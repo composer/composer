@@ -166,6 +166,9 @@ class Factory
         }
 
         foreach ($config->getRepositories() as $index => $repo) {
+            if (is_string($repo)) {
+                throw new \UnexpectedValueException('Repositories should be an array of repository defintions, only a single repository was given');
+            }
             if (!is_array($repo)) {
                 throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
             }
