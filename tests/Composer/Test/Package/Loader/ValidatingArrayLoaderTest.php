@@ -339,6 +339,20 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                 ),
                 false
             ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'extra' => array(
+                        'branch-alias' => array(
+                            '5.x-dev' => '3.1-dev'
+                        ),
+                    )
+                ),
+                array(
+                    'extra.branch-alias.5.x-dev : the target branch (3.1-dev) is not a valid numeric alias for this version'
+                ),
+                false
+            ),
         );
     }
 }

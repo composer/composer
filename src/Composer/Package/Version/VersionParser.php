@@ -176,12 +176,13 @@ class VersionParser
      * @param string $branch Branch name (e.g. 2.1.x-dev)
      * @return string|false Numeric prefix if present (e.g. 2.1.) or false
      */
-    public function parseNumericAliasPrefix($branch) {
-        if(preg_match('/^(?<version>(\d+\\.)*\d+).x-dev$/i', $branch, $matches)) {
+    public function parseNumericAliasPrefix($branch)
+    {
+        if (preg_match('/^(?<version>(\d+\\.)*\d+)(?:\.x)?-dev$/i', $branch, $matches)) {
             return $matches['version'].".";
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

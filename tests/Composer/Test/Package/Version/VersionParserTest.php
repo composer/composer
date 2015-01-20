@@ -68,32 +68,35 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider successfulNormalizedVersions
-     */
-    public function testNormalizeSucceeds($input, $expected)
-    {
-        $parser = new VersionParser;
-        $this->assertSame($expected, $parser->normalize($input));
-    }
-
-    public function numericAliasVersions() {
-        return array(
-            array('0.x-dev',        '0.'),
-            array('1.0.x-dev',      '1.0.'),
-            array('1.x-dev',        '1.'),
-            array('1.2.x-dev',      '1.2.'),
-            array('dev-develop',    false),
-            array('dev-master',     false),
-        );
-    }
-
-    /**
      * @dataProvider numericAliasVersions
      */
     public function testParseNumericAliasPrefix($input, $expected)
     {
         $parser = new VersionParser;
         $this->assertSame($expected, $parser->parseNumericAliasPrefix($input));
+    }
+
+    public function numericAliasVersions()
+    {
+        return array(
+            array('0.x-dev',        '0.'),
+            array('1.0.x-dev',      '1.0.'),
+            array('1.x-dev',        '1.'),
+            array('1.2.x-dev',      '1.2.'),
+            array('1.2-dev',        '1.2.'),
+            array('1-dev',          '1.'),
+            array('dev-develop',    false),
+            array('dev-master',     false),
+        );
+    }
+
+    /**
+     * @dataProvider successfulNormalizedVersions
+     */
+    public function testNormalizeSucceeds($input, $expected)
+    {
+        $parser = new VersionParser;
+        $this->assertSame($expected, $parser->normalize($input));
     }
 
     public function successfulNormalizedVersions()

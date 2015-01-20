@@ -113,10 +113,12 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
             array('3.1.2-dev', true, 'dev', '3.1.2-dev'),
             // dev packages with alias inherit the alias
             array('dev-master', true, 'dev', '~2.1@dev', '2.1.x-dev'),
+            array('dev-master', true, 'dev', '~2.1@dev', '2.1-dev'),
             array('dev-master', true, 'dev', '~2.1@dev', '2.1.3.x-dev'),
             array('dev-master', true, 'dev', '~2.0@dev', '2.x-dev'),
             // numeric alias
             array('3.x-dev', true, 'dev', '~3.0@dev', '3.0.x-dev'),
+            array('3.x-dev', true, 'dev', '~3.0@dev', '3.0-dev'),
         );
     }
 
