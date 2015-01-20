@@ -167,10 +167,10 @@ class Factory
 
         foreach ($config->getRepositories() as $index => $repo) {
             if (!is_array($repo)) {
-                throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
+                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
             }
             if (!isset($repo['type'])) {
-                throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') must have a type defined');
+                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') must have a type defined');
             }
             $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
             while (isset($repos[$name])) {
