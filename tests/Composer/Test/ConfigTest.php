@@ -97,6 +97,18 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ),
         );
 
+        $data['incorrect local config does not cause ErrorException'] = array(
+            array(
+                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true),
+                'type' => 'vcs',
+                'url' => 'http://example.com',
+            ),
+            array(
+                'type' => 'vcs',
+                'url' => 'http://example.com',
+            ),
+        );
+
         return $data;
     }
 
