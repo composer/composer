@@ -138,6 +138,28 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
         $this->assertEquals('1.0.x-dev', $package->getPrettyVersion());
+
+        $config = array(
+            'name' => 'B',
+            'version' => '4.x-dev',
+            'extra' => array('branch-alias' => array('4.x-dev' => '4.0.x-dev')),
+        );
+
+        $package = $this->loader->load($config);
+
+        $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
+        $this->assertEquals('4.0.x-dev', $package->getPrettyVersion());
+
+        $config = array(
+            'name' => 'C',
+            'version' => '4.x-dev',
+            'extra' => array('branch-alias' => array('4.x-dev' => '3.4.x-dev')),
+        );
+
+        $package = $this->loader->load($config);
+
+        $this->assertInstanceOf('Composer\Package\CompletePackage', $package);
+        $this->assertEquals('4.x-dev', $package->getPrettyVersion());
     }
 
     public function testAbandoned()
