@@ -165,10 +165,15 @@ class Factory
             $rm = $factory->createRepositoryManager($io, $config);
         }
 
-        foreach ($config->getRepositories() as $index => $repo) {
-            if (is_string($repo)) {
-                throw new \UnexpectedValueException('Repositories should be an array of repository defintions, only a single repository was given');
-            }
+        $repositories = $config->getRepositories();
+
+        if (!is_array($repositories)) {
+            throw new \UnexpectedValueException(
+                '"repositories" should be an array of repository definitions, only a single repository was given'
+            );
+        }
+
+        foreach ($repositories as $index => $repo) {
             if (!is_array($repo)) {
                 throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
             }
