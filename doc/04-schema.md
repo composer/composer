@@ -54,8 +54,8 @@ The version of the package. In most cases this is not required and should
 be omitted (see below).
 
 This must follow the format of `X.Y.Z` or `vX.Y.Z` with an optional suffix
-of `-dev`, `-patch`, `-alpha`, `-beta` or `-RC`. The patch, alpha, beta and
-RC suffixes can also be followed by a number.
+of `-dev`, `-patch` (`-p`), `-alpha` (`-a`), `-beta` (`-b`) or `-RC`.
+The patch, alpha, beta and RC suffixes can also be followed by a number.
 
 Examples:
 
@@ -67,6 +67,7 @@ Examples:
 - 1.0.0-alpha3
 - 1.0.0-beta2
 - 1.0.0-RC5
+- v2.0.4-p1
 
 Optional if the package repository can infer the version from somewhere, such
 as the VCS tag name in the VCS repository. In that case it is also recommended
