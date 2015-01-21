@@ -388,7 +388,7 @@ EOT
             foreach ($errors as $error => $current) {
                 switch ($error) {
                     case 'php':
-                        $text = "- Your PHP ({$current}) is too old, you must upgrade to PHP 5.3.2 or higher.";
+                        $text = "Your PHP ({$current}) is too old, you must upgrade to PHP 5.3.2 or higher.";
                         break;
 
                     case 'allow_url_fopen':
