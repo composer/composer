@@ -29,8 +29,13 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DiagnoseCommand extends Command
 {
+    /** @var RemoteFileSystem */
     protected $rfs;
+
+    /** @var ProcessExecutor */
     protected $process;
+
+    /** @var int */
     protected $failures = 0;
 
     protected function configure()
@@ -49,6 +54,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer(false);
+
         if ($composer) {
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -90,6 +96,24 @@ EOT
                 $output->write('Checking '.$domain.' oauth access: ');
                 $this->outputResult($output, $this->checkGithubOauth($domain, $token));
             }
+        } else {
+            $output->write('Checking github.com rate limit: ');
+            $rate = $this->getGithubRateLimit('github.com');
+
+            if (10 > $rate['remaining']) {
+                $output->writeln('<warning>WARNING</warning>');
+                $output->writeln(sprintf(
+                    '<comment>Github has a rate limit on their API. '
+                    . 'You currently have <options=bold>%u</options=bold> '
+                    . 'out of <options=bold>%u</options=bold> requests left.' . PHP_EOL
+                    . 'See https://developer.github.com/v3/#rate-limiting and also' . PHP_EOL
+                    . '    https://getcomposer.org/doc/articles/troubleshooting.md#api-rate-limit-and-oauth-tokens</comment>',
+                    $rate['remaining'],
+                    $rate['limit']
+                ));
+            } else {
+                $output->writeln('<info>OK</info>');
+            }
         }
 
         $output->write('Checking disk free space: ');
@@ -129,7 +153,7 @@ EOT
     {
         $this->process->execute('git config color.ui', $output);
         if (strtolower(trim($output)) === 'always') {
-            return '<warning>Your git color.ui setting is set to always, this is known to create issues. Use "git config --global color.ui true" to set it correctly.</warning>';
+            return '<comment>Your git color.ui setting is set to always, this is known to create issues. Use "git config --global color.ui true" to set it correctly.</comment>';
         }
 
         return true;
@@ -139,7 +163,7 @@ EOT
     {
         $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $json = $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false);
+            $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false);
         } catch (\Exception $e) {
             return $e;
         }
@@ -207,7 +231,7 @@ EOT
 
         $url = 'https://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0';
         try {
-            $rfcResult = $this->rfs->getContents('github.com', $url, false);
+            $this->rfs->getContents('github.com', $url, false);
         } catch (TransportException $e) {
             try {
                 $this->rfs->getContents('github.com', $url, false, array('http' => array('request_fulluri' => false)));
@@ -227,10 +251,33 @@ EOT
         try {
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/user/repos' : 'https://'.$domain.'/api/v3/user/repos';
 
-            return $this->rfs->getContents($domain, $url, false) ? true : 'Unexpected error';
+            return $this->rfs->getContents($domain, $url, false, array(
+                'retry-auth-failure' => false
+            )) ? true : 'Unexpected error';
         } catch (\Exception $e) {
             if ($e instanceof TransportException && $e->getCode() === 401) {
-                return '<warning>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</warning>';
+                return '<comment>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</comment>';
+            }
+
+            return $e;
+        }
+    }
+
+    private function getGithubRateLimit($domain, $token = null)
+    {
+        if ($token) {
+            $this->getIO()->setAuthentication($domain, $token, 'x-oauth-basic');
+        }
+
+        try {
+            $url = $domain === 'github.com' ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
+            $json = $this->rfs->getContents($domain, $url, array('retry-auth-failure' => false));
+            $data = json_decode($json, true);
+
+            return $data['rate'];
+        } catch (\Exception $e) {
+            if ($e instanceof TransportException && $e->getCode() === 401) {
+                return '<comment>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</comment>';
             }
 
             return $e;
@@ -255,7 +302,7 @@ EOT
         $latest = trim($this->rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/version', false));
 
         if (Composer::VERSION !== $latest && Composer::VERSION !== '@package_version@') {
-            return '<warning>You are not running the latest version</warning>';
+            return '<comment>You are not running the latest version</comment>';
         }
 
         return true;
@@ -271,7 +318,7 @@ EOT
             if ($result instanceof \Exception) {
                 $output->writeln('['.get_class($result).'] '.$result->getMessage());
             } elseif ($result) {
-                $output->writeln($result);
+                $output->writeln(trim($result));
             }
         }
     }
@@ -280,7 +327,7 @@ EOT
     {
         $output = '';
         $out = function ($msg, $style) use (&$output) {
-            $output .= '<'.$style.'>'.$msg.'</'.$style.'>';
+            $output .= '<'.$style.'>'.$msg.'</'.$style.'>'.PHP_EOL;
         };
 
         // code below taken from getcomposer.org/installer, any changes should be made there and replicated here
@@ -341,13 +388,13 @@ EOT
             foreach ($errors as $error => $current) {
                 switch ($error) {
                     case 'php':
-                        $text = PHP_EOL."Your PHP ({$current}) is too old, you must upgrade to PHP 5.3.2 or higher.";
+                        $text = "- Your PHP ({$current}) is too old, you must upgrade to PHP 5.3.2 or higher.";
                         break;
 
                     case 'allow_url_fopen':
-                        $text = PHP_EOL."The allow_url_fopen setting is incorrect.".PHP_EOL;
+                        $text  = "The allow_url_fopen setting is incorrect.".PHP_EOL;
                         $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
-                        $text .= "    allow_url_fopen = On";
+                        $text .= "  allow_url_fopen = On";
                         $displayIniMessage = true;
                         break;
                 }
@@ -361,51 +408,51 @@ EOT
             foreach ($warnings as $warning => $current) {
                 switch ($warning) {
                     case 'apc_cli':
-                        $text = PHP_EOL."The apc.enable_cli setting is incorrect.".PHP_EOL;
+                        $text  = "The apc.enable_cli setting is incorrect.".PHP_EOL;
                         $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
-                        $text .= "    apc.enable_cli = Off";
+                        $text .= "  apc.enable_cli = Off";
                         $displayIniMessage = true;
                         break;
 
                     case 'sigchild':
-                        $text = PHP_EOL."PHP was compiled with --enable-sigchild which can cause issues on some platforms.".PHP_EOL;
+                        $text  = "PHP was compiled with --enable-sigchild which can cause issues on some platforms.".PHP_EOL;
                         $text .= "Recompile it without this flag if possible, see also:".PHP_EOL;
-                        $text .= "    https://bugs.php.net/bug.php?id=22999";
+                        $text .= "  https://bugs.php.net/bug.php?id=22999";
                         break;
 
                     case 'curlwrappers':
-                        $text = PHP_EOL."PHP was compiled with --with-curlwrappers which will cause issues with HTTP authentication and GitHub.".PHP_EOL;
-                        $text .= "Recompile it without this flag if possible";
+                        $text  = "PHP was compiled with --with-curlwrappers which will cause issues with HTTP authentication and GitHub.".PHP_EOL;
+                        $text .= " Recompile it without this flag if possible";
                         break;
 
                     case 'openssl':
-                        $text = PHP_EOL."The openssl extension is missing, which will reduce the security and stability of Composer.".PHP_EOL;
-                        $text .= "If possible you should enable it or recompile php with --with-openssl";
+                        $text  = "The openssl extension is missing, which will reduce the security and stability of Composer.".PHP_EOL;
+                        $text .= " If possible you should enable it or recompile php with --with-openssl";
                         break;
 
                     case 'php':
-                        $text = PHP_EOL."Your PHP ({$current}) is quite old, upgrading to PHP 5.3.4 or higher is recommended.".PHP_EOL;
-                        $text .= "Composer works with 5.3.2+ for most people, but there might be edge case issues.";
+                        $text  = "Your PHP ({$current}) is quite old, upgrading to PHP 5.3.4 or higher is recommended.".PHP_EOL;
+                        $text .= " Composer works with 5.3.2+ for most people, but there might be edge case issues.";
                         break;
 
                     case 'xdebug_loaded':
-                        $text = PHP_EOL."The xdebug extension is loaded, this can slow down Composer a little.".PHP_EOL;
-                        $text .= "Disabling it when using Composer is recommended, but should not cause issues beyond slowness.";
+                        $text  = "The xdebug extension is loaded, this can slow down Composer a little.".PHP_EOL;
+                        $text .= " Disabling it when using Composer is recommended.";
                         break;
 
                     case 'xdebug_profile':
-                        $text = PHP_EOL."The xdebug.profiler_enabled setting is enabled, this can slow down Composer a lot.".PHP_EOL;
+                        $text  = "The xdebug.profiler_enabled setting is enabled, this can slow down Composer a lot.".PHP_EOL;
                         $text .= "Add the following to the end of your `php.ini` to disable it:".PHP_EOL;
-                        $text .= "    xdebug.profiler_enabled = 0";
+                        $text .= "  xdebug.profiler_enabled = 0";
                         $displayIniMessage = true;
                         break;
                 }
-                $out($text, 'warning');
+                $out($text, 'comment');
             }
         }
 
         if ($displayIniMessage) {
-            $out($iniMessage, 'warning');
+            $out($iniMessage, 'comment');
         }
 
         return !$warnings && !$errors ? true : $output;
