@@ -168,6 +168,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function testNormalizeBranch($input, $expected)
     {
         $parser = new VersionParser;
+        $parser->setReleaseBranchPrefix("release/");
         $this->assertSame((string) $expected, (string) $parser->normalizeBranch($input));
     }
 
@@ -186,6 +187,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses trunk'          => array('trunk',       '9999999-dev'),
             'parses arbitrary'      => array('feature-a',   'dev-feature-a'),
             'parses arbitrary/2'    => array('FOOBAR',      'dev-FOOBAR'),
+            'release branch prefix' => array('release/1.0', '1.0.9999999.9999999-dev'),
         );
     }
 

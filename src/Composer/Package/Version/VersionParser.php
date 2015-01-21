@@ -28,6 +28,8 @@ class VersionParser
 {
     private static $modifierRegex = '[._-]?(?:(stable|beta|b|RC|alpha|a|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
 
+    protected $releaseBranchPrefix;
+
     /**
      * Returns the stability of a version
      *
@@ -197,6 +199,10 @@ class VersionParser
 
         if (in_array($name, array('master', 'trunk', 'default'))) {
             return $this->normalize($name);
+        }
+
+        if (!is_null($this->releaseBranchPrefix)) {
+            $name = str_replace($this->releaseBranchPrefix, '', $name);
         }
 
         if (preg_match('#^v?(\d+)(\.(?:\d+|[xX*]))?(\.(?:\d+|[xX*]))?(\.(?:\d+|[xX*]))?$#i', $name, $matches)) {
@@ -538,5 +544,13 @@ class VersionParser
         }
 
         return $result;
+    }
+
+    /**
+     *
+     */
+    public function setReleaseBranchPrefix($releaseBranchPrefix)
+    {
+        $this->releaseBranchPrefix = $releaseBranchPrefix;
     }
 }

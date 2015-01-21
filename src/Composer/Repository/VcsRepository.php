@@ -116,6 +116,7 @@ class VcsRepository extends ArrayRepository
         }
 
         $this->versionParser = new VersionParser;
+
         if (!$this->loader) {
             $this->loader = new ArrayLoader($this->versionParser);
         }
@@ -218,6 +219,11 @@ class VcsRepository extends ArrayRepository
                     continue;
                 }
 
+                // Update parsedBranch if this package's composer.json specifies a prefix for their release branches
+                if (array_key_exists('config', $data) && array_key_exists('release-branch-prefix', $data['config'])) {
+                    $parsedBranch = $this->validateBranch($branch, $data['config']['release-branch-prefix']);
+                }
+
                 // branches are always auto-versioned, read value from branch name
                 $data['version'] = $branch;
                 $data['version_normalized'] = $parsedBranch;
@@ -280,8 +286,12 @@ class VcsRepository extends ArrayRepository
         return $data;
     }
 
-    private function validateBranch($branch)
+    private function validateBranch($branch, $releaseBranchPrefix = null)
     {
+        if (!is_null($releaseBranchPrefix)) {
+            $this->versionParser->setReleaseBranchPrefix($releaseBranchPrefix);
+        }
+
         try {
             return $this->versionParser->normalizeBranch($branch);
         } catch (\Exception $e) {
