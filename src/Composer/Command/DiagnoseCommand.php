@@ -271,7 +271,7 @@ EOT
 
         try {
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
-            $json = $this->rfs->getContents($domain, $url, array('retry-auth-failure' => false));
+            $json = $this->rfs->getContents($domain, $url, false, array('retry-auth-failure' => false));
             $data = json_decode($json, true);
 
             return $data['rate'];
