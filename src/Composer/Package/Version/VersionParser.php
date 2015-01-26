@@ -178,7 +178,7 @@ class VersionParser
      */
     public function parseNumericAliasPrefix($branch)
     {
-        if (preg_match('/^(?<version>(\d+\\.)*\d+)(?:\.x)?-dev$/i', $branch, $matches)) {
+        if (preg_match('/^(?P<version>(\d+\\.)*\d+)(?:\.x)?-dev$/i', $branch, $matches)) {
             return $matches['version'].".";
         }
 
