@@ -97,12 +97,14 @@ class ConsoleIO extends BaseIO
     {
         if (null !== $this->startTime) {
             $messages = (array) $messages;
-            $messages[0] = sprintf(
-                '[%.1fMB/%.2fs] %s',
-                memory_get_usage() / 1024 / 1024,
-                microtime(true) - $this->startTime,
-                $messages[0]
-            );
+            $messages = array_map(function (&$message) {
+                return sprintf(
+                    '[%.1fMB/%.2fs] %s',
+                    memory_get_usage() / 1024 / 1024,
+                    microtime(true) - $this->startTime,
+                    $message
+                );
+            }, $messages);
         }
         $this->output->write($messages, $newline);
         $this->lastMessage = join($newline ? "\n" : '', (array) $messages);
