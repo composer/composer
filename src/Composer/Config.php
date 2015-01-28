@@ -39,6 +39,7 @@ class Config
         'discard-changes' => false,
         'autoloader-suffix' => null,
         'optimize-autoloader' => false,
+        'classmap-authoritative' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
         'github-expose-hostname' => true,
