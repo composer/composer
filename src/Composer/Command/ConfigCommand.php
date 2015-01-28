@@ -137,7 +137,7 @@ EOT
         }
 
         if (!$this->configFile->exists()) {
-            throw new \RuntimeException('No composer.json found in the current directory');
+            throw new \RuntimeException(sprintf('File "%s" cannot be found in the current directory', $configFile));
         }
     }
 
