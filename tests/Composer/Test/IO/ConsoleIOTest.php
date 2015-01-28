@@ -57,9 +57,9 @@ class ConsoleIOTest extends TestCase
             ->method('write')
             ->with(
                 $this->callback(function($messages){
-                    $this->assertRegExp("[(.*)/(.*) First line]", $messages[0]);
-                    $this->assertRegExp("[(.*)/(.*) Second line]", $messages[1]);
-                    return true;
+                    $result = preg_match("[(.*)/(.*) First line]", $messages[0]) > 0;
+                    $result &= preg_match("[(.*)/(.*) Second line]", $messages[1]) > 0;
+                    return $result;
                 }),
                 $this->equalTo(false)
             );
