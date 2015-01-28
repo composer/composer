@@ -72,8 +72,12 @@ EOT
         if (!is_writable($tmpDir)) {
             throw new FilesystemException('Composer update failed: the "'.$tmpDir.'" directory used to download the temp file could not be written');
         }
-        if (!is_writable($localFilename)) {
-            throw new FilesystemException('Composer update failed: the "'.$localFilename.'" file could not be written');
+
+        $tempFilename = $tmpDir . '/' . basename($localFilename, '.phar').'-temp.phar';
+
+        // check if the the user has permission for renaming file
+        if (!$this->hasRenamePermission($tempFilename, $localFilename)) {
+            throw new FilesystemException('Composer update failed: the "'.$localFilename.'" file could not be overwritten');
         }
 
         if ($input->getOption('rollback')) {
@@ -95,7 +99,6 @@ EOT
             return 0;
         }
 
-        $tempFilename = $tmpDir . '/' . basename($localFilename, '.phar').'-temp.phar';
         $backupFile = sprintf(
             '%s/%s-%s%s',
             $rollbackDir,
@@ -158,10 +161,12 @@ EOT
         if (!is_readable($old)) {
             throw new FilesystemException('Composer rollback failed: "'.$old.'" could not be read');
         }
+        if (!$this->hasRenamePermission($old, $localFilename)) {
+            throw new FilesystemException('Composer rollback failed: the "'.$newFilename.'" file could not be overwritten');
+        }
 
-        $oldFile = $rollbackDir . "/{$rollbackVersion}" . self::OLD_INSTALL_EXT;
         $output->writeln(sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
-        if ($err = $this->setLocalPhar($localFilename, $oldFile)) {
+        if ($err = $this->setLocalPhar($localFilename, $old)) {
             $output->writeln('<error>The backup file was corrupted ('.$err->getMessage().') and has been removed.</error>');
 
             return 1;
@@ -221,5 +226,58 @@ EOT
             ->in($rollbackDir);
 
         return $finder;
+    }
+
+    /**
+     * Determine if renaming source to target is allowed
+     *
+     * Permissions needed for renaming a file is not the same when the source and the targe are on the same partion
+     * not. When files are on different paritions, PHP will copy + delete the the source
+     * see https://bugs.php.net/bug.php?id=54097
+     *  - To rename a file you need write permission on the directory
+     *  - To copy a file you need write permission on the file
+     *
+     * @param string $source
+     * @param string $target
+     *
+     * @return bool
+     */
+    private function hasRenamePermission($source, $target)
+    {
+        if ($this->isOnSamePartition($source, $target)) {
+            if (is_writable(dirname($target))) {
+                return true;
+            }
+        } elseif (is_writable($target)) {
+            return true;
+        }
+
+        return null;
+    }
+
+    private function isOnSamePartition($file1, $file2)
+    {
+        while (!is_dir($file1)) {
+            $file1 = dirname($file1);
+        }
+        while (!is_dir($file2)) {
+            $file2 = dirname($file2);
+        }
+
+        if (realpath($file1) === realpath($file2)) {
+            return true;
+        }
+
+        // File are on the same partition if the total and free space are equals.
+        if (disk_total_space($file1) !== disk_total_space($file2)) {
+            return false;
+        }
+
+        // For free space, we have to pike multiple samples, given the value can change between 2 picks
+        $free1 = disk_free_space($file1);
+        $free2 = disk_free_space($file2);
+        $free3 = disk_free_space($file1);
+
+        return $free2 <= max($free1, $free3) && $free2 >= min($free1, $free3);
     }
 }
