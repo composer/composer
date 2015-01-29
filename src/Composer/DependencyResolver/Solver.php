@@ -83,7 +83,7 @@ class Solver
             $conflict = $this->decisions->decisionRule($literal);
 
             if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
-                $problem = new Problem($this->pool);
+                $problem = new Problem();
 
                 $problem->addRule($rule);
                 $problem->addRule($conflict);
@@ -93,7 +93,7 @@ class Solver
             }
 
             // conflict with another job
-            $problem = new Problem($this->pool);
+            $problem = new Problem();
             $problem->addRule($rule);
             $problem->addRule($conflict);
 
@@ -154,7 +154,7 @@ class Solver
                     }
 
                     if (!$this->pool->whatProvides($job['packageName'], $job['constraint'])) {
-                        $problem = new Problem($this->pool);
+                        $problem = new Problem();
                         $problem->addRule(new Rule(array(), null, null, $job));
                         $this->problems[] = $problem;
                     }
@@ -190,7 +190,12 @@ class Solver
         }
 
         if ($this->problems) {
-            throw new SolverProblemsException($this->problems, $this->installedMap);
+            $problemFormatters = array();
+            foreach ($this->problems as $problem) {
+                 $problemFormatters[] = new ProblemFormatter($this->pool, $problem);
+            }
+
+            throw new SolverProblemsException($problemFormatters, $this->installedMap);
         }
 
         $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisions);
@@ -472,7 +477,7 @@ class Solver
 
     private function analyzeUnsolvable($conflictRule, $disableRules)
     {
-        $problem = new Problem($this->pool);
+        $problem = new Problem();
         $problem->addRule($conflictRule);
 
         $this->analyzeUnsolvableRule($problem, $conflictRule);

@@ -14,6 +14,7 @@ namespace Composer\Test\DependencyResolver;
 use Composer\Repository\ArrayRepository;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\ProblemFormatter;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
@@ -73,10 +74,10 @@ class SolverTest extends TestCase
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
-            $problems = $e->getProblems();
-            $this->assertEquals(1, count($problems));
+            $problemFormatters = $e->getProblemFormatters();
+            $this->assertEquals(1, count($problemFormatters));
             $this->assertEquals(2, $e->getCode());
-            $this->assertEquals("\n    - The requested package b could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString());
+            $this->assertEquals("\n    - The requested package b could not be found in any version, there may be a typo in the package name.", $problemFormatters[0]->getPrettyString());
         }
     }
 
@@ -668,8 +669,8 @@ class SolverTest extends TestCase
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
-            $problems = $e->getProblems();
-            $this->assertEquals(1, count($problems));
+            $problemFormatters = $e->getProblemFormatters();
+            $this->assertEquals(1, count($problemFormatters));
 
             $msg = "\n";
             $msg .= "  Problem 1\n";
@@ -697,8 +698,8 @@ class SolverTest extends TestCase
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
-            $problems = $e->getProblems();
-            $this->assertEquals(1, count($problems));
+            $problemFormatters = $e->getProblemFormatters();
+            $this->assertEquals(1, count($problemFormatters));
             // TODO assert problem properties
 
             $msg = "\n";
@@ -743,8 +744,8 @@ class SolverTest extends TestCase
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
-            $problems = $e->getProblems();
-            $this->assertEquals(1, count($problems));
+            $problemFormatters = $e->getProblemFormatters();
+            $this->assertEquals(1, count($problemFormatters));
 
             $msg = "\n";
             $msg .= "  Problem 1\n";

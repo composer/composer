@@ -17,12 +17,12 @@ namespace Composer\DependencyResolver;
  */
 class SolverProblemsException extends \RuntimeException
 {
-    protected $problems;
+    protected $problemFormatters;
     protected $installedMap;
 
-    public function __construct(array $problems, array $installedMap)
+    public function __construct(array $problemFormatters, array $installedMap)
     {
-        $this->problems = $problems;
+        $this->problemFormatters = $problemFormatters;
         $this->installedMap = $installedMap;
 
         parent::__construct($this->createMessage(), 2);
@@ -31,8 +31,8 @@ class SolverProblemsException extends \RuntimeException
     protected function createMessage()
     {
         $text = "\n";
-        foreach ($this->problems as $i => $problem) {
-            $text .= "  Problem ".($i+1).$problem->getPrettyString($this->installedMap)."\n";
+        foreach ($this->problemFormatters as $i => $problemFormatter) {
+            $text .= "  Problem ".($i+1).$problemFormatter->getPrettyString($this->installedMap)."\n";
         }
 
         if (strpos($text, 'could not be found') || strpos($text, 'no matching package found')) {
@@ -42,8 +42,8 @@ class SolverProblemsException extends \RuntimeException
         return $text;
     }
 
-    public function getProblems()
-    {
-        return $this->problems;
+    public function getProblemFormatters()
+    {   
+        return $this->problemFormatters;
     }
 }
