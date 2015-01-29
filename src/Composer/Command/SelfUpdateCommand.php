@@ -70,7 +70,8 @@ EOT
         }
         $remoteFilesystem = Factory::createRemoteFilesystem($this->getIO(), $config);
 
-        //$baseUrl = (extension_loaded('openssl') ? 'https' : 'http') . '://' . self::HOMEPAGE;
+        // TODO: Silent switch probably should be kicking out exception
+        $baseUrl = (extension_loaded('openssl') ? 'https' : 'http') . '://' . self::HOMEPAGE;
 
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('home');

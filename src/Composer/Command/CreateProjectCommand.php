@@ -239,19 +239,14 @@ EOT
     {
         if (null === $repositoryUrl) {
             $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
-<<<<<<< HEAD
-        } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION)) {
-            $sourceRepo = new FilesystemRepository(new JsonFile($repositoryUrl, Factory::createRemoteFilesystem($io, $config)));
-=======
         } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION) && file_exists($repositoryUrl)) {
-            $json = new JsonFile($repositoryUrl, new RemoteFilesystem($io, $config));
+            $json = new JsonFile($repositoryUrl, Factory::createRemoteFilesystem($io, $config));
             $data = $json->read();
             if (!empty($data['packages']) || !empty($data['includes']) || !empty($data['provider-includes'])) {
                 $sourceRepo = new ComposerRepository(array('url' => 'file://' . strtr(realpath($repositoryUrl), '\\', '/')), $io, $config);
             } else {
                 $sourceRepo = new FilesystemRepository($json);
             }
->>>>>>> master
         } elseif (0 === strpos($repositoryUrl, 'http')) {
             $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl), $io, $config);
         } else {
