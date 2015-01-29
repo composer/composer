@@ -241,7 +241,11 @@ class GitDriver extends VcsDriver
             return false;
         }
 
-        // TODO try to connect to the server
+        $process = new ProcessExecutor($io);
+        if($process->execute('git ls-remote ' . $url, $output) === 0) {
+            return true;
+        }
+
         return false;
     }
 }
