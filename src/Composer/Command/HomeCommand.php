@@ -84,7 +84,7 @@ EOT
             }
 
             if ($input->getOption('show')) {
-                $output->writeln(sprintf('<comment>%s: </comment><info>%s</info>', $input->getOption('homepage') ? 'Homepage URL' : 'Repository URL', $url).' </info>');
+                $output->writeln(sprintf('<info>%s</info>', $url));
             } else {
                 $this->openBrowser($url);
             }
