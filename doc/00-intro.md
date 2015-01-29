@@ -107,6 +107,8 @@ mv composer.phar /usr/local/bin/composer
 > **Note:** If the above fails due to permissions, run the `mv` line
 > again with sudo.
 
+> **Note:** In OSX Yosemite the `/usr` directory does not exist by default. If you receive the error "/usr/local/bin/composer: No such file or directory" then you must create `/usr/local/bin/` manually before proceeding.
+
 Then, just run `composer` in order to run Composer instead of `php composer.phar`.
 
 ## Installation - Windows
