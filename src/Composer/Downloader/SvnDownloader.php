@@ -24,10 +24,9 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doDownload(PackageInterface $package, $path)
+    public function doDownload(PackageInterface $package, $path, $url)
     {
         SvnUtil::cleanEnv();
-        $url = $package->getSourceUrl();
         $ref = $package->getSourceReference();
 
         $this->io->write("    Checking out ".$package->getSourceReference());
@@ -37,18 +36,24 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
+    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
         SvnUtil::cleanEnv();
-        $url = $target->getSourceUrl();
         $ref = $target->getSourceReference();
 
         if (!is_dir($path.'/.svn')) {
             throw new \RuntimeException('The .svn directory is missing from '.$path.', see http://getcomposer.org/commit-deps for more information');
         }
 
+        $flags = "";
+        if (0 === $this->process->execute('svn --version', $output)) {
+            if (preg_match('{(\d+(?:\.\d+)+)}', $output, $match) && version_compare($match[1], '1.7.0', '>=')) {
+                $flags .= ' --ignore-ancestry';
+            }
+        }
+
         $this->io->write("    Checking out " . $ref);
-        $this->execute($url, "svn switch", sprintf("%s/%s", $url, $ref), $path);
+        $this->execute($url, "svn switch" . $flags, sprintf("%s/%s", $url, $ref), $path);
     }
 
     /**
@@ -79,7 +84,7 @@ class SvnDownloader extends VcsDownloader
      */
     protected function execute($baseUrl, $command, $url, $cwd = null, $path = null)
     {
-        $util = new SvnUtil($baseUrl, $this->io);
+        $util = new SvnUtil($baseUrl, $this->io, $this->config);
         try {
             return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
         } catch (\RuntimeException $e) {

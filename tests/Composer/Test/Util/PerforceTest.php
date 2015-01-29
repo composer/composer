@@ -22,17 +22,49 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
 {
     protected $perforce;
     protected $processExecutor;
+    protected $io;
 
-    public function setUp()
+    const TEST_DEPOT       = 'depot';
+    const TEST_BRANCH      = 'branch';
+    const TEST_P4USER      = 'user';
+    const TEST_CLIENT_NAME = 'TEST';
+    const TEST_PORT        = 'port';
+    const TEST_PATH        = 'path';
+
+    protected function setUp()
     {
         $this->processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
-        $repoConfig = array(
-            'depot'                       => 'depot',
-            'branch'                      => 'branch',
-            'p4user'                      => 'user',
-            'unique_perforce_client_name' => 'TEST'
+        $this->repoConfig = $this->getTestRepoConfig();
+        $this->io = $this->getMockIOInterface();
+        $this->createNewPerforceWithWindowsFlag(true);
+    }
+
+    protected function tearDown()
+    {
+        $this->perforce        = null;
+        $this->io              = null;
+        $this->repoConfig      = null;
+        $this->processExecutor = null;
+    }
+
+    public function getTestRepoConfig()
+    {
+        return array(
+            'depot'                       => self::TEST_DEPOT,
+            'branch'                      => self::TEST_BRANCH,
+            'p4user'                      => self::TEST_P4USER,
+            'unique_perforce_client_name' => self::TEST_CLIENT_NAME
         );
-        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, true);
+    }
+
+    public function getMockIOInterface()
+    {
+        return $this->getMock('Composer\IO\IOInterface');
+    }
+
+    protected function createNewPerforceWithWindowsFlag($flag)
+    {
+        $this->perforce = new Perforce($this->repoConfig, self::TEST_PORT, self::TEST_PATH, $this->processExecutor, $flag, $this->io);
     }
 
     public function testGetClientWithoutStream()
@@ -98,116 +130,90 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
 
     public function testQueryP4UserWithUserAlreadySet()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
-
-        $repoConfig = array('depot' => 'depot', 'branch' => 'branch', 'p4user' => 'TEST_USER');
-        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, true, 'TEST');
-
-        $this->perforce->queryP4user($io);
-        $this->assertEquals('TEST_USER', $this->perforce->getUser());
+        $this->perforce->queryP4user();
+        $this->assertEquals(self::TEST_P4USER, $this->perforce->getUser());
     }
 
     public function testQueryP4UserWithUserSetInP4VariablesWithWindowsOS()
     {
-        $repoConfig = array('depot' => 'depot', 'branch' => 'branch');
-        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, true, 'TEST');
-
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $this->createNewPerforceWithWindowsFlag(true);
+        $this->perforce->setUser(null);
         $expectedCommand = 'p4 set';
+        $callback = function ($command, &$output) {
+                $output = 'P4USER=TEST_P4VARIABLE_USER' . PHP_EOL;
+
+                return true;
+            };
         $this->processExecutor->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo($expectedCommand))
-            ->will(
-                $this->returnCallback(
-                    function ($command, &$output) {
-                        $output = 'P4USER=TEST_P4VARIABLE_USER' . PHP_EOL ;
-
-                        return true;
-                    }
-                )
-            );
-
-        $this->perforce->queryP4user($io);
+                            ->method('execute')
+                            ->with($this->equalTo($expectedCommand))
+                            ->will($this->returnCallback($callback));
+        $this->perforce->queryP4user();
         $this->assertEquals('TEST_P4VARIABLE_USER', $this->perforce->getUser());
     }
 
     public function testQueryP4UserWithUserSetInP4VariablesNotWindowsOS()
     {
-        $repoConfig = array('depot' => 'depot', 'branch' => 'branch');
-        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, false, 'TEST');
-
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $this->createNewPerforceWithWindowsFlag(false);
+        $this->perforce->setUser(null);
         $expectedCommand = 'echo $P4USER';
+        $callback = function ($command, &$output) {
+                $output = 'TEST_P4VARIABLE_USER' . PHP_EOL;
+
+                return true;
+            };
         $this->processExecutor->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo($expectedCommand))
-            ->will(
-                $this->returnCallback(
-                    function ($command, &$output) {
-                        $output = 'TEST_P4VARIABLE_USER' . PHP_EOL;
-
-                        return true;
-                    }
-                )
-            );
-
-        $this->perforce->queryP4user($io);
+                              ->method('execute')
+                              ->with($this->equalTo($expectedCommand))
+                              ->will($this->returnCallback($callback));
+        $this->perforce->queryP4user();
         $this->assertEquals('TEST_P4VARIABLE_USER', $this->perforce->getUser());
     }
 
     public function testQueryP4UserQueriesForUser()
     {
-        $repoConfig = array('depot' => 'depot', 'branch' => 'branch');
-        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, false, 'TEST');
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $this->perforce->setUser(null);
         $expectedQuestion = 'Enter P4 User:';
-        $io->expects($this->at(0))
-            ->method('ask')
-            ->with($this->equalTo($expectedQuestion))
-            ->will($this->returnValue('TEST_QUERY_USER'));
-
-        $this->perforce->queryP4user($io);
+        $this->io->expects($this->at(0))
+                 ->method('ask')
+                 ->with($this->equalTo($expectedQuestion))
+                 ->will($this->returnValue('TEST_QUERY_USER'));
+        $this->perforce->queryP4user();
         $this->assertEquals('TEST_QUERY_USER', $this->perforce->getUser());
     }
 
     public function testQueryP4UserStoresResponseToQueryForUserWithWindows()
     {
-        $repoConfig = array('depot' => 'depot', 'branch' => 'branch');
-        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, true, 'TEST');
-
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $this->createNewPerforceWithWindowsFlag(true);
+        $this->perforce->setUser(null);
         $expectedQuestion = 'Enter P4 User:';
-        $io->expects($this->at(0))
-            ->method('ask')
-            ->with($this->equalTo($expectedQuestion))
-            ->will($this->returnValue('TEST_QUERY_USER'));
-        $expectedCommand = 'p4 set P4USER=TEST_QUERY_USER';
+        $expectedCommand  = 'p4 set P4USER=TEST_QUERY_USER';
+        $this->io->expects($this->at(0))
+                 ->method('ask')
+                 ->with($this->equalTo($expectedQuestion))
+                 ->will($this->returnValue('TEST_QUERY_USER'));
         $this->processExecutor->expects($this->at(1))
-            ->method('execute')
-            ->with($this->equalTo($expectedCommand))
-            ->will($this->returnValue(0));
-
-        $this->perforce->queryP4user($io);
+                              ->method('execute')
+                              ->with($this->equalTo($expectedCommand))
+                              ->will($this->returnValue(0));
+        $this->perforce->queryP4user();
     }
 
     public function testQueryP4UserStoresResponseToQueryForUserWithoutWindows()
     {
-        $repoConfig = array('depot' => 'depot', 'branch' => 'branch');
-        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, false, 'TEST');
-
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $this->createNewPerforceWithWindowsFlag(false);
+        $this->perforce->setUser(null);
         $expectedQuestion = 'Enter P4 User:';
-        $io->expects($this->at(0))
-            ->method('ask')
-            ->with($this->equalTo($expectedQuestion))
-            ->will($this->returnValue('TEST_QUERY_USER'));
-        $expectedCommand = 'export P4USER=TEST_QUERY_USER';
+        $expectedCommand  = 'export P4USER=TEST_QUERY_USER';
+        $this->io->expects($this->at(0))
+                 ->method('ask')
+                 ->with($this->equalTo($expectedQuestion))
+                 ->will($this->returnValue('TEST_QUERY_USER'));
         $this->processExecutor->expects($this->at(1))
-            ->method('execute')
-            ->with($this->equalTo($expectedCommand))
-            ->will($this->returnValue(0));
-
-        $this->perforce->queryP4user($io);
+                              ->method('execute')
+                              ->with($this->equalTo($expectedCommand))
+                              ->will($this->returnValue(0));
+        $this->perforce->queryP4user();
     }
 
     public function testQueryP4PasswordWithPasswordAlreadySet()
@@ -218,69 +224,55 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             'p4user'     => 'user',
             'p4password' => 'TEST_PASSWORD'
         );
-        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, false, 'TEST');
-        $io = $this->getMock('Composer\IO\IOInterface');
-
-        $password = $this->perforce->queryP4Password($io);
+        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, false,  $this->getMockIOInterface(), 'TEST');
+        $password = $this->perforce->queryP4Password();
         $this->assertEquals('TEST_PASSWORD', $password);
     }
 
     public function testQueryP4PasswordWithPasswordSetInP4VariablesWithWindowsOS()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
-
+        $this->createNewPerforceWithWindowsFlag(true);
         $expectedCommand = 'p4 set';
+        $callback = function ($command, &$output) {
+                $output = 'P4PASSWD=TEST_P4VARIABLE_PASSWORD' . PHP_EOL;
+
+                return true;
+            };
         $this->processExecutor->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo($expectedCommand))
-            ->will(
-                $this->returnCallback(
-                    function ($command, &$output) {
-                        $output = 'P4PASSWD=TEST_P4VARIABLE_PASSWORD' . PHP_EOL;
-
-                        return true;
-                    }
-                )
-            );
-
-        $password = $this->perforce->queryP4Password($io);
+                              ->method('execute')
+                              ->with($this->equalTo($expectedCommand))
+                              ->will($this->returnCallback($callback));
+        $password = $this->perforce->queryP4Password();
         $this->assertEquals('TEST_P4VARIABLE_PASSWORD', $password);
     }
 
     public function testQueryP4PasswordWithPasswordSetInP4VariablesNotWindowsOS()
     {
-        $repoConfig = array('depot' => 'depot', 'branch' => 'branch', 'p4user' => 'user');
-        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, false, 'TEST');
-
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $this->createNewPerforceWithWindowsFlag(false);
         $expectedCommand = 'echo $P4PASSWD';
+        $callback = function ($command, &$output) {
+                $output = 'TEST_P4VARIABLE_PASSWORD' . PHP_EOL;
+
+                return true;
+            };
         $this->processExecutor->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo($expectedCommand))
-            ->will(
-                $this->returnCallback(
-                    function ($command, &$output) {
-                        $output = 'TEST_P4VARIABLE_PASSWORD' . PHP_EOL;
+                              ->method('execute')
+                              ->with($this->equalTo($expectedCommand))
+                              ->will($this->returnCallback($callback));
 
-                        return true;
-                    }
-                )
-            );
-
-        $password = $this->perforce->queryP4Password($io);
+        $password = $this->perforce->queryP4Password();
         $this->assertEquals('TEST_P4VARIABLE_PASSWORD', $password);
     }
 
     public function testQueryP4PasswordQueriesForPassword()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
         $expectedQuestion = 'Enter password for Perforce user user: ';
-        $io->expects($this->at(0))
+        $this->io->expects($this->at(0))
             ->method('askAndHideAnswer')
             ->with($this->equalTo($expectedQuestion))
             ->will($this->returnValue('TEST_QUERY_PASSWORD'));
 
-        $password = $this->perforce->queryP4Password($io);
+        $password = $this->perforce->queryP4Password();
         $this->assertEquals('TEST_QUERY_PASSWORD', $password);
     }
 
@@ -364,15 +356,35 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
                     }
                 )
             );
+        $expectedCommand2 = 'p4 -u user -p port changes //depot/branch/...';
+        $expectedCallback = function ($command, &$output) {
+                $output = 'Change 1234 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\'';
+
+                return true;
+            };
+        $this->processExecutor->expects($this->at(1))
+                              ->method('execute')
+                              ->with($this->equalTo($expectedCommand2))
+                              ->will($this->returnCallback($expectedCallback));
 
         $branches = $this->perforce->getBranches();
-        $this->assertEquals('//depot/branch', $branches['master']);
+        $this->assertEquals('//depot/branch@1234', $branches['master']);
     }
 
     public function testGetBranchesWithoutStream()
     {
+        $expectedCommand = 'p4 -u user -p port changes //depot/...';
+        $expectedCallback = function ($command, &$output) {
+                $output = 'Change 5678 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\'';
+
+                return true;
+            };
+        $this->processExecutor->expects($this->once())
+            ->method('execute')
+            ->with($this->equalTo($expectedCommand))
+            ->will($this->returnCallback($expectedCallback));
         $branches = $this->perforce->getBranches();
-        $this->assertEquals('//depot', $branches['master']);
+        $this->assertEquals('//depot@5678', $branches['master']);
     }
 
     public function testGetTagsWithoutStream()
@@ -617,12 +629,12 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
         $result = $this->perforce->checkServerExists('perforce.does.exist:port', $processExecutor);
         $this->assertTrue($result);
     }
-    
+
     /**
      * Test if "p4" command is missing.
-     * 
+     *
      * @covers \Composer\Util\Perforce::checkServerExists
-     * 
+     *
      * @return void
      */
     public function testCheckServerClientError()
@@ -634,7 +646,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))
             ->will($this->returnValue(127));
-        
+
         $result = $this->perforce->checkServerExists('perforce.does.exist:port', $processExecutor);
         $this->assertFalse($result);
     }
@@ -691,5 +703,19 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
     private function setPerforceToStream()
     {
         $this->perforce->setStream('//depot/branch');
+    }
+
+    public function testCleanupClientSpecShouldDeleteClient()
+    {
+        $fs = $this->getMock('Composer\Util\Filesystem');
+        $this->perforce->setFilesystem($fs);
+
+        $testClient = $this->perforce->getClient();
+        $expectedCommand = 'p4 -u ' . self::TEST_P4USER . ' -p ' . self::TEST_PORT . ' client -d ' . $testClient;
+        $this->processExecutor->expects($this->once())->method('execute')->with($this->equalTo($expectedCommand));
+
+        $fs->expects($this->once())->method('remove')->with($this->perforce->getP4ClientSpec());
+
+        $this->perforce->cleanupClientSpec();
     }
 }

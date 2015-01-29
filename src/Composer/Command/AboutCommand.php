@@ -40,6 +40,5 @@ EOT
 See http://getcomposer.org/ for more information.</comment>
 EOT
         );
-
     }
 }

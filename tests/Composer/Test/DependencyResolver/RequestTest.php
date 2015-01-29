@@ -34,14 +34,14 @@ class RequestTest extends TestCase
 
         $request = new Request($pool);
         $request->install('foo');
-        $request->install('bar');
+        $request->fix('bar');
         $request->remove('foobar');
 
         $this->assertEquals(
             array(
-                array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => null),
-                array('cmd' => 'install', 'packageName' => 'bar', 'constraint' => null),
-                array('cmd' => 'remove', 'packageName' => 'foobar', 'constraint' => null),
+                array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => null, 'fixed' => false),
+                array('cmd' => 'install', 'packageName' => 'bar', 'constraint' => null, 'fixed' => true),
+                array('cmd' => 'remove', 'packageName' => 'foobar', 'constraint' => null, 'fixed' => false),
             ),
             $request->getJobs());
     }
@@ -66,7 +66,7 @@ class RequestTest extends TestCase
 
         $this->assertEquals(
             array(
-                    array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => $constraint),
+                    array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => $constraint, 'fixed' => false),
             ),
             $request->getJobs()
         );

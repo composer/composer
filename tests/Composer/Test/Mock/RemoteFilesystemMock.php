@@ -36,5 +36,4 @@ class RemoteFilesystemMock extends RemoteFilesystem
 
         throw new TransportException('The "'.$fileUrl.'" file could not be downloaded (NOT FOUND)', 404);
     }
-
 }

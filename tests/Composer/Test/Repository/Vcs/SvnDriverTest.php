@@ -23,9 +23,6 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
     public function testWrongCredentialsInUrl()
     {
         $console = $this->getMock('Composer\IO\IOInterface');
-        $console->expects($this->exactly(6))
-            ->method('isInteractive')
-            ->will($this->returnValue(true));
 
         $output  = "svn: OPTIONS of 'http://corp.svn.local/repo':";
         $output .= " authorization failed: Could not authenticate to server:";

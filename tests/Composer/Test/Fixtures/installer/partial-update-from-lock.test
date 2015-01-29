@@ -35,6 +35,8 @@ Partial update from lock file should update everything to the state of the lock,
     "stability-flags": {
         "b/unstable": 15
     },
+    "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }
@@ -57,6 +59,8 @@ update b/unstable
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }

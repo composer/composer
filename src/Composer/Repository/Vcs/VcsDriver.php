@@ -18,6 +18,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\Filesystem;
 
 /**
  * A driver implementation for driver with authentication interaction.
@@ -45,11 +46,8 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     final public function __construct(array $repoConfig, IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
     {
-
-        if (self::isLocalUrl($repoConfig['url'])) {
-            $repoConfig['url'] = realpath(
-                preg_replace('/^file:\/\//', '', $repoConfig['url'])
-            );
+        if (Filesystem::isLocalPath($repoConfig['url'])) {
+            $repoConfig['url'] = Filesystem::getPlatformPath($repoConfig['url']);
         }
 
         $this->url = $repoConfig['url'];
@@ -100,17 +98,6 @@ abstract class VcsDriver implements VcsDriverInterface
     protected function getContents($url)
     {
         return $this->remoteFilesystem->getContents($this->originUrl, $url, false);
-    }
-
-    /**
-     * Return if current repository url is local
-     *
-     * @param  string  $url
-     * @return boolean Repository url is local
-     */
-    protected static function isLocalUrl($url)
-    {
-        return (bool) preg_match('{^(file://|/|[a-z]:[\\\\/])}i', $url);
     }
 
     /**

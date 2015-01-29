@@ -18,6 +18,7 @@ namespace Composer\Json;
 class JsonManipulator
 {
     private static $RECURSE_BLOCKS;
+    private static $RECURSE_ARRAYS;
     private static $JSON_VALUE;
     private static $JSON_STRING;
 
@@ -29,15 +30,19 @@ class JsonManipulator
     {
         if (!self::$RECURSE_BLOCKS) {
             self::$RECURSE_BLOCKS = '(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{[^{}]*\})*\})*\})*\})*';
+            self::$RECURSE_ARRAYS = '(?:[^\]]*|\[(?:[^\]]*|\[(?:[^\]]*|\[(?:[^\]]*|\[[^\]]*\])*\])*\])*\]|'.self::$RECURSE_BLOCKS.')*';
             self::$JSON_STRING = '"(?:\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4}|[^\0-\x09\x0a-\x1f\\\\"])*"';
-            self::$JSON_VALUE = '(?:[0-9.]+|null|true|false|'.self::$JSON_STRING.'|\[[^\]]*\]|\{'.self::$RECURSE_BLOCKS.'\})';
+            self::$JSON_VALUE = '(?:[0-9.]+|null|true|false|'.self::$JSON_STRING.'|\['.self::$RECURSE_ARRAYS.'\]|\{'.self::$RECURSE_BLOCKS.'\})';
         }
 
         $contents = trim($contents);
+        if ($contents === '') {
+            $contents = '{}';
+        }
         if (!$this->pregMatch('#^\{(.*)\}$#s', $contents)) {
             throw new \InvalidArgumentException('The json file must be an object ({})');
         }
-        $this->newline = false !== strpos($contents, "\r\n") ? "\r\n": "\n";
+        $this->newline = false !== strpos($contents, "\r\n") ? "\r\n" : "\n";
         $this->contents = $contents === '{}' ? '{' . $this->newline . '}' : $contents;
         $this->detectIndenting();
     }
@@ -47,7 +52,7 @@ class JsonManipulator
         return $this->contents . $this->newline;
     }
 
-    public function addLink($type, $package, $constraint)
+    public function addLink($type, $package, $constraint, $sortPackages = false)
     {
         $decoded = JsonFile::parseJson($this->contents);
 
@@ -83,6 +88,13 @@ class JsonManipulator
                     $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $this->newline .
                     $this->indent . '}';
             }
+        }
+
+        if (true === $sortPackages) {
+            $requirements = json_decode($links, true);
+
+            ksort($requirements);
+            $links = $this->format($requirements);
         }
 
         $this->contents = $matches[1] . $matches[2] . $links . $matches[4];
@@ -122,7 +134,7 @@ class JsonManipulator
         }
 
         $subName = null;
-        if (false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'repositories')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
@@ -200,8 +212,13 @@ class JsonManipulator
         }
 
         $subName = null;
-        if (false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'repositories')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
+        }
+
+        // no node to remove
+        if (!isset($decoded[$mainNode][$name]) || ($subName && !isset($decoded[$mainNode][$name][$subName]))) {
+            return true;
         }
 
         // try and find a match for the subkey
@@ -222,6 +239,8 @@ class JsonManipulator
                     }
                 }
             }
+        } else {
+            $childrenClean = $children;
         }
 
         // no child data left, $name was the only key in

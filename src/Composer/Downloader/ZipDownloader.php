@@ -38,12 +38,16 @@ class ZipDownloader extends ArchiveDownloader
 
         // try to use unzip on *nix
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $command = 'unzip '.escapeshellarg($file).' -d '.escapeshellarg($path) . ' && chmod -R u+w ' . escapeshellarg($path);
-            if (0 === $this->process->execute($command, $ignoredOutput)) {
-                return;
-            }
+            $command = 'unzip '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path) . ' && chmod -R u+w ' . ProcessExecutor::escape($path);
+            try {
+                if (0 === $this->process->execute($command, $ignoredOutput)) {
+                    return;
+                }
 
-            $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
+                $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
+            } catch (\Exception $e) {
+                $processError = 'Failed to execute ' . $command . "\n\n" . $e->getMessage();
+            }
         }
 
         if (!class_exists('ZipArchive')) {

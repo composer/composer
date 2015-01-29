@@ -44,11 +44,17 @@ abstract class BasePackage implements PackageInterface
         'dev'    => self::STABILITY_DEV,
     );
 
+    /**
+     * READ-ONLY: The package id, public for fast access in dependency solver
+     * @var int
+     */
+    public $id;
+
     protected $name;
     protected $prettyName;
 
     protected $repository;
-    protected $id;
+    protected $transportOptions;
 
     /**
      * All descendants' constructors should call this parent constructor
@@ -60,6 +66,7 @@ abstract class BasePackage implements PackageInterface
         $this->prettyName = $name;
         $this->name = strtolower($name);
         $this->id = -1;
+        $this->transportOptions = array();
     }
 
     /**
@@ -131,6 +138,24 @@ abstract class BasePackage implements PackageInterface
     public function getRepository()
     {
         return $this->repository;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getTransportOptions()
+    {
+        return $this->transportOptions;
+    }
+
+    /**
+     * Configures the list of options to download package dist files
+     *
+     * @param array $options
+     */
+    public function setTransportOptions(array $options)
+    {
+        $this->transportOptions = $options;
     }
 
     /**

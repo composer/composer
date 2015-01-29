@@ -69,11 +69,11 @@ class RuleWatchGraph
      * above example the rule was (-A|+B), then A turning true means that
      * B must now be decided true as well.
      *
-     * @param int $decidedLiteral The literal which was decided (A in our example)
-     * @param int $level          The level at which the decision took place and at which
-     *     all resulting decisions should be made.
-     * @param Decisions $decisions Used to check previous decisions and to
-     *     register decisions resulting from propagation
+     * @param  int       $decidedLiteral The literal which was decided (A in our example)
+     * @param  int       $level          The level at which the decision took place and at which
+     *                                   all resulting decisions should be made.
+     * @param  Decisions $decisions      Used to check previous decisions and to
+     *                                   register decisions resulting from propagation
      * @return Rule|null If a conflict is found the conflicting rule is returned
      */
     public function propagateLiteral($decidedLiteral, $level, $decisions)
@@ -95,7 +95,7 @@ class RuleWatchGraph
             $otherWatch = $node->getOtherWatch($literal);
 
             if (!$node->getRule()->isDisabled() && !$decisions->satisfy($otherWatch)) {
-                $ruleLiterals = $node->getRule()->getLiterals();
+                $ruleLiterals = $node->getRule()->literals;
 
                 $alternativeLiterals = array_filter($ruleLiterals, function ($ruleLiteral) use ($literal, $otherWatch, $decisions) {
                     return $literal !== $ruleLiteral &&

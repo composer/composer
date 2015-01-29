@@ -22,6 +22,10 @@ class JsonFormatterTest extends \PHPUnit_Framework_TestCase
      */
     public function testUnicodeWithPrependedSlash()
     {
+        if (!extension_loaded('mbstring')) {
+            $this->markTestSkipped('Test requires the mbstring extension');
+        }
+
         $data = '"' . chr(92) . chr(92) . chr(92) . 'u0119"';
         $encodedData = JsonFormatter::format($data, true, true);
         $expected = '34+92+92+196+153+34';
@@ -30,7 +34,7 @@ class JsonFormatterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Convert string to character codes split by a plus sign
-     * @param string $string
+     * @param  string $string
      * @return string
      */
     protected function getCharacterCodes($string)
@@ -39,7 +43,7 @@ class JsonFormatterTest extends \PHPUnit_Framework_TestCase
         for ($i = 0; $i < strlen($string); $i++) {
             $codes[] = ord($string[$i]);
         }
+
         return implode('+', $codes);
     }
-
 }

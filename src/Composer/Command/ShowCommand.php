@@ -41,6 +41,7 @@ class ShowCommand extends Command
     {
         $this
             ->setName('show')
+            ->setAliases(array('info'))
             ->setDescription('Show information about packages')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect'),
@@ -52,6 +53,7 @@ class ShowCommand extends Command
                 new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
                 new InputOption('disable-tls', null, InputOption::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
                 new InputOption('cafile', null, InputOption::VALUE_REQUIRED, 'The path to a valid CA certificate file for SSL/TLS certificate verification'),
+                new InputOption('path', 'P', InputOption::VALUE_NONE, 'Show package paths'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -195,8 +197,9 @@ EOT
                     $width--;
                 }
 
-                $writeVersion = !$input->getOption('name-only') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
-                $writeDescription = !$input->getOption('name-only') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
+                $writePath = !$input->getOption('name-only') && $input->getOption('path');
+                $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
+                $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
                         $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
@@ -212,6 +215,11 @@ EOT
                                 $description = substr($description, 0, $remaining - 3) . '...';
                             }
                             $output->write(' ' . $description);
+                        }
+
+                        if ($writePath) {
+                            $path = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
+                            $output->write(' ' . $path);
                         }
                     } else {
                         $output->write($indent . $package);
@@ -288,6 +296,16 @@ EOT
         $output->writeln('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
         $output->writeln('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
         $output->writeln('<info>names</info>    : ' . implode(', ', $package->getNames()));
+
+        if ($package->isAbandoned()) {
+            $replacement = ($package->getReplacementPackage() !== null)
+                ? ' The author suggests using the ' . $package->getReplacementPackage(). ' package instead.'
+                : null;
+
+            $output->writeln(
+                sprintf('<error>Attention: This package is abandoned and no longer maintained.%s</error>', $replacement)
+            );
+        }
 
         if ($package->getSupport()) {
             $output->writeln("\n<info>support</info>");

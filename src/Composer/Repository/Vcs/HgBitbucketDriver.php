@@ -33,7 +33,7 @@ class HgBitbucketDriver extends VcsDriver
      */
     public function initialize()
     {
-        preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $this->url, $match);
+        preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+)/?$#', $this->url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'bitbucket.org';
@@ -102,7 +102,7 @@ class HgBitbucketDriver extends VcsDriver
 
             $composer = JsonFile::parseJson($repoData['data'], $resource);
 
-            if (!isset($composer['time'])) {
+            if (empty($composer['time'])) {
                 $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'.$this->owner.'/'.$this->repository.'/changesets/'.$identifier;
                 $changeset = JsonFile::parseJson($this->getContents($resource), $resource);
                 $composer['time'] = $changeset['timestamp'];
@@ -153,7 +153,7 @@ class HgBitbucketDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url)) {
+        if (!preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url)) {
             return false;
         }
 

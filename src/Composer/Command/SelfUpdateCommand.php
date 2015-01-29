@@ -22,6 +22,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Finder\Finder;
 
 /**
  * @author Igor Wiedler <igor@wiedler.ch>
@@ -45,6 +46,7 @@ class SelfUpdateCommand extends Command
                 new InputOption('disable-tls', null, InputOption::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
                 new InputOption('cafile', null, InputOption::VALUE_REQUIRED, 'The path to a valid CA certificate file for SSL/TLS certificate verification'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'The version to update to'),
+                new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
             ))
             ->setHelp(<<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer
@@ -67,6 +69,8 @@ EOT
             $baseUrl = 'https://' . self::HOMEPAGE;
         }
         $remoteFilesystem = Factory::createRemoteFilesystem($this->getIO(), $config);
+
+        //$baseUrl = (extension_loaded('openssl') ? 'https' : 'http') . '://' . self::HOMEPAGE;
 
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('home');
@@ -113,7 +117,7 @@ EOT
 
         $output->writeln(sprintf("Updating to version <info>%s</info>.", $updateVersion));
         $remoteFilename = $baseUrl . (preg_match('{^[0-9a-f]{40}$}', $updateVersion) ? '/composer.phar' : "/download/{$updateVersion}/composer.phar");
-        $remoteFilesystem->copy(self::HOMEPAGE, $remoteFilename, $tempFilename);
+        $remoteFilesystem->copy(self::HOMEPAGE, $remoteFilename, $tempFilename, !$input->getOption('no-progress'));
         if (!file_exists($tempFilename)) {
             $output->writeln('<error>The download of the new composer version failed for an unexpected reason</error>');
 
@@ -122,15 +126,13 @@ EOT
 
         // remove saved installations of composer
         if ($input->getOption('clean-backups')) {
-            $files = $this->getOldInstallationFiles($rollbackDir);
+            $finder = $this->getOldInstallationFinder($rollbackDir);
 
-            if (!empty($files)) {
-                $fs = new Filesystem;
-
-                foreach ($files as $file) {
-                    $output->writeln('<info>Removing: '.$file.'</info>');
-                    $fs->remove($file);
-                }
+            $fs = new Filesystem;
+            foreach ($finder as $file) {
+                $file = (string) $file;
+                $output->writeln('<info>Removing: '.$file.'</info>');
+                $fs->remove($file);
             }
         }
 
@@ -182,18 +184,19 @@ EOT
     protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
     {
         try {
-            @chmod($newFilename, 0777 & ~umask());
-            // test the phar validity
-            $phar = new \Phar($newFilename);
-            // free the variable to unlock the file
-            unset($phar);
+            @chmod($newFilename, fileperms($localFilename));
+            if (!ini_get('phar.readonly')) {
+                // test the phar validity
+                $phar = new \Phar($newFilename);
+                // free the variable to unlock the file
+                unset($phar);
+            }
 
             // copy current file into installations dir
             if ($backupTarget && file_exists($localFilename)) {
                 @copy($localFilename, $backupTarget);
             }
 
-            unset($phar);
             rename($newFilename, $localFilename);
         } catch (\Exception $e) {
             if ($backupTarget) {
@@ -209,18 +212,25 @@ EOT
 
     protected function getLastBackupVersion($rollbackDir)
     {
-        $files = $this->getOldInstallationFiles($rollbackDir);
-        if (empty($files)) {
-            return false;
+        $finder = $this->getOldInstallationFinder($rollbackDir);
+        $finder->sortByName();
+        $files = iterator_to_array($finder);
+
+        if (count($files)) {
+            return basename(end($files), self::OLD_INSTALL_EXT);
         }
 
-        sort($files);
-
-        return basename(end($files), self::OLD_INSTALL_EXT);
+        return false;
     }
 
-    protected function getOldInstallationFiles($rollbackDir)
+    protected function getOldInstallationFinder($rollbackDir)
     {
-        return glob($rollbackDir . '/*' . self::OLD_INSTALL_EXT) ?: array();
+        $finder = Finder::create()
+            ->depth(0)
+            ->files()
+            ->name('*' . self::OLD_INSTALL_EXT)
+            ->in($rollbackDir);
+
+        return $finder;
     }
 }

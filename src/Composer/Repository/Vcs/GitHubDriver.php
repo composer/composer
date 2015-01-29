@@ -46,7 +46,7 @@ class GitHubDriver extends VcsDriver
      */
     public function initialize()
     {
-        preg_match('#^(?:(?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git)?$#', $this->url, $match);
+        preg_match('#^(?:(?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $this->url, $match);
         $this->owner = $match[3];
         $this->repository = $match[4];
         $this->originUrl = !empty($match[1]) ? $match[1] : $match[2];
@@ -54,10 +54,16 @@ class GitHubDriver extends VcsDriver
 
         if (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api']) {
             $this->setupGitDriver($this->url);
+
             return;
         }
 
         $this->fetchRootIdentifier();
+    }
+
+    public function getRepositoryUrl()
+    {
+        return 'https://'.$this->originUrl.'/'.$this->owner.'/'.$this->repository;
     }
 
     /**
@@ -165,7 +171,7 @@ class GitHubDriver extends VcsDriver
             if ($composer) {
                 $composer = JsonFile::parseJson($composer, $resource);
 
-                if (!isset($composer['time'])) {
+                if (empty($composer['time'])) {
                     $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/commits/'.urlencode($identifier);
                     $commit = JsonFile::parseJson($this->getContents($resource), $resource);
                     $composer['time'] = $commit['commit']['committer']['date'];
@@ -198,12 +204,17 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getTags();
         }
         if (null === $this->tags) {
-            $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/tags';
-            $tagsData = JsonFile::parseJson($this->getContents($resource), $resource);
             $this->tags = array();
-            foreach ($tagsData as $tag) {
-                $this->tags[$tag['name']] = $tag['commit']['sha'];
-            }
+            $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/tags?per_page=100';
+
+            do {
+                $tagsData = JsonFile::parseJson($this->getContents($resource), $resource);
+                foreach ($tagsData as $tag) {
+                    $this->tags[$tag['name']] = $tag['commit']['sha'];
+                }
+
+                $resource = $this->getNextPage();
+            } while ($resource);
         }
 
         return $this->tags;
@@ -218,13 +229,22 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getBranches();
         }
         if (null === $this->branches) {
-            $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads';
-            $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
             $this->branches = array();
-            foreach ($branchData as $branch) {
-                $name = substr($branch['ref'], 11);
-                $this->branches[$name] = $branch['object']['sha'];
-            }
+            $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads?per_page=100';
+
+            $branchBlacklist = array('gh-pages');
+
+            do {
+                $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
+                foreach ($branchData as $branch) {
+                    $name = substr($branch['ref'], 11);
+                    if (!in_array($name, $branchBlacklist)) {
+                        $this->branches[$name] = $branch['object']['sha'];
+                    }
+                }
+
+                $resource = $this->getNextPage();
+            } while ($resource);
         }
 
         return $this->branches;
@@ -235,7 +255,7 @@ class GitHubDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match('#^((?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git)?$#', $url, $matches)) {
+        if (!preg_match('#^((?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $url, $matches)) {
             return false;
         }
 
@@ -386,6 +406,9 @@ class GitHubDriver extends VcsDriver
             return;
         }
 
+        $this->owner = $repoData['owner']['login'];
+        $this->repository = $repoData['name'];
+
         $this->isPrivate = !empty($repoData['private']);
         if (isset($repoData['default_branch'])) {
             $this->rootIdentifier = $repoData['default_branch'];
@@ -427,5 +450,20 @@ class GitHubDriver extends VcsDriver
             $this->remoteFilesystem
         );
         $this->gitDriver->initialize();
+    }
+
+    protected function getNextPage()
+    {
+        $headers = $this->remoteFilesystem->getLastHeaders();
+        foreach ($headers as $header) {
+            if (substr($header, 0, 5) === 'Link:') {
+                $links = explode(',', substr($header, 5));
+                foreach ($links as $link) {
+                    if (preg_match('{<(.+?)>; *rel="next"}', $link, $match)) {
+                        return $match[1];
+                    }
+                }
+            }
+        }
     }
 }

@@ -2,14 +2,22 @@
     tagline: Host your own composer repository
 -->
 
-# Handling private packages with Satis
+# Handling private packages with Satis or Toran Proxy
 
-Satis is a static `composer` repository generator. It is a bit like an ultra-
-lightweight, static file-based version of packagist and can be used to host the
-metadata of your company's private packages, or your own. It basically acts as
-a micro-packagist. You can get it from
-[GitHub](http://github.com/composer/satis) or install via CLI:
-`composer.phar create-project composer/satis --stability=dev`.
+# Toran Proxy
+
+[Toran Proxy](https://toranproxy.com/) is a commercial alternative to Satis offering professional support as well as a web UI to manage everything and a better integration with Composer.
+
+Toran's revenue is also used to pay for Composer and Packagist development and hosting so using it is a good way to support open source financially. You can find more information about how to set it up and use it on the [Toran Proxy](https://toranproxy.com/) website.
+
+# Satis
+
+Satis on the other hand is open source but only a static `composer`
+repository generator. It is a bit like an ultra-lightweight, static file-based
+version of packagist and can be used to host the metadata of your company's
+private packages, or your own. You can get it from [GitHub](http://github.com/composer/satis)
+or install via CLI:
+`php composer.phar create-project composer/satis --stability=dev --keep-vcs`.
 
 ## Setup
 
@@ -25,34 +33,38 @@ repositories you defined.
 
 The default file Satis looks for is `satis.json` in the root of the repository.
 
-    {
-        "name": "My Repository",
-        "homepage": "http://packages.example.org",
-        "repositories": [
-            { "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
-            { "type": "vcs", "url": "http://svn.example.org/private/repo" },
-            { "type": "vcs", "url": "http://github.com/mycompany/privaterepo2" }
-        ],
-        "require-all": true
-    }
+```json
+{
+    "name": "My Repository",
+    "homepage": "http://packages.example.org",
+    "repositories": [
+        { "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
+        { "type": "vcs", "url": "http://svn.example.org/private/repo" },
+        { "type": "vcs", "url": "http://github.com/mycompany/privaterepo2" }
+    ],
+    "require-all": true
+}
+```
 
 If you want to cherry pick which packages you want, you can list all the packages
 you want to have in your satis repository inside the classic composer `require` key,
 using a `"*"` constraint to make sure all versions are selected, or another
 constraint if you want really specific versions.
 
-    {
-        "repositories": [
-            { "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
-            { "type": "vcs", "url": "http://svn.example.org/private/repo" },
-            { "type": "vcs", "url": "http://github.com/mycompany/privaterepo2" }
-        ],
-        "require": {
-            "company/package": "*",
-            "company/package2": "*",
-            "company/package3": "2.0.0"
-        }
+```json
+{
+    "repositories": [
+        { "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
+        { "type": "vcs", "url": "http://svn.example.org/private/repo" },
+        { "type": "vcs", "url": "http://github.com/mycompany/privaterepo2" }
+    ],
+    "require": {
+        "company/package": "*",
+        "company/package2": "*",
+        "company/package3": "2.0.0"
     }
+}
+```
 
 Once you did this, you just run `php bin/satis build <configuration file> <build dir>`.
 For example `php bin/satis build config.json web/` would read the `config.json`
@@ -80,14 +92,16 @@ everything should work smoothly. You don't need to copy all your repositories
 in every project anymore. Only that one unique repository that will update
 itself.
 
-    {
-        "repositories": [ { "type": "composer", "url": "http://packages.example.org/" } ],
-        "require": {
-            "company/package": "1.2.0",
-            "company/package2": "1.5.2",
-            "company/package3": "dev-master"
-        }
+```json
+{
+    "repositories": [ { "type": "composer", "url": "http://packages.example.org/" } ],
+    "require": {
+        "company/package": "1.2.0",
+        "company/package2": "1.5.2",
+        "company/package3": "dev-master"
     }
+}
+```
 
 ### Security
 
@@ -97,39 +111,43 @@ connection options for the server.
 
 Example using a custom repository using SSH (requires the SSH2 PECL extension):
 
-    {
-        "repositories": [
-            {
-                "type": "composer",
-                "url": "ssh2.sftp://example.org",
-                "options": {
-                    "ssh2": {
-                        "username": "composer",
-                        "pubkey_file": "/home/composer/.ssh/id_rsa.pub",
-                        "privkey_file": "/home/composer/.ssh/id_rsa"
-                    }
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "ssh2.sftp://example.org",
+            "options": {
+                "ssh2": {
+                    "username": "composer",
+                    "pubkey_file": "/home/composer/.ssh/id_rsa.pub",
+                    "privkey_file": "/home/composer/.ssh/id_rsa"
                 }
             }
-        ]
-    }
+        }
+    ]
+}
+```
 
 > **Tip:** See [ssh2 context options](http://www.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options) for more information.
 
 Example using HTTP over SSL using a client certificate:
 
-    {
-        "repositories": [
-            {
-                "type": "composer",
-                "url": "https://example.org",
-                "options": {
-                    "ssl": {
-                        "local_cert": "/home/composer/.ssl/composer.pem"
-                    }
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "options": {
+                "ssl": {
+                    "local_cert": "/home/composer/.ssl/composer.pem"
                 }
             }
-        ]
-    }
+        }
+    ]
+}
+```
 
 > **Tip:** See [ssl context options](http://www.php.net/manual/en/context.ssl.php) for more information.
 
@@ -145,14 +163,16 @@ Subversion) will not have downloads available and thus installations usually tak
 To enable your satis installation to create downloads for all (Git, Mercurial and Subversion) your packages, add the
 following to your `satis.json`:
 
-    {
-        "archive": {
-            "directory": "dist",
-            "format": "tar",
-            "prefix-url": "https://amazing.cdn.example.org",
-            "skip-dev": true
-        }
+```json
+{
+    "archive": {
+        "directory": "dist",
+        "format": "tar",
+        "prefix-url": "https://amazing.cdn.example.org",
+        "skip-dev": true
     }
+}
+```
 
 #### Options explained
 
@@ -178,11 +198,14 @@ It is possible to make satis automatically resolve and add all dependencies for 
 with the Downloads functionality to have a complete local mirror of packages. Just add the following
 to your `satis.json`:
 
-```
+```json
 {
-    "require-dependencies": true
+    "require-dependencies": true,
+    "require-dev-dependencies": true
 }
 ```
 
 When searching for packages, satis will attempt to resolve all the required packages from the listed repositories.
 Therefore, if you are requiring a package from Packagist, you will need to define it in your `satis.json`.
+
+Dev dependencies are packaged only if the `require-dev-dependencies` parameter is set to true.

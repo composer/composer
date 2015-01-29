@@ -13,7 +13,6 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\AliasPackage;
-use Composer\DependencyResolver\Operation;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -50,16 +49,15 @@ class Transaction
             $package = $this->pool->literalToPackage($literal);
 
             // wanted & installed || !wanted & !installed
-            if (($literal > 0) == (isset($this->installedMap[$package->getId()]))) {
+            if (($literal > 0) == (isset($this->installedMap[$package->id]))) {
                 continue;
             }
 
             if ($literal > 0) {
                 if (isset($installMeansUpdateMap[abs($literal)]) && !$package instanceof AliasPackage) {
-
                     $source = $installMeansUpdateMap[abs($literal)];
 
-                    $updateMap[$package->getId()] = array(
+                    $updateMap[$package->id] = array(
                         'package' => $package,
                         'source' => $source,
                         'reason' => $reason,
@@ -67,9 +65,9 @@ class Transaction
 
                     // avoid updates to one package from multiple origins
                     unset($installMeansUpdateMap[abs($literal)]);
-                    $ignoreRemove[$source->getId()] = true;
+                    $ignoreRemove[$source->id] = true;
                 } else {
-                    $installMap[$package->getId()] = array(
+                    $installMap[$package->id] = array(
                         'package' => $package,
                         'reason' => $reason,
                     );
@@ -79,16 +77,16 @@ class Transaction
 
         foreach ($this->decisions as $i => $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
+            $reason = $decision[Decisions::DECISION_REASON];
             $package = $this->pool->literalToPackage($literal);
 
             if ($literal <= 0 &&
-                isset($this->installedMap[$package->getId()]) &&
-                !isset($ignoreRemove[$package->getId()])) {
-                $uninstallMap[$package->getId()] = array(
+                isset($this->installedMap[$package->id]) &&
+                !isset($ignoreRemove[$package->id])) {
+                $uninstallMap[$package->id] = array(
                     'package' => $package,
                     'reason' => $reason,
                 );
-
             }
         }
 
@@ -109,7 +107,7 @@ class Transaction
 
         while (!empty($queue)) {
             $package = array_pop($queue);
-            $packageId = $package->getId();
+            $packageId = $package->id;
 
             if (!isset($visited[$packageId])) {
                 array_push($queue, $package);
@@ -126,7 +124,7 @@ class Transaction
                     }
                 }
 
-                $visited[$package->getId()] = true;
+                $visited[$package->id] = true;
             } else {
                 if (isset($installMap[$packageId])) {
                     $this->install(
@@ -167,7 +165,7 @@ class Transaction
                 $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                 foreach ($possibleRequires as $require) {
-                    unset($roots[$require->getId()]);
+                    unset($roots[$require->id]);
                 }
             }
         }
@@ -188,13 +186,13 @@ class Transaction
             }
 
             // !wanted & installed
-            if ($literal <= 0 && isset($this->installedMap[$package->getId()])) {
+            if ($literal <= 0 && isset($this->installedMap[$package->id])) {
                 $updates = $this->policy->findUpdatePackages($this->pool, $this->installedMap, $package);
 
-                $literals = array($package->getId());
+                $literals = array($package->id);
 
                 foreach ($updates as $update) {
-                    $literals[] = $update->getId();
+                    $literals[] = $update->id;
                 }
 
                 foreach ($literals as $updateLiteral) {

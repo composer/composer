@@ -127,19 +127,20 @@ class PearPackageExtractor
     /**
      * Builds list of copy and list of remove actions that would transform extracted PEAR tarball into installed package.
      *
-     * @param  string $source string path to extracted files
-     * @param  array  $roles  array [role => roleRoot] relative root for files having that role
-     * @param  array  $vars   list of values can be used for replacement tasks
-     * @return array  array of 'source' => 'target', where source is location of file in the tarball (relative to source
-     *  path, and target is destination of file (also relative to $source path)
+     * @param  string            $source string path to extracted files
+     * @param  array             $roles  array [role => roleRoot] relative root for files having that role
+     * @param  array             $vars   list of values can be used for replacement tasks
+     * @return array             array of 'source' => 'target', where source is location of file in the tarball (relative to source
+     *                                  path, and target is destination of file (also relative to $source path)
      * @throws \RuntimeException
      */
     private function buildCopyActions($source, array $roles, $vars)
     {
         /** @var $package \SimpleXmlElement */
         $package = simplexml_load_file($this->combine($source, 'package.xml'));
-        if(false === $package)
+        if (false === $package) {
             throw new \RuntimeException('Package definition file is not valid.');
+        }
 
         $packageSchemaVersion = $package['version'];
         if ('1.0' == $packageSchemaVersion) {
@@ -203,16 +204,16 @@ class PearPackageExtractor
             /** @var $child \SimpleXMLElement */
             if ($child->getName() == 'dir') {
                 $dirSource = $this->combine($source, (string) $child['name']);
-                $dirTarget = $child['baseinstalldir'] ? : $target;
-                $dirRole = $child['role'] ? : $role;
+                $dirTarget = $child['baseinstalldir'] ?: $target;
+                $dirRole = $child['role'] ?: $role;
                 $dirFiles = $this->buildSourceList10($child->children(), $targetRoles, $dirSource, $dirTarget, $dirRole, $packageName);
                 $result = array_merge($result, $dirFiles);
             } elseif ($child->getName() == 'file') {
-                $fileRole = (string) $child['role'] ? : $role;
+                $fileRole = (string) $child['role'] ?: $role;
                 if (isset($targetRoles[$fileRole])) {
-                    $fileName = (string) ($child['name'] ? : $child[0]); // $child[0] means text content
+                    $fileName = (string) ($child['name'] ?: $child[0]); // $child[0] means text content
                     $fileSource = $this->combine($source, $fileName);
-                    $fileTarget = $this->combine((string) $child['baseinstalldir'] ? : $target, $fileName);
+                    $fileTarget = $this->combine((string) $child['baseinstalldir'] ?: $target, $fileName);
                     if (!in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
                         $fileTarget = $packageName . '/' . $fileTarget;
                     }
@@ -233,15 +234,15 @@ class PearPackageExtractor
             /** @var $child \SimpleXMLElement */
             if ('dir' == $child->getName()) {
                 $dirSource = $this->combine($source, $child['name']);
-                $dirTarget = $child['baseinstalldir'] ? : $target;
-                $dirRole = $child['role'] ? : $role;
+                $dirTarget = $child['baseinstalldir'] ?: $target;
+                $dirRole = $child['role'] ?: $role;
                 $dirFiles = $this->buildSourceList20($child->children(), $targetRoles, $dirSource, $dirTarget, $dirRole, $packageName);
                 $result = array_merge($result, $dirFiles);
             } elseif ('file' == $child->getName()) {
-                $fileRole = (string) $child['role'] ? : $role;
+                $fileRole = (string) $child['role'] ?: $role;
                 if (isset($targetRoles[$fileRole])) {
                     $fileSource = $this->combine($source, (string) $child['name']);
-                    $fileTarget = $this->combine((string) ($child['baseinstalldir'] ? : $target), (string) $child['name']);
+                    $fileTarget = $this->combine((string) ($child['baseinstalldir'] ?: $target), (string) $child['name']);
                     $fileTasks = array();
                     foreach ($child->children('http://pear.php.net/dtd/tasks-1.0') as $taskNode) {
                         if ('replace' == $taskNode->getName()) {

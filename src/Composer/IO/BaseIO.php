@@ -68,6 +68,13 @@ abstract class BaseIO implements IOInterface
                 $this->setAuthentication($domain, $token, 'x-oauth-basic');
             }
         }
+
+        // reload http basic credentials from config if available
+        if ($creds = $config->get('http-basic')) {
+            foreach ($creds as $domain => $cred) {
+                $this->setAuthentication($domain, $cred['username'], $cred['password']);
+            }
+        }
     }
 
     /**

@@ -19,6 +19,8 @@ use Composer\Config\ConfigSourceInterface;
  */
 class Config
 {
+    const RELATIVE_PATHS = 1;
+
     public static $defaultConfig = array(
         'process-timeout' => 300,
         'use-include-path' => false,
@@ -37,29 +39,43 @@ class Config
         'discard-changes' => false,
         'autoloader-suffix' => null,
         'optimize-autoloader' => false,
+        'classmap-authoritative' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
         'disable-tls' => false,
         'cafile' => null,
+        'github-expose-hostname' => true,
+        'store-auths' => 'prompt',
+        // valid keys without defaults (auth config stuff):
+        // github-oauth
+        // http-basic
     );
 
     public static $defaultRepositories = array(
         'packagist' => array(
             'type' => 'composer',
             'url' => 'https?://packagist.org',
-            'allow_ssl_downgrade' => true,
+            'allow_ssl_downgrade' => true, // TODO: check
         )
     );
 
     private $config;
+    private $baseDir;
     private $repositories;
     private $configSource;
+    private $authConfigSource;
+    private $useEnvironment;
 
-    public function __construct()
+    /**
+     * @param boolean $useEnvironment Use COMPOSER_ environment variables to replace config settings
+     */
+    public function __construct($useEnvironment = true, $baseDir = null)
     {
         // load defaults
         $this->config = static::$defaultConfig;
         $this->repositories = static::$defaultRepositories;
+        $this->useEnvironment = (bool) $useEnvironment;
+        $this->baseDir = $baseDir;
     }
 
     public function setConfigSource(ConfigSourceInterface $source)
@@ -72,17 +88,27 @@ class Config
         return $this->configSource;
     }
 
+    public function setAuthConfigSource(ConfigSourceInterface $source)
+    {
+        $this->authConfigSource = $source;
+    }
+
+    public function getAuthConfigSource()
+    {
+        return $this->authConfigSource;
+    }
+
     /**
      * Merges new config values with the existing ones (overriding)
      *
      * @param array $config
      */
-    public function merge(array $config)
+    public function merge($config)
     {
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('github-oauth')) && isset($this->config[$key])) {
+                if (in_array($key, array('github-oauth', 'http-basic')) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
                 } else {
                     $this->config[$key] = $val;
@@ -101,7 +127,7 @@ class Config
                 }
 
                 // disable a repository with an anonymous {"name": false} repo
-                if (1 === count($repository) && false === current($repository)) {
+                if (is_array($repository) && 1 === count($repository) && false === current($repository)) {
                     unset($this->repositories[key($repository)]);
                     continue;
                 }
@@ -129,10 +155,11 @@ class Config
      * Returns a setting
      *
      * @param  string            $key
+     * @param  int               $flags Options (see class constants)
      * @throws \RuntimeException
      * @return mixed
      */
-    public function get($key)
+    public function get($key, $flags = 0)
     {
         switch ($key) {
             case 'vendor-dir':
@@ -146,7 +173,14 @@ class Config
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
-                return rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
+                $val = rtrim($this->process($this->getComposerEnv($env) ?: $this->config[$key], $flags), '/\\');
+                $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $val);
+
+                if (substr($key, -4) !== '-dir') {
+                    return $val;
+                }
+
+                return ($flags & self::RELATIVE_PATHS == 1) ? $val : $this->realpath($val);
 
             case 'cache-ttl':
                 return (int) $this->config[$key];
@@ -182,10 +216,10 @@ class Config
                 return (int) $this->config['cache-ttl'];
 
             case 'home':
-                return rtrim($this->process($this->config[$key]), '/\\');
+                return rtrim($this->process($this->config[$key], $flags), '/\\');
 
             case 'discard-changes':
-                if ($env = getenv('COMPOSER_DISCARD_CHANGES')) {
+                if ($env = $this->getComposerEnv('COMPOSER_DISCARD_CHANGES')) {
                     if (!in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
                         throw new \RuntimeException(
                             "Invalid value for COMPOSER_DISCARD_CHANGES: {$env}. Expected 1, 0, true, false or stash"
@@ -222,17 +256,17 @@ class Config
                     return null;
                 }
 
-                return $this->process($this->config[$key]);
+                return $this->process($this->config[$key], $flags);
         }
     }
 
-    public function all()
+    public function all($flags = 0)
     {
         $all = array(
             'repositories' => $this->getRepositories(),
         );
         foreach (array_keys($this->config) as $key) {
-            $all['config'][$key] = $this->get($key);
+            $all['config'][$key] = $this->get($key, $flags);
         }
 
         return $all;
@@ -260,10 +294,11 @@ class Config
     /**
      * Replaces {$refs} inside a config string
      *
-     * @param string $value a config string that can contain {$refs-to-other-config}
+     * @param  string $value a config string that can contain {$refs-to-other-config}
+     * @param  int    $flags Options (see class constants)
      * @return string
      */
-    private function process($value)
+    private function process($value, $flags)
     {
         $config = $this;
 
@@ -271,8 +306,43 @@ class Config
             return $value;
         }
 
-        return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config) {
-            return $config->get($match[1]);
+        return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config, $flags) {
+            return $config->get($match[1], $flags);
         }, $value);
+    }
+
+    /**
+     * Turns relative paths in absolute paths without realpath()
+     *
+     * Since the dirs might not exist yet we can not call realpath or it will fail.
+     *
+     * @param  string $path
+     * @return string
+     */
+    private function realpath($path)
+    {
+        if (substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':') {
+            return $path;
+        }
+
+        return $this->baseDir . '/' . $path;
+    }
+
+    /**
+     * Reads the value of a Composer environment variable
+     *
+     * This should be used to read COMPOSER_ environment variables
+     * that overload config values.
+     *
+     * @param  string         $var
+     * @return string|boolean
+     */
+    private function getComposerEnv($var)
+    {
+        if ($this->useEnvironment) {
+            return getenv($var);
+        }
+
+        return false;
     }
 }

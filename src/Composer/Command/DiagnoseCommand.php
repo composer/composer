@@ -53,15 +53,6 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
-        $this->process = new ProcessExecutor($this->getIO());
-
-        $output->write('Checking platform settings: ');
-        $this->outputResult($output, $this->checkPlatform());
-
-        $output->write('Checking git settings: ');
-        $this->outputResult($output, $this->checkGit());
-
         $composer = $this->getComposer(false);
         if ($composer) {
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
@@ -76,6 +67,15 @@ EOT
         } else {
             $config = Factory::createConfig();
         }
+
+        $this->rfs = new RemoteFilesystem($this->getIO(), $config);
+        $this->process = new ProcessExecutor($this->getIO());
+
+        $output->write('Checking platform settings: ');
+        $this->outputResult($output, $this->checkPlatform());
+
+        $output->write('Checking git settings: ');
+        $this->outputResult($output, $this->checkGit());
 
         $output->write('Checking http connectivity: ');
         $this->outputResult($output, $this->checkHttp($config));
@@ -216,7 +216,7 @@ EOT
             try {
                 $this->rfs->getContents('packagist.org', $url, false, array('http' => array('request_fulluri' => false)));
             } catch (TransportException $e) {
-                return 'Unable to assert the situation, maybe packagist.org is down ('.$e->getMessage().')';
+                return 'Unable to assess the situation, maybe packagist.org is down ('.$e->getMessage().')';
             }
 
             return 'It seems there is a problem with your proxy server, try setting the "HTTP_PROXY_REQUEST_FULLURI" and "HTTPS_PROXY_REQUEST_FULLURI" environment variables to "false"';
@@ -240,12 +240,12 @@ EOT
 
         $url = 'https://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0';
         try {
-            $rfcResult = $this->rfs->getContents('api.github.com', $url, false);
+            $rfcResult = $this->rfs->getContents('github.com', $url, false);
         } catch (TransportException $e) {
             try {
-                $this->rfs->getContents('api.github.com', $url, false, array('http' => array('request_fulluri' => false)));
+                $this->rfs->getContents('github.com', $url, false, array('http' => array('request_fulluri' => false)));
             } catch (TransportException $e) {
-                return 'Unable to assert the situation, maybe github is down ('.$e->getMessage().')';
+                return 'Unable to assess the situation, maybe github is down ('.$e->getMessage().')';
             }
 
             return 'It seems there is a problem with your proxy server, try setting the "HTTPS_PROXY_REQUEST_FULLURI" environment variable to "false"';
@@ -288,7 +288,7 @@ EOT
         $latest = trim($this->rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/version', false));
 
         if (Composer::VERSION !== $latest && Composer::VERSION !== '@package_version@') {
-            return '<warning>Your are not running the latest version</warning>';
+            return '<warning>You are not running the latest version</warning>';
         }
 
         return true;
@@ -351,7 +351,7 @@ EOT
             $warnings['openssl'] = true;
         }
 
-        if (ini_get('apc.enable_cli')) {
+        if (!defined('HHVM_VERSION') && !extension_loaded('apcu') && ini_get('apc.enable_cli')) {
             $warnings['apc_cli'] = true;
         }
 

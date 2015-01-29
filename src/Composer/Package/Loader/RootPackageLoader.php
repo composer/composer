@@ -131,7 +131,7 @@ class RootPackageLoader extends ArrayLoader
         $minimumStability = $stabilities[$minimumStability];
         foreach ($requires as $reqName => $reqVersion) {
             // parse explicit stability flags to the most unstable
-            if (preg_match('{^[^,\s]*?@('.implode('|', array_keys($stabilities)).')$}i', $reqVersion, $match)) {
+            if (preg_match('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $reqVersion, $match)) {
                 $name = strtolower($reqName);
                 $stability = $stabilities[VersionParser::normalizeStability($match[1])];
 
@@ -191,8 +191,7 @@ class RootPackageLoader extends ArrayLoader
 
     private function guessGitVersion(array $config)
     {
-        $util = new GitUtil;
-        $util->cleanEnv();
+        GitUtil::cleanEnv();
 
         // try to fetch current version from git tags
         if (0 === $this->process->execute('git describe --exact-match --tags', $output)) {
@@ -321,6 +320,7 @@ class RootPackageLoader extends ArrayLoader
                     if ('9999999-dev' === $version) {
                         $version = 'dev-'.$matches[3];
                     }
+
                     return $version;
                 }
 

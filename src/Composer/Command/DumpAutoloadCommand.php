@@ -30,7 +30,7 @@ class DumpAutoloadCommand extends Command
             ->setAliases(array('dumpautoload'))
             ->setDescription('Dumps the autoloader')
             ->setDefinition(array(
-                new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 packages to be loaded with classmaps too, good for production.'),
+                new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules.'),
             ))
             ->setHelp(<<<EOT
@@ -52,7 +52,7 @@ EOT
         $package = $composer->getPackage();
         $config = $composer->getConfig();
 
-        $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader');
+        $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader') || $config->get('classmap-authoritative');
 
         if ($optimize) {
             $output->writeln('<info>Generating optimized autoload files</info>');

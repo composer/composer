@@ -51,7 +51,7 @@ class PackageDependencyParser
      */
     private function buildDependency10Info($depArray)
     {
-        static $dep10toOperatorMap = array('has'=>'==', 'eq' => '==', 'ge' => '>=', 'gt' => '>', 'le' => '<=', 'lt' => '<', 'not' => '!=');
+        static $dep10toOperatorMap = array('has' => '==', 'eq' => '==', 'ge' => '>=', 'gt' => '>', 'le' => '<=', 'lt' => '<', 'not' => '!=');
 
         $result = array();
 
@@ -255,7 +255,7 @@ class PackageDependencyParser
      */
     private function parse20VersionConstraint(array $data)
     {
-        static $dep20toOperatorMap = array('has'=>'==', 'min' => '>=', 'max' => '<=', 'exclude' => '!=');
+        static $dep20toOperatorMap = array('has' => '==', 'min' => '>=', 'max' => '<=', 'exclude' => '!=');
 
         $versions = array();
         $values = array_intersect_key($data, $dep20toOperatorMap);

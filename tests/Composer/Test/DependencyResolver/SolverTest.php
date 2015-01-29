@@ -654,8 +654,7 @@ class SolverTest extends TestCase
     public function testConflictResultEmpty()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
-        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));;
-
+        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
         $packageA->setConflicts(array(
             'b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'conflicts'),
         ));

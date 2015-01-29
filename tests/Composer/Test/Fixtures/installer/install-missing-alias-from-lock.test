@@ -32,7 +32,9 @@ Installing an old alias that doesn't exist anymore from a lock is possible
     "packages-dev": null,
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": []
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false
 }
 --RUN--
 install

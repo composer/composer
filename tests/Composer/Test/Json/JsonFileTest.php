@@ -132,12 +132,8 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
     {
         $data = array('test' => array(), 'test2' => new \stdClass);
         $json = '{
-    "test": [
-
-    ],
-    "test2": {
-
-    }
+    "test": [],
+    "test2": {}
 }';
         $this->assertJsonFormat($json, $data);
     }
@@ -230,5 +226,4 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals($json, $file->encode($data, $options));
         }
     }
-
 }

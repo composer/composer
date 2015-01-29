@@ -13,7 +13,6 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Downloader\DownloaderInterface;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
 
@@ -104,7 +103,7 @@ class DownloadManager
     /**
      * Returns downloader for a specific installation type.
      *
-     * @param string $type installation type
+     * @param  string              $type installation type
      * @return DownloaderInterface
      *
      * @throws \InvalidArgumentException if downloader for provided type is not registered
@@ -122,12 +121,12 @@ class DownloadManager
     /**
      * Returns downloader for already installed package.
      *
-     * @param PackageInterface $package package instance
+     * @param  PackageInterface         $package package instance
      * @return DownloaderInterface|null
      *
      * @throws \InvalidArgumentException if package has no installation source specified
      * @throws \LogicException           if specific downloader used to load package with
-     *                                          wrong type
+     *                                   wrong type
      */
     public function getDownloaderForInstalledPackage(PackageInterface $package)
     {
@@ -165,6 +164,7 @@ class DownloadManager
      * @param bool             $preferSource prefer installation from source
      *
      * @throws \InvalidArgumentException if package have no urls to download from
+     * @throws \RuntimeException
      */
     public function download(PackageInterface $package, $targetDir, $preferSource = null)
     {
@@ -192,7 +192,7 @@ class DownloadManager
 
         foreach ($sources as $i => $source) {
             if (isset($e)) {
-                $this->io->write('<warning>Now trying to download from ' . $source . '</warning>');
+                $this->io->write('    <warning>Now trying to download from ' . $source . '</warning>');
             }
             $package->setInstallationSource($source);
             try {
@@ -202,12 +202,12 @@ class DownloadManager
                 }
                 break;
             } catch (\RuntimeException $e) {
-                if ($i == count($sources) - 1) {
+                if ($i === count($sources) - 1) {
                     throw $e;
                 }
 
                 $this->io->write(
-                    '<warning>Failed to download '.
+                    '    <warning>Failed to download '.
                     $package->getPrettyName().
                     ' from ' . $source . ': '.
                     $e->getMessage().'</warning>'

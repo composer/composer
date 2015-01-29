@@ -15,6 +15,7 @@ namespace Composer\IO;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * The Input/Output helper.
@@ -95,13 +96,11 @@ class ConsoleIO extends BaseIO
     public function write($messages, $newline = true)
     {
         if (null !== $this->startTime) {
-            $messages = (array) $messages;
-            $messages[0] = sprintf(
-                '[%.1fMB/%.2fs] %s',
-                memory_get_usage() / 1024 / 1024,
-                microtime(true) - $this->startTime,
-                $messages[0]
-            );
+            $memoryUsage = memory_get_usage() / 1024 / 1024;
+            $timeSpent = microtime(true) - $this->startTime;
+            $messages = array_map(function ($message) use ($memoryUsage, $timeSpent) {
+                return sprintf('[%.1fMB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
+            }, (array) $messages);
         }
         $this->output->write($messages, $newline);
         $this->lastMessage = join($newline ? "\n" : '', (array) $messages);
@@ -112,6 +111,14 @@ class ConsoleIO extends BaseIO
      */
     public function overwrite($messages, $newline = true, $size = null)
     {
+        if (!$this->output->isDecorated()) {
+            if (!$messages) {
+                return;
+            }
+
+            return $this->write($messages, count($messages) === 1 || $newline);
+        }
+
         // messages can be an array, let's convert it to string anyway
         $messages = join($newline ? "\n" : '', (array) $messages);
 
@@ -171,6 +178,18 @@ class ConsoleIO extends BaseIO
     {
         // handle windows
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $finder = new ExecutableFinder();
+
+            // use bash if it's present
+            if ($finder->find('bash') && $finder->find('stty')) {
+                $this->write($question, false);
+                $value = rtrim(shell_exec('bash -c "stty -echo; read -n0 discard; read -r mypassword; stty echo; echo $mypassword"'));
+                $this->write('');
+
+                return $value;
+            }
+
+            // fallback to hiddeninput executable
             $exe = __DIR__.'\\hiddeninput.exe';
 
             // handle code running from a phar

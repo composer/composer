@@ -12,6 +12,7 @@
 
 namespace Composer;
 
+use Composer\Json\JsonFile;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 
@@ -24,6 +25,7 @@ use Symfony\Component\Process\Process;
 class Compiler
 {
     private $version;
+    private $branchAliasVersion = '';
     private $versionDate;
 
     /**
@@ -48,13 +50,22 @@ class Compiler
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
+
         $date = new \DateTime(trim($process->getOutput()));
         $date->setTimezone(new \DateTimeZone('UTC'));
         $this->versionDate = $date->format('Y-m-d H:i:s');
 
-        $process = new Process('git describe --tags HEAD');
+        $process = new Process('git describe --tags --exact-match HEAD');
         if ($process->run() == 0) {
             $this->version = trim($process->getOutput());
+        } else {
+            // get branch-alias defined in composer.json for dev-master (if any)
+            $localConfig = __DIR__.'/../../composer.json';
+            $file = new JsonFile($localConfig);
+            $localConfig = $file->read();
+            if (isset($localConfig['extra']['branch-alias']['dev-master'])) {
+                $this->branchAliasVersion = $localConfig['extra']['branch-alias']['dev-master'];
+            }
         }
 
         $phar = new \Phar($pharFile, 0, 'composer.phar');
@@ -141,6 +152,7 @@ class Compiler
 
         if ($path === 'src/Composer/Composer.php') {
             $content = str_replace('@package_version@', $this->version, $content);
+            $content = str_replace('@package_branch_alias_version@', $this->branchAliasVersion, $content);
             $content = str_replace('@release_date@', $this->versionDate, $content);
         }
 
@@ -202,6 +214,16 @@ class Compiler
  * For the full copyright and license information, please view
  * the license that is located at the bottom of this file.
  */
+
+// Avoid APC causing random fatal errors per https://github.com/composer/composer/issues/264
+if (extension_loaded('apc') && ini_get('apc.enable_cli') && ini_get('apc.cache_by_default')) {
+    if (version_compare(phpversion('apc'), '3.0.12', '>=')) {
+        ini_set('apc.cache_by_default', 0);
+    } else {
+        fwrite(STDERR, 'Warning: APC <= 3.0.12 may cause fatal errors when running composer commands.'.PHP_EOL);
+        fwrite(STDERR, 'Update APC, or set apc.enable_cli or apc.cache_by_default to 0 in your php.ini.'.PHP_EOL);
+    }
+}
 
 Phar::mapPhar('composer.phar');
 

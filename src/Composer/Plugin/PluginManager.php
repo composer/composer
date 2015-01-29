@@ -28,30 +28,32 @@ use Composer\DependencyResolver\Pool;
  * Plugin manager
  *
  * @author Nils Adermann <naderman@naderman.de>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class PluginManager
 {
     protected $composer;
     protected $io;
-    protected $globalRepository;
+    protected $globalComposer;
     protected $versionParser;
 
     protected $plugins = array();
+    protected $registeredPlugins = array();
 
     private static $classCounter = 0;
 
     /**
      * Initializes plugin manager
      *
-     * @param Composer            $composer
      * @param IOInterface         $io
-     * @param RepositoryInterface $globalRepository
+     * @param Composer            $composer
+     * @param Composer            $globalComposer
      */
-    public function __construct(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
+    public function __construct(IOInterface $io, Composer $composer, Composer $globalComposer = null)
     {
-        $this->composer = $composer;
         $this->io = $io;
-        $this->globalRepository = $globalRepository;
+        $this->composer = $composer;
+        $this->globalComposer = $globalComposer;
         $this->versionParser = new VersionParser();
     }
 
@@ -61,12 +63,12 @@ class PluginManager
     public function loadInstalledPlugins()
     {
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
-
+        $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
         if ($repo) {
             $this->loadRepository($repo);
         }
-        if ($this->globalRepository) {
-            $this->loadRepository($this->globalRepository);
+        if ($globalRepo) {
+            $this->loadRepository($globalRepo);
         }
     }
 
@@ -103,6 +105,8 @@ class PluginManager
      * call this method as early as possible.
      *
      * @param RepositoryInterface $repo Repository to scan for plugins to install
+     *
+     * @throws \RuntimeException
      */
     public function loadRepository(RepositoryInterface $repo)
     {
@@ -186,10 +190,17 @@ class PluginManager
      * instead for BC
      *
      * @param PackageInterface $package
+     * @param bool             $failOnMissingClasses By default this silently skips plugins that can not be found, but if set to true it fails with an exception
+     *
+     * @throws \UnexpectedValueException
      */
-    public function registerPackage(PackageInterface $package)
+    public function registerPackage(PackageInterface $package, $failOnMissingClasses = false)
     {
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
+
+        if (in_array($package->getName(), $this->registeredPlugins)) {
+            return;
+        }
 
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
@@ -197,11 +208,13 @@ class PluginManager
         }
         $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
 
-        $pool = new Pool('dev');
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
+        $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
+
+        $pool = new Pool('dev');
         $pool->addRepository($localRepo);
-        if ($this->globalRepository) {
-            $pool->addRepository($this->globalRepository);
+        if ($globalRepo) {
+            $pool->addRepository($globalRepo);
         }
 
         $autoloadPackages = array($package->getName() => $package);
@@ -210,7 +223,7 @@ class PluginManager
         $generator = $this->composer->getAutoloadGenerator();
         $autoloads = array();
         foreach ($autoloadPackages as $autoloadPackage) {
-            $downloadPath = $this->getInstallPath($autoloadPackage, ($this->globalRepository && $this->globalRepository->hasPackage($autoloadPackage)));
+            $downloadPath = $this->getInstallPath($autoloadPackage, ($globalRepo && $globalRepo->hasPackage($autoloadPackage)));
             $autoloads[] = array($autoloadPackage, $downloadPath);
         }
 
@@ -230,9 +243,12 @@ class PluginManager
             if ($oldInstallerPlugin) {
                 $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
-            } else {
+            } elseif (class_exists($class)) {
                 $plugin = new $class();
                 $this->addPlugin($plugin);
+                $this->registeredPlugins[] = $package->getName();
+            } elseif ($failOnMissingClasses) {
+                throw new \UnexpectedValueException('Plugin '.$package->getName().' could not be initialized, class not found: '.$class);
             }
         }
     }
@@ -251,9 +267,6 @@ class PluginManager
             return $this->composer->getInstallationManager()->getInstallPath($package);
         }
 
-        $targetDir = $package->getTargetDir();
-        $vendorDir = $this->composer->getConfig()->get('home').'/vendor';
-
-        return ($vendorDir ? $vendorDir.'/' : '').$package->getPrettyName().($targetDir ? '/'.$targetDir : '');
+        return $this->globalComposer->getInstallationManager()->getInstallPath($package);
     }
 }

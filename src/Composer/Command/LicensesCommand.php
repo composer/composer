@@ -16,6 +16,8 @@ use Composer\Json\JsonFile;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Package\PackageInterface;
+use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Helper\TableHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -33,6 +35,7 @@ class LicensesCommand extends Command
             ->setDescription('Show information about licenses of dependencies')
             ->setDefinition(array(
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
             ))
             ->setHelp(<<<EOT
 The license command displays detailed information about the licenses of
@@ -55,9 +58,10 @@ EOT
 
         $versionParser = new VersionParser;
 
-        $packages = array();
-        foreach ($repo->getPackages() as $package) {
-            $packages[$package->getName()] = $package;
+        if ($input->getOption('no-dev')) {
+            $packages = $this->filterRequiredPackages($repo, $root);
+        } else {
+            $packages = $this->appendPackages($repo->getPackages(), array());
         }
 
         ksort($packages);
@@ -101,5 +105,48 @@ EOT
             default:
                 throw new \RuntimeException(sprintf('Unsupported format "%s".  See help for supported formats.', $format));
         }
+    }
+
+    /**
+     * Find package requires and child requires
+     *
+     * @param RepositoryInterface $repo
+     * @param PackageInterface    $package
+     */
+    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, $bucket = array())
+    {
+        $requires = array_keys($package->getRequires());
+
+        $packageListNames = array_keys($bucket);
+        $packages = array_filter(
+            $repo->getPackages(),
+            function ($package) use ($requires, $packageListNames) {
+                return in_array($package->getName(), $requires) && !in_array($package->getName(), $packageListNames);
+            }
+        );
+
+        $bucket = $this->appendPackages($packages, $bucket);
+
+        foreach ($packages as $package) {
+            $bucket = $this->filterRequiredPackages($repo, $package, $bucket);
+        }
+
+        return $bucket;
+    }
+
+    /**
+     * Adds packages to the package list
+     *
+     * @param  array $packages the list of packages to add
+     * @param  array $bucket   the list to add packages to
+     * @return array
+     */
+    public function appendPackages(array $packages, array $bucket)
+    {
+        foreach ($packages as $package) {
+            $bucket[$package->getName()] = $package;
+        }
+
+        return $bucket;
     }
 }

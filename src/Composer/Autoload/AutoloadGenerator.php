@@ -15,6 +15,7 @@ namespace Composer\Autoload;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
+use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
@@ -32,11 +33,17 @@ class AutoloadGenerator
      */
     private $eventDispatcher;
 
+    /**
+     * @var IOInterface
+     */
+    private $io;
+
     private $devMode = false;
 
-    public function __construct(EventDispatcher $eventDispatcher)
+    public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
+        $this->io = $io;
     }
 
     public function setDevMode($devMode = true)
@@ -46,7 +53,9 @@ class AutoloadGenerator
 
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
-        $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode);
+        $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode, array(), array(
+            'optimize' => (bool) $scanPsr0Packages,
+        ));
 
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
@@ -54,6 +63,7 @@ class AutoloadGenerator
         $vendorPath = $filesystem->normalizePath(realpath($config->get('vendor-dir')));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
+        $classMapAuthoritative = $config->get('classmap-authoritative');
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
@@ -177,12 +187,12 @@ EOF;
                             preg_quote($dir),
                             ($psrType === 'psr-0' && strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
                         );
-                        foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
-                            if ('' === $namespace || 0 === strpos($class, $namespace)) {
-                                if (!isset($classMap[$class])) {
-                                    $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
-                                    $classMap[$class] = $path.",\n";
-                                }
+
+                        $namespaceFilter = $namespace === '' ? null : $namespace;
+                        foreach (ClassMapGenerator::createMap($dir, $whitelist, $this->io, $namespaceFilter) as $class => $path) {
+                            if (!isset($classMap[$class])) {
+                                $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
+                                $classMap[$class] = $path.",\n";
                             }
                         }
                     }
@@ -191,7 +201,7 @@ EOF;
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
+            foreach (ClassMapGenerator::createMap($dir, null, $this->io) as $class => $path) {
                 $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
                 $classMap[$class] = $path.",\n";
             }
@@ -217,7 +227,7 @@ EOF;
             file_put_contents($targetDir.'/autoload_files.php', $includeFilesFile);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader));
+        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative));
 
         // use stream_copy_to_stream instead of copy
         // to work around https://bugs.php.net/bug.php?id=64634
@@ -228,7 +238,9 @@ EOF;
         fclose($targetLoader);
         unset($sourceLoader, $targetLoader);
 
-        $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode);
+        $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
+            'optimize' => (bool) $scanPsr0Packages,
+        ));
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
@@ -244,7 +256,7 @@ EOF;
 
             $packageMap[] = array(
                 $package,
-                $installationManager->getInstallPath($package)
+                $installationManager->getInstallPath($package),
             );
         }
 
@@ -432,7 +444,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader)
+    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative)
     {
         // TODO the class ComposerAutoloaderInit should be revert to a closure
         // when APC has been fixed:
@@ -466,9 +478,6 @@ class ComposerAutoloaderInit$suffix
         spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prependAutoloader);
         self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
-
-        \$vendorDir = $vendorPathCode;
-        \$baseDir = $appBaseDirCode;
 
 
 HEADER;
@@ -512,6 +521,13 @@ PSR4;
 CLASSMAP;
         }
 
+        if ($classMapAuthoritative) {
+            $file .= <<<'CLASSMAPAUTHORITATIVE'
+        $loader->setClassMapAuthoritative(true);
+
+CLASSMAPAUTHORITATIVE;
+        }
+
         if ($useGlobalIncludePath) {
             $file .= <<<'INCLUDEPATH'
         $loader->setUseIncludePath(true);
@@ -525,7 +541,6 @@ INCLUDEPATH;
 
 
 REGISTER_AUTOLOAD;
-
         }
 
         $file .= <<<REGISTER_LOADER
@@ -543,7 +558,6 @@ REGISTER_LOADER;
 
 
 INCLUDE_FILES;
-
         }
 
         $file .= <<<METHOD_FOOTER
@@ -563,7 +577,6 @@ function composerRequire$suffix(\$file)
 }
 
 FOOTER;
-
     }
 
     protected function parseAutoloadsType(array $packageMap, $type, PackageInterface $mainPackage)
@@ -619,7 +632,7 @@ FOOTER;
      *
      * Packages of equal weight retain the original order
      *
-     * @param array $packageMap
+     * @param  array $packageMap
      * @return array
      */
     protected function sortPackageMap(array $packageMap)
@@ -642,7 +655,7 @@ FOOTER;
 
         $computing = array();
         $computed = array();
-        $computeImportance = function($name) use(&$computeImportance, &$computing, &$computed, $usageList) {
+        $computeImportance = function ($name) use (&$computeImportance, &$computing, &$computed, $usageList) {
             // reusing computed importance
             if (isset($computed[$name])) {
                 return $computed[$name];
@@ -675,17 +688,17 @@ FOOTER;
             $weightList[$name] = $weight;
         }
 
-        $stable_sort = function(&$array) {
+        $stable_sort = function (&$array) {
             static $transform, $restore;
 
             $i = 0;
 
             if (!$transform) {
-                $transform = function(&$v, $k) use(&$i) {
+                $transform = function (&$v, $k) use (&$i) {
                     $v = array($v, ++$i, $k, $v);
                 };
 
-                $restore = function(&$v, $k) {
+                $restore = function (&$v, $k) {
                     $v = $v[3];
                 };
             }

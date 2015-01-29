@@ -17,6 +17,7 @@ use Composer\Composer;
 use Composer\Downloader\PearPackageExtractor;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\Util\ProcessExecutor;
 
 /**
  * Package installation manager.
@@ -77,7 +78,7 @@ class PearInstaller extends LibraryInstaller
         if ($this->io->isVerbose()) {
             $this->io->write('    Cleaning up');
         }
-        unlink($packageArchive);
+        $this->filesystem->unlink($packageArchive);
     }
 
     protected function getBinaries(PackageInterface $package)
@@ -124,7 +125,7 @@ class PearInstaller extends LibraryInstaller
                     "pushd .\r\n".
                     "cd %~dp0\r\n".
                     "set PHP_PROXY=%CD%\\composer-php.bat\r\n".
-                    "cd ".escapeshellarg(dirname($binPath))."\r\n".
+                    "cd ".ProcessExecutor::escape(dirname($binPath))."\r\n".
                     "set BIN_TARGET=%CD%\\".basename($binPath)."\r\n".
                     "popd\r\n".
                     "%PHP_PROXY% \"%BIN_TARGET%\" %*\r\n";
@@ -134,7 +135,7 @@ class PearInstaller extends LibraryInstaller
         return "@echo off\r\n".
             "pushd .\r\n".
             "cd %~dp0\r\n".
-            "cd ".escapeshellarg(dirname($binPath))."\r\n".
+            "cd ".ProcessExecutor::escape(dirname($binPath))."\r\n".
             "set BIN_TARGET=%CD%\\".basename($binPath)."\r\n".
             "popd\r\n".
             $caller." \"%BIN_TARGET%\" %*\r\n";

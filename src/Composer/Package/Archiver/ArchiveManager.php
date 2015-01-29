@@ -14,7 +14,7 @@ namespace Composer\Package\Archiver;
 
 use Composer\Downloader\DownloadManager;
 use Composer\Package\PackageInterface;
-use Composer\Package\RootPackage;
+use Composer\Package\RootPackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Json\JsonFile;
 
@@ -133,11 +133,11 @@ class ArchiveManager
             return $target;
         }
 
-        if ($package instanceof RootPackage) {
+        if ($package instanceof RootPackageInterface) {
             $sourcePath = realpath('.');
         } else {
             // Directory used to download the sources
-            $sourcePath = sys_get_temp_dir().'/composer_archiver/'.$packageName;
+            $sourcePath = sys_get_temp_dir().'/composer_archive'.uniqid();
             $filesystem->ensureDirectoryExists($sourcePath);
 
             // Download sources
@@ -154,13 +154,18 @@ class ArchiveManager
         }
 
         // Create the archive
-        $archivePath = $usableArchiver->archive($sourcePath, $target, $format, $package->getArchiveExcludes());
+        $tempTarget = sys_get_temp_dir().'/composer_archive'.uniqid().'.'.$format;
+        $filesystem->ensureDirectoryExists(dirname($tempTarget));
+
+        $archivePath = $usableArchiver->archive($sourcePath, $tempTarget, $format, $package->getArchiveExcludes());
+        rename($archivePath, $target);
 
         // cleanup temporary download
-        if (!$package instanceof RootPackage) {
+        if (!$package instanceof RootPackageInterface) {
             $filesystem->removeDirectory($sourcePath);
         }
+        $filesystem->remove($tempTarget);
 
-        return $archivePath;
+        return $target;
     }
 }

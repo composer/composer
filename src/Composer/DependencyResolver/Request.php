@@ -43,7 +43,17 @@ class Request
         $this->addJob($packageName, 'remove', $constraint);
     }
 
-    protected function addJob($packageName, $cmd, LinkConstraintInterface $constraint = null)
+    /**
+     * Mark an existing package as being installed and having to remain installed
+     *
+     * These jobs will not be tempered with by the solver
+     */
+    public function fix($packageName, LinkConstraintInterface $constraint = null)
+    {
+        $this->addJob($packageName, 'install', $constraint, true);
+    }
+
+    protected function addJob($packageName, $cmd, LinkConstraintInterface $constraint = null, $fixed = false)
     {
         $packageName = strtolower($packageName);
 
@@ -51,6 +61,7 @@ class Request
             'cmd' => $cmd,
             'packageName' => $packageName,
             'constraint' => $constraint,
+            'fixed' => $fixed
         );
     }
 

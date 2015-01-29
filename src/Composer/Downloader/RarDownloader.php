@@ -42,7 +42,7 @@ class RarDownloader extends ArchiveDownloader
 
         // Try to use unrar on *nix
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $command = 'unrar x ' . escapeshellarg($file) . ' ' . escapeshellarg($path) . ' && chmod -R u+w ' . escapeshellarg($path);
+            $command = 'unrar x ' . ProcessExecutor::escape($file) . ' ' . ProcessExecutor::escape($path) . ' && chmod -R u+w ' . ProcessExecutor::escape($path);
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {
                 return;

@@ -1,0 +1,23 @@
+{
+    "packages": {
+        "a/a": {
+            "dev-foobar": {
+                "name": "a/a",
+                "version": "dev-foobar",
+                "version_normalized": "dev-foobar",
+                "source": {
+                    "type": "git",
+                    "url": "git@example.com:repo.git",
+                    "reference": "abcdef0000000000000000000000000000000000"
+                },
+                "time": "2014-11-13 11:52:12",
+                "type": "library",
+                "extra": {
+                    "branch-alias": {
+                        "dev-foobar": "3.2.x-dev"
+                    }
+                }
+            }
+        }
+    }
+}

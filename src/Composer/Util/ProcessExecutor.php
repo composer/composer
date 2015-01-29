@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Symfony\Component\Process\Process;
+use Symfony\Component\Process\ProcessUtils;
 use Composer\IO\IOInterface;
 
 /**
@@ -34,10 +35,10 @@ class ProcessExecutor
     /**
      * runs a process on the commandline
      *
-     * @param string $command the command to execute
-     * @param mixed  $output  the output will be written into this var if passed by ref
-     *                        if a callable is passed it will be used as output handler
-     * @param  string $cwd the working directory
+     * @param  string $command the command to execute
+     * @param  mixed  $output  the output will be written into this var if passed by ref
+     *                         if a callable is passed it will be used as output handler
+     * @param  string $cwd     the working directory
      * @return int    statuscode
      */
     public function execute($command, &$output = null, $cwd = null)
@@ -103,5 +104,18 @@ class ProcessExecutor
     public static function setTimeout($timeout)
     {
         static::$timeout = $timeout;
+    }
+
+    /**
+     * Escapes a string to be used as a shell argument.
+     *
+     * @param string $argument The argument that will be escaped
+     *
+     * @return string The escaped argument
+     */
+
+    public static function escape($argument)
+    {
+        return ProcessUtils::escapeArgument($argument);
     }
 }

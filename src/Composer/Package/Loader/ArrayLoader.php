@@ -25,13 +25,15 @@ use Composer\Package\Version\VersionParser;
 class ArrayLoader implements LoaderInterface
 {
     protected $versionParser;
+    protected $loadOptions;
 
-    public function __construct(VersionParser $parser = null)
+    public function __construct(VersionParser $parser = null, $loadOptions = false)
     {
         if (!$parser) {
             $parser = new VersionParser;
         }
         $this->versionParser = $parser;
+        $this->loadOptions = $loadOptions;
     }
 
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
@@ -65,7 +67,7 @@ class ArrayLoader implements LoaderInterface
                 throw new \UnexpectedValueException('Package '.$config['name'].'\'s bin key should be an array, '.gettype($config['bin']).' given.');
             }
             foreach ($config['bin'] as $key => $bin) {
-                $config['bin'][$key]= ltrim($bin, '/');
+                $config['bin'][$key] = ltrim($bin, '/');
             }
             $package->setBinaries($config['bin']);
         }
@@ -85,6 +87,9 @@ class ArrayLoader implements LoaderInterface
             $package->setSourceType($config['source']['type']);
             $package->setSourceUrl($config['source']['url']);
             $package->setSourceReference($config['source']['reference']);
+            if (isset($config['source']['mirrors'])) {
+                $package->setSourceMirrors($config['source']['mirrors']);
+            }
         }
 
         if (isset($config['dist'])) {
@@ -101,6 +106,9 @@ class ArrayLoader implements LoaderInterface
             $package->setDistUrl($config['dist']['url']);
             $package->setDistReference(isset($config['dist']['reference']) ? $config['dist']['reference'] : null);
             $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
+            if (isset($config['dist']['mirrors'])) {
+                $package->setDistMirrors($config['dist']['mirrors']);
+            }
         }
 
         foreach (Package\BasePackage::$supportedLinkTypes as $type => $opts) {
@@ -187,6 +195,10 @@ class ArrayLoader implements LoaderInterface
             if (isset($config['support'])) {
                 $package->setSupport($config['support']);
             }
+
+            if (isset($config['abandoned'])) {
+                $package->setAbandoned($config['abandoned']);
+            }
         }
 
         if ($aliasNormalized = $this->getBranchAlias($config)) {
@@ -195,6 +207,10 @@ class ArrayLoader implements LoaderInterface
             } else {
                 $package = new AliasPackage($package, $aliasNormalized, preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
             }
+        }
+
+        if ($this->loadOptions && isset($config['transport-options'])) {
+            $package->setTransportOptions($config['transport-options']);
         }
 
         return $package;
@@ -208,7 +224,7 @@ class ArrayLoader implements LoaderInterface
      */
     public function getBranchAlias(array $config)
     {
-        if ('dev-' !== substr($config['version'], 0, 4)
+        if (('dev-' !== substr($config['version'], 0, 4) && '-dev' !== substr($config['version'], -4))
             || !isset($config['extra']['branch-alias'])
             || !is_array($config['extra']['branch-alias'])
         ) {
@@ -229,6 +245,14 @@ class ArrayLoader implements LoaderInterface
 
             // ensure that it is the current branch aliasing itself
             if (strtolower($config['version']) !== strtolower($sourceBranch)) {
+                continue;
+            }
+
+            // If using numeric aliases ensure the alias is a valid subversion
+            if(($sourcePrefix = $this->versionParser->parseNumericAliasPrefix($sourceBranch))
+                && ($targetPrefix = $this->versionParser->parseNumericAliasPrefix($targetBranch))
+                && (stripos($targetPrefix, $sourcePrefix) !== 0)
+            ) {
                 continue;
             }
 

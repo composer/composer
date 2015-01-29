@@ -19,6 +19,14 @@ use Composer\Package\BasePackage;
 
 class ArtifactRepositoryTest extends TestCase
 {
+    public function setUp()
+    {
+        parent::setUp();
+        if (!extension_loaded('zip')) {
+            $this->markTestSkipped('You need the zip extension to run this test.');
+        }
+    }
+
     public function testExtractsConfigsFromZipArchives()
     {
         $expectedPackages = array(
@@ -28,14 +36,14 @@ class ArtifactRepositoryTest extends TestCase
             'vendor3/package1-5.4.3',
             'test/jsonInRoot-1.0.0',
             'test/jsonInFirstLevel-1.0.0',
-            //The files not-an-artifact.zip and jsonSecondLevel are not valid 
+            //The files not-an-artifact.zip and jsonSecondLevel are not valid
             //artifacts and do not get detected.
         );
 
         $coordinates = array('type' => 'artifact', 'url' => __DIR__ . '/Fixtures/artifacts');
         $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
 
-        $foundPackages = array_map(function(BasePackage $package) {
+        $foundPackages = array_map(function (BasePackage $package) {
             return "{$package->getPrettyName()}-{$package->getPrettyVersion()}";
         }, $repo->getPackages());
 
@@ -43,6 +51,28 @@ class ArtifactRepositoryTest extends TestCase
         sort($foundPackages);
 
         $this->assertSame($expectedPackages, $foundPackages);
+    }
+
+    public function testAbsoluteRepoUrlCreatesAbsoluteUrlPackages()
+    {
+        $absolutePath = __DIR__ . '/Fixtures/artifacts';
+        $coordinates = array('type' => 'artifact', 'url' => $absolutePath);
+        $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
+
+        foreach ($repo->getPackages() as $package) {
+            $this->assertTrue(strpos($package->getDistUrl(), $absolutePath) === 0);
+        }
+    }
+
+    public function testRelativeRepoUrlCreatesRelativeUrlPackages()
+    {
+        $relativePath = 'tests/Composer/Test/Repository/Fixtures/artifacts';
+        $coordinates = array('type' => 'artifact', 'url' => $relativePath);
+        $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
+
+        foreach ($repo->getPackages() as $package) {
+            $this->assertTrue(strpos($package->getDistUrl(), $relativePath) === 0);
+        }
     }
 }
 
@@ -73,7 +103,7 @@ class ArtifactRepositoryTest extends TestCase
 //    ),
 //);
 //
-//foreach($archivesToCreate as $archiveName => $fileDetails) {
+//foreach ($archivesToCreate as $archiveName => $fileDetails) {
 //    $zipFile = new ZipArchive();
 //    $zipFile->open("$archiveName.zip", ZIPARCHIVE::CREATE);
 //
@@ -83,4 +113,3 @@ class ArtifactRepositoryTest extends TestCase
 //
 //    $zipFile->close();
 //}
-

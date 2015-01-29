@@ -35,13 +35,15 @@ current composer plugin API version is 1.0.0.
 
 For example
 
-    {
-        "name": "my/plugin-package",
-        "type": "composer-plugin",
-        "require": {
-            "composer-plugin-api": "1.0.0"
-        }
+```json
+{
+    "name": "my/plugin-package",
+    "type": "composer-plugin",
+    "require": {
+        "composer-plugin-api": "1.0.0"
     }
+}
+```
 
 ### Plugin Class
 
@@ -54,20 +56,24 @@ be read and all internal objects and state can be manipulated as desired.
 
 Example:
 
-    namespace phpDocumentor\Composer;
+```php
+<?php
 
-    use Composer\Composer;
-    use Composer\IO\IOInterface;
-    use Composer\Plugin\PluginInterface;
+namespace phpDocumentor\Composer;
 
-    class TemplateInstallerPlugin implements PluginInterface
+use Composer\Composer;
+use Composer\IO\IOInterface;
+use Composer\Plugin\PluginInterface;
+
+class TemplateInstallerPlugin implements PluginInterface
+{
+    public function activate(Composer $composer, IOInterface $io)
     {
-        public function activate(Composer $composer, IOInterface $io)
-        {
-            $installer = new TemplateInstaller($io, $composer);
-            $composer->getInstallationManager()->addInstaller($installer);
-        }
+        $installer = new TemplateInstaller($io, $composer);
+        $composer->getInstallationManager()->addInstaller($installer);
     }
+}
+```
 
 ## Event Handler
 
@@ -88,46 +94,50 @@ The events available for plugins are:
 
 Example:
 
-    namespace Naderman\Composer\AWS;
+```php
+<?php
 
-    use Composer\Composer;
-    use Composer\EventDispatcher\EventSubscriberInterface;
-    use Composer\IO\IOInterface;
-    use Composer\Plugin\PluginInterface;
-    use Composer\Plugin\PluginEvents;
-    use Composer\Plugin\PreFileDownloadEvent;
+namespace Naderman\Composer\AWS;
 
-    class AwsPlugin implements PluginInterface, EventSubscriberInterface
+use Composer\Composer;
+use Composer\EventDispatcher\EventSubscriberInterface;
+use Composer\IO\IOInterface;
+use Composer\Plugin\PluginInterface;
+use Composer\Plugin\PluginEvents;
+use Composer\Plugin\PreFileDownloadEvent;
+
+class AwsPlugin implements PluginInterface, EventSubscriberInterface
+{
+    protected $composer;
+    protected $io;
+
+    public function activate(Composer $composer, IOInterface $io)
     {
-        protected $composer;
-        protected $io;
+        $this->composer = $composer;
+        $this->io = $io;
+    }
 
-        public function activate(Composer $composer, IOInterface $io)
-        {
-            $this->composer = $composer;
-            $this->io = $io;
-        }
+    public static function getSubscribedEvents()
+    {
+        return array(
+            PluginEvents::PRE_FILE_DOWNLOAD => array(
+                array('onPreFileDownload', 0)
+            ),
+        );
+    }
 
-        public static function getSubscribedEvents()
-        {
-            return array(
-                PluginEvents::PRE_FILE_DOWNLOAD => array(
-                    array('onPreFileDownload', 0)
-                ),
-            );
-        }
+    public function onPreFileDownload(PreFileDownloadEvent $event)
+    {
+        $protocol = parse_url($event->getProcessedUrl(), PHP_URL_SCHEME);
 
-        public function onPreFileDownload(PreFileDownloadEvent $event)
-        {
-            $protocol = parse_url($event->getProcessedUrl(), PHP_URL_SCHEME);
-
-            if ($protocol === 's3') {
-                $awsClient = new AwsClient($this->io, $this->composer->getConfig());
-                $s3RemoteFilesystem = new S3RemoteFilesystem($this->io, $event->getRemoteFilesystem()->getOptions(), $awsClient);
-                $event->setRemoteFilesystem($s3RemoteFilesystem);
-            }
+        if ($protocol === 's3') {
+            $awsClient = new AwsClient($this->io, $this->composer->getConfig());
+            $s3RemoteFilesystem = new S3RemoteFilesystem($this->io, $event->getRemoteFilesystem()->getOptions(), $awsClient);
+            $event->setRemoteFilesystem($s3RemoteFilesystem);
         }
     }
+}
+```
 
 ## Using Plugins
 
