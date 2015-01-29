@@ -144,15 +144,11 @@ php composer.phar update vendor/*
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
 * **--with-dependencies** Add also all dependencies of whitelisted packages to the whitelist.
-<<<<<<< HEAD
-  So all packages with their dependencies are updated recursively.
 * **--disable-tls:** Display SSL/TLS peer verification.
 * **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
-=======
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
->>>>>>> master
 
 ## require
 
