@@ -79,17 +79,20 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
-        $packages = $input->getArgument('packages');
-        if ($input->getOption('interactive')) {
-            $packages = $this->getPackagesInteractively($input, $output, $composer, $packages);
-        }
-
         if ($input->getOption('no-custom-installers')) {
             $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
         }
 
+        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+
+        $packages = $input->getArgument('packages');
+
+        if ($this->isInteractive($input)) {
+            $packages = $this->getPackagesInteractively($input, $output, $composer, $packages);
+        }
+
+        $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
@@ -177,22 +180,21 @@ EOT
         $packages = is_array($packages) ? $packages : array();
         $output->writeln('<info>NB: Empty package ends submission.</info>'); // I couldn't find any better for now!
 
-        $continue = true;
         do {
             $question->setAutocompleterValues($autocompleterValues);
             $addedPackage = $helper->ask($input, $output, $question);
 
-            if (is_string($addedPackage)) {
-                if (!in_array($addedPackage, $packages)) {
-                    $packages[] = $addedPackage;
-                    $autocompleterValues = array_diff($autocompleterValues, array($addedPackage));
-                } else {
-                    $output->writeln(sprintf('<error>The package "%s" was already added.</error>', $package));
-                }
-            } else {
-                $continue = false;
+            if (!is_string($addedPackage)) {
+                break;
             }
-        } while ($continue);
+
+            if (!in_array($addedPackage, $packages)) {
+                $packages[] = $addedPackage;
+                $autocompleterValues = array_diff($autocompleterValues, array($addedPackage));
+            } else {
+                $output->writeln(sprintf('<error>The package "%s" was already added.</error>', $package));
+            }
+        } while (true);
 
         $packages = array_filter($packages);
         if (!$packages) {
@@ -219,5 +221,10 @@ EOT
         }
 
         throw new \RuntimeException('Installation aborted.');
+    }
+
+    private function isInteractive($input)
+    {
+        return $input->getOption('interactive');
     }
 }
