@@ -66,7 +66,7 @@ constraint if you want really specific versions.
 }
 ```
 
-Once you did this, you just run `php bin/satis build <configuration file> <build dir>`.
+Once you've done this, you just run `php bin/satis build <configuration file> <build dir>`.
 For example `php bin/satis build config.json web/` would read the `config.json`
 file and build a static repository inside the `web/` directory.
 
