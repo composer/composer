@@ -88,7 +88,7 @@ EOT
 
         $packages = $input->getArgument('packages');
 
-        if ($this->isInteractive($input)) {
+        if ($input->getOption('interactive')) {
             $packages = $this->getPackagesInteractively($input, $output, $composer, $packages);
         }
 
@@ -150,6 +150,10 @@ EOT
 
     private function getPackagesInteractively(InputInterface $input, OutputInterface $output, Composer $composer, $packages)
     {
+        if (!$input->isInteractive()) {
+            throw new \InvalidArgumentException('--interactive cannot be used in non-interactive terminals.');
+        }
+
         $packagesMap = $composer->getRepositoryManager()
             ->getLocalRepository()->getPackages();
 
@@ -221,10 +225,5 @@ EOT
         }
 
         throw new \RuntimeException('Installation aborted.');
-    }
-
-    private function isInteractive($input)
-    {
-        return $input->getOption('interactive');
     }
 }
