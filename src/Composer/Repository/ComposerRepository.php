@@ -204,6 +204,11 @@ class ComposerRepository extends ArrayRepository
             $this->loadProviderListings($this->loadRootServerFile());
         }
 
+        if ($this->lazyProvidersUrl) {
+            // Can not determine list of provided packages for lazy repositories
+            return array();
+        }
+
         if ($this->providersUrl) {
             return array_keys($this->providerListing);
         }
