@@ -90,10 +90,10 @@ class FileDownloader implements DownloaderInterface
             } catch (\Exception $e) {
                 if ($this->io->isDebug()) {
                     $this->io->write('');
-                    $this->io->write('Failed: ['.get_class($e).'] '.$e->getMessage());
+                    $this->io->write('Failed: ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
                 } elseif (count($urls)) {
                     $this->io->write('');
-                    $this->io->write('    Failed, trying the next URL');
+                    $this->io->write('    Failed, trying the next URL ('.$e->getCode().': '.$e->getMessage().')');
                 }
 
                 if (!count($urls)) {
