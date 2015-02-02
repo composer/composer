@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\Factory;
+use Composer\Config;
 use Composer\Downloader\TransportException;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -23,6 +24,7 @@ use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -42,7 +44,10 @@ class DiagnoseCommand extends Command
 The <info>diagnose</info> command checks common errors to help debugging problems.
 
 EOT
-            )
+            )->setDefinition(array(
+                new InputOption('disable-tls', null, InputOption::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
+                new InputOption('cafile', null, InputOption::VALUE_REQUIRED, 'The path to a valid CA certificate file for SSL/TLS certificate verification'),
+            ))
         ;
     }
 
@@ -73,7 +78,7 @@ EOT
         $this->outputResult($output, $this->checkGit());
 
         $output->write('Checking http connectivity: ');
-        $this->outputResult($output, $this->checkHttp());
+        $this->outputResult($output, $this->checkHttp($config));
 
         $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
         if (!empty($opts['http']['proxy'])) {
@@ -135,13 +140,41 @@ EOT
         return true;
     }
 
-    private function checkHttp()
+    private function checkHttp(Config $config)
     {
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
+        $disableTls = false;
+        $result = array();
+        if($config->get('disable-tls') === true) {
+            $protocol = 'http';
+            $disableTls = true;
+            $result[] = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
+        } else {
+            $protocol = 'https';
+        }
+        if (!extension_loaded('openssl') && !$disableTls) {
+            $result[] = '<error>Composer is configured to use SSL/TLS protection but the openssl extension is not available.</error>';
+        }
+
+        try {
+            $this->rfs = Factory::createRemoteFilesystem($this->getIO(), $config);
+        } catch (TransportException $e) {
+            if (preg_match('|cafile|', $e->getMessage())) {
+                $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
+                $result[] = '<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>';
+                $result[] = '<error>You can alternatively disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>';
+            } else {
+                throw $e;
+            }
+        }
+
         try {
             $json = $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false);
         } catch (\Exception $e) {
-            return $e;
+            array_unshift($result, '[' . get_class($e) . '] ' . $e->getMessage());
+        }
+
+        if (count($result) > 0) {
+            return $result;
         }
 
         return true;
@@ -271,7 +304,13 @@ EOT
             if ($result instanceof \Exception) {
                 $output->writeln('['.get_class($result).'] '.$result->getMessage());
             } elseif ($result) {
-                $output->writeln($result);
+                if (is_array($result)) {
+                    foreach ($result as $message) {
+                        $output->writeln($message);
+                    }
+                } else {
+                    $output->writeln($result);
+                }
             }
         }
     }

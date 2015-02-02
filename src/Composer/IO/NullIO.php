@@ -104,4 +104,20 @@ class NullIO extends BaseIO
     {
         return null;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getInputOption($optionName)
+    {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getInputArgument($ArgumentName)
+    {
+        return null;
+    }
 }

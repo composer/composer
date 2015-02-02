@@ -69,6 +69,8 @@ class CreateProjectCommand extends Command
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deletion vcs folder.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
+                new InputOption('disable-tls', null, InputOption::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
+                new InputOption('cafile', null, InputOption::VALUE_REQUIRED, 'The path to a valid CA certificate file for SSL/TLS certificate verification'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
             ))
             ->setHelp(<<<EOT
@@ -238,7 +240,7 @@ EOT
         if (null === $repositoryUrl) {
             $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
         } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION) && file_exists($repositoryUrl)) {
-            $json = new JsonFile($repositoryUrl, new RemoteFilesystem($io, $config));
+            $json = new JsonFile($repositoryUrl, Factory::createRemoteFilesystem($io, $config));
             $data = $json->read();
             if (!empty($data['packages']) || !empty($data['includes']) || !empty($data['provider-includes'])) {
                 $sourceRepo = new ComposerRepository(array('url' => 'file://' . strtr(realpath($repositoryUrl), '\\', '/')), $io, $config);

@@ -24,6 +24,7 @@ use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Version\VersionParser;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * Creates a configured instance of composer.
@@ -173,7 +174,7 @@ class Factory
             if (!isset($repo['type'])) {
                 throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') must have a type defined');
             }
-            $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
+            $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index; //CHECK: Why is scheme stripped?
             while (isset($repos[$name])) {
                 $name .= '2';
             }
@@ -206,7 +207,9 @@ class Factory
 
         if (is_string($localConfig)) {
             $composerFile = $localConfig;
-            $file = new JsonFile($localConfig, new RemoteFilesystem($io));
+
+            $rfs = Factory::createRemoteFilesystem($io);
+            $file = new JsonFile($localConfig, $rfs);
 
             if (!$file->exists()) {
                 if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
@@ -309,7 +312,9 @@ class Factory
             $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
-            $locker = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io, $config)), $rm, $im, md5_file($composerFile));
+
+            $locker = new Package\Locker($io, new JsonFile($lockFile, $rfs), $rm, $im, md5_file($composerFile)); // can we reuse same object?
+
             $composer->setLocker($locker);
         }
 
@@ -487,5 +492,44 @@ class Factory
         $factory = new static();
 
         return $factory->createComposer($io, $config, $disablePlugins);
+    }
+
+    /**
+     * @param IOInterface   $io         IO instance
+     * @param Config        $config     Config instance
+     * @param array         $options    Array of options passed directly to RemoteFilesystem constructor
+     * @return RemoteFilesystem
+     */
+    public static function createRemoteFilesystem(IOInterface $io, Config $config = null, $options = array())
+    {
+        $disableTls = false;
+        if((isset($config) && $config->get('disable-tls') === true) || $io->getInputOption('disable-tls')) {
+            $io->write('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
+            $disableTls = true;
+        } elseif (!extension_loaded('openssl')) {
+            throw new \RuntimeException('The openssl extension is required for SSL/TLS protection but is not available. '
+                . 'You can disable this error, at your own risk, by passing the \'--disable-tls\' option to this command.');
+        }
+        $remoteFilesystemOptions = array();
+        if ($disableTls === false) {
+            if (isset($config) && !empty($config->get('cafile'))) {
+                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
+            }
+            if (!empty($io->getInputOption('cafile'))) {
+                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$io->getInputOption('cafile')));
+            }
+            $remoteFilesystemOptions = array_merge_recursive($remoteFilesystemOptions, $options);
+        }
+        try {
+            $remoteFilesystem = new RemoteFilesystem($io, $remoteFilesystemOptions, $disableTls);
+        } catch (TransportException $e) {
+            if (preg_match('|cafile|', $e->getMessage())) {
+                $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
+                $io->write('<error>A valid CA certificate file is required for SSL/TLS protection.</error>');
+                $io->write('<error>You can disable this error, at your own risk, by passing the \'--disable-tls\' option to this command.</error>');
+            }
+            throw $e;
+        }
+        return $remoteFilesystem;
     }
 }

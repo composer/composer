@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Config;
 use Composer\Cache;
+use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -55,7 +56,7 @@ class FileDownloader implements DownloaderInterface
         $this->io = $io;
         $this->config = $config;
         $this->eventDispatcher = $eventDispatcher;
-        $this->rfs = $rfs ?: new RemoteFilesystem($io, $config);
+        $this->rfs = $rfs ?: Factory::createRemoteFilesystem($this->io, $config);
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->cache = $cache;
 

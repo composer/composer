@@ -76,4 +76,20 @@ abstract class BaseIO implements IOInterface
             }
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getInputOption($optionName)
+    {
+        return $this->input->getOption($optionName);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getInputArgument($ArgumentName)
+    {
+        return $this->input->getArgument($argumentName);
+    }
 }

@@ -22,6 +22,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Util\RemoteFilesystem;
 use Composer\Config;
+use Composer\Factory;
 
 /**
  * Builds list of package from PEAR channel.
@@ -57,7 +58,7 @@ class PearRepository extends ArrayRepository
 
         $this->url = rtrim($repoConfig['url'], '/');
         $this->io = $io;
-        $this->rfs = $rfs ?: new RemoteFilesystem($this->io, $config);
+        $this->rfs = $rfs ?: Factory::createRemoteFilesystem($this->io, $config);
         $this->vendorAlias = isset($repoConfig['vendor-alias']) ? $repoConfig['vendor-alias'] : null;
         $this->versionParser = new VersionParser();
     }

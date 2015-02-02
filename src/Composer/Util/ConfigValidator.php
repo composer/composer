@@ -51,7 +51,7 @@ class ConfigValidator
         // validate json schema
         $laxValid = false;
         try {
-            $json = new JsonFile($file, new RemoteFilesystem($this->io));
+            $json = new JsonFile($file, Factory::createRemoteFilesystem($this->io)); //TODO - can't configure here obviouslyS
             $manifest = $json->read();
 
             $json->validateSchema(JsonFile::LAX_SCHEMA);

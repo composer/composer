@@ -96,6 +96,8 @@ resolution.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## update
 
@@ -142,6 +144,8 @@ php composer.phar update vendor/*
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
 * **--with-dependencies** Add also all dependencies of whitelisted packages to the whitelist.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
@@ -179,6 +183,8 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--update-no-dev** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies** Also update dependencies of the newly
   required packages.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## remove
 
@@ -240,6 +246,8 @@ You can also search for more than one term by passing multiple arguments.
 ### Options
 
 * **--only-name (-N):** Search only in name.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## show
 
@@ -283,6 +291,8 @@ php composer.phar show monolog/monolog 1.0.2
 * **--installed (-i):** List the packages that are installed.
 * **--platform (-p):** List only platform packages (php & extensions).
 * **--self (-s):** List the root package info.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## browse / home
 
@@ -375,6 +385,8 @@ sudo composer self-update
 
 * **--rollback (-r):** Rollback to the last version you had installed.
 * **--clean-backups:** Delete old backups during an update. This makes the current version of composer the only backup available after the update.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## config
 
@@ -467,9 +479,14 @@ By default the command checks for the packages on packagist.org.
 * **--keep-vcs:** Skip the deletion of the VCS metadata for the created
   project. This is mostly useful if you run the command in non-interactive
   mode.
+<<<<<<< HEAD
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
+=======
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
   fulfill these.
+>>>>>>> master
 
 ## dump-autoload
 
@@ -519,6 +536,11 @@ problems.
 ```sh
 php composer.phar diagnose
 ```
+
+### Options
+
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## archive
 
@@ -644,6 +666,11 @@ By default it points to $COMPOSER_HOME/cache on \*nix and OSX, and
 
 This env var controls the time composer waits for commands (such as git
 commands) to finish executing. The default value is 300 seconds (5 minutes).
+
+### COMPOSER_CAFILE
+
+By setting this environmental value, you can set a path to a certificate bundle
+file to be used during SSL/TLS peer verification.
 
 ### COMPOSER_DISCARD_CHANGES
 

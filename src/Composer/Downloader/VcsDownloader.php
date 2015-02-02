@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Config;
+use Composer\Factory;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;

@@ -42,6 +42,8 @@ class Config
         'classmap-authoritative' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
+        'disable-tls' => false,
+        'cafile' => null,
         'github-expose-hostname' => true,
         'store-auths' => 'prompt',
         // valid keys without defaults (auth config stuff):
@@ -53,7 +55,7 @@ class Config
         'packagist' => array(
             'type' => 'composer',
             'url' => 'https?://packagist.org',
-            'allow_ssl_downgrade' => true,
+            'allow_ssl_downgrade' => true, // TODO: check
         )
     );
 
@@ -167,6 +169,7 @@ class Config
             case 'cache-files-dir':
             case 'cache-repo-dir':
             case 'cache-vcs-dir':
+            case 'cafile':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
@@ -244,6 +247,9 @@ class Config
                 }
 
                 return $this->config[$key];
+                
+            case 'disable-tls':
+                return $this->config[$key] !== 'false' && (bool) $this->config[$key];
 
             default:
                 if (!isset($this->config[$key])) {

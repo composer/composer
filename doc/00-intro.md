@@ -134,7 +134,9 @@ C:\Users\username>cd C:\bin
 C:\bin>php -r "readfile('https://getcomposer.org/installer');" | php
 ```
 
-> **Note:** If the above fails due to readfile, use the `http` url or enable php_openssl.dll in php.ini
+> **Note:** If the above fails due to readfile, enable php_openssl.dll in php.ini.
+> You may use the http URL, however this will leave the request susceptible to a
+> Man-In-The-Middle (MITM) attack.
 
 Create a new `composer.bat` file alongside `composer.phar`:
 
@@ -170,6 +172,14 @@ composer install
 
 Following the [example above](#declaring-dependencies), this will download
 monolog into the `vendor/monolog/monolog` directory.
+
+> **Note:** Composer will attempt to protect all HTTPS requests using SSL/TLS. It
+> implements peer verification using a certificate bundle, either one installed on
+> the local system or a copy distributed with Composer. You may also pass the path
+> to a bundle using the --cafile option for most commands. While you can also
+> disable peer verification by passing the --disable-tls option, this is not
+> recommended and will leave all downloads susceptible to Man-In-The-Middle (MITM)
+> attacks.
 
 ## Autoloading
 
