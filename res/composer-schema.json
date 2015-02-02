@@ -367,6 +367,13 @@
                     "format": "uri"
                 }
             }
+        },
+        "non-feature-branches": {
+            "type": ["array"],
+            "description": "A set of string or regex patterns for non-numeric branch names that will not be handles as feature branches.",
+            "items": {
+                "type": "string"
+            }
         }
     }
 }
