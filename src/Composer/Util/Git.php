@@ -169,6 +169,9 @@ class Git
         if (getenv('GIT_WORK_TREE')) {
             putenv('GIT_WORK_TREE');
         }
+
+        // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
+        putenv("DYLD_LIBRARY_PATH");
     }
 
     public static function getGitHubDomainsRegex(Config $config)

@@ -41,6 +41,7 @@ class ShowCommand extends Command
     {
         $this
             ->setName('show')
+            ->setAliases(array('info'))
             ->setDescription('Show information about packages')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect'),

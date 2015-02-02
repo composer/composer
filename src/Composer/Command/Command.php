@@ -16,6 +16,8 @@ use Composer\Composer;
 use Composer\Console\Application;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command as BaseCommand;
 
 /**
@@ -101,5 +103,17 @@ abstract class Command extends BaseCommand
     public function setIO(IOInterface $io)
     {
         $this->io = $io;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        if (true === $input->hasParameterOption(array('--no-ansi')) && $input->hasOption('no-progress')) {
+            $input->setOption('no-progress', true);
+        }
+
+        parent::initialize($input, $output);
     }
 }

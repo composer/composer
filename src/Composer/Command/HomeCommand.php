@@ -40,12 +40,14 @@ class HomeCommand extends Command
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Package(s) to browse to.'),
                 new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL.'),
+                new InputOption('show', 's', InputOption::VALUE_NONE, 'Only show the homepage or repository URL.'),
             ))
             ->setHelp(<<<EOT
-The home command opens a package's repository URL or
+The home command opens or shows a package's repository URL or
 homepage in your default browser.
 
 To open the homepage by default, use -H or --homepage.
+To show instead of open the repository or homepage URL, use -s or --show.
 EOT
             );
     }
@@ -55,7 +57,7 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $repo = $this->initializeRepo($input, $output);
+        $repo = $this->initializeRepo();
         $return = 0;
 
         foreach ($input->getArgument('packages') as $packageName) {
@@ -81,7 +83,11 @@ EOT
                 continue;
             }
 
-            $this->openBrowser($url);
+            if ($input->getOption('show')) {
+                $output->writeln(sprintf('<info>%s</info>', $url));
+            } else {
+                $this->openBrowser($url);
+            }
         }
 
         return $return;
@@ -138,13 +144,11 @@ EOT
     }
 
     /**
-     * initializes the repo
+     * Initializes the repo
      *
-     * @param  InputInterface      $input
-     * @param  OutputInterface     $output
      * @return CompositeRepository
      */
-    private function initializeRepo(InputInterface $input, OutputInterface $output)
+    private function initializeRepo()
     {
         $composer = $this->getComposer(false);
 

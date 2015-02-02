@@ -22,9 +22,9 @@ use Composer\IO\IOInterface;
 
 class FactoryMock extends Factory
 {
-    public static function createConfig(IOInterface $io = null)
+    public static function createConfig(IOInterface $io = null, $cwd = null)
     {
-        $config = new Config();
+        $config = new Config(true, $cwd);
 
         $config->merge(array(
             'config' => array('home' => sys_get_temp_dir().'/composer-test'),

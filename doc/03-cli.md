@@ -87,7 +87,8 @@ resolution.
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
-* **--no-dev:** Skip installing packages listed in `require-dev`.
+* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
+* **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -129,7 +130,8 @@ php composer.phar update vendor/*
   fulfill these.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
-* **--no-dev:** Skip installing packages listed in `require-dev`.
+* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
+* **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -397,16 +399,18 @@ options.
 ### Options
 
 * **--global (-g):** Operate on the global config file located at
-`$COMPOSER_HOME/config.json` by default.  Without this option, this command
-affects the local composer.json file or a file specified by `--file`.
+  `$COMPOSER_HOME/config.json` by default.  Without this option, this command
+  affects the local composer.json file or a file specified by `--file`.
 * **--editor (-e):** Open the local composer.json file using in a text editor as
-defined by the `EDITOR` env variable.  With the `--global` option, this opens
-the global config file.
+  defined by the `EDITOR` env variable.  With the `--global` option, this opens
+  the global config file.
 * **--unset:** Remove the configuration element named by `setting-key`.
 * **--list (-l):** Show the list of current config variables.  With the `--global`
- option this lists the global configuration only.
+  option this lists the global configuration only.
 * **--file="..." (-f):** Operate on a specific file instead of composer.json. Note
- that this cannot be used in conjunction with the `--global` option.
+  that this cannot be used in conjunction with the `--global` option.
+* **--absolute:** Returns absolute paths when fetching *-dir config values
+  instead of relative.
 
 ### Modifying Repositories
 
@@ -463,6 +467,9 @@ By default the command checks for the packages on packagist.org.
 * **--keep-vcs:** Skip the deletion of the VCS metadata for the created
   project. This is mostly useful if you run the command in non-interactive
   mode.
+* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
+  requirements and force the installation even if the local machine does not
+  fulfill these.
 
 ## dump-autoload
 

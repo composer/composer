@@ -2,7 +2,7 @@
 
 ## Installing
 
-If you have not yet installed Composer, refer to to the [Intro](00-intro.md) chapter.
+If you have not yet installed Composer, refer to the [Intro](00-intro.md) chapter.
 
 ## `composer.json`: Project Setup
 
@@ -213,7 +213,7 @@ You define a mapping from namespaces to directories. The `src` directory would
 be in your project root, on the same level as `vendor` directory is. An example
 filename would be `src/Foo.php` containing an `Acme\Foo` class.
 
-After adding the `autoload` field, you have to re-run `install` to re-generate
+After adding the `autoload` field, you have to re-run `dump-autoload` to re-generate
 the `vendor/autoload.php` file.
 
 Including that file will also return the autoloader instance, so you can store

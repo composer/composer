@@ -190,10 +190,11 @@ class PluginManager
      * instead for BC
      *
      * @param PackageInterface $package
+     * @param bool             $failOnMissingClasses By default this silently skips plugins that can not be found, but if set to true it fails with an exception
      *
      * @throws \UnexpectedValueException
      */
-    public function registerPackage(PackageInterface $package)
+    public function registerPackage(PackageInterface $package, $failOnMissingClasses = false)
     {
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
 
@@ -242,10 +243,12 @@ class PluginManager
             if ($oldInstallerPlugin) {
                 $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
-            } else {
+            } elseif (class_exists($class)) {
                 $plugin = new $class();
                 $this->addPlugin($plugin);
                 $this->registeredPlugins[] = $package->getName();
+            } elseif ($failOnMissingClasses) {
+                throw new \UnexpectedValueException('Plugin '.$package->getName().' could not be initialized, class not found: '.$class);
             }
         }
     }

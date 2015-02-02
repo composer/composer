@@ -160,6 +160,7 @@ class PearRepository extends ArrayRepository
                 $package = new CompletePackage($composerPackageName, $normalizedVersion, $version);
                 $package->setType('pear-library');
                 $package->setDescription($packageDefinition->getDescription());
+                $package->setLicense(array($packageDefinition->getLicense()));
                 $package->setDistType('file');
                 $package->setDistUrl($distUrl);
                 $package->setAutoload(array('classmap' => array('')));

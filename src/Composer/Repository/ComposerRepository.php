@@ -53,8 +53,6 @@ class ComposerRepository extends ArrayRepository
     protected $eventDispatcher;
     protected $sourceMirrors;
     protected $distMirrors;
-    private $rawData;
-    private $minimalPackages;
     private $degradedMode = false;
     private $rootData;
 
@@ -204,6 +202,11 @@ class ComposerRepository extends ArrayRepository
 
         if (null === $this->providerListing) {
             $this->loadProviderListings($this->loadRootServerFile());
+        }
+
+        if ($this->lazyProvidersUrl) {
+            // Can not determine list of provided packages for lazy repositories
+            return array();
         }
 
         if ($this->providersUrl) {

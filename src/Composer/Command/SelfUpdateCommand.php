@@ -173,7 +173,7 @@ EOT
     protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
     {
         try {
-            @chmod($newFilename, 0777 & ~umask());
+            @chmod($newFilename, fileperms($localFilename));
             if (!ini_get('phar.readonly')) {
                 // test the phar validity
                 $phar = new \Phar($newFilename);

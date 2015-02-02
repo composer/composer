@@ -19,6 +19,14 @@ use Composer\Package\BasePackage;
 
 class ArtifactRepositoryTest extends TestCase
 {
+    public function setUp()
+    {
+        parent::setUp();
+        if (!extension_loaded('zip')) {
+            $this->markTestSkipped('You need the zip extension to run this test.');
+        }
+    }
+
     public function testExtractsConfigsFromZipArchives()
     {
         $expectedPackages = array(

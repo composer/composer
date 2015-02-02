@@ -54,8 +54,8 @@ The version of the package. In most cases this is not required and should
 be omitted (see below).
 
 This must follow the format of `X.Y.Z` or `vX.Y.Z` with an optional suffix
-of `-dev`, `-patch`, `-alpha`, `-beta` or `-RC`. The patch, alpha, beta and
-RC suffixes can also be followed by a number.
+of `-dev`, `-patch` (`-p`), `-alpha` (`-a`), `-beta` (`-b`) or `-RC`.
+The patch, alpha, beta and RC suffixes can also be followed by a number.
 
 Examples:
 
@@ -67,6 +67,7 @@ Examples:
 - 1.0.0-alpha3
 - 1.0.0-beta2
 - 1.0.0-RC5
+- v2.0.4-p1
 
 Optional if the package repository can infer the version from somewhere, such
 as the VCS tag name in the VCS repository. In that case it is also recommended
@@ -375,7 +376,7 @@ useful for common interfaces. A package could depend on some virtual
 `logger` package, any library that implements this logger interface would
 simply list it in `provide`.
 
-### suggest
+#### suggest
 
 Suggested packages that can enhance or work well with this package. These are
 just informational and are displayed after the package is installed, to give
@@ -790,6 +791,9 @@ The following options are supported:
   the generated Composer autoloader. When null a random one will be generated.
 * **optimize-autoloader** Defaults to `false`. Always optimize when dumping
   the autoloader.
+* **classmap-authoritative:** Defaults to `false`. If true, the composer
+  autoloader will not scan the filesystem for classes that are not found in
+  the class map. Implies 'optimize-autoloader'.
 * **github-domains:** Defaults to `["github.com"]`. A list of domains to use in
   github mode. This is used for GitHub Enterprise setups.
 * **github-expose-hostname:** Defaults to `true`. If set to false, the OAuth

@@ -33,7 +33,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public function initialize()
     {
-        preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)\.git$#', $this->url, $match);
+        preg_match('#^https?://bitbucket\.org/([^/]+)/(.+?)\.git$#', $this->url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'bitbucket.org';
@@ -143,7 +143,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)\.git$#', $url)) {
+        if (!preg_match('#^https?://bitbucket\.org/([^/]+)/(.+?)\.git$#', $url)) {
             return false;
         }
 

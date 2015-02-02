@@ -84,13 +84,6 @@ class PearRepositoryTest extends TestCase
     public function repositoryDataProvider()
     {
         return array(
-           array(
-                'pear.phpunit.de',
-                array(
-                    array('name' => 'pear-pear.phpunit.de/PHPUnit_MockObject', 'version' => '1.1.1'),
-                    array('name' => 'pear-pear.phpunit.de/PHPUnit', 'version' => '3.6.10'),
-                )
-            ),
             array(
                 'pear.php.net',
                 array(

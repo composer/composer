@@ -57,6 +57,7 @@ class ConfigCommand extends Command
                 new InputOption('unset', null, InputOption::VALUE_NONE, 'Unset the given setting-key'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json', 'composer.json'),
+                new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
@@ -99,6 +100,8 @@ EOT
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
+        parent::initialize($input, $output);
+
         if ($input->getOption('global') && 'composer.json' !== $input->getOption('file')) {
             throw new \RuntimeException('--file and --global can not be combined');
         }
@@ -134,7 +137,7 @@ EOT
         }
 
         if (!$this->configFile->exists()) {
-            throw new \RuntimeException('No composer.json found in the current directory');
+            throw new \RuntimeException(sprintf('File "%s" cannot be found in the current directory', $configFile));
         }
     }
 
@@ -218,7 +221,7 @@ EOT
 
                 $value = $data;
             } elseif (isset($data['config'][$settingKey])) {
-                $value = $data['config'][$settingKey];
+                $value = $this->config->get($settingKey, $input->getOption('absolute') ? 0 : Config::RELATIVE_PATHS);
             } else {
                 throw new \RuntimeException($settingKey.' is not defined');
             }
@@ -322,6 +325,7 @@ EOT
             ),
             'autoloader-suffix' => array('is_string', function ($val) { return $val === 'null' ? null : $val; }),
             'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
+            'classmap-authoritative' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
         );

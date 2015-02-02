@@ -202,7 +202,7 @@ class GitDriver extends VcsDriver
             $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
-                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match)) {
                         $branches[$match[1]] = $match[2];
                     }
                 }
@@ -241,7 +241,11 @@ class GitDriver extends VcsDriver
             return false;
         }
 
-        // TODO try to connect to the server
+        $process = new ProcessExecutor($io);
+        if($process->execute('git ls-remote --heads ' . ProcessExecutor::escape($url)) === 0) {
+            return true;
+        }
+
         return false;
     }
 }
