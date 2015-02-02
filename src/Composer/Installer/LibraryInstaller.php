@@ -34,6 +34,7 @@ class LibraryInstaller implements InstallerInterface
     protected $io;
     protected $type;
     protected $filesystem;
+    protected $binCompat;
 
     /**
      * Initializes library installer.
@@ -53,6 +54,7 @@ class LibraryInstaller implements InstallerInterface
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
         $this->binDir = rtrim($composer->getConfig()->get('bin-dir'), '/');
+        $this->binCompat = trim(getenv("COMPOSER_BIN_COMPAT")) ?: 'auto';
     }
 
     /**
@@ -219,36 +221,57 @@ class LibraryInstaller implements InstallerInterface
                 $this->io->write('    Skipped installation of bin '.$bin.' for package '.$package->getName().': name conflicts with an existing file');
                 continue;
             }
-            if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-                // add unixy support for cygwin and similar environments
-                if ('.bat' !== substr($binPath, -4)) {
-                    file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
-                    @chmod($link, 0777 & ~umask());
-                    $link .= '.bat';
-                    if (file_exists($link)) {
-                        $this->io->write('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
-                    }
+            if ($this->binCompat === "auto") {
+                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                    $this->installFullBinaries($binPath, $link, $bin, $package);
+                } else {
+                    $this->installSymlinkBinaries($binPath, $link);
                 }
-                if (!file_exists($link)) {
-                    file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
-                }
-            } else {
-                $cwd = getcwd();
-                try {
-                    // under linux symlinks are not always supported for example
-                    // when using it in smbfs mounted folder
-                    $relativeBin = $this->filesystem->findShortestPath($link, $binPath);
-                    chdir(dirname($link));
-                    if (false === symlink($relativeBin, $link)) {
-                        throw new \ErrorException();
-                    }
-                } catch (\ErrorException $e) {
-                    file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
-                }
-                chdir($cwd);
+            } elseif($this->binCompat === "nosymlink") {
+                $this->installUnixyProxyBinaries($binPath, $link);
+            } elseif($this->binCompat === "full") {
+                $this->installFullBinaries($binPath, $link, $bin, $package);
             }
             @chmod($link, 0777 & ~umask());
         }
+    }
+
+    protected function installFullBinaries($binPath, $link, $bin, PackageInterface $package)
+    {
+        // add unixy support for cygwin and similar environments
+        if ('.bat' !== substr($binPath, -4)) {
+            $this->installUnixyProxyBinaries($binPath, $link);
+            @chmod($link, 0777 & ~umask());
+            $link .= '.bat';
+            if (file_exists($link)) {
+                $this->io->write('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+            }
+        }
+        if (!file_exists($link)) {
+            file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+        }
+    }
+
+    protected function installSymlinkBinaries($binPath, $link)
+    {
+        $cwd = getcwd();
+        try {
+            // under linux symlinks are not always supported for example
+            // when using it in smbfs mounted folder
+            $relativeBin = $this->filesystem->findShortestPath($link, $binPath);
+            chdir(dirname($link));
+            if (false === symlink($relativeBin, $link)) {
+                throw new \ErrorException();
+            }
+        } catch (\ErrorException $e) {
+           $this->installUnixyProxyBinaries($binPath, $link);
+        }
+        chdir($cwd);
+    }
+
+    protected function installUnixyProxyBinaries($binPath, $link)
+    {
+        file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
     }
 
     protected function removeBinaries(PackageInterface $package)
