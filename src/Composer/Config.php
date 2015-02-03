@@ -29,6 +29,7 @@ class Config
         'github-protocols' => array('git', 'https', 'ssh'),
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
+        'bin-compat' => 'auto',
         'cache-dir' => '{$home}/cache',
         'cache-files-dir' => '{$cache-dir}/files',
         'cache-repo-dir' => '{$cache-dir}/repo',
@@ -214,6 +215,17 @@ class Config
 
             case 'home':
                 return rtrim($this->process($this->config[$key], $flags), '/\\');
+
+            case 'bin-compat':
+                $value= $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
+
+                if (!in_array($value, array('auto', 'nosymlink', 'full'))) {
+                    throw new \RuntimeException(
+                        "Invalid value for 'bin-compat': {$value}. Expected auto, nosymlink, full"
+                    );
+                }
+
+                return $value;
 
             case 'discard-changes':
                 if ($env = $this->getComposerEnv('COMPOSER_DISCARD_CHANGES')) {

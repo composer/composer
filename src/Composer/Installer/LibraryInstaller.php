@@ -54,7 +54,7 @@ class LibraryInstaller implements InstallerInterface
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
         $this->binDir = rtrim($composer->getConfig()->get('bin-dir'), '/');
-        $this->binCompat = trim(getenv("COMPOSER_BIN_COMPAT")) ?: 'auto';
+        $this->binCompat = $composer->getConfig()->get('bin-compat');
     }
 
     /**
@@ -227,9 +227,9 @@ class LibraryInstaller implements InstallerInterface
                 } else {
                     $this->installSymlinkBinaries($binPath, $link);
                 }
-            } elseif($this->binCompat === "nosymlink") {
+            } elseif ($this->binCompat === "nosymlink") {
                 $this->installUnixyProxyBinaries($binPath, $link);
-            } elseif($this->binCompat === "full") {
+            } elseif ($this->binCompat === "full") {
                 $this->installFullBinaries($binPath, $link, $bin, $package);
             }
             @chmod($link, 0777 & ~umask());
