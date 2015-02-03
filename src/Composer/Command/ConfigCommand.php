@@ -303,6 +303,10 @@ EOT
             'notify-on-install' => array($booleanValidator, $booleanNormalizer),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
             'bin-dir' => array('is_string', function ($val) { return $val; }),
+            'bin-compat' => array(
+                function ($val) { return in_array($val, array('auto', 'nosymlink', 'full')); },
+                function ($val) { return $val; }
+            ),
             'cache-dir' => array('is_string', function ($val) { return $val; }),
             'cache-files-dir' => array('is_string', function ($val) { return $val; }),
             'cache-repo-dir' => array('is_string', function ($val) { return $val; }),
