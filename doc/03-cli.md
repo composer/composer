@@ -507,8 +507,13 @@ Lists the name, version and license of every package installed. Use
 
 ## run-script
 
+### Options
+
+* **--no-dev:** Disable dev mode
+* **--list:** List user defined scripts
+
 To run [scripts](articles/scripts.md) manually you can use this command,
-just give it the script name and optionally --no-dev to disable the dev mode.
+just give it the script name and optionally any required arguments.
 
 ## diagnose
 
