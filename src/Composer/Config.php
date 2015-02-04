@@ -29,7 +29,6 @@ class Config
         'github-protocols' => array('git', 'https', 'ssh'),
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
-        'bin-compat' => 'auto',
         'cache-dir' => '{$home}/cache',
         'cache-files-dir' => '{$cache-dir}/files',
         'cache-repo-dir' => '{$cache-dir}/repo',
@@ -37,6 +36,7 @@ class Config
         'cache-ttl' => 15552000, // 6 months
         'cache-files-ttl' => null, // fallback to cache-ttl
         'cache-files-maxsize' => '300MiB',
+        'bin-compat' => 'auto',
         'discard-changes' => false,
         'autoloader-suffix' => null,
         'optimize-autoloader' => false,

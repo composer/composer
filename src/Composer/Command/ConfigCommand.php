@@ -303,10 +303,6 @@ EOT
             'notify-on-install' => array($booleanValidator, $booleanNormalizer),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
             'bin-dir' => array('is_string', function ($val) { return $val; }),
-            'bin-compat' => array(
-                function ($val) { return in_array($val, array('auto', 'nosymlink', 'full')); },
-                function ($val) { return $val; }
-            ),
             'cache-dir' => array('is_string', function ($val) { return $val; }),
             'cache-files-dir' => array('is_string', function ($val) { return $val; }),
             'cache-repo-dir' => array('is_string', function ($val) { return $val; }),
@@ -315,6 +311,10 @@ EOT
             'cache-files-ttl' => array('is_numeric', 'intval'),
             'cache-files-maxsize' => array(
                 function ($val) { return preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val) > 0; },
+                function ($val) { return $val; }
+            ),
+            'bin-compat' => array(
+                function ($val) { return in_array($val, array('auto', 'nosymlink', 'full')); },
                 function ($val) { return $val; }
             ),
             'discard-changes' => array(
