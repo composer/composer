@@ -274,7 +274,7 @@ EOT
             $json = $this->rfs->getContents($domain, $url, false, array('retry-auth-failure' => false));
             $data = json_decode($json, true);
 
-            return $data['rate'];
+            return $data['resources']['core'];
         } catch (\Exception $e) {
             if ($e instanceof TransportException && $e->getCode() === 401) {
                 return '<comment>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</comment>';
