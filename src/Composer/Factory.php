@@ -116,7 +116,7 @@ class Factory
         $file = new JsonFile($home.'/config.json');
         if ($file->exists()) {
             if ($io && $io->isDebug()) {
-                $io->write('Loading config file ' . $file->getPath());
+                $io->writeError('Loading config file ' . $file->getPath());
             }
             $config->merge($file->read());
         }
@@ -126,7 +126,7 @@ class Factory
         $file = new JsonFile($config->get('home').'/auth.json');
         if ($file->exists()) {
             if ($io && $io->isDebug()) {
-                $io->write('Loading config file ' . $file->getPath());
+                $io->writeError('Loading config file ' . $file->getPath());
             }
             $config->merge(array('config' => $file->read()));
         }
@@ -227,12 +227,12 @@ class Factory
         $config->merge($localConfig);
         if (isset($composerFile)) {
             if ($io && $io->isDebug()) {
-                $io->write('Loading config file ' . $composerFile);
+                $io->writeError('Loading config file ' . $composerFile);
             }
             $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json');
             if ($localAuthFile->exists()) {
                 if ($io && $io->isDebug()) {
-                    $io->write('Loading config file ' . $localAuthFile->getPath());
+                    $io->writeError('Loading config file ' . $localAuthFile->getPath());
                 }
                 $config->merge(array('config' => $localAuthFile->read()));
                 $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
@@ -362,7 +362,7 @@ class Factory
             $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), false);
         } catch (\Exception $e) {
             if ($io->isDebug()) {
-                $io->write('Failed to initialize global composer: '.$e->getMessage());
+                $io->writeError('Failed to initialize global composer: '.$e->getMessage());
             }
         }
 

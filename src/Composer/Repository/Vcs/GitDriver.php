@@ -66,7 +66,7 @@ class GitDriver extends VcsDriver
                     };
                     $gitUtil->runCommand($commandCallable, $this->url, $this->repoDir);
                 } catch (\Exception $e) {
-                    $this->io->write('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$e->getMessage().')</error>');
+                    $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$e->getMessage().')</error>');
                 }
             } else {
                 // clean up directory and do a fresh clone into it

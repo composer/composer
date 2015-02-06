@@ -51,21 +51,21 @@ EOT
         foreach ($cachePaths as $key => $cachePath) {
             $cachePath = realpath($cachePath);
             if (!$cachePath) {
-                $io->write("<info>Cache directory does not exist ($key): $cachePath</info>");
+                $io->writeError("<info>Cache directory does not exist ($key): $cachePath</info>");
 
                 return;
             }
             $cache = new Cache($io, $cachePath);
             if (!$cache->isEnabled()) {
-                $io->write("<info>Cache is not enabled ($key): $cachePath</info>");
+                $io->writeError("<info>Cache is not enabled ($key): $cachePath</info>");
 
                 return;
             }
 
-            $io->write("<info>Clearing cache ($key): $cachePath</info>");
+            $io->writeError("<info>Clearing cache ($key): $cachePath</info>");
             $cache->gc(0, 0);
         }
 
-        $io->write('<info>All caches cleared.</info>');
+        $io->writeError('<info>All caches cleared.</info>');
     }
 }

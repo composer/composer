@@ -66,7 +66,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($input->getOption('list')) {
-            return $this->listScripts($input, $output);
+            return $this->listScripts();
         } elseif (!$input->getArgument('script')) {
             throw new \RunTimeException('Missing required argument "script"');
         }
@@ -95,7 +95,7 @@ EOT
         return $composer->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args);
     }
 
-    protected function listScripts(InputInterface $input, OutputInterface $output)
+    protected function listScripts()
     {
         $scripts = $this->getComposer()->getPackage()->getScripts();
 
@@ -103,9 +103,9 @@ EOT
             return 0;
         }
 
-        $output->writeln('<info>scripts:</info>');
+        $this->getIO()->writeError('<info>scripts:</info>');
         foreach ($scripts as $name => $script) {
-            $output->writeln('  ' . $name);
+            $this->getIO()->write('  ' . $name);
         }
 
         return 0;

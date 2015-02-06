@@ -59,8 +59,8 @@ EOT
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
-            $output->write('Checking composer.json: ');
-            $this->outputResult($output, $this->checkComposerSchema());
+            $this->getIO()->write('Checking composer.json: ', false);
+            $this->outputResult($this->checkComposerSchema());
         }
 
         if ($composer) {
@@ -72,37 +72,37 @@ EOT
         $this->rfs = new RemoteFilesystem($this->getIO(), $config);
         $this->process = new ProcessExecutor($this->getIO());
 
-        $output->write('Checking platform settings: ');
-        $this->outputResult($output, $this->checkPlatform());
+        $this->getIO()->write('Checking platform settings: ', false);
+        $this->outputResult($this->checkPlatform());
 
-        $output->write('Checking git settings: ');
-        $this->outputResult($output, $this->checkGit());
+        $this->getIO()->write('Checking git settings: ', false);
+        $this->outputResult($this->checkGit());
 
-        $output->write('Checking http connectivity: ');
-        $this->outputResult($output, $this->checkHttp());
+        $this->getIO()->write('Checking http connectivity: ', false);
+        $this->outputResult($this->checkHttp());
 
         $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
         if (!empty($opts['http']['proxy'])) {
-            $output->write('Checking HTTP proxy: ');
-            $this->outputResult($output, $this->checkHttpProxy());
-            $output->write('Checking HTTP proxy support for request_fulluri: ');
-            $this->outputResult($output, $this->checkHttpProxyFullUriRequestParam());
-            $output->write('Checking HTTPS proxy support for request_fulluri: ');
-            $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam());
+            $this->getIO()->write('Checking HTTP proxy: ', false);
+            $this->outputResult($this->checkHttpProxy());
+            $this->getIO()->write('Checking HTTP proxy support for request_fulluri: ', false);
+            $this->outputResult($this->checkHttpProxyFullUriRequestParam());
+            $this->getIO()->write('Checking HTTPS proxy support for request_fulluri: ', false);
+            $this->outputResult($this->checkHttpsProxyFullUriRequestParam());
         }
 
         if ($oauth = $config->get('github-oauth')) {
             foreach ($oauth as $domain => $token) {
-                $output->write('Checking '.$domain.' oauth access: ');
-                $this->outputResult($output, $this->checkGithubOauth($domain, $token));
+                $this->getIO()->write('Checking '.$domain.' oauth access: ', false);
+                $this->outputResult($this->checkGithubOauth($domain, $token));
             }
         } else {
-            $output->write('Checking github.com rate limit: ');
+            $this->getIO()->write('Checking github.com rate limit: ', false);
             $rate = $this->getGithubRateLimit('github.com');
 
             if (10 > $rate['remaining']) {
-                $output->writeln('<warning>WARNING</warning>');
-                $output->writeln(sprintf(
+                $this->getIO()->write('<warning>WARNING</warning>');
+                $this->getIO()->write(sprintf(
                     '<comment>Github has a rate limit on their API. '
                     . 'You currently have <options=bold>%u</options=bold> '
                     . 'out of <options=bold>%u</options=bold> requests left.' . PHP_EOL
@@ -112,15 +112,15 @@ EOT
                     $rate['limit']
                 ));
             } else {
-                $output->writeln('<info>OK</info>');
+                $this->getIO()->write('<info>OK</info>');
             }
         }
 
-        $output->write('Checking disk free space: ');
-        $this->outputResult($output, $this->checkDiskSpace($config));
+        $this->getIO()->write('Checking disk free space: ', false);
+        $this->outputResult($this->checkDiskSpace($config));
 
-        $output->write('Checking composer version: ');
-        $this->outputResult($output, $this->checkVersion());
+        $this->getIO()->write('Checking composer version: ', false);
+        $this->outputResult($this->checkVersion());
 
         return $this->failures;
     }
@@ -308,17 +308,17 @@ EOT
         return true;
     }
 
-    private function outputResult(OutputInterface $output, $result)
+    private function outputResult($result)
     {
         if (true === $result) {
-            $output->writeln('<info>OK</info>');
+            $this->getIO()->write('<info>OK</info>');
         } else {
             $this->failures++;
-            $output->writeln('<error>FAIL</error>');
+            $this->getIO()->write('<error>FAIL</error>');
             if ($result instanceof \Exception) {
-                $output->writeln('['.get_class($result).'] '.$result->getMessage());
+                $this->getIO()->write('['.get_class($result).'] '.$result->getMessage());
             } elseif ($result) {
-                $output->writeln(trim($result));
+                $this->getIO()->write(trim($result));
             }
         }
     }

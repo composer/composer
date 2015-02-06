@@ -146,7 +146,7 @@ class RemoteFilesystem
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
 
         if ($this->io->isDebug()) {
-            $this->io->write((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
+            $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
         }
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
@@ -158,7 +158,7 @@ class RemoteFilesystem
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
-            $this->io->write("    Downloading: <comment>connection...</comment>", false);
+            $this->io->writeError("    Downloading: <comment>connection...</comment>", false);
         }
 
         $errorMessage = '';

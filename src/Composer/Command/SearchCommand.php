@@ -62,7 +62,7 @@ EOT
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
             $defaultRepos = Factory::createDefaultRepositories($this->getIO());
-            $output->writeln('No composer.json found in the current directory, showing packages from ' . implode(', ', array_keys($defaultRepos)));
+            $this->getIO()->writeError('No composer.json found in the current directory, showing packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
@@ -78,7 +78,7 @@ EOT
         $results = $repos->search(implode(' ', $input->getArgument('tokens')), $flags);
 
         foreach ($results as $result) {
-            $output->writeln($result['name'] . (isset($result['description']) ? ' '. $result['description'] : ''));
+            $this->getIO()->write($result['name'] . (isset($result['description']) ? ' '. $result['description'] : ''));
         }
     }
 }

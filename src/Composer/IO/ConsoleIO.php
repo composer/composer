@@ -13,6 +13,7 @@
 namespace Composer\IO;
 
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Process\ExecutableFinder;
@@ -29,6 +30,7 @@ class ConsoleIO extends BaseIO
     protected $output;
     protected $helperSet;
     protected $lastMessage;
+    protected $lastMessageErr;
     private $startTime;
 
     /**
@@ -95,6 +97,19 @@ class ConsoleIO extends BaseIO
      */
     public function write($messages, $newline = true)
     {
+        $this->doWrite($messages, $newline, false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function writeError($messages, $newline = true)
+    {
+        $this->doWrite($messages, $newline, true);
+    }
+
+    private function doWrite($messages, $newline, $stderr)
+    {
         if (null !== $this->startTime) {
             $memoryUsage = memory_get_usage() / 1024 / 1024;
             $timeSpent = microtime(true) - $this->startTime;
@@ -102,6 +117,13 @@ class ConsoleIO extends BaseIO
                 return sprintf('[%.1fMB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
             }, (array) $messages);
         }
+
+        if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
+            $this->output->getErrorOutput()->write($messages, $newline);
+            $this->lastMessageErr = join($newline ? "\n" : '', (array) $messages);
+            return;
+        }
+
         $this->output->write($messages, $newline);
         $this->lastMessage = join($newline ? "\n" : '', (array) $messages);
     }

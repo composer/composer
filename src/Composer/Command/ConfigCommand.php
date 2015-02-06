@@ -33,14 +33,24 @@ class ConfigCommand extends Command
     protected $config;
 
     /**
-     * @var Composer\Json\JsonFile
+     * @var JsonFile
      */
     protected $configFile;
 
     /**
-     * @var Composer\Config\JsonConfigSource
+     * @var JsonConfigSource
      */
     protected $configSource;
+
+    /**
+     * @var JsonFile
+     */
+    protected $authConfigFile;
+
+    /**
+     * @var JsonConfigSource
+     */
+    protected $authConfigSource;
 
     /**
      * {@inheritDoc}
@@ -247,7 +257,7 @@ EOT
                 $value = json_encode($value);
             }
 
-            $output->writeln($value);
+            $this->getIO()->write($value);
 
             return 0;
         }
@@ -474,9 +484,9 @@ EOT
             }
 
             if (is_string($rawVal) && $rawVal != $value) {
-                $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>');
+                $this->getIO()->write('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>');
             } else {
-                $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
+                $this->getIO()->write('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
             }
         }
     }

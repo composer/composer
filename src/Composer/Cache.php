@@ -65,7 +65,7 @@ class Cache
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
             if ($this->io->isDebug()) {
-                $this->io->write('Reading '.$this->root . $file.' from cache');
+                $this->io->writeError('Reading '.$this->root . $file.' from cache');
             }
 
             return file_get_contents($this->root . $file);
@@ -80,7 +80,7 @@ class Cache
             $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
 
             if ($this->io->isDebug()) {
-                $this->io->write('Writing '.$this->root . $file.' into cache');
+                $this->io->writeError('Writing '.$this->root . $file.' into cache');
             }
 
             try {
@@ -98,7 +98,7 @@ class Cache
                         @disk_free_space($this->root . dirname($file))
                     );
 
-                    $this->io->write($message);
+                    $this->io->writeError($message);
 
                     return false;
                 }
@@ -120,7 +120,7 @@ class Cache
             $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
 
             if ($this->io->isDebug()) {
-                $this->io->write('Writing '.$this->root . $file.' into cache');
+                $this->io->writeError('Writing '.$this->root . $file.' into cache');
             }
 
             return copy($source, $this->root . $file);
@@ -139,7 +139,7 @@ class Cache
             touch($this->root . $file);
 
             if ($this->io->isDebug()) {
-                $this->io->write('Reading '.$this->root . $file.' from cache');
+                $this->io->writeError('Reading '.$this->root . $file.' from cache');
             }
 
             return copy($this->root . $file, $target);

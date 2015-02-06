@@ -65,6 +65,14 @@ interface IOInterface
     public function write($messages, $newline = true);
 
     /**
+     * Writes a message to the error output.
+     *
+     * @param string|array $messages The message as an array of lines or a single string
+     * @param bool         $newline  Whether to add a newline or not
+     */
+    public function writeError($messages, $newline = true);
+
+    /**
      * Overwrites a previous message to the output.
      *
      * @param string|array $messages The message as an array of lines or a single string
