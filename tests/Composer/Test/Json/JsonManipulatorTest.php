@@ -595,6 +595,44 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testRemoveSubNodeFromRequire()
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "package": {
+                "require": {
+                    "this/should-not-end-up-in-root-require": "~2.0"
+                }
+            }
+        }
+    ],
+    "require": {
+        "package/a": "*",
+        "package/b": "*",
+        "package/c": "*"
+    }
+}');
+
+        $this->assertTrue($manipulator->removeSubNode('require', 'package/c'));
+        $this->assertEquals('{
+    "repositories": [
+        {
+            "package": {
+                "require": {
+                    "this/should-not-end-up-in-root-require": "~2.0"
+                }
+            }
+        }
+    ],
+    "require": {
+        "package/a": "*",
+        "package/b": "*"
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testAddRepositoryCanInitializeEmptyRepositories()
     {
         $manipulator = new JsonManipulator('{
