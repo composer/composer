@@ -242,7 +242,7 @@ class GitDriver extends VcsDriver
         }
 
         $process = new ProcessExecutor($io);
-        if($process->execute('git ls-remote --heads ' . ProcessExecutor::escape($url)) === 0) {
+        if($process->execute('git ls-remote --heads ' . ProcessExecutor::escape($url), $output) === 0) {
             return true;
         }
 
