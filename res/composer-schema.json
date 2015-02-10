@@ -284,7 +284,8 @@
         },
         "minimum-stability": {
             "type": ["string"],
-            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable."
+            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable.",
+            "pattern": "^dev|alpha|beta|rc|RC|stable$"
         },
         "prefer-stable": {
             "type": ["boolean"],
