@@ -91,6 +91,11 @@ option and providing a target directory (it can be an absolute or relative path)
 curl -sS https://getcomposer.org/installer | php -- --install-dir=bin
 ```
 
+On shared hosting, the correct PHP CLI interpreter may not be the default php.
+For example, on a 
+[Bluehost shared hosting account a different local environment setting](http://avantidevelopment.com/install-composer-on-bluehost/)
+ is required.
+
 #### Globally
 
 You can place this file anywhere you wish. If you put it in your `PATH`,
