@@ -21,6 +21,8 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    possible interferences with existing vendor installations or `composer.lock`
    entries.
 
+5. Try clearing Composer's cache by running `composer clear-cache`.
+
 ## Package not found
 
 1. Double-check you **don't have typos** in your `composer.json` or repository
@@ -37,6 +39,9 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 4. Use the **same vendor and package name** throughout all branches and tags of
    your repository, especially when maintaining a third party fork and using
    `replace`.
+
+5. If you are updating to a recently published version of a package, be aware that
+   Packagist has a delay of up to 1 minute before new packages are visible to Composer.
 
 ## Package not found on travis-ci.org
 
@@ -63,12 +68,14 @@ You can fix this by aliasing version 0.11 to 0.1:
 
 composer.json:
 
-    {
-        "require": {
-            "A": "0.2",
-            "B": "0.11 as 0.1"
-        }
+```json
+{
+    "require": {
+        "A": "0.2",
+        "B": "0.11 as 0.1"
     }
+}
+```
 
 See [aliases](aliases.md) for more information.
 
@@ -76,7 +83,7 @@ See [aliases](aliases.md) for more information.
 
 If composer shows memory errors on some commands:
 
-    PHP Fatal error:  Allowed memory size of XXXXXX bytes exhausted <...>
+`PHP Fatal error:  Allowed memory size of XXXXXX bytes exhausted <...>`
 
 The PHP `memory_limit` should be increased.
 
@@ -86,35 +93,67 @@ The PHP `memory_limit` should be increased.
 
 To get the current `memory_limit` value, run:
 
-    php -r "echo ini_get('memory_limit').PHP_EOL;"
+```sh
+php -r "echo ini_get('memory_limit').PHP_EOL;"
+```
 
 Try increasing the limit in your `php.ini` file (ex. `/etc/php5/cli/php.ini` for
 Debian-like systems):
 
-    ; Use -1 for unlimited or define an explicit value like 512M
-    memory_limit = -1
+```ini
+; Use -1 for unlimited or define an explicit value like 512M
+memory_limit = -1
+```
 
 Or, you can increase the limit with a command-line argument:
 
-    php -d memory_limit=-1 composer.phar <...>
+```sh
+php -d memory_limit=-1 composer.phar <...>
+```
 
 ## "The system cannot find the path specified" (Windows)
 
 1. Open regedit.
-2. Search for an ```AutoRun``` key inside ```HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor```
-   or ```HKEY_CURRENT_USER\Software\Microsoft\Command Processor```.
+2. Search for an `AutoRun` key inside `HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor`,
+   `HKEY_CURRENT_USER\Software\Microsoft\Command Processor`
+   or `HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Command Processor`.
 3. Check if it contains any path to non-existent file, if it's the case, just remove them.
 
-## API rate limit and two factor authentication
+## API rate limit and OAuth tokens
 
 Because of GitHub's rate limits on their API it can happen that Composer prompts
 for authentication asking your username and password so it can go ahead with its work.
-Unfortunately this will not work if you enabled two factor authentication on
-your GitHub account and to solve this issue you need to:
 
-1. [Create](https://github.com/settings/applications) an oauthtoken on GitHub.
+If you would prefer not to provide your GitHub credentials to Composer you can
+manually create a token using the following procedure:
+
+1. [Create](https://github.com/settings/applications) an OAuth token on GitHub.
 [Read more](https://github.com/blog/1509-personal-api-tokens) on this.
 
 2. Add it to the configuration running `composer config -g github-oauth.github.com <oauthtoken>`
 
 Now Composer should install/update without asking for authentication.
+
+## proc_open(): fork failed errors
+If composer shows proc_open() fork failed on some commands:
+
+`PHP Fatal error: Uncaught exception 'ErrorException' with message 'proc_open(): fork failed - Cannot allocate memory' in phar`
+
+This could be happening because the VPS runs out of memory and has no Swap space enabled.
+
+```sh
+free -m
+
+total used free shared buffers cached
+Mem: 2048 357 1690 0 0 237
+-/+ buffers/cache: 119 1928
+Swap: 0 0 0
+```
+
+To enable the swap you can use for example:
+
+```sh
+/bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
+/sbin/mkswap /var/swap.1
+/sbin/swapon /var/swap.1
+```

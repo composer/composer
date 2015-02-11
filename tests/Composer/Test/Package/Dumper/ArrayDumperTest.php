@@ -62,12 +62,33 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('dev', $config['minimum-stability']);
     }
 
+    public function testDumpAbandoned()
+    {
+        $this->packageExpects('isAbandoned', true);
+        $this->packageExpects('getReplacementPackage', true);
+
+        $config = $this->dumper->dump($this->package);
+
+        $this->assertSame(true, $config['abandoned']);
+    }
+
+    public function testDumpAbandonedReplacement()
+    {
+        $this->packageExpects('isAbandoned', true);
+        $this->packageExpects('getReplacementPackage', 'foo/bar');
+
+        $config = $this->dumper->dump($this->package);
+
+        $this->assertSame('foo/bar', $config['abandoned']);
+    }
+
     /**
      * @dataProvider getKeys
      */
     public function testKeys($key, $value, $method = null, $expectedValue = null)
     {
         $this->packageExpects('get'.ucfirst($method ?: $key), $value);
+        $this->packageExpects('isAbandoned', $value);
 
         $config = $this->dumper->dump($this->package);
 
@@ -194,6 +215,11 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
                 array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'conflicts',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+            ),
+            array(
+                'transport-options',
+                array('ssl' => array('local_cert' => '/opt/certs/test.pem')),
+                'transportOptions'
             )
         );
     }

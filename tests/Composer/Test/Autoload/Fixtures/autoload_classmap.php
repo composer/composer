@@ -6,5 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Acme\\Cake\\ClassMapBar' => $baseDir . '/src-cake/ClassMapBar.php',
     'ClassMapFoo' => $baseDir . '/composersrc/foo.php',
+    'Lala\\ClassMapMain' => $baseDir . '/src/Lala/ClassMapMain.php',
 );

@@ -57,7 +57,7 @@ class FilesystemRepository extends WritableArrayRepository
             throw new InvalidRepositoryException('Invalid repository data in '.$this->file->getPath().', packages could not be loaded: ['.get_class($e).'] '.$e->getMessage());
         }
 
-        $loader = new ArrayLoader();
+        $loader = new ArrayLoader(null, true);
         foreach ($packages as $packageData) {
             $package = $loader->load($packageData);
             $this->addPackage($package);

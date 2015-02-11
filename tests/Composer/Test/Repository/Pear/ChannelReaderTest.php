@@ -121,6 +121,7 @@ class ChannelReaderTest extends TestCase
         $expectedPackage->setType('pear-library');
         $expectedPackage->setDistType('file');
         $expectedPackage->setDescription('description');
+        $expectedPackage->setLicense(array('license'));
         $expectedPackage->setDistUrl("http://test.loc/get/sample-1.0.0.1.tgz");
         $expectedPackage->setAutoload(array('classmap' => array('')));
         $expectedPackage->setIncludePaths(array('/'));

@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 
 /**
  * Package installation manager.
@@ -126,7 +127,7 @@ class LibraryInstaller implements InstallerInterface
         $downloadPath = $this->getPackageBasePath($package);
         if (strpos($package->getName(), '/')) {
             $packageVendorDir = dirname($downloadPath);
-            if (is_dir($packageVendorDir) && !glob($packageVendorDir.'/*')) {
+            if (is_dir($packageVendorDir) && $this->filesystem->isDirEmpty($packageVendorDir)) {
                 @rmdir($packageVendorDir);
             }
         }
@@ -196,7 +197,7 @@ class LibraryInstaller implements InstallerInterface
         foreach ($binaries as $bin) {
             $binPath = $this->getInstallPath($package).'/'.$bin;
             if (!file_exists($binPath)) {
-                $this->io->write('    <warning>Skipped installation of '.$bin.' for package '.$package->getName().': file not found in package</warning>');
+                $this->io->write('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': file not found in package</warning>');
                 continue;
             }
 
@@ -215,7 +216,7 @@ class LibraryInstaller implements InstallerInterface
                     // is a fresh install of the vendor.
                     @chmod($link, 0777 & ~umask());
                 }
-                $this->io->write('    Skipped installation of '.$bin.' for package '.$package->getName().': name conflicts with an existing file');
+                $this->io->write('    Skipped installation of bin '.$bin.' for package '.$package->getName().': name conflicts with an existing file');
                 continue;
             }
             if (defined('PHP_WINDOWS_VERSION_BUILD')) {
@@ -225,7 +226,7 @@ class LibraryInstaller implements InstallerInterface
                     @chmod($link, 0777 & ~umask());
                     $link .= '.bat';
                     if (file_exists($link)) {
-                        $this->io->write('    Skipped installation of '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+                        $this->io->write('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
                     }
                 }
                 if (!file_exists($link)) {
@@ -259,10 +260,10 @@ class LibraryInstaller implements InstallerInterface
         foreach ($binaries as $bin) {
             $link = $this->binDir.'/'.basename($bin);
             if (is_link($link) || file_exists($link)) {
-                unlink($link);
+                $this->filesystem->unlink($link);
             }
             if (file_exists($link.'.bat')) {
-                unlink($link.'.bat');
+                $this->filesystem->unlink($link.'.bat');
             }
         }
     }
@@ -296,7 +297,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         return "@ECHO OFF\r\n".
-            "SET BIN_TARGET=%~dp0/".trim(escapeshellarg($binPath), '"')."\r\n".
+            "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape($binPath), '"')."\r\n".
             "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 
@@ -307,7 +308,7 @@ class LibraryInstaller implements InstallerInterface
         return "#!/usr/bin/env sh\n".
             'SRC_DIR="`pwd`"'."\n".
             'cd "`dirname "$0"`"'."\n".
-            'cd '.escapeshellarg(dirname($binPath))."\n".
+            'cd '.ProcessExecutor::escape(dirname($binPath))."\n".
             'BIN_TARGET="`pwd`/'.basename($binPath)."\"\n".
             'cd "$SRC_DIR"'."\n".
             '"$BIN_TARGET" "$@"'."\n";

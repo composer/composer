@@ -37,13 +37,13 @@ class GitDriver extends VcsDriver
      */
     public function initialize()
     {
-        if (static::isLocalUrl($this->url)) {
-            $this->repoDir = str_replace('file://', '', $this->url);
+        if (Filesystem::isLocalPath($this->url)) {
+            $this->repoDir = $this->url;
+            $cacheUrl = realpath($this->url);
         } else {
             $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
 
-            $util = new GitUtil;
-            $util->cleanEnv();
+            GitUtil::cleanEnv();
 
             $fs = new Filesystem();
             $fs->ensureDirectoryExists(dirname($this->repoDir));
@@ -56,32 +56,37 @@ class GitDriver extends VcsDriver
                 throw new \InvalidArgumentException('The source URL '.$this->url.' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
             }
 
+            $gitUtil = new GitUtil($this->io, $this->config, $this->process, $fs);
+
             // update the repo if it is a valid git repository
-            if (is_dir($this->repoDir) && 0 === $this->process->execute('git remote', $output, $this->repoDir)) {
-                if (0 !== $this->process->execute('git remote update --prune origin', $output, $this->repoDir)) {
-                    $this->io->write('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
+            if (is_dir($this->repoDir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $this->repoDir) && trim($output) === '.') {
+                try {
+                    $commandCallable = function ($url) {
+                        return sprintf('git remote set-url origin %s && git remote update --prune origin', ProcessExecutor::escape($url));
+                    };
+                    $gitUtil->runCommand($commandCallable, $this->url, $this->repoDir);
+                } catch (\Exception $e) {
+                    $this->io->write('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$e->getMessage().')</error>');
                 }
             } else {
                 // clean up directory and do a fresh clone into it
                 $fs->removeDirectory($this->repoDir);
 
-                $command = sprintf('git clone --mirror %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir));
-                if (0 !== $this->process->execute($command, $output)) {
-                    $output = $this->process->getErrorOutput();
+                $repoDir = $this->repoDir;
+                $commandCallable = function ($url) use ($repoDir) {
+                    return sprintf('git clone --mirror %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($repoDir));
+                };
 
-                    if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
-                        throw new \RuntimeException('Failed to clone '.$this->url.', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
-                    }
-
-                    throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it' . "\n\n" .$output);
-                }
+                $gitUtil->runCommand($commandCallable, $this->url, $this->repoDir, true);
             }
+
+            $cacheUrl = $this->url;
         }
 
         $this->getTags();
         $this->getBranches();
 
-        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url));
+        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $cacheUrl));
     }
 
     /**
@@ -142,7 +147,7 @@ class GitDriver extends VcsDriver
         }
 
         if (!isset($this->infoCache[$identifier])) {
-            $resource = sprintf('%s:composer.json', escapeshellarg($identifier));
+            $resource = sprintf('%s:composer.json', ProcessExecutor::escape($identifier));
             $this->process->execute(sprintf('git show %s', $resource), $composer, $this->repoDir);
 
             if (!trim($composer)) {
@@ -151,8 +156,8 @@ class GitDriver extends VcsDriver
 
             $composer = JsonFile::parseJson($composer, $resource);
 
-            if (!isset($composer['time'])) {
-                $this->process->execute(sprintf('git log -1 --format=%%at %s', escapeshellarg($identifier)), $output, $this->repoDir);
+            if (empty($composer['time'])) {
+                $this->process->execute(sprintf('git log -1 --format=%%at %s', ProcessExecutor::escape($identifier)), $output, $this->repoDir);
                 $date = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
@@ -197,8 +202,8 @@ class GitDriver extends VcsDriver
             $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
-                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
-                       $branches[$match[1]] = $match[2];
+                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match)) {
+                        $branches[$match[1]] = $match[2];
                     }
                 }
             }
@@ -219,13 +224,13 @@ class GitDriver extends VcsDriver
         }
 
         // local filesystem
-        if (static::isLocalUrl($url)) {
+        if (Filesystem::isLocalPath($url)) {
+            $url = Filesystem::getPlatformPath($url);
             if (!is_dir($url)) {
-                throw new \RuntimeException('Directory does not exist: '.$url);
+                return false;
             }
 
-            $process = new ProcessExecutor();
-            $url = str_replace('file://', '', $url);
+            $process = new ProcessExecutor($io);
             // check whether there is a git repo in that path
             if ($process->execute('git tag', $output, $url) === 0) {
                 return true;
@@ -236,7 +241,11 @@ class GitDriver extends VcsDriver
             return false;
         }
 
-        // TODO try to connect to the server
+        $process = new ProcessExecutor($io);
+        if($process->execute('git ls-remote --heads ' . ProcessExecutor::escape($url), $output) === 0) {
+            return true;
+        }
+
         return false;
     }
 }

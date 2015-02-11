@@ -14,11 +14,11 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
      *
      * @dataProvider getLoadClassTests
      *
-     * @param string $class The fully-qualified class name to test, without preceding namespace separator.
-     * @param bool $prependSeparator Whether to call ->loadClass() with a class name with preceding
-     *                               namespace separator, as it happens in PHP 5.3.0 - 5.3.2. See https://bugs.php.net/50731
+     * @param string $class            The fully-qualified class name to test, without preceding namespace separator.
+     * @param bool   $prependSeparator Whether to call ->loadClass() with a class name with preceding
+     *                                 namespace separator, as it happens in PHP 5.3.0 - 5.3.2. See https://bugs.php.net/50731
      */
-    public function testLoadClass($class, $prependSeparator = FALSE)
+    public function testLoadClass($class, $prependSeparator = false)
     {
         $loader = new ClassLoader();
         $loader->add('Namespaced\\', __DIR__ . '/Fixtures');
@@ -54,5 +54,14 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
             array('Pearlike_Bar', true),
             array('ShinyVendor\\ShinyPackage\\SubNamespace\\Bar', true),
         );
+    }
+
+    /**
+     * getPrefixes method should return empty array if ClassLoader does not have any psr-0 configuration
+     */
+    public function testGetPrefixesWithNoPSR0Configuration()
+    {
+        $loader = new ClassLoader();
+        $this->assertEmpty($loader->getPrefixes());
     }
 }

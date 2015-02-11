@@ -1,0 +1,36 @@
+--TEST--
+Abandoned packages are flagged
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "abandoned": true }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "c/c", "version": "1.0.0", "abandoned": "b/b" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0",
+        "c/c": "1.0.0"
+    }
+}
+--RUN--
+install
+--EXPECT-OUTPUT--
+<info>Loading composer repositories with package information</info>
+<info>Installing dependencies (including require-dev)</info>
+<error>Package a/a is abandoned, you should avoid using it. No replacement was suggested.</error>
+<error>Package c/c is abandoned, you should avoid using it. Use b/b instead.</error>
+<info>Writing lock file</info>
+<info>Generating autoload files</info>
+
+--EXPECT--
+Installing a/a (1.0.0)
+Installing c/c (1.0.0)

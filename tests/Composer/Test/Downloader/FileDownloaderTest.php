@@ -48,6 +48,10 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getDistUrl')
             ->will($this->returnValue('url'))
         ;
+        $packageMock->expects($this->once())
+            ->method('getDistUrls')
+            ->will($this->returnValue(array('url')))
+        ;
 
         $path = tempnam(sys_get_temp_dir(), 'c');
 
@@ -87,7 +91,15 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getDistUrl')
-            ->will($this->returnValue('http://example.com/script.js'))
+            ->will($this->returnValue($distUrl = 'http://example.com/script.js'))
+        ;
+        $packageMock->expects($this->once())
+            ->method('getDistUrls')
+            ->will($this->returnValue(array($distUrl)))
+        ;
+        $packageMock->expects($this->atLeastOnce())
+            ->method('getTransportOptions')
+            ->will($this->returnValue(array()))
         ;
 
         do {
@@ -97,7 +109,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         $ioMock = $this->getMock('Composer\IO\IOInterface');
         $ioMock->expects($this->any())
             ->method('write')
-            ->will($this->returnCallback(function($messages, $newline = true) use ($path) {
+            ->will($this->returnCallback(function ($messages, $newline = true) use ($path) {
                 if (is_file($path.'/script.js')) {
                     unlink($path.'/script.js');
                 }
@@ -159,11 +171,19 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getDistUrl')
-            ->will($this->returnValue('http://example.com/script.js'))
+            ->will($this->returnValue($distUrl = 'http://example.com/script.js'))
+        ;
+        $packageMock->expects($this->atLeastOnce())
+            ->method('getTransportOptions')
+            ->will($this->returnValue(array()))
         ;
         $packageMock->expects($this->any())
             ->method('getDistSha1Checksum')
             ->will($this->returnValue('invalid'))
+        ;
+        $packageMock->expects($this->once())
+            ->method('getDistUrls')
+            ->will($this->returnValue(array($distUrl)))
         ;
         $filesystem = $this->getMock('Composer\Util\Filesystem');
 

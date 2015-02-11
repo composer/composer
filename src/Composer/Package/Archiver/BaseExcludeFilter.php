@@ -82,17 +82,14 @@ abstract class BaseExcludeFilter
                 function ($line) use ($lineParser) {
                     $line = trim($line);
 
-                    $commentHash = strpos($line, '#');
-                    if ($commentHash !== false) {
-                        $line = substr($line, 0, $commentHash);
+                    if (!$line || 0 === strpos($line, '#')) {
+                        return;
                     }
 
-                    if ($line) {
-                        return call_user_func($lineParser, $line);
-                    }
-
-                    return null;
-                }, $lines),
+                    return call_user_func($lineParser, $line);
+                },
+                $lines
+            ),
             function ($pattern) {
                 return $pattern !== null;
             }
@@ -136,11 +133,15 @@ abstract class BaseExcludeFilter
         if (strlen($rule) && $rule[0] === '/') {
             $pattern .= '^/';
             $rule = substr($rule, 1);
-        } elseif (false === strpos($rule, '/') || strlen($rule) - 1 === strpos($rule, '/')) {
+        } elseif (strlen($rule) - 1 === strpos($rule, '/')) {
+            $pattern .= '/';
+            $rule = substr($rule, 0, -1);
+        } elseif (false === strpos($rule, '/')) {
             $pattern .= '/';
         }
 
-        $pattern .= substr(Finder\Glob::toRegex($rule), 2, -2);
+        // remove delimiters as well as caret (^) and dollar sign ($) from the regex
+        $pattern .= substr(Finder\Glob::toRegex($rule), 2, -2) . '(?=$|/)';
 
         return array($pattern . '#', $negate, false);
     }

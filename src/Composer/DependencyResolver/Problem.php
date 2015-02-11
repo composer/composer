@@ -80,7 +80,13 @@ class Problem
             $rule = $reason['rule'];
             $job = $reason['job'];
 
-            if ($job && $job['cmd'] === 'install' && empty($job['packages'])) {
+            if (isset($job['constraint'])) {
+                $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
+            } else {
+                $packages = array();
+            }
+
+            if ($job && $job['cmd'] === 'install' && empty($packages)) {
                 // handle php extensions
                 if (0 === stripos($job['packageName'], 'ext-')) {
                     $ext = substr($job['packageName'], 4);
@@ -124,7 +130,7 @@ class Problem
                 $messages[] = $this->jobToText($job);
             } elseif ($rule) {
                 if ($rule instanceof Rule) {
-                    $messages[] = $rule->getPrettyString($installedMap);
+                    $messages[] = $rule->getPrettyString($this->pool, $installedMap);
                 }
             }
         }
@@ -161,18 +167,25 @@ class Problem
     {
         switch ($job['cmd']) {
             case 'install':
-                if (!$job['packages']) {
+                $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
+                if (!$packages) {
                     return 'No package found to satisfy install request for '.$job['packageName'].$this->constraintToText($job['constraint']);
                 }
 
-                return 'Installation request for '.$job['packageName'].$this->constraintToText($job['constraint']).' -> satisfiable by '.$this->getPackageList($job['packages']).'.';
+                return 'Installation request for '.$job['packageName'].$this->constraintToText($job['constraint']).' -> satisfiable by '.$this->getPackageList($packages).'.';
             case 'update':
                 return 'Update request for '.$job['packageName'].$this->constraintToText($job['constraint']).'.';
             case 'remove':
                 return 'Removal request for '.$job['packageName'].$this->constraintToText($job['constraint']).'';
         }
 
-        return 'Job(cmd='.$job['cmd'].', target='.$job['packageName'].', packages=['.$this->getPackageList($job['packages']).'])';
+        if (isset($job['constraint'])) {
+            $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
+        } else {
+            $packages = array();
+        }
+
+        return 'Job(cmd='.$job['cmd'].', target='.$job['packageName'].', packages=['.$this->getPackageList($packages).'])';
     }
 
     protected function getPackageList($packages)

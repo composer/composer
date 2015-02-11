@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Repository\PlatformRepository;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -25,6 +26,8 @@ class RuleSetGenerator
     protected $rules;
     protected $jobs;
     protected $installedMap;
+    protected $whitelistedMap;
+    protected $addedMap;
 
     public function __construct(PolicyInterface $policy, Pool $pool)
     {
@@ -38,27 +41,27 @@ class RuleSetGenerator
      * This rule is of the form (-A|B|C), where B and C are the providers of
      * one requirement of the package A.
      *
-     * @param PackageInterface $package   The package with a requirement
-     * @param array            $providers The providers of the requirement
-     * @param int              $reason    A RULE_* constant describing the
-     *                                     reason for generating this rule
-     * @param mixed $reasonData Any data, e.g. the requirement name,
-     *                                     that goes with the reason
-     * @return Rule The generated rule or null if tautological
+     * @param  PackageInterface $package    The package with a requirement
+     * @param  array            $providers  The providers of the requirement
+     * @param  int              $reason     A RULE_* constant describing the
+     *                                      reason for generating this rule
+     * @param  mixed            $reasonData Any data, e.g. the requirement name,
+     *                                      that goes with the reason
+     * @return Rule             The generated rule or null if tautological
      */
     protected function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
     {
-        $literals = array(-$package->getId());
+        $literals = array(-$package->id);
 
         foreach ($providers as $provider) {
             // self fulfilling rule?
             if ($provider === $package) {
                 return null;
             }
-            $literals[] = $provider->getId();
+            $literals[] = $provider->id;
         }
 
-        return new Rule($this->pool, $literals, $reason, $reasonData);
+        return new Rule($literals, $reason, $reasonData);
     }
 
     /**
@@ -67,20 +70,20 @@ class RuleSetGenerator
      * The rule is (A|B|C) with A, B and C different packages. If the given
      * set of packages is empty an impossible rule is generated.
      *
-     * @param array $packages The set of packages to choose from
-     * @param int   $reason   A RULE_* constant describing the reason for
-     *                            generating this rule
-     * @param  array $job The job this rule was created from
+     * @param  array $packages The set of packages to choose from
+     * @param  int   $reason   A RULE_* constant describing the reason for
+     *                         generating this rule
+     * @param  array $job      The job this rule was created from
      * @return Rule  The generated rule
      */
     protected function createInstallOneOfRule(array $packages, $reason, $job)
     {
         $literals = array();
         foreach ($packages as $package) {
-            $literals[] = $package->getId();
+            $literals[] = $package->id;
         }
 
-        return new Rule($this->pool, $literals, $reason, $job['packageName'], $job);
+        return new Rule($literals, $reason, $job['packageName'], $job);
     }
 
     /**
@@ -88,15 +91,15 @@ class RuleSetGenerator
      *
      * The rule for a package A is (-A).
      *
-     * @param PackageInterface $package The package to be removed
-     * @param int              $reason  A RULE_* constant describing the
-     *                                     reason for generating this rule
-     * @param  array $job The job this rule was created from
-     * @return Rule  The generated rule
+     * @param  PackageInterface $package The package to be removed
+     * @param  int              $reason  A RULE_* constant describing the
+     *                                   reason for generating this rule
+     * @param  array            $job     The job this rule was created from
+     * @return Rule             The generated rule
      */
     protected function createRemoveRule(PackageInterface $package, $reason, $job)
     {
-        return new Rule($this->pool, array(-$package->getId()), $reason, $job['packageName'], $job);
+        return new Rule(array(-$package->id), $reason, $job['packageName'], $job);
     }
 
     /**
@@ -105,13 +108,13 @@ class RuleSetGenerator
      * The rule for conflicting packages A and B is (-A|-B). A is called the issuer
      * and B the provider.
      *
-     * @param PackageInterface $issuer   The package declaring the conflict
-     * @param PackageInterface $provider The package causing the conflict
-     * @param int              $reason   A RULE_* constant describing the
-     *                                     reason for generating this rule
-     * @param mixed $reasonData Any data, e.g. the package name, that
-     *                                     goes with the reason
-     * @return Rule The generated rule
+     * @param  PackageInterface $issuer     The package declaring the conflict
+     * @param  PackageInterface $provider   The package causing the conflict
+     * @param  int              $reason     A RULE_* constant describing the
+     *                                      reason for generating this rule
+     * @param  mixed            $reasonData Any data, e.g. the package name, that
+     *                                      goes with the reason
+     * @return Rule             The generated rule
      */
     protected function createConflictRule(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
     {
@@ -120,7 +123,7 @@ class RuleSetGenerator
             return null;
         }
 
-        return new Rule($this->pool, array(-$issuer->getId(), -$provider->getId()), $reason, $reasonData);
+        return new Rule(array(-$issuer->id, -$provider->id), $reason, $reasonData);
     }
 
     /**
@@ -141,20 +144,59 @@ class RuleSetGenerator
         $this->rules->add($newRule, $type);
     }
 
-    protected function addRulesForPackage(PackageInterface $package)
+    protected function whitelistFromPackage(PackageInterface $package)
     {
         $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
 
         while (!$workQueue->isEmpty()) {
             $package = $workQueue->dequeue();
-            if (isset($this->addedMap[$package->getId()])) {
+            if (isset($this->whitelistedMap[$package->id])) {
                 continue;
             }
 
-            $this->addedMap[$package->getId()] = true;
+            $this->whitelistedMap[$package->id] = true;
 
             foreach ($package->getRequires() as $link) {
+                $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint(), true);
+
+                foreach ($possibleRequires as $require) {
+                    $workQueue->enqueue($require);
+                }
+            }
+
+            $obsoleteProviders = $this->pool->whatProvides($package->getName(), null, true);
+
+            foreach ($obsoleteProviders as $provider) {
+                if ($provider === $package) {
+                    continue;
+                }
+
+                if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
+                    $workQueue->enqueue($provider);
+                }
+            }
+        }
+    }
+
+    protected function addRulesForPackage(PackageInterface $package, $ignorePlatformReqs)
+    {
+        $workQueue = new \SplQueue;
+        $workQueue->enqueue($package);
+
+        while (!$workQueue->isEmpty()) {
+            $package = $workQueue->dequeue();
+            if (isset($this->addedMap[$package->id])) {
+                continue;
+            }
+
+            $this->addedMap[$package->id] = true;
+
+            foreach ($package->getRequires() as $link) {
+                if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+                    continue;
+                }
+
                 $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                 $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, $possibleRequires, Rule::RULE_PACKAGE_REQUIRES, $link));
@@ -173,7 +215,7 @@ class RuleSetGenerator
             }
 
             // check obsoletes and implicit obsoletes of a package
-            $isInstalled = (isset($this->installedMap[$package->getId()]));
+            $isInstalled = (isset($this->installedMap[$package->id]));
 
             foreach ($package->getReplaces() as $link) {
                 $obsoleteProviders = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
@@ -221,41 +263,46 @@ class RuleSetGenerator
         return $impossible;
     }
 
-    /**
-     * Adds all rules for all update packages of a given package
-     *
-     * @param PackageInterface $package Rules for this package's updates are to
-     *                                   be added
-     */
-    private function addRulesForUpdatePackages(PackageInterface $package)
-    {
-        $updates = $this->policy->findUpdatePackages($this->pool, $this->installedMap, $package);
-
-        foreach ($updates as $update) {
-            $this->addRulesForPackage($update);
-        }
-    }
-
-    protected function addRulesForJobs()
+    protected function whitelistFromJobs()
     {
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'install':
-                    if ($job['packages']) {
-                        foreach ($job['packages'] as $package) {
-                            if (!isset($this->installedMap[$package->getId()])) {
-                                $this->addRulesForPackage($package);
+                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint'], true);
+                    foreach ($packages as $package) {
+                        $this->whitelistFromPackage($package);
+                    }
+                    break;
+            }
+        }
+    }
+
+    protected function addRulesForJobs($ignorePlatformReqs)
+    {
+        foreach ($this->jobs as $job) {
+            switch ($job['cmd']) {
+                case 'install':
+                    if (!$job['fixed'] && $ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
+                        continue;
+                    }
+
+                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
+                    if ($packages) {
+                        foreach ($packages as $package) {
+                            if (!isset($this->installedMap[$package->id])) {
+                                $this->addRulesForPackage($package, $ignorePlatformReqs);
                             }
                         }
 
-                        $rule = $this->createInstallOneOfRule($job['packages'], Rule::RULE_JOB_INSTALL, $job);
+                        $rule = $this->createInstallOneOfRule($packages, Rule::RULE_JOB_INSTALL, $job);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                     }
                     break;
                 case 'remove':
                     // remove all packages with this name including uninstalled
                     // ones to make sure none of them are picked as replacements
-                    foreach ($job['packages'] as $package) {
+                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
+                    foreach ($packages as $package) {
                         $rule = $this->createRemoveRule($package, Rule::RULE_JOB_REMOVE, $job);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                     }
@@ -264,18 +311,26 @@ class RuleSetGenerator
         }
     }
 
-    public function getRulesFor($jobs, $installedMap)
+    public function getRulesFor($jobs, $installedMap, $ignorePlatformReqs = false)
     {
         $this->jobs = $jobs;
         $this->rules = new RuleSet;
         $this->installedMap = $installedMap;
 
+        $this->whitelistedMap = array();
         foreach ($this->installedMap as $package) {
-            $this->addRulesForPackage($package);
-            $this->addRulesForUpdatePackages($package);
+            $this->whitelistFromPackage($package);
+        }
+        $this->whitelistFromJobs();
+
+        $this->pool->setWhitelist($this->whitelistedMap);
+
+        $this->addedMap = array();
+        foreach ($this->installedMap as $package) {
+            $this->addRulesForPackage($package, $ignorePlatformReqs);
         }
 
-        $this->addRulesForJobs();
+        $this->addRulesForJobs($ignorePlatformReqs);
 
         return $this->rules;
     }

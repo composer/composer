@@ -176,4 +176,65 @@ class FilesystemTest extends TestCase
             array('phar://c:../Foo', 'phar://c:../Foo'),
         );
     }
+
+    /**
+     * @link https://github.com/composer/composer/issues/3157
+     */
+    public function testUnlinkSymlinkedDirectory()
+    {
+        $tmp       = sys_get_temp_dir();
+        $basepath  = $tmp . "/composer_testdir";
+        $symlinked = $basepath . "/linked";
+        @mkdir($basepath . "/real", 0777, true);
+        touch($basepath . "/real/FILE");
+
+        $result = @symlink($basepath . "/real", $symlinked);
+
+        if (!$result) {
+            $this->markTestSkipped('Symbolic links for directories not supported on this platform');
+        }
+
+        if (!is_dir($symlinked)) {
+            $this->fail('Precondition assertion failed (is_dir is false on symbolic link to directory).');
+        }
+
+        $fs     = new Filesystem();
+        $result = $fs->unlink($symlinked);
+        $this->assertTrue($result);
+        $this->assertFalse(file_exists($symlinked));
+    }
+
+    /**
+     * @link https://github.com/composer/composer/issues/3144
+     */
+    public function testRemoveSymlinkedDirectoryWithTrailingSlash()
+    {
+        $tmp = sys_get_temp_dir();
+        $basepath = $tmp . "/composer_testdir";
+        @mkdir($basepath . "/real", 0777, true);
+        touch($basepath . "/real/FILE");
+        $symlinked              = $basepath . "/linked";
+        $symlinkedTrailingSlash = $symlinked . "/";
+
+        $result = @symlink($basepath . "/real", $symlinked);
+
+        if (!$result) {
+            $this->markTestSkipped('Symbolic links for directories not supported on this platform');
+        }
+
+        if (!is_dir($symlinked)) {
+            $this->fail('Precondition assertion failed (is_dir is false on symbolic link to directory).');
+        }
+
+        if (!is_dir($symlinkedTrailingSlash)) {
+            $this->fail('Precondition assertion failed (is_dir false w trailing slash).');
+        }
+
+        $fs = new Filesystem();
+
+        $result = $fs->removeDirectory($symlinkedTrailingSlash);
+        $this->assertTrue($result);
+        $this->assertFalse(file_exists($symlinkedTrailingSlash));
+        $this->assertFalse(file_exists($symlinked));
+    }
 }

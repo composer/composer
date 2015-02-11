@@ -39,7 +39,7 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
         $this->directory = sys_get_temp_dir() . '/' . uniqid();
         for ($i = 1; $i <= 4; $i++) {
             $filename = '/Fixtures/plugin-v'.$i.'/composer.json';
-            mkdir(dirname($this->directory . $filename), 0777, TRUE);
+            mkdir(dirname($this->directory . $filename), 0777, true);
             $this->packages[] = $loader->load(__DIR__ . $filename);
         }
 
@@ -76,7 +76,7 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
         $this->composer->setInstallationManager($im);
         $this->composer->setAutoloadGenerator($this->autoloadGenerator);
 
-        $this->pm = new PluginManager($this->composer, $this->io);
+        $this->pm = new PluginManager($this->io, $this->composer);
         $this->composer->setPluginManager($this->pm);
 
         $config->merge(array(
@@ -163,5 +163,22 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
 
         $plugins = $this->pm->getPlugins();
         $this->assertEquals('installer-v3', $plugins[1]->version);
+    }
+
+    public function testRegisterPluginOnlyOneTime()
+    {
+        $this->repository
+            ->expects($this->exactly(2))
+            ->method('getPackages')
+            ->will($this->returnValue(array()));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
+
+        $installer->install($this->repository, $this->packages[0]);
+        $installer->install($this->repository, clone $this->packages[0]);
+
+        $plugins = $this->pm->getPlugins();
+        $this->assertCount(1, $plugins);
+        $this->assertEquals('installer-v1', $plugins[0]->version);
     }
 }

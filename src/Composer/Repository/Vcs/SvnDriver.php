@@ -27,6 +27,9 @@ use Composer\Downloader\TransportException;
  */
 class SvnDriver extends VcsDriver
 {
+    /**
+     * @var Cache
+     */
     protected $cache;
     protected $baseUrl;
     protected $tags;
@@ -38,6 +41,7 @@ class SvnDriver extends VcsDriver
     protected $branchesPath = 'branches';
     protected $tagsPath     = 'tags';
     protected $packagePath   = '';
+    protected $cacheCredentials = true;
 
     /**
      * @var \Composer\Util\Svn
@@ -51,6 +55,8 @@ class SvnDriver extends VcsDriver
     {
         $this->url = $this->baseUrl = rtrim(self::normalizeUrl($this->url), '/');
 
+        SvnUtil::cleanEnv();
+
         if (isset($this->repoConfig['trunk-path'])) {
             $this->trunkPath = $this->repoConfig['trunk-path'];
         }
@@ -59,6 +65,9 @@ class SvnDriver extends VcsDriver
         }
         if (isset($this->repoConfig['tags-path'])) {
             $this->tagsPath = $this->repoConfig['tags-path'];
+        }
+        if (array_key_exists('svn-cache-credentials', $this->repoConfig)) {
+            $this->cacheCredentials = (bool) $this->repoConfig['svn-cache-credentials'];
         }
         if (isset($this->repoConfig['package-path'])) {
             $this->packagePath = '/' . trim($this->repoConfig['package-path'], '/');
@@ -139,7 +148,7 @@ class SvnDriver extends VcsDriver
 
             $composer = JsonFile::parseJson($output, $this->baseUrl . $resource . $rev);
 
-            if (!isset($composer['time'])) {
+            if (empty($composer['time'])) {
                 $output = $this->execute('svn info', $this->baseUrl . $path . $rev);
                 foreach ($this->process->splitLines($output) as $line) {
                     if ($line && preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {
@@ -194,10 +203,10 @@ class SvnDriver extends VcsDriver
         if (null === $this->branches) {
             $this->branches = array();
 
-            if (false === strpos($this->trunkPath, '/')) {
+            if (false === $this->trunkPath) {
                 $trunkParent = $this->baseUrl . '/';
             } else {
-                $trunkParent = $this->baseUrl . '/' . dirname($this->trunkPath) . '/';
+                $trunkParent = $this->baseUrl . '/' . $this->trunkPath;
             }
 
             $output = $this->execute('svn ls --verbose', $trunkParent);
@@ -205,12 +214,12 @@ class SvnDriver extends VcsDriver
                 foreach ($this->process->splitLines($output) as $line) {
                     $line = trim($line);
                     if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                        if (isset($match[1]) && isset($match[2]) && $match[2] === $this->trunkPath . '/') {
-                            $this->branches[$this->trunkPath] = $this->buildIdentifier(
+                        if (isset($match[1]) && isset($match[2]) && $match[2] === './') {
+                            $this->branches['trunk'] = $this->buildIdentifier(
                                 '/' . $this->trunkPath,
                                 $match[1]
                             );
-                            $this->rootIdentifier = $this->branches[$this->trunkPath];
+                            $this->rootIdentifier = $this->branches['trunk'];
                             break;
                         }
                     }
@@ -250,7 +259,7 @@ class SvnDriver extends VcsDriver
         }
 
         // proceed with deep check for local urls since they are fast to process
-        if (!$deep && !static::isLocalUrl($url)) {
+        if (!$deep && !Filesystem::isLocalPath($url)) {
             return false;
         }
 
@@ -304,7 +313,8 @@ class SvnDriver extends VcsDriver
     protected function execute($command, $url)
     {
         if (null === $this->util) {
-            $this->util = new SvnUtil($this->baseUrl, $this->io, $this->process);
+            $this->util = new SvnUtil($this->baseUrl, $this->io, $this->config, $this->process);
+            $this->util->setCacheCredentials($this->cacheCredentials);
         }
 
         try {

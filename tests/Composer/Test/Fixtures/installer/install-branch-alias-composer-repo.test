@@ -1,0 +1,19 @@
+--TEST--
+Installing branch aliased package from a Composer repository.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "file://install-branch-alias-composer-repo"
+        }
+    ],
+    "require": {
+        "a/a": "3.2.*@dev"
+    }
+}
+--RUN--
+install
+--EXPECT--
+Installing a/a (dev-foobar abcdef0)
+Marking a/a (3.2.x-dev abcdef0) as installed, alias of a/a (dev-foobar abcdef0)

@@ -13,7 +13,6 @@
 namespace Composer\Test\Package\Archiver;
 
 use Composer\Factory;
-use Composer\Package\Archiver;
 use Composer\Package\PackageInterface;
 
 class ArchiveManagerTest extends ArchiverTest

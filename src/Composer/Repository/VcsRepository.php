@@ -265,7 +265,7 @@ class VcsRepository extends ArrayRepository
         }
     }
 
-    private function preProcess(VcsDriverInterface $driver, array $data, $identifier)
+    protected function preProcess(VcsDriverInterface $driver, array $data, $identifier)
     {
         // keep the name of the main identifier for all packages
         $data['name'] = $this->packageName ?: $data['name'];

@@ -53,9 +53,11 @@ class ConfigCommand extends Command
             ->setDefinition(array(
                 new InputOption('global', 'g', InputOption::VALUE_NONE, 'Apply command to the global config file'),
                 new InputOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor'),
+                new InputOption('auth', 'a', InputOption::VALUE_NONE, 'Affect auth config file (only used for --editor)'),
                 new InputOption('unset', null, InputOption::VALUE_NONE, 'Unset the given setting-key'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json', 'composer.json'),
+                new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
@@ -98,11 +100,13 @@ EOT
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
+        parent::initialize($input, $output);
+
         if ($input->getOption('global') && 'composer.json' !== $input->getOption('file')) {
             throw new \RuntimeException('--file and --global can not be combined');
         }
 
-        $this->config = Factory::createConfig();
+        $this->config = Factory::createConfig($this->getIO());
 
         // Get the local composer.json, global config.json, or if the user
         // passed in a file to use
@@ -113,15 +117,27 @@ EOT
         $this->configFile = new JsonFile($configFile);
         $this->configSource = new JsonConfigSource($this->configFile);
 
+        $authConfigFile = $input->getOption('global')
+            ? ($this->config->get('home') . '/auth.json')
+            : dirname(realpath($input->getOption('file'))) . '/auth.json';
+
+        $this->authConfigFile = new JsonFile($authConfigFile);
+        $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);
+
         // initialize the global file if it's not there
         if ($input->getOption('global') && !$this->configFile->exists()) {
             touch($this->configFile->getPath());
             $this->configFile->write(array('config' => new \ArrayObject));
             @chmod($this->configFile->getPath(), 0600);
         }
+        if ($input->getOption('global') && !$this->authConfigFile->exists()) {
+            touch($this->authConfigFile->getPath());
+            $this->authConfigFile->write(array('http-basic' => new \ArrayObject, 'github-oauth' => new \ArrayObject));
+            @chmod($this->authConfigFile->getPath(), 0600);
+        }
 
         if (!$this->configFile->exists()) {
-            throw new \RuntimeException('No composer.json found in the current directory');
+            throw new \RuntimeException(sprintf('File "%s" cannot be found in the current directory', $configFile));
         }
     }
 
@@ -146,13 +162,15 @@ EOT
                 }
             }
 
-            system($editor . ' ' . $this->configFile->getPath() . (defined('PHP_WINDOWS_VERSION_BUILD') ? '':  ' > `tty`'));
+            $file = $input->getOption('auth') ? $this->authConfigFile->getPath() : $this->configFile->getPath();
+            system($editor . ' ' . $file . (defined('PHP_WINDOWS_VERSION_BUILD') ? '' : ' > `tty`'));
 
             return 0;
         }
 
         if (!$input->getOption('global')) {
             $this->config->merge($this->configFile->read());
+            $this->config->merge(array('config' => $this->authConfigFile->exists() ? $this->authConfigFile->read() : array()));
         }
 
         // List the configuration of the file settings
@@ -203,7 +221,7 @@ EOT
 
                 $value = $data;
             } elseif (isset($data['config'][$settingKey])) {
-                $value = $data['config'][$settingKey];
+                $value = $this->config->get($settingKey, $input->getOption('absolute') ? 0 : Config::RELATIVE_PATHS);
             } else {
                 throw new \RuntimeException($settingKey.' is not defined');
             }
@@ -236,16 +254,29 @@ EOT
         }
 
         // handle github-oauth
-        if (preg_match('/^github-oauth\.(.+)/', $settingKey, $matches)) {
+        if (preg_match('/^(github-oauth|http-basic)\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
-                return $this->configSource->removeConfigSetting('github-oauth.'.$matches[1]);
+                $this->authConfigSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+
+                return;
             }
 
-            if (1 !== count($values)) {
-                throw new \RuntimeException('Too many arguments, expected only one token');
+            if ($matches[1] === 'github-oauth') {
+                if (1 !== count($values)) {
+                    throw new \RuntimeException('Too many arguments, expected only one token');
+                }
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], $values[0]);
+            } elseif ($matches[1] === 'http-basic') {
+                if (2 !== count($values)) {
+                    throw new \RuntimeException('Expected two arguments (username, password), got '.count($values));
+                }
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'password' => $values[1]));
             }
 
-            return $this->configSource->addConfigSetting('github-oauth.'.$matches[1], $values[0]);
+            return;
         }
 
         $booleanValidator = function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); };
@@ -258,6 +289,16 @@ EOT
             'preferred-install' => array(
                 function ($val) { return in_array($val, array('auto', 'source', 'dist'), true); },
                 function ($val) { return $val; }
+            ),
+            'store-auths' => array(
+                function ($val) { return in_array($val, array('true', 'false', 'prompt'), true); },
+                function ($val) {
+                    if ('prompt' === $val) {
+                        return 'prompt';
+                    }
+
+                    return $val !== 'false' && (bool) $val;
+                }
             ),
             'notify-on-install' => array($booleanValidator, $booleanNormalizer),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
@@ -284,7 +325,9 @@ EOT
             ),
             'autoloader-suffix' => array('is_string', function ($val) { return $val === 'null' ? null : $val; }),
             'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
+            'classmap-authoritative' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
+            'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
         );
         $multiConfigValues = array(
             'github-protocols' => array(
@@ -294,8 +337,8 @@ EOT
                     }
 
                     foreach ($vals as $val) {
-                        if (!in_array($val, array('git', 'https'))) {
-                            return 'valid protocols include: git, https';
+                        if (!in_array($val, array('git', 'https', 'ssh'))) {
+                            return 'valid protocols include: git, https, ssh';
                         }
                     }
 
@@ -320,7 +363,7 @@ EOT
         );
 
         foreach ($uniqueConfigValues as $name => $callbacks) {
-             if ($settingKey === $name) {
+            if ($settingKey === $name) {
                 if ($input->getOption('unset')) {
                     return $this->configSource->removeConfigSetting($settingKey);
                 }

@@ -23,9 +23,6 @@ class ComposerAutoloaderInitFilesAutoloadOrder
         self::$loader = $loader = new \Composer\Autoload\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInitFilesAutoloadOrder', 'loadClassLoader'));
 
-        $vendorDir = dirname(__DIR__);
-        $baseDir = dirname($vendorDir);
-
         $map = require __DIR__ . '/autoload_namespaces.php';
         foreach ($map as $namespace => $path) {
             $loader->set($namespace, $path);
@@ -45,9 +42,14 @@ class ComposerAutoloaderInitFilesAutoloadOrder
 
         $includeFiles = require __DIR__ . '/autoload_files.php';
         foreach ($includeFiles as $file) {
-            require $file;
+            composerRequireFilesAutoloadOrder($file);
         }
 
         return $loader;
     }
+}
+
+function composerRequireFilesAutoloadOrder($file)
+{
+    require $file;
 }

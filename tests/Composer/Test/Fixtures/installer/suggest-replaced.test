@@ -6,7 +6,7 @@ Suggestions are not displayed for packages if they are replaced
         {
             "type": "package",
             "package": [
-                { "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" } },
+                { "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" }, "require": { "c/c": "*" } },
                 { "name": "c/c", "version": "1.0.0", "replace": { "b/b": "1.0.0" } }
             ]
         }
@@ -20,10 +20,10 @@ Suggestions are not displayed for packages if they are replaced
 install
 --EXPECT-OUTPUT--
 <info>Loading composer repositories with package information</info>
-<info>Installing dependencies</info>
+<info>Installing dependencies (including require-dev)</info>
 <info>Writing lock file</info>
 <info>Generating autoload files</info>
 
 --EXPECT--
-Installing a/a (1.0.0)
 Installing c/c (1.0.0)
+Installing a/a (1.0.0)

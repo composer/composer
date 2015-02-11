@@ -74,6 +74,49 @@ class ArtifactRepository extends ArrayRepository
         }
     }
 
+    /**
+     * Find a file by name, returning the one that has the shortest path.
+     *
+     * @param  \ZipArchive $zip
+     * @param $filename
+     * @return bool|int
+     */
+    private function locateFile(\ZipArchive $zip, $filename)
+    {
+        $indexOfShortestMatch = false;
+        $lengthOfShortestMatch = -1;
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            if (strcmp(basename($stat['name']), $filename) === 0) {
+                $directoryName = dirname($stat['name']);
+                if ($directoryName == '.') {
+                    //if composer.json is in root directory
+                    //it has to be the one to use.
+                    return $i;
+                }
+
+                if (strpos($directoryName, '\\') !== false ||
+                   strpos($directoryName, '/') !== false) {
+                    //composer.json files below first directory are rejected
+                    continue;
+                }
+
+                $length = strlen($stat['name']);
+                if ($indexOfShortestMatch == false || $length < $lengthOfShortestMatch) {
+                    //Check it's not a directory.
+                    $contents = $zip->getFromIndex($i);
+                    if ($contents !== false) {
+                        $indexOfShortestMatch = $i;
+                        $lengthOfShortestMatch = $length;
+                    }
+                }
+            }
+        }
+
+        return $indexOfShortestMatch;
+    }
+
     private function getComposerInformation(\SplFileInfo $file)
     {
         $zip = new \ZipArchive();
@@ -83,7 +126,7 @@ class ArtifactRepository extends ArrayRepository
             return false;
         }
 
-        $foundFileIndex = $zip->locateName('composer.json', \ZipArchive::FL_NODIR);
+        $foundFileIndex = $this->locateFile($zip, 'composer.json');
         if (false === $foundFileIndex) {
             return false;
         }
@@ -96,8 +139,7 @@ class ArtifactRepository extends ArrayRepository
         $package = JsonFile::parseJson($json, $composerFile);
         $package['dist'] = array(
             'type' => 'zip',
-            'url' => $file->getRealPath(),
-            'reference' => $file->getBasename(),
+            'url' => $file->getPathname(),
             'shasum' => sha1_file($file->getRealPath())
         );
 

@@ -83,7 +83,28 @@ class Cache
                 $this->io->write('Writing '.$this->root . $file.' into cache');
             }
 
-            return file_put_contents($this->root . $file, $contents);
+            try {
+                return file_put_contents($this->root . $file, $contents);
+            } catch (\ErrorException $e) {
+                if (preg_match('{^file_put_contents\(\): Only ([0-9]+) of ([0-9]+) bytes written}', $e->getMessage(), $m)) {
+                    // Remove partial file.
+                    unlink($this->root . $file);
+
+                    $message = sprintf(
+                        '<warning>Writing %1$s into cache failed after %2$u of %3$u bytes written, only %4$u bytes of free space available</warning>',
+                        $this->root . $file,
+                        $m[1],
+                        $m[2],
+                        @disk_free_space($this->root . dirname($file))
+                    );
+
+                    $this->io->write($message);
+
+                    return false;
+                }
+
+                throw $e;
+            }
         }
 
         return false;
@@ -129,14 +150,14 @@ class Cache
 
     public function gcIsNecessary()
     {
-       return (!self::$cacheCollected && !mt_rand(0, 50));
+        return (!self::$cacheCollected && !mt_rand(0, 50));
     }
 
     public function remove($file)
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
-            return unlink($this->root . $file);
+            return $this->filesystem->unlink($this->root . $file);
         }
 
         return false;
@@ -144,28 +165,32 @@ class Cache
 
     public function gc($ttl, $maxSize)
     {
-        $expire = new \DateTime();
-        $expire->modify('-'.$ttl.' seconds');
+        if ($this->enabled) {
+            $expire = new \DateTime();
+            $expire->modify('-'.$ttl.' seconds');
 
-        $finder = $this->getFinder()->date('until '.$expire->format('Y-m-d H:i:s'));
-        foreach ($finder as $file) {
-            unlink($file->getRealPath());
-        }
-
-        $totalSize = $this->filesystem->size($this->root);
-        if ($totalSize > $maxSize) {
-            $iterator = $this->getFinder()->sortByAccessedTime()->getIterator();
-            while ($totalSize > $maxSize && $iterator->valid()) {
-                $filepath = $iterator->current()->getRealPath();
-                $totalSize -= $this->filesystem->size($filepath);
-                unlink($filepath);
-                $iterator->next();
+            $finder = $this->getFinder()->date('until '.$expire->format('Y-m-d H:i:s'));
+            foreach ($finder as $file) {
+                $this->filesystem->unlink($file->getPathname());
             }
+
+            $totalSize = $this->filesystem->size($this->root);
+            if ($totalSize > $maxSize) {
+                $iterator = $this->getFinder()->sortByAccessedTime()->getIterator();
+                while ($totalSize > $maxSize && $iterator->valid()) {
+                    $filepath = $iterator->current()->getPathname();
+                    $totalSize -= $this->filesystem->size($filepath);
+                    $this->filesystem->unlink($filepath);
+                    $iterator->next();
+                }
+            }
+
+            self::$cacheCollected = true;
+
+            return true;
         }
 
-        self::$cacheCollected = true;
-
-        return true;
+        return false;
     }
 
     public function sha1($file)

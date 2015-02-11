@@ -48,8 +48,8 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->once())
-            ->method('getSourceUrl')
-            ->will($this->returnValue('https://mercurial.dev/l3l0/composer'));
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://mercurial.dev/l3l0/composer')));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
 
         $expectedGitCommand = $this->getCmd('hg clone \'https://mercurial.dev/l3l0/composer\' \'composerPath\'');
@@ -93,8 +93,8 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->any())
-            ->method('getSourceUrl')
-            ->will($this->returnValue('https://github.com/l3l0/composer'));
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://github.com/l3l0/composer')));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
 
         $expectedHgCommand = $this->getCmd("hg st");

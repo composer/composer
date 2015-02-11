@@ -22,18 +22,17 @@ use Composer\Util\Perforce;
 class PerforceDownloader extends VcsDownloader
 {
     protected $perforce;
-    protected $perforceInjected = false;
 
     /**
      * {@inheritDoc}
      */
-    public function doDownload(PackageInterface $package, $path)
+    public function doDownload(PackageInterface $package, $path, $url)
     {
         $ref = $package->getSourceReference();
-        $label = $package->getPrettyVersion();
+        $label = $this->getLabelFromSourceReference($ref);
 
         $this->io->write('    Cloning ' . $ref);
-        $this->initPerforce($package, $path);
+        $this->initPerforce($package, $path, $url);
         $this->perforce->setStream($ref);
         $this->perforce->p4Login($this->io);
         $this->perforce->writeP4ClientSpec();
@@ -42,10 +41,21 @@ class PerforceDownloader extends VcsDownloader
         $this->perforce->cleanupClientSpec();
     }
 
-    public function initPerforce($package, $path)
+    private function getLabelFromSourceReference($ref)
     {
-        if ($this->perforce) {
+        $pos = strpos($ref,'@');
+        if (false !== $pos) {
+            return substr($ref, $pos + 1);
+        }
+
+        return null;
+    }
+
+    public function initPerforce($package, $path, $url)
+    {
+        if (!empty($this->perforce)) {
             $this->perforce->initializePath($path);
+
             return;
         }
 
@@ -54,7 +64,7 @@ class PerforceDownloader extends VcsDownloader
         if ($repository instanceof VcsRepository) {
             $repoConfig = $this->getRepoConfig($repository);
         }
-        $this->perforce = Perforce::create($repoConfig, $package->getSourceUrl(), $path);
+        $this->perforce = Perforce::create($repoConfig, $url, $path, $this->process, $this->io);
     }
 
     private function getRepoConfig(VcsRepository $repository)
@@ -65,9 +75,9 @@ class PerforceDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
+    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
-        $this->doDownload($target, $path);
+        $this->doDownload($target, $path, $url);
     }
 
     /**

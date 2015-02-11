@@ -27,6 +27,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     protected $homepage;
     protected $scripts = array();
     protected $support = array();
+    protected $abandoned = false;
 
     /**
      * @param array $scripts
@@ -47,7 +48,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * Set the repositories
      *
-     * @param string $repositories
+     * @param array $repositories
      */
     public function setRepositories($repositories)
     {
@@ -168,5 +169,31 @@ class CompletePackage extends Package implements CompletePackageInterface
     public function getSupport()
     {
         return $this->support;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isAbandoned()
+    {
+        return (boolean) $this->abandoned;
+    }
+
+    /**
+     * @param boolean|string $abandoned
+     */
+    public function setAbandoned($abandoned)
+    {
+        $this->abandoned = $abandoned;
+    }
+
+    /**
+     * If the package is abandoned and has a suggested replacement, this method returns it
+     *
+     * @return string|null
+     */
+    public function getReplacementPackage()
+    {
+        return is_string($this->abandoned) ? $this->abandoned : null;
     }
 }

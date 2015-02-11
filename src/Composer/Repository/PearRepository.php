@@ -57,7 +57,7 @@ class PearRepository extends ArrayRepository
 
         $this->url = rtrim($repoConfig['url'], '/');
         $this->io = $io;
-        $this->rfs = $rfs ?: new RemoteFilesystem($this->io);
+        $this->rfs = $rfs ?: new RemoteFilesystem($this->io, $config);
         $this->vendorAlias = isset($repoConfig['vendor-alias']) ? $repoConfig['vendor-alias'] : null;
         $this->versionParser = new VersionParser();
     }
@@ -160,6 +160,7 @@ class PearRepository extends ArrayRepository
                 $package = new CompletePackage($composerPackageName, $normalizedVersion, $version);
                 $package->setType('pear-library');
                 $package->setDescription($packageDefinition->getDescription());
+                $package->setLicense(array($packageDefinition->getLicense()));
                 $package->setDistType('file');
                 $package->setDistUrl($distUrl);
                 $package->setAutoload(array('classmap' => array('')));

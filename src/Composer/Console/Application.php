@@ -56,11 +56,11 @@ class Application extends BaseApplication
 
     public function __construct()
     {
-        if (function_exists('ini_set')) {
+        if (function_exists('ini_set') && extension_loaded('xdebug')) {
             ini_set('xdebug.show_exception_trace', false);
             ini_set('xdebug.scream', false);
-
         }
+
         if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
             date_default_timezone_set(@date_default_timezone_get());
         }
@@ -94,9 +94,18 @@ class Application extends BaseApplication
             $output->writeln('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
         }
 
-        if (defined('COMPOSER_DEV_WARNING_TIME') && $this->getCommandName($input) !== 'self-update' && $this->getCommandName($input) !== 'selfupdate') {
-            if (time() > COMPOSER_DEV_WARNING_TIME) {
-                $output->writeln(sprintf('<warning>Warning: This development build of composer is over 30 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
+        if (defined('COMPOSER_DEV_WARNING_TIME')) {
+            $commandName = '';
+            if ($name = $this->getCommandName($input)) {
+                try {
+                    $commandName = $this->find($name)->getName();
+                } catch (\InvalidArgumentException $e) {
+                }
+            }
+            if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
+                if (time() > COMPOSER_DEV_WARNING_TIME) {
+                    $output->writeln(sprintf('<warning>Warning: This development build of composer is over 30 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
+                }
             }
         }
 
@@ -104,14 +113,34 @@ class Application extends BaseApplication
             $input->setInteractive(false);
         }
 
-        if ($input->hasParameterOption('--profile')) {
-            $startTime = microtime(true);
-            $this->io->enableDebugging($startTime);
-        }
-
+        // switch working dir
         if ($newWorkDir = $this->getNewWorkingDir($input)) {
             $oldWorkingDir = getcwd();
             chdir($newWorkDir);
+            if ($output->getVerbosity() >= 4) {
+                $output->writeln('Changed CWD to ' . getcwd());
+            }
+        }
+
+        // add non-standard scripts as own commands
+        $file = Factory::getComposerFile();
+        if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
+            if (isset($composer['scripts']) && is_array($composer['scripts'])) {
+                foreach ($composer['scripts'] as $script => $dummy) {
+                    if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
+                        if ($this->has($script)) {
+                            $output->writeln('<warning>A script named '.$script.' would override a native Composer function and has been skipped</warning>');
+                        } else {
+                            $this->add(new Command\ScriptAliasCommand($script));
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($input->hasParameterOption('--profile')) {
+            $startTime = microtime(true);
+            $this->io->enableDebugging($startTime);
         }
 
         $result = parent::doRun($input, $output);
@@ -129,6 +158,7 @@ class Application extends BaseApplication
 
     /**
      * @param  InputInterface    $input
+     * @return string
      * @throws \RuntimeException
      */
     private function getNewWorkingDir(InputInterface $input)
@@ -147,18 +177,30 @@ class Application extends BaseApplication
     public function renderException($exception, $output)
     {
         try {
-            $composer = $this->getComposer(false);
+            $composer = $this->getComposer(false, true);
             if ($composer) {
                 $config = $composer->getConfig();
 
                 $minSpaceFree = 1024*1024;
                 if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
                     || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+                    || (($df = @disk_free_space($dir = sys_get_temp_dir())) !== false && $df < $minSpaceFree)
                 ) {
                     $output->writeln('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>');
                 }
             }
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
+
+        if (defined('PHP_WINDOWS_VERSION_BUILD') && false !== strpos($exception->getMessage(), 'The system cannot find the path specified')) {
+            $output->writeln('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>');
+            $output->writeln('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#-the-system-cannot-find-the-path-specified-windows- for details</error>');
+        }
+
+        if (false !== strpos($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
+            $output->writeln('<error>The following exception is caused by a lack of memory and not having swap configured</error>');
+            $output->writeln('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>');
+        }
 
         return parent::renderException($exception, $output);
     }
@@ -184,10 +226,17 @@ class Application extends BaseApplication
                 $message = $e->getMessage() . ':' . PHP_EOL . $errors;
                 throw new JsonValidationException($message);
             }
-
         }
 
         return $this->composer;
+    }
+
+    /**
+     * Removes the cached composer instance
+     */
+    public function resetComposer()
+    {
+        $this->composer = null;
     }
 
     /**
@@ -227,6 +276,9 @@ class Application extends BaseApplication
         $commands[] = new Command\RunScriptCommand();
         $commands[] = new Command\LicensesCommand();
         $commands[] = new Command\GlobalCommand();
+        $commands[] = new Command\ClearCacheCommand();
+        $commands[] = new Command\RemoveCommand();
+        $commands[] = new Command\HomeCommand();
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();
@@ -240,6 +292,16 @@ class Application extends BaseApplication
      */
     public function getLongVersion()
     {
+        if (Composer::BRANCH_ALIAS_VERSION) {
+            return sprintf(
+                '<info>%s</info> version <comment>%s (%s)</comment> %s',
+                $this->getName(),
+                Composer::BRANCH_ALIAS_VERSION,
+                $this->getVersion(),
+                Composer::RELEASE_DATE
+            );
+        }
+
         return parent::getLongVersion() . ' ' . Composer::RELEASE_DATE;
     }
 

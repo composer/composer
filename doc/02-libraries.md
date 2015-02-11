@@ -12,12 +12,14 @@ libraries is that your project is a package without a name.
 In order to make that package installable you need to give it a name. You do
 this by adding a `name` to `composer.json`:
 
-    {
-        "name": "acme/hello-world",
-        "require": {
-            "monolog/monolog": "1.0.*"
-        }
+```json
+{
+    "name": "acme/hello-world",
+    "require": {
+        "monolog/monolog": "1.0.*"
     }
+}
+```
 
 In this case the project name is `acme/hello-world`, where `acme` is the
 vendor name. Supplying a vendor name is mandatory.
@@ -33,8 +35,11 @@ installed on the system but are not actually installable by Composer. This
 includes PHP itself, PHP extensions and some system libraries.
 
 * `php` represents the PHP version of the user, allowing you to apply
-   constraints, e.g. `>=5.4.0`. To require a 64bit version of php, you can
-   require the `php-64bit` package.
+  constraints, e.g. `>=5.4.0`. To require a 64bit version of php, you can
+  require the `php-64bit` package.
+
+* `hhvm` represents the version of the HHVM runtime (aka HipHop Virtual
+  Machine) and allows you to apply a constraint, e.g., '>=2.3.3'.
 
 * `ext-<name>` allows you to require PHP extensions (includes core
   extensions). Versioning can be quite inconsistent here, so it's often
@@ -42,8 +47,8 @@ includes PHP itself, PHP extensions and some system libraries.
   package name is `ext-gd`.
 
 * `lib-<name>` allows constraints to be made on versions of libraries used by
-  PHP. The following are available: `curl`, `iconv`, `libxml`, `openssl`,
-  `pcre`, `uuid`, `xsl`.
+  PHP. The following are available: `curl`, `iconv`, `icu`, `libxml`,
+  `openssl`, `pcre`, `uuid`, `xsl`.
 
 You can use `composer show --platform` to get a list of your locally available
 platform packages.
@@ -59,9 +64,11 @@ version numbers are extracted from these.
 If you are creating packages by hand and really have to specify it explicitly,
 you can just add a `version` field:
 
-    {
-        "version": "1.0.0"
-    }
+```json
+{
+    "version": "1.0.0"
+}
+```
 
 > **Note:** You should avoid specifying the version field explicitly, because
 > for tags the value must match the tag name.
@@ -70,17 +77,17 @@ you can just add a `version` field:
 
 For every tag that looks like a version, a package version of that tag will be
 created. It should match 'X.Y.Z' or 'vX.Y.Z', with an optional suffix
-of `-patch`, `-alpha`, `-beta` or `-RC`. The suffixes can also be followed by
-a number.
+of `-patch` (`-p`), `-alpha` (`-a`), `-beta` (`-b`) or `-RC`. The suffixes
+can also be followed by a number.
 
 Here are a few examples of valid tag names:
 
-    1.0.0
-    v1.0.0
-    1.10.5-RC1
-    v4.4.4beta2
-    v2.0.0-alpha
-    v2.0.4-p1
+- 1.0.0
+- v1.0.0
+- 1.10.5-RC1
+- v4.4.4-beta2
+- v2.0.0-alpha
+- v2.0.4-p1
 
 > **Note:** Even if your tag is prefixed with `v`, a [version constraint](01-basic-usage.md#package-versions)
 > in a `require` statement has to be specified without prefix
@@ -98,9 +105,9 @@ like a version, it will be `dev-{branchname}`. `master` results in a
 
 Here are some examples of version branch names:
 
-    1.x
-    1.0 (equals 1.0.x)
-    1.1.x
+- 1.x
+- 1.0 (equals 1.0.x)
+- 1.1.x
 
 > **Note:** When you install a development version, it will be automatically
 > pulled from its `source`. See the [`install`](03-cli.md#install) command
@@ -137,12 +144,14 @@ project locally. We will call it `acme/blog`. This blog will depend on
 accomplish this by creating a new `blog` directory somewhere, containing a
 `composer.json`:
 
-    {
-        "name": "acme/blog",
-        "require": {
-            "acme/hello-world": "dev-master"
-        }
+```json
+{
+    "name": "acme/blog",
+    "require": {
+        "acme/hello-world": "dev-master"
     }
+}
+```
 
 The name is not needed in this case, since we don't want to publish the blog
 as a library. It is added here to clarify which `composer.json` is being
@@ -152,18 +161,20 @@ Now we need to tell the blog app where to find the `hello-world` dependency.
 We do this by adding a package repository specification to the blog's
 `composer.json`:
 
-    {
-        "name": "acme/blog",
-        "repositories": [
-            {
-                "type": "vcs",
-                "url": "https://github.com/username/hello-world"
-            }
-        ],
-        "require": {
-            "acme/hello-world": "dev-master"
+```json
+{
+    "name": "acme/blog",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/username/hello-world"
         }
+    ],
+    "require": {
+        "acme/hello-world": "dev-master"
     }
+}
+```
 
 For more details on how package repositories work and what other types are
 available, see [Repositories](05-repositories.md).

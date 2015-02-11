@@ -12,6 +12,8 @@
 namespace Composer\Test\Autoload;
 
 use Composer\Autoload\ClassMapGenerator;
+use Symfony\Component\Finder\Finder;
+use Composer\Util\Filesystem;
 
 class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 {
@@ -78,11 +80,9 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateMapFinderSupport()
     {
-        if (!class_exists('Symfony\\Component\\Finder\\Finder')) {
-            $this->markTestSkipped('Finder component is not available');
-        }
+        $this->checkIfFinderIsAvailable();
 
-        $finder = new \Symfony\Component\Finder\Finder();
+        $finder = new Finder();
         $finder->files()->in(__DIR__ . '/Fixtures/beta/NamespaceCollision');
 
         $this->assertEqualsNormalized(array(
@@ -104,6 +104,92 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
         $find->invoke(null, __DIR__.'/no-file');
     }
 
+    public function testAmbiguousReference()
+    {
+        $this->checkIfFinderIsAvailable();
+
+        $tempDir = sys_get_temp_dir().'/ComposerTestAmbiguousRefs';
+        if (!is_dir($tempDir.'/other')) {
+            mkdir($tempDir.'/other', 0777, true);
+        }
+
+        $finder = new Finder();
+        $finder->files()->in($tempDir);
+
+        $io = $this->getMockBuilder('Composer\IO\ConsoleIO')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        file_put_contents($tempDir.'/A.php', "<?php\nclass A {}");
+        file_put_contents($tempDir.'/other/A.php', "<?php\nclass A {}");
+
+        $a = realpath($tempDir.'/A.php');
+        $b = realpath($tempDir.'/other/A.php');
+        $msg = '';
+
+        $io->expects($this->once())
+            ->method('write')
+            ->will($this->returnCallback(function ($text) use (&$msg) {
+                $msg = $text;
+            }));
+
+        $messages = array(
+            '<warning>Warning: Ambiguous class resolution, "A" was found in both "'.$a.'" and "'.$b.'", the first will be used.</warning>',
+            '<warning>Warning: Ambiguous class resolution, "A" was found in both "'.$b.'" and "'.$a.'", the first will be used.</warning>',
+        );
+
+        ClassMapGenerator::createMap($finder, null, $io);
+
+        $this->assertTrue(in_array($msg, $messages, true), $msg.' not found in expected messages ('.var_export($messages, true).')');
+
+        $fs = new Filesystem();
+        $fs->removeDirectory($tempDir);
+    }
+
+    /**
+     * If one file has a class or interface defined more than once,
+     * an ambiguous reference warning should not be produced
+     */
+    public function testUnambiguousReference()
+    {
+        $tempDir = sys_get_temp_dir().'/ComposerTestUnambiguousRefs';
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
+
+        file_put_contents($tempDir.'/A.php', "<?php\nclass A {}");
+
+        file_put_contents(
+            $tempDir.'/B.php',
+            "<?php
+                if (true) {
+                    interface B {}
+                } else {
+                    interface B extends Iterator {}
+                }
+            "
+        );
+
+        foreach (array('test', 'fixture', 'example') as $keyword) {
+            if (!is_dir($tempDir.'/'.$keyword)) {
+                mkdir($tempDir.'/'.$keyword, 0777, true);
+            }
+            file_put_contents($tempDir.'/'.$keyword.'/A.php', "<?php\nclass A {}");
+        }
+
+        $io = $this->getMockBuilder('Composer\IO\ConsoleIO')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $io->expects($this->never())
+            ->method('write');
+
+        ClassMapGenerator::createMap($tempDir, null, $io);
+
+        $fs = new Filesystem();
+        $fs->removeDirectory($tempDir);
+    }
+
     /**
      * @expectedException \RuntimeException
      * @expectedExceptionMessage Could not scan for classes inside
@@ -122,5 +208,12 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             $actual[$ns] = strtr($path, '\\', '/');
         }
         $this->assertEquals($expected, $actual, $message);
+    }
+
+    private function checkIfFinderIsAvailable()
+    {
+        if (!class_exists('Symfony\\Component\\Finder\\Finder')) {
+            $this->markTestSkipped('Finder component is not available');
+        }
     }
 }

@@ -16,7 +16,6 @@ use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
-use Composer\Package\AliasPackage;
 use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
@@ -56,7 +55,7 @@ class Locker
         $this->repositoryManager = $repositoryManager;
         $this->installationManager = $installationManager;
         $this->hash = $hash;
-        $this->loader = new ArrayLoader();
+        $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
         $this->process = new ProcessExecutor($io);
     }
@@ -174,6 +173,24 @@ class Locker
         return isset($lockData['stability-flags']) ? $lockData['stability-flags'] : array();
     }
 
+    public function getPreferStable()
+    {
+        $lockData = $this->getLockData();
+
+        // return null if not set to allow caller logic to choose the
+        // right behavior since old lock files have no prefer-stable
+        return isset($lockData['prefer-stable']) ? $lockData['prefer-stable'] : null;
+    }
+
+    public function getPreferLowest()
+    {
+        $lockData = $this->getLockData();
+
+        // return null if not set to allow caller logic to choose the
+        // right behavior since old lock files have no prefer-lowest
+        return isset($lockData['prefer-lowest']) ? $lockData['prefer-lowest'] : null;
+    }
+
     public function getAliases()
     {
         $lockData = $this->getLockData();
@@ -204,19 +221,25 @@ class Locker
      * @param array  $aliases          array of aliases
      * @param string $minimumStability
      * @param array  $stabilityFlags
+     * @param bool   $preferStable
+     * @param bool   $preferLowest
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest)
     {
         $lock = array(
-            '_readme' => array('This file locks the dependencies of your project to a known state', 'Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file'),
+            '_readme' => array('This file locks the dependencies of your project to a known state',
+                               'Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
+                               'This file is @gener'.'ated automatically'),
             'hash' => $this->hash,
             'packages' => null,
             'packages-dev' => null,
             'aliases' => array(),
             'minimum-stability' => $minimumStability,
             'stability-flags' => $stabilityFlags,
+            'prefer-stable' => $preferStable,
+            'prefer-lowest' => $preferLowest,
         );
 
         foreach ($aliases as $package => $versions) {
@@ -285,7 +308,7 @@ class Locker
                 $time = $this->getPackageTime($package) ?: $time;
             }
             if (null !== $time) {
-               $spec['time'] = $time;
+                $spec['time'] = $time;
             }
 
             unset($spec['installation-source']);
@@ -327,16 +350,15 @@ class Locker
             $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
             switch ($sourceType) {
                 case 'git':
-                    $util = new GitUtil;
-                    $util->cleanEnv();
+                    GitUtil::cleanEnv();
 
-                    if (0 === $this->process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
+                    if (0 === $this->process->execute('git log -n1 --pretty=%ct '.ProcessExecutor::escape($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
                         $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                     }
                     break;
 
                 case 'hg':
-                    if (0 === $this->process->execute('hg log --template "{date|hgdate}" -r '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*(\d+)\s*}', $output, $match)) {
+                    if (0 === $this->process->execute('hg log --template "{date|hgdate}" -r '.ProcessExecutor::escape($sourceRef), $output, $path) && preg_match('{^\s*(\d+)\s*}', $output, $match)) {
                         $datetime = new \DateTime('@'.$match[1], new \DateTimeZone('UTC'));
                     }
                     break;

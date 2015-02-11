@@ -55,8 +55,28 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         }
 
         $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
-        $this->filesystem->removeDirectory($path);
-        $this->doDownload($package, $path);
+        $this->filesystem->emptyDirectory($path);
+
+        $urls = $package->getSourceUrls();
+        while ($url = array_shift($urls)) {
+            try {
+                if (Filesystem::isLocalPath($url)) {
+                    $url = realpath($url);
+                }
+                $this->doDownload($package, $path, $url);
+                break;
+            } catch (\Exception $e) {
+                if ($this->io->isDebug()) {
+                    $this->io->write('Failed: ['.get_class($e).'] '.$e->getMessage());
+                } elseif (count($urls)) {
+                    $this->io->write('    Failed, trying the next URL');
+                }
+                if (!count($urls)) {
+                    throw $e;
+                }
+            }
+        }
+
         $this->io->write('');
     }
 
@@ -87,17 +107,31 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         $this->io->write("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
 
         $this->cleanChanges($initial, $path, true);
-        try {
-            $this->doUpdate($initial, $target, $path);
-        } catch (\Exception $e) {
-            // in case of failed update, try to reapply the changes before aborting
-            $this->reapplyChanges($path);
+        $urls = $target->getSourceUrls();
+        while ($url = array_shift($urls)) {
+            try {
+                if (Filesystem::isLocalPath($url)) {
+                    $url = realpath($url);
+                }
+                $this->doUpdate($initial, $target, $path, $url);
+                break;
+            } catch (\Exception $e) {
+                if ($this->io->isDebug()) {
+                    $this->io->write('Failed: ['.get_class($e).'] '.$e->getMessage());
+                } elseif (count($urls)) {
+                    $this->io->write('    Failed, trying the next URL');
+                } else {
+                    // in case of failed update, try to reapply the changes before aborting
+                    $this->reapplyChanges($path);
 
-            throw $e;
+                    throw $e;
+                }
+            }
         }
+
         $this->reapplyChanges($path);
 
-        //print the commit logs if in verbose mode
+        // print the commit logs if in verbose mode
         if ($this->io->isVerbose()) {
             $message = 'Pulling in changes:';
             $logs = $this->getCommitLogs($initial->getSourceReference(), $target->getSourceReference(), $path);
@@ -128,10 +162,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         $this->io->write("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
         $this->cleanChanges($package, $path, false);
         if (!$this->filesystem->removeDirectory($path)) {
-            // retry after a bit on windows since it tends to be touchy with mass removals
-            if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(250) && !$this->filesystem->removeDirectory($path))) {
-                throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
-            }
+            throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
         }
     }
 
@@ -147,10 +178,10 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * Prompt the user to check if changes should be stashed/removed or the operation aborted
      *
-     * @param PackageInterface $package
-     * @param string           $path
-     * @param bool             $update  if true (update) the changes can be stashed and reapplied after an update,
-     *                                  if false (remove) the changes should be assumed to be lost if the operation is not aborted
+     * @param  PackageInterface  $package
+     * @param  string            $path
+     * @param  bool              $update  if true (update) the changes can be stashed and reapplied after an update,
+     *                                    if false (remove) the changes should be assumed to be lost if the operation is not aborted
      * @throws \RuntimeException in case the operation must be aborted
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)
@@ -176,8 +207,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      *
      * @param PackageInterface $package package instance
      * @param string           $path    download path
+     * @param string           $url     package url
      */
-    abstract protected function doDownload(PackageInterface $package, $path);
+    abstract protected function doDownload(PackageInterface $package, $path, $url);
 
     /**
      * Updates specific package in specific folder from initial to target version.
@@ -185,8 +217,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @param PackageInterface $initial initial package
      * @param PackageInterface $target  updated package
      * @param string           $path    download path
+     * @param string           $url     package url
      */
-    abstract protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path);
+    abstract protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url);
 
     /**
      * Fetches the commit logs between two commits

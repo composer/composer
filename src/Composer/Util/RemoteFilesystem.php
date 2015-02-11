@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\Composer;
+use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 
@@ -24,7 +25,7 @@ use Composer\Downloader\TransportException;
 class RemoteFilesystem
 {
     private $io;
-    private $firstCall;
+    private $config;
     private $bytesMax;
     private $originUrl;
     private $fileUrl;
@@ -33,16 +34,21 @@ class RemoteFilesystem
     private $progress;
     private $lastProgress;
     private $options;
+    private $retryAuthFailure;
+    private $lastHeaders;
+    private $storeAuth;
 
     /**
      * Constructor.
      *
      * @param IOInterface $io      The IO instance
+     * @param Config      $config  The config
      * @param array       $options The options
      */
-    public function __construct(IOInterface $io, $options = array())
+    public function __construct(IOInterface $io, Config $config = null, array $options = array())
     {
         $this->io = $io;
+        $this->config = $config;
         $this->options = $options;
     }
 
@@ -70,7 +76,7 @@ class RemoteFilesystem
      * @param boolean $progress  Display the progression
      * @param array   $options   Additional context options
      *
-     * @return string The content
+     * @return bool|string The content
      */
     public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
@@ -85,6 +91,16 @@ class RemoteFilesystem
     public function getOptions()
     {
         return $this->options;
+    }
+
+    /**
+     * Returns the headers of the last request
+     *
+     * @return array
+     */
+    public function getLastHeaders()
+    {
+        return $this->lastHeaders;
     }
 
     /**
@@ -103,16 +119,28 @@ class RemoteFilesystem
      */
     protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
     {
+        if (strpos($originUrl, '.github.com') === (strlen($originUrl) - 11)) {
+            $originUrl = 'github.com';
+        }
+
         $this->bytesMax = 0;
         $this->originUrl = $originUrl;
         $this->fileUrl = $fileUrl;
         $this->fileName = $fileName;
         $this->progress = $progress;
         $this->lastProgress = null;
+        $this->retryAuthFailure = true;
+        $this->lastHeaders = array();
 
         // capture username/password from URL if there is one
         if (preg_match('{^https?://(.+):(.+)@([^/]+)}i', $fileUrl, $match)) {
             $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
+        }
+
+        if (isset($additionalOptions['retry-auth-failure'])) {
+            $this->retryAuthFailure = (bool) $additionalOptions['retry-auth-failure'];
+
+            unset($additionalOptions['retry-auth-failure']);
         }
 
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
@@ -123,6 +151,9 @@ class RemoteFilesystem
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
             unset($options['github-token']);
+        }
+        if (isset($options['http'])) {
+            $options['http']['ignore_errors'] = true;
         }
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
@@ -145,6 +176,10 @@ class RemoteFilesystem
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
+            if ($e instanceof TransportException && $result !== false) {
+                $e->setResponse($result);
+            }
+            $result = false;
         }
         if ($errorMessage && !ini_get('allow_url_fopen')) {
             $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
@@ -154,10 +189,16 @@ class RemoteFilesystem
             throw $e;
         }
 
-        // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
+        // fail 4xx and 5xx responses and capture the response
         if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ ([45]\d\d)}i', $http_response_header[0], $match)) {
-            $result = false;
             $errorCode = $match[1];
+            if (!$this->retry) {
+                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $errorCode);
+                $e->setHeaders($http_response_header);
+                $e->setResponse($result);
+                throw $e;
+            }
+            $result = false;
         }
 
         // decode gzip
@@ -179,10 +220,14 @@ class RemoteFilesystem
                     // work around issue with gzuncompress & co that do not work with all gzip checksums
                     $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
                 }
+
+                if (!$result) {
+                    throw new TransportException('Failed to decode zlib stream');
+                }
             }
         }
 
-        if ($this->progress) {
+        if ($this->progress && !$this->retry) {
             $this->io->overwrite("    Downloading: <comment>100%</comment>");
         }
 
@@ -209,7 +254,13 @@ class RemoteFilesystem
         if ($this->retry) {
             $this->retry = false;
 
-            return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+            $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+
+            $authHelper = new AuthHelper($this->io, $this->config);
+            $authHelper->storeAuth($this->originUrl, $this->storeAuth);
+            $this->storeAuth = false;
+
+            return $result;
         }
 
         if (false === $result) {
@@ -219,6 +270,10 @@ class RemoteFilesystem
             }
 
             throw $e;
+        }
+
+        if (!empty($http_response_header[0])) {
+            $this->lastHeaders = $http_response_header;
         }
 
         return $result;
@@ -241,31 +296,19 @@ class RemoteFilesystem
             case STREAM_NOTIFY_FAILURE:
             case STREAM_NOTIFY_AUTH_REQUIRED:
                 if (401 === $messageCode) {
-                    if (!$this->io->isInteractive()) {
-                        $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
-
-                        throw new TransportException($message, 401);
+                    // Bail if the caller is going to handle authentication failures itself.
+                    if (!$this->retryAuthFailure) {
+                        break;
                     }
 
-                    $this->promptAuthAndRetry();
+                    $this->promptAuthAndRetry($messageCode);
                     break;
                 }
-
-                if ($notificationCode === STREAM_NOTIFY_AUTH_REQUIRED) {
-                    break;
-                }
-
-                throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', $messageCode);
+                break;
 
             case STREAM_NOTIFY_AUTH_RESULT:
                 if (403 === $messageCode) {
-                    if (!$this->io->isInteractive() || $this->io->hasAuthentication($this->originUrl)) {
-                        $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $message;
-
-                        throw new TransportException($message, 403);
-                    }
-
-                    $this->promptAuthAndRetry();
+                    $this->promptAuthAndRetry($messageCode, $message);
                     break;
                 }
                 break;
@@ -296,12 +339,44 @@ class RemoteFilesystem
         }
     }
 
-    protected function promptAuthAndRetry()
+    protected function promptAuthAndRetry($httpStatus, $reason = null)
     {
-        $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
-        $username = $this->io->ask('      Username: ');
-        $password = $this->io->askAndHideAnswer('      Password: ');
-        $this->io->setAuthentication($this->originUrl, $username, $password);
+        if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
+            $message = "\n".'Could not fetch '.$this->fileUrl.', enter your GitHub credentials '.($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
+            $gitHubUtil = new GitHub($this->io, $this->config, null);
+            if (!$gitHubUtil->authorizeOAuth($this->originUrl)
+                && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
+            ) {
+                throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
+            }
+        } else {
+            // 404s are only handled for github
+            if ($httpStatus === 404) {
+                return;
+            }
+
+            // fail if the console is not interactive
+            if (!$this->io->isInteractive()) {
+                if ($httpStatus === 401) {
+                    $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console to authenticate";
+                }
+                if ($httpStatus === 403) {
+                    $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $reason;
+                }
+
+                throw new TransportException($message, $httpStatus);
+            }
+            // fail if we already have auth
+            if ($this->io->hasAuthentication($this->originUrl)) {
+                throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
+            }
+
+            $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+            $username = $this->io->ask('      Username: ');
+            $password = $this->io->askAndHideAnswer('      Password: ');
+            $this->io->setAuthentication($this->originUrl, $username, $password);
+            $this->storeAuth = $this->config->get('store-auths');
+        }
 
         $this->retry = true;
         throw new TransportException('RETRY');
@@ -309,15 +384,19 @@ class RemoteFilesystem
 
     protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
+        if (defined('HHVM_VERSION')) {
+            $phpVersion = 'HHVM ' . HHVM_VERSION;
+        } else {
+            $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
+        }
+
         $headers = array(
             sprintf(
-                'User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)',
+                'User-Agent: Composer/%s (%s; %s; %s)',
                 Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
                 php_uname('s'),
                 php_uname('r'),
-                PHP_MAJOR_VERSION,
-                PHP_MINOR_VERSION,
-                PHP_RELEASE_VERSION
+                $phpVersion
             )
         );
 

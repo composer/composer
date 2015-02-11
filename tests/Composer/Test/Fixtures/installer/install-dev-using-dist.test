@@ -47,6 +47,8 @@ install --prefer-dist
     "stability-flags": {
         "a/a": 20
     },
+    "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }

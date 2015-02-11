@@ -54,9 +54,15 @@ class ClassLoader
     private $useIncludePath = false;
     private $classMap = array();
 
+    private $classMapAuthoritative = false;
+
     public function getPrefixes()
     {
-        return call_user_func_array('array_merge', $this->prefixesPsr0);
+        if (!empty($this->prefixesPsr0)) {
+            return call_user_func_array('array_merge', $this->prefixesPsr0);
+        }
+
+        return array();
     }
 
     public function getPrefixesPsr4()
@@ -143,6 +149,8 @@ class ClassLoader
      * @param string       $prefix  The prefix/namespace, with trailing '\\'
      * @param array|string $paths   The PSR-0 base directories
      * @param bool         $prepend Whether to prepend the directories
+     *
+     * @throws \InvalidArgumentException
      */
     public function addPsr4($prefix, $paths, $prepend = false)
     {
@@ -202,10 +210,13 @@ class ClassLoader
      * Registers a set of PSR-4 directories for a given namespace,
      * replacing any others previously set for this namespace.
      *
-     * @param string       $prefix  The prefix/namespace, with trailing '\\'
-     * @param array|string $paths   The PSR-4 base directories
+     * @param string       $prefix The prefix/namespace, with trailing '\\'
+     * @param array|string $paths  The PSR-4 base directories
+     *
+     * @throws \InvalidArgumentException
      */
-    public function setPsr4($prefix, $paths) {
+    public function setPsr4($prefix, $paths)
+    {
         if (!$prefix) {
             $this->fallbackDirsPsr4 = (array) $paths;
         } else {
@@ -240,6 +251,27 @@ class ClassLoader
     }
 
     /**
+     * Turns off searching the prefix and fallback directories for classes
+     * that have not been registered with the class map.
+     *
+     * @param bool $classMapAuthoritative
+     */
+    public function setClassMapAuthoritative($classMapAuthoritative)
+    {
+        $this->classMapAuthoritative = $classMapAuthoritative;
+    }
+
+    /**
+     * Should class lookup fail if not found in the current class map?
+     *
+     * @return bool
+     */
+    public function isClassMapAuthoritative()
+    {
+        return $this->classMapAuthoritative;
+    }
+
+    /**
      * Registers this instance as an autoloader.
      *
      * @param bool $prepend Whether to prepend the autoloader or not
@@ -266,7 +298,7 @@ class ClassLoader
     public function loadClass($class)
     {
         if ($file = $this->findFile($class)) {
-            include $file;
+            includeFile($file);
 
             return true;
         }
@@ -290,9 +322,29 @@ class ClassLoader
         if (isset($this->classMap[$class])) {
             return $this->classMap[$class];
         }
+        if ($this->classMapAuthoritative) {
+            return false;
+        }
 
+        $file = $this->findFileWithExtension($class, '.php');
+
+        // Search for Hack files if we are running on HHVM
+        if ($file === null && defined('HHVM_VERSION')) {
+            $file = $this->findFileWithExtension($class, '.hh');
+        }
+
+        if ($file === null) {
+            // Remember that this class does not exist.
+            return $this->classMap[$class] = false;
+        }
+
+        return $file;
+    }
+
+    private function findFileWithExtension($class, $ext)
+    {
         // PSR-4 lookup
-        $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . '.php';
+        $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . $ext;
 
         $first = $class[0];
         if (isset($this->prefixLengthsPsr4[$first])) {
@@ -321,7 +373,7 @@ class ClassLoader
                 . strtr(substr($logicalPathPsr4, $pos + 1), '_', DIRECTORY_SEPARATOR);
         } else {
             // PEAR-like class name
-            $logicalPathPsr0 = strtr($class, '_', DIRECTORY_SEPARATOR) . '.php';
+            $logicalPathPsr0 = strtr($class, '_', DIRECTORY_SEPARATOR) . $ext;
         }
 
         if (isset($this->prefixesPsr0[$first])) {
@@ -347,8 +399,15 @@ class ClassLoader
         if ($this->useIncludePath && $file = stream_resolve_include_path($logicalPathPsr0)) {
             return $file;
         }
-
-        // Remember that this class does not exist.
-        return $this->classMap[$class] = false;
     }
+}
+
+/**
+ * Scope isolated include.
+ *
+ * Prevents access to $this/self from included files.
+ */
+function includeFile($file)
+{
+    include $file;
 }

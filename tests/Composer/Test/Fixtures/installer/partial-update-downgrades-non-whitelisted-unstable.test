@@ -35,6 +35,8 @@ Partial update from lock file should apply lock file and downgrade unstable pack
     "stability-flags": {
         "b/unstable": 15
     },
+    "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }
@@ -57,6 +59,8 @@ update c/uptodate
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }

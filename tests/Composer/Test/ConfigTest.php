@@ -21,7 +21,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddPackagistRepository($expected, $localConfig, $systemConfig = null)
     {
-        $config = new Config();
+        $config = new Config(false);
         if ($systemConfig) {
             $config->merge(array('repositories' => $systemConfig));
         }
@@ -97,21 +97,74 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             ),
         );
 
+        $data['incorrect local config does not cause ErrorException'] = array(
+            array(
+                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true),
+                'type' => 'vcs',
+                'url' => 'http://example.com',
+            ),
+            array(
+                'type' => 'vcs',
+                'url' => 'http://example.com',
+            ),
+        );
+
         return $data;
     }
 
     public function testMergeGithubOauth()
     {
-        $config = new Config();
+        $config = new Config(false);
         $config->merge(array('config' => array('github-oauth' => array('foo' => 'bar'))));
         $config->merge(array('config' => array('github-oauth' => array('bar' => 'baz'))));
 
         $this->assertEquals(array('foo' => 'bar', 'bar' => 'baz'), $config->get('github-oauth'));
     }
 
+    public function testVarReplacement()
+    {
+        $config = new Config(false);
+        $config->merge(array('config' => array('a' => 'b', 'c' => '{$a}')));
+        $config->merge(array('config' => array('bin-dir' => '$HOME', 'cache-dir' => '~/foo/')));
+
+        $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '\\/');
+        $this->assertEquals('b', $config->get('c'));
+        $this->assertEquals($home.'/', $config->get('bin-dir'));
+        $this->assertEquals($home.'/foo', $config->get('cache-dir'));
+    }
+
+    public function testRealpathReplacement()
+    {
+        $config = new Config(false, '/foo/bar');
+        $config->merge(array('config' => array(
+            'bin-dir' => '$HOME/foo',
+            'cache-dir' => '/baz/',
+            'vendor-dir' => 'vendor'
+        )));
+
+        $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '\\/');
+        $this->assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
+        $this->assertEquals($home.'/foo', $config->get('bin-dir'));
+        $this->assertEquals('/baz', $config->get('cache-dir'));
+    }
+
+    public function testFetchingRelativePaths()
+    {
+        $config = new Config(false, '/foo/bar');
+        $config->merge(array('config' => array(
+            'bin-dir' => '{$vendor-dir}/foo',
+            'vendor-dir' => 'vendor'
+        )));
+
+        $this->assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
+        $this->assertEquals('/foo/bar/vendor/foo', $config->get('bin-dir'));
+        $this->assertEquals('vendor', $config->get('vendor-dir', Config::RELATIVE_PATHS));
+        $this->assertEquals('vendor/foo', $config->get('bin-dir', Config::RELATIVE_PATHS));
+    }
+
     public function testOverrideGithubProtocols()
     {
-        $config = new Config();
+        $config = new Config(false);
         $config->merge(array('config' => array('github-protocols' => array('https', 'git'))));
         $config->merge(array('config' => array('github-protocols' => array('https'))));
 

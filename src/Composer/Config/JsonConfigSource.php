@@ -23,17 +23,34 @@ use Composer\Json\JsonManipulator;
  */
 class JsonConfigSource implements ConfigSourceInterface
 {
+    /**
+     * @var \Composer\Json\JsonFile
+     */
     private $file;
-    private $manipulator;
+
+    /**
+     * @var bool
+     */
+    private $authConfig;
 
     /**
      * Constructor
      *
      * @param JsonFile $file
+     * @param bool     $authConfig
      */
-    public function __construct(JsonFile $file)
+    public function __construct(JsonFile $file, $authConfig = false)
     {
         $this->file = $file;
+        $this->authConfig = $authConfig;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return $this->file->getPath();
     }
 
     /**
@@ -62,7 +79,16 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addConfigSetting($name, $value)
     {
         $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) {
-            $config['config'][$key] = $val;
+            if ($key === 'github-oauth' || $key === 'http-basic') {
+                list($key, $host) = explode('.', $key, 2);
+                if ($this->authConfig) {
+                    $config[$key][$host] = $val;
+                } else {
+                    $config['config'][$key][$host] = $val;
+                }
+            } else {
+                $config['config'][$key] = $val;
+            }
         });
     }
 
@@ -72,7 +98,16 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeConfigSetting($name)
     {
         $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) {
-            unset($config['config'][$key]);
+            if ($key === 'github-oauth' || $key === 'http-basic') {
+                list($key, $host) = explode('.', $key, 2);
+                if ($this->authConfig) {
+                    unset($config[$key][$host]);
+                } else {
+                    unset($config['config'][$key][$host]);
+                }
+            } else {
+                unset($config['config'][$key]);
+            }
         });
     }
 
@@ -105,12 +140,26 @@ class JsonConfigSource implements ConfigSourceInterface
 
         if ($this->file->exists()) {
             $contents = file_get_contents($this->file->getPath());
+        } elseif ($this->authConfig) {
+            $contents = "{\n}\n";
         } else {
             $contents = "{\n    \"config\": {\n    }\n}\n";
         }
+
         $manipulator = new JsonManipulator($contents);
 
         $newFile = !$this->file->exists();
+
+        // override manipulator method for auth config files
+        if ($this->authConfig && $method === 'addConfigSetting') {
+            $method = 'addSubNode';
+            list($mainNode, $name) = explode('.', $args[0], 2);
+            $args = array($mainNode, $name, $args[1]);
+        } elseif ($this->authConfig && $method === 'removeConfigSetting') {
+            $method = 'removeSubNode';
+            list($mainNode, $name) = explode('.', $args[0], 2);
+            $args = array($mainNode, $name);
+        }
 
         // try to update cleanly
         if (call_user_func_array(array($manipulator, $method), $args)) {
@@ -118,7 +167,7 @@ class JsonConfigSource implements ConfigSourceInterface
         } else {
             // on failed clean update, call the fallback and rewrite the whole file
             $config = $this->file->read();
-            array_unshift($args, $config);
+            $this->arrayUnshiftRef($args, $config);
             call_user_func_array($fallback, $args);
             $this->file->write($config);
         }
@@ -126,5 +175,20 @@ class JsonConfigSource implements ConfigSourceInterface
         if ($newFile) {
             @chmod($this->file->getPath(), 0600);
         }
+    }
+
+    /**
+     * Prepend a reference to an element to the beginning of an array.
+     *
+     * @param  array $array
+     * @param  mixed $value
+     * @return array
+     */
+    private function arrayUnshiftRef(&$array, &$value)
+    {
+        $return = array_unshift($array, '');
+        $array[0] = &$value;
+
+        return $return;
     }
 }

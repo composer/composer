@@ -1,12 +1,13 @@
 {
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "name": "Package",
     "type": "object",
     "additionalProperties": false,
+    "required": [ "name", "description" ],
     "properties": {
         "name": {
             "type": "string",
-            "description": "Package name, including 'vendor-name/' prefix.",
-            "required": true
+            "description": "Package name, including 'vendor-name/' prefix."
         },
         "type": {
             "description": "Package type, either 'library' for common packages, 'composer-plugin' for plugins, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
@@ -18,8 +19,7 @@
         },
         "description": {
             "type": "string",
-            "description": "Short package description.",
-            "required": true
+            "description": "Short package description."
         },
         "keywords": {
             "type": "array",
@@ -39,7 +39,7 @@
         },
         "time": {
             "type": "string",
-            "description": "Package release date, in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' format."
+            "description": "Package release date, in 'YYYY-MM-DD', 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DDTHH:MM:SSZ' format."
         },
         "license": {
             "type": ["string", "array"],
@@ -51,11 +51,11 @@
             "items": {
                 "type": "object",
                 "additionalProperties": false,
+                "required": [ "name"],
                 "properties": {
                     "name": {
                         "type": "string",
-                        "description": "Full name of the author.",
-                        "required": true
+                        "description": "Full name of the author."
                     },
                     "email": {
                         "type": "string",
@@ -136,6 +136,15 @@
                     "description": "A hash of domain name => github API oauth tokens, typically {\"github.com\":\"<token>\"}.",
                     "additionalProperties": true
                 },
+                "http-basic": {
+                    "type": "object",
+                    "description": "A hash of domain name => {\"username\": \"...\", \"password\": \"...\"}.",
+                    "additionalProperties": true
+                },
+                "store-auths": {
+                    "type": ["string", "boolean"],
+                    "description": "What to do after prompting for authentication, one of: true (store), false (do not store) or \"prompt\" (ask every time), defaults to prompt."
+                },
                 "vendor-dir": {
                     "type": "string",
                     "description": "The location where all packages are installed, defaults to \"vendor\"."
@@ -182,11 +191,15 @@
                 },
                 "optimize-autoloader": {
                     "type": "boolean",
-                    "description": "Always optimize when dumping the autoloader"
+                    "description": "Always optimize when dumping the autoloader."
                 },
                 "prepend-autoloader": {
                     "type": "boolean",
                     "description": "If false, the composer autoloader will not be prepended to existing autoloaders, defaults to true."
+                },
+                "classmap-authoritative": {
+                    "type": "boolean",
+                    "description": "If true, the composer autoloader will not scan the filesystem for classes that are not found in the class map, defaults to false."
                 },
                 "github-domains": {
                     "type": "array",
@@ -194,6 +207,10 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "github-expose-hostname": {
+                    "type": "boolean",
+                    "description": "Defaults to true. If set to false, the OAuth tokens created to access the github API will have a date instead of the machine hostname."
                 }
             }
         },
@@ -230,6 +247,30 @@
                 }
             }
         },
+        "autoload-dev": {
+            "type": "object",
+            "description": "Description of additional autoload rules for development purpose (eg. a test suite).",
+            "properties": {
+                "psr-0": {
+                    "type": "object",
+                    "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": true
+                },
+                "psr-4": {
+                    "type": "object",
+                    "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": true
+                },
+                "classmap": {
+                    "type": "array",
+                    "description": "This is an array of directories that contain classes to be included in the class-map generation process."
+                },
+                "files": {
+                    "type": "array",
+                    "description": "This is an array of files that are always required on every request."
+                }
+            }
+        },
         "archive": {
             "type": ["object"],
             "description": "Options for creating package archives for distribution.",
@@ -247,7 +288,8 @@
         },
         "minimum-stability": {
             "type": ["string"],
-            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable."
+            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable.",
+            "pattern": "^dev|alpha|beta|rc|RC|stable$"
         },
         "prefer-stable": {
             "type": ["boolean"],

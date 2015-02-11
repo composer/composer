@@ -1,0 +1,26 @@
+--TEST--
+Update in ignore-platform-reqs mode
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.1", "require": { "ext-testdummy": "*" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.*",
+        "php": "99.9",
+        "ext-dummy2": "9"
+    }
+}
+--INSTALLED--
+[
+    { "name": "a/a", "version": "1.0.0" }
+]
+--RUN--
+update --ignore-platform-reqs
+--EXPECT--
+Updating a/a (1.0.0) to a/a (1.0.1)

@@ -116,11 +116,25 @@ interface PackageInterface
     public function getSourceUrl();
 
     /**
+     * Returns the repository urls of this package including mirrors, e.g. git://github.com/naderman/composer.git
+     *
+     * @return array
+     */
+    public function getSourceUrls();
+
+    /**
      * Returns the repository reference of this package, e.g. master, 1.0.0 or a commit hash for git
      *
      * @return string The repository reference
      */
     public function getSourceReference();
+
+    /**
+     * Returns the source mirrors of this package
+     *
+     * @return array|null
+     */
+    public function getSourceMirrors();
 
     /**
      * Returns the type of the distribution archive of this version, e.g. zip, tarball
@@ -137,6 +151,13 @@ interface PackageInterface
     public function getDistUrl();
 
     /**
+     * Returns the urls of the distribution archive of this version, including mirrors
+     *
+     * @return array
+     */
+    public function getDistUrls();
+
+    /**
      * Returns the reference of the distribution archive of this version, e.g. master, 1.0.0 or a commit hash for git
      *
      * @return string
@@ -149,6 +170,13 @@ interface PackageInterface
      * @return string
      */
     public function getDistSha1Checksum();
+
+    /**
+     * Returns the dist mirrors of this package
+     *
+     * @return array|null
+     */
+    public function getDistMirrors();
 
     /**
      * Returns the version of this package
@@ -231,12 +259,24 @@ interface PackageInterface
      *
      * {"<type>": {"<namespace": "<directory>"}}
      *
-     * Type is either "psr-0" or "pear". Namespaces are mapped to directories
-     * for autoloading using the type specified.
+     * Type is either "psr-4", "psr-0", "classmap" or "files". Namespaces are mapped to
+     * directories for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
      */
     public function getAutoload();
+
+    /**
+     * Returns an associative array of dev autoloading rules
+     *
+     * {"<type>": {"<namespace": "<directory>"}}
+     *
+     * Type is either "psr-4", "psr-0", "classmap" or "files". Namespaces are mapped to
+     * directories for autoloading using the type specified.
+     *
+     * @return array Mapping of dev autoloading rules
+     */
+    public function getDevAutoload();
 
     /**
      * Returns a list of directories which should get added to PHP's
@@ -301,4 +341,11 @@ interface PackageInterface
      * @return array
      */
     public function getArchiveExcludes();
+
+    /**
+     * Returns a list of options to download package dist files
+     *
+     * @return array
+     */
+    public function getTransportOptions();
 }

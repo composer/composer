@@ -165,4 +165,21 @@ class ScriptEvents
      */
     const POST_CREATE_PROJECT_CMD = 'post-create-project-cmd';
 
+    /**
+     * The PRE_ARCHIVE_CMD event occurs before the update command is executed.
+     *
+     * The event listener method receives a Composer\Script\CommandEvent instance.
+     *
+     * @var string
+     */
+    const PRE_ARCHIVE_CMD = 'pre-archive-cmd';
+
+    /**
+     * The POST_ARCHIVE_CMD event occurs after the status command is executed.
+     *
+     * The event listener method receives a Composer\Script\CommandEvent instance.
+     *
+     * @var string
+     */
+    const POST_ARCHIVE_CMD = 'post-archive-cmd';
 }

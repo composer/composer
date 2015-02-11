@@ -12,9 +12,11 @@
 
 namespace Composer\Command;
 
+use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Util\ConfigValidator;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -34,6 +36,7 @@ class ValidateCommand extends Command
             ->setName('validate')
             ->setDescription('Validates a composer.json')
             ->setDefinition(array(
+                new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not make a complete validation'),
                 new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
             ))
             ->setHelp(<<<EOT
@@ -65,7 +68,8 @@ EOT
         }
 
         $validator = new ConfigValidator($this->getIO());
-        list($errors, $publishErrors, $warnings) = $validator->validate($file);
+        $checkAll = $input->getOption('no-check-all') ? 0 : ValidatingArrayLoader::CHECK_ALL;
+        list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
 
         // output errors/warnings
         if (!$errors && !$publishErrors && !$warnings) {

@@ -7,7 +7,7 @@
 ## Why aliases?
 
 When you are using a VCS repository, you will only get comparable versions for
-branches that look like versions, such as `2.0`. For your `master` branch, you
+branches that look like versions, such as `2.0` or `2.0.x`. For your `master` branch, you
 will get a `dev-master` version. For your `bugfix` branch, you will get a
 `dev-bugfix` version.
 
@@ -28,18 +28,24 @@ someone will want the latest master dev version. Thus, Composer allows you to
 alias your `dev-master` branch to a `1.0.x-dev` version. It is done by
 specifying a `branch-alias` field under `extra` in `composer.json`:
 
-    {
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.0.x-dev"
-            }
+```json
+{
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
         }
     }
+}
+```
 
-The branch version must begin with `dev-` (non-comparable version), the alias
-must be a comparable dev version (i.e. start with numbers, and end with
-`.x-dev`). The `branch-alias` must be present on the branch that it references.
-For `dev-master`, you need to commit it on the `master` branch.
+If you alias a non-comparible version (such as dev-develop) `dev-` must prefix the
+branch name. You may also alias a comparible version (i.e. start with numbers,
+and end with `.x-dev`), but only as a more specific version.
+For example, 1.x-dev could be aliased as 1.2.x-dev.
+
+The alias must be a comparable dev version, and the `branch-alias` must be present on
+the branch that it references. For `dev-master`, you need to commit it on the
+`master` branch.
 
 As a result, anyone can now require `1.0.*` and it will happily install
 `dev-master`.
@@ -68,18 +74,20 @@ You are using `symfony/monolog-bundle` which requires `monolog/monolog` version
 
 Just add this to your project's root `composer.json`:
 
-    {
-        "repositories": [
-            {
-                "type": "vcs",
-                "url": "https://github.com/you/monolog"
-            }
-        ],
-        "require": {
-            "symfony/monolog-bundle": "2.0",
-            "monolog/monolog": "dev-bugfix as 1.0.x-dev"
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/you/monolog"
         }
+    ],
+    "require": {
+        "symfony/monolog-bundle": "2.0",
+        "monolog/monolog": "dev-bugfix as 1.0.x-dev"
     }
+}
+```
 
 That will fetch the `dev-bugfix` version of `monolog/monolog` from your GitHub
 and alias it to `1.0.x-dev`.

@@ -84,7 +84,7 @@ EOT
         foreach ($errors as $path => $changes) {
             if ($input->getOption('verbose')) {
                 $indentedChanges = implode("\n", array_map(function ($line) {
-                    return '    ' . $line;
+                    return '    ' . ltrim($line);
                 }, explode("\n", $changes)));
                 $output->writeln('<info>'.$path.'</info>:');
                 $output->writeln($indentedChanges);

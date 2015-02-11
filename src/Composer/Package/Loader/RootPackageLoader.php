@@ -22,6 +22,7 @@ use Composer\Repository\Vcs\HgDriver;
 use Composer\IO\NullIO;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Git as GitUtil;
+use Composer\Util\Svn as SvnUtil;
 
 /**
  * ArrayLoader built for the sole purpose of loading the root package
@@ -130,7 +131,7 @@ class RootPackageLoader extends ArrayLoader
         $minimumStability = $stabilities[$minimumStability];
         foreach ($requires as $reqName => $reqVersion) {
             // parse explicit stability flags to the most unstable
-            if (preg_match('{^[^,\s]*?@('.implode('|', array_keys($stabilities)).')$}i', $reqVersion, $match)) {
+            if (preg_match('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $reqVersion, $match)) {
                 $name = strtolower($reqName);
                 $stability = $stabilities[VersionParser::normalizeStability($match[1])];
 
@@ -179,14 +180,18 @@ class RootPackageLoader extends ArrayLoader
                 return $version;
             }
 
-            return $this->guessHgVersion($config);
+            $version = $this->guessHgVersion($config);
+            if (null !== $version) {
+                return $version;
+            }
+
+            return $this->guessSvnVersion($config);
         }
     }
 
     private function guessGitVersion(array $config)
     {
-        $util = new GitUtil;
-        $util->cleanEnv();
+        GitUtil::cleanEnv();
 
         // try to fetch current version from git tags
         if (0 === $this->process->execute('git describe --exact-match --tags', $output)) {
@@ -204,7 +209,7 @@ class RootPackageLoader extends ArrayLoader
 
             // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from [a-f0-9]+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if ($match[1] === '(no branch)' || substr($match[1], 0, 10) === '(detached ') {
                         $version = 'dev-'.$match[2];
                         $isFeatureBranch = true;
@@ -294,5 +299,33 @@ class RootPackageLoader extends ArrayLoader
         }
 
         return $version;
+    }
+
+    private function guessSvnVersion(array $config)
+    {
+        SvnUtil::cleanEnv();
+
+        // try to fetch current version from svn
+        if (0 === $this->process->execute('svn info --xml', $output)) {
+            $trunkPath = isset($config['trunk-path']) ? preg_quote($config['trunk-path'], '#') : 'trunk';
+            $branchesPath = isset($config['branches-path']) ? preg_quote($config['branches-path'], '#') : 'branches';
+            $tagsPath = isset($config['tags-path']) ? preg_quote($config['tags-path'], '#') : 'tags';
+
+            $urlPattern = '#<url>.*/('.$trunkPath.'|('.$branchesPath.'|'. $tagsPath .')/(.*))</url>#';
+
+            if (preg_match($urlPattern, $output, $matches)) {
+                if (isset($matches[2]) && ($branchesPath === $matches[2] || $tagsPath === $matches[2])) {
+                    // we are in a branches path
+                    $version = $this->versionParser->normalizeBranch($matches[3]);
+                    if ('9999999-dev' === $version) {
+                        $version = 'dev-'.$matches[3];
+                    }
+
+                    return $version;
+                }
+
+                return $this->versionParser->normalize(trim($matches[1]));
+            }
+        }
     }
 }

@@ -52,6 +52,10 @@ class ArchivableFilesFinder extends \FilterIterator
         $this->finder = new Finder\Finder();
 
         $filter = function (\SplFileInfo $file) use ($sources, $filters, $fs) {
+            if ($file->isLink() && strpos($file->getLinkTarget(), $sources) !== 0) {
+                return false;
+            }
+
             $relativePath = preg_replace(
                 '#^'.preg_quote($sources, '#').'#',
                 '',
