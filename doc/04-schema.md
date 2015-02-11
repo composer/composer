@@ -802,16 +802,16 @@ with a valid version or special branch name like master, you can set patterns fo
 names, that should be handled as dev version branches.
 
 An example:
-    If you have a testing branch, that is heavily maintained during a testing phase and is
-    deployed to your staging environment, normally "composer show -s" will give you "versions : * dev-master".
+If you have a testing branch, that is heavily maintained during a testing phase and is
+deployed to your staging environment, normally "composer show -s" will give you "versions : * dev-master".
 
-    If you configure latest-.* as a pattern for non-feature-branches like this:
+If you configure latest-.* as a pattern for non-feature-branches like this:
 
     {
         "non-feature-branches": ["latest-.*"]
     }
 
-    Then "composer show -s" will give you "versions : * dev-latest-testing".
+Then "composer show -s" will give you "versions : * dev-latest-testing".
 
 
 Optional.
