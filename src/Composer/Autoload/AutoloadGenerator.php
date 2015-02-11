@@ -174,7 +174,7 @@ EOF;
         }
 
         $blacklist = '';
-        if(!empty($autoloads['exclude-from-classmap'])) {
+        if (!empty($autoloads['exclude-from-classmap'])) {
             $blacklist = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
         }
 
@@ -189,38 +189,21 @@ EOF;
                         if (!is_dir($dir)) {
                             continue;
                         }
-                        $whitelist = sprintf(
-                            '{%s/%s.+(?<!(?<!/)Test\.php)$}',
-                            preg_quote($dir),
-                            ($psrType === 'psr-0' && strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
-                        );
 
                         $namespaceFilter = $namespace === '' ? null : $namespace;
-                        foreach (ClassMapGenerator::createMap($dir, $whitelist, $this->io, $namespaceFilter) as $class => $path) {
+                        foreach (ClassMapGenerator::createMap($dir, $blacklist, $this->io, $namespaceFilter) as $class => $path) {
                             if (!isset($classMap[$class])) {
                                 $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
                                 $classMap[$class] = $path.",\n";
                             }
                         }
-                        /*
-                         * RKERNER
-                         * foreach (ClassMapGenerator::createMap($dir, $blacklist) as $class => $path) {
-                            if ('' === $namespace || 0 === strpos($class, $namespace)) {
-                                if (!isset($classMap[$class])) {
-                                    $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
-                                    $classMap[$class] = $path.",\n";
-                                }
-                            }
-                        }
-                         */
                     }
                 }
             }
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            foreach (ClassMapGenerator::createMap($dir, null, $this->io) as $class => $path) {
-                //REKERNER foreach (ClassMapGenerator::createMap($dir, $blacklist) as $class => $path) {
+            foreach (ClassMapGenerator::createMap($dir, $blacklist, $this->io) as $class => $path) {
                 $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
                 $classMap[$class] = $path.",\n";
             }
@@ -644,7 +627,7 @@ FOOTER;
                     if ($type === 'classmap' && $package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
                         $path = $package->getTargetDir() . '/' . $path;
                     }
-
+*/
                     if ($type === 'exclude-from-classmap') {
                         // first escape user input
                         $path = sprintf(self::EXCLUDE_PATTERN, preg_quote($path));
@@ -661,7 +644,7 @@ FOOTER;
                         $autoloads[] = empty($installPath) ? $path : preg_quote($installPath) . '/' . $path;
                         continue;
                     }
-
+/*
                     if (empty($installPath)) {
                         $autoloads[$namespace][] = empty($path) ? '.' : $path;
                     } else {

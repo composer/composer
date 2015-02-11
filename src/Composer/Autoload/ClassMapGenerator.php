@@ -45,7 +45,7 @@ class ClassMapGenerator
      * Iterate over all files in the given directory searching for classes
      *
      * @param \Iterator|string $path      The path to search in or an iterator
-     * @param string           $whitelist Regex that matches against the file path
+     * @param string           $blacklist Regex that matches against the file path that exclude from the classmap.
      * @param IOInterface      $io        IO object
      * @param string           $namespace Optional namespace prefix to filter by
      *
@@ -53,7 +53,7 @@ class ClassMapGenerator
      *
      * @throws \RuntimeException When the path is neither an existing file nor directory
      */
-    public static function createMap($path, $whitelist = null, IOInterface $io = null, $namespace = null)
+    public static function createMap($path, $blacklist = '', IOInterface $io = null, $namespace = null)
     // RKERNER: public static function createMap($path, $blacklist = '')
     {
         if (is_string($path)) {
@@ -78,8 +78,7 @@ class ClassMapGenerator
                 continue;
             }
 
-            if ($whitelist && !preg_match($whitelist, strtr($filePath, '\\', '/'))) {
-            // RKERNER: if ($blacklist && preg_match($blacklist, strtr($filePath, '\\', '/'))) {
+            if ($blacklist && preg_match($blacklist, strtr($filePath, '\\', '/'))) {
                 continue;
             }
 
