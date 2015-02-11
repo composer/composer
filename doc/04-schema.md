@@ -799,7 +799,11 @@ To handle non-numeric named branches as versions instead of searching for a pare
 with a valid version or special branch name like master, you can set patterns for branch
 names, that should be handled as dev version branches.
 
+This is really helpful when you have dependencies using "self.version", so that not dev-master,
+but the same branch is installed (in the example: latest-testing).
+
 An example:
+
 If you have a testing branch, that is heavily maintained during a testing phase and is
 deployed to your staging environment, normally "composer show -s" will give you `versions : * dev-master`.
 
