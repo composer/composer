@@ -785,8 +785,6 @@ The example will include `/dir/foo/bar/file`, `/foo/bar/baz`, `/file.php`,
 
 Optional.
 
-&larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
-
 ### non-feature-branches
 
 A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something), that will NOT be handled as feature branches. This is an array of string.
@@ -815,3 +813,5 @@ Then "composer show -s" will give you "versions : * dev-latest-testing".
 
 
 Optional.
+
+&larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
