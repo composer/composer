@@ -244,6 +244,7 @@ class Factory
                 $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
         }
+
         $vendorDir = $config->get('vendor-dir');
         $binDir = $config->get('bin-dir');
 
@@ -362,7 +363,7 @@ class Factory
 
         $composer = null;
         try {
-            $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), false, false);
+            $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), false);
         } catch (\Exception $e) {
             if ($io->isDebug()) {
                 $io->write('Failed to initialize global composer: '.$e->getMessage());
@@ -496,7 +497,7 @@ class Factory
      * @param $composerFile
      * @return string
      */
-    protected function getLockFilename($composerFile)
+    private function getLockFilename($composerFile)
     {
         return "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
             ? substr($composerFile, 0, -4) . 'lock'
