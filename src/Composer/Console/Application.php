@@ -211,11 +211,11 @@ class Application extends BaseApplication
      * @throws JsonValidationException
      * @return \Composer\Composer
      */
-    public function getComposer($required = true, $disablePlugins = false)
+    public function getComposer($required = true, $disablePlugins = false, $ignoreRootReqsIfLockIsPresent = false)
     {
         if (null === $this->composer) {
             try {
-                $this->composer = Factory::create($this->io, null, $disablePlugins);
+                $this->composer = Factory::create($this->io, null, $disablePlugins, $ignoreRootReqsIfLockIsPresent);
             } catch (\InvalidArgumentException $e) {
                 if ($required) {
                     $this->io->write($e->getMessage());
