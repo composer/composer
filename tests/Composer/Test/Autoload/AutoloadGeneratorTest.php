@@ -1207,7 +1207,7 @@ EOF;
                 'Acme\Cake\\' => array('src-cake/', 'lib-cake/'),
             ),
             'classmap' => array('composersrc/'),
-            'exclude-from-classmap' => array('/tests/'),
+            'exclude-from-classmap' => array('/tests/', 'Exclude.php'),
         ));
 
         $this->repository->expects($this->once())
@@ -1225,11 +1225,12 @@ EOF;
         file_put_contents($this->workingDir.'/src-cake/ClassMapBar.php', '<?php namespace Acme\Cake; class ClassMapBar {}');
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/tests');
         file_put_contents($this->workingDir.'/composersrc/foo.php', '<?php class ClassMapFoo {}');
 
-        // this class should not be found in the classmap
-        $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/tests');
+        // this classes should not be found in the classmap
         file_put_contents($this->workingDir.'/composersrc/tests/bar.php', '<?php class ClassExcludeMapFoo {}');
+        file_put_contents($this->workingDir.'/composersrc/ClassToExclude.php', '<?php class ClassClassToExclude {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
 
