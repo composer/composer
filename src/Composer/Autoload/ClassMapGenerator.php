@@ -54,7 +54,6 @@ class ClassMapGenerator
      * @throws \RuntimeException When the path is neither an existing file nor directory
      */
     public static function createMap($path, $blacklist = '', IOInterface $io = null, $namespace = null)
-    // RKERNER: public static function createMap($path, $blacklist = '')
     {
         if (is_string($path)) {
             if (is_file($path)) {

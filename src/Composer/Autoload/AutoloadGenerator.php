@@ -621,13 +621,7 @@ FOOTER;
                             $path = $package->getTargetDir() . '/' . $path;
                         }
                     }
-                    
-                    /* RKERNER
-                     * // add target-dir to classmap entries that don't have it
-                    if ($type === 'classmap' && $package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
-                        $path = $package->getTargetDir() . '/' . $path;
-                    }
-*/
+
                     if ($type === 'exclude-from-classmap') {
                         // first escape user input
                         $path = sprintf(self::EXCLUDE_PATTERN, preg_quote($path));
@@ -644,13 +638,6 @@ FOOTER;
                         $autoloads[] = empty($installPath) ? $path : preg_quote($installPath) . '/' . $path;
                         continue;
                     }
-/*
-                    if (empty($installPath)) {
-                        $autoloads[$namespace][] = empty($path) ? '.' : $path;
-                    } else {
-                        $autoloads[$namespace][] = $installPath.'/'.$path;
-                    }
-                     */
 
                     $relativePath = empty($installPath) ? (empty($path) ? '.' : $path) : $installPath.'/'.$path;
 
