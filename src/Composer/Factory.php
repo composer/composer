@@ -222,7 +222,7 @@ class Factory
             $localConfig = $file->read();
         }
 
-        if($ignoreRootReqsIfLockIsPresent && isset($composerFile) && file_exists($this->getLockFilename($composerFile))){
+        if ($ignoreRootReqsIfLockIsPresent && isset($composerFile) && file_exists($this->getLockFilename($composerFile))) {
             // ignore all requirements from the original composer.json file in case we are installing from a lock file.
             $localConfig["require"] = array();
             $localConfig["require-dev"] = array();
@@ -498,9 +498,8 @@ class Factory
      */
     protected function getLockFilename($composerFile)
     {
-        $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
+        return "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
             ? substr($composerFile, 0, -4) . 'lock'
             : $composerFile . '.lock';
-        return $lockFile;
     }
 }
