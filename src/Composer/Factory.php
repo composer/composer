@@ -195,7 +195,7 @@ class Factory
      * @throws \UnexpectedValueException
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true)
+    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true, $ignoreRootReqsIfLockIsPresent = false)
     {
         $cwd = $cwd ?: getcwd();
 
@@ -220,6 +220,12 @@ class Factory
 
             $file->validateSchema(JsonFile::LAX_SCHEMA);
             $localConfig = $file->read();
+        }
+
+        if ($ignoreRootReqsIfLockIsPresent && isset($composerFile) && file_exists($this->getLockFilename($composerFile))) {
+            // ignore all requirements from the original composer.json file in case we are installing from a lock file.
+            $localConfig["require"] = array();
+            $localConfig["require-dev"] = array();
         }
 
         // Load config and override with local config/auth config
@@ -306,9 +312,7 @@ class Factory
 
         // init locker if possible
         if ($fullLoad && isset($composerFile)) {
-            $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
-                ? substr($composerFile, 0, -4).'lock'
-                : $composerFile . '.lock';
+            $lockFile = $this->getLockFilename($composerFile);
             $locker = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io, $config)), $rm, $im, md5_file($composerFile));
             $composer->setLocker($locker);
         }
@@ -482,10 +486,21 @@ class Factory
      * @param  bool        $disablePlugins Whether plugins should not be loaded
      * @return Composer
      */
-    public static function create(IOInterface $io, $config = null, $disablePlugins = false)
+    public static function create(IOInterface $io, $config = null, $disablePlugins = false, $ignoreRootReqsIfLockIsPresent = false)
     {
         $factory = new static();
 
-        return $factory->createComposer($io, $config, $disablePlugins);
+        return $factory->createComposer($io, $config, $disablePlugins, null, true, $ignoreRootReqsIfLockIsPresent);
+    }
+
+    /**
+     * @param $composerFile
+     * @return string
+     */
+    private function getLockFilename($composerFile)
+    {
+        return "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
+            ? substr($composerFile, 0, -4) . 'lock'
+            : $composerFile . '.lock';
     }
 }

@@ -79,7 +79,7 @@ EOT
             $output->writeln('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
         }
 
-        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+        $composer = $this->getComposer(true, $input->getOption('no-plugins'), true);
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
 
