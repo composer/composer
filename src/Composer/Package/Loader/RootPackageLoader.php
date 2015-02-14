@@ -277,7 +277,18 @@ class RootPackageLoader extends ArrayLoader
         ) {
             $branch = preg_replace('{^dev-}', '', $version);
             $length = PHP_INT_MAX;
+
+            $nonFeatureBranches = '';
+            if(!empty($config['non-feature-branches'])) {
+                $nonFeatureBranches = implode('|', $config['non-feature-branches']);
+            }
+
             foreach ($branches as $candidate) {
+                // return directly, if branch is configured to be non-feature branch
+                if($candidate === $branch && preg_match('{^(' . $nonFeatureBranches . ')$}', $candidate)) {
+                    return $version;
+                }
+
                 // do not compare against other feature branches
                 if ($candidate === $branch || !preg_match('{^(master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
                     continue;
