@@ -355,6 +355,9 @@ class Installer
         $installFromLock = false;
         if (!$this->update && $this->locker->isLocked()) {
             $installFromLock = true;
+            // we are removing all requirements from the root package so only the lock file is relevant for installation rules
+            $this->package->setRequires(array());
+            $this->package->setDevRequires(array());
             try {
                 $lockedRepository = $this->locker->getLockedRepository($withDevReqs);
             } catch (\RuntimeException $e) {
