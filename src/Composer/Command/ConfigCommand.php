@@ -373,8 +373,9 @@ EOT
                 ));
             }
 
-            if (1 === count($values) && $booleanValidator($values[0])) {
-                if (false === $booleanNormalizer($values[0])) {
+            if (1 === count($values)) {
+                $bool = strtolower($values[0]);
+                if (true === $booleanValidator($bool) && false === $booleanNormalizer($bool)) {
                     return $this->configSource->addRepository($matches[1], false);
                 }
             }
