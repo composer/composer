@@ -240,9 +240,19 @@ EOT
         // handle repositories
         if (preg_match('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
-                return $this->configSource->removeRepository($matches[1]);
+                // packagist is not written to config and must be overidden with false
+                if ($matches[1] === 'packagist') {
+                    $values = array('false');
+                }
+                else {
+                    return $this->configSource->removeRepository($matches[1]);
+                }
             }
 
+            // special case to allow packagist to be turned off
+            if ($matches[1] === 'packagist' && 1 === count($values) && $values[0] === 'false') {
+                return $this->configSource->addRepository($matches[1], false);
+            }
             if (2 !== count($values)) {
                 throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
             }
