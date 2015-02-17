@@ -20,7 +20,7 @@ namespace Composer\Package;
 interface RootPackageInterface extends CompletePackageInterface
 {
     /**
-     * Returns a set of package names and theirs aliases
+     * Returns a set of package names and their aliases
      *
      * @return array
      */
