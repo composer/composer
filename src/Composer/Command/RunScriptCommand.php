@@ -54,10 +54,11 @@ class RunScriptCommand extends Command
             ->setName('run-script')
             ->setDescription('Run the scripts defined in composer.json.')
             ->setDefinition(array(
-                new InputArgument('script', InputArgument::REQUIRED, 'Script name to run.'),
+                new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run.'),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),
+                new InputOption('list', 'l', InputOption::VALUE_NONE, 'List scripts.'),
             ))
             ->setHelp(<<<EOT
 The <info>run-script</info> command runs scripts defined in composer.json:
@@ -70,6 +71,12 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        if ($input->getOption('list')) {
+            return $this->listScripts($input, $output);
+        } elseif (!$input->getArgument('script')) {
+            throw new \RunTimeException('Missing required argument "script"');
+        }
+
         $script = $input->getArgument('script');
         if (!in_array($script, $this->commandEvents) && !in_array($script, $this->scriptEvents)) {
             if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
@@ -96,5 +103,21 @@ EOT
         }
 
         return $composer->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args);
+    }
+
+    protected function listScripts(InputInterface $input, OutputInterface $output)
+    {
+        $scripts = $this->getComposer()->getPackage()->getScripts();
+
+        if (!count($scripts)) {
+            return 0;
+        }
+
+        $output->writeln('<info>scripts:</info>');
+        foreach ($scripts as $name => $script) {
+            $output->writeln('  ' . $name);
+        }
+
+        return 0;
     }
 }
