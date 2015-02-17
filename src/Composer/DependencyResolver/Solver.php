@@ -40,6 +40,7 @@ class Solver
     protected $branches = array();
     protected $problems = array();
     protected $learnedPool = array();
+    protected $learnedWhy = array();
 
     public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
     {
