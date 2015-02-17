@@ -554,6 +554,22 @@ Example:
 }
 ```
 
+#### Exclude files from classmap
+
+If you want to exclude some files or folders from the classmap you can use the 'exclude-from-classmap' property.
+This might be useful to exclude UnitTest classes from the classmap in your live environment, for example.
+
+The classmap generator will ignore all files which match your configured regex pattern.
+Please note that configured regex pattern will be interpreted as case sensitive.
+
+```json
+{
+    "autoload": {
+        "exclude-from-classmap": ["/Tests/", "/test/", "/tests/"]
+    }
+}
+```
+
 ### autoload-dev <span>(root-only)</span>
 
 This section allows to define autoload rules for development purposes.
