@@ -154,11 +154,6 @@ class RemoteFilesystem
             unset($options['github-token']);
         }
 
-        if (isset($options['gitlab-token'])) {
-            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'private_token='.$options['gitlab-token'];
-            unset($options['gitlab-token']);
-        }
-
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
@@ -356,6 +351,14 @@ class RemoteFilesystem
             ) {
                 throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
+        // } else if ($this->config && in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
+        //     $message = "\n".'Could not fetch '.$this->fileUrl.', enter your GitLab private tolen to access private repos';
+        //     $gitHubUtil = new GitHub($this->io, $this->config, null, $this);
+        //     if (!$gitHubUtil->authorizeOAuth($this->originUrl)
+        //         && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
+        //     ) {
+        //         throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
+        //     }
         } else {
             // 404s are only handled for github
             if ($httpStatus === 404) {
@@ -418,7 +421,7 @@ class RemoteFilesystem
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
                 $options['github-token'] = $auth['username'];
             } elseif ($auth['password'] === 'gitlab-private-token') {
-                $options['gitlab-token'] = $auth['username'];
+                $headers[] = 'Private-Token: '.$auth['username'];
             }else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
