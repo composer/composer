@@ -33,6 +33,7 @@ use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
+use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
@@ -355,9 +356,6 @@ class Installer
         $installFromLock = false;
         if (!$this->update && $this->locker->isLocked()) {
             $installFromLock = true;
-            // we are removing all requirements from the root package so only the lock file is relevant for installation rules
-            $this->package->setRequires(array());
-            $this->package->setDevRequires(array());
             try {
                 $lockedRepository = $this->locker->getLockedRepository($withDevReqs);
             } catch (\RuntimeException $e) {
@@ -381,7 +379,7 @@ class Installer
 
         // creating repository pool
         $policy = $this->createPolicy();
-        $pool = $this->createPool($withDevReqs);
+        $pool = $this->createPool($withDevReqs, $lockedRepository);
         $pool->addRepository($installedRepo, $aliases);
         if ($installFromLock) {
             $pool->addRepository($lockedRepository, $aliases);
@@ -674,27 +672,39 @@ class Installer
         return array_merge($uninstOps, $operations);
     }
 
-    private function createPool($withDevReqs)
+    private function createPool($withDevReqs, RepositoryInterface $lockedRepository = null)
     {
-        $minimumStability = $this->package->getMinimumStability();
-        $stabilityFlags = $this->package->getStabilityFlags();
-
-        if (!$this->update && $this->locker->isLocked()) {
+        if (!$this->update && $this->locker->isLocked()) { // install from lock
             $minimumStability = $this->locker->getMinimumStability();
             $stabilityFlags = $this->locker->getStabilityFlags();
+
+            $requires = array();
+            foreach ($lockedRepository->getPackages() as $package) {
+                $constraint = new VersionConstraint('=', $package->getVersion());
+                $constraint->setPrettyString($package->getPrettyVersion());
+                $requires[$package->getName()] = $constraint;
+            }
+        } else {
+            $minimumStability = $this->package->getMinimumStability();
+            $stabilityFlags = $this->package->getStabilityFlags();
+
+            $requires = $this->package->getRequires();
+            if ($withDevReqs) {
+                $requires = array_merge($requires, $this->package->getDevRequires());
+            }
         }
 
-        $requires = $this->package->getRequires();
-        if ($withDevReqs) {
-            $requires = array_merge($requires, $this->package->getDevRequires());
-        }
         $rootConstraints = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
             if ($this->ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
                 continue;
             }
-            $rootConstraints[$req] = $constraint->getConstraint();
+            if ($constraint instanceof Link) {
+                $rootConstraints[$req] = $constraint->getConstraint();
+            } else {
+                $rootConstraints[$req] = $constraint;
+            }
         }
 
         return new Pool($minimumStability, $stabilityFlags, $rootConstraints);
