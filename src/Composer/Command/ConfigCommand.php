@@ -65,6 +65,15 @@ class ConfigCommand extends Command
 This command allows you to edit some basic composer settings in either the
 local composer.json file or the global config.json file.
 
+To set a config setting:
+
+    <comment>%command.full_name% bin-dir bin/</comment>
+
+To read a config setting:
+
+    <comment>%command.full_name% bin-dir</comment>
+    Outputs: <info>bin</info>
+
 To edit the global config.json file:
 
     <comment>%command.full_name% --global</comment>
@@ -73,7 +82,15 @@ To add a repository:
 
     <comment>%command.full_name% repositories.foo vcs http://bar.com</comment>
 
-You can add a repository to the global config.json file by passing in the
+To remove a repository (repo is a short alias for repositories):
+
+    <comment>%command.full_name% --unset repo.foo</comment>
+
+To disable packagist:
+
+    <comment>%command.full_name% repo.packagist false</comment>
+
+You can alter repositories in the global config.json file by passing in the
 <info>--global</info> option.
 
 To edit the file in an external editor:
