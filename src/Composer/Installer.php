@@ -625,17 +625,13 @@ class Installer
      */
     private function movePluginsToFront(array $operations)
     {
-        $installerOps = array();
-        foreach ($operations as $idx => $op) {
-            if ($op instanceof InstallOperation) {
-                $package = $op->getPackage();
-            } elseif ($op instanceof UpdateOperation) {
-                $package = $op->getTargetPackage();
-            } else {
+        $pluginDependencies = array();
+        foreach ($operations as $op) {
+            if (null === $package = $this->getOperationPackage($op)) {
                 continue;
             }
 
-            if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
+            if ($this->isPlugin($package)) {
                 // ignore requirements to platform or composer-plugin-api
                 $requires = array_keys($package->getRequires());
                 foreach ($requires as $index => $req) {
@@ -643,11 +639,21 @@ class Installer
                         unset($requires[$index]);
                     }
                 }
-                // if there are no other requirements, move the plugin to the top of the op list
-                if (!count($requires)) {
-                    $installerOps[] = $op;
-                    unset($operations[$idx]);
-                }
+                $pluginDependencies = array_merge($pluginDependencies, $requires);
+            }
+        }
+        $pluginDependencies = array_unique($pluginDependencies);
+
+        $installerOps = array();
+        foreach ($operations as $idx => $op) {
+            if (null === $package = $this->getOperationPackage($op)) {
+                continue;
+            }
+
+            if ($this->isPlugin($package)
+                || in_array($package->getName(), $pluginDependencies)) {
+                $installerOps[] = $op;
+                unset($operations[$idx]);
             }
         }
 
@@ -672,6 +678,36 @@ class Installer
         }
 
         return array_merge($uninstOps, $operations);
+    }
+
+    /**
+     * Get the package of operation
+     *
+     * @param OperationInterface $operation
+     *
+     * @return PackageInterface|null
+     */
+    private function getOperationPackage(OperationInterface $operation)
+    {
+        if ($operation instanceof InstallOperation) {
+            return $operation->getPackage();
+        } elseif ($operation instanceof UpdateOperation) {
+            return $operation->getTargetPackage();
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if package is a plugin
+     *
+     * @param  PackageInterface $package
+     * @return bool
+     */
+    private function isPlugin(PackageInterface $package)
+    {
+        return $package->getType() === 'composer-plugin'
+            || $package->getType() === 'composer-installer';
     }
 
     private function createPool($withDevReqs)
