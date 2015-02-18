@@ -136,7 +136,7 @@ class VcsRepository extends ArrayRepository
             if ($verbose) {
                 $this->io->writeError($msg);
             } else {
-                $this->io->overwrite($msg, false);
+                $this->io->overwriteError($msg, false);
             }
 
             // strip the release- prefix from tags if present
@@ -192,7 +192,7 @@ class VcsRepository extends ArrayRepository
         }
 
         if (!$verbose) {
-            $this->io->overwrite('', false);
+            $this->io->overwriteError('', false);
         }
 
         foreach ($driver->getBranches() as $branch => $identifier) {
@@ -200,7 +200,7 @@ class VcsRepository extends ArrayRepository
             if ($verbose) {
                 $this->io->writeError($msg);
             } else {
-                $this->io->overwrite($msg, false);
+                $this->io->overwriteError($msg, false);
             }
 
             if (!$parsedBranch = $this->validateBranch($branch)) {
@@ -257,7 +257,7 @@ class VcsRepository extends ArrayRepository
         $driver->cleanup();
 
         if (!$verbose) {
-            $this->io->overwrite('', false);
+            $this->io->overwriteError('', false);
         }
 
         if (!$this->getPackages()) {
