@@ -108,6 +108,11 @@ class ConsoleIO extends BaseIO
         $this->doWrite($messages, $newline, true);
     }
 
+    /**
+     * @param array $messages
+     * @param boolean $newline
+     * @param boolean $stderr
+     */
     private function doWrite($messages, $newline, $stderr)
     {
         if (null !== $this->startTime) {
@@ -133,12 +138,38 @@ class ConsoleIO extends BaseIO
      */
     public function overwrite($messages, $newline = true, $size = null)
     {
-        if (!$this->output->isDecorated()) {
+        $this->doOverwrite($messages, $newline, $size, false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function overwriteError($messages, $newline = true, $size = null)
+    {
+        $this->doOverwrite($messages, $newline, $size, true);
+    }
+
+    /**
+     * @param array $messages
+     * @param boolean $newline
+     * @param integer $size
+     * @param boolean $stderr
+     */
+    private function doOverwrite($messages, $newline, $size, $stderr)
+    {
+        if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
+            $output = $this->output->getErrorOutput();
+        } else {
+            $output = $this->output;
+        }
+
+        if (!$output->isDecorated()) {
             if (!$messages) {
                 return;
             }
 
-            return $this->write($messages, count($messages) === 1 || $newline);
+            $this->doWrite($messages, count($messages) === 1 || $newline, $stderr);
+            return;
         }
 
         // messages can be an array, let's convert it to string anyway
@@ -147,24 +178,24 @@ class ConsoleIO extends BaseIO
         // since overwrite is supposed to overwrite last message...
         if (!isset($size)) {
             // removing possible formatting of lastMessage with strip_tags
-            $size = strlen(strip_tags($this->lastMessage));
+            $size = strlen(strip_tags($stderr ? $this->lastMessageErr : $this->lastMessage));
         }
         // ...let's fill its length with backspaces
-        $this->write(str_repeat("\x08", $size), false);
+        $this->doWrite(str_repeat("\x08", $size), false, $stderr);
 
         // write the new message
-        $this->write($messages, false);
+        $this->doWrite($messages, false, $stderr);
 
         $fill = $size - strlen(strip_tags($messages));
         if ($fill > 0) {
             // whitespace whatever has left
-            $this->write(str_repeat(' ', $fill), false);
+            $this->doWrite(str_repeat(' ', $fill), false, $stderr);
             // move the cursor back
-            $this->write(str_repeat("\x08", $fill), false);
+            $this->doWrite(str_repeat("\x08", $fill), false, $stderr);
         }
 
         if ($newline) {
-            $this->write('');
+            $this->doWrite('', true, $stderr);
         }
         $this->lastMessage = $messages;
     }
@@ -174,7 +205,16 @@ class ConsoleIO extends BaseIO
      */
     public function ask($question, $default = null)
     {
-        return $this->helperSet->get('dialog')->ask($this->output, $question, $default);
+        $output = $this->output;
+
+        if ($output instanceof ConsoleOutputInterface) {
+            $output = $output->getErrorOutput();
+        }
+
+        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
+        $dialog = $this->helperSet->get('dialog');
+
+        return $dialog->ask($output, $question, $default);
     }
 
     /**
@@ -182,7 +222,16 @@ class ConsoleIO extends BaseIO
      */
     public function askConfirmation($question, $default = true)
     {
-        return $this->helperSet->get('dialog')->askConfirmation($this->output, $question, $default);
+        $output = $this->output;
+
+        if ($output instanceof ConsoleOutputInterface) {
+            $output = $output->getErrorOutput();
+        }
+
+        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
+        $dialog = $this->helperSet->get('dialog');
+
+        return $dialog->askConfirmation($output, $question, $default);
     }
 
     /**
@@ -190,7 +239,16 @@ class ConsoleIO extends BaseIO
      */
     public function askAndValidate($question, $validator, $attempts = false, $default = null)
     {
-        return $this->helperSet->get('dialog')->askAndValidate($this->output, $question, $validator, $attempts, $default);
+        $output = $this->output;
+
+        if ($output instanceof ConsoleOutputInterface) {
+            $output = $output->getErrorOutput();
+        }
+
+        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
+        $dialog = $this->helperSet->get('dialog');
+
+        return $dialog->askAndValidate($output, $question, $validator, $attempts, $default);
     }
 
     /**
@@ -204,9 +262,9 @@ class ConsoleIO extends BaseIO
 
             // use bash if it's present
             if ($finder->find('bash') && $finder->find('stty')) {
-                $this->write($question, false);
+                $this->writeError($question, false);
                 $value = rtrim(shell_exec('bash -c "stty -echo; read -n0 discard; read -r mypassword; stty echo; echo $mypassword"'));
-                $this->write('');
+                $this->writeError('');
 
                 return $value;
             }
@@ -230,9 +288,9 @@ class ConsoleIO extends BaseIO
                 $exe = $tmpExe;
             }
 
-            $this->write($question, false);
+            $this->writeError($question, false);
             $value = rtrim(shell_exec($exe));
-            $this->write('');
+            $this->writeError('');
 
             // clean up
             if (isset($tmpExe)) {
@@ -252,11 +310,11 @@ class ConsoleIO extends BaseIO
                 }
             }
             if (isset($shell)) {
-                $this->write($question, false);
+                $this->writeError($question, false);
                 $readCmd = ($shell === 'csh') ? 'set mypassword = $<' : 'read -r mypassword';
                 $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
                 $value = rtrim(shell_exec($command));
-                $this->write('');
+                $this->writeError('');
 
                 return $value;
             }
