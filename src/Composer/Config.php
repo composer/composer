@@ -217,7 +217,7 @@ class Config
                 return rtrim($this->process($this->config[$key], $flags), '/\\');
 
             case 'bin-compat':
-                $value= $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
+                $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
 
                 if (!in_array($value, array('auto', 'nosymlink', 'full'))) {
                     throw new \RuntimeException(
