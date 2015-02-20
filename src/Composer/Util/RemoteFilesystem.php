@@ -351,14 +351,15 @@ class RemoteFilesystem
             ) {
                 throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
-        // } else if ($this->config && in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
-        //     $message = "\n".'Could not fetch '.$this->fileUrl.', enter your GitLab private tolen to access private repos';
-        //     $gitHubUtil = new GitHub($this->io, $this->config, null, $this);
-        //     if (!$gitHubUtil->authorizeOAuth($this->originUrl)
-        //         && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
-        //     ) {
-        //         throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
-        //     }
+        } else if ($this->config && in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
+            if ($this->io->isInteractive()) {
+                $this->io->overwrite('Enter your GitLab private token to access API (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+                $token = $this->io->askAndHideAnswer('      Private-Token: ');
+                $this->io->setAuthentication($this->originUrl, $token, 'gitlab-private-token');
+                $this->config->getAuthConfigSource()->addConfigSetting('gitlab-tokens.'.$this->originUrl, $token);
+            } else {
+                throw new TransportException("The GitLab URL requires authentication.\nYou must be using the interactive console to authenticate", $httpStatus);
+            }
         } else {
             // 404s are only handled for github
             if ($httpStatus === 404) {
@@ -422,7 +423,7 @@ class RemoteFilesystem
                 $options['github-token'] = $auth['username'];
             } elseif ($auth['password'] === 'gitlab-private-token') {
                 $headers[] = 'Private-Token: '.$auth['username'];
-            }else {
+            } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
             }

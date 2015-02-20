@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Repository\Vcs;
 
 use Composer\Config;
@@ -7,39 +17,74 @@ use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Downloader\TransportException;
+use Composer\Util\RemoteFilesystem;
 
 /**
- * Simplistic driver for GitLab currently only supports the api, not local checkouts.
+ * Driver for GitLab API, use the Git driver for local checkouts.
+ *
+ * @author Henrik Bjørnskov <henrik@bjrnskov.dk>
+ * @author Jérôme Tamarelle <jerome@tamarelle.net>
  */
 class GitLabDriver extends VcsDriver
 {
-    protected $owner;
-    protected $repository;
-    protected $originUrl;
-    protected $cache;
-    protected $infoCache = array();
+    private $scheme;
+    private $owner;
+    private $repository;
 
-    protected $project;
-    protected $commits = array();
-    protected $tags;
-    protected $branches;
+    private $cache;
+    private $infoCache = array();
+
+    /**
+     * @var array Project data returned by GitLab API
+     */
+    private $project;
+
+    /**
+     * @var array Keeps commits returned by GitLab API
+     */
+    private $commits = array();
+
+    /**
+     * @var array List of tag => reference
+     */
+    private $tags;
+
+    /**
+     * @var array List of branch => reference
+     */
+    private $branches;
 
     /**
      * Extracts information from the repository url.
+     * SSH urls are not supported in order to know the HTTP sheme to use.
      *
      * {@inheritDoc}
      */
     public function initialize()
     {
-        preg_match('#^(?:(https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $this->url, $match);
+        if (!preg_match('#^(https?)://([^/]+)/([^/]+)/([^/]+)(?:\.git|/)?$#', $this->url, $match)) {
+            throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
+        }
 
-        $this->scheme       = $match[1];
-        $this->owner        = $match[4];
-        $this->repository   = $match[5];
-        $this->originUrl    = !empty($match[2]) ? $match[2] : $match[3];
-        $this->cache        = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
+        $this->scheme = $match[1];
+        $this->originUrl = $match[2];
+        $this->owner = $match[3];
+        $this->repository = preg_replace('#(\.git)$#', '', $match[4]);
+
+        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
         $this->fetchProject();
+    }
+
+    /**
+     * Updates the RemoteFilesystem instance.
+     * Mainly useful for tests.
+     *
+     * @internal
+     */
+    public function setRemoteFilesystem(RemoteFilesystem $remoteFilesystem)
+    {
+        $this->remoteFilesystem = $remoteFilesystem;
     }
 
     /**
@@ -53,10 +98,9 @@ class GitLabDriver extends VcsDriver
     {
         // Convert the root identifier to a cachable commit id
         if (!preg_match('{[a-f0-9]{40}}i', $identifier)) {
-            foreach ($this->getBranches() as $ref => $id) {
-                if ($ref === $identifier) {
-                    $identifier = $id;
-                }
+            $branches = $this->getBranches();
+            if (isset($branches[$identifier])) {
+                $identifier = $branches[$identifier];
             }
         }
 
@@ -86,24 +130,6 @@ class GitLabDriver extends VcsDriver
         }
 
         return $this->infoCache[$identifier] = $composer;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function hasComposerFile($identifier)
-    {
-        try {
-            $this->getComposerInformation($identifier);
-
-            return true;
-        } catch (TransportException $e) {
-            if ($e->getCode() !== 404) {
-                throw $e;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -173,31 +199,30 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * Fetches composer.json file from the repository through api
+     * Fetches composer.json file from the repository through api.
      *
      * @param string $identifier
+     *
      * @return array
      */
     protected function fetchComposerFile($identifier)
     {
-        $resource = $this->getApiUrl() . '/repository/blobs/'.$identifier.'?filepath=composer.json';
+        $resource = $this->getApiUrl().'/repository/blobs/'.$identifier.'?filepath=composer.json';
 
         return JsonFile::parseJson($this->getContents($resource), $resource);
     }
 
     /**
-     * Root url
-     *
-     * {@inheritDoc}
+     * @return string Base URL for GitLab API v3
      */
-    protected function getApiUrl()
+    public function getApiUrl()
     {
-        // this needs to be https, but our install is running http
-        return 'http://'.$this->originUrl.'/api/v3/projects/'.$this->owner.'%2F'.$this->repository;
+        return $this->scheme.'://'.$this->originUrl.'/api/v3/projects/'.$this->owner.'%2F'.$this->repository;
     }
 
     /**
      * @param string $type
+     *
      * @return string[] where keys are named references like tags or branches and the value a sha
      */
     protected function getReferences($type)
@@ -212,7 +237,7 @@ class GitLabDriver extends VcsDriver
             $references[$datum['name']] = $datum['commit']['id'];
 
             // Keep the last commit date of a reference to avoid
-            // unnecessary API call when retreiving the composer file.
+            // unnecessary API call when retrieving the composer file.
             $this->commits[$datum['commit']['id']] = $datum['commit'];
         }
 
@@ -228,24 +253,25 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * Uses the config `gitlab-domains` to see if the driver supports the url for the 
+     * Uses the config `gitlab-domains` to see if the driver supports the url for the
      * repository given.
      *
      * {@inheritDoc}
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match('#^((?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $url, $matches)) {
+        if (!preg_match('#^(https?)://([^/]+)/([^/]+)/([^/]+)(?:\.git|/)?$#', $url, $match)) {
             return false;
         }
 
-        $originUrl = empty($matches[2]) ? $matches[3] : $matches[2];
+        $scheme = $match[1];
+        $originUrl = $match[2];
 
         if (!in_array($originUrl, (array) $config->get('gitlab-domains'))) {
             return false;
         }
 
-        if (!extension_loaded('openssl')) {
+        if ('https' === $scheme && !extension_loaded('openssl')) {
             if ($io->isVerbose()) {
                 $io->write('Skipping GitLab driver for '.$url.' because the OpenSSL PHP extension is missing.');
             }
