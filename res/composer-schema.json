@@ -183,6 +183,7 @@
                 },
                 "bin-compat": {
                     "type": "string",
+                    "enum": ["auto", "nosymlink", "full"],
                     "description": "The compatibility of the binaries, defaults to \"auto\" (automatically guessed) and can be \"nosymlink\" (compatible with Unix-based systems) or \"full\" (compatible with both Windows and Unix-based systems)."
                 },
                 "discard-changes": {
