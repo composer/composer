@@ -83,6 +83,6 @@ class HtmlOutputFormatter extends OutputFormatter
             }
         }
 
-        return $out . '">'.$matches[2].'</span>';
+        return $out.'">'.$matches[2].'</span>';
     }
 }
