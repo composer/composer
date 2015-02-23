@@ -21,7 +21,6 @@ use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Script;
-use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
 use Composer\Util\ProcessExecutor;
 
@@ -95,36 +94,28 @@ class EventDispatcher
     /**
      * Dispatch a package event.
      *
-     * @param  string             $eventName The constant in ScriptEvents
-     * @param  boolean            $devMode   Whether or not we are in dev mode
-     * @param  OperationInterface $operation The package being installed/updated/removed
-     * @return int                return code of the executed script if any, for php scripts a false return
-     *                                      value is changed to 1, anything else to 0
-     */
-    public function dispatchPackageEvent($eventName, $devMode, OperationInterface $operation)
-    {
-        return $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $operation));
-    }
-
-    /**
-     * Dispatch a command event.
+     * @param string              $eventName     The constant in PackageEvents
+     * @param bool                $devMode       Whether or not we are in dev mode
+     * @param PolicyInterface     $policy        The policy
+     * @param Pool                $pool          The pool
+     * @param CompositeRepository $installedRepo The installed repository
+     * @param Request             $request       The request
+     * @param array               $operations    The list of operations
+     * @param OperationInterface  $operation     The package being installed/updated/removed
      *
-     * @param  string  $eventName      The constant in ScriptEvents
-     * @param  boolean $devMode        Whether or not we are in dev mode
-     * @param  array   $additionalArgs Arguments passed by the user
-     * @param  array   $flags          Optional flags to pass data not as argument
-     * @return int     return code of the executed script if any, for php scripts a false return
-     *                                value is changed to 1, anything else to 0
+     * @return int return code of the executed script if any, for php scripts a false return
+     *             value is changed to 1, anything else to 0
      */
-    public function dispatchCommandEvent($eventName, $devMode, $additionalArgs = array(), $flags = array())
+    public function dispatchPackageEvent($eventName, $devMode, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations, OperationInterface $operation)
     {
-        return $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode, $additionalArgs, $flags));
+        return $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $policy, $pool, $installedRepo, $request, $operations, $operation));
     }
 
     /**
      * Dispatch a installer event.
      *
      * @param string              $eventName     The constant in InstallerEvents
+     * @param bool                $devMode       Whether or not we are in dev mode
      * @param PolicyInterface     $policy        The policy
      * @param Pool                $pool          The pool
      * @param CompositeRepository $installedRepo The installed repository
@@ -134,9 +125,9 @@ class EventDispatcher
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
      */
-    public function dispatchInstallerEvent($eventName, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations = array())
+    public function dispatchInstallerEvent($eventName, $devMode, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations = array())
     {
-        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $policy, $pool, $installedRepo, $request, $operations));
+        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $policy, $pool, $installedRepo, $request, $operations));
     }
 
     /**
@@ -232,8 +223,18 @@ class EventDispatcher
 
         $expected = $typehint->getName();
 
+        // BC support
         if (!$event instanceof $expected && $expected === 'Composer\Script\CommandEvent') {
-            $event = new CommandEvent($event->getName(), $event->getComposer(), $event->getIO(), $event->isDevMode(), $event->getArguments());
+            $event = new \Composer\Script\CommandEvent(
+                $event->getName(), $event->getComposer(), $event->getIO(), $event->isDevMode(), $event->getArguments()
+            );
+        }
+        if (!$event instanceof $expected && $expected === 'Composer\Script\PackageEvent') {
+            $event = new \Composer\Script\PackageEvent(
+                $event->getName(), $event->getComposer(), $event->getIO(), $event->isDevMode(),
+                $event->getPolicy(), $event->getPool(), $event->getInstalledRepo(), $event->getRequest(),
+                $event->getOperations(), $event->getOperation()
+            );
         }
 
         return $event;

@@ -12,44 +12,13 @@
 
 namespace Composer\Script;
 
-use Composer\Composer;
-use Composer\IO\IOInterface;
-use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\Installer\PackageEvent as BasePackageEvent;
 
 /**
  * The Package Event.
  *
- * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @deprecated Use Composer\Installer\PackageEvent instead
  */
-class PackageEvent extends Event
+class PackageEvent extends BasePackageEvent
 {
-    /**
-     * @var OperationInterface The package instance
-     */
-    private $operation;
-
-    /**
-     * Constructor.
-     *
-     * @param string             $name      The event name
-     * @param Composer           $composer  The composer object
-     * @param IOInterface        $io        The IOInterface object
-     * @param boolean            $devMode   Whether or not we are in dev mode
-     * @param OperationInterface $operation The operation object
-     */
-    public function __construct($name, Composer $composer, IOInterface $io, $devMode, OperationInterface $operation)
-    {
-        parent::__construct($name, $composer, $io, $devMode);
-        $this->operation = $operation;
-    }
-
-    /**
-     * Returns the package instance.
-     *
-     * @return OperationInterface
-     */
-    public function getOperation()
-    {
-        return $this->operation;
-    }
 }

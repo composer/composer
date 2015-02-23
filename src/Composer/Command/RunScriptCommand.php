@@ -27,7 +27,7 @@ class RunScriptCommand extends Command
     /**
      * @var array Array with command events
      */
-    protected $commandEvents = array(
+    protected $scriptEvents = array(
         ScriptEvents::PRE_INSTALL_CMD,
         ScriptEvents::POST_INSTALL_CMD,
         ScriptEvents::PRE_UPDATE_CMD,
@@ -35,17 +35,11 @@ class RunScriptCommand extends Command
         ScriptEvents::PRE_STATUS_CMD,
         ScriptEvents::POST_STATUS_CMD,
         ScriptEvents::POST_ROOT_PACKAGE_INSTALL,
-        ScriptEvents::POST_CREATE_PROJECT_CMD
-    );
-
-    /**
-     * @var array Array with script events
-     */
-    protected $scriptEvents = array(
+        ScriptEvents::POST_CREATE_PROJECT_CMD,
         ScriptEvents::PRE_ARCHIVE_CMD,
         ScriptEvents::POST_ARCHIVE_CMD,
         ScriptEvents::PRE_AUTOLOAD_DUMP,
-        ScriptEvents::POST_AUTOLOAD_DUMP
+        ScriptEvents::POST_AUTOLOAD_DUMP,
     );
 
     protected function configure()
@@ -78,7 +72,7 @@ EOT
         }
 
         $script = $input->getArgument('script');
-        if (!in_array($script, $this->commandEvents) && !in_array($script, $this->scriptEvents)) {
+        if (!in_array($script, $this->scriptEvents)) {
             if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                 throw new \InvalidArgumentException(sprintf('Script "%s" cannot be run with this command', $script));
             }
@@ -97,10 +91,6 @@ EOT
         }
 
         $args = $input->getArgument('args');
-
-        if (in_array($script, $this->commandEvents)) {
-            return $composer->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args);
-        }
 
         return $composer->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args);
     }

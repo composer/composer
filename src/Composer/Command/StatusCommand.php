@@ -57,7 +57,7 @@ EOT
         $im = $composer->getInstallationManager();
 
         // Dispatch pre-status-command
-        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::PRE_STATUS_CMD, true);
+        $composer->getEventDispatcher()->dispatchScript(ScriptEvents::PRE_STATUS_CMD, true);
 
         $errors = array();
 
@@ -98,7 +98,7 @@ EOT
         }
 
         // Dispatch post-status-command
-        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_STATUS_CMD, true);
+        $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_STATUS_CMD, true);
 
         return $errors ? 1 : 0;
     }

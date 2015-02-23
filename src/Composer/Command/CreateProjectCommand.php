@@ -149,7 +149,7 @@ EOT
 
         if ($noScripts === false) {
             // dispatch event
-            $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
+            $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
         }
 
         $rootPackageConfig = $composer->getConfig();
@@ -217,7 +217,7 @@ EOT
 
         if ($noScripts === false) {
             // dispatch event
-            $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
+            $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
         }
 
         chdir($oldCwd);
