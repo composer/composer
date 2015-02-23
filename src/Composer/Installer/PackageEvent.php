@@ -49,16 +49,8 @@ class PackageEvent extends InstallerEvent
      */
     public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations, OperationInterface $operation)
     {
-        parent::__construct($eventName);
+        parent::__construct($eventName, $composer, $io, $devMode, $policy, $pool, $installedRepo, $request, $operations);
 
-        $this->composer = $composer;
-        $this->io = $io;
-        $this->devMode = $devMode;
-        $this->policy = $policy;
-        $this->pool = $pool;
-        $this->installedRepo = $installedRepo;
-        $this->request = $request;
-        $this->operations = $operations;
         $this->operation = $operation;
     }
 
