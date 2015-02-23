@@ -89,7 +89,7 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         putenv('COMPOSER_HOME='.$this->testDir.'home');
 
         $cmd = 'php '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
-        $proc = new Process($cmd, __DIR__.'/Fixtures/functional');
+        $proc = new Process($cmd, __DIR__.'/Fixtures/functional', null, null, 300);
         $exitcode = $proc->run();
 
         if (isset($testData['EXPECT'])) {
