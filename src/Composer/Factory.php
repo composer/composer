@@ -242,6 +242,20 @@ class Factory
         $vendorDir = $config->get('vendor-dir');
         $binDir = $config->get('bin-dir');
 
+        // initialize curl-transfer
+        if (extension_loaded('curl') && $config->get('enable-curl-transfer') && !defined(__NAMESPACE__ . '\\CURL_ENABLED')) {
+            $wrappers = stream_get_wrappers();
+            if (in_array('http', $wrappers)) {
+                stream_wrapper_unregister('http');
+            }
+            if (in_array('https', $wrappers)) {
+                stream_wrapper_unregister('https');
+            }
+            stream_wrapper_register('http', 'Composer\\Util\\CurlStream');
+            stream_wrapper_register('https', 'Composer\\Util\\CurlStream');
+            define(__NAMESPACE__ . '\\CURL_ENABLED', true);
+        }
+
         // initialize composer
         $composer = new Composer();
         $composer->setConfig($config);

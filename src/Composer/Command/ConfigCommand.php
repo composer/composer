@@ -303,6 +303,7 @@ EOT
             'classmap-authoritative' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
+            'enable-curl-transfer' => array($booleanValidator, $booleanNormalizer),
         );
         $multiConfigValues = array(
             'github-protocols' => array(
