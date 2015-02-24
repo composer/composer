@@ -6,9 +6,15 @@
 
 # Toran Proxy
 
-[Toran Proxy](https://toranproxy.com/) is a commercial alternative to Satis offering professional support as well as a web UI to manage everything and a better integration with Composer.
+[Toran Proxy](https://toranproxy.com/) is a commercial alternative to Satis
+offering professional support as well as a web UI to manage everything and a
+better integration with Composer. It also provides proxying/mirroring for git
+repos and package zip files which makes installs faster and independent from
+third party systems.
 
-Toran's revenue is also used to pay for Composer and Packagist development and hosting so using it is a good way to support open source financially. You can find more information about how to set it up and use it on the [Toran Proxy](https://toranproxy.com/) website.
+Toran's revenue is also used to pay for Composer and Packagist development and
+hosting so using it is a good way to support open source financially. You can
+find more information about how to set it up and use it on the [Toran Proxy](https://toranproxy.com/) website.
 
 # Satis
 
