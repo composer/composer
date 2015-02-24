@@ -56,9 +56,10 @@ class ConsoleIOTest extends TestCase
         $outputMock->expects($this->once())
             ->method('write')
             ->with(
-                $this->callback(function($messages){
+                $this->callback(function ($messages) {
                     $result = preg_match("[(.*)/(.*) First line]", $messages[0]) > 0;
                     $result &= preg_match("[(.*)/(.*) Second line]", $messages[1]) > 0;
+
                     return $result;
                 }),
                 $this->equalTo(false)

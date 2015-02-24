@@ -383,7 +383,7 @@ EOF;
         }
 
         if (!$filesCode) {
-            return FALSE;
+            return false;
         }
 
         return <<<EOF

@@ -166,6 +166,7 @@ class GitHubTest extends \PHPUnit_Framework_TestCase
                             return true;
                         }
                     }
+
                     return false;
                 })
             )

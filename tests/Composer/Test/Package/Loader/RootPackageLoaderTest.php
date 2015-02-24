@@ -169,9 +169,10 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         $self = $this;
 
         /* Can do away with this mock object when https://github.com/sebastianbergmann/phpunit-mock-objects/issues/81 is fixed */
-        $processExecutor = new ProcessExecutorMock(function($command, &$output = null, $cwd = null) use ($self) {
+        $processExecutor = new ProcessExecutorMock(function ($command, &$output = null, $cwd = null) use ($self) {
             if (0 === strpos($command, 'git rev-list')) {
                 $output = "";
+
                 return 0;
             }
 
@@ -207,9 +208,10 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         $self = $this;
 
         /* Can do away with this mock object when https://github.com/sebastianbergmann/phpunit-mock-objects/issues/81 is fixed */
-        $processExecutor = new ProcessExecutorMock(function($command, &$output = null, $cwd = null) use ($self) {
+        $processExecutor = new ProcessExecutorMock(function ($command, &$output = null, $cwd = null) use ($self) {
             if (0 === strpos($command, 'git rev-list')) {
                 $output = "";
+
                 return 0;
             }
 

@@ -106,6 +106,7 @@ class AutoloadGeneratorTest extends TestCase
                         $ret = $ret();
                     }
                 }
+
                 return $ret;
             }));
 

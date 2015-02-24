@@ -33,7 +33,6 @@ use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
-use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
@@ -1179,7 +1178,6 @@ class Installer
         return $this;
     }
 
-
     /**
      * set whether to run autoloader or not
      *
@@ -1192,7 +1190,6 @@ class Installer
 
         return $this;
     }
-
 
     /**
      * set whether to run scripts or not

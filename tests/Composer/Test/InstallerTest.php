@@ -330,8 +330,7 @@ class InstallerTest extends TestCase
         );
 
         $section = null;
-        foreach ($tokens as $i => $token)
-        {
+        foreach ($tokens as $i => $token) {
             if (null === $section && empty($token)) {
                 continue; // skip leading blank
             }

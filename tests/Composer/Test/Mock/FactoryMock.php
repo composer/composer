@@ -14,7 +14,6 @@ namespace Composer\Test\Mock;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Factory;
-use Composer\Repository;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Installer;
