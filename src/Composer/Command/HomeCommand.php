@@ -57,10 +57,16 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $repo = $this->initializeRepo();
+        $repos = $this->initializeRepos();
         $return = 0;
 
         foreach ($input->getArgument('packages') as $packageName) {
+            foreach ($repos as $repo) {
+                $package = $this->getPackage($repo, $packageName);
+                if ($package instanceof CompletePackageInterface) {
+                    break;
+                }
+            }
             $package = $this->getPackage($repo, $packageName);
 
             if (!$package instanceof CompletePackageInterface) {
@@ -144,21 +150,25 @@ EOT
     }
 
     /**
-     * Initializes the repo
+     * Initializes repositories
      *
-     * @return CompositeRepository
+     * Returns an array of repos in order they should be checked in
+     *
+     * @return RepositoryInterface[]
      */
-    private function initializeRepo()
+    private function initializeRepos()
     {
         $composer = $this->getComposer(false);
 
         if ($composer) {
-            $repo = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
-        } else {
-            $defaultRepos = Factory::createDefaultRepositories($this->getIO());
-            $repo = new CompositeRepository($defaultRepos);
+            return array(
+                $composer->getRepositoryManager()->getLocalRepository(),
+                new CompositeRepository($composer->getRepositoryManager()->getRepositories())
+            );
         }
 
-        return $repo;
+        $defaultRepos = Factory::createDefaultRepositories($this->getIO());
+
+        return array(new CompositeRepository($defaultRepos));
     }
 }
