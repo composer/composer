@@ -262,7 +262,7 @@ EOT
         $type = $input->getOption('type') ?: false;
         $type = $dialog->ask(
             $output,
-            $dialog->getQuestion('Type', $type),
+            $dialog->getQuestion('Package Type', $type),
             $type
         );
         $input->setOption('type', $type);
