@@ -53,12 +53,12 @@ class Git
         }
 
         $protocols = $this->config->get('github-protocols');
+        if (!is_array($protocols)) {
+            throw new \RuntimeException('Config value "github-protocols" must be an array, got '.gettype($protocols));
+        }
 
         // public github, autoswitch protocols
         if (preg_match('{^(?:https?|git)://'.self::getGitHubDomainsRegex($this->config).'/(.*)}', $url, $match)) {
-            if (!is_array($protocols)) {
-                throw new \RuntimeException('Config value "github-protocols" must be an array, got '.gettype($protocols));
-            }
             $messages = array();
             foreach ($protocols as $protocol) {
                 if ('ssh' === $protocol) {
