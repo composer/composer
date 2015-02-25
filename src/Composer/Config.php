@@ -44,6 +44,7 @@ class Config
         'github-domains' => array('github.com'),
         'github-expose-hostname' => true,
         'store-auths' => 'prompt',
+        'enable-curl-transfer' => true,
         // valid keys without defaults (auth config stuff):
         // github-oauth
         // http-basic

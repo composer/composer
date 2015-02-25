@@ -172,6 +172,10 @@ class RemoteFilesystem
         });
         try {
             $result = file_get_contents($fileUrl, false, $ctx);
+            if (defined('Composer\CURL_ENABLED')) {
+                $http_response_header = CurlStream::getLastHeaders();
+                CurlStream::clearLastHeaders();
+            }
         } catch (\Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
@@ -202,7 +206,7 @@ class RemoteFilesystem
         }
 
         // decode gzip
-        if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
+        if ($result && !defined('Composer\CURL_ENABLED') && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
             $decode = false;
             foreach ($http_response_header as $header) {
                 if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
