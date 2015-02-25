@@ -1,6 +1,6 @@
 --RUN--
 create-project seld/jsonlint %testDir% 1.0.0 --prefer-source -n
---EXPECT--
+--EXPECT-ERROR--
 Installing seld/jsonlint (1.0.0)
   - Installing seld/jsonlint (1.0.0)
     Cloning 3b4bc2a96ff5d3fe6866bfe9dd0c845246705791

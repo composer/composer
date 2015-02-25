@@ -57,12 +57,12 @@ EOT
         $file = $input->getArgument('file');
 
         if (!file_exists($file)) {
-            $output->writeln('<error>' . $file . ' not found.</error>');
+            $this->getIO()->writeError('<error>' . $file . ' not found.</error>');
 
             return 1;
         }
         if (!is_readable($file)) {
-            $output->writeln('<error>' . $file . ' is not readable.</error>');
+            $this->getIO()->writeError('<error>' . $file . ' is not readable.</error>');
 
             return 1;
         }
@@ -73,16 +73,16 @@ EOT
 
         // output errors/warnings
         if (!$errors && !$publishErrors && !$warnings) {
-            $output->writeln('<info>' . $file . ' is valid</info>');
+            $this->getIO()->write('<info>' . $file . ' is valid</info>');
         } elseif (!$errors && !$publishErrors) {
-            $output->writeln('<info>' . $file . ' is valid, but with a few warnings</info>');
-            $output->writeln('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            $this->getIO()->writeError('<info>' . $file . ' is valid, but with a few warnings</info>');
+            $this->getIO()->writeError('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         } elseif (!$errors) {
-            $output->writeln('<info>' . $file . ' is valid for simple usage with composer but has</info>');
-            $output->writeln('<info>strict errors that make it unable to be published as a package:</info>');
-            $output->writeln('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            $this->getIO()->writeError('<info>' . $file . ' is valid for simple usage with composer but has</info>');
+            $this->getIO()->writeError('<info>strict errors that make it unable to be published as a package:</info>');
+            $this->getIO()->writeError('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         } else {
-            $output->writeln('<error>' . $file . ' is invalid, the following errors/warnings were found:</error>');
+            $this->getIO()->writeError('<error>' . $file . ' is invalid, the following errors/warnings were found:</error>');
         }
 
         $messages = array(
@@ -92,7 +92,7 @@ EOT
 
         foreach ($messages as $style => $msgs) {
             foreach ($msgs as $msg) {
-                $output->writeln('<' . $style . '>' . $msg . '</' . $style . '>');
+                $this->getIO()->writeError('<' . $style . '>' . $msg . '</' . $style . '>');
             }
         }
 

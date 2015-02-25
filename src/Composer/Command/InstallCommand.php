@@ -65,18 +65,18 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($args = $input->getArgument('packages')) {
-            $output->writeln('<error>Invalid argument '.implode(' ', $args).'. Use "composer require '.implode(' ', $args).'" instead to add packages to your composer.json.</error>');
+            $this->getIO()->writeError('<error>Invalid argument '.implode(' ', $args).'. Use "composer require '.implode(' ', $args).'" instead to add packages to your composer.json.</error>');
 
             return 1;
         }
 
         if ($input->getOption('no-custom-installers')) {
-            $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $this->getIO()->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
         }
 
         if ($input->getOption('dev')) {
-            $output->writeln('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
+            $this->getIO()->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
         }
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));

@@ -60,14 +60,14 @@ class ArtifactRepository extends ArrayRepository
             $package = $this->getComposerInformation($file);
             if (!$package) {
                 if ($io->isVerbose()) {
-                    $io->write("File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package");
+                    $io->writeError("File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package");
                 }
                 continue;
             }
 
             if ($io->isVerbose()) {
                 $template = 'Found package <info>%s</info> (<comment>%s</comment>) in file <info>%s</info>';
-                $io->write(sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename()));
+                $io->writeError(sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename()));
             }
 
             $this->addPackage($package);

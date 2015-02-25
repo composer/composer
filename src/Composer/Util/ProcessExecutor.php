@@ -45,7 +45,7 @@ class ProcessExecutor
     {
         if ($this->io && $this->io->isDebug()) {
             $safeCommand = preg_replace('{(://[^:/\s]+:)[^@\s/]+}i', '$1****', $command);
-            $this->io->write('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
+            $this->io->writeError('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
         }
 
         // make sure that null translate to the proper directory in case the dir is a symlink

@@ -34,7 +34,7 @@ class GitHubTest extends \PHPUnit_Framework_TestCase
         $io = $this->getIOMock();
         $io
             ->expects($this->at(0))
-            ->method('write')
+            ->method('writeError')
             ->with($this->message)
         ;
         $io

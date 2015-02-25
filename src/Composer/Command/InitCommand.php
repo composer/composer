@@ -117,13 +117,13 @@ EOT
         $json = $file->encode($options);
 
         if ($input->isInteractive()) {
-            $output->writeln(array(
+            $this->getIO()->writeError(array(
                 '',
                 $json,
                 ''
             ));
             if (!$dialog->askConfirmation($output, $dialog->getQuestion('Do you confirm generation', 'yes', '?'), true)) {
-                $output->writeln('<error>Command aborted</error>');
+                $this->getIO()->writeError('<error>Command aborted</error>');
 
                 return 1;
             }
@@ -154,14 +154,14 @@ EOT
 
         $dialog = $this->getHelperSet()->get('dialog');
         $formatter = $this->getHelperSet()->get('formatter');
-        $output->writeln(array(
+        $this->getIO()->writeError(array(
             '',
             $formatter->formatBlock('Welcome to the Composer config generator', 'bg=blue;fg=white', true),
             ''
         ));
 
         // namespace
-        $output->writeln(array(
+        $this->getIO()->writeError(array(
             '',
             'This command will guide you through creating your composer.json config.',
             '',
@@ -266,7 +266,7 @@ EOT
         );
         $input->setOption('license', $license);
 
-        $output->writeln(array(
+        $this->getIO()->writeError(array(
             '',
             'Define your dependencies.',
             ''
@@ -316,7 +316,7 @@ EOT
                     $version = $this->findBestVersionForPackage($input, $requirement['name']);
                     $requirement['version'] = $version;
 
-                    $output->writeln(sprintf(
+                    $this->getIO()->writeError(sprintf(
                         'Using version <info>%s</info> for <info>%s</info>',
                         $requirement['version'],
                         $requirement['name']
@@ -345,14 +345,14 @@ EOT
 
                 // no match, prompt which to pick
                 if (!$exactMatch) {
-                    $output->writeln(array(
+                    $this->getIO()->writeError(array(
                         '',
                         sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
                         ''
                     ));
 
-                    $output->writeln($choices);
-                    $output->writeln('');
+                    $this->getIO()->writeError($choices);
+                    $this->getIO()->writeError('');
 
                     $validator = function ($selection) use ($matches) {
                         if ('' === $selection) {
@@ -392,7 +392,7 @@ EOT
                     if (false === $constraint) {
                         $constraint = $this->findBestVersionForPackage($input, $package);
 
-                        $output->writeln(sprintf(
+                        $this->getIO()->writeError(sprintf(
                             'Using version <info>%s</info> for <info>%s</info>',
                             $constraint,
                             $package

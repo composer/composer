@@ -33,7 +33,7 @@ class EventDispatcherTest extends TestCase
         ), $io);
 
         $io->expects($this->once())
-            ->method('write')
+            ->method('writeError')
             ->with('<error>Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
@@ -189,7 +189,7 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnValue($listener));
 
         $io->expects($this->once())
-            ->method('write')
+            ->method('writeError')
             ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with an error</error>'));
 
         $this->setExpectedException('RuntimeException');

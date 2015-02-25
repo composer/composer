@@ -154,11 +154,11 @@ class EventDispatcher
                 $methodName = substr($callable, strpos($callable, '::') + 2);
 
                 if (!class_exists($className)) {
-                    $this->io->write('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>');
+                    $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>');
                     continue;
                 }
                 if (!is_callable($callable)) {
-                    $this->io->write('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>');
+                    $this->io->writeError('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>');
                     continue;
                 }
 
@@ -166,13 +166,13 @@ class EventDispatcher
                     $return = false === $this->executeEventPhpScript($className, $methodName, $event) ? 1 : 0;
                 } catch (\Exception $e) {
                     $message = "Script %s handling the %s event terminated with an exception";
-                    $this->io->write('<error>'.sprintf($message, $callable, $event->getName()).'</error>');
+                    $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>');
                     throw $e;
                 }
             } else {
                 $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor','escape'), $event->getArguments()));
                 if (0 !== ($exitCode = $this->process->execute($callable . ($args === '' ? '' : ' '.$args)))) {
-                    $this->io->write(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
+                    $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 
                     throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                 }

@@ -146,7 +146,7 @@ class RemoteFilesystem
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
 
         if ($this->io->isDebug()) {
-            $this->io->write((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
+            $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
         }
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
@@ -158,7 +158,7 @@ class RemoteFilesystem
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
-            $this->io->write("    Downloading: <comment>connection...</comment>", false);
+            $this->io->writeError("    Downloading: <comment>connection...</comment>", false);
         }
 
         $errorMessage = '';
@@ -228,7 +228,7 @@ class RemoteFilesystem
         }
 
         if ($this->progress && !$this->retry) {
-            $this->io->overwrite("    Downloading: <comment>100%</comment>");
+            $this->io->overwriteError("    Downloading: <comment>100%</comment>");
         }
 
         // handle copy command if download was successful
@@ -329,7 +329,7 @@ class RemoteFilesystem
 
                     if ((0 === $progression % 5) && $progression !== $this->lastProgress) {
                         $this->lastProgress = $progression;
-                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
+                        $this->io->overwriteError("    Downloading: <comment>$progression%</comment>", false);
                     }
                 }
                 break;
@@ -371,7 +371,7 @@ class RemoteFilesystem
                 throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
             }
 
-            $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+            $this->io->overwriteError('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');
             $this->io->setAuthentication($this->originUrl, $username, $password);

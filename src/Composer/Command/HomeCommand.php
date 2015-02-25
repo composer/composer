@@ -71,7 +71,7 @@ EOT
 
             if (!$package instanceof CompletePackageInterface) {
                 $return = 1;
-                $output->writeln('<warning>Package '.$packageName.' not found</warning>');
+                $this->getIO()->writeError('<warning>Package '.$packageName.' not found</warning>');
 
                 continue;
             }
@@ -84,13 +84,13 @@ EOT
 
             if (!filter_var($url, FILTER_VALIDATE_URL)) {
                 $return = 1;
-                $output->writeln('<warning>'.($input->getOption('homepage') ? 'Invalid or missing homepage' : 'Invalid or missing repository URL').' for '.$packageName.'</warning>');
+                $this->getIO()->writeError('<warning>'.($input->getOption('homepage') ? 'Invalid or missing homepage' : 'Invalid or missing repository URL').' for '.$packageName.'</warning>');
 
                 continue;
             }
 
             if ($input->getOption('show')) {
-                $output->writeln(sprintf('<info>%s</info>', $url));
+                $this->getIO()->write(sprintf('<info>%s</info>', $url));
             } else {
                 $this->openBrowser($url);
             }
@@ -145,7 +145,7 @@ EOT
         } elseif (0 === $osx) {
             passthru('open ' . $url);
         } else {
-            $this->getIO()->write('no suitable browser opening command found, open yourself: ' . $url);
+            $this->getIO()->writeError('no suitable browser opening command found, open yourself: ' . $url);
         }
     }
 

@@ -159,7 +159,7 @@ class HgBitbucketDriver extends VcsDriver
 
         if (!extension_loaded('openssl')) {
             if ($io->isVerbose()) {
-                $io->write('Skipping Bitbucket hg driver for '.$url.' because the OpenSSL PHP extension is missing.');
+                $io->writeError('Skipping Bitbucket hg driver for '.$url.' because the OpenSSL PHP extension is missing.');
             }
 
             return false;

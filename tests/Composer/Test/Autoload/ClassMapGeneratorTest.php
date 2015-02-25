@@ -128,7 +128,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
         $msg = '';
 
         $io->expects($this->once())
-            ->method('write')
+            ->method('writeError')
             ->will($this->returnCallback(function ($text) use (&$msg) {
                 $msg = $text;
             }));

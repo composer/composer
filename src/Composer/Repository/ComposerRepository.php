@@ -434,7 +434,7 @@ class ComposerRepository extends ArrayRepository
         }
 
         if (!empty($data['warning'])) {
-            $this->io->write('<warning>Warning from '.$this->url.': '.$data['warning'].'</warning>');
+            $this->io->writeError('<warning>Warning from '.$this->url.': '.$data['warning'].'</warning>');
         }
 
         if (!empty($data['providers-lazy-url'])) {
@@ -613,8 +613,8 @@ class ComposerRepository extends ArrayRepository
 
                 if ($cacheKey && ($contents = $this->cache->read($cacheKey))) {
                     if (!$this->degradedMode) {
-                        $this->io->write('<warning>'.$e->getMessage().'</warning>');
-                        $this->io->write('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
+                        $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
+                        $this->io->writeError('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
                     }
                     $this->degradedMode = true;
                     $data = JsonFile::parseJson($contents, $this->cache->getRoot().$cacheKey);

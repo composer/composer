@@ -111,7 +111,7 @@ class Svn
             }
             $output .= $buffer;
             if ($verbose) {
-                $io->write($buffer, false);
+                $io->writeError($buffer, false);
             }
         };
         $status = $this->process->execute($svnCommand, $handler, $cwd);
@@ -169,7 +169,7 @@ class Svn
             );
         }
 
-        $this->io->write("The Subversion server ({$this->url}) requested credentials:");
+        $this->io->writeError("The Subversion server ({$this->url}) requested credentials:");
 
         $this->hasAuth = true;
         $this->credentials['username'] = $this->io->ask("Username: ");

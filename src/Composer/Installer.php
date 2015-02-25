@@ -177,7 +177,7 @@ class Installer
         // purge old require-dev packages to avoid conflicts with the new way of handling dev requirements
         $devRepo = new InstalledFilesystemRepository(new JsonFile($this->config->get('vendor-dir').'/composer/installed_dev.json'));
         if ($devRepo->getPackages()) {
-            $this->io->write('<warning>BC Notice: Removing old dev packages to migrate to the new require-dev handling.</warning>');
+            $this->io->writeError('<warning>BC Notice: Removing old dev packages to migrate to the new require-dev handling.</warning>');
             foreach ($devRepo->getPackages() as $package) {
                 if ($this->installationManager->isPackageInstalled($devRepo, $package)) {
                     $this->installationManager->uninstall($devRepo, new UninstallOperation($package));
@@ -243,7 +243,7 @@ class Installer
                     }
                 }
 
-                $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
+                $this->io->writeError($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
             }
         }
 
@@ -257,7 +257,7 @@ class Installer
                 ? 'Use ' . $package->getReplacementPackage() . ' instead'
                 : 'No replacement was suggested';
 
-            $this->io->write(
+            $this->io->writeError(
                 sprintf(
                     "<error>Package %s is abandoned, you should avoid using it. %s.</error>",
                     $package->getPrettyName(),
@@ -314,16 +314,16 @@ class Installer
                     $this->preferLowest
                 );
                 if ($updatedLock) {
-                    $this->io->write('<info>Writing lock file</info>');
+                    $this->io->writeError('<info>Writing lock file</info>');
                 }
             }
 
             if ($this->dumpAutoloader) {
                 // write autoloader
                 if ($this->optimizeAutoloader) {
-                    $this->io->write('<info>Generating optimized autoload files</info>');
+                    $this->io->writeError('<info>Generating optimized autoload files</info>');
                 } else {
-                    $this->io->write('<info>Generating autoload files</info>');
+                    $this->io->writeError('<info>Generating autoload files</info>');
                 }
 
                 $this->autoloadGenerator->setDevMode($this->devMode);
@@ -374,7 +374,7 @@ class Installer
             $this->package->getDevRequires()
         );
 
-        $this->io->write('<info>Loading composer repositories with package information</info>');
+        $this->io->writeError('<info>Loading composer repositories with package information</info>');
 
         // creating repository pool
         $policy = $this->createPolicy();
@@ -409,7 +409,7 @@ class Installer
         }
 
         if ($this->update) {
-            $this->io->write('<info>Updating dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
+            $this->io->writeError('<info>Updating dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
 
             $request->updateAll();
 
@@ -460,10 +460,10 @@ class Installer
                 }
             }
         } elseif ($installFromLock) {
-            $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').' from lock file</info>');
+            $this->io->writeError('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').' from lock file</info>');
 
             if (!$this->locker->isFresh()) {
-                $this->io->write('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. Run update to update them.</warning>');
+                $this->io->writeError('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. Run update to update them.</warning>');
             }
 
             foreach ($lockedRepository->getPackages() as $package) {
@@ -480,7 +480,7 @@ class Installer
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } else {
-            $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
+            $this->io->writeError('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
 
             if ($withDevReqs) {
                 $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
@@ -503,8 +503,8 @@ class Installer
             $operations = $solver->solve($request, $this->ignorePlatformReqs);
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
-            $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
-            $this->io->write($e->getMessage());
+            $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>');
+            $this->io->writeError($e->getMessage());
 
             return max(1, $e->getCode());
         }
@@ -514,7 +514,7 @@ class Installer
 
         // execute operations
         if (!$operations) {
-            $this->io->write('Nothing to install or update');
+            $this->io->writeError('Nothing to install or update');
         }
 
         $operations = $this->movePluginsToFront($operations);
@@ -553,8 +553,8 @@ class Installer
                     && $operation->getTargetPackage()->getSourceReference() === $operation->getInitialPackage()->getSourceReference()
                 ) {
                     if ($this->io->isDebug()) {
-                        $this->io->write('  - Skipping update of '. $operation->getTargetPackage()->getPrettyName().' to the same reference-locked version');
-                        $this->io->write('');
+                        $this->io->writeError('  - Skipping update of '. $operation->getTargetPackage()->getPrettyName().' to the same reference-locked version');
+                        $this->io->writeError('');
                     }
 
                     continue;
@@ -568,11 +568,11 @@ class Installer
 
             // output non-alias ops in dry run, output alias ops in debug verbosity
             if ($this->dryRun && false === strpos($operation->getJobType(), 'Alias')) {
-                $this->io->write('  - ' . $operation);
-                $this->io->write('');
+                $this->io->writeError('  - ' . $operation);
+                $this->io->writeError('');
             } elseif ($this->io->isDebug() && false !== strpos($operation->getJobType(), 'Alias')) {
-                $this->io->write('  - ' . $operation);
-                $this->io->write('');
+                $this->io->writeError('  - ' . $operation);
+                $this->io->writeError('');
             }
 
             $this->installationManager->execute($localRepo, $operation);
@@ -583,12 +583,12 @@ class Installer
                 if ($reason instanceof Rule) {
                     switch ($reason->getReason()) {
                         case Rule::RULE_JOB_INSTALL:
-                            $this->io->write('    REASON: Required by root: '.$reason->getPrettyString($pool));
-                            $this->io->write('');
+                            $this->io->writeError('    REASON: Required by root: '.$reason->getPrettyString($pool));
+                            $this->io->writeError('');
                             break;
                         case Rule::RULE_PACKAGE_REQUIRES:
-                            $this->io->write('    REASON: '.$reason->getPrettyString($pool));
-                            $this->io->write('');
+                            $this->io->writeError('    REASON: '.$reason->getPrettyString($pool));
+                            $this->io->writeError('');
                             break;
                     }
                 }
@@ -1001,7 +1001,7 @@ class Installer
             }
 
             if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock'))) {
-                $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
+                $this->io->writeError('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 
             foreach ($depPackages as $depPackage) {

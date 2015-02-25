@@ -266,7 +266,7 @@ class GitHubDriver extends VcsDriver
 
         if (!extension_loaded('openssl')) {
             if ($io->isVerbose()) {
-                $io->write('Skipping GitHub driver for '.$url.' because the OpenSSL PHP extension is missing.');
+                $io->writeError('Skipping GitHub driver for '.$url.' because the OpenSSL PHP extension is missing.');
             }
 
             return false;
@@ -333,7 +333,7 @@ class GitHubDriver extends VcsDriver
 
                     if (!$this->io->hasAuthentication($this->originUrl)) {
                         if (!$this->io->isInteractive()) {
-                            $this->io->write('<error>GitHub API limit exhausted. Failed to get metadata for the '.$this->url.' repository, try running in interactive mode so that you can enter your GitHub credentials to increase the API limit</error>');
+                            $this->io->writeError('<error>GitHub API limit exhausted. Failed to get metadata for the '.$this->url.' repository, try running in interactive mode so that you can enter your GitHub credentials to increase the API limit</error>');
                             throw $e;
                         }
 
@@ -344,7 +344,7 @@ class GitHubDriver extends VcsDriver
 
                     if ($rateLimited) {
                         $rateLimit = $this->getRateLimit($e->getHeaders());
-                        $this->io->write(sprintf(
+                        $this->io->writeError(sprintf(
                             '<error>GitHub API limit (%d calls/hr) is exhausted. You are already authorized so you have to wait until %s before doing more requests</error>',
                             $rateLimit['limit'],
                             $rateLimit['reset']
@@ -435,7 +435,7 @@ class GitHubDriver extends VcsDriver
         } catch (\RuntimeException $e) {
             $this->gitDriver = null;
 
-            $this->io->write('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your GitHub credentials</error>');
+            $this->io->writeError('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your GitHub credentials</error>');
             throw $e;
         }
     }

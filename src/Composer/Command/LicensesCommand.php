@@ -69,11 +69,11 @@ EOT
 
         switch ($format = $input->getOption('format')) {
             case 'text':
-                $output->writeln('Name: <comment>'.$root->getPrettyName().'</comment>');
-                $output->writeln('Version: <comment>'.$versionParser->formatVersion($root).'</comment>');
-                $output->writeln('Licenses: <comment>'.(implode(', ', $root->getLicense()) ?: 'none').'</comment>');
-                $output->writeln('Dependencies:');
-                $output->writeln('');
+                $this->getIO()->write('Name: <comment>'.$root->getPrettyName().'</comment>');
+                $this->getIO()->write('Version: <comment>'.$versionParser->formatVersion($root).'</comment>');
+                $this->getIO()->write('Licenses: <comment>'.(implode(', ', $root->getLicense()) ?: 'none').'</comment>');
+                $this->getIO()->write('Dependencies:');
+                $this->getIO()->write('');
 
                 $table = new Table($output);
                 $table->setStyle('compact');
@@ -98,7 +98,7 @@ EOT
                     );
                 }
 
-                $output->writeln(JsonFile::encode(array(
+                $this->getIO()->write(JsonFile::encode(array(
                     'name'         => $root->getPrettyName(),
                     'version'      => $versionParser->formatVersion($root),
                     'license'      => $root->getLicense(),
