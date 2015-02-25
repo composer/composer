@@ -19,6 +19,7 @@ use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -72,10 +73,13 @@ EOT
                 $output->writeln('Version: <comment>'.$versionParser->formatVersion($root).'</comment>');
                 $output->writeln('Licenses: <comment>'.(implode(', ', $root->getLicense()) ?: 'none').'</comment>');
                 $output->writeln('Dependencies:');
+                $output->writeln('');
 
                 $table = new Table($output);
-                $table->setStyle('borderless');
-                $table->getStyle()->setHorizontalBorderChar('');
+                $table->setStyle('compact');
+                $table->getStyle()->setVerticalBorderChar('');
+                $table->getStyle()->setCellRowContentFormat('%s  ');
+                $table->setHeaders(array('Name', 'Version', 'License'));
                 foreach ($packages as $package) {
                     $table->addRow(array(
                         $package->getPrettyName(),
