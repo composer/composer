@@ -108,6 +108,20 @@ class Config
             foreach ($config['config'] as $key => $val) {
                 if (in_array($key, array('github-oauth', 'http-basic')) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
+                } elseif ('preferred-install' === $key && isset($this->config[$key])) {
+                    if (is_string($val)) {
+                        $val = array('*' => $val);
+                    }
+                    if (is_string($this->config[$key])) {
+                        $this->config[$key] = array('*' => $this->config[$key]);
+                    }
+                    $this->config[$key] = array_merge($this->config[$key], $val);
+                    // the full match pattern needs to be last
+                    if (isset($this->config[$key]['*'])) {
+                        $wildcard = $this->config[$key]['*'];
+                        unset($this->config[$key]['*']);
+                        $this->config[$key]['*'] = $wildcard;
+                    }
                 } else {
                     $this->config[$key] = $val;
                 }

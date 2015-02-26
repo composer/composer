@@ -117,8 +117,8 @@
                     "description": "If true, the Composer autoloader will also look for classes in the PHP include path."
                 },
                 "preferred-install": {
-                    "type": "string",
-                    "description": "The install method Composer will prefer to use, defaults to auto and can be any of source, dist or auto."
+                    "type": ["string", "object"],
+                    "description": "The install method Composer will prefer to use, defaults to auto and can be any of source, dist, auto, or a hash of {\"pattern\": \"preference\"}."
                 },
                 "notify-on-install": {
                     "type": "boolean",

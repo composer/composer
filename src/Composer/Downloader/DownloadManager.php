@@ -26,6 +26,7 @@ class DownloadManager
     private $io;
     private $preferDist = false;
     private $preferSource = false;
+    private $packagePreferences = array();
     private $filesystem;
     private $downloaders  = array();
 
@@ -65,6 +66,19 @@ class DownloadManager
     public function setPreferDist($preferDist)
     {
         $this->preferDist = $preferDist;
+
+        return $this;
+    }
+
+    /**
+     * Sets fine tuned preference settings for package level source/dist selection.
+     *
+     * @param  array           $preferences array of preferences by package patterns
+     * @return DownloadManager
+     */
+    public function setPreferences(array $preferences)
+    {
+        $this->packagePreferences = $preferences;
 
         return $this;
     }
@@ -184,7 +198,17 @@ class DownloadManager
             throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }
 
-        if ((!$package->isDev() || $this->preferDist) && !$preferSource) {
+        if (!$this->preferDist && !$preferSource) {
+            foreach ($this->packagePreferences as $pattern => $preference) {
+                $pattern = '{^'.str_replace('*', '.*', $pattern).'$}i';
+                if (preg_match($pattern, $package->getName())) {
+                    if ('dist' === $preference || (!$package->isDev() && 'auto' === $preference)) {
+                        $sources = array_reverse($sources);
+                    }
+                    break;
+                }
+            }
+        } elseif ((!$package->isDev() || $this->preferDist) && !$preferSource) {
             $sources = array_reverse($sources);
         }
 
