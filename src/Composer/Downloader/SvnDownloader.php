@@ -111,7 +111,7 @@ class SvnDownloader extends VcsDownloader
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)
     {
-        if (!$changes = $this->getLocalChanges($package, $path)) {
+        if (!$changes = $this->getWorkingTreeState($package, $path)) {
             return;
         }
 
