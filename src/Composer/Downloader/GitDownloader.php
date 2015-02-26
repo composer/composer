@@ -112,7 +112,31 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges(PackageInterface $package, $path)
+    protected function getVersionDifference(PackageInterface $package, $path)
+    {
+        GitUtil::cleanEnv();
+        $path = $this->normalizePath($path);
+        if (!is_dir($path.'/.git')) {
+            return;
+        }
+
+        $command = 'git log --pretty="%H" -n1 HEAD';
+        if (0 !== $this->process->execute($command, $output, $path)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        $current = trim($output);
+        if ($current !== $package->getSourceReference()) {
+            return '<comment>Current Version:</comment> '.$current;
+        }
+        
+        return;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getWorkingTreeState(PackageInterface $package, $path)
     {
         GitUtil::cleanEnv();
         if (!$this->hasMetadataRepository($path)) {
@@ -209,7 +233,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             throw new \RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch: '."\n".$unpushed);
         }
 
-        if (!$changes = $this->getLocalChanges($package, $path)) {
+        if (!$changes = $this->getWorkingTreeState($package, $path)) {
             return;
         }
 

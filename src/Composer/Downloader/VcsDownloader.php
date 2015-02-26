@@ -194,6 +194,16 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function getLocalChanges(PackageInterface $package, $path)
+    {
+        $output = $this->getVersionDifference($package, $path)."\n".$this->getWorkingTreeState($package, $path);
+        
+        return trim($output) ?: null;
+    }
+    
+    /**
      * Prompt the user to check if changes should be stashed/removed or the operation aborted
      *
      * @param  PackageInterface  $package
@@ -205,9 +215,33 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     protected function cleanChanges(PackageInterface $package, $path, $update)
     {
         // the default implementation just fails if there are any changes, override in child classes to provide stash-ability
-        if (null !== $this->getLocalChanges($package, $path)) {
+        if (null !== $this->getWorkingTreeState($package, $path)) {
             throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes.');
         }
+    }
+
+    /**
+     * Checks for changes to the local copy
+     *
+     * @param  PackageInterface $package package instance
+     * @param  string           $path    package directory
+     * @return string|null      changes or null
+     */
+    abstract protected function getWorkingTreeState(PackageInterface $package, $path);
+
+    /**
+     * Compare the package version to the local version
+     *
+     * @param  PackageInterface $package package instance
+     * @param  string           $path    package directory
+     * @return string|null     current reference or null if equal or cannot be determined
+     */
+    protected function getVersionDifference(PackageInterface $package, $path)
+    {
+        $driver = ltrim(substr(get_class($this), strlen(__NAMESPACE__), -10), '\\');
+        $this->io->writeError(sprintf('<info>%s driver does not check for version changes before overriding</info>', $driver), true);
+
+        return;
     }
 
     /**

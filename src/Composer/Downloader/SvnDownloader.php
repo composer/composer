@@ -70,7 +70,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges(PackageInterface $package, $path)
+    protected function getWorkingTreeState(PackageInterface $package, $path)
     {
         if (!$this->hasMetadataRepository($path)) {
             return null;
