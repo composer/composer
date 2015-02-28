@@ -37,6 +37,7 @@ class ValidateCommand extends Command
             ->setDescription('Validates a composer.json')
             ->setDefinition(array(
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not make a complete validation'),
+                new InputOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors'),
                 new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
             ))
             ->setHelp(<<<EOT
@@ -69,6 +70,7 @@ EOT
 
         $validator = new ConfigValidator($this->getIO());
         $checkAll = $input->getOption('no-check-all') ? 0 : ValidatingArrayLoader::CHECK_ALL;
+        $checkPublish = !$input->getOption('no-check-publish');
         list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
 
         // output errors/warnings
@@ -86,9 +88,16 @@ EOT
         }
 
         $messages = array(
-            'error' => array_merge($errors, $publishErrors),
+            'error' => $errors,
             'warning' => $warnings,
         );
+
+        // If checking publish errors, display them errors, otherwise just show them as warnings
+        if ($checkPublish) {
+            $messages['error'] = array_merge($messages['error'], $publishErrors);
+        } else {
+            $messages['warning'] = array_merge($messages['warning'], $publishErrors);
+        }
 
         foreach ($messages as $style => $msgs) {
             foreach ($msgs as $msg) {
@@ -96,6 +105,6 @@ EOT
             }
         }
 
-        return $errors || $publishErrors ? 1 : 0;
+        return $errors || ($publishErrors && $checkPublish) ? 1 : 0;
     }
 }
