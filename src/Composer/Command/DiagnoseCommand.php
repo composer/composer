@@ -343,8 +343,32 @@ EOT
         }
         $iniMessage .= PHP_EOL.'If you can not modify the ini file, you can also run `php -d option=value` to modify ini values on the fly. You can use -d multiple times.';
 
+        if (!function_exists('json_decode')) {
+            $errors['json'] = true;
+        }
+
+        if (!extension_loaded('Phar')) {
+            $errors['phar'] = true;
+        }
+
+        if (!extension_loaded('filter')) {
+            $errors['filter'] = true;
+        }
+
+        if (!extension_loaded('hash')) {
+            $errors['hash'] = true;
+        }
+
+        if (!extension_loaded('ctype')) {
+            $errors['ctype'] = true;
+        }
+
         if (!ini_get('allow_url_fopen')) {
             $errors['allow_url_fopen'] = true;
+        }
+
+        if (extension_loaded('ionCube Loader') && ioncube_loader_iversion() < 40009) {
+            $errors['ioncube'] = ioncube_loader_version();
         }
 
         if (version_compare(PHP_VERSION, '5.3.2', '<')) {
@@ -356,17 +380,11 @@ EOT
         }
 
         if (!extension_loaded('openssl')) {
-            $warnings['openssl'] = true;
+            $errors['openssl'] = true;
         }
 
         if (!defined('HHVM_VERSION') && !extension_loaded('apcu') && ini_get('apc.enable_cli')) {
             $warnings['apc_cli'] = true;
-        }
-
-        if (ini_get('xdebug.profiler_enabled')) {
-            $warnings['xdebug_profile'] = true;
-        } elseif (extension_loaded('xdebug')) {
-            $warnings['xdebug_loaded'] = true;
         }
 
         ob_start();
@@ -384,18 +402,75 @@ EOT
             }
         }
 
+        if (ini_get('xdebug.profiler_enabled')) {
+            $warnings['xdebug_profile'] = true;
+        } elseif (extension_loaded('xdebug')) {
+            $warnings['xdebug_loaded'] = true;
+        }
+
         if (!empty($errors)) {
             foreach ($errors as $error => $current) {
                 switch ($error) {
+                    case 'json':
+                        $text = PHP_EOL."The json extension is missing.".PHP_EOL;
+                        $text .= "Install it or recompile php without --disable-json";
+                        break;
+
+                    case 'phar':
+                        $text = PHP_EOL."The phar extension is missing.".PHP_EOL;
+                        $text .= "Install it or recompile php without --disable-phar";
+                        break;
+
+                    case 'filter':
+                        $text = PHP_EOL."The filter extension is missing.".PHP_EOL;
+                        $text .= "Install it or recompile php without --disable-filter";
+                        break;
+
+                    case 'hash':
+                        $text = PHP_EOL."The hash extension is missing.".PHP_EOL;
+                        $text .= "Install it or recompile php without --disable-hash";
+                        break;
+
+                    case 'ctype':
+                        $text = PHP_EOL."The ctype extension is missing.".PHP_EOL;
+                        $text .= "Install it or recompile php without --disable-ctype";
+                        break;
+
+                    case 'unicode':
+                        $text = PHP_EOL."The detect_unicode setting must be disabled.".PHP_EOL;
+                        $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
+                        $text .= "    detect_unicode = Off";
+                        $displayIniMessage = true;
+                        break;
+
+                    case 'suhosin':
+                        $text = PHP_EOL."The suhosin.executor.include.whitelist setting is incorrect.".PHP_EOL;
+                        $text .= "Add the following to the end of your `php.ini` or suhosin.ini (Example path [for Debian]: /etc/php5/cli/conf.d/suhosin.ini):".PHP_EOL;
+                        $text .= "    suhosin.executor.include.whitelist = phar ".$current;
+                        $displayIniMessage = true;
+                        break;
+
                     case 'php':
-                        $text = "Your PHP ({$current}) is too old, you must upgrade to PHP 5.3.2 or higher.";
+                        $text = PHP_EOL."Your PHP ({$current}) is too old, you must upgrade to PHP 5.3.2 or higher.";
                         break;
 
                     case 'allow_url_fopen':
-                        $text  = "The allow_url_fopen setting is incorrect.".PHP_EOL;
+                        $text = PHP_EOL."The allow_url_fopen setting is incorrect.".PHP_EOL;
                         $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
-                        $text .= "  allow_url_fopen = On";
+                        $text .= "    allow_url_fopen = On";
                         $displayIniMessage = true;
+                        break;
+
+                    case 'ioncube':
+                        $text = PHP_EOL."Your ionCube Loader extension ($current) is incompatible with Phar files.".PHP_EOL;
+                        $text .= "Upgrade to ionCube 4.0.9 or higher or remove this line (path may be different) from your `php.ini` to disable it:".PHP_EOL;
+                        $text .= "    zend_extension = /usr/lib/php5/20090626+lfs/ioncube_loader_lin_5.3.so";
+                        $displayIniMessage = true;
+                        break;
+
+                    case 'openssl':
+                        $text = PHP_EOL."The openssl extension is missing, which means that secure HTTPS transfers are impossible.".PHP_EOL;
+                        $text .= "If possible you should enable it or recompile php with --with-openssl";
                         break;
                 }
                 $out($text, 'error');
@@ -423,11 +498,6 @@ EOT
                     case 'curlwrappers':
                         $text  = "PHP was compiled with --with-curlwrappers which will cause issues with HTTP authentication and GitHub.".PHP_EOL;
                         $text .= " Recompile it without this flag if possible";
-                        break;
-
-                    case 'openssl':
-                        $text  = "The openssl extension is missing, which will reduce the security and stability of Composer.".PHP_EOL;
-                        $text .= " If possible you should enable it or recompile php with --with-openssl";
                         break;
 
                     case 'php':
