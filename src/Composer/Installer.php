@@ -517,8 +517,7 @@ class Installer
             $this->io->writeError('Nothing to install or update');
         }
 
-        $operations = $this->movePluginsToFront($operations);
-        $operations = $this->moveUninstallsToFront($operations);
+        $operations = $this->movePlugins($operations);
 
         foreach ($operations as $operation) {
             // collect suggestions
@@ -617,58 +616,97 @@ class Installer
      * it at least fixes the symptoms and makes usage of composer possible (again)
      * in such scenarios.
      *
-     * @param  OperationInterface[] $operations
-     * @return OperationInterface[] reordered operation list
-     */
-    private function movePluginsToFront(array $operations)
-    {
-        $installerOps = array();
-        foreach ($operations as $idx => $op) {
-            if ($op instanceof InstallOperation) {
-                $package = $op->getPackage();
-            } elseif ($op instanceof UpdateOperation) {
-                $package = $op->getTargetPackage();
-            } else {
-                continue;
-            }
-
-            if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
-                // ignore requirements to platform or composer-plugin-api
-                $requires = array_keys($package->getRequires());
-                foreach ($requires as $index => $req) {
-                    if ($req === 'composer-plugin-api' || preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
-                        unset($requires[$index]);
-                    }
-                }
-                // if there are no other requirements, move the plugin to the top of the op list
-                if (!count($requires)) {
-                    $installerOps[] = $op;
-                    unset($operations[$idx]);
-                }
-            }
-        }
-
-        return array_merge($installerOps, $operations);
-    }
-
-    /**
-     * Removals of packages should be executed before installations in
-     * case two packages resolve to the same path (due to custom installers)
+     * This change does fix for https://github.com/composer/composer/issues/3791
+     * also includes fix for https://github.com/composer/composer/issues/2874
      *
      * @param  OperationInterface[] $operations
      * @return OperationInterface[] reordered operation list
      */
-    private function moveUninstallsToFront(array $operations)
+    private function movePlugins(array $operations)
     {
-        $uninstOps = array();
+        $packagesIndex = array();
+
+        foreach ($operations as $idx => $op) {
+            if ($op instanceof UpdateOperation) {
+                $package = $op->getTargetPackage();
+            } else {
+                $package = $op->getPackage();
+            }
+
+            $packagesIndex[$package->getName()]['operation'] = $op;
+            $packagesIndex[$package->getName()]['package'] = $package;
+            $packagesIndex[$package->getName()]['index'] = $idx;
+        }
+
+        $pluginUninstallOperations = array();
+        $pluginInstallOperations = array();
+        $packagesUninstallOperations = array();
+
+        foreach ($packagesIndex as $packageName => $packageData) {
+            if ($packageData['package']->getType() === 'composer-plugin') {
+                $pluginRelatedPackagesNames = $this->getAllRequires($packageData['package'], $packagesIndex);
+                $pluginOperations = array();
+                foreach ($pluginRelatedPackagesNames as $packageName) {
+                    if (isset($packagesIndex[$packageName])) {
+                        $pluginOperations[] = $packagesIndex[$packageName]['operation'];
+                        unset($operations[$packagesIndex[$packageName]['index']]);
+                    }
+                }
+
+                if ($packageData['operation'] instanceof UninstallOperation) {
+                    $pluginUninstallOperations = array_merge(array($packageData['operation']), $pluginOperations);
+                } else {
+                    $pluginInstallOperations = array_reverse($pluginOperations);
+                    $pluginInstallOperations = array_merge($pluginInstallOperations, array($packageData['operation']));
+                }
+                unset($operations[$packageData['index']]);
+            }
+        }
+
         foreach ($operations as $idx => $op) {
             if ($op instanceof UninstallOperation) {
-                $uninstOps[] = $op;
+                $packagesUninstallOperations[] = $op;
                 unset($operations[$idx]);
             }
         }
 
-        return array_merge($uninstOps, $operations);
+        $operations = array_merge(
+            $packagesUninstallOperations, // uninstalls packages
+            $pluginUninstallOperations,   // uninstalls plugins and plugins dependencies
+            $pluginInstallOperations,     // installs and updates plugins and plugins dependencies
+            $operations                   // installs and updates packages
+
+        );
+
+        return $operations;
+    }
+
+    /**
+     * Gets all required packages names for package
+     *
+     * @param PackageInterface $package
+     * @param array $packageIndex
+     * @param array $requiresPackages
+     *
+     * @return string[] Flat array of requirements
+     */
+    private function getAllRequires($package, $packageIndex, $requiresPackages = array())
+    {
+        $requires = $package->getRequires();
+
+        foreach($requires as $packageName => $require) {
+            if (isset($packageIndex[$packageName])) {
+                $requiresPackages[] = $packageName;
+
+                $requiresPackages = $this->getAllRequires(
+                    $packageIndex[$packageName]['package'],
+                    $packageIndex,
+                    $requiresPackages
+                );
+            }
+        }
+
+        return $requiresPackages;
     }
 
     private function createPool($withDevReqs, RepositoryInterface $lockedRepository = null)
