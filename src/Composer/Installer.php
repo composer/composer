@@ -643,7 +643,9 @@ class Installer
         $packagesUninstallOperations = array();
 
         foreach ($packagesIndex as $packageName => $packageData) {
-            if ($packageData['package']->getType() === 'composer-plugin') {
+            if ($packageData['package']->getType() === 'composer-plugin'
+                || $packageData['package']->getType() === 'composer-installer'
+            ) {
                 $pluginRelatedPackagesNames = $this->getAllRequires($packageData['package'], $packagesIndex);
                 $pluginOperations = array();
                 foreach ($pluginRelatedPackagesNames as $packageName) {
