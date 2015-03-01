@@ -624,7 +624,7 @@ class Installer
      */
     private function movePlugins(array $operations)
     {
-        $packagesIndex = array();
+        $operationsPackagesIndex = array();
 
         foreach ($operations as $idx => $op) {
             if ($op instanceof UpdateOperation) {
@@ -633,33 +633,34 @@ class Installer
                 $package = $op->getPackage();
             }
 
-            $packagesIndex[$package->getName()]['operation'] = $op;
-            $packagesIndex[$package->getName()]['package'] = $package;
-            $packagesIndex[$package->getName()]['index'] = $idx;
+            $operationsPackagesIndex[$package->getName()]['operation'] = $op;
+            $operationsPackagesIndex[$package->getName()]['package'] = $package;
+            $operationsPackagesIndex[$package->getName()]['index'] = $idx;
         }
 
         $pluginUninstallOperations = array();
         $pluginInstallOperations = array();
         $packagesUninstallOperations = array();
 
-        foreach ($packagesIndex as $packageName => $packageData) {
+        foreach ($operationsPackagesIndex as $packageName => $packageData) {
             if ($packageData['package']->getType() === 'composer-plugin'
                 || $packageData['package']->getType() === 'composer-installer'
             ) {
-                $pluginRelatedPackagesNames = $this->getAllRequires($packageData['package'], $packagesIndex);
+                $pluginRelatedPackagesNames = $this->getAllRequires($packageData['package'], $operationsPackagesIndex);
                 $pluginOperations = array();
                 foreach ($pluginRelatedPackagesNames as $packageName) {
-                    if (isset($packagesIndex[$packageName])) {
-                        $pluginOperations[] = $packagesIndex[$packageName]['operation'];
-                        unset($operations[$packagesIndex[$packageName]['index']]);
+                    if (isset($operationsPackagesIndex[$packageName])) {
+                        $pluginOperations[] = $operationsPackagesIndex[$packageName]['operation'];
+                        unset($operations[$operationsPackagesIndex[$packageName]['index']]);
                     }
                 }
 
                 if ($packageData['operation'] instanceof UninstallOperation) {
-                    $pluginUninstallOperations = array_merge(array($packageData['operation']), $pluginOperations);
+                    array_unshift($pluginOperations, $packageData['operation']);
+                    $pluginUninstallOperations = $pluginOperations;
                 } else {
                     $pluginInstallOperations = array_reverse($pluginOperations);
-                    $pluginInstallOperations = array_merge($pluginInstallOperations, array($packageData['operation']));
+                    array_push($pluginInstallOperations, $packageData['operation']);
                 }
                 unset($operations[$packageData['index']]);
             }
@@ -677,7 +678,6 @@ class Installer
             $pluginUninstallOperations,   // uninstalls plugins and plugins dependencies
             $pluginInstallOperations,     // installs and updates plugins and plugins dependencies
             $operations                   // installs and updates packages
-
         );
 
         return $operations;
@@ -687,23 +687,25 @@ class Installer
      * Gets all required packages names for package
      *
      * @param PackageInterface $package
-     * @param array $packageIndex
-     * @param array $requiresPackages
+     * @param array $operationsPackagesIndex
      *
      * @return string[] Flat array of requirements
      */
-    private function getAllRequires($package, $packageIndex, $requiresPackages = array())
+    private function getAllRequires($package, $operationsPackagesIndex)
     {
-        $requires = $package->getRequires();
+        $requiresPackages = array();
+        $requires = array_keys($package->getRequires());
 
-        foreach($requires as $packageName => $require) {
-            if (isset($packageIndex[$packageName])) {
+        foreach($requires as $packageName) {
+            if (isset($operationsPackagesIndex[$packageName])) {
                 $requiresPackages[] = $packageName;
 
-                $requiresPackages = $this->getAllRequires(
-                    $packageIndex[$packageName]['package'],
-                    $packageIndex,
-                    $requiresPackages
+                $requiresPackages = array_merge(
+                    $requiresPackages,
+                    $this->getAllRequires(
+                        $operationsPackagesIndex[$packageName]['package'],
+                        $operationsPackagesIndex
+                    )
                 );
             }
         }
