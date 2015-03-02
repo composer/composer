@@ -236,6 +236,12 @@ class EventDispatcher
                 $event->getOperations(), $event->getOperation()
             );
         }
+        if (!$event instanceof $expected && $expected === 'Composer\Script\Event') {
+            $event = new \Composer\Script\Event(
+                $event->getName(), $event->getComposer(), $event->getIO(), $event->isDevMode(),
+                $event->getArguments(), $event->getFlags()
+            );
+        }
 
         return $event;
     }
