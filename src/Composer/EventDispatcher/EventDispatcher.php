@@ -205,10 +205,6 @@ class EventDispatcher
      */
     protected function checkListenerExpectedEvent($target, Event $event)
     {
-        if (!$event instanceof Script\Event) {
-            return $event;
-        }
-
         try {
             $reflected = new \ReflectionParameter($target, 0);
         } catch (\Exception $e) {
