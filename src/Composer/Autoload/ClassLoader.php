@@ -377,12 +377,12 @@ class ClassLoader
                     if (0 === strpos($class, $prefix)) {
                         foreach ($this->prefixDirsPsr4[$prefix] as $dir) {
                             $file = $dir.DIRECTORY_SEPARATOR.substr($logicalPathPsr4, $length);
-                            if ($searchMode == self::SEARCHMODE_OPCACHE) {
+                            if ($searchMode === self::SEARCHMODE_OPCACHE) {
                                 if (opcache_is_script_cached($file)) {
                                     return $file;
                                 }
                             }
-                            else if ($searchMode == self::SEARCHMODE_FILE) {
+                            else if ($searchMode === self::SEARCHMODE_FILE) {
                                 if (file_exists($file)) {
                                     return $file;
                                 }
@@ -395,12 +395,12 @@ class ClassLoader
             // PSR-4 fallback dirs
             foreach ($this->fallbackDirsPsr4 as $dir) {
                 $file = $dir.DIRECTORY_SEPARATOR.$logicalPathPsr4;
-                if ($searchMode == self::SEARCHMODE_OPCACHE) {
+                if ($searchMode === self::SEARCHMODE_OPCACHE) {
                     if (opcache_is_script_cached($file)) {
                         return $file;
                     }
                 }
-                else if ($searchMode == self::SEARCHMODE_FILE) {
+                else if ($searchMode === self::SEARCHMODE_FILE) {
                     if (file_exists($file)) {
                         return $file;
                     }
@@ -423,12 +423,12 @@ class ClassLoader
                     if (0 === strpos($class, $prefix)) {
                         foreach ($dirs as $dir) {
                             $file = $dir.DIRECTORY_SEPARATOR.$logicalPathPsr0;
-                            if ($searchMode == self::SEARCHMODE_OPCACHE) {
+                            if ($searchMode === self::SEARCHMODE_OPCACHE) {
                                 if (opcache_is_script_cached($file)) {
                                     return $file;
                                 }
                             }
-                            else if ($searchMode == self::SEARCHMODE_FILE) {
+                            else if ($searchMode === self::SEARCHMODE_FILE) {
                                 if (file_exists($file)) {
                                     return $file;
                                 }
@@ -441,12 +441,12 @@ class ClassLoader
             // PSR-0 fallback dirs
             foreach ($this->fallbackDirsPsr0 as $dir) {
                 $file = $dir.DIRECTORY_SEPARATOR.$logicalPathPsr0;
-                if ($searchMode == self::SEARCHMODE_OPCACHE) {
+                if ($searchMode === self::SEARCHMODE_OPCACHE) {
                     if (opcache_is_script_cached($file)) {
                         return $file;
                     }
                 }
-                else if ($searchMode == self::SEARCHMODE_FILE) {
+                else if ($searchMode === self::SEARCHMODE_FILE) {
                     if (file_exists($file)) {
                         return $file;
                     }
