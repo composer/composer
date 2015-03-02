@@ -439,11 +439,7 @@ EOF;
 
 require_once $vendorPathToTargetDirCode . '/autoload_real.php';
 
-if (defined('COMPOSER_OPCACHE_OPTIMIZE') && COMPOSER_OPCACHE_OPTIMIZE == true) {
-    return ComposerAutoloaderInit$suffix::getLoader(true);
-}
-
-return ComposerAutoloaderInit$suffix::getLoader(false);
+return ComposerAutoloaderInit$suffix::getLoader(defined('COMPOSER_OPCACHE_OPTIMIZE') && COMPOSER_OPCACHE_OPTIMIZE);
 
 AUTOLOAD;
     }

@@ -378,7 +378,7 @@ class ClassLoader
                         foreach ($this->prefixDirsPsr4[$prefix] as $dir) {
                             $file = $dir.DIRECTORY_SEPARATOR.substr($logicalPathPsr4, $length);
                             if ($searchMode == self::SEARCHMODE_OPCACHE) {
-                                if (opcache_is_script_cached($file) == true) {
+                                if (opcache_is_script_cached($file)) {
                                     return $file;
                                 }
                             }
@@ -396,7 +396,7 @@ class ClassLoader
             foreach ($this->fallbackDirsPsr4 as $dir) {
                 $file = $dir.DIRECTORY_SEPARATOR.$logicalPathPsr4;
                 if ($searchMode == self::SEARCHMODE_OPCACHE) {
-                    if (opcache_is_script_cached($file) == true) {
+                    if (opcache_is_script_cached($file)) {
                         return $file;
                     }
                 }
@@ -424,7 +424,7 @@ class ClassLoader
                         foreach ($dirs as $dir) {
                             $file = $dir.DIRECTORY_SEPARATOR.$logicalPathPsr0;
                             if ($searchMode == self::SEARCHMODE_OPCACHE) {
-                                if (opcache_is_script_cached($file) == true) {
+                                if (opcache_is_script_cached($file)) {
                                     return $file;
                                 }
                             }
@@ -442,7 +442,7 @@ class ClassLoader
             foreach ($this->fallbackDirsPsr0 as $dir) {
                 $file = $dir.DIRECTORY_SEPARATOR.$logicalPathPsr0;
                 if ($searchMode == self::SEARCHMODE_OPCACHE) {
-                    if (opcache_is_script_cached($file) == true) {
+                    if (opcache_is_script_cached($file)) {
                         return $file;
                     }
                 }

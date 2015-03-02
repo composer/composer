@@ -4,8 +4,4 @@
 
 require_once __DIR__ . '/composer' . '/autoload_real.php';
 
-if (defined('COMPOSER_OPCACHE_OPTIMIZE') && COMPOSER_OPCACHE_OPTIMIZE == true) {
-    return ComposerAutoloaderInitFilesAutoload::getLoader(true);
-}
-
-return ComposerAutoloaderInitFilesAutoload::getLoader(false);
+return ComposerAutoloaderInitFilesAutoload::getLoader(defined('COMPOSER_OPCACHE_OPTIMIZE') && COMPOSER_OPCACHE_OPTIMIZE);
