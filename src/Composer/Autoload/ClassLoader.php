@@ -56,8 +56,8 @@ class ClassLoader
 
     private $classMapAuthoritative = false;
 
-    const   SEARCHMODE_OPCACHE = 0;
-    const   SEARCHMODE_FILE = 1;
+    const SEARCHMODE_OPCACHE = 0;
+    const SEARCHMODE_FILE = 1;
     
     public function __construct($enableOpcacheOptimize = false)
     {
@@ -364,7 +364,8 @@ class ClassLoader
         return $file;
     }
 
-    private function findFileWithExtension($class, $ext) {
+    private function findFileWithExtension($class, $ext)
+    {
         foreach ($this->searchModes as $searchMode) {
 
             // PSR-4 lookup
