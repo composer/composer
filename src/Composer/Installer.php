@@ -643,26 +643,32 @@ class Installer
         $packagesUninstallOperations = array();
 
         foreach ($operationsPackagesIndex as $packageName => $packageData) {
+            $pluginOperations = array();
             if ($packageData['package']->getType() === 'composer-plugin'
                 || $packageData['package']->getType() === 'composer-installer'
             ) {
-                $pluginRelatedPackagesNames = $this->getAllRequires($packageData['package'], $operationsPackagesIndex);
-                $pluginOperations = array();
-                foreach ($pluginRelatedPackagesNames as $packageName) {
+
+                $pluginDependencies = $this->getAllRequires($packageData['package'], $operationsPackagesIndex);
+                foreach ($pluginDependencies as $packageName) {
                     if (isset($operationsPackagesIndex[$packageName])) {
                         $pluginOperations[] = $operationsPackagesIndex[$packageName]['operation'];
                         unset($operations[$operationsPackagesIndex[$packageName]['index']]);
                     }
                 }
 
-                if ($packageData['operation'] instanceof UninstallOperation) {
-                    array_unshift($pluginOperations, $packageData['operation']);
-                    $pluginUninstallOperations = $pluginOperations;
-                } else {
-                    $pluginInstallOperations = array_reverse($pluginOperations);
-                    array_push($pluginInstallOperations, $packageData['operation']);
-                }
                 unset($operations[$packageData['index']]);
+
+                if ($packageData['operation'] instanceof UninstallOperation) {
+                    $pluginUninstallOperations = array_merge($pluginUninstallOperations, $pluginOperations);
+                    array_unshift($pluginUninstallOperations, $packageData['operation']);
+                } else {
+                    $pluginOperations = array_reverse($pluginOperations);
+                    $pluginOperations[] = $packageData['operation'];
+                    $pluginInstallOperations = array_merge(
+                        $pluginInstallOperations,
+                        $pluginOperations
+                    );
+                }
             }
         }
 
