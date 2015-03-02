@@ -53,13 +53,13 @@ EOT
             if (!$cachePath) {
                 $io->writeError("<info>Cache directory does not exist ($key): $cachePath</info>");
 
-                return;
+                continue;
             }
             $cache = new Cache($io, $cachePath);
             if (!$cache->isEnabled()) {
                 $io->writeError("<info>Cache is not enabled ($key): $cachePath</info>");
 
-                return;
+                continue;
             }
 
             $io->writeError("<info>Clearing cache ($key): $cachePath</info>");
