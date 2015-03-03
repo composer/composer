@@ -56,7 +56,7 @@ class ProcessExecutor
 
         $this->captureOutput = count(func_get_args()) > 1;
         $this->errorOutput = null;
-        $process = new Process($command, $cwd, null, null, static::getTimeout());
+        $process = new Process($command, $cwd, array('LANGUAGE' => 'C') + $_ENV + $_SERVER, null, static::getTimeout());
 
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
         $process->run($callback);
