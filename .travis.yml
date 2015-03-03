@@ -9,11 +9,6 @@ php:
   - 7.0
   - hhvm
 
-matrix:
-    fast_finish: true
-    allow_failures:
-        - php: 7.0
-
 before_script:
     - sudo apt-get install parallel
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
