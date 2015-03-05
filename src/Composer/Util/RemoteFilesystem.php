@@ -158,7 +158,7 @@ class RemoteFilesystem
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
-            $this->io->writeError("    Downloading: <comment>connection...</comment>", false);
+            $this->io->writeError("    Downloading: <comment>connection...</comment>", !$this->io->isDecorated());
         }
 
         $errorMessage = '';
