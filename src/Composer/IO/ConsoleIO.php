@@ -197,7 +197,12 @@ class ConsoleIO extends BaseIO
         if ($newline) {
             $this->doWrite('', true, $stderr);
         }
-        $this->lastMessage = $messages;
+
+        if ($stderr) {
+            $this->lastMessageErr = $messages;
+        } else {
+            $this->lastMessage = $messages;
+        }
     }
 
     /**
