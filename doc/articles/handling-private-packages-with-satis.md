@@ -157,6 +157,24 @@ Example using HTTP over SSL using a client certificate:
 
 > **Tip:** See [ssl context options](http://www.php.net/manual/en/context.ssl.php) for more information.
 
+### Authentification
+
+When your private repositories are password protected, you can store the authentification details permanently. 
+The first time Composer needs to authenticate against some domain it will prompt you for a username/password 
+and then you will be asked whether you want to store it. 
+
+The storage can be done either globally in the `COMPOSER_HOME/auth.json` file (`COMPOSER_HOME` defaults to 
+`~/.composer` or `%APPDATA%/Composer` on Windows) or also in the project directory directly sitting besides your
+composer.json.
+
+You can also configure these by hand using the config command if you need to configure a production machine 
+to be able to run non-interactive installs. For example to enter credentials for example.org one could type:
+
+    composer config http-basic.example.org username password
+
+That will store it in the current directory's auth.json, but if you want it available globally you can use the
+`--global` (`-g`) flag.
+
 ### Downloads
 
 When GitHub or BitBucket repositories are mirrored on your local satis, the build process will include
