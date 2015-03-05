@@ -327,7 +327,7 @@ class RemoteFilesystem
                         $progression = round($bytesTransferred / $this->bytesMax * 100);
                     }
 
-                    if ((0 === $progression % 5) && $progression !== $this->lastProgress) {
+                    if ((0 === $progression % 5) && 100 !== $progression && $progression !== $this->lastProgress) {
                         $this->lastProgress = $progression;
                         $this->io->overwriteError("    Downloading: <comment>$progression%</comment>", false);
                     }
