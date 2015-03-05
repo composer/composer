@@ -215,21 +215,27 @@ class JsonFile
         return $result;
     }
 
+    /**
+     * Throws an exception according to a given code with a customized message
+     *
+     * @param int $code return code of json_last_error function
+     * @throws \RuntimeException
+     */
     private static function throwEncodeError($code)
     {
         switch ($code) {
             case JSON_ERROR_DEPTH:
                 $msg = 'Maximum stack depth exceeded';
-            break;
+                break;
             case JSON_ERROR_STATE_MISMATCH:
                 $msg = 'Underflow or the modes mismatch';
-            break;
+                break;
             case JSON_ERROR_CTRL_CHAR:
                 $msg = 'Unexpected control character found';
-            break;
+                break;
             case JSON_ERROR_UTF8:
                 $msg = 'Malformed UTF-8 characters, possibly incorrectly encoded';
-            break;
+                break;
             default:
                 $msg = 'Unknown error';
         }
