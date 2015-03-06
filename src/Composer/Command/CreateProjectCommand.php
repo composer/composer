@@ -145,6 +145,8 @@ EOT
         }
 
         $composer = Factory::create($io, null, $disablePlugins);
+        $composer->getDownloadManager()->setOutputProgress(!$noProgress);
+
         $fs = new Filesystem();
 
         if ($noScripts === false) {
