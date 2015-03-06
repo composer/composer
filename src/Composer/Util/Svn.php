@@ -81,6 +81,7 @@ class Svn
     {
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
         putenv("DYLD_LIBRARY_PATH");
+        unset($_SERVER['DYLD_LIBRARY_PATH']);
     }
 
     /**

@@ -316,7 +316,8 @@ EOT
         $io->writeError('<info>Created project in ' . $directory . '</info>');
         chdir($directory);
 
-        putenv('COMPOSER_ROOT_VERSION='.$package->getPrettyVersion());
+        $_SERVER['COMPOSER_ROOT_VERSION'] = $package->getPrettyVersion();
+        putenv('COMPOSER_ROOT_VERSION='.$_SERVER['COMPOSER_ROOT_VERSION']);
 
         return $installedFromVcs;
     }

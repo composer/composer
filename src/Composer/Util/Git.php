@@ -164,18 +164,22 @@ class Git
         // added in git 1.7.1, prevents prompting the user for username/password
         if (getenv('GIT_ASKPASS') !== 'echo') {
             putenv('GIT_ASKPASS=echo');
+            unset($_SERVER['GIT_ASKPASS']);
         }
 
         // clean up rogue git env vars in case this is running in a git hook
         if (getenv('GIT_DIR')) {
             putenv('GIT_DIR');
+            unset($_SERVER['GIT_DIR']);
         }
         if (getenv('GIT_WORK_TREE')) {
             putenv('GIT_WORK_TREE');
+            unset($_SERVER['GIT_WORK_TREE']);
         }
 
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
         putenv("DYLD_LIBRARY_PATH");
+        unset($_SERVER['DYLD_LIBRARY_PATH']);
     }
 
     public static function getGitHubDomainsRegex(Config $config)
