@@ -113,7 +113,7 @@ class Factory
         $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir)));
 
         // load global config
-        $file = new JsonFile($home.'/config.json');
+        $file = new JsonFile($config->get('home').'/config.json');
         if ($file->exists()) {
             if ($io && $io->isDebug()) {
                 $io->writeError('Loading config file ' . $file->getPath());
