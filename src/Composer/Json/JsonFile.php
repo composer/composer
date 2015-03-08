@@ -253,6 +253,9 @@ class JsonFile
      */
     public static function parseJson($json, $file = null)
     {
+        if (null === $json) {
+            return;
+        }
         $data = json_decode($json, true);
         if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
             self::validateSyntax($json, $file);
