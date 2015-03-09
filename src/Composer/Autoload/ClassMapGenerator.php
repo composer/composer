@@ -114,7 +114,7 @@ class ClassMapGenerator
     {
         $traits = version_compare(PHP_VERSION, '5.4', '<') ? '' : '|trait';
         $enums = '';
-        if (defined('HPHP_VERSION') && version_compare(HPHP_VERSION, '3.3', '>=')) {
+        if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>=')) {
             $enums = '|enum';
         }
 
