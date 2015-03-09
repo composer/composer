@@ -74,6 +74,12 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
                 'Foo\\CBar' => __DIR__.'/Fixtures/php5.4/traits.php',
             ));
         }
+        if (defined('HPHP_VERSION') && version_compare(HPHP_VERSION, '3.3', '>=')) {
+            $data[] = array(__DIR__.'/Fixtures/hhvm3.3', array(
+                'FooEnum' => __DIR__.'/Fixtures/hhvm3.3/HackEnum.php',
+                'Foo\BarEnum' => __DIR__.'/Fixtures/hhvm3.3/NamespacedHackEnum.php',
+            ));
+        }
 
         return $data;
     }

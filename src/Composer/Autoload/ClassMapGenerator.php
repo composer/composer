@@ -113,6 +113,10 @@ class ClassMapGenerator
     private static function findClasses($path)
     {
         $traits = version_compare(PHP_VERSION, '5.4', '<') ? '' : '|trait';
+        $enums = '';
+        if (defined('HPHP_VERSION') && version_compare(HPHP_VERSION, '3.3', '>=')) {
+            $enums = '|enum';
+        }
 
         try {
             $contents = @php_strip_whitespace($path);
@@ -129,7 +133,7 @@ class ClassMapGenerator
         }
 
         // return early if there is no chance of matching anything in this file
-        if (!preg_match('{\b(?:class|interface'.$traits.')\s}i', $contents)) {
+        if (!preg_match('{\b(?:class|interface'.$traits.$enums.')\s}i', $contents)) {
             return array();
         }
 
@@ -154,7 +158,7 @@ class ClassMapGenerator
 
         preg_match_all('{
             (?:
-                 \b(?<![\$:>])(?P<type>class|interface'.$traits.') \s+ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*)
+                 \b(?<![\$:>])(?P<type>class|interface'.$traits.$enums.') \s+ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*)
                | \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\s*\\\\\s*[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)? \s*[\{;]
             )
         }ix', $contents, $matches);
@@ -170,6 +174,12 @@ class ClassMapGenerator
                 if ($name[0] === ':') {
                     // This is an XHP class, https://github.com/facebook/xhp
                     $name = 'xhp'.substr(str_replace(array('-', ':'), array('_', '__'), $name), 1);
+                } else if ($matches['type'][$i] === 'enum') {
+                    // In Hack, something like:
+                    //   enum Foo: int { HERP = '123'; }
+                    // The regex above captures the colon, which isn't part of
+                    // the class name.
+                    $name = rtrim($name, ':');
                 }
                 $classes[] = ltrim($namespace . $name, '\\');
             }
