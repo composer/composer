@@ -112,10 +112,9 @@ class ClassMapGenerator
      */
     private static function findClasses($path)
     {
-        $traits = version_compare(PHP_VERSION, '5.4', '<') ? '' : '|trait';
-        $enums = '';
+        $extraTypes = version_compare(PHP_VERSION, '5.4', '<') ? '' : '|trait';
         if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>=')) {
-            $enums = '|enum';
+            $extraTypes .= '|enum';
         }
 
         try {
@@ -133,7 +132,7 @@ class ClassMapGenerator
         }
 
         // return early if there is no chance of matching anything in this file
-        if (!preg_match('{\b(?:class|interface'.$traits.$enums.')\s}i', $contents)) {
+        if (!preg_match('{\b(?:class|interface'.$extraTypes.')\s}i', $contents)) {
             return array();
         }
 
@@ -158,7 +157,7 @@ class ClassMapGenerator
 
         preg_match_all('{
             (?:
-                 \b(?<![\$:>])(?P<type>class|interface'.$traits.$enums.') \s+ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*)
+                 \b(?<![\$:>])(?P<type>class|interface'.$extraTypes.') \s+ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*)
                | \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\s*\\\\\s*[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)? \s*[\{;]
             )
         }ix', $contents, $matches);
