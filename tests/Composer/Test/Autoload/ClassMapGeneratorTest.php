@@ -78,6 +78,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             $data[] = array(__DIR__.'/Fixtures/hhvm3.3', array(
                 'FooEnum' => __DIR__.'/Fixtures/hhvm3.3/HackEnum.php',
                 'Foo\BarEnum' => __DIR__.'/Fixtures/hhvm3.3/NamespacedHackEnum.php',
+                'GenericsClass' => __DIR__.'/Fixtures/hhvm3.3/Generics.php',
             ));
         }
 
