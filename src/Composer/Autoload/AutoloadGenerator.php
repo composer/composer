@@ -214,7 +214,16 @@ EOF;
         $classmapFile .= ");\n";
 
         if (!$suffix) {
-            $suffix = $config->get('autoloader-suffix') ?: md5(uniqid('', true));
+            if (is_readable($vendorPath.'/autoload.php')) {
+                $content = file_get_contents($vendorPath.'/autoload.php');
+                if (preg_match('{ComposerAutoloaderInit([^:\s]+)::}', $content, $match)) {
+                    $suffix = $match[1];
+                }
+            }
+
+            if (!$suffix) {
+                $suffix = $config->get('autoloader-suffix') ?: md5(uniqid('', true));
+            }
         }
 
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
