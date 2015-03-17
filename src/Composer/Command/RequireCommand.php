@@ -82,7 +82,7 @@ EOT
             return 1;
         }
 
-        if (file_get_contents($file) === '') {
+        if (filesize($file) === 0) {
             file_put_contents($file, "{\n}\n");
         }
 
