@@ -188,6 +188,7 @@ class FilesystemTest extends TestCase
         @mkdir($basepath . "/real", 0777, true);
         touch($basepath . "/real/FILE");
 
+        $this->skipTestIfSymlinkPhpFunctionIsMissing();
         $result = @symlink($basepath . "/real", $symlinked);
 
         if (!$result) {
@@ -216,6 +217,7 @@ class FilesystemTest extends TestCase
         $symlinked              = $basepath . "/linked";
         $symlinkedTrailingSlash = $symlinked . "/";
 
+        $this->skipTestIfSymlinkPhpFunctionIsMissing();
         $result = @symlink($basepath . "/real", $symlinked);
 
         if (!$result) {
@@ -236,5 +238,12 @@ class FilesystemTest extends TestCase
         $this->assertTrue($result);
         $this->assertFalse(file_exists($symlinkedTrailingSlash));
         $this->assertFalse(file_exists($symlinked));
+    }
+
+    private function skipTestIfSymlinkPhpFunctionIsMissing()
+    {
+        if (!function_exists('symlink')) {
+            $this->markTestSkipped('The php symlink() function for symbolic links is not available on this platform');
+        }
     }
 }
