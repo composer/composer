@@ -55,5 +55,5 @@ username/password pairs, for example:
 
 The main advantage of the auth.json file is that it can be gitignored so
 that every developer in your team can place their own credentials in there,
-which makes revokation of credentials much easier than if you all share the
+which makes revocation of credentials much easier than if you all share the
 same.

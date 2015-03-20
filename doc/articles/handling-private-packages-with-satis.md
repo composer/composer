@@ -157,9 +157,9 @@ Example using HTTP over SSL using a client certificate:
 
 > **Tip:** See [ssl context options](http://www.php.net/manual/en/context.ssl.php) for more information.
 
-### Authentification
+### Authentication
 
-When your private repositories are password protected, you can store the authentification details permanently. 
+When your private repositories are password protected, you can store the authentication details permanently. 
 The first time Composer needs to authenticate against some domain it will prompt you for a username/password 
 and then you will be asked whether you want to store it. 
 

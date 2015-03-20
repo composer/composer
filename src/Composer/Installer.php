@@ -832,8 +832,8 @@ class Installer
                         $matches[$index] = $match->getId();
                     }
 
-                    // select prefered package according to policy rules
-                    if ($matches && $matches = $policy->selectPreferedPackages($pool, array(), $matches)) {
+                    // select preferred package according to policy rules
+                    if ($matches && $matches = $policy->selectPreferredPackages($pool, array(), $matches)) {
                         $newPackage = $pool->literalToPackage($matches[0]);
 
                         if ($task === 'force-links' && $newPackage) {
@@ -1281,7 +1281,7 @@ class Installer
     }
 
     /**
-     * Should packages be prefered in a stable version when updating?
+     * Should packages be preferred in a stable version when updating?
      *
      * @param  boolean   $preferStable
      * @return Installer
@@ -1294,7 +1294,7 @@ class Installer
     }
 
     /**
-     * Should packages be prefered in a lowest version when updating?
+     * Should packages be preferred in a lowest version when updating?
      *
      * @param  boolean   $preferLowest
      * @return Installer
