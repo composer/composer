@@ -329,6 +329,7 @@ EOT
             return $result;
         }
 
+        $versionParser = new VersionParser();
         while (null !== $package = $dialog->ask($output, $prompt)) {
             $matches = $this->findPackages($package);
 
@@ -354,22 +355,32 @@ EOT
                     $this->getIO()->writeError($choices);
                     $this->getIO()->writeError('');
 
-                    $validator = function ($selection) use ($matches) {
+                    $validator = function ($selection) use ($matches, $versionParser) {
                         if ('' === $selection) {
                             return false;
                         }
 
-                        if (!is_numeric($selection) && preg_match('{^\s*(\S+)\s+(\S.*)\s*$}', $selection, $matches)) {
-                            return $matches[1].' '.$matches[2];
+                        if (is_numeric($selection) && isset($matches[(int) $selection])) {
+                            $package = $matches[(int) $selection];
+
+                            return $package['name'];
                         }
 
-                        if (!isset($matches[(int) $selection])) {
-                            throw new \Exception('Not a valid selection');
+                        if (preg_match('{^\s*(?P<name>[\S/]+)(?:\s+(?P<version>\S+))?\s*$}', $selection, $packageMatches)) {
+                            if (isset($packageMatches['version'])) {
+                                // parsing `acme/example ~2.3`
+
+                                // validate version constraint
+                                $versionParser->parseConstraints($packageMatches['version']);
+
+                                return $packageMatches['name'].' '.$packageMatches['version'];
+                            }
+
+                            // parsing `acme/example`
+                            return $packageMatches['name'];
                         }
 
-                        $package = $matches[(int) $selection];
-
-                        return $package['name'];
+                        throw new \Exception('Not a valid selection');
                     };
 
                     $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or the complete package name if it is not listed', false, ':'), $validator, 3);
