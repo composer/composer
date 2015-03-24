@@ -99,27 +99,21 @@ class ConsoleIOTest extends TestCase
             ->method('write')
             ->with($this->equalTo('something (<question>strlen = 23</question>)'));
         $outputMock->expects($this->at(1))
-            ->method('isDecorated')
-            ->willReturn(true);
-        $outputMock->expects($this->at(2))
             ->method('write')
             ->with($this->equalTo(str_repeat("\x08", 23)), $this->equalTo(false));
-        $outputMock->expects($this->at(3))
+        $outputMock->expects($this->at(2))
             ->method('write')
             ->with($this->equalTo('shorter (<comment>12</comment>)'), $this->equalTo(false));
-        $outputMock->expects($this->at(4))
+        $outputMock->expects($this->at(3))
             ->method('write')
             ->with($this->equalTo(str_repeat(' ', 11)), $this->equalTo(false));
-        $outputMock->expects($this->at(5))
+        $outputMock->expects($this->at(4))
             ->method('write')
             ->with($this->equalTo(str_repeat("\x08", 11)), $this->equalTo(false));
-        $outputMock->expects($this->at(6))
-            ->method('isDecorated')
-            ->willReturn(true);
-        $outputMock->expects($this->at(7))
+        $outputMock->expects($this->at(5))
             ->method('write')
             ->with($this->equalTo(str_repeat("\x08", 12)), $this->equalTo(false));
-        $outputMock->expects($this->at(8))
+        $outputMock->expects($this->at(6))
             ->method('write')
             ->with($this->equalTo('something longer than initial (<info>34</info>)'));
 
