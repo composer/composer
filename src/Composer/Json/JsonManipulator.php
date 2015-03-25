@@ -92,14 +92,47 @@ class JsonManipulator
 
         if (true === $sortPackages) {
             $requirements = json_decode($links, true);
-
-            ksort($requirements);
+            $this->sortPackages($requirements);
             $links = $this->format($requirements);
         }
 
         $this->contents = $matches[1] . $matches[2] . $links . $matches[4];
 
         return true;
+    }
+
+    /**
+     * Sorts packages by importance (platform packages first, then PHP dependencies) and alphabetically.
+     *
+     * @link https://getcomposer.org/doc/02-libraries.md#platform-packages
+     *
+     * @param array $packages
+     */
+    private function sortPackages(array &$packages = array())
+    {
+        $prefix = function ($requirement) {
+            return preg_replace(
+                array(
+                    '/^php$/',
+                    '/^hhvm$/',
+                    '/^ext-\w+$/',
+                    '/^lib-\w+$/',
+                    '/^.+$/',
+                ),
+                array(
+                    '0-$0',
+                    '1-$0',
+                    '2-$0',
+                    '3-$0',
+                    '4-$0',
+                ),
+                $requirement
+            );
+        };
+
+        uksort($packages, function ($a, $b) use ($prefix) {
+            return strcmp($prefix($a), $prefix($b));
+        });
     }
 
     public function addRepository($name, $config)
