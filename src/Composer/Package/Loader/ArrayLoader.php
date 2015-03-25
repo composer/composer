@@ -249,7 +249,7 @@ class ArrayLoader implements LoaderInterface
             }
 
             // If using numeric aliases ensure the alias is a valid subversion
-            if(($sourcePrefix = $this->versionParser->parseNumericAliasPrefix($sourceBranch))
+            if (($sourcePrefix = $this->versionParser->parseNumericAliasPrefix($sourceBranch))
                 && ($targetPrefix = $this->versionParser->parseNumericAliasPrefix($targetBranch))
                 && (stripos($targetPrefix, $sourcePrefix) !== 0)
             ) {

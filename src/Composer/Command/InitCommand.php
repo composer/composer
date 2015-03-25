@@ -117,13 +117,13 @@ EOT
         $json = $file->encode($options);
 
         if ($input->isInteractive()) {
-            $output->writeln(array(
+            $this->getIO()->writeError(array(
                 '',
                 $json,
                 ''
             ));
             if (!$dialog->askConfirmation($output, $dialog->getQuestion('Do you confirm generation', 'yes', '?'), true)) {
-                $output->writeln('<error>Command aborted</error>');
+                $this->getIO()->writeError('<error>Command aborted</error>');
 
                 return 1;
             }
@@ -154,14 +154,14 @@ EOT
 
         $dialog = $this->getHelperSet()->get('dialog');
         $formatter = $this->getHelperSet()->get('formatter');
-        $output->writeln(array(
+        $this->getIO()->writeError(array(
             '',
             $formatter->formatBlock('Welcome to the Composer config generator', 'bg=blue;fg=white', true),
             ''
         ));
 
         // namespace
-        $output->writeln(array(
+        $this->getIO()->writeError(array(
             '',
             'This command will guide you through creating your composer.json config.',
             '',
@@ -266,7 +266,7 @@ EOT
         );
         $input->setOption('license', $license);
 
-        $output->writeln(array(
+        $this->getIO()->writeError(array(
             '',
             'Define your dependencies.',
             ''
@@ -316,7 +316,7 @@ EOT
                     $version = $this->findBestVersionForPackage($input, $requirement['name']);
                     $requirement['version'] = $version;
 
-                    $output->writeln(sprintf(
+                    $this->getIO()->writeError(sprintf(
                         'Using version <info>%s</info> for <info>%s</info>',
                         $requirement['version'],
                         $requirement['name']
@@ -329,6 +329,7 @@ EOT
             return $result;
         }
 
+        $versionParser = new VersionParser();
         while (null !== $package = $dialog->ask($output, $prompt)) {
             $matches = $this->findPackages($package);
 
@@ -345,31 +346,41 @@ EOT
 
                 // no match, prompt which to pick
                 if (!$exactMatch) {
-                    $output->writeln(array(
+                    $this->getIO()->writeError(array(
                         '',
                         sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
                         ''
                     ));
 
-                    $output->writeln($choices);
-                    $output->writeln('');
+                    $this->getIO()->writeError($choices);
+                    $this->getIO()->writeError('');
 
-                    $validator = function ($selection) use ($matches) {
+                    $validator = function ($selection) use ($matches, $versionParser) {
                         if ('' === $selection) {
                             return false;
                         }
 
-                        if (!is_numeric($selection) && preg_match('{^\s*(\S+)\s+(\S.*)\s*$}', $selection, $matches)) {
-                            return $matches[1].' '.$matches[2];
+                        if (is_numeric($selection) && isset($matches[(int) $selection])) {
+                            $package = $matches[(int) $selection];
+
+                            return $package['name'];
                         }
 
-                        if (!isset($matches[(int) $selection])) {
-                            throw new \Exception('Not a valid selection');
+                        if (preg_match('{^\s*(?P<name>[\S/]+)(?:\s+(?P<version>\S+))?\s*$}', $selection, $packageMatches)) {
+                            if (isset($packageMatches['version'])) {
+                                // parsing `acme/example ~2.3`
+
+                                // validate version constraint
+                                $versionParser->parseConstraints($packageMatches['version']);
+
+                                return $packageMatches['name'].' '.$packageMatches['version'];
+                            }
+
+                            // parsing `acme/example`
+                            return $packageMatches['name'];
                         }
 
-                        $package = $matches[(int) $selection];
-
-                        return $package['name'];
+                        throw new \Exception('Not a valid selection');
                     };
 
                     $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or the complete package name if it is not listed', false, ':'), $validator, 3);
@@ -392,7 +403,7 @@ EOT
                     if (false === $constraint) {
                         $constraint = $this->findBestVersionForPackage($input, $package);
 
-                        $output->writeln(sprintf(
+                        $this->getIO()->writeError(sprintf(
                             'Using version <info>%s</info> for <info>%s</info>',
                             $constraint,
                             $package

@@ -1,18 +1,34 @@
 language: php
 
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+addons:
+  apt_packages:
+    - parallel
+
 php:
   - 5.3.3
   - 5.3
   - 5.4
   - 5.5
   - 5.6
+  - 7.0
   - hhvm
+  - hhvm-nightly
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: hhvm-nightly
 
 before_script:
-    - sudo apt-get install parallel
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
-    - composer install --prefer-source
-    - bin/composer install --prefer-source
+    - composer install
+    - bin/composer install
     - git config --global user.name travis-ci
     - git config --global user.email travis@example.com
 

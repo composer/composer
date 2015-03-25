@@ -79,6 +79,9 @@ class PluginManager
      */
     public function addPlugin(PluginInterface $plugin)
     {
+        if ($this->io->isDebug()) {
+            $this->io->writeError('Loading plugin '.get_class($plugin));
+        }
         $this->plugins[] =  $plugin;
         $plugin->activate($this->composer, $this->io);
 
@@ -127,7 +130,7 @@ class PluginManager
                 }
 
                 if (!$requiresComposer->matches(new VersionConstraint('==', $this->versionParser->normalize(PluginInterface::PLUGIN_API_VERSION)))) {
-                    $this->io->write("<warning>The plugin ".$package->getName()." requires a version of composer-plugin-api that does not match your composer installation. You may need to run composer update with the '--no-plugins' option.</warning>");
+                    $this->io->writeError("<warning>The plugin ".$package->getName()." requires a version of composer-plugin-api that does not match your composer installation. You may need to run composer update with the '--no-plugins' option.</warning>");
                 }
 
                 $this->registerPackage($package);

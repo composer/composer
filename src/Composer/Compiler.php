@@ -102,10 +102,13 @@ class Compiler
         $finder->files()
             ->ignoreVCS(true)
             ->name('*.php')
+            ->name('LICENSE')
             ->exclude('Tests')
+            ->exclude('tests')
+            ->exclude('docs')
             ->in(__DIR__.'/../../vendor/symfony/')
-            ->in(__DIR__.'/../../vendor/seld/jsonlint/src/')
-            ->in(__DIR__.'/../../vendor/justinrainbow/json-schema/src/')
+            ->in(__DIR__.'/../../vendor/seld/jsonlint/')
+            ->in(__DIR__.'/../../vendor/justinrainbow/json-schema/')
         ;
 
         foreach ($finder as $file) {

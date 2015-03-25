@@ -45,7 +45,7 @@ class ProcessExecutor
     {
         if ($this->io && $this->io->isDebug()) {
             $safeCommand = preg_replace('{(://[^:/\s]+:)[^@\s/]+}i', '$1****', $command);
-            $this->io->write('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
+            $this->io->writeError('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
         }
 
         // make sure that null translate to the proper directory in case the dir is a symlink
@@ -56,7 +56,7 @@ class ProcessExecutor
 
         $this->captureOutput = count(func_get_args()) > 1;
         $this->errorOutput = null;
-        $process = new Process($command, $cwd, null, null, static::getTimeout());
+        $process = new Process($command, $cwd, array_replace($_ENV, $_SERVER, array('LANGUAGE' => 'C')), null, static::getTimeout());
 
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
         $process->run($callback);

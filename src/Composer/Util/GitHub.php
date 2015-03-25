@@ -77,11 +77,11 @@ class GitHub
     public function authorizeOAuthInteractively($originUrl, $message = null)
     {
         if ($message) {
-            $this->io->write($message);
+            $this->io->writeError($message);
         }
 
-        $this->io->write(sprintf('A token will be created and stored in "%s", your password will never be stored', $this->config->getAuthConfigSource()->getName()));
-        $this->io->write('To revoke access to this token you can visit https://github.com/settings/applications');
+        $this->io->writeError(sprintf('A token will be created and stored in "%s", your password will never be stored', $this->config->getAuthConfigSource()->getName()));
+        $this->io->writeError('To revoke access to this token you can visit https://github.com/settings/applications');
 
         $otp = null;
         $attemptCounter = 0;
@@ -105,13 +105,13 @@ class GitHub
                     }
 
                     if (401 === $e->getCode()) {
-                        $this->io->write('Bad credentials.');
+                        $this->io->writeError('Bad credentials.');
                     } else {
-                        $this->io->write('Maximum number of login attempts exceeded. Please try again later.');
+                        $this->io->writeError('Maximum number of login attempts exceeded. Please try again later.');
                     }
 
-                    $this->io->write('You can also manually create a personal token at https://github.com/settings/applications');
-                    $this->io->write('Add it using "composer config github-oauth.github.com <token>"');
+                    $this->io->writeError('You can also manually create a personal token at https://github.com/settings/applications');
+                    $this->io->writeError('Add it using "composer config github-oauth.github.com <token>"');
 
                     continue;
                 }
@@ -166,7 +166,7 @@ class GitHub
             )
         ));
 
-        $this->io->write('Token successfully created');
+        $this->io->writeError('Token successfully created');
 
         return JsonFile::parseJson($json);
     }
@@ -184,14 +184,14 @@ class GitHub
             list($required, $method) = array_map('trim', explode(';', substr(strstr($headers[$key], ':'), 1)));
 
             if ('required' === $required) {
-                $this->io->write('Two-factor Authentication');
+                $this->io->writeError('Two-factor Authentication');
 
                 if ('app' === $method) {
-                    $this->io->write('Open the two-factor authentication app on your device to view your authentication code and verify your identity.');
+                    $this->io->writeError('Open the two-factor authentication app on your device to view your authentication code and verify your identity.');
                 }
 
                 if ('sms' === $method) {
-                    $this->io->write('You have been sent an SMS message with an authentication code to verify your identity.');
+                    $this->io->writeError('You have been sent an SMS message with an authentication code to verify your identity.');
                 }
 
                 return $this->io->ask('Authentication Code: ');

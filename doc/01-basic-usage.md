@@ -140,7 +140,7 @@ versions from `composer.json` and  create the lock file after executing the `upd
 command.
 
 This means that if any of the dependencies get a new version, you won't get the updates
-automatically. To update to the new version, use `update` command. This will fetch
+automatically. To update to the new version, use the `update` command. This will fetch
 the latest matching versions (according to your `composer.json` file) and also update
 the lock file with the new version.
 

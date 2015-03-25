@@ -29,7 +29,7 @@ class ApplicationTest extends TestCase
             ->will($this->returnValue('list'));
 
         $outputMock->expects($this->once())
-            ->method("writeln")
+            ->method("write")
             ->with($this->equalTo(sprintf('<warning>Warning: This development build of composer is over 30 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF'])));
 
         if (!defined('COMPOSER_DEV_WARNING_TIME')) {

@@ -81,6 +81,7 @@ class Svn
     {
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
         putenv("DYLD_LIBRARY_PATH");
+        unset($_SERVER['DYLD_LIBRARY_PATH']);
     }
 
     /**
@@ -111,7 +112,7 @@ class Svn
             }
             $output .= $buffer;
             if ($verbose) {
-                $io->write($buffer, false);
+                $io->writeError($buffer, false);
             }
         };
         $status = $this->process->execute($svnCommand, $handler, $cwd);
@@ -169,7 +170,7 @@ class Svn
             );
         }
 
-        $this->io->write("The Subversion server ({$this->url}) requested credentials:");
+        $this->io->writeError("The Subversion server ({$this->url}) requested credentials:");
 
         $this->hasAuth = true;
         $this->credentials['username'] = $this->io->ask("Username: ");

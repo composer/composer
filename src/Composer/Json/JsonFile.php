@@ -184,6 +184,9 @@ class JsonFile
     {
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
             $json = json_encode($data, $options);
+            if (false === $json) {
+                self::throwEncodeError(json_last_error());
+            }
 
             //  compact brackets to follow recent php versions
             if (PHP_VERSION_ID < 50428 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50512) || (defined('JSON_C_VERSION') && version_compare(phpversion('json'), '1.3.6', '<'))) {
@@ -195,6 +198,9 @@ class JsonFile
         }
 
         $json = json_encode($data);
+        if (false === $json) {
+            self::throwEncodeError(json_last_error());
+        }
 
         $prettyPrint = (bool) ($options & self::JSON_PRETTY_PRINT);
         $unescapeUnicode = (bool) ($options & self::JSON_UNESCAPED_UNICODE);
@@ -210,6 +216,34 @@ class JsonFile
     }
 
     /**
+     * Throws an exception according to a given code with a customized message
+     *
+     * @param int $code return code of json_last_error function
+     * @throws \RuntimeException
+     */
+    private static function throwEncodeError($code)
+    {
+        switch ($code) {
+            case JSON_ERROR_DEPTH:
+                $msg = 'Maximum stack depth exceeded';
+                break;
+            case JSON_ERROR_STATE_MISMATCH:
+                $msg = 'Underflow or the modes mismatch';
+                break;
+            case JSON_ERROR_CTRL_CHAR:
+                $msg = 'Unexpected control character found';
+                break;
+            case JSON_ERROR_UTF8:
+                $msg = 'Malformed UTF-8 characters, possibly incorrectly encoded';
+                break;
+            default:
+                $msg = 'Unknown error';
+        }
+
+        throw new \RuntimeException('JSON encoding failed: '.$msg);
+    }
+
+    /**
      * Parses json string and returns hash.
      *
      * @param string $json json string
@@ -219,6 +253,9 @@ class JsonFile
      */
     public static function parseJson($json, $file = null)
     {
+        if (null === $json) {
+            return;
+        }
         $data = json_decode($json, true);
         if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
             self::validateSyntax($json, $file);

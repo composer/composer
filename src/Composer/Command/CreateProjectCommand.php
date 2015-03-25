@@ -106,7 +106,7 @@ EOT
         $this->updatePreferredOptions($config, $input, $preferSource, $preferDist);
 
         if ($input->getOption('no-custom-installers')) {
-            $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $this->getIO()->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
         }
 
@@ -145,11 +145,13 @@ EOT
         }
 
         $composer = Factory::create($io, null, $disablePlugins);
+        $composer->getDownloadManager()->setOutputProgress(!$noProgress);
+
         $fs = new Filesystem();
 
         if ($noScripts === false) {
             // dispatch event
-            $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
+            $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
         }
 
         $rootPackageConfig = $composer->getConfig();
@@ -196,7 +198,7 @@ EOT
                     }
                 }
             } catch (\Exception $e) {
-                $io->write('<error>An error occurred while removing the VCS metadata: '.$e->getMessage().'</error>');
+                $io->writeError('<error>An error occurred while removing the VCS metadata: '.$e->getMessage().'</error>');
             }
 
             $hasVcs = false;
@@ -217,7 +219,7 @@ EOT
 
         if ($noScripts === false) {
             // dispatch event
-            $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
+            $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
         }
 
         chdir($oldCwd);
@@ -288,10 +290,10 @@ EOT
             $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
-        $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>');
+        $io->writeError('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>');
 
         if ($disablePlugins) {
-            $io->write('<info>Plugins have been disabled.</info>');
+            $io->writeError('<info>Plugins have been disabled.</info>');
         }
 
         if (0 === strpos($package->getPrettyVersion(), 'dev-') && in_array($package->getSourceType(), array('git', 'hg'))) {
@@ -311,10 +313,11 @@ EOT
 
         $installedFromVcs = 'source' === $package->getInstallationSource();
 
-        $io->write('<info>Created project in ' . $directory . '</info>');
+        $io->writeError('<info>Created project in ' . $directory . '</info>');
         chdir($directory);
 
-        putenv('COMPOSER_ROOT_VERSION='.$package->getPrettyVersion());
+        $_SERVER['COMPOSER_ROOT_VERSION'] = $package->getPrettyVersion();
+        putenv('COMPOSER_ROOT_VERSION='.$_SERVER['COMPOSER_ROOT_VERSION']);
 
         return $installedFromVcs;
     }

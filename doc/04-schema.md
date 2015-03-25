@@ -894,4 +894,36 @@ The example will include `/dir/foo/bar/file`, `/foo/bar/baz`, `/file.php`,
 
 Optional.
 
+### non-feature-branches
+
+A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something), that will NOT be handled as feature branches. This is an array of string.
+
+If you have non-numeric branch names, for example like "latest", "current", "latest-stable"
+or something, that do not look like a version number, then composer handles such branches
+as feature branches. This means it searches for parent branches, that look like a version
+or ends at special branches (like master) and the root package version number becomes the
+version of the parent branch or at least master or something.
+
+To handle non-numeric named branches as versions instead of searching for a parent branch
+with a valid version or special branch name like master, you can set patterns for branch
+names, that should be handled as dev version branches.
+
+This is really helpful when you have dependencies using "self.version", so that not dev-master,
+but the same branch is installed (in the example: latest-testing).
+
+An example:
+
+If you have a testing branch, that is heavily maintained during a testing phase and is
+deployed to your staging environment, normally "composer show -s" will give you `versions : * dev-master`.
+
+If you configure latest-.* as a pattern for non-feature-branches like this:
+
+    {
+        "non-feature-branches": ["latest-.*"]
+    }
+
+Then "composer show -s" will give you `versions : * dev-latest-testing`.
+
+Optional.
+
 &larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;

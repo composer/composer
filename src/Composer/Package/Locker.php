@@ -258,16 +258,16 @@ class Locker
             $lock['packages-dev'] = $this->lockPackages($devPackages);
         }
 
-        if (empty($lock['packages']) && empty($lock['packages-dev'])) {
+        $lock['platform'] = $platformReqs;
+        $lock['platform-dev'] = $platformDevReqs;
+
+        if (empty($lock['packages']) && empty($lock['packages-dev']) && empty($lock['platform']) && empty($lock['platform-dev'])) {
             if ($this->lockFile->exists()) {
                 unlink($this->lockFile->getPath());
             }
 
             return false;
         }
-
-        $lock['platform'] = $platformReqs;
-        $lock['platform-dev'] = $platformDevReqs;
 
         if (!$this->isLocked() || $lock !== $this->getLockData()) {
             $this->lockFile->write($lock);

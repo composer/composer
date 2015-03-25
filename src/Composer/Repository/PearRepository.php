@@ -66,13 +66,13 @@ class PearRepository extends ArrayRepository
     {
         parent::initialize();
 
-        $this->io->write('Initializing PEAR repository '.$this->url);
+        $this->io->writeError('Initializing PEAR repository '.$this->url);
 
         $reader = new ChannelReader($this->rfs);
         try {
             $channelInfo = $reader->read($this->url);
         } catch (\Exception $e) {
-            $this->io->write('<warning>PEAR repository from '.$this->url.' could not be loaded. '.$e->getMessage().'</warning>');
+            $this->io->writeError('<warning>PEAR repository from '.$this->url.' could not be loaded. '.$e->getMessage().'</warning>');
 
             return;
         }
@@ -98,7 +98,7 @@ class PearRepository extends ArrayRepository
                     $normalizedVersion = $versionParser->normalize($version);
                 } catch (\UnexpectedValueException $e) {
                     if ($this->io->isVerbose()) {
-                        $this->io->write('Could not load '.$packageDefinition->getPackageName().' '.$version.': '.$e->getMessage());
+                        $this->io->writeError('Could not load '.$packageDefinition->getPackageName().' '.$version.': '.$e->getMessage());
                     }
                     continue;
                 }
