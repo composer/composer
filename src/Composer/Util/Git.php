@@ -67,7 +67,9 @@ class Git
                     $url = $protocol ."://" . $match[1] . "/" . $match[2];
                 }
 
-                if (0 === $this->process->execute(call_user_func($commandCallable, $url), $ignoredOutput, $cwd)) {
+                $exitCode = $this->process->execute(call_user_func($commandCallable, $url), $ignoredOutput, $cwd);
+
+                if (0 === $exitCode) {
                     return;
                 }
                 $messages[] = '- ' . $url . "\n" . preg_replace('#^#m', '  ', $this->process->getErrorOutput());
@@ -77,14 +79,15 @@ class Git
             }
 
             // failed to checkout, first check git accessibility
-            $this->throwException('Failed to clone ' . self::sanitizeUrl($url) .' via '.implode(', ', $protocols).' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
+            $this->throwException('Failed to clone ' . self::sanitizeUrl($url) .' via '.implode(', ', $protocols).' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url, $exitCode);
         }
 
         // if we have a private github url and the ssh protocol is disabled then we skip it and directly fallback to https
         $bypassSshForGitHub = preg_match('{^git@'.self::getGitHubDomainsRegex($this->config).':(.+?)\.git$}i', $url) && !in_array('ssh', $protocols, true);
 
         $command = call_user_func($commandCallable, $url);
-        if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
+        $exitCode = $this->process->execute($command, $ignoredOutput, $cwd);
+        if ($bypassSshForGitHub || 0 !== $exitCode) {
             // private github repository without git access, try https with auth
             if (preg_match('{^git@'.self::getGitHubDomainsRegex($this->config).':(.+?)\.git$}i', $url, $match)) {
                 if (!$this->io->hasAuthentication($match[1])) {
@@ -101,7 +104,8 @@ class Git
                     $url = 'https://'.rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@'.$match[1].'/'.$match[2].'.git';
 
                     $command = call_user_func($commandCallable, $url);
-                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                    $exitCode = $this->process->execute($command, $ignoredOutput, $cwd);
+                    if (0 === $exitCode) {
                         return;
                     }
                 }
@@ -138,7 +142,9 @@ class Git
                     $url = $match[1].rawurlencode($auth['username']).':'.rawurlencode($auth['password']).'@'.$match[2].$match[3];
 
                     $command = call_user_func($commandCallable, $url);
-                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                    $exitCode = $this->process->execute($command, $ignoredOutput, $cwd);
+                
+                    if (0 === $exitCode) {
                         $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
                         $authHelper = new AuthHelper($this->io, $this->config);
                         $authHelper->storeAuth($match[2], $storeAuth);
@@ -151,7 +157,7 @@ class Git
             if ($initialClone) {
                 $this->filesystem->removeDirectory($origCwd);
             }
-            $this->throwException('Failed to execute ' . self::sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput(), $url);
+            $this->throwException('Failed to execute ' . self::sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput(), $url, $exitCode);
         }
     }
 
@@ -192,12 +198,12 @@ class Git
         return preg_replace('{://([^@]+?):.+?@}', '://$1:***@', $message);
     }
 
-    private function throwException($message, $url)
+    private function throwException($message, $url, $exitCode)
     {
         if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
-            throw new \RuntimeException('Failed to clone '.self::sanitizeUrl($url).', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
+            throw new \RuntimeException('Failed to clone '.self::sanitizeUrl($url).', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput(), $exitCode);
         }
-
-        throw new \RuntimeException($message);
+        
+        throw new \RuntimeException($message, $exitCode);
     }
 }
