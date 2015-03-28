@@ -22,15 +22,25 @@ use Composer\Repository\PlatformRepository;
 class OperationCollection implements \IteratorAggregate
 {
     /**
-     * @var array The operations sorted by type
+     * The 'plugin' operation type that must be executed before all others.
      */
-    private $operations = array(
-        'install' => array(),
-        'update' => array(),
-        'uninstall' => array(),
-        'plugin' => array(),
-        'markAliasInstalled' => array(),
-        'markAliasUninstalled' => array(),
+    const TYPE_PLUGIN = 'plugin';
+
+    /**
+     * @var SolverOperation[] The operations, minus the uninstalls and plugins.
+     */
+    private $operations = array();
+
+    /**
+     * @var array The operations by type so they can be selectively retrieved.
+     */
+    private $operationTypes = array(
+        self::TYPE_PLUGIN => array(),
+        UninstallOperation::TYPE => array(),
+        UpdateOperation::TYPE => array(),
+        InstallOperation::TYPE => array(),
+        MarkAliasUninstalledOperation::TYPE => array(),
+        MarkAliasInstalledOperation::TYPE => array(),
     );
 
     /**
@@ -46,7 +56,7 @@ class OperationCollection implements \IteratorAggregate
      */
     public function isEmpty()
     {
-        return !array_filter($this->operations);
+        return !array_filter($this->sortOperationsToArray());
     }
 
     /**
@@ -54,7 +64,7 @@ class OperationCollection implements \IteratorAggregate
      */
     public function getInstalls()
     {
-        return $this->operations['install'];
+        return $this->operationTypes[InstallOperation::TYPE];
     }
 
     /**
@@ -62,7 +72,7 @@ class OperationCollection implements \IteratorAggregate
      */
     public function getUpdates()
     {
-        return $this->operations['update'];
+        return $this->operationTypes[UpdateOperation::TYPE];
     }
 
     /**
@@ -70,7 +80,7 @@ class OperationCollection implements \IteratorAggregate
      */
     public function getUninstalls()
     {
-        return $this->operations['uninstall'];
+        return $this->operationTypes[UninstallOperation::TYPE];
     }
 
     /**
@@ -78,7 +88,7 @@ class OperationCollection implements \IteratorAggregate
      */
     public function getPlugins()
     {
-        return $this->operations['plugin'];
+        return $this->operationTypes[self::TYPE_PLUGIN];
     }
 
     /**
@@ -86,7 +96,7 @@ class OperationCollection implements \IteratorAggregate
      */
     public function getMarkAliasInstalled()
     {
-        return $this->operations['markAliasInstalled'];
+        return $this->operationTypes[MarkAliasInstalledOperation::TYPE];
     }
 
     /**
@@ -94,7 +104,7 @@ class OperationCollection implements \IteratorAggregate
      */
     public function getMarkAliasUninstalled()
     {
-        return $this->operations['markAliasUninstalled'];
+        return $this->operationTypes[MarkAliasUninstalledOperation::TYPE];
     }
 
     /**
@@ -109,27 +119,18 @@ class OperationCollection implements \IteratorAggregate
      * Add an operation to the collection.
      *
      * @param OperationInterface $operation
-     * @throws \InvalidArgumentException if the operation type is not known.
      */
     public function add(OperationInterface $operation)
     {
 
-        if ($operation instanceof InstallOperation || $operation instanceof UpdateOperation) {
-            if ($this->operationNeedsToMoveUp($operation)) {
-                $this->operations['plugin'][] = $operation;
-            } elseif ($operation instanceof InstallOperation) {
-                $this->operations['install'][] = $operation;
-            } else {
-                $this->operations['update'][] = $operation;
-            }
-        } elseif ($operation instanceof UninstallOperation) {
-            $this->operations['uninstall'][] = $operation;
-        } elseif ($operation instanceof MarkAliasInstalledOperation) {
-            $this->operations['markAliasInstalled'][] = $operation;
-        } elseif ($operation instanceof MarkAliasUninstalledOperation) {
-            $this->operations['markAliasUninstalled'][] = $operation;
-        } else {
-            throw new \InvalidArgumentException('Unknown operation type.');
+        $type = $operation->getJobType();
+        if ($this->operationNeedsToMoveUp($operation)) {
+            $type = self::TYPE_PLUGIN;
+        }
+
+        $this->operationTypes[$type][] = $operation;
+        if ($type != UninstallOperation::TYPE && $type != self::TYPE_PLUGIN) {
+            $this->operations[] = $operation;
         }
     }
 
@@ -148,11 +149,10 @@ class OperationCollection implements \IteratorAggregate
      */
     private function operationNeedsToMoveUp(OperationInterface $operation)
     {
-        if ($operation instanceof InstallOperation) {
-            $package = $operation->getPackage();
-        } elseif ($operation instanceof UpdateOperation) {
-            $package = $operation->getTargetPackage();
+        if (!($operation instanceof InstallOperation || $operation instanceof UpdateOperation)) {
+            return false;
         }
+        $package = ($operation instanceof InstallOperation) ? $operation->getPackage() : $operation->getTargetPackage();
 
         if (!($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer')) {
             return false;
@@ -180,12 +180,9 @@ class OperationCollection implements \IteratorAggregate
     private function sortOperationsToArray()
     {
         return array_merge(
-            $this->operations['uninstall'],
-            $this->operations['plugin'],
-            $this->operations['markAliasUninstalled'],
-            $this->operations['install'],
-            $this->operations['markAliasInstalled'],
-            $this->operations['update']
+            $this->operationTypes[UninstallOperation::TYPE],
+            $this->operationTypes[self::TYPE_PLUGIN],
+            $this->operations
         );
     }
 }
