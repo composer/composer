@@ -21,6 +21,11 @@ use Composer\Package\AliasPackage;
  */
 class MarkAliasInstalledOperation extends SolverOperation
 {
+    /**
+     * The operation type.
+     */
+    const TYPE = 'markAliasInstalled';
+
     protected $package;
 
     /**
@@ -47,13 +52,11 @@ class MarkAliasInstalledOperation extends SolverOperation
     }
 
     /**
-     * Returns job type.
-     *
-     * @return string
+     * {@inheritDoc}
      */
     public function getJobType()
     {
-        return 'markAliasInstalled';
+        return self::TYPE;
     }
 
     /**

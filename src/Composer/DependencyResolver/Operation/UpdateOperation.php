@@ -21,6 +21,11 @@ use Composer\Package\PackageInterface;
  */
 class UpdateOperation extends SolverOperation
 {
+    /**
+     * The operation type.
+     */
+    const TYPE = 'update';
+
     protected $initialPackage;
     protected $targetPackage;
 
@@ -60,13 +65,11 @@ class UpdateOperation extends SolverOperation
     }
 
     /**
-     * Returns job type.
-     *
-     * @return string
+     * {@inheritDoc}
      */
     public function getJobType()
     {
-        return 'update';
+        return self::TYPE;
     }
 
     /**

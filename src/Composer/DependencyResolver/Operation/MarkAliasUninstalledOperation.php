@@ -21,6 +21,11 @@ use Composer\Package\AliasPackage;
  */
 class MarkAliasUninstalledOperation extends SolverOperation
 {
+    /**
+     * The operation type.
+     */
+    const TYPE = 'markAliasUninstalled';
+
     protected $package;
 
     /**
@@ -47,13 +52,11 @@ class MarkAliasUninstalledOperation extends SolverOperation
     }
 
     /**
-     * Returns job type.
-     *
-     * @return string
+     * {@inheritDoc}
      */
     public function getJobType()
     {
-        return 'markAliasUninstalled';
+        return self::TYPE;
     }
 
     /**
