@@ -515,7 +515,7 @@ class Installer
         // execute operations
         if ($operations->isEmpty()) {
             $this->io->write('Nothing to install or update');
-        } elseif ($this->confirm) {
+        } elseif ($this->confirm  && $this->shouldConfirmOperations($operations)) {
             $this->showAllChanges($operations);
             if (!$this->io->askConfirmation('<question>Proceed with these changes? </question>[<comment>Y/n</comment>]', true)) {
                 return 1;
@@ -608,6 +608,21 @@ class Installer
 
         return 0;
     }
+
+    /**
+     * Determine whether the operations should really be confirmed. Aliases are an internal operation that the user
+     * should not worry about.
+     *
+     * @param OperationCollection $operations
+     * @return bool
+     */
+    protected function shouldConfirmOperations(OperationCollection $operations)
+    {
+        $aliasOps = count($operations->getMarkAliasInstalled()) + count($operations->getMarkAliasUninstalled());
+
+        return count($operations->toArray()) > $aliasOps;
+    }
+
     /**
      * @param OperationCollection $operations
      */
@@ -618,17 +633,13 @@ class Installer
         $this->showChanges('The following packages will be uninstalled:', $operations->getUninstalls());
         $this->showChanges('The following packages will be installed:', $operations->getInstalls());
         $this->showChanges('The following packages will be updated:', $operations->getUpdates());
-        $this->showChanges(
-            'The following alias changes will occur:',
-            array_merge($operations->getMarkAliasUninstalled(), $operations->getMarkAliasInstalled())
-        );
     }
 
     /**
      * Display the changes for a set of operations.
      *
      * @param string $operationStatement
-     * @param array $operations
+     * @param DependencyResolver\Operation\SolverOperation[] $operations
      */
     private function showChanges($operationStatement, array $operations)
     {
