@@ -81,10 +81,10 @@ class OperationCollectionTest extends TestCase
 
         $this->assertInstanceOf('Composer\DependencyResolver\Operation\UninstallOperation', reset($operations));
         $this->assertTrue(next($operations)->getPackage()->getType() == 'composer-plugin');
-        $this->assertInstanceOf('Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation', next($operations));
+        $this->assertInstanceOf('Composer\DependencyResolver\Operation\UpdateOperation', next($operations));
         $this->assertInstanceOf('Composer\DependencyResolver\Operation\InstallOperation', next($operations));
         $this->assertInstanceOf('Composer\DependencyResolver\Operation\MarkAliasInstalledOperation', next($operations));
-        $this->assertInstanceOf('Composer\DependencyResolver\Operation\UpdateOperation', next($operations));
+        $this->assertInstanceOf('Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation', next($operations));
     }
 
     public function testIsIterable()
