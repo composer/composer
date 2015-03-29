@@ -97,7 +97,7 @@ EOT
             $package = $this->getComposer()->getPackage();
         }
 
-        $io->write('<info>Creating the archive.</info>');
+        $io->writeError('<info>Creating the archive.</info>');
         $archiveManager->archive($package, $format, $dest);
 
         return 0;
@@ -105,14 +105,14 @@ EOT
 
     protected function selectPackage(IOInterface $io, $packageName, $version = null)
     {
-        $io->write('<info>Searching for the specified package.</info>');
+        $io->writeError('<info>Searching for the specified package.</info>');
 
         if ($composer = $this->getComposer(false)) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $repos = new CompositeRepository(array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
             $defaultRepos = Factory::createDefaultRepositories($this->getIO());
-            $io->write('No composer.json found in the current directory, searching packages from ' . implode(', ', array_keys($defaultRepos)));
+            $io->writeError('No composer.json found in the current directory, searching packages from ' . implode(', ', array_keys($defaultRepos)));
             $repos = new CompositeRepository($defaultRepos);
         }
 
@@ -125,14 +125,14 @@ EOT
 
         if (count($packages) > 1) {
             $package = reset($packages);
-            $io->write('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
-            $io->write('Alternatives were '.implode(', ', array_map(function ($p) { return $p->getPrettyString(); }, $packages)).'.');
-            $io->write('<comment>Please use a more specific constraint to pick a different package.</comment>');
+            $io->writeError('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
+            $io->writeError('Alternatives were '.implode(', ', array_map(function ($p) { return $p->getPrettyString(); }, $packages)).'.');
+            $io->writeError('<comment>Please use a more specific constraint to pick a different package.</comment>');
         } elseif ($packages) {
             $package = reset($packages);
-            $io->write('<info>Found an exact match '.$package->getPrettyString().'.</info>');
+            $io->writeError('<info>Found an exact match '.$package->getPrettyString().'.</info>');
         } else {
-            $io->write('<error>Could not find a package matching '.$packageName.'.</error>');
+            $io->writeError('<error>Could not find a package matching '.$packageName.'.</error>');
 
             return false;
         }

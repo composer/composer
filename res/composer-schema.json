@@ -1,12 +1,13 @@
 {
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "name": "Package",
     "type": "object",
     "additionalProperties": false,
+    "required": [ "name", "description" ],
     "properties": {
         "name": {
             "type": "string",
-            "description": "Package name, including 'vendor-name/' prefix.",
-            "required": true
+            "description": "Package name, including 'vendor-name/' prefix."
         },
         "type": {
             "description": "Package type, either 'library' for common packages, 'composer-plugin' for plugins, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
@@ -18,8 +19,7 @@
         },
         "description": {
             "type": "string",
-            "description": "Short package description.",
-            "required": true
+            "description": "Short package description."
         },
         "keywords": {
             "type": "array",
@@ -51,11 +51,11 @@
             "items": {
                 "type": "object",
                 "additionalProperties": false,
+                "required": [ "name"],
                 "properties": {
                     "name": {
                         "type": "string",
-                        "description": "Full name of the author.",
-                        "required": true
+                        "description": "Full name of the author."
                     },
                     "email": {
                         "type": "string",
@@ -197,6 +197,10 @@
                     "type": "boolean",
                     "description": "If false, the composer autoloader will not be prepended to existing autoloaders, defaults to true."
                 },
+                "classmap-authoritative": {
+                    "type": "boolean",
+                    "description": "If true, the composer autoloader will not scan the filesystem for classes that are not found in the class map, defaults to false."
+                },
                 "github-domains": {
                     "type": "array",
                     "description": "A list of domains to use in github mode. This is used for GitHub Enterprise setups, defaults to [\"github.com\"].",
@@ -280,7 +284,8 @@
         },
         "minimum-stability": {
             "type": ["string"],
-            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable."
+            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable.",
+            "pattern": "^dev|alpha|beta|rc|RC|stable$"
         },
         "prefer-stable": {
             "type": ["boolean"],
@@ -403,6 +408,13 @@
                     "description": "URL to browse or download the sources.",
                     "format": "uri"
                 }
+            }
+        },
+        "non-feature-branches": {
+            "type": ["array"],
+            "description": "A set of string or regex patterns for non-numeric branch names that will not be handles as feature branches.",
+            "items": {
+                "type": "string"
             }
         }
     }

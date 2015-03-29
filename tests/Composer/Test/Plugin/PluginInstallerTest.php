@@ -76,7 +76,7 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
         $this->composer->setInstallationManager($im);
         $this->composer->setAutoloadGenerator($this->autoloadGenerator);
 
-        $this->pm = new PluginManager($this->composer, $this->io);
+        $this->pm = new PluginManager($this->io, $this->composer);
         $this->composer->setPluginManager($this->pm);
 
         $config->merge(array(

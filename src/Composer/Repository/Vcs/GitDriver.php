@@ -66,7 +66,7 @@ class GitDriver extends VcsDriver
                     };
                     $gitUtil->runCommand($commandCallable, $this->url, $this->repoDir);
                 } catch (\Exception $e) {
-                    $this->io->write('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$e->getMessage().')</error>');
+                    $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$e->getMessage().')</error>');
                 }
             } else {
                 // clean up directory and do a fresh clone into it
@@ -202,7 +202,7 @@ class GitDriver extends VcsDriver
             $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
-                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match)) {
                         $branches[$match[1]] = $match[2];
                     }
                 }
@@ -241,7 +241,11 @@ class GitDriver extends VcsDriver
             return false;
         }
 
-        // TODO try to connect to the server
+        $process = new ProcessExecutor($io);
+        if ($process->execute('git ls-remote --heads ' . ProcessExecutor::escape($url), $output) === 0) {
+            return true;
+        }
+
         return false;
     }
 }

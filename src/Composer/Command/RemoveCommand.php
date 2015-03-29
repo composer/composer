@@ -73,7 +73,7 @@ EOT
             if (isset($composer[$type][$package])) {
                 $json->removeLink($type, $package);
             } elseif (isset($composer[$altType][$package])) {
-                $output->writeln('<warning>'.$package.' could not be found in '.$type.' but it is present in '.$altType.'</warning>');
+                $this->getIO()->writeError('<warning>'.$package.' could not be found in '.$type.' but it is present in '.$altType.'</warning>');
                 $dialog = $this->getHelperSet()->get('dialog');
                 if ($this->getIO()->isInteractive()) {
                     if ($dialog->askConfirmation($output, $dialog->getQuestion('Do you want to remove it from '.$altType, 'yes', '?'), true)) {
@@ -81,7 +81,7 @@ EOT
                     }
                 }
             } else {
-                $output->writeln('<warning>'.$package.' is not required in your composer.json and has not been removed</warning>');
+                $this->getIO()->writeError('<warning>'.$package.' is not required in your composer.json and has not been removed</warning>');
             }
         }
 
@@ -111,7 +111,7 @@ EOT
 
         $status = $install->run();
         if ($status !== 0) {
-            $output->writeln("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
+            $this->getIO()->writeError("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
             file_put_contents($jsonFile->getPath(), $composerBackup);
         }
 

@@ -33,7 +33,7 @@ class HgBitbucketDriver extends VcsDriver
      */
     public function initialize()
     {
-        preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $this->url, $match);
+        preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+)/?$#', $this->url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'bitbucket.org';
@@ -153,13 +153,13 @@ class HgBitbucketDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url)) {
+        if (!preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url)) {
             return false;
         }
 
         if (!extension_loaded('openssl')) {
             if ($io->isVerbose()) {
-                $io->write('Skipping Bitbucket hg driver for '.$url.' because the OpenSSL PHP extension is missing.');
+                $io->writeError('Skipping Bitbucket hg driver for '.$url.' because the OpenSSL PHP extension is missing.');
             }
 
             return false;

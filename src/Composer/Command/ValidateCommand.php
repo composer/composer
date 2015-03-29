@@ -37,6 +37,7 @@ class ValidateCommand extends Command
             ->setDescription('Validates a composer.json')
             ->setDefinition(array(
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not make a complete validation'),
+                new InputOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors'),
                 new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
             ))
             ->setHelp(<<<EOT
@@ -57,45 +58,53 @@ EOT
         $file = $input->getArgument('file');
 
         if (!file_exists($file)) {
-            $output->writeln('<error>' . $file . ' not found.</error>');
+            $this->getIO()->writeError('<error>' . $file . ' not found.</error>');
 
             return 1;
         }
         if (!is_readable($file)) {
-            $output->writeln('<error>' . $file . ' is not readable.</error>');
+            $this->getIO()->writeError('<error>' . $file . ' is not readable.</error>');
 
             return 1;
         }
 
         $validator = new ConfigValidator($this->getIO());
         $checkAll = $input->getOption('no-check-all') ? 0 : ValidatingArrayLoader::CHECK_ALL;
+        $checkPublish = !$input->getOption('no-check-publish');
         list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
 
         // output errors/warnings
         if (!$errors && !$publishErrors && !$warnings) {
-            $output->writeln('<info>' . $file . ' is valid</info>');
+            $this->getIO()->write('<info>' . $file . ' is valid</info>');
         } elseif (!$errors && !$publishErrors) {
-            $output->writeln('<info>' . $file . ' is valid, but with a few warnings</info>');
-            $output->writeln('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            $this->getIO()->writeError('<info>' . $file . ' is valid, but with a few warnings</info>');
+            $this->getIO()->writeError('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         } elseif (!$errors) {
-            $output->writeln('<info>' . $file . ' is valid for simple usage with composer but has</info>');
-            $output->writeln('<info>strict errors that make it unable to be published as a package:</info>');
-            $output->writeln('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            $this->getIO()->writeError('<info>' . $file . ' is valid for simple usage with composer but has</info>');
+            $this->getIO()->writeError('<info>strict errors that make it unable to be published as a package:</info>');
+            $this->getIO()->writeError('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         } else {
-            $output->writeln('<error>' . $file . ' is invalid, the following errors/warnings were found:</error>');
+            $this->getIO()->writeError('<error>' . $file . ' is invalid, the following errors/warnings were found:</error>');
         }
 
         $messages = array(
-            'error' => array_merge($errors, $publishErrors),
+            'error' => $errors,
             'warning' => $warnings,
         );
 
+        // If checking publish errors, display them errors, otherwise just show them as warnings
+        if ($checkPublish) {
+            $messages['error'] = array_merge($messages['error'], $publishErrors);
+        } else {
+            $messages['warning'] = array_merge($messages['warning'], $publishErrors);
+        }
+
         foreach ($messages as $style => $msgs) {
             foreach ($msgs as $msg) {
-                $output->writeln('<' . $style . '>' . $msg . '</' . $style . '>');
+                $this->getIO()->writeError('<' . $style . '>' . $msg . '</' . $style . '>');
             }
         }
 
-        return $errors || $publishErrors ? 1 : 0;
+        return $errors || ($publishErrors && $checkPublish) ? 1 : 0;
     }
 }

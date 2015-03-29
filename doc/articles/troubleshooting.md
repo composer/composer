@@ -114,8 +114,9 @@ php -d memory_limit=-1 composer.phar <...>
 ## "The system cannot find the path specified" (Windows)
 
 1. Open regedit.
-2. Search for an ```AutoRun``` key inside ```HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor```
-   or ```HKEY_CURRENT_USER\Software\Microsoft\Command Processor```.
+2. Search for an `AutoRun` key inside `HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor`,
+   `HKEY_CURRENT_USER\Software\Microsoft\Command Processor`
+   or `HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Command Processor`.
 3. Check if it contains any path to non-existent file, if it's the case, just remove them.
 
 ## API rate limit and OAuth tokens

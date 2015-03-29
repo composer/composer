@@ -20,20 +20,16 @@ the Composer execution process.
 
 Composer fires the following named events during its execution process:
 
+### Command Events
+
 - **pre-install-cmd**: occurs before the `install` command is executed.
 - **post-install-cmd**: occurs after the `install` command is executed.
 - **pre-update-cmd**: occurs before the `update` command is executed.
 - **post-update-cmd**: occurs after the `update` command is executed.
 - **pre-status-cmd**: occurs before the `status` command is executed.
 - **post-status-cmd**: occurs after the `status` command is executed.
-- **pre-dependencies-solving**: occurs before the dependencies are resolved.
-- **post-dependencies-solving**: occurs after the dependencies are resolved.
-- **pre-package-install**: occurs before a package is installed.
-- **post-package-install**: occurs after a package is installed.
-- **pre-package-update**: occurs before a package is updated.
-- **post-package-update**: occurs after a package is updated.
-- **pre-package-uninstall**: occurs before a package has been uninstalled.
-- **post-package-uninstall**: occurs after a package has been uninstalled.
+- **pre-archive-cmd**: occurs before the `archive` command is executed.
+- **post-archive-cmd**: occurs after the `archive` command is executed.
 - **pre-autoload-dump**: occurs before the autoloader is dumped, either
   during `install`/`update`, or via the `dump-autoload` command.
 - **post-autoload-dump**: occurs after the autoloader is dumped, either
@@ -42,8 +38,28 @@ Composer fires the following named events during its execution process:
   installed, during the `create-project` command.
 - **post-create-project-cmd**: occurs after the `create-project` command is
   executed.
-- **pre-archive-cmd**: occurs before the `archive` command is executed.
-- **post-archive-cmd**: occurs after the `archive` command is executed.
+
+### Installer Events
+
+- **pre-dependencies-solving**: occurs before the dependencies are resolved.
+- **post-dependencies-solving**: occurs after the dependencies are resolved.
+
+### Package Events
+
+- **pre-package-install**: occurs before a package is installed.
+- **post-package-install**: occurs after a package is installed.
+- **pre-package-update**: occurs before a package is updated.
+- **post-package-update**: occurs after a package is updated.
+- **pre-package-uninstall**: occurs before a package has been uninstalled.
+- **post-package-uninstall**: occurs after a package has been uninstalled.
+
+### Plugin Events
+
+- **command**: occurs before any Composer Command is executed on the CLI. It
+  provides you with access to the input and output objects of the program.
+- **pre-file-download**: occurs before files are downloaded and allows
+  you to manipulate the `RemoteFilesystem` object prior to downloading files
+  based on the URL to be downloaded.
 
 > **Note:** Composer makes no assumptions about the state of your dependencies
 > prior to `install` or `update`. Therefore, you should not specify scripts
@@ -96,6 +112,7 @@ that might be used to execute the PHP callbacks:
 namespace MyVendor;
 
 use Composer\Script\Event;
+use Composer\Installer\PackageEvent;
 
 class MyClass
 {
@@ -105,7 +122,7 @@ class MyClass
         // do stuff
     }
 
-    public static function postPackageInstall(Event $event)
+    public static function postPackageInstall(PackageEvent $event)
     {
         $installedPackage = $event->getOperation()->getPackage();
         // do stuff
@@ -118,14 +135,21 @@ class MyClass
 }
 ```
 
-When an event is fired, Composer's internal event handler receives a
-`Composer\Script\Event` object, which is passed as the first argument to your
-PHP callback. This `Event` object has getters for other contextual objects:
+When an event is fired, your PHP callback receives as first argument an
+`Composer\EventDispatcher\Event` object. This object has a `getName()` method
+that lets you retrieve event name.
 
-- `getComposer()`: returns the current instance of `Composer\Composer`
-- `getName()`: returns the name of the event being fired as a string
-- `getIO()`: returns the current input/output stream which implements
-`Composer\IO\IOInterface` for writing to the console
+Depending on the script types (see list above) you will get various event
+subclasses containing various getters with relevant data and associated
+objects:
+
+- Base class: [`Composer\EventDispatcher\Event`](https://getcomposer.org/apidoc/master/Composer/EventDispatcher/Event.html)
+- Command Events: [`Composer\Script\Event`](https://getcomposer.org/apidoc/master/Composer/Script/Event.html)
+- Installer Events: [`Composer\Installer\InstallerEvent`](https://getcomposer.org/apidoc/master/Composer/Installer/InstallerEvent.html)
+- Package Events: [`Composer\Installer\PackageEvent`](https://getcomposer.org/apidoc/master/Composer/Installer/PackageEvent.html)
+- Plugin Events:
+  - command: [`Composer\Plugin\CommandEvent`](https://getcomposer.org/apidoc/master/Composer/Plugin/CommandEvent.html)
+  - pre-file-download: [`Composer\Plugin\PreFileDownloadEvent`](https://getcomposer.org/apidoc/master/Composer/Plugin/PreFileDownloadEvent.html)
 
 ## Running scripts manually
 

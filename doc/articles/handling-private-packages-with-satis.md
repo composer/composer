@@ -6,9 +6,15 @@
 
 # Toran Proxy
 
-[Toran Proxy](https://toranproxy.com/) is a commercial alternative to Satis offering professional support as well as a web UI to manage everything and a better integration with Composer.
+[Toran Proxy](https://toranproxy.com/) is a commercial alternative to Satis
+offering professional support as well as a web UI to manage everything and a
+better integration with Composer. It also provides proxying/mirroring for git
+repos and package zip files which makes installs faster and independent from
+third party systems.
 
-Toran's revenue is also used to pay for Composer and Packagist development and hosting so using it is a good way to support open source financially. You can find more information about how to set it up and use it on the [Toran Proxy](https://toranproxy.com/) website.
+Toran's revenue is also used to pay for Composer and Packagist development and
+hosting so using it is a good way to support open source financially. You can
+find more information about how to set it up and use it on the [Toran Proxy](https://toranproxy.com/) website.
 
 # Satis
 
@@ -66,7 +72,7 @@ constraint if you want really specific versions.
 }
 ```
 
-Once you did this, you just run `php bin/satis build <configuration file> <build dir>`.
+Once you've done this, you just run `php bin/satis build <configuration file> <build dir>`.
 For example `php bin/satis build config.json web/` would read the `config.json`
 file and build a static repository inside the `web/` directory.
 
@@ -150,6 +156,24 @@ Example using HTTP over SSL using a client certificate:
 ```
 
 > **Tip:** See [ssl context options](http://www.php.net/manual/en/context.ssl.php) for more information.
+
+### Authentification
+
+When your private repositories are password protected, you can store the authentification details permanently. 
+The first time Composer needs to authenticate against some domain it will prompt you for a username/password 
+and then you will be asked whether you want to store it. 
+
+The storage can be done either globally in the `COMPOSER_HOME/auth.json` file (`COMPOSER_HOME` defaults to 
+`~/.composer` or `%APPDATA%/Composer` on Windows) or also in the project directory directly sitting besides your
+composer.json.
+
+You can also configure these by hand using the config command if you need to configure a production machine 
+to be able to run non-interactive installs. For example to enter credentials for example.org one could type:
+
+    composer config http-basic.example.org username password
+
+That will store it in the current directory's auth.json, but if you want it available globally you can use the
+`--global` (`-g`) flag.
 
 ### Downloads
 

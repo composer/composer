@@ -32,7 +32,8 @@ Limited update takes rules from lock if available, and not from the installed re
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],
-    "prefer-stable": false
+    "prefer-stable": false,
+    "prefer-lowest": false
 }
 --INSTALLED--
 [

@@ -77,8 +77,8 @@ you can just add a `version` field:
 
 For every tag that looks like a version, a package version of that tag will be
 created. It should match 'X.Y.Z' or 'vX.Y.Z', with an optional suffix
-of `-patch`, `-alpha`, `-beta` or `-RC`. The suffixes can also be followed by
-a number.
+of `-patch` (`-p`), `-alpha` (`-a`), `-beta` (`-b`) or `-RC`. The suffixes
+can also be followed by a number.
 
 Here are a few examples of valid tag names:
 

@@ -1,29 +1,8 @@
 # Basic usage
 
-## Installation
+## Installing
 
-To install Composer, you just need to download the `composer.phar` executable.
-
-```sh
-curl -sS https://getcomposer.org/installer | php
-```
-
-For the details, see the [Introduction](00-intro.md) chapter.
-
-To check if Composer is working, just run the PHAR through `php`:
-
-```sh
-php composer.phar
-```
-
-This should give you a list of available commands.
-
-> **Note:** You can also perform the checks only without downloading Composer
-> by using the `--check` option. For more information, just use `--help`.
->
-> ```sh
-> curl -sS https://getcomposer.org/installer | php -- --help
-> ```
+If you have not yet installed Composer, refer to the [Intro](00-intro.md) chapter.
 
 ## `composer.json`: Project Setup
 
@@ -161,7 +140,7 @@ versions from `composer.json` and  create the lock file after executing the `upd
 command.
 
 This means that if any of the dependencies get a new version, you won't get the updates
-automatically. To update to the new version, use `update` command. This will fetch
+automatically. To update to the new version, use the `update` command. This will fetch
 the latest matching versions (according to your `composer.json` file) and also update
 the lock file with the new version.
 
@@ -234,7 +213,7 @@ You define a mapping from namespaces to directories. The `src` directory would
 be in your project root, on the same level as `vendor` directory is. An example
 filename would be `src/Foo.php` containing an `Acme\Foo` class.
 
-After adding the `autoload` field, you have to re-run `install` to re-generate
+After adding the `autoload` field, you have to re-run `dump-autoload` to re-generate
 the `vendor/autoload.php` file.
 
 Including that file will also return the autoloader instance, so you can store

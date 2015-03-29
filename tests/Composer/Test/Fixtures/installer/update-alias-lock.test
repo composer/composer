@@ -39,7 +39,8 @@ Update aliased package does not mess up the lock file
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": [],
-    "prefer-stable": false
+    "prefer-stable": false,
+    "prefer-lowest": false
 }
 --INSTALLED--
 [
@@ -66,6 +67,7 @@ update
     "minimum-stability": "dev",
     "stability-flags": [],
     "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }

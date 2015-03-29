@@ -61,7 +61,7 @@ class PluginInstaller extends LibraryInstaller
         }
 
         parent::install($repo, $package);
-        $this->composer->getPluginManager()->registerPackage($package);
+        $this->composer->getPluginManager()->registerPackage($package, true);
     }
 
     /**
@@ -75,6 +75,6 @@ class PluginInstaller extends LibraryInstaller
         }
 
         parent::update($repo, $initial, $target);
-        $this->composer->getPluginManager()->registerPackage($target);
+        $this->composer->getPluginManager()->registerPackage($target, true);
     }
 }

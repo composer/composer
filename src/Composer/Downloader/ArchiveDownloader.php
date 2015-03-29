@@ -35,7 +35,7 @@ abstract class ArchiveDownloader extends FileDownloader
             $fileName = parent::download($package, $path);
 
             if ($this->io->isVerbose()) {
-                $this->io->write('    Extracting archive');
+                $this->io->writeError('    Extracting archive');
             }
 
             try {
@@ -77,7 +77,7 @@ abstract class ArchiveDownloader extends FileDownloader
 
                 // retry downloading if we have an invalid zip file
                 if ($retries && $e instanceof \UnexpectedValueException && class_exists('ZipArchive') && $e->getCode() === \ZipArchive::ER_NOZIP) {
-                    $this->io->write('    Invalid zip file, retrying...');
+                    $this->io->writeError('    Invalid zip file, retrying...');
                     usleep(500000);
                     continue;
                 }
@@ -88,7 +88,7 @@ abstract class ArchiveDownloader extends FileDownloader
             break;
         }
 
-        $this->io->write('');
+        $this->io->writeError('');
     }
 
     /**

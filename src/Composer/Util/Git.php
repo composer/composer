@@ -52,12 +52,13 @@ class Git
             }
         }
 
+        $protocols = $this->config->get('github-protocols');
+        if (!is_array($protocols)) {
+            throw new \RuntimeException('Config value "github-protocols" must be an array, got '.gettype($protocols));
+        }
+
         // public github, autoswitch protocols
         if (preg_match('{^(?:https?|git)://'.self::getGitHubDomainsRegex($this->config).'/(.*)}', $url, $match)) {
-            $protocols = $this->config->get('github-protocols');
-            if (!is_array($protocols)) {
-                throw new \RuntimeException('Config value "github-protocols" must be an array, got '.gettype($protocols));
-            }
             $messages = array();
             foreach ($protocols as $protocol) {
                 if ('ssh' === $protocol) {
@@ -79,8 +80,11 @@ class Git
             $this->throwException('Failed to clone ' . self::sanitizeUrl($url) .' via '.implode(', ', $protocols).' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
         }
 
+        // if we have a private github url and the ssh protocol is disabled then we skip it and directly fallback to https
+        $bypassSshForGitHub = preg_match('{^git@'.self::getGitHubDomainsRegex($this->config).':(.+?)\.git$}i', $url) && !in_array('ssh', $protocols, true);
+
         $command = call_user_func($commandCallable, $url);
-        if (0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
+        if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
             // private github repository without git access, try https with auth
             if (preg_match('{^git@'.self::getGitHubDomainsRegex($this->config).':(.+?)\.git$}i', $url, $match)) {
                 if (!$this->io->hasAuthentication($match[1])) {
@@ -122,7 +126,7 @@ class Git
                         }
                     }
 
-                    $this->io->write('    Authentication required (<info>'.parse_url($url, PHP_URL_HOST).'</info>):');
+                    $this->io->writeError('    Authentication required (<info>'.parse_url($url, PHP_URL_HOST).'</info>):');
                     $auth = array(
                         'username'  => $this->io->ask('      Username: ', $defaultUsername),
                         'password'  => $this->io->askAndHideAnswer('      Password: '),
@@ -160,15 +164,22 @@ class Git
         // added in git 1.7.1, prevents prompting the user for username/password
         if (getenv('GIT_ASKPASS') !== 'echo') {
             putenv('GIT_ASKPASS=echo');
+            unset($_SERVER['GIT_ASKPASS']);
         }
 
         // clean up rogue git env vars in case this is running in a git hook
         if (getenv('GIT_DIR')) {
             putenv('GIT_DIR');
+            unset($_SERVER['GIT_DIR']);
         }
         if (getenv('GIT_WORK_TREE')) {
             putenv('GIT_WORK_TREE');
+            unset($_SERVER['GIT_WORK_TREE']);
         }
+
+        // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
+        putenv("DYLD_LIBRARY_PATH");
+        unset($_SERVER['DYLD_LIBRARY_PATH']);
     }
 
     public static function getGitHubDomainsRegex(Config $config)

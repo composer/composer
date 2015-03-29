@@ -31,7 +31,7 @@ class JsonManipulator
         if (!self::$RECURSE_BLOCKS) {
             self::$RECURSE_BLOCKS = '(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{[^{}]*\})*\})*\})*\})*';
             self::$RECURSE_ARRAYS = '(?:[^\]]*|\[(?:[^\]]*|\[(?:[^\]]*|\[(?:[^\]]*|\[[^\]]*\])*\])*\])*\]|'.self::$RECURSE_BLOCKS.')*';
-            self::$JSON_STRING = '"(?:\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4}|[^\0-\x09\x0a-\x1f\\\\"])+"';
+            self::$JSON_STRING = '"(?:[^\0-\x09\x0a-\x1f\\\\"]+|\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4})*"';
             self::$JSON_VALUE = '(?:[0-9.]+|null|true|false|'.self::$JSON_STRING.'|\['.self::$RECURSE_ARRAYS.'\]|\{'.self::$RECURSE_BLOCKS.'\})';
         }
 
@@ -52,7 +52,7 @@ class JsonManipulator
         return $this->contents . $this->newline;
     }
 
-    public function addLink($type, $package, $constraint)
+    public function addLink($type, $package, $constraint, $sortPackages = false)
     {
         $decoded = JsonFile::parseJson($this->contents);
 
@@ -88,6 +88,13 @@ class JsonManipulator
                     $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $this->newline .
                     $this->indent . '}';
             }
+        }
+
+        if (true === $sortPackages) {
+            $requirements = json_decode($links, true);
+
+            ksort($requirements);
+            $links = $this->format($requirements);
         }
 
         $this->contents = $matches[1] . $matches[2] . $links . $matches[4];
@@ -132,12 +139,20 @@ class JsonManipulator
         }
 
         // main node content not match-able
-        $nodeRegex = '#("'.$mainNode.'":\s*\{)('.self::$RECURSE_BLOCKS.')(\})#s';
-        if (!$this->pregMatch($nodeRegex, $this->contents, $match)) {
-            return false;
+        $nodeRegex = '{^(\s*\{\s*(?:'.self::$JSON_STRING.'\s*:\s*'.self::$JSON_VALUE.'\s*,\s*)*?)'.
+            '('.preg_quote(JsonFile::encode($mainNode)).'\s*:\s*\{)('.self::$RECURSE_BLOCKS.')(\})(.*)}s';
+        try {
+            if (!$this->pregMatch($nodeRegex, $this->contents, $match)) {
+                return false;
+            }
+        } catch (\RuntimeException $e) {
+            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+                return false;
+            }
+            throw $e;
         }
 
-        $children = $match[2];
+        $children = $match[3];
 
         // invalid match due to un-regexable content, abort
         if (!@json_decode('{'.$children.'}')) {
@@ -177,7 +192,7 @@ class JsonManipulator
             $children = $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $children;
         }
 
-        $this->contents = preg_replace($nodeRegex, addcslashes('${1}'.$children.'$3', '\\'), $this->contents);
+        $this->contents = preg_replace($nodeRegex, addcslashes('${1}${2}'.$children.'${4}${5}', '\\'), $this->contents);
 
         return true;
     }
@@ -192,15 +207,23 @@ class JsonManipulator
         }
 
         // no node content match-able
-        $nodeRegex = '#("'.$mainNode.'":\s*\{)('.self::$RECURSE_BLOCKS.')(\})#s';
-        if (!$this->pregMatch($nodeRegex, $this->contents, $match)) {
-            return false;
+        $nodeRegex = '{^(\s*\{\s*(?:'.self::$JSON_STRING.'\s*:\s*'.self::$JSON_VALUE.'\s*,\s*)*?)'.
+            '('.preg_quote(JsonFile::encode($mainNode)).'\s*:\s*\{)('.self::$RECURSE_BLOCKS.')(\})(.*)}s';
+        try {
+            if (!$this->pregMatch($nodeRegex, $this->contents, $match)) {
+                return false;
+            }
+        } catch (\RuntimeException $e) {
+            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+                return false;
+            }
+            throw $e;
         }
 
-        $children = $match[2];
+        $children = $match[3];
 
         // invalid match due to un-regexable content, abort
-        if (!@json_decode('{'.$children.'}')) {
+        if (!@json_decode('{'.$children.'}', true)) {
             return false;
         }
 
@@ -238,7 +261,7 @@ class JsonManipulator
 
         // no child data left, $name was the only key in
         if (!trim($childrenClean)) {
-            $this->contents = preg_replace($nodeRegex, '$1'.$this->newline.$this->indent.'}', $this->contents);
+            $this->contents = preg_replace($nodeRegex, '$1$2'.$this->newline.$this->indent.'$4$5', $this->contents);
 
             // we have a subname, so we restore the rest of $name
             if ($subName !== null) {
@@ -253,12 +276,12 @@ class JsonManipulator
         $that = $this;
         $this->contents = preg_replace_callback($nodeRegex, function ($matches) use ($that, $name, $subName, $childrenClean) {
             if ($subName !== null) {
-                $curVal = json_decode('{'.$matches[2].'}', true);
+                $curVal = json_decode('{'.$matches[3].'}', true);
                 unset($curVal[$name][$subName]);
                 $childrenClean = substr($that->format($curVal, 0), 1, -1);
             }
 
-            return $matches[1] . $childrenClean . $matches[3];
+            return $matches[1] . $matches[2] . $childrenClean . $matches[4] . $matches[5];
         }, $this->contents);
 
         return true;
@@ -345,17 +368,17 @@ class JsonManipulator
         if ($count === false) {
             switch (preg_last_error()) {
                 case PREG_NO_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_NO_ERROR');
+                    throw new \RuntimeException('Failed to execute regex: PREG_NO_ERROR', PREG_NO_ERROR);
                 case PREG_INTERNAL_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_INTERNAL_ERROR');
+                    throw new \RuntimeException('Failed to execute regex: PREG_INTERNAL_ERROR', PREG_INTERNAL_ERROR);
                 case PREG_BACKTRACK_LIMIT_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_BACKTRACK_LIMIT_ERROR');
+                    throw new \RuntimeException('Failed to execute regex: PREG_BACKTRACK_LIMIT_ERROR', PREG_BACKTRACK_LIMIT_ERROR);
                 case PREG_RECURSION_LIMIT_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_RECURSION_LIMIT_ERROR');
+                    throw new \RuntimeException('Failed to execute regex: PREG_RECURSION_LIMIT_ERROR', PREG_RECURSION_LIMIT_ERROR);
                 case PREG_BAD_UTF8_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_ERROR');
+                    throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_ERROR', PREG_BAD_UTF8_ERROR);
                 case PREG_BAD_UTF8_OFFSET_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_OFFSET_ERROR');
+                    throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_OFFSET_ERROR', PREG_BAD_UTF8_OFFSET_ERROR);
                 default:
                     throw new \RuntimeException('Failed to execute regex: Unknown error');
             }

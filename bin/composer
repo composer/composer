@@ -32,9 +32,9 @@ if (function_exists('ini_set')) {
     };
 
     $memoryLimit = trim(ini_get('memory_limit'));
-    // Increase memory_limit if it is lower than 512M
-    if ($memoryLimit != -1 && $memoryInBytes($memoryLimit) < 512 * 1024 * 1024) {
-        @ini_set('memory_limit', '512M');
+    // Increase memory_limit if it is lower than 1GB
+    if ($memoryLimit != -1 && $memoryInBytes($memoryLimit) < 1024 * 1024 * 1024) {
+        @ini_set('memory_limit', '1G');
     }
     unset($memoryInBytes, $memoryLimit);
 }

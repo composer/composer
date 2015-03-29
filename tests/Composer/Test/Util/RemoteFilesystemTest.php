@@ -119,7 +119,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $io = $this->getMock('Composer\IO\IOInterface');
         $io
             ->expects($this->once())
-            ->method('overwrite')
+            ->method('overwriteError')
         ;
 
         $fs = new RemoteFilesystem($io);

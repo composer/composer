@@ -1,0 +1,41 @@
+--TEST--
+The locked version will not get overwritten by an install
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "foo/bar", "version": "1.0.0" },
+                { "name": "foo/baz", "version": "1.0.0" },
+                { "name": "foo/baz", "version": "2.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "foo/bar": "2.0.0",
+        "foo/baz": "2.0.0"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        { "name": "foo/bar", "version": "1.0.0" },
+        { "name": "foo/baz", "version": "2.0.0" }
+    ],
+    "packages-dev": null,
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false
+}
+--INSTALLED--
+[
+    { "name": "foo/bar", "version": "1.0.0" },
+    { "name": "foo/baz", "version": "1.0.0" }
+]
+--RUN--
+install
+--EXPECT--
+Updating foo/baz (1.0.0) to foo/baz (2.0.0)

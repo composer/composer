@@ -49,6 +49,47 @@ class ConsoleIOTest extends TestCase
         $consoleIO->write('some information about something', false);
     }
 
+    public function testWriteError()
+    {
+        $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
+        $outputMock = $this->getMock('Symfony\Component\Console\Output\ConsoleOutputInterface');
+        $outputMock->expects($this->once())
+            ->method('getErrorOutput')
+            ->willReturn($outputMock);
+        $outputMock->expects($this->once())
+            ->method('write')
+            ->with($this->equalTo('some information about something'), $this->equalTo(false));
+        $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
+
+        $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
+        $consoleIO->writeError('some information about something', false);
+    }
+
+    public function testWriteWithMultipleLineStringWhenDebugging()
+    {
+        $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
+        $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
+        $outputMock->expects($this->once())
+            ->method('write')
+            ->with(
+                $this->callback(function ($messages) {
+                    $result = preg_match("[(.*)/(.*) First line]", $messages[0]) > 0;
+                    $result &= preg_match("[(.*)/(.*) Second line]", $messages[1]) > 0;
+
+                    return $result;
+                }),
+                $this->equalTo(false)
+            );
+        $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
+
+        $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
+        $startTime = microtime(true);
+        $consoleIO->enableDebugging($startTime);
+
+        $example = explode('\n', 'First line\nSecond lines');
+        $consoleIO->write($example, false);
+    }
+
     public function testOverwrite()
     {
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');

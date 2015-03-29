@@ -47,7 +47,7 @@ any version beginning with `1.2`.
 ## System Requirements
 
 Composer requires PHP 5.3.2+ to run. A few sensitive php settings and compile
-flags are also required, but the installer will warn you about any
+flags are also required, but when using the installer you will be warned about any
 incompatibilities.
 
 To install packages from sources instead of simple zip archives, you will need
@@ -56,14 +56,17 @@ git, svn or hg depending on how the package is version-controlled.
 Composer is multi-platform and we strive to make it run equally well on Windows,
 Linux and OSX.
 
-## Installation - *nix
+## Installation - Linux / Unix / OSX
 
 ### Downloading the Composer Executable
 
+There are in short, two ways to install Composer. Locally as part of your
+project, or globally as a system wide executable.
+
 #### Locally
 
-To actually get Composer, we need to do two things. The first one is installing
-Composer (again, this means downloading it into your project):
+Installing Composer locally is a matter of just running the installer in your
+project directory:
 
 ```sh
 curl -sS https://getcomposer.org/installer | php
@@ -76,8 +79,8 @@ curl -sS https://getcomposer.org/installer | php
 php -r "readfile('https://getcomposer.org/installer');" | php
 ```
 
-This will just check a few PHP settings and then download `composer.phar` to
-your working directory. This file is the Composer binary. It is a PHAR (PHP
+The installer will just check a few PHP settings and then download `composer.phar`
+to your working directory. This file is the Composer binary. It is a PHAR (PHP
 archive), which is an archive format for PHP which can be run on the command
 line, amongst other things.
 
@@ -104,18 +107,9 @@ mv composer.phar /usr/local/bin/composer
 > **Note:** If the above fails due to permissions, run the `mv` line
 > again with sudo.
 
+> **Note:** In OSX Yosemite the `/usr` directory does not exist by default. If you receive the error "/usr/local/bin/composer: No such file or directory" then you must create `/usr/local/bin/` manually before proceeding.
+
 Then, just run `composer` in order to run Composer instead of `php composer.phar`.
-
-#### Globally (on OSX via homebrew)
-
-Composer is part of the homebrew-php project.
-
-```sh
-brew update
-brew tap homebrew/dupes
-brew tap homebrew/php
-brew install composer
-```
 
 ## Installation - Windows
 
@@ -126,6 +120,9 @@ This is the easiest way to get Composer set up on your machine.
 Download and run [Composer-Setup.exe](https://getcomposer.org/Composer-Setup.exe),
 it will install the latest Composer version and set up your PATH so that you can
 just call `composer` from any directory in your command line.
+
+> **Note:** Close your current terminal. Test usage with a new terminal:
+> That is important since the PATH only gets loaded when the terminal starts.
 
 ### Manual Installation
 

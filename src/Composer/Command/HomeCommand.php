@@ -40,12 +40,14 @@ class HomeCommand extends Command
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Package(s) to browse to.'),
                 new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL.'),
+                new InputOption('show', 's', InputOption::VALUE_NONE, 'Only show the homepage or repository URL.'),
             ))
             ->setHelp(<<<EOT
-The home command opens a package's repository URL or
+The home command opens or shows a package's repository URL or
 homepage in your default browser.
 
 To open the homepage by default, use -H or --homepage.
+To show instead of open the repository or homepage URL, use -s or --show.
 EOT
             );
     }
@@ -55,15 +57,21 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $repo = $this->initializeRepo($input, $output);
+        $repos = $this->initializeRepos();
         $return = 0;
 
         foreach ($input->getArgument('packages') as $packageName) {
+            foreach ($repos as $repo) {
+                $package = $this->getPackage($repo, $packageName);
+                if ($package instanceof CompletePackageInterface) {
+                    break;
+                }
+            }
             $package = $this->getPackage($repo, $packageName);
 
             if (!$package instanceof CompletePackageInterface) {
                 $return = 1;
-                $output->writeln('<warning>Package '.$packageName.' not found</warning>');
+                $this->getIO()->writeError('<warning>Package '.$packageName.' not found</warning>');
 
                 continue;
             }
@@ -76,12 +84,16 @@ EOT
 
             if (!filter_var($url, FILTER_VALIDATE_URL)) {
                 $return = 1;
-                $output->writeln('<warning>'.($input->getOption('homepage') ? 'Invalid or missing homepage' : 'Invalid or missing repository URL').' for '.$packageName.'</warning>');
+                $this->getIO()->writeError('<warning>'.($input->getOption('homepage') ? 'Invalid or missing homepage' : 'Invalid or missing repository URL').' for '.$packageName.'</warning>');
 
                 continue;
             }
 
-            $this->openBrowser($url);
+            if ($input->getOption('show')) {
+                $this->getIO()->write(sprintf('<info>%s</info>', $url));
+            } else {
+                $this->openBrowser($url);
+            }
         }
 
         return $return;
@@ -133,28 +145,30 @@ EOT
         } elseif (0 === $osx) {
             passthru('open ' . $url);
         } else {
-            $this->getIO()->write('no suitable browser opening command found, open yourself: ' . $url);
+            $this->getIO()->writeError('no suitable browser opening command found, open yourself: ' . $url);
         }
     }
 
     /**
-     * initializes the repo
+     * Initializes repositories
      *
-     * @param  InputInterface      $input
-     * @param  OutputInterface     $output
-     * @return CompositeRepository
+     * Returns an array of repos in order they should be checked in
+     *
+     * @return RepositoryInterface[]
      */
-    private function initializeRepo(InputInterface $input, OutputInterface $output)
+    private function initializeRepos()
     {
         $composer = $this->getComposer(false);
 
         if ($composer) {
-            $repo = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
-        } else {
-            $defaultRepos = Factory::createDefaultRepositories($this->getIO());
-            $repo = new CompositeRepository($defaultRepos);
+            return array(
+                $composer->getRepositoryManager()->getLocalRepository(),
+                new CompositeRepository($composer->getRepositoryManager()->getRepositories())
+            );
         }
 
-        return $repo;
+        $defaultRepos = Factory::createDefaultRepositories($this->getIO());
+
+        return array(new CompositeRepository($defaultRepos));
     }
 }

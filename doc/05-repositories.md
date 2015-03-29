@@ -122,7 +122,7 @@ JSON request body:
 ```json
 {
     "downloads": [
-        {"name": "monolog/monolog", "version": "1.2.1.0"},
+        {"name": "monolog/monolog", "version": "1.2.1.0"}
     ]
 }
 ```
@@ -234,7 +234,7 @@ project to use the patched version. If the library is on GitHub (this is the
 case most of the time), you can simply fork it there and push your changes to
 your fork. After that you update the project's `composer.json`. All you have
 to do is add your fork as a repository and update the version constraint to
-point to your custom branch. For version constraint naming conventions see
+point to your custom branch. Your custom branch name must be prefixed with `"dev-"`. For version constraint naming conventions see
 [Libraries](02-libraries.md) for more information.
 
 Example assuming you patched monolog to fix a bug in the `bugfix` branch:
@@ -533,10 +533,9 @@ There are a few tools that can help you create a `composer` repository.
 ### Packagist
 
 The underlying application used by packagist is open source. This means that you
-can just install your own copy of packagist, re-brand, and use it. It's really
-quite straight-forward to do. However due to its size and complexity, for most
-small and medium sized companies willing to track a few packages will be better
-off using Satis.
+can technically install your own copy of packagist. However it is not a
+supported use case and changes will happen without caring for third parties
+using the code.
 
 Packagist is a Symfony2 application, and it is [available on
 GitHub](https://github.com/composer/packagist). It uses composer internally and
@@ -544,8 +543,11 @@ acts as a proxy between VCS repositories and the composer users. It holds a list
 of all VCS packages, periodically re-crawls them, and exposes them as a composer
 repository.
 
-To set your own copy, simply follow the instructions from the [packagist
-github repository](https://github.com/composer/packagist).
+### Toran Proxy
+
+[Toran Proxy](https://toranproxy.com/) is a web app much like Packagist but
+providing private package hosting as well as mirroring/proxying of GitHub and packagist.org. Check its homepage and the [Satis/Toran Proxy article](articles/handling-private-packages-with-satis.md)
+for more information.
 
 ### Satis
 

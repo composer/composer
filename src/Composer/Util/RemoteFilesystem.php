@@ -26,7 +26,6 @@ class RemoteFilesystem
 {
     private $io;
     private $config;
-    private $firstCall;
     private $bytesMax;
     private $originUrl;
     private $fileUrl;
@@ -147,7 +146,7 @@ class RemoteFilesystem
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
 
         if ($this->io->isDebug()) {
-            $this->io->write((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
+            $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
         }
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
@@ -159,7 +158,7 @@ class RemoteFilesystem
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
-            $this->io->write("    Downloading: <comment>connection...</comment>", false);
+            $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
         }
 
         $errorMessage = '';
@@ -229,7 +228,7 @@ class RemoteFilesystem
         }
 
         if ($this->progress && !$this->retry) {
-            $this->io->overwrite("    Downloading: <comment>100%</comment>");
+            $this->io->overwriteError("    Downloading: <comment>100%</comment>");
         }
 
         // handle copy command if download was successful
@@ -328,9 +327,9 @@ class RemoteFilesystem
                         $progression = round($bytesTransferred / $this->bytesMax * 100);
                     }
 
-                    if ((0 === $progression % 5) && $progression !== $this->lastProgress) {
+                    if ((0 === $progression % 5) && 100 !== $progression && $progression !== $this->lastProgress) {
                         $this->lastProgress = $progression;
-                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
+                        $this->io->overwriteError("    Downloading: <comment>$progression%</comment>", false);
                     }
                 }
                 break;
@@ -344,7 +343,7 @@ class RemoteFilesystem
     {
         if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
             $message = "\n".'Could not fetch '.$this->fileUrl.', enter your GitHub credentials '.($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
-            $gitHubUtil = new GitHub($this->io, $this->config, null, $this);
+            $gitHubUtil = new GitHub($this->io, $this->config, null);
             if (!$gitHubUtil->authorizeOAuth($this->originUrl)
                 && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
             ) {
@@ -372,7 +371,7 @@ class RemoteFilesystem
                 throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
             }
 
-            $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+            $this->io->overwriteError('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');
             $this->io->setAuthentication($this->originUrl, $username, $password);

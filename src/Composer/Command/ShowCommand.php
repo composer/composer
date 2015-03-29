@@ -41,6 +41,7 @@ class ShowCommand extends Command
     {
         $this
             ->setName('show')
+            ->setAliases(array('info'))
             ->setDescription('Show information about packages')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect'),
@@ -83,7 +84,7 @@ EOT
             } else {
                 $defaultRepos = Factory::createDefaultRepositories($this->getIO());
                 $repos = new CompositeRepository($defaultRepos);
-                $output->writeln('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
+                $this->getIO()->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             }
         } elseif ($composer) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
@@ -91,7 +92,7 @@ EOT
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
             $defaultRepos = Factory::createDefaultRepositories($this->getIO());
-            $output->writeln('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
+            $this->getIO()->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
@@ -118,9 +119,9 @@ EOT
             $this->printLinks($input, $output, $package, 'requires');
             $this->printLinks($input, $output, $package, 'devRequires', 'requires (dev)');
             if ($package->getSuggests()) {
-                $output->writeln("\n<info>suggests</info>");
+                $this->getIO()->write("\n<info>suggests</info>");
                 foreach ($package->getSuggests() as $suggested => $reason) {
-                    $output->writeln($suggested . ' <comment>' . $reason . '</comment>');
+                    $this->getIO()->write($suggested . ' <comment>' . $reason . '</comment>');
                 }
             }
             $this->printLinks($input, $output, $package, 'provides');
@@ -171,7 +172,7 @@ EOT
         foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
                 if ($tree) {
-                    $output->writeln($type);
+                    $this->getIO()->write($type);
                 }
                 ksort($packages[$type]);
 
@@ -221,10 +222,10 @@ EOT
                     } else {
                         $output->write($indent . $package);
                     }
-                    $output->writeln('');
+                    $this->getIO()->write('');
                 }
                 if ($tree) {
-                    $output->writeln('');
+                    $this->getIO()->write('');
                 }
             }
         }
@@ -284,53 +285,53 @@ EOT
      */
     protected function printMeta(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, RepositoryInterface $repos)
     {
-        $output->writeln('<info>name</info>     : ' . $package->getPrettyName());
-        $output->writeln('<info>descrip.</info> : ' . $package->getDescription());
-        $output->writeln('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
+        $this->getIO()->write('<info>name</info>     : ' . $package->getPrettyName());
+        $this->getIO()->write('<info>descrip.</info> : ' . $package->getDescription());
+        $this->getIO()->write('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
         $this->printVersions($input, $output, $package, $versions, $installedRepo, $repos);
-        $output->writeln('<info>type</info>     : ' . $package->getType());
-        $output->writeln('<info>license</info>  : ' . implode(', ', $package->getLicense()));
-        $output->writeln('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
-        $output->writeln('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
-        $output->writeln('<info>names</info>    : ' . implode(', ', $package->getNames()));
+        $this->getIO()->write('<info>type</info>     : ' . $package->getType());
+        $this->getIO()->write('<info>license</info>  : ' . implode(', ', $package->getLicense()));
+        $this->getIO()->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
+        $this->getIO()->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
+        $this->getIO()->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
 
         if ($package->isAbandoned()) {
             $replacement = ($package->getReplacementPackage() !== null)
                 ? ' The author suggests using the ' . $package->getReplacementPackage(). ' package instead.'
                 : null;
 
-            $output->writeln(
+            $this->getIO()->writeError(
                 sprintf('<error>Attention: This package is abandoned and no longer maintained.%s</error>', $replacement)
             );
         }
 
         if ($package->getSupport()) {
-            $output->writeln("\n<info>support</info>");
+            $this->getIO()->write("\n<info>support</info>");
             foreach ($package->getSupport() as $type => $value) {
-                $output->writeln('<comment>' . $type . '</comment> : '.$value);
+                $this->getIO()->write('<comment>' . $type . '</comment> : '.$value);
             }
         }
 
         if ($package->getAutoload()) {
-            $output->writeln("\n<info>autoload</info>");
+            $this->getIO()->write("\n<info>autoload</info>");
             foreach ($package->getAutoload() as $type => $autoloads) {
-                $output->writeln('<comment>' . $type . '</comment>');
+                $this->getIO()->write('<comment>' . $type . '</comment>');
 
                 if ($type === 'psr-0') {
                     foreach ($autoloads as $name => $path) {
-                        $output->writeln(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
+                        $this->getIO()->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
                     }
                 } elseif ($type === 'psr-4') {
                     foreach ($autoloads as $name => $path) {
-                        $output->writeln(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
+                        $this->getIO()->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
                     }
                 } elseif ($type === 'classmap') {
-                    $output->writeln(implode(', ', $autoloads));
+                    $this->getIO()->write(implode(', ', $autoloads));
                 }
             }
             if ($package->getIncludePaths()) {
-                $output->writeln('<comment>include-path</comment>');
-                $output->writeln(implode(', ', $package->getIncludePaths()));
+                $this->getIO()->write('<comment>include-path</comment>');
+                $this->getIO()->write(implode(', ', $package->getIncludePaths()));
             }
         }
     }
@@ -354,7 +355,7 @@ EOT
 
         $versions = implode(', ', $versions);
 
-        $output->writeln('<info>versions</info> : ' . $versions);
+        $this->getIO()->write('<info>versions</info> : ' . $versions);
     }
 
     /**
@@ -370,10 +371,10 @@ EOT
     {
         $title = $title ?: $linkType;
         if ($links = $package->{'get'.ucfirst($linkType)}()) {
-            $output->writeln("\n<info>" . $title . "</info>");
+            $this->getIO()->write("\n<info>" . $title . "</info>");
 
             foreach ($links as $link) {
-                $output->writeln($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
+                $this->getIO()->write($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
             }
         }
     }

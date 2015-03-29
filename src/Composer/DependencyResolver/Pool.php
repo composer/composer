@@ -65,6 +65,11 @@ class Pool
         }
         $this->stabilityFlags = $stabilityFlags;
         $this->filterRequires = $filterRequires;
+        foreach ($filterRequires as $name => $constraint) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
+                unset($this->filterRequires[$name]);
+            }
+        }
     }
 
     public function setWhitelist($whitelist)

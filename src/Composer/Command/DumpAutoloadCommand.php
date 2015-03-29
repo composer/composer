@@ -52,12 +52,12 @@ EOT
         $package = $composer->getPackage();
         $config = $composer->getConfig();
 
-        $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader');
+        $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader') || $config->get('classmap-authoritative');
 
         if ($optimize) {
-            $output->writeln('<info>Generating optimized autoload files</info>');
+            $this->getIO()->writeError('<info>Generating optimized autoload files</info>');
         } else {
-            $output->writeln('<info>Generating autoload files</info>');
+            $this->getIO()->writeError('<info>Generating autoload files</info>');
         }
 
         $generator = $composer->getAutoloadGenerator();

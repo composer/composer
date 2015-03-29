@@ -78,6 +78,6 @@ class MultiConstraint implements LinkConstraintInterface
             $constraints[] = $constraint->__toString();
         }
 
-        return '['.implode($this->conjunctive ? ', ' : ' | ', $constraints).']';
+        return '['.implode($this->conjunctive ? ' ' : ' || ', $constraints).']';
     }
 }

@@ -251,6 +251,17 @@ class ValidatingArrayLoader implements LoaderInterface
                     if ('-dev' !== substr($validatedTargetBranch, -4)) {
                         $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must be a parseable number like 2.0-dev';
                         unset($this->config['extra']['branch-alias'][$sourceBranch]);
+
+                        continue;
+                    }
+
+                    // If using numeric aliases ensure the alias is a valid subversion
+                    if (($sourcePrefix = $this->versionParser->parseNumericAliasPrefix($sourceBranch))
+                        && ($targetPrefix = $this->versionParser->parseNumericAliasPrefix($targetBranch))
+                        && (stripos($targetPrefix, $sourcePrefix) !== 0)
+                    ) {
+                        $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') is not a valid numeric alias for this version';
+                        unset($this->config['extra']['branch-alias'][$sourceBranch]);
                     }
                 }
             }

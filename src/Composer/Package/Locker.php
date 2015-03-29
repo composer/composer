@@ -182,6 +182,15 @@ class Locker
         return isset($lockData['prefer-stable']) ? $lockData['prefer-stable'] : null;
     }
 
+    public function getPreferLowest()
+    {
+        $lockData = $this->getLockData();
+
+        // return null if not set to allow caller logic to choose the
+        // right behavior since old lock files have no prefer-lowest
+        return isset($lockData['prefer-lowest']) ? $lockData['prefer-lowest'] : null;
+    }
+
     public function getAliases()
     {
         $lockData = $this->getLockData();
@@ -213,10 +222,11 @@ class Locker
      * @param string $minimumStability
      * @param array  $stabilityFlags
      * @param bool   $preferStable
+     * @param bool   $preferLowest
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest)
     {
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
@@ -229,6 +239,7 @@ class Locker
             'minimum-stability' => $minimumStability,
             'stability-flags' => $stabilityFlags,
             'prefer-stable' => $preferStable,
+            'prefer-lowest' => $preferLowest,
         );
 
         foreach ($aliases as $package => $versions) {
@@ -247,16 +258,16 @@ class Locker
             $lock['packages-dev'] = $this->lockPackages($devPackages);
         }
 
-        if (empty($lock['packages']) && empty($lock['packages-dev'])) {
+        $lock['platform'] = $platformReqs;
+        $lock['platform-dev'] = $platformDevReqs;
+
+        if (empty($lock['packages']) && empty($lock['packages-dev']) && empty($lock['platform']) && empty($lock['platform-dev'])) {
             if ($this->lockFile->exists()) {
                 unlink($this->lockFile->getPath());
             }
 
             return false;
         }
-
-        $lock['platform'] = $platformReqs;
-        $lock['platform-dev'] = $platformDevReqs;
 
         if (!$this->isLocked() || $lock !== $this->getLockData()) {
             $this->lockFile->write($lock);

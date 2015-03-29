@@ -217,7 +217,15 @@ class Rule
                     $targetName = $this->reasonData->getTarget();
 
                     // handle php extensions
-                    if (0 === strpos($targetName, 'ext-')) {
+                    if ($targetName === 'php' || $targetName === 'php-64bit' || $targetName === 'hhvm') {
+                        if (defined('HHVM_VERSION')) {
+                            $text .= ' -> your HHVM version does not satisfy that requirement.';
+                        } elseif ($targetName === 'hhvm') {
+                            $text .= ' -> you are running this with PHP and not HHVM.';
+                        } else {
+                            $text .= ' -> your PHP version does not satisfy that requirement.';
+                        }
+                    } elseif (0 === strpos($targetName, 'ext-')) {
                         $ext = substr($targetName, 4);
                         $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
 

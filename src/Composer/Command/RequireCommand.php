@@ -38,7 +38,7 @@ class RequireCommand extends InitCommand
             ->setName('require')
             ->setDescription('Adds required packages to your composer.json and installs them')
             ->setDefinition(array(
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Required package with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
+                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Required package name optionally including a version constraint, e.g. foo/bar or foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
@@ -47,9 +47,12 @@ class RequireCommand extends InitCommand
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('sort-packages', null, InputOption::VALUE_NONE, 'Sorts packages when adding/updating a new dependency'),
             ))
             ->setHelp(<<<EOT
-The require command adds required packages to your composer.json and installs them
+The require command adds required packages to your composer.json and installs them.
+
+If you do not specify a version constraint, composer will choose a suitable one based on the available package versions.
 
 If you do not want to install the new dependencies immediately you can call it with --no-update
 
@@ -64,17 +67,17 @@ EOT
 
         $newlyCreated = !file_exists($file);
         if (!file_exists($file) && !file_put_contents($file, "{\n}\n")) {
-            $output->writeln('<error>'.$file.' could not be created.</error>');
+            $this->getIO()->writeError('<error>'.$file.' could not be created.</error>');
 
             return 1;
         }
         if (!is_readable($file)) {
-            $output->writeln('<error>'.$file.' is not readable.</error>');
+            $this->getIO()->writeError('<error>'.$file.' is not readable.</error>');
 
             return 1;
         }
         if (!is_writable($file)) {
-            $output->writeln('<error>'.$file.' is not writable.</error>');
+            $this->getIO()->writeError('<error>'.$file.' is not writable.</error>');
 
             return 1;
         }
@@ -104,7 +107,9 @@ EOT
             $versionParser->parseConstraints($constraint);
         }
 
-        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey, $removeKey)) {
+        $sortPackages = $input->getOption('sort-packages');
+
+        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey, $removeKey, $sortPackages)) {
             foreach ($requirements as $package => $version) {
                 $baseRequirements[$package] = $version;
 
@@ -117,7 +122,7 @@ EOT
             $json->write($composerDefinition);
         }
 
-        $output->writeln('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
+        $this->getIO()->writeError('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
 
         if ($input->getOption('no-update')) {
             return 0;
@@ -149,10 +154,10 @@ EOT
         $status = $install->run();
         if ($status !== 0) {
             if ($newlyCreated) {
-                $output->writeln("\n".'<error>Installation failed, deleting '.$file.'.</error>');
+                $this->getIO()->writeError("\n".'<error>Installation failed, deleting '.$file.'.</error>');
                 unlink($json->getPath());
             } else {
-                $output->writeln("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
+                $this->getIO()->writeError("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
                 file_put_contents($json->getPath(), $composerBackup);
             }
         }
@@ -160,14 +165,14 @@ EOT
         return $status;
     }
 
-    private function updateFileCleanly($json, array $base, array $new, $requireKey, $removeKey)
+    private function updateFileCleanly($json, array $base, array $new, $requireKey, $removeKey, $sortPackages)
     {
         $contents = file_get_contents($json->getPath());
 
         $manipulator = new JsonManipulator($contents);
 
         foreach ($new as $package => $constraint) {
-            if (!$manipulator->addLink($requireKey, $package, $constraint)) {
+            if (!$manipulator->addLink($requireKey, $package, $constraint, $sortPackages)) {
                 return false;
             }
             if (!$manipulator->removeSubNode($removeKey, $package)) {

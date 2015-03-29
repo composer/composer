@@ -82,15 +82,7 @@ Furthermore plugins may implement the
 event handlers automatically registered with the `EventDispatcher` when the
 plugin is loaded.
 
-The events available for plugins are:
-
-* **COMMAND**, is called at the beginning of all commands that load plugins.
-  It provides you with access to the input and output objects of the program.
-* **PRE_FILE_DOWNLOAD**, is triggered before files are downloaded and allows
-  you to manipulate the `RemoteFilesystem` object prior to downloading files
-  based on the URL to be downloaded.
-
-> A plugin can also subscribe to [script events][7].
+Plugin can subscribe to any of the available [script events](scripts.md#event-names).
 
 Example:
 
@@ -148,7 +140,7 @@ list of installed packages. Additionally all plugin packages installed in the
 local project plugins are loaded.
 
 > You may pass the `--no-plugins` option to composer commands to disable all
-> installed commands. This may be particularly helpful if any of the plugins
+> installed plugins. This may be particularly helpful if any of the plugins
 > causes errors and you wish to update or uninstall it.
 
 [1]: ../04-schema.md#type
@@ -157,4 +149,3 @@ local project plugins are loaded.
 [4]: https://github.com/composer/composer/blob/master/src/Composer/Composer.php
 [5]: https://github.com/composer/composer/blob/master/src/Composer/IO/IOInterface.php
 [6]: https://github.com/composer/composer/blob/master/src/Composer/EventDispatcher/EventSubscriberInterface.php
-[7]: ./scripts.md#event-names

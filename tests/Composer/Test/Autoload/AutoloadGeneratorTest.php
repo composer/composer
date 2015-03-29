@@ -67,6 +67,17 @@ class AutoloadGeneratorTest extends TestCase
      */
     private $eventDispatcher;
 
+    /**
+     * Map of setting name => return value configuration for the stub Config
+     * object.
+     *
+     * Note: must be public for compatibility with PHP 5.3 runtimes where
+     * closures cannot access private members of the classes they are created
+     * in.
+     * @var array
+     */
+    public $configValueMap;
+
     protected function setUp()
     {
         $this->fs = new Filesystem;
@@ -79,18 +90,24 @@ class AutoloadGeneratorTest extends TestCase
 
         $this->config = $this->getMock('Composer\Config');
 
-        $this->config->expects($this->at(0))
-            ->method('get')
-            ->with($this->equalTo('vendor-dir'))
-            ->will($this->returnCallback(function () use ($that) {
+        $this->configValueMap = array(
+            'vendor-dir' => function () use ($that) {
                 return $that->vendorDir;
-            }));
+            },
+        );
 
-        $this->config->expects($this->at(1))
+        $this->config->expects($this->atLeastOnce())
             ->method('get')
-            ->with($this->equalTo('vendor-dir'))
-            ->will($this->returnCallback(function () use ($that) {
-                return $that->vendorDir;
+            ->will($this->returnCallback(function ($arg) use ($that) {
+                $ret = null;
+                if (isset($that->configValueMap[$arg])) {
+                    $ret = $that->configValueMap[$arg];
+                    if (is_callable($ret)) {
+                        $ret = $ret();
+                    }
+                }
+
+                return $ret;
             }));
 
         $this->origDir = getcwd();
@@ -483,6 +500,48 @@ class AutoloadGeneratorTest extends TestCase
             include $this->vendorDir.'/composer/autoload_classmap.php'
         );
         $this->assertAutoloadFiles('classmap5', $this->vendorDir.'/composer', 'classmap');
+        $this->assertNotContains('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+    }
+
+    public function testClassMapAutoloadingAuthoritative()
+    {
+        $package = new Package('a', '1.0', '1.0');
+
+        $packages = array();
+        $packages[] = $a = new Package('a/a', '1.0', '1.0');
+        $packages[] = $b = new Package('b/b', '1.0', '1.0');
+        $packages[] = $c = new Package('c/c', '1.0', '1.0');
+        $a->setAutoload(array('classmap' => array('')));
+        $b->setAutoload(array('classmap' => array('test.php')));
+        $c->setAutoload(array('classmap' => array('./')));
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($packages));
+
+        $this->configValueMap['classmap-authoritative'] = true;
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/c/c/foo');
+        file_put_contents($this->vendorDir.'/a/a/src/a.php', '<?php class ClassMapFoo {}');
+        file_put_contents($this->vendorDir.'/b/b/test.php', '<?php class ClassMapBar {}');
+        file_put_contents($this->vendorDir.'/c/c/foo/test.php', '<?php class ClassMapBaz {}');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_7');
+        $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
+        $this->assertEquals(
+            array(
+                'ClassMapBar' => $this->vendorDir.'/b/b/test.php',
+                'ClassMapBaz' => $this->vendorDir.'/c/c/foo/test.php',
+                'ClassMapFoo' => $this->vendorDir.'/a/a/src/a.php',
+            ),
+            include $this->vendorDir.'/composer/autoload_classmap.php'
+        );
+        $this->assertAutoloadFiles('classmap5', $this->vendorDir.'/composer', 'classmap');
+
+        $this->assertContains('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
     }
 
     public function testFilesAutoloadGeneration()
@@ -829,10 +888,7 @@ EOF;
             ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
-        $this->config->expects($this->at(2))
-            ->method('get')
-            ->with($this->equalTo('use-include-path'))
-            ->will($this->returnValue(true));
+        $this->configValueMap['use-include-path'] = true;
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a');
 
