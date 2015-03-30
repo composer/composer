@@ -18,6 +18,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Symlink;
 
 /**
  * Package installation manager.
@@ -256,15 +257,10 @@ class LibraryInstaller implements InstallerInterface
     {
         $cwd = getcwd();
         try {
-            // under linux symlinks are not always supported for example
-            // when using it in smbfs mounted folder
-            $relativeBin = $this->filesystem->findShortestPath($link, $binPath);
-            chdir(dirname($link));
-            if (false === symlink($relativeBin, $link)) {
-                throw new \ErrorException();
-            }
+            $symlink = new Symlink($this->filesystem);
+            $symlink->symlinkBin($binPath, $link);
         } catch (\ErrorException $e) {
-           $this->installUnixyProxyBinaries($binPath, $link);
+            $this->installUnixyProxyBinaries($binPath, $link);
         }
         chdir($cwd);
     }
