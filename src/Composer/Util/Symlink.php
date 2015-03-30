@@ -15,7 +15,7 @@ namespace Composer\Util;
 use Composer\Config;
 
 /**
- * @author Kocsis Máté <kocsismate@woohoolabs.com>
+ * @author Kocsis MÃ¡tÃ© <kocsismate@woohoolabs.com>
  */
 class Symlink
 {
