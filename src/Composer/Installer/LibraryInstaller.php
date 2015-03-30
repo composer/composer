@@ -200,7 +200,7 @@ class LibraryInstaller implements InstallerInterface
         foreach ($binaries as $bin) {
             $binPath = $this->getInstallPath($package).'/'.$bin;
             if (!file_exists($binPath)) {
-                $this->io->write('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': file not found in package</warning>');
+                $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': file not found in package</warning>');
                 continue;
             }
 
@@ -219,9 +219,10 @@ class LibraryInstaller implements InstallerInterface
                     // is a fresh install of the vendor.
                     @chmod($link, 0777 & ~umask());
                 }
-                $this->io->write('    Skipped installation of bin '.$bin.' for package '.$package->getName().': name conflicts with an existing file');
+                $this->io->writeError('    Skipped installation of bin '.$bin.' for package '.$package->getName().': name conflicts with an existing file');
                 continue;
             }
+
             if ($this->binCompat === "auto") {
                 if (defined('PHP_WINDOWS_VERSION_BUILD')) {
                     $this->installFullBinaries($binPath, $link, $bin, $package);
@@ -245,7 +246,7 @@ class LibraryInstaller implements InstallerInterface
             @chmod($link, 0777 & ~umask());
             $link .= '.bat';
             if (file_exists($link)) {
-                $this->io->write('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+                $this->io->writeError('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
             }
         }
         if (!file_exists($link)) {
