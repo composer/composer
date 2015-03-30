@@ -255,14 +255,12 @@ class LibraryInstaller implements InstallerInterface
 
     protected function installSymlinkBinaries($binPath, $link)
     {
-        $cwd = getcwd();
         try {
             $symlink = new Symlink($this->filesystem);
             $symlink->symlinkBin($binPath, $link);
         } catch (\ErrorException $e) {
             $this->installUnixyProxyBinaries($binPath, $link);
         }
-        chdir($cwd);
     }
 
     protected function installUnixyProxyBinaries($binPath, $link)
