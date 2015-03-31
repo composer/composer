@@ -250,6 +250,14 @@ class DownloadManager
             return;
         }
 
+        // Totally different repositories mean it is not safe to update-in-place
+        if($initial->getSourceUrl() !== $target->getSourceUrl()){
+            $this->io->writeError('    <warning>Repository URL changed, re-downloading.</warning>');
+            $downloader->remove($initial, $targetDir);
+            $this->download($target, $targetDir);
+            return;
+        }
+
         if ($initialType === $targetType) {
             $target->setInstallationSource($installationSource);
             $downloader->update($initial, $target, $targetDir);
