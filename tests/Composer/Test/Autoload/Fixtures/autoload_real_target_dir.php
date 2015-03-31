@@ -22,7 +22,13 @@ class ComposerAutoloaderInitTargetDir
         spl_autoload_register(array('ComposerAutoloaderInitTargetDir', 'loadClassLoader'), true, true);
         self::$loader = $loader = new \Composer\Autoload\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInitTargetDir', 'loadClassLoader'));
+        self::setup($loader);
 
+        return $loader;
+    }
+
+    public static function setup($loader)
+    {
         $map = require __DIR__ . '/autoload_namespaces.php';
         foreach ($map as $namespace => $path) {
             $loader->set($namespace, $path);
