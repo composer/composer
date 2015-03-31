@@ -487,7 +487,13 @@ class ComposerAutoloaderInit$suffix
         spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prependAutoloader);
         self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
+        self::setup(\$loader);
 
+        return \$loader;
+    }
+
+    public static function setup(\$loader)
+    {
 
 HEADER;
 
