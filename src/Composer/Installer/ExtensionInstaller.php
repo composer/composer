@@ -26,12 +26,8 @@ use Composer\Util\ProcessExecutor;
 class ExtensionInstaller implements InstallerInterface
 {
     protected $composer;
-    protected $vendorDir;
-    protected $binDir;
     protected $downloadManager;
     protected $io;
-    protected $type;
-    protected $filesystem;
     protected $pickle = 'pickle';
     protected $process;
     /**
@@ -42,16 +38,11 @@ class ExtensionInstaller implements InstallerInterface
      * @param string      $type
      * @param Filesystem  $filesystem
      */
-    public function __construct(IOInterface $io, Composer $composer, $type = 'extension', Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, Composer $composer)
     {
         $this->composer = $composer;
         $this->downloadManager = $composer->getDownloadManager();
         $this->io = $io;
-        $this->type = 'extension';
-
-        $this->filesystem = $filesystem ?: new Filesystem();
-        $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
-        $this->binDir = rtrim($composer->getConfig()->get('bin-dir'), '/');
 
         if (($pickle = getenv('COMPOSER_PICKLE_PATH'))) {
             $this->pickle = escapeshellcmd($pickle);
@@ -74,7 +65,7 @@ class ExtensionInstaller implements InstallerInterface
      */
     public function supports($packageType)
     {
-        return $packageType === $this->type;
+        return $packageType === 'extension';
     }
 
     /**
