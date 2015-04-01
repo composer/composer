@@ -32,6 +32,7 @@ use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackage;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
@@ -762,7 +763,7 @@ class Installer
         return $request;
     }
 
-    private function processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, $task, array $operations = null)
+    private function processDevPackages(RepositoryInterface $localRepo, Pool $pool, $policy, $repositories, $lockedRepository, $installFromLock, $task, array $operations = null)
     {
         if ($task === 'force-updates' && null === $operations) {
             throw new \InvalidArgumentException('Missing operations argument');
@@ -846,6 +847,7 @@ class Installer
                         if ($task === 'force-updates' && $newPackage && (
                             (($newPackage->getSourceReference() && $newPackage->getSourceReference() !== $package->getSourceReference())
                                 || ($newPackage->getDistReference() && $newPackage->getDistReference() !== $package->getDistReference())
+                                || ($newPackage->getSourceUrl() && $newPackage->getSourceUrl() !== $package->getSourceUrl())
                             )
                         )) {
                             $operations[] = new UpdateOperation($package, $newPackage);
