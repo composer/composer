@@ -79,13 +79,27 @@ class GitDownloader extends VcsDownloader
 
         $ref = $target->getSourceReference();
         $this->io->writeError("    Checking out ".$ref);
-        $command = 'git remote set-url composer %1$s && git fetch composer && git fetch --tags composer && git remote set-url origin %1$s';
+        $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
         $commandCallable = function ($url) use ($command) {
             return sprintf($command, ProcessExecutor::escape ($url));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
+
+        if($initial->getSourceUrl() !== $target->getSourceUrl()){
+            /*
+             * If this were a fresh download, then git-clone would automatically
+             * set the origin for us. Since it isn't, we need to update it
+             * ourselves to match the new repository.
+             */
+            $command2 = 'git remote set-url origin %s';
+            $commandCallable2 = function ($url) use ($command2) {
+                return sprintf($command2, ProcessExecutor::escape ($url));
+            };
+            $this->gitUtil->runCommand($commandCallable2, $url, $path);
+        }
+
         if ($newRef =  $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate())) {
             if ($target->getDistReference() === $target->getSourceReference()) {
                 $target->setDistReference($newRef);
