@@ -32,7 +32,7 @@ class ExtensionInstaller implements InstallerInterface
     protected $io;
     protected $type;
     protected $filesystem;
-    protected $pickle;
+    protected $pickle = 'pickle';
 
     /**
      * Initializes library installer.
@@ -52,7 +52,9 @@ class ExtensionInstaller implements InstallerInterface
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
         $this->binDir = rtrim($composer->getConfig()->get('bin-dir'), '/');
-        $this->pickle = "/home/pierre/projects/pickle/pickle/bin/pickle";
+        if (($pickle = getenv('COMPOSER_PICKLE_PATH'))) {
+            $this->pickle = $pickle;
+        }
     }
 
     /**
