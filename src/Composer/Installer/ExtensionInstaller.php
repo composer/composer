@@ -47,7 +47,7 @@ class ExtensionInstaller implements InstallerInterface
         $this->composer = $composer;
         $this->downloadManager = $composer->getDownloadManager();
         $this->io = $io;
-        $this->type = $type;
+        $this->type = 'extension';
 
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
@@ -74,7 +74,7 @@ class ExtensionInstaller implements InstallerInterface
      */
     public function supports($packageType)
     {
-        return $packageType === $this->type || null === $this->type;
+        return $packageType === $this->type;
     }
 
     /**
