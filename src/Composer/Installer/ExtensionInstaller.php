@@ -33,7 +33,7 @@ class ExtensionInstaller implements InstallerInterface
     protected $type;
     protected $filesystem;
     protected $pickle = 'pickle';
-
+    protected $process;
     /**
      * Initializes library installer.
      *
@@ -52,8 +52,20 @@ class ExtensionInstaller implements InstallerInterface
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
         $this->binDir = rtrim($composer->getConfig()->get('bin-dir'), '/');
+
         if (($pickle = getenv('COMPOSER_PICKLE_PATH'))) {
-            $this->pickle = $pickle;
+            $this->pickle = escapeshellcmd($pickle);
+        }
+        $this->process = new ProcessExecutor($this->io);
+
+        $res = $this->process->execute($this->pickle . ' --version', $output);
+        if ($res != 0) {
+            Throw new \ErrorException("Error while calling pickle command: $res");
+        }
+        $verpos = strpos($output, 'version');
+        $version = trim(substr($output, $verpos + 7));
+        if (!version_compare('0.4.0', $version, '>=')) {
+            Throw new \ErrorException("pickle 0.4.0 required.");
         }
     }
 
@@ -89,10 +101,10 @@ class ExtensionInstaller implements InstallerInterface
             $pkg_dir = $this->createTempDir();
             $this->downloadManager->download($package, $pkg_dir);
         }
-        $process = new ProcessExecutor($this->io);
+
         /* Add interactions */
         $cmd = sprintf('%s install -q -n --save-logs=%s %s', $this->pickle, ProcessExecutor::escape($pkg_dir . 'logs'), ProcessExecutor::escape($pkg_dir));
-        $process->execute($cmd);
+        $this->process->execute($cmd);
         return;
     }
 
