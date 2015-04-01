@@ -44,6 +44,7 @@ class SelfUpdateCommand extends Command
                 new InputOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'The version to update to'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
+                new InputOption('if-outdated', null, InputOption::VALUE_NONE, 'Update only, when Composer is more than 30 days old.'),
             ))
             ->setHelp(<<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer
@@ -58,6 +59,14 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        if ($input->getOption('if-outdated')) {
+            if(!((defined('COMPOSER_DEV_WARNING_TIME') && (time() > COMPOSER_DEV_WARNING_TIME)))) {
+                $this->getIO()->writeError('<info>Your composer version is not outdated, yet.</info>');
+
+                return 0;
+            }
+        }
+
         $baseUrl = (extension_loaded('openssl') ? 'https' : 'http') . '://' . self::HOMEPAGE;
         $config = Factory::createConfig();
         $remoteFilesystem = new RemoteFilesystem($this->getIO(), $config);
