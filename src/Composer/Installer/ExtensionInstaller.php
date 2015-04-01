@@ -93,17 +93,17 @@ class ExtensionInstaller implements InstallerInterface
     {       
         $this->io->write("Pickle: fetching " . $package->getName());
 
-        $dist_url = $package->getDistURL();
-        if (strtolower(substr($dist_url, -3)) == "zip") {
-            $extract_dir = $this->uncompress($package);
-            $json = $this->findComposerJson($extract_dir);
+        $distUrl = $package->getDistURL();
+        if (strtolower(substr($distUrl, -3)) == "zip") {
+            $extractDir = $this->uncompress($package);
+            $json = $this->findComposerJson($extractDir);   
         } else {
-            $pkg_dir = $this->createTempDir();
-            $this->downloadManager->download($package, $pkg_dir);
+            $pkgDir = $this->createTempDir();
+            $this->downloadManager->download($package, $pkgDir);
         }
 
         /* Add interactions */
-        $cmd = sprintf('%s install -q -n --save-logs=%s %s', $this->pickle, ProcessExecutor::escape($pkg_dir . 'logs'), ProcessExecutor::escape($pkg_dir));
+        $cmd = sprintf('%s install -q -n --save-logs=%s %s', $this->pickle, ProcessExecutor::escape($pkgDir . 'logs'), ProcessExecutor::escape($pkgDir));
         $this->process->execute($cmd);
         return;
     }
@@ -120,16 +120,16 @@ class ExtensionInstaller implements InstallerInterface
     
     protected function uncompress(PackageInterface $package)
     {
-        $extract_dir = $this->createTempDir();
-        $dist_url = $package->getDistUrl();
+        $extractDir = $this->createTempDir();
+        $distUrl = $package->getDistUrl();
         $zip = new \ZipArchive;
-        if ($zip->open($dist_url) === TRUE) {
-            $zip->extractTo($extract_dir);
+        if ($zip->open($distUrl) === TRUE) {
+            $zip->extractTo($extractDir);
             $zip->close();
         } else {
             Throw new \ErrorException("cannot get the temporary directory (ZipArchive error: " . $zip->status . ")");
         }
-        return $extract_dir;
+        return $extractDir;
     }
 
     protected function findComposerJson($basedir)
