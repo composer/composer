@@ -31,12 +31,10 @@ class ExtensionInstaller implements InstallerInterface
     protected $pickle = 'pickle';
     protected $process;
     /**
-     * Initializes library installer.
+     * Initializes Extension installer.
      *
      * @param IOInterface $io
      * @param Composer    $composer
-     * @param string      $type
-     * @param Filesystem  $filesystem
      */
     public function __construct(IOInterface $io, Composer $composer)
     {
@@ -71,7 +69,6 @@ class ExtensionInstaller implements InstallerInterface
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-
         $this->io->write("Pickle: fetching " . $package->getName());
 
         $distUrl = $package->getDistURL();
@@ -134,12 +131,12 @@ class ExtensionInstaller implements InstallerInterface
 
         $res = $this->process->execute($this->pickle . ' --version', $output);
         if ($res != 0) {
-            Throw new \ErrorException("Error while calling pickle command: $res");
+            throw new \ErrorException("Error while calling pickle command: $res");
         }
         $verpos = strpos($output, 'version');
         $version = trim(substr($output, $verpos + 7));
         if (!version_compare('0.4.0', $version, '>=')) {
-            Throw new \ErrorException("pickle 0.4.0 required.");
+            throw new \ErrorException("pickle >= 0.4.0 required.");
         }
     }
 
