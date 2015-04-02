@@ -108,6 +108,7 @@ class Installer
     protected $dumpAutoloader = true;
     protected $runScripts = true;
     protected $ignorePlatformReqs = false;
+    protected $installExtensions = false;
     protected $preferStable = false;
     protected $preferLowest = false;
     /**
@@ -500,7 +501,7 @@ class Installer
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request);
         $solver = new Solver($policy, $pool, $installedRepo);
         try {
-            $operations = $solver->solve($request, $this->ignorePlatformReqs);
+            $operations = $solver->solve($request, $this->ignorePlatformReqs, $this->installExtensions);
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>');
@@ -1249,6 +1250,19 @@ class Installer
     public function setIgnorePlatformRequirements($ignorePlatformReqs = false)
     {
         $this->ignorePlatformReqs = (boolean) $ignorePlatformReqs;
+
+        return $this;
+    }
+
+    /**
+     * set install Extensions flag
+     *
+     * @param  boolean   $installExtensions
+     * @return Installer
+     */
+    public function setInstallExtensions($installExtensions = false)
+    {
+        $this->installExtensions = (boolean) $installExtensions;
 
         return $this;
     }
