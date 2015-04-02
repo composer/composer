@@ -25,7 +25,7 @@ use Composer\Package\Loader\ArrayLoader;
  * @code
  * "require": {
  *     "<vendor>/<local-package>": "*"
- * }
+ * },
  * "repositories": [
  *     {
  *         "type": "folder",
