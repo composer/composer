@@ -179,7 +179,7 @@ class RuleSetGenerator
         }
     }
 
-    protected function addRulesForPackage(PackageInterface $package, $ignorePlatformReqs)
+    protected function addRulesForPackage(PackageInterface $package, $ignorePlatformReqs, $installExtensions = false)
     {
         $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
@@ -189,6 +189,10 @@ class RuleSetGenerator
             if (isset($this->addedMap[$package->id])) {
                 continue;
             }
+
+			if (!$installExtensions && $package->getType() == 'extension') {
+				continue;
+			}
 
             $this->addedMap[$package->id] = true;
 
@@ -311,7 +315,7 @@ class RuleSetGenerator
         }
     }
 
-    public function getRulesFor($jobs, $installedMap, $ignorePlatformReqs = false)
+    public function getRulesFor($jobs, $installedMap, $ignorePlatformReqs = false, $installExtensions = false)
     {
         $this->jobs = $jobs;
         $this->rules = new RuleSet;
@@ -327,7 +331,7 @@ class RuleSetGenerator
 
         $this->addedMap = array();
         foreach ($this->installedMap as $package) {
-            $this->addRulesForPackage($package, $ignorePlatformReqs);
+            $this->addRulesForPackage($package, $ignorePlatformReqs, $installExtensions);
         }
 
         $this->addRulesForJobs($ignorePlatformReqs);
