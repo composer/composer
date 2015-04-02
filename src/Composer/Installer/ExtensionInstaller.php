@@ -47,17 +47,6 @@ class ExtensionInstaller implements InstallerInterface
         if (($pickle = getenv('COMPOSER_PICKLE_PATH'))) {
             $this->pickle = escapeshellcmd($pickle);
         }
-        $this->process = new ProcessExecutor($this->io);
-
-        $res = $this->process->execute($this->pickle . ' --version', $output);
-        if ($res != 0) {
-            Throw new \ErrorException("Error while calling pickle command: $res");
-        }
-        $verpos = strpos($output, 'version');
-        $version = trim(substr($output, $verpos + 7));
-        if (!version_compare('0.4.0', $version, '>=')) {
-            Throw new \ErrorException("pickle 0.4.0 required.");
-        }
     }
 
     /**
@@ -81,17 +70,20 @@ class ExtensionInstaller implements InstallerInterface
      * {@inheritDoc}
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
-    {       
+    {
+
         $this->io->write("Pickle: fetching " . $package->getName());
 
         $distUrl = $package->getDistURL();
         if (strtolower(substr($distUrl, -3)) == "zip") {
             $extractDir = $this->uncompress($package);
-            $json = $this->findComposerJson($extractDir);   
+            $json = $this->findComposerJson($extractDir);
         } else {
             $pkgDir = $this->createTempDir();
             $this->downloadManager->download($package, $pkgDir);
         }
+
+        $this->checkPickleCmd();
 
         /* Add interactions */
         $cmd = sprintf('%s install -q -n --save-logs=%s %s', $this->pickle, ProcessExecutor::escape($pkgDir . 'logs'), ProcessExecutor::escape($pkgDir));
@@ -108,7 +100,7 @@ class ExtensionInstaller implements InstallerInterface
         $lockfile = tempnam($tmpdir, 'pickle');
         return $lockfile . '_dir';
     }
-    
+
     protected function uncompress(PackageInterface $package)
     {
         $extractDir = $this->createTempDir();
@@ -134,6 +126,21 @@ class ExtensionInstaller implements InstallerInterface
             $json = $basedir . "/composer.json";
         }
         return $json;
+    }
+
+    protected function checkPickleCmd()
+    {
+        $this->process = new ProcessExecutor($this->io);
+
+        $res = $this->process->execute($this->pickle . ' --version', $output);
+        if ($res != 0) {
+            Throw new \ErrorException("Error while calling pickle command: $res");
+        }
+        $verpos = strpos($output, 'version');
+        $version = trim(substr($output, $verpos + 7));
+        if (!version_compare('0.4.0', $version, '>=')) {
+            Throw new \ErrorException("pickle 0.4.0 required.");
+        }
     }
 
     /**
