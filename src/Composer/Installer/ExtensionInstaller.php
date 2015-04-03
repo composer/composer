@@ -30,6 +30,8 @@ class ExtensionInstaller implements InstallerInterface
     protected $io;
     protected $pickle = 'pickle';
     protected $process;
+    protected $cacheDir;
+
     /**
      * Initializes Extension installer.
      *
@@ -41,6 +43,7 @@ class ExtensionInstaller implements InstallerInterface
         $this->composer = $composer;
         $this->downloadManager = $composer->getDownloadManager();
         $this->io = $io;
+        $this->cacheDir = rtrim($composer->getConfig()->get('cache-file-dir'), '/');
 
         if (($pickle = getenv('COMPOSER_PICKLE_PATH'))) {
             $this->pickle = escapeshellcmd($pickle);
@@ -69,7 +72,9 @@ class ExtensionInstaller implements InstallerInterface
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $this->io->write("Pickle: fetching " . $package->getName());
+
+        $this->checkPickleCmd();
+        $this->io->write("Pickle: fetching " . $package->getPrettyName());
 
         $distUrl = $package->getDistURL();
         if (strtolower(substr($distUrl, -3)) == "zip") {
@@ -80,8 +85,6 @@ class ExtensionInstaller implements InstallerInterface
             $this->downloadManager->download($package, $pkgDir);
         }
 
-        $this->checkPickleCmd();
-
         /* Add interactions */
         $cmd = sprintf('%s install -q -n --save-logs=%s %s', $this->pickle, ProcessExecutor::escape($pkgDir . 'logs'), ProcessExecutor::escape($pkgDir));
         $this->process->execute($cmd);
@@ -90,11 +93,7 @@ class ExtensionInstaller implements InstallerInterface
 
     protected function createTempDir()
     {
-        $tmpdir = sys_get_temp_dir();
-        if (!$tmpdir) {
-            Throw new \ErrorException("cannot get the temporary directory");
-        }
-        $lockfile = tempnam($tmpdir, 'pickle');
+        $lockfile = tempnam($this->cacheDir, 'pickle');
         return $lockfile . '_dir';
     }
 
