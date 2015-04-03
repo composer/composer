@@ -101,11 +101,9 @@ You can run these commands to easily access `composer` from anywhere on your sys
 
 ```sh
 curl -sS https://getcomposer.org/installer | php
-mv composer.phar /usr/local/bin/composer
+sudo mv composer.phar /usr/local/bin/composer
+sudo chmod +x /usr/local/bin/composer
 ```
-
-> **Note:** If the above fails due to permissions, run the `mv` line
-> again with sudo.
 
 > **Note:** In OSX Yosemite the `/usr` directory does not exist by default. If you receive the error "/usr/local/bin/composer: No such file or directory" then you must create `/usr/local/bin/` manually before proceeding.
 
