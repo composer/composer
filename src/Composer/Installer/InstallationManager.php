@@ -148,8 +148,6 @@ class InstallationManager
     public function install(RepositoryInterface $repo, InstallOperation $operation)
     {
         $package = $operation->getPackage();
-		$type = $package->getType();
-
         $installer = $this->getInstaller($package->getType());
         $installer->install($repo, $package);
         $this->markForNotification($package);

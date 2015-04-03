@@ -489,7 +489,7 @@ class Installer
                 $links = $this->package->getRequires();
             }
 
-            foreach ($links as $link) {				
+            foreach ($links as $link) {             
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         }
@@ -525,10 +525,10 @@ class Installer
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
-				if (!$this->installExtensions && $operation->getPackage()->getType() ==  'extension') {
-					$this->io->writeError('<warning>This package has extensions dependencies, run composer install --install-extensons</warning>');
-					continue;
-				}
+                if (!$this->installExtensions && $operation->getPackage()->getType() ==  'extension') {
+                    $this->io->writeError('<warning>This package has extensions dependencies, run composer install --install-extensons</warning>');
+                    continue;
+                }
                 foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
                     $this->suggestedPackages[] = array(
                         'source' => $operation->getPackage()->getPrettyName(),
