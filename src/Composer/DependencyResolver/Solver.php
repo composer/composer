@@ -130,7 +130,7 @@ class Solver
         }
     }
 
-    protected function checkForRootRequireProblems($ignorePlatformReqs, $installExtensions)
+    protected function checkForRootRequireProblems($ignorePlatformReqs)
     {
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
@@ -164,13 +164,13 @@ class Solver
         }
     }
 
-    public function solve(Request $request, $ignorePlatformReqs = false, $installExtensions = false)
+    public function solve(Request $request, $ignorePlatformReqs = false)
     {
         $this->jobs = $request->getJobs();
 
         $this->setupInstalledMap();
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
-        $this->checkForRootRequireProblems($ignorePlatformReqs, $installExtensions);
+        $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
 

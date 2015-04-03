@@ -489,7 +489,7 @@ class Installer
                 $links = $this->package->getRequires();
             }
 
-            foreach ($links as $link) {
+            foreach ($links as $link) {				
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         }
@@ -500,8 +500,9 @@ class Installer
         // solve dependencies
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request);
         $solver = new Solver($policy, $pool, $installedRepo);
+
         try {
-            $operations = $solver->solve($request, $this->ignorePlatformReqs, $this->installExtensions);
+            $operations = $solver->solve($request, $this->ignorePlatformReqs);
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>');
@@ -524,6 +525,9 @@ class Installer
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
+				if (!$this->installExtensions && $operation->getPackage()->getType() ==  'extension') {
+					$this->io->writeError('<warning>This package has extensions dependencies, run composer install --install-extensons</warning>');
+				}
                 foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
                     $this->suggestedPackages[] = array(
                         'source' => $operation->getPackage()->getPrettyName(),

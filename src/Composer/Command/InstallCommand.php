@@ -125,8 +125,8 @@ EOT
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
 			->setInstallExtensions($input->getOption('install-extensions'));
         ;
-
-        if ($input->getOption('no-plugins')) {
+		
+		if ($input->getOption('no-plugins')) {
             $install->disablePlugins();
         }
 

@@ -149,11 +149,7 @@ class InstallationManager
     {
         $package = $operation->getPackage();
 		$type = $package->getType();
-		if ($type == 'extension') {
-			/* replace that with a notification at the end of the current command ?*/
-			//print "run composer install --install-extension\n";
-			return;
-		}
+
         $installer = $this->getInstaller($package->getType());
         $installer->install($repo, $package);
         $this->markForNotification($package);
