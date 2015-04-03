@@ -527,6 +527,7 @@ class Installer
             if ('install' === $operation->getJobType()) {
 				if (!$this->installExtensions && $operation->getPackage()->getType() ==  'extension') {
 					$this->io->writeError('<warning>This package has extensions dependencies, run composer install --install-extensons</warning>');
+					continue;
 				}
                 foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
                     $this->suggestedPackages[] = array(

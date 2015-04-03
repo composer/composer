@@ -179,7 +179,7 @@ class RuleSetGenerator
         }
     }
 
-    protected function addRulesForPackage(PackageInterface $package, $ignorePlatformReqs, $installExtensions = false)
+    protected function addRulesForPackage(PackageInterface $package, $ignorePlatformReqs)
     {
         $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
@@ -189,10 +189,6 @@ class RuleSetGenerator
             if (isset($this->addedMap[$package->id])) {
                 continue;
             }
-
-			if (!$installExtensions && $package->getType() == 'extension') {
-				continue;
-			}
 
             $this->addedMap[$package->id] = true;
 
