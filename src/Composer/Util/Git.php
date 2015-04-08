@@ -106,8 +106,7 @@ class Git
                     }
                 }
             } elseif ( // private non-github repo that failed to authenticate
-                preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
-                strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
+                $this->isAuthenticationFailure($url, $match)
             ) {
                 if (strpos($match[2], '@')) {
                     list($authParts, $match[2]) = explode('@', $match[2], 2);
@@ -153,6 +152,21 @@ class Git
             }
             $this->throwException('Failed to execute ' . self::sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput(), $url);
         }
+    }
+
+    private function isAuthenticationFailure ($url, &$match) {
+        if (!preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match)) {
+            return false;
+        }
+
+        $authFailures = array('fatal: Authentication failed', 'remote error: Invalid username or password.');
+        foreach ($authFailures as $authFailure) {
+            if (strpos($this->process->getErrorOutput(), $authFailure) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function cleanEnv()
