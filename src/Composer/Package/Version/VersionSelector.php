@@ -44,7 +44,7 @@ class VersionSelector
     public function findBestCandidate($packageName, $targetPackageVersion = null)
     {
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
-        $candidates = $this->pool->whatProvides($packageName, $constraint, true);
+        $candidates = $this->pool->whatProvides(strtolower($packageName), $constraint, true);
 
         if (!$candidates) {
             return false;
