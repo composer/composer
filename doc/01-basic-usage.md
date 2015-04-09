@@ -22,32 +22,38 @@ depends on.
 ```json
 {
     "require": {
-        "monolog/monolog": "1.0.*"
+        "myvendor/mypackage": "1.0.*"
     }
 }
 ```
 
-As you can see, `require` takes an object that maps **package names** (e.g. `monolog/monolog`)
-to **package versions** (e.g. `1.0.*`).
+Each item in the `require` key maps **package names** (e.g. `myvendor/mypackage`)
+to **package versions** (e.g. `1.0.*`).  
+
+> **Note:** You can check the syntax of your `composer.json` file by using 
+> the `composer validate` command.
 
 ### Package Names
 
 The package name consists of a vendor name and the project's name. Often these
-will be identical - the vendor name just exists to prevent naming clashes. It allows
-two different people to create a library named `json`, which would then just be
-named `igorw/json` and `seldaek/json`.
-
-Here we are requiring `monolog/monolog`, so the vendor name is the same as the
-project's name. For projects with a unique name this is recommended. It also
-allows adding more related projects under the same namespace later on. If you
-are maintaining a library, this would make it really easy to split it up into
-smaller decoupled parts.
+will be identical.  The vendor name exists to prevent naming clashes. For example, 
+use of the vendor name  allows two different people to both create a library named `json`, 
+which might be named `igorw/json` and `seldaek/json`.
 
 ### Package Versions
 
-In the previous example we were requiring version `1.0.*` of monolog. This
-means any version in the `1.0` development branch. It would match `1.0.0`,
-`1.0.2` or `1.0.20`.
+Let's look at this example:
+
+```json
+{
+    "require": {
+        "monolog/monolog": "1.0.*"
+    }
+}
+```
+In this example we were requiring version `1.0.*` of monolog. The star 
+would match any version in the `1.0` development branch including version `1.0.0`,
+`1.0.2`, or `1.0.20`.
 
 Version constraints can be specified in a few different ways.
 
@@ -97,10 +103,17 @@ packages instead of doing per dependency you can also use the
 ## Installing Dependencies
 
 To fetch the defined dependencies into your local project, just run the
-`install` command of `composer.phar`.
+`install` command of `composer.phar` from the directory containing your `composer.json` file.
 
 ```sh
 php composer.phar install
+```
+
+You often see the following syntax used in documentation -- you can use this syntax if you have
+installed composer globally:
+
+```sh
+composer install
 ```
 
 This will find the latest version of `monolog/monolog` that matches the
@@ -109,8 +122,8 @@ It's a convention to put third party code into a directory named `vendor`.
 In case of monolog it will put it into `vendor/monolog/monolog`.
 
 > **Tip:** If you are using git for your project, you probably want to add
-> `vendor` into your `.gitignore`. You really don't want to add all of that
-> code to your repository.
+> the `vendor/` directory into your `.gitignore`.  You don't need to version
+> control the dependencies in your project's repository.
 
 Another thing that the `install` command does is it adds a `composer.lock`
 file into your project root.
