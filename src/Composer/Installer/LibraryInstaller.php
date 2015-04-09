@@ -239,7 +239,7 @@ class LibraryInstaller implements InstallerInterface
                     // when using it in smbfs mounted folder
                     $relativeBin = $this->filesystem->findShortestPath($link, $binPath);
                     chdir(dirname($link));
-                    if (false === symlink($relativeBin, $link)) {
+                    if (false === @symlink($relativeBin, $link)) {
                         throw new \ErrorException();
                     }
                 } catch (\ErrorException $e) {
