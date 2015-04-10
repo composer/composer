@@ -145,6 +145,12 @@ class RemoteFilesystem
 
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
 
+        if (isset($options['retry-auth-failure'])) {
+            $this->retryAuthFailure = (bool) $options['retry-auth-failure'];
+
+            unset($options['retry-auth-failure']);
+        }
+
         if ($this->io->isDebug()) {
             $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
         }
@@ -154,15 +160,20 @@ class RemoteFilesystem
             unset($options['github-token']);
         }
 
+        if (isset($options['gitlab-token'])) {
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['gitlab-token'];
+            unset($options['gitlab-token']);
+        }
+
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
+ 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
             $this->io->writeError("    Downloading: <comment>connection...</comment>", false);
         }
-
         $errorMessage = '';
         $errorCode = 0;
         $result = false;
@@ -352,13 +363,12 @@ class RemoteFilesystem
                 throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
         } else if ($this->config && in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
-            if ($this->io->isInteractive()) {
-                $this->io->overwrite('Enter your GitLab private token to access API (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
-                $token = $this->io->askAndHideAnswer('      Private-Token: ');
-                $this->io->setAuthentication($this->originUrl, $token, 'gitlab-private-token');
-                $this->config->getAuthConfigSource()->addConfigSetting('gitlab-tokens.'.$this->originUrl, $token);
-            } else {
-                throw new TransportException("The GitLab URL requires authentication.\nYou must be using the interactive console to authenticate", $httpStatus);
+            $message = "\n".'Could not fetch '.$this->fileUrl.', enter your ' . $this->config->get('gitlab-domains')[0] . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
+            $gitLabUtil = new GitLab($this->io, $this->config, null);
+            if (!$gitLabUtil->authorizeOAuth($this->originUrl)
+                && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively($this->originUrl, $message))
+            ) {
+                throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
         } else {
             // 404s are only handled for github
@@ -417,12 +427,15 @@ class RemoteFilesystem
 
         $options = array_replace_recursive($this->options, $additionalOptions);
 
+
         if ($this->io->hasAuthentication($originUrl)) {
             $auth = $this->io->getAuthentication($originUrl);
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
                 $options['github-token'] = $auth['username'];
-            } elseif ($auth['password'] === 'gitlab-private-token') {
-                $headers[] = 'Private-Token: '.$auth['username'];
+            } elseif ($originUrl === $this->config->get('gitlab-domains')[0]) {
+                if($auth['password'] === 'oauth2') {
+                    $headers[] = 'Authorization: Bearer '.$auth['username'];    
+                }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
@@ -436,6 +449,9 @@ class RemoteFilesystem
             $options['http']['header'][] = $header;
         }
 
+        if($this->config && $this->config->get('gitlab-domains') && $originUrl == $this->config->get('gitlab-domains')[0]) {
+            $options['retry-auth-failure'] = false;
+        }
         return $options;
     }
 }
