@@ -254,17 +254,21 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git remote -v")))
+            ->with($this->equalTo($this->winCompat("git rev-parse --verify HEAD")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(2))
             ->method('execute')
-            ->with($this->equalTo($expectedGitUpdateCommand))
+            ->with($this->equalTo($this->winCompat("git remote -v")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(3))
             ->method('execute')
-            ->with($this->equalTo('git branch -r'))
+            ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(4))
+            ->method('execute')
+            ->with($this->equalTo('git branch -r'))
+            ->will($this->returnValue(0));
+        $processExecutor->expects($this->at(5))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git checkout 'ref' && git reset --hard 'ref'")), $this->equalTo(null), $this->equalTo($this->winCompat($tmpDir)))
             ->will($this->returnValue(0));
@@ -297,9 +301,13 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git remote -v")))
+            ->with($this->equalTo($this->winCompat("git rev-parse --verify HEAD")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(2))
+            ->method('execute')
+            ->with($this->equalTo($this->winCompat("git remote -v")))
+            ->will($this->returnValue(0));
+        $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(1));

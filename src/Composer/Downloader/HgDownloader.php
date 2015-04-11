@@ -68,7 +68,17 @@ class HgDownloader extends VcsDownloader
 
         $this->process->execute('hg st', $output, realpath($path));
 
-        return trim($output) ?: null;
+        if (trim($output)) {
+            return trim($output);
+        }
+
+        $this->process->execute('hg parent --template ' . escapeshellarg('{node}'), $refOutput, realpath($path));
+
+        if (!trim($refOutput)) {
+            return null;
+        }
+
+        return trim($refOutput) !== $package->getSourceReference() ? 'Reference differs' : null;
     }
 
     /**

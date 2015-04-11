@@ -67,7 +67,19 @@ class SvnDownloader extends VcsDownloader
 
         $this->process->execute('svn status --ignore-externals', $output, $path);
 
-        return preg_match('{^ *[^X ] +}m', $output) ? $output : null;
+        if (preg_match('{^ *[^X ] +}m', $output)) {
+            return $output;
+        }
+
+        $this->process->execute('svnversion', $refOutput, $path);
+
+        $sourceRef = substr($package->getSourceReference(), strrpos($package->getSourceReference(), '@') + 1);
+
+        if (!trim($refOutput)) {
+            return null;
+        }
+
+        return trim($refOutput) !== $sourceRef ? 'Reference differs' : null;
     }
 
     /**

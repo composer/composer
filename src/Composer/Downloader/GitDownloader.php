@@ -110,7 +110,36 @@ class GitDownloader extends VcsDownloader
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
-        return trim($output) ?: null;
+        if (trim($output)) {
+            return trim($output);
+        }
+
+        if (0 !== $this->process->execute('git rev-parse --verify HEAD', $refOutput, $path)) {
+            throw new \RuntimeException("Could not determine reference\n\n:".$this->process->getErrorOutput());
+        }
+
+        $reference = trim($refOutput);
+        if (!$reference) {
+            return null;
+        }
+
+        if ($reference === $package->getSourceReference()) {
+            return null;
+        }
+
+        // perform tag resolving
+        $tagReferenceCommand = sprintf('git rev-parse --verify %s^{commit}', escapeshellarg($package->getSourceReference()));
+        if (0 !== $this->process->execute($tagReferenceCommand, $refTagOutput, $path)) {
+            throw new \RuntimeException("Could not determine tag reference\n\n:".$this->process->getErrorOutput());
+        }
+
+        $tagReference = trim($refTagOutput);
+
+        if (!$tagReference) {
+            return null;
+        }
+
+        return $tagReference !== $reference ? 'Reference differs' : null;
     }
 
     /**
