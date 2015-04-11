@@ -84,26 +84,15 @@ class GitLab
         $this->io->writeError(sprintf('A token will be created and stored in "%s", your password will never be stored', $this->config->getAuthConfigSource()->getName()));
         $this->io->writeError('To revoke access to this token you can visit ' . $this->config->get('gitlab-domains')[0] . '/profile/applications');
 
-        $otp = null;
         $attemptCounter = 0;
 
         while ($attemptCounter++ < 5) {
             try {
-                $response = $this->createToken($originUrl, $otp);
+                $response = $this->createToken($originUrl);
             } catch (TransportException $e) {
-                // https://developer.GitLab.com/v3/#authentication && https://developer.GitLab.com/v3/auth/#working-with-two-factor-authentication
-                // 401 is bad credentials, or missing otp code
+                // 401 is bad credentials, 
                 // 403 is max login attempts exceeded
                 if (in_array($e->getCode(), array(403, 401))) {
-                    // in case of a 401, and authentication was previously provided
-                    if (401 === $e->getCode() && $this->io->hasAuthentication($originUrl)) {
-                        // check for the presence of otp headers and get otp code from user
-                        $otp = $this->checkTwoFactorAuthentication($e->getHeaders());
-                        // if given, retry creating a token using the user provided code
-                        if (null !== $otp) {
-                            continue;
-                        }
-                    }
 
                     if (401 === $e->getCode()) {
                         $this->io->writeError('Bad credentials.');
@@ -131,9 +120,9 @@ class GitLab
         throw new \RuntimeException("Invalid GitLab credentials 5 times in a row, aborting.");
     }
 
-    private function createToken($originUrl, $otp = null)
+    private function createToken($originUrl)
     {
-        if (null === $otp || !$this->io->hasAuthentication($originUrl)) {
+        if (!$this->io->hasAuthentication($originUrl)) {
             $username = $this->io->ask('Username: ');
             $password = $this->io->askAndHideAnswer('Password: ');
 
@@ -142,9 +131,6 @@ class GitLab
 
 
         $headers = array('Content-Type: application/x-www-form-urlencoded');
-        if ($otp) {
-            $headers[] = 'X-GitLab-OTP: ' . $otp;
-        }
 
         $note = 'Composer';
         if ($this->config->get('GitLab-expose-hostname') === true && 0 === $this->process->execute('hostname', $output)) {
@@ -173,35 +159,5 @@ class GitLab
         $this->io->writeError('Token successfully created');
 
         return JsonFile::parseJson($json);
-    }
-
-    private function checkTwoFactorAuthentication(array $headers)
-    {
-        $headerNames = array_map(
-            function ($header) {
-                return strtolower(strstr($header, ':', true));
-            },
-            $headers
-        );
-
-        if (false !== ($key = array_search('x-GitLab-otp', $headerNames))) {
-            list($required, $method) = array_map('trim', explode(';', substr(strstr($headers[$key], ':'), 1)));
-
-            if ('required' === $required) {
-                $this->io->writeError('Two-factor Authentication');
-
-                if ('app' === $method) {
-                    $this->io->writeError('Open the two-factor authentication app on your device to view your authentication code and verify your identity.');
-                }
-
-                if ('sms' === $method) {
-                    $this->io->writeError('You have been sent an SMS message with an authentication code to verify your identity.');
-                }
-
-                return $this->io->ask('Authentication Code: ');
-            }
-        }
-
-        return null;
     }
 }
