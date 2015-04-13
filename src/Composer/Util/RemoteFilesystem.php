@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use React;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
@@ -63,9 +64,9 @@ class RemoteFilesystem
      *
      * @return bool true
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array())
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array(), React\EventLoop\LoopInterface $loop = null)
     {
-        return $this->get($originUrl, $fileUrl, $options, $fileName, $progress);
+        return $this->get($originUrl, $fileUrl, $options, $fileName, $progress, $loop);
     }
 
     /**
@@ -117,36 +118,38 @@ class RemoteFilesystem
      *
      * @return bool|string
      */
-    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
+    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true, React\EventLoop\LoopInterface $loop = null)
     {
         if (strpos($originUrl, '.github.com') === (strlen($originUrl) - 11)) {
             $originUrl = 'github.com';
         }
 
-        $this->bytesMax = 0;
-        $this->originUrl = $originUrl;
-        $this->fileUrl = $fileUrl;
-        $this->fileName = $fileName;
-        $this->progress = $progress;
-        $this->lastProgress = null;
-        $this->retryAuthFailure = true;
+        $that = clone $this;
+        $that->bytesMax = 0;
+        $that->originUrl = $originUrl;
+        $that->fileUrl = $fileUrl;
+        $that->fileName = $fileName;
+        $that->progress = $progress;
+        $that->lastProgress = null;
+        $that->retryAuthFailure = true;
+
         $this->lastHeaders = array();
 
         // capture username/password from URL if there is one
         if (preg_match('{^https?://(.+):(.+)@([^/]+)}i', $fileUrl, $match)) {
-            $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
+            $that->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
         }
 
         if (isset($additionalOptions['retry-auth-failure'])) {
-            $this->retryAuthFailure = (bool) $additionalOptions['retry-auth-failure'];
+            $that->retryAuthFailure = (bool) $additionalOptions['retry-auth-failure'];
 
             unset($additionalOptions['retry-auth-failure']);
         }
 
-        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        $options = $that->getOptionsForUrl($originUrl, $additionalOptions);
 
-        if ($this->io->isDebug()) {
-            $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
+        if ($that->io->isDebug()) {
+            $that->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
         }
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
@@ -155,15 +158,15 @@ class RemoteFilesystem
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
-        $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
+        $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($that, 'callbackGet')));
 
-        if ($this->progress) {
-            $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
+        if ($that->progress) {
+            $that->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
         }
 
         $errorMessage = '';
         $errorCode = 0;
-        $result = false;
+        $handle = false;
         set_error_handler(function ($code, $msg) use (&$errorMessage) {
             if ($errorMessage) {
                 $errorMessage .= "\n";
@@ -171,100 +174,54 @@ class RemoteFilesystem
             $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
         });
         try {
-            $result = file_get_contents($fileUrl, false, $ctx);
+            $handle = fopen($fileUrl, 'rb', false, $ctx);
         } catch (\Exception $e) {
-            if ($e instanceof TransportException && !empty($http_response_header[0])) {
-                $e->setHeaders($http_response_header);
-            }
-            if ($e instanceof TransportException && $result !== false) {
-                $e->setResponse($result);
-            }
-            $result = false;
+            // Re-thrown below
         }
         if ($errorMessage && !ini_get('allow_url_fopen')) {
             $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
         }
         restore_error_handler();
-        if (isset($e) && !$this->retry) {
-            throw $e;
+        if (isset($e)) {
+            if (!$that->retry) {
+                if ($e instanceof TransportException && !empty($http_response_header[0])) {
+                    $e->setHeaders($http_response_header);
+                }
+                if ($e instanceof TransportException && $handle !== false) {
+                    $e->setResponse(stream_get_contents($handle));
+                }
+                throw $e;
+            }
+            $handle = false;
         }
 
         // fail 4xx and 5xx responses and capture the response
         if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ ([45]\d\d)}i', $http_response_header[0], $match)) {
             $errorCode = $match[1];
-            if (!$this->retry) {
-                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $errorCode);
+            if (!$that->retry) {
+                $e = new TransportException('The "'.$that->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $errorCode);
                 $e->setHeaders($http_response_header);
-                $e->setResponse($result);
+                $e->setResponse(stream_get_contents($handle));
+
                 throw $e;
             }
-            $result = false;
+            $handle = false;
         }
 
-        // decode gzip
-        if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
-            $decode = false;
-            foreach ($http_response_header as $header) {
-                if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
-                    $decode = true;
-                    continue;
-                } elseif (preg_match('{^HTTP/}i', $header)) {
-                    $decode = false;
-                }
-            }
+        if ($that->retry) {
+            $that->retry = false;
 
-            if ($decode) {
-                if (PHP_VERSION_ID >= 50400) {
-                    $result = zlib_decode($result);
-                } else {
-                    // work around issue with gzuncompress & co that do not work with all gzip checksums
-                    $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
-                }
+            $result = $that->get($that->originUrl, $that->fileUrl, $additionalOptions, $that->fileName, $that->progress, $loop);
 
-                if (!$result) {
-                    throw new TransportException('Failed to decode zlib stream');
-                }
-            }
-        }
-
-        if ($this->progress && !$this->retry) {
-            $this->io->overwriteError("    Downloading: <comment>100%</comment>");
-        }
-
-        // handle copy command if download was successful
-        if (false !== $result && null !== $fileName) {
-            if ('' === $result) {
-                throw new TransportException('"'.$this->fileUrl.'" appears broken, and returned an empty 200 response');
-            }
-
-            $errorMessage = '';
-            set_error_handler(function ($code, $msg) use (&$errorMessage) {
-                if ($errorMessage) {
-                    $errorMessage .= "\n";
-                }
-                $errorMessage .= preg_replace('{^file_put_contents\(.*?\): }', '', $msg);
-            });
-            $result = (bool) file_put_contents($fileName, $result);
-            restore_error_handler();
-            if (false === $result) {
-                throw new TransportException('The "'.$this->fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
-            }
-        }
-
-        if ($this->retry) {
-            $this->retry = false;
-
-            $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
-
-            $authHelper = new AuthHelper($this->io, $this->config);
-            $authHelper->storeAuth($this->originUrl, $this->storeAuth);
-            $this->storeAuth = false;
+            $authHelper = new AuthHelper($that->io, $that->config);
+            $authHelper->storeAuth($that->originUrl, $that->storeAuth);
+            $that->storeAuth = false;
 
             return $result;
         }
 
-        if (false === $result) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+        if (false === $handle) {
+            $e = new TransportException('The "'.$that->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
             if (!empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
@@ -276,7 +233,99 @@ class RemoteFilesystem
             $this->lastHeaders = $http_response_header;
         }
 
-        return $result;
+        $deferred = new React\Promise\Deferred();
+        $runLoop = !$loop;
+        $loop = $loop ?: React\EventLoop\Factory::create();
+        $stream = new React\Stream\Stream($handle, $loop);
+
+        $result = (object) array(
+            'headers' => isset($http_response_header) ? $http_response_header : array(),
+            'body' => '',
+        );
+        $stream->on('data', function ($data) use ($result) {
+            $result->body .= $data;
+        });
+        $stream->on('error', function (\Exception $e) use ($deferred) {
+            $deferred->reject($e);
+        });
+        $stream->on('close', function () use ($deferred, $result) {
+            $deferred->resolve($result);
+        });
+
+        $promise = $deferred->promise();
+
+        // decode gzip
+        if (extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
+            $promise = $promise->then(function ($result) {
+                $decode = false;
+                foreach ($result->headers as $header) {
+                    if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
+                        $decode = true;
+                        continue;
+                    } elseif (preg_match('{^HTTP/}i', $header)) {
+                        $decode = false;
+                    }
+                }
+
+                if ($decode) {
+                    if (PHP_VERSION_ID >= 50400) {
+                        $result->body = zlib_decode($result->body);
+                    } else {
+                        // work around issue with gzuncompress & co that do not work with all gzip checksums
+                        $result->body = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result->body));
+                    }
+
+                    if (!$result->body) {
+                        throw new TransportException('Failed to decode zlib stream');
+                    }
+                }
+
+                return $result;
+            });
+        }
+
+        if ($progress) {
+            $io = $that->io;
+            $promise = $promise->then(function ($result) use ($io) {
+                $io->overwriteError("    Downloading: <comment>100%</comment>");
+
+                return $result;
+            });
+        }
+
+        // handle copy command if download was successful
+        if (null !== $fileName) {
+            $fileUrl = $that->fileUrl;
+            $promise = $promise->then(function ($result) use ($fileUrl, $fileName) {
+                if ('' === $result->body) {
+                    throw new TransportException('"'.$fileUrl.'" appears broken, and returned an empty 200 response');
+                }
+
+                $errorMessage = '';
+                set_error_handler(function ($code, $msg) use (&$errorMessage) {
+                    if ($errorMessage) {
+                        $errorMessage .= "\n";
+                    }
+                    $errorMessage .= preg_replace('{^file_put_contents\(.*?\): }', '', $msg);
+                });
+                $result->body = (bool) file_put_contents($fileName, $result->body);
+                restore_error_handler();
+                if (false === $result->body) {
+                    throw new TransportException('The "'.$fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
+                }
+
+                return $result;
+            });
+        };
+
+        if (!$runLoop) {
+            return $promise;
+        }
+
+        $promise->done();
+        $loop->run();
+
+        return $result->body;
     }
 
     /**
@@ -290,7 +339,7 @@ class RemoteFilesystem
      * @param  integer            $bytesMax         The total size
      * @throws TransportException
      */
-    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
+    public function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
     {
         switch ($notificationCode) {
             case STREAM_NOTIFY_FAILURE:

@@ -26,7 +26,6 @@ use Composer\Package\PackageInterface;
  */
 class PluginInstaller extends LibraryInstaller
 {
-    private $installationManager;
     private static $classCounter = 0;
 
     /**
@@ -34,12 +33,10 @@ class PluginInstaller extends LibraryInstaller
      *
      * @param IOInterface $io
      * @param Composer    $composer
-     * @param string      $type
      */
-    public function __construct(IOInterface $io, Composer $composer, $type = 'library')
+    public function __construct(IOInterface $io, Composer $composer)
     {
         parent::__construct($io, $composer, 'composer-plugin');
-        $this->installationManager = $composer->getInstallationManager();
     }
 
     /**
