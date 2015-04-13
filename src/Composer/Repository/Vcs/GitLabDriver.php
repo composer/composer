@@ -18,7 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Downloader\TransportException;
 use Composer\Util\RemoteFilesystem;
-
+use Composer\Util\GitLab;
 /**
  * Driver for GitLab API, use the Git driver for local checkouts.
  *
@@ -53,6 +53,13 @@ class GitLabDriver extends VcsDriver
      * @var array List of branch => reference
      */
     private $branches;
+
+    /**
+     * Git Driver
+     *
+     * @var GitDriver
+     */
+    protected $gitDriver;
 
     /**
      * Extracts information from the repository url.
@@ -248,9 +255,85 @@ class GitLabDriver extends VcsDriver
     {
         // we need to fetch the default branch from the api
         $resource = $this->getApiUrl();
-
-        $this->project = JsonFile::parseJson($this->getContents($resource), $resource);
+        $this->project = JsonFile::parseJson($this->getContents($resource, true), $resource);
     }
+
+    protected function attemptCloneFallback()
+    {
+
+        try {
+            // If this repository may be private and we
+            // cannot ask for authentication credentials (because we
+            // are not interactive) then we fallback to GitDriver.
+            $this->setupGitDriver($this->generateSshUrl());
+
+            return;
+        } catch (\RuntimeException $e) {
+            $this->gitDriver = null;
+
+            $this->io->writeError('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your credentials</error>');
+            throw $e;
+        }
+    }
+
+    protected function setupGitDriver($url)
+    {
+        $this->gitDriver = new GitDriver(
+            array('url' => $url),
+            $this->io,
+            $this->config,
+            $this->process,
+            $this->remoteFilesystem
+        );
+        $this->gitDriver->initialize();
+    }    
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getContents($url, $fetchingRepoData = false)
+    {
+        try {
+            return parent::getContents($url);
+        } catch (TransportException $e) {
+            $gitLabUtil = new GitLab($this->io, $this->config, $this->process, $this->remoteFilesystem);
+
+            switch ($e->getCode()) {
+                case 401:
+                case 404:
+                    // try to authorize only if we are fetching the main /repos/foo/bar data, otherwise it must be a real 404
+                    if (!$fetchingRepoData) {
+                        throw $e;
+                    }
+
+                    if ($gitLabUtil->authorizeOAuth($this->originUrl)) {
+                        return parent::getContents($url);
+                    }
+
+                    if (!$this->io->isInteractive()) {
+                        return $this->attemptCloneFallback();
+                    }
+                    $this->io->writeError('<warning>Failed to download ' . $this->owner . '/' . $this->repository . ':' . $e->getMessage() . '</warning>');
+                    $gitLabUtil->authorizeOAuthInteractively($this->originUrl, 'Your credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
+
+                    return parent::getContents($url);
+
+                case 403:
+                    if (!$this->io->hasAuthentication($this->originUrl) && $gitLabUtil->authorizeOAuth($this->originUrl)) {
+                        return parent::getContents($url);
+                    }
+
+                    if (!$this->io->isInteractive() && $fetchingRepoData) {
+                        return $this->attemptCloneFallback();
+                    }
+
+                    throw $e;
+
+                default:
+                    throw $e;
+            }
+        }
+    }    
 
     /**
      * Uses the config `gitlab-domains` to see if the driver supports the url for the
