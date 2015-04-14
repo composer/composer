@@ -27,6 +27,7 @@ matrix:
 
 before_script:
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
+    - composer self-update # the version of Composer used on Travis is not compatible with PHP 7
     - composer install
     - bin/composer install
     - git config --global user.name travis-ci
