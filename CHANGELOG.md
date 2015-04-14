@@ -1,3 +1,27 @@
+### 1.0.0-alpha10 (2015-04-14)
+
+  * Break: The following event classes are deprecated and you should update your script handlers to use the new ones in type hints:
+    - `Composer\Script\CommandEvent` is deprecated, use `Composer\Script\Event`
+    - `Composer\Script\PackageEvent` is deprecated, use `Composer\Installer\PackageEvent`
+  * Break: Output is now split between stdout and stderr. Any irrelevant output to each command is on stderr as per unix best practices.
+  * Added support for npm-style semver operators (`^` and `-` ranges, ` ` = AND, `||` = OR)
+  * Added --prefer-lowest to `update` command to allow testing a package with the lowest declared dependencies
+  * Added support for parsing semver build metadata `+anything` at the end of versions
+  * Added --sort-packages option to `require` command for sorting dependencies
+  * Added --no-autoloader to `install` and `update` commands to skip autoload generation
+  * Added --list to `run-script` command to see available scripts
+  * Added --absolute to `config` command to get back absolute paths
+  * Added `classmap-authoritative` config option, if enabled only the classmap info will be used by the composer autoloader
+  * Added support for branch-alias on numeric branches
+  * Added support for the `https_proxy`/`HTTPS_PROXY` env vars used only for https URLs
+  * Added support for using real composer repos as local paths in `create-project` command
+  * Added --no-dev to `licenses` command
+  * Added support for PHP 7.0 nightly builds
+  * Fixed detection of stability when parsing multiple constraints
+  * Fixed installs from lock file containing updated composer.json requirement
+  * Fixed the autoloader suffix in vendor/autoload.php changing in every build
+  * Many minor fixes, documentation additions and UX improvements
+
 ### 1.0.0-alpha9 (2014-12-07)
 
   * Added `remove` command to do the reverse of `require`
