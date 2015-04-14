@@ -28,6 +28,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
+use Composer\Util\SpdxLicense;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -115,18 +116,18 @@ EOT
                 $versions = array($package->getPrettyVersion() => $package->getVersion());
             }
 
-            $this->printMeta($input, $output, $package, $versions, $installedRepo, $repos);
-            $this->printLinks($input, $output, $package, 'requires');
-            $this->printLinks($input, $output, $package, 'devRequires', 'requires (dev)');
+            $this->printMeta($package, $versions, $installedRepo);
+            $this->printLinks($package, 'requires');
+            $this->printLinks($package, 'devRequires', 'requires (dev)');
             if ($package->getSuggests()) {
                 $this->getIO()->write("\n<info>suggests</info>");
                 foreach ($package->getSuggests() as $suggested => $reason) {
                     $this->getIO()->write($suggested . ' <comment>' . $reason . '</comment>');
                 }
             }
-            $this->printLinks($input, $output, $package, 'provides');
-            $this->printLinks($input, $output, $package, 'conflicts');
-            $this->printLinks($input, $output, $package, 'replaces');
+            $this->printLinks($package, 'provides');
+            $this->printLinks($package, 'conflicts');
+            $this->printLinks($package, 'replaces');
 
             return;
         }
@@ -283,14 +284,14 @@ EOT
     /**
      * prints package meta data
      */
-    protected function printMeta(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, RepositoryInterface $repos)
+    protected function printMeta(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo)
     {
         $this->getIO()->write('<info>name</info>     : ' . $package->getPrettyName());
         $this->getIO()->write('<info>descrip.</info> : ' . $package->getDescription());
         $this->getIO()->write('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
-        $this->printVersions($input, $output, $package, $versions, $installedRepo, $repos);
+        $this->printVersions($package, $versions, $installedRepo);
         $this->getIO()->write('<info>type</info>     : ' . $package->getType());
-        $this->getIO()->write('<info>license</info>  : ' . implode(', ', $package->getLicense()));
+        $this->printLicenses($package);
         $this->getIO()->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
         $this->getIO()->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
         $this->getIO()->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
@@ -339,7 +340,7 @@ EOT
     /**
      * prints all available versions of this package and highlights the installed one if any
      */
-    protected function printVersions(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, RepositoryInterface $repos)
+    protected function printVersions(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo)
     {
         uasort($versions, 'version_compare');
         $versions = array_keys(array_reverse($versions));
@@ -361,13 +362,11 @@ EOT
     /**
      * print link objects
      *
-     * @param InputInterface           $input
-     * @param OutputInterface          $output
      * @param CompletePackageInterface $package
      * @param string                   $linkType
      * @param string                   $title
      */
-    protected function printLinks(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, $linkType, $title = null)
+    protected function printLinks(CompletePackageInterface $package, $linkType, $title = null)
     {
         $title = $title ?: $linkType;
         if ($links = $package->{'get'.ucfirst($linkType)}()) {
@@ -376,6 +375,31 @@ EOT
             foreach ($links as $link) {
                 $this->getIO()->write($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
             }
+        }
+    }
+
+    /**
+     * Prints the licenses of a package with metadata
+     *
+     * @param CompletePackageInterface $package
+     */
+    protected function printLicenses(CompletePackageInterface $package)
+    {
+        $spdxLicense = new SpdxLicense;
+
+        $licenses = $package->getLicense();
+
+        foreach($licenses as $licenseId) {
+            $license = $spdxLicense->getLicenseByIdentifier($licenseId); // keys: 0 fullname, 1 osi, 2 url
+
+            // is license OSI approved?
+            if($license[1] === true) {
+                $out = sprintf('%s (%s) (OSI approved) %s', $license[0], $licenseId, $license[2]);
+            } else {
+                $out = sprintf('%s (%s) %s', $license[0], $licenseId, $license[2]);
+            }
+
+            $this->getIO()->write('<info>license</info>  : ' . $out);
         }
     }
 }
