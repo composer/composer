@@ -44,7 +44,7 @@ class InitCommand extends Command
             if ($this->isValidEmail($match['email'])) {
                 return array(
                     'name'  => trim($match['name']),
-                    'email' => $match['email']
+                    'email' => $match['email'],
                 );
             }
         }
@@ -100,15 +100,15 @@ EOT
             unset($options['stability']);
         }
 
-        $options['require'] = isset($options['require']) ? $this->formatRequirements($options['require']) : new \stdClass;
+        $options['require'] = isset($options['require']) ? $this->formatRequirements($options['require']) : new \stdClass();
         if (array() === $options['require']) {
-            $options['require'] = new \stdClass;
+            $options['require'] = new \stdClass();
         }
 
         if (isset($options['require-dev'])) {
             $options['require-dev'] = $this->formatRequirements($options['require-dev']);
             if (array() === $options['require-dev']) {
-                $options['require-dev'] = new \stdClass;
+                $options['require-dev'] = new \stdClass();
             }
         }
 
@@ -120,7 +120,7 @@ EOT
             $this->getIO()->writeError(array(
                 '',
                 $json,
-                ''
+                '',
             ));
             if (!$dialog->askConfirmation($output, $dialog->getQuestion('Do you confirm generation', 'yes', '?'), true)) {
                 $this->getIO()->writeError('<error>Command aborted</error>');
@@ -157,7 +157,7 @@ EOT
         $this->getIO()->writeError(array(
             '',
             $formatter->formatBlock('Welcome to the Composer config generator', 'bg=blue;fg=white', true),
-            ''
+            '',
         ));
 
         // namespace
@@ -167,7 +167,7 @@ EOT
             '',
         ));
 
-        $cwd = realpath(".");
+        $cwd = realpath('.');
 
         if (!$name = $input->getOption('name')) {
             $name = basename($cwd);
@@ -269,7 +269,7 @@ EOT
         $this->getIO()->writeError(array(
             '',
             'Define your dependencies.',
-            ''
+            '',
         ));
 
         $requirements = array();
@@ -293,7 +293,7 @@ EOT
     {
         if (!$this->repos) {
             $this->repos = new CompositeRepository(array_merge(
-                array(new PlatformRepository),
+                array(new PlatformRepository()),
                 Factory::createDefaultRepositories($this->getIO())
             ));
         }
@@ -349,7 +349,7 @@ EOT
                     $this->getIO()->writeError(array(
                         '',
                         sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
-                        ''
+                        '',
                     ));
 
                     $this->getIO()->writeError($choices);
@@ -506,7 +506,7 @@ EOT
 
     protected function addVendorIgnore($ignoreFile, $vendor = '/vendor/')
     {
-        $contents = "";
+        $contents = '';
         if (file_exists($ignoreFile)) {
             $contents = file_get_contents($ignoreFile);
 
@@ -564,9 +564,11 @@ EOT
      *
      * This returns a version with the ~ operator prefixed when possible.
      *
-     * @param  InputInterface            $input
-     * @param  string                    $name
+     * @param InputInterface $input
+     * @param string         $name
+     *
      * @return string
+     *
      * @throws \InvalidArgumentException
      */
     private function findBestVersionForPackage(InputInterface $input, $name)

@@ -13,20 +13,22 @@
 namespace Composer\DependencyResolver;
 
 /**
- * Represents a problem detected while solving dependencies
+ * Represents a problem detected while solving dependencies.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
 class Problem
 {
     /**
-     * A map containing the id of each rule part of this problem as a key
+     * A map containing the id of each rule part of this problem as a key.
+     *
      * @var array
      */
     protected $reasonSeen;
 
     /**
-     * A set of reasons for the problem, each is a rule or a job and a rule
+     * A set of reasons for the problem, each is a rule or a job and a rule.
+     *
      * @var array
      */
     protected $reasons = array();
@@ -41,7 +43,7 @@ class Problem
     }
 
     /**
-     * Add a rule as a reason
+     * Add a rule as a reason.
      *
      * @param Rule $rule A rule which is a reason for this problem
      */
@@ -54,7 +56,7 @@ class Problem
     }
 
     /**
-     * Retrieve all reasons for this problem
+     * Retrieve all reasons for this problem.
      *
      * @return array The problem's reasons
      */
@@ -64,9 +66,10 @@ class Problem
     }
 
     /**
-     * A human readable textual representation of the problem's reasons
+     * A human readable textual representation of the problem's reasons.
      *
-     * @param  array  $installedMap A map of all installed packages
+     * @param array $installedMap A map of all installed packages
+     *
      * @return string
      */
     public function getPrettyString(array $installedMap = array())
@@ -152,7 +155,7 @@ class Problem
     }
 
     /**
-     * Store a reason descriptor but ignore duplicates
+     * Store a reason descriptor but ignore duplicates.
      *
      * @param string $id     A canonical identifier for the reason
      * @param string $reason The reason descriptor
@@ -171,9 +174,10 @@ class Problem
     }
 
     /**
-     * Turns a job into a human readable description
+     * Turns a job into a human readable description.
      *
-     * @param  array  $job
+     * @param array $job
+     *
      * @return string
      */
     protected function jobToText($job)
@@ -216,9 +220,10 @@ class Problem
     }
 
     /**
-     * Turns a constraint into text usable in a sentence describing a job
+     * Turns a constraint into text usable in a sentence describing a job.
      *
-     * @param  \Composer\Package\LinkConstraint\LinkConstraintInterface $constraint
+     * @param \Composer\Package\LinkConstraint\LinkConstraintInterface $constraint
+     *
      * @return string
      */
     protected function constraintToText($constraint)

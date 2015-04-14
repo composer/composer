@@ -54,7 +54,7 @@ class Svn
     protected $process;
 
     /**
-     * @var integer
+     * @var int
      */
     protected $qtyAuthTries = 0;
 
@@ -74,13 +74,13 @@ class Svn
         $this->url = $url;
         $this->io  = $io;
         $this->config = $config;
-        $this->process = $process ?: new ProcessExecutor;
+        $this->process = $process ?: new ProcessExecutor();
     }
 
     public static function cleanEnv()
     {
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
-        putenv("DYLD_LIBRARY_PATH");
+        putenv('DYLD_LIBRARY_PATH');
         unset($_SERVER['DYLD_LIBRARY_PATH']);
     }
 
@@ -148,7 +148,7 @@ class Svn
     }
 
     /**
-     * @param boolean $cacheCredentials
+     * @param bool $cacheCredentials
      */
     public function setCacheCredentials($cacheCredentials)
     {
@@ -159,6 +159,7 @@ class Svn
      * Repositories requests credentials, let's put them in.
      *
      * @return \Composer\Util\Svn
+     *
      * @throws \RuntimeException
      */
     protected function doAuthDance()
@@ -173,10 +174,10 @@ class Svn
         $this->io->writeError("The Subversion server ({$this->url}) requested credentials:");
 
         $this->hasAuth = true;
-        $this->credentials['username'] = $this->io->ask("Username: ");
-        $this->credentials['password'] = $this->io->askAndHideAnswer("Password: ");
+        $this->credentials['username'] = $this->io->ask('Username: ');
+        $this->credentials['password'] = $this->io->askAndHideAnswer('Password: ');
 
-        $this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ", true);
+        $this->cacheCredentials = $this->io->askConfirmation('Should Subversion cache these credentials? (yes/no) ', true);
 
         return $this;
     }
@@ -231,12 +232,13 @@ class Svn
      * Get the password for the svn command. Can be empty.
      *
      * @return string
+     *
      * @throws \LogicException
      */
     protected function getPassword()
     {
         if ($this->credentials === null) {
-            throw new \LogicException("No svn auth detected.");
+            throw new \LogicException('No svn auth detected.');
         }
 
         return isset($this->credentials['password']) ? $this->credentials['password'] : '';
@@ -246,12 +248,13 @@ class Svn
      * Get the username for the svn command.
      *
      * @return string
+     *
      * @throws \LogicException
      */
     protected function getUsername()
     {
         if ($this->credentials === null) {
-            throw new \LogicException("No svn auth detected.");
+            throw new \LogicException('No svn auth detected.');
         }
 
         return $this->credentials['username'];
@@ -310,7 +313,7 @@ class Svn
     }
 
     /**
-     * Create the auth params from the url
+     * Create the auth params from the url.
      *
      * @return bool
      */

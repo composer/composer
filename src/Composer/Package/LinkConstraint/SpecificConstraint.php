@@ -13,7 +13,7 @@
 namespace Composer\Package\LinkConstraint;
 
 /**
- * Provides a common basis for specific package link constraints
+ * Provides a common basis for specific package link constraints.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */

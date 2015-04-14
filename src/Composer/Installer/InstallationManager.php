@@ -43,7 +43,7 @@ class InstallationManager
     }
 
     /**
-     * Adds installer
+     * Adds installer.
      *
      * @param InstallerInterface $installer installer instance
      */
@@ -54,7 +54,7 @@ class InstallationManager
     }
 
     /**
-     * Removes installer
+     * Removes installer.
      *
      * @param InstallerInterface $installer installer instance
      */
@@ -219,10 +219,11 @@ class InstallationManager
     }
 
     /**
-     * Returns the installation path of a package
+     * Returns the installation path of a package.
      *
-     * @param  PackageInterface $package
-     * @return string           path
+     * @param PackageInterface $package
+     *
+     * @return string path
      */
     public function getInstallPath(PackageInterface $package)
     {
@@ -243,13 +244,13 @@ class InstallationManager
                         'version' => $package->getPrettyVersion(),
                         'version_normalized' => $package->getVersion(),
                     );
-                    $opts = array('http' =>
-                        array(
+                    $opts = array(
+                        'http' => array(
                             'method'  => 'POST',
                             'header'  => array('Content-type: application/x-www-form-urlencoded'),
                             'content' => http_build_query($params, '', '&'),
                             'timeout' => 3,
-                        )
+                        ),
                     );
 
                     $context = StreamContextFactory::getContext($url, $opts);
@@ -267,13 +268,13 @@ class InstallationManager
                 );
             }
 
-            $opts = array('http' =>
-                array(
+            $opts = array(
+                'http' => array(
                     'method'  => 'POST',
                     'header'  => array('Content-Type: application/json'),
                     'content' => json_encode($postData),
                     'timeout' => 6,
-                )
+                ),
             );
 
             $context = StreamContextFactory::getContext($repoUrl, $opts);

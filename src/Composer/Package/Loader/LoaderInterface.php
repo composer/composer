@@ -13,17 +13,18 @@
 namespace Composer\Package\Loader;
 
 /**
- * Defines a loader that takes an array to create package instances
+ * Defines a loader that takes an array to create package instances.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 interface LoaderInterface
 {
     /**
-     * Converts a package from an array to a real instance
+     * Converts a package from an array to a real instance.
      *
-     * @param  array                              $package Package config
-     * @param  string                             $class   Package class to use
+     * @param array  $package Package config
+     * @param string $class   Package class to use
+     *
      * @return \Composer\Package\PackageInterface
      */
     public function load(array $package, $class = 'Composer\Package\CompletePackage');

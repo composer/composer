@@ -55,11 +55,11 @@ class RemoteFilesystem
     /**
      * Copy the remote file in local.
      *
-     * @param string  $originUrl The origin URL
-     * @param string  $fileUrl   The file URL
-     * @param string  $fileName  the local filename
-     * @param boolean $progress  Display the progression
-     * @param array   $options   Additional context options
+     * @param string $originUrl The origin URL
+     * @param string $fileUrl   The file URL
+     * @param string $fileName  the local filename
+     * @param bool   $progress  Display the progression
+     * @param array  $options   Additional context options
      *
      * @return bool true
      */
@@ -71,10 +71,10 @@ class RemoteFilesystem
     /**
      * Get the content.
      *
-     * @param string  $originUrl The origin URL
-     * @param string  $fileUrl   The file URL
-     * @param boolean $progress  Display the progression
-     * @param array   $options   Additional context options
+     * @param string $originUrl The origin URL
+     * @param string $fileUrl   The file URL
+     * @param bool   $progress  Display the progression
+     * @param array  $options   Additional context options
      *
      * @return bool|string The content
      */
@@ -84,7 +84,7 @@ class RemoteFilesystem
     }
 
     /**
-     * Retrieve the options set in the constructor
+     * Retrieve the options set in the constructor.
      *
      * @return array Options
      */
@@ -94,7 +94,7 @@ class RemoteFilesystem
     }
 
     /**
-     * Returns the headers of the last request
+     * Returns the headers of the last request.
      *
      * @return array
      */
@@ -106,11 +106,11 @@ class RemoteFilesystem
     /**
      * Get file content or copy action.
      *
-     * @param string  $originUrl         The origin URL
-     * @param string  $fileUrl           The file URL
-     * @param array   $additionalOptions context options
-     * @param string  $fileName          the local filename
-     * @param boolean $progress          Display the progression
+     * @param string $originUrl         The origin URL
+     * @param string $fileUrl           The file URL
+     * @param array  $additionalOptions context options
+     * @param string $fileName          the local filename
+     * @param bool   $progress          Display the progression
      *
      * @throws TransportException|\Exception
      * @throws TransportException            When the file could not be downloaded
@@ -158,7 +158,7 @@ class RemoteFilesystem
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
-            $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
+            $this->io->writeError('    Downloading: <comment>Connecting...</comment>', false);
         }
 
         $errorMessage = '';
@@ -228,7 +228,7 @@ class RemoteFilesystem
         }
 
         if ($this->progress && !$this->retry) {
-            $this->io->overwriteError("    Downloading: <comment>100%</comment>");
+            $this->io->overwriteError('    Downloading: <comment>100%</comment>');
         }
 
         // handle copy command if download was successful
@@ -282,12 +282,13 @@ class RemoteFilesystem
     /**
      * Get notification action.
      *
-     * @param  integer            $notificationCode The notification code
-     * @param  integer            $severity         The severity level
-     * @param  string             $message          The message
-     * @param  integer            $messageCode      The message code
-     * @param  integer            $bytesTransferred The loaded size
-     * @param  integer            $bytesMax         The total size
+     * @param int    $notificationCode The notification code
+     * @param int    $severity         The severity level
+     * @param string $message          The message
+     * @param int    $messageCode      The message code
+     * @param int    $bytesTransferred The loaded size
+     * @param int    $bytesMax         The total size
+     *
      * @throws TransportException
      */
     protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
@@ -397,7 +398,7 @@ class RemoteFilesystem
                 php_uname('s'),
                 php_uname('r'),
                 $phpVersion
-            )
+            ),
         );
 
         if (extension_loaded('zlib')) {

@@ -376,7 +376,7 @@ class ComposerRepository extends ArrayRepository
     }
 
     /**
-     * Adds a new package to the repository
+     * Adds a new package to the repository.
      *
      * @param PackageInterface $package
      */
@@ -487,7 +487,7 @@ class ComposerRepository extends ArrayRepository
             $includes = $data['provider-includes'];
             foreach ($includes as $include => $metadata) {
                 $url = $this->baseUrl . '/' . str_replace('%hash%', $metadata['sha256'], $include);
-                $cacheKey = str_replace(array('%hash%','$'), '', $include);
+                $cacheKey = str_replace(array('%hash%', '$'), '', $include);
                 if ($this->cache->sha256($cacheKey) === $metadata['sha256']) {
                     $includedData = json_decode($this->cache->read($cacheKey), true);
                 } else {

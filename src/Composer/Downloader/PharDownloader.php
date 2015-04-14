@@ -13,7 +13,7 @@
 namespace Composer\Downloader;
 
 /**
- * Downloader for phar files
+ * Downloader for phar files.
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */

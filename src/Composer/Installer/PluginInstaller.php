@@ -13,13 +13,12 @@
 namespace Composer\Installer;
 
 use Composer\Composer;
-use Composer\Package\Package;
 use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 
 /**
- * Installer for plugin packages
+ * Installer for plugin packages.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nils Adermann <naderman@naderman.de>

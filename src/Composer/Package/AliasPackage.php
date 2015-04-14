@@ -35,7 +35,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     protected $suggests;
 
     /**
-     * All descendants' constructors should call this parent constructor
+     * All descendants' constructors should call this parent constructor.
      *
      * @param PackageInterface $aliasOf       The package this package is an alias of
      * @param string           $version       The version the alias must report
@@ -155,7 +155,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     }
 
     /**
-     * Stores whether this is an alias created by an aliasing in the requirements of the root package or not
+     * Stores whether this is an alias created by an aliasing in the requirements of the root package or not.
      *
      * Use by the policy for sorting manually aliased packages first, see #576
      *
@@ -170,6 +170,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
 
     /**
      * @see setRootPackageAlias
+     *
      * @return bool
      */
     public function isRootPackageAlias()

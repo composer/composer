@@ -17,7 +17,9 @@ use Symfony\Component\Console\Helper\DialogHelper as BaseDialogHelper;
 class DialogHelper extends BaseDialogHelper
 {
     /**
-     * Build text for asking a question. For example:
+     * Build text for asking a question.
+     *
+     * For example:
      *
      *  "Do you want to continue [yes]:"
      *

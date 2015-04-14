@@ -76,7 +76,7 @@ class RepositoryManager
     }
 
     /**
-     * Adds repository
+     * Adds repository.
      *
      * @param RepositoryInterface $repository repository instance
      */
@@ -88,9 +88,11 @@ class RepositoryManager
     /**
      * Returns a new repository for a specific installation type.
      *
-     * @param  string                    $type   repository type
-     * @param  array                     $config repository configuration
+     * @param string $type   repository type
+     * @param array  $config repository configuration
+     *
      * @return RepositoryInterface
+     *
      * @throws \InvalidArgumentException if repository for provided type is not registered
      */
     public function createRepository($type, $config)
@@ -149,6 +151,7 @@ class RepositoryManager
      * Returns all local repositories for the project.
      *
      * @deprecated getLocalDevRepository is gone, so this is useless now, just use getLocalRepository instead
+     *
      * @return array[WritableRepositoryInterface]
      */
     public function getLocalRepositories()

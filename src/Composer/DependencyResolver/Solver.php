@@ -172,7 +172,7 @@ class Solver
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
-        $this->watchGraph = new RuleWatchGraph;
+        $this->watchGraph = new RuleWatchGraph();
 
         foreach ($this->rules as $rule) {
             $this->watchGraph->insert(new RuleWatchNode($rule));
@@ -212,7 +212,8 @@ class Solver
      * Evaluates each term affected by the decision (linked through watches)
      * If we find unit rules we make new decisions based on them
      *
-     * @param  integer   $level
+     * @param int $level
+     *
      * @return Rule|null A rule on conflict, otherwise null.
      */
     protected function propagate($level)
@@ -300,7 +301,7 @@ class Solver
 
             if ($newLevel <= 0 || $newLevel >= $level) {
                 throw new SolverBugException(
-                    "Trying to revert to invalid level ".(int) $newLevel." from level ".(int) $level."."
+                    'Trying to revert to invalid level '.(int) $newLevel.' from level '.(int) $level.'.'
                 );
             } elseif (!$newRule) {
                 throw new SolverBugException(

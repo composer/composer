@@ -55,7 +55,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         // init repos
-        $platformRepo = new PlatformRepository;
+        $platformRepo = new PlatformRepository();
         if ($composer = $this->getComposer(false)) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));

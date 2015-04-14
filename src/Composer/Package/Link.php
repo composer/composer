@@ -15,7 +15,7 @@ namespace Composer\Package;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 
 /**
- * Represents a link between two packages, represented by their names
+ * Represents a link between two packages, represented by their names.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */

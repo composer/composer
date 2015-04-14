@@ -13,7 +13,7 @@
 namespace Composer\Package\Archiver;
 
 /**
- * An exclude filter that processes gitignore and gitattributes
+ * An exclude filter that processes gitignore and gitattributes.
  *
  * It respects export-ignore git attributes
  *
@@ -22,7 +22,7 @@ namespace Composer\Package\Archiver;
 class GitExcludeFilter extends BaseExcludeFilter
 {
     /**
-     * Parses .gitignore and .gitattributes files if they exist
+     * Parses .gitignore and .gitattributes files if they exist.
      *
      * @param string $sourcePath
      */
@@ -47,7 +47,7 @@ class GitExcludeFilter extends BaseExcludeFilter
     }
 
     /**
-     * Callback line parser which process gitignore lines
+     * Callback line parser which process gitignore lines.
      *
      * @param string $line A line from .gitignore
      *
@@ -59,7 +59,7 @@ class GitExcludeFilter extends BaseExcludeFilter
     }
 
     /**
-     * Callback parser which finds export-ignore rules in git attribute lines
+     * Callback parser which finds export-ignore rules in git attribute lines.
      *
      * @param string $line A line from .gitattributes
      *

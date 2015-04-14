@@ -261,7 +261,7 @@ EOT
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/user/repos' : 'https://'.$domain.'/api/v3/user/repos';
 
             return $this->rfs->getContents($domain, $url, false, array(
-                'retry-auth-failure' => false
+                'retry-auth-failure' => false,
             )) ? true : 'Unexpected error';
         } catch (\Exception $e) {
             if ($e instanceof TransportException && $e->getCode() === 401) {
@@ -275,7 +275,9 @@ EOT
     /**
      * @param string $domain
      * @param string $token
+     *
      * @return array
+     *
      * @throws TransportException
      */
     private function getGithubRateLimit($domain, $token = null)
@@ -422,41 +424,41 @@ EOT
             foreach ($errors as $error => $current) {
                 switch ($error) {
                     case 'json':
-                        $text = PHP_EOL."The json extension is missing.".PHP_EOL;
-                        $text .= "Install it or recompile php without --disable-json";
+                        $text = PHP_EOL.'The json extension is missing.'.PHP_EOL;
+                        $text .= 'Install it or recompile php without --disable-json';
                         break;
 
                     case 'phar':
-                        $text = PHP_EOL."The phar extension is missing.".PHP_EOL;
-                        $text .= "Install it or recompile php without --disable-phar";
+                        $text = PHP_EOL.'The phar extension is missing.'.PHP_EOL;
+                        $text .= 'Install it or recompile php without --disable-phar';
                         break;
 
                     case 'filter':
-                        $text = PHP_EOL."The filter extension is missing.".PHP_EOL;
-                        $text .= "Install it or recompile php without --disable-filter";
+                        $text = PHP_EOL.'The filter extension is missing.'.PHP_EOL;
+                        $text .= 'Install it or recompile php without --disable-filter';
                         break;
 
                     case 'hash':
-                        $text = PHP_EOL."The hash extension is missing.".PHP_EOL;
-                        $text .= "Install it or recompile php without --disable-hash";
+                        $text = PHP_EOL.'The hash extension is missing.'.PHP_EOL;
+                        $text .= 'Install it or recompile php without --disable-hash';
                         break;
 
                     case 'ctype':
-                        $text = PHP_EOL."The ctype extension is missing.".PHP_EOL;
-                        $text .= "Install it or recompile php without --disable-ctype";
+                        $text = PHP_EOL.'The ctype extension is missing.'.PHP_EOL;
+                        $text .= 'Install it or recompile php without --disable-ctype';
                         break;
 
                     case 'unicode':
-                        $text = PHP_EOL."The detect_unicode setting must be disabled.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
-                        $text .= "    detect_unicode = Off";
+                        $text = PHP_EOL.'The detect_unicode setting must be disabled.'.PHP_EOL;
+                        $text .= 'Add the following to the end of your `php.ini`:'.PHP_EOL;
+                        $text .= '    detect_unicode = Off';
                         $displayIniMessage = true;
                         break;
 
                     case 'suhosin':
-                        $text = PHP_EOL."The suhosin.executor.include.whitelist setting is incorrect.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini` or suhosin.ini (Example path [for Debian]: /etc/php5/cli/conf.d/suhosin.ini):".PHP_EOL;
-                        $text .= "    suhosin.executor.include.whitelist = phar ".$current;
+                        $text = PHP_EOL.'The suhosin.executor.include.whitelist setting is incorrect.'.PHP_EOL;
+                        $text .= 'Add the following to the end of your `php.ini` or suhosin.ini (Example path [for Debian]: /etc/php5/cli/conf.d/suhosin.ini):'.PHP_EOL;
+                        $text .= '    suhosin.executor.include.whitelist = phar '.$current;
                         $displayIniMessage = true;
                         break;
 
@@ -465,22 +467,22 @@ EOT
                         break;
 
                     case 'allow_url_fopen':
-                        $text = PHP_EOL."The allow_url_fopen setting is incorrect.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
-                        $text .= "    allow_url_fopen = On";
+                        $text = PHP_EOL.'The allow_url_fopen setting is incorrect.'.PHP_EOL;
+                        $text .= 'Add the following to the end of your `php.ini`:'.PHP_EOL;
+                        $text .= '    allow_url_fopen = On';
                         $displayIniMessage = true;
                         break;
 
                     case 'ioncube':
                         $text = PHP_EOL."Your ionCube Loader extension ($current) is incompatible with Phar files.".PHP_EOL;
-                        $text .= "Upgrade to ionCube 4.0.9 or higher or remove this line (path may be different) from your `php.ini` to disable it:".PHP_EOL;
-                        $text .= "    zend_extension = /usr/lib/php5/20090626+lfs/ioncube_loader_lin_5.3.so";
+                        $text .= 'Upgrade to ionCube 4.0.9 or higher or remove this line (path may be different) from your `php.ini` to disable it:'.PHP_EOL;
+                        $text .= '    zend_extension = /usr/lib/php5/20090626+lfs/ioncube_loader_lin_5.3.so';
                         $displayIniMessage = true;
                         break;
 
                     case 'openssl':
-                        $text = PHP_EOL."The openssl extension is missing, which means that secure HTTPS transfers are impossible.".PHP_EOL;
-                        $text .= "If possible you should enable it or recompile php with --with-openssl";
+                        $text = PHP_EOL.'The openssl extension is missing, which means that secure HTTPS transfers are impossible.'.PHP_EOL;
+                        $text .= 'If possible you should enable it or recompile php with --with-openssl';
                         break;
                 }
                 $out($text, 'error');
@@ -493,37 +495,37 @@ EOT
             foreach ($warnings as $warning => $current) {
                 switch ($warning) {
                     case 'apc_cli':
-                        $text  = "The apc.enable_cli setting is incorrect.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
-                        $text .= "  apc.enable_cli = Off";
+                        $text  = 'The apc.enable_cli setting is incorrect.'.PHP_EOL;
+                        $text .= 'Add the following to the end of your `php.ini`:'.PHP_EOL;
+                        $text .= '  apc.enable_cli = Off';
                         $displayIniMessage = true;
                         break;
 
                     case 'sigchild':
-                        $text  = "PHP was compiled with --enable-sigchild which can cause issues on some platforms.".PHP_EOL;
-                        $text .= "Recompile it without this flag if possible, see also:".PHP_EOL;
-                        $text .= "  https://bugs.php.net/bug.php?id=22999";
+                        $text  = 'PHP was compiled with --enable-sigchild which can cause issues on some platforms.'.PHP_EOL;
+                        $text .= 'Recompile it without this flag if possible, see also:'.PHP_EOL;
+                        $text .= '  https://bugs.php.net/bug.php?id=22999';
                         break;
 
                     case 'curlwrappers':
-                        $text  = "PHP was compiled with --with-curlwrappers which will cause issues with HTTP authentication and GitHub.".PHP_EOL;
-                        $text .= " Recompile it without this flag if possible";
+                        $text  = 'PHP was compiled with --with-curlwrappers which will cause issues with HTTP authentication and GitHub.'.PHP_EOL;
+                        $text .= ' Recompile it without this flag if possible';
                         break;
 
                     case 'php':
                         $text  = "Your PHP ({$current}) is quite old, upgrading to PHP 5.3.4 or higher is recommended.".PHP_EOL;
-                        $text .= " Composer works with 5.3.2+ for most people, but there might be edge case issues.";
+                        $text .= ' Composer works with 5.3.2+ for most people, but there might be edge case issues.';
                         break;
 
                     case 'xdebug_loaded':
-                        $text  = "The xdebug extension is loaded, this can slow down Composer a little.".PHP_EOL;
-                        $text .= " Disabling it when using Composer is recommended.";
+                        $text  = 'The xdebug extension is loaded, this can slow down Composer a little.'.PHP_EOL;
+                        $text .= ' Disabling it when using Composer is recommended.';
                         break;
 
                     case 'xdebug_profile':
-                        $text  = "The xdebug.profiler_enabled setting is enabled, this can slow down Composer a lot.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini` to disable it:".PHP_EOL;
-                        $text .= "  xdebug.profiler_enabled = 0";
+                        $text  = 'The xdebug.profiler_enabled setting is enabled, this can slow down Composer a lot.'.PHP_EOL;
+                        $text .= 'Add the following to the end of your `php.ini` to disable it:'.PHP_EOL;
+                        $text .= '  xdebug.profiler_enabled = 0';
                         $displayIniMessage = true;
                         break;
                 }

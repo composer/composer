@@ -33,13 +33,14 @@ class ProcessExecutor
     }
 
     /**
-     * runs a process on the commandline
+     * runs a process on the commandline.
      *
-     * @param  string $command the command to execute
-     * @param  mixed  $output  the output will be written into this var if passed by ref
-     *                         if a callable is passed it will be used as output handler
-     * @param  string $cwd     the working directory
-     * @return int    statuscode
+     * @param string $command the command to execute
+     * @param mixed  $output  the output will be written into this var if passed by ref
+     *                        if a callable is passed it will be used as output handler
+     * @param string $cwd     the working directory
+     *
+     * @return int statuscode
      */
     public function execute($command, &$output = null, $cwd = null)
     {
@@ -78,7 +79,7 @@ class ProcessExecutor
     }
 
     /**
-     * Get any error output from the last command
+     * Get any error output from the last command.
      *
      * @return string
      */
@@ -113,7 +114,6 @@ class ProcessExecutor
      *
      * @return string The escaped argument
      */
-
     public static function escape($argument)
     {
         return ProcessUtils::escapeArgument($argument);

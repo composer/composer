@@ -37,6 +37,7 @@ class Factory
 {
     /**
      * @return string
+     *
      * @throws \RuntimeException
      */
     protected static function getHomeDir()
@@ -84,7 +85,8 @@ class Factory
     }
 
     /**
-     * @param  IOInterface|null $io
+     * @param IOInterface|null $io
+     *
      * @return Config
      */
     public static function createConfig(IOInterface $io = null, $cwd = null)
@@ -159,7 +161,7 @@ class Factory
             if (!$io) {
                 throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
             }
-            $factory = new static;
+            $factory = new static();
             $rm = $factory->createRepositoryManager($io, $config);
         }
 
@@ -184,15 +186,17 @@ class Factory
     }
 
     /**
-     * Creates a Composer instance
+     * Creates a Composer instance.
      *
-     * @param  IOInterface               $io             IO instance
-     * @param  array|string|null         $localConfig    either a configuration array or a filename to read from, if null it will
-     *                                                   read from the default filename
-     * @param  bool                      $disablePlugins Whether plugins should not be loaded
-     * @param  bool                      $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
+     * @param IOInterface       $io             IO instance
+     * @param array|string|null $localConfig    either a configuration array or a filename to read from, if null it will
+     *                                          read from the default filename
+     * @param bool              $disablePlugins Whether plugins should not be loaded
+     * @param bool              $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
+     *
      * @throws \InvalidArgumentException
      * @throws \UnexpectedValueException
+     *
      * @return Composer
      */
     public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true)
@@ -266,7 +270,7 @@ class Factory
         $this->addLocalRepository($rm, $vendorDir);
 
         // load package
-        $parser = new VersionParser;
+        $parser = new VersionParser();
         $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
         $package = $loader->load($localConfig);
         $composer->setPackage($package);
@@ -306,7 +310,7 @@ class Factory
 
         // init locker if possible
         if ($fullLoad && isset($composerFile)) {
-            $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
+            $lockFile = 'json' === pathinfo($composerFile, PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
             $locker = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io, $config)), $rm, $im, md5_file($composerFile));
@@ -317,9 +321,10 @@ class Factory
     }
 
     /**
-     * @param  IOInterface                  $io
-     * @param  Config                       $config
-     * @param  EventDispatcher              $eventDispatcher
+     * @param IOInterface     $io
+     * @param Config          $config
+     * @param EventDispatcher $eventDispatcher
+     *
      * @return Repository\RepositoryManager
      */
     protected function createRepositoryManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
@@ -348,7 +353,8 @@ class Factory
     }
 
     /**
-     * @param  Config        $config
+     * @param Config $config
+     *
      * @return Composer|null
      */
     protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins)
@@ -370,9 +376,10 @@ class Factory
     }
 
     /**
-     * @param  IO\IOInterface             $io
-     * @param  Config                     $config
-     * @param  EventDispatcher            $eventDispatcher
+     * @param IO\IOInterface  $io
+     * @param Config          $config
+     * @param EventDispatcher $eventDispatcher
+     *
      * @return Downloader\DownloadManager
      */
     public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
@@ -425,15 +432,16 @@ class Factory
         }
 
         $am = new Archiver\ArchiveManager($dm);
-        $am->addArchiver(new Archiver\PharArchiver);
+        $am->addArchiver(new Archiver\PharArchiver());
 
         return $am;
     }
 
     /**
-     * @param  IOInterface          $io
-     * @param  Composer             $composer
-     * @param  Composer             $globalComposer
+     * @param IOInterface $io
+     * @param Composer    $composer
+     * @param Composer    $globalComposer
+     *
      * @return Plugin\PluginManager
      */
     protected function createPluginManager(IOInterface $io, Composer $composer, Composer $globalComposer = null)
@@ -476,10 +484,11 @@ class Factory
     }
 
     /**
-     * @param  IOInterface $io             IO instance
-     * @param  mixed       $config         either a configuration array or a filename to read from, if null it will read from
-     *                                     the default filename
-     * @param  bool        $disablePlugins Whether plugins should not be loaded
+     * @param IOInterface $io             IO instance
+     * @param mixed       $config         either a configuration array or a filename to read from, if null it will read from
+     *                                    the default filename
+     * @param bool        $disablePlugins Whether plugins should not be loaded
+     *
      * @return Composer
      */
     public static function create(IOInterface $io, $config = null, $disablePlugins = false)

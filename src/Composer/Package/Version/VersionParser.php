@@ -20,7 +20,7 @@ use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
- * Version parser
+ * Version parser.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -29,9 +29,10 @@ class VersionParser
     private static $modifierRegex = '[._-]?(?:(stable|beta|b|RC|alpha|a|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
 
     /**
-     * Returns the stability of a version
+     * Returns the stability of a version.
      *
-     * @param  string $version
+     * @param string $version
+     *
      * @return string
      */
     public static function parseStability($version)
@@ -84,11 +85,13 @@ class VersionParser
     }
 
     /**
-     * Normalizes a version string to be able to perform comparisons on it
+     * Normalizes a version string to be able to perform comparisons on it.
      *
-     * @param  string                    $version
-     * @param  string                    $fullVersion optional complete version string to give more context
+     * @param string $version
+     * @param string $fullVersion optional complete version string to give more context
+     *
      * @throws \UnexpectedValueException
+     *
      * @return string
      */
     public function normalize($version, $fullVersion = null)
@@ -171,24 +174,26 @@ class VersionParser
 
     /**
      * Extract numeric prefix from alias, if it is in numeric format, suitable for
-     * version comparison
+     * version comparison.
      *
      * @param string $branch Branch name (e.g. 2.1.x-dev)
+     *
      * @return string|false Numeric prefix if present (e.g. 2.1.) or false
      */
     public function parseNumericAliasPrefix($branch)
     {
         if (preg_match('/^(?P<version>(\d+\\.)*\d+)(?:\.x)?-dev$/i', $branch, $matches)) {
-            return $matches['version'].".";
+            return $matches['version'].'.';
         }
 
         return false;
     }
 
     /**
-     * Normalizes a branch name to be able to perform comparisons on it
+     * Normalizes a branch name to be able to perform comparisons on it.
      *
-     * @param  string $name
+     * @param string $name
+     *
      * @return string
      */
     public function normalizeBranch($name)
@@ -212,10 +217,11 @@ class VersionParser
     }
 
     /**
-     * @param  string $source        source package name
-     * @param  string $sourceVersion source package version (pretty version ideally)
-     * @param  string $description   link description (e.g. requires, replaces, ..)
-     * @param  array  $links         array of package name => constraint mappings
+     * @param string $source        source package name
+     * @param string $sourceVersion source package version (pretty version ideally)
+     * @param string $description   link description (e.g. requires, replaces, ..)
+     * @param array  $links         array of package name => constraint mappings
+     *
      * @return Link[]
      */
     public function parseLinks($source, $sourceVersion, $description, $links)
@@ -234,9 +240,10 @@ class VersionParser
     }
 
     /**
-     * Parses as constraint string into LinkConstraint objects
+     * Parses as constraint string into LinkConstraint objects.
      *
-     * @param  string                                                   $constraints
+     * @param string $constraints
+     *
      * @return \Composer\Package\LinkConstraint\LinkConstraintInterface
      */
     public function parseConstraints($constraints)
@@ -294,7 +301,7 @@ class VersionParser
         }
 
         if (preg_match('{^[xX*](\.[xX*])*$}i', $constraint)) {
-            return array(new EmptyConstraint);
+            return array(new EmptyConstraint());
         }
 
         $versionRegex = '(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex;
@@ -334,7 +341,7 @@ class VersionParser
             }
 
             if (!$stabilitySuffix) {
-                $stabilitySuffix = "-dev";
+                $stabilitySuffix = '-dev';
             }
             $lowVersion = $this->manipulateVersionString($matches, $position, 0) . $stabilitySuffix;
             $lowerBound = new VersionConstraint('>=', $lowVersion);
@@ -347,7 +354,7 @@ class VersionParser
 
             return array(
                 $lowerBound,
-                $upperBound
+                $upperBound,
             );
         }
 
@@ -378,7 +385,7 @@ class VersionParser
 
             return array(
                 $lowerBound,
-                $upperBound
+                $upperBound,
             );
         }
 
@@ -392,10 +399,10 @@ class VersionParser
                 $position = 1;
             }
 
-            $lowVersion = $this->manipulateVersionString($matches, $position) . "-dev";
-            $highVersion = $this->manipulateVersionString($matches, $position, 1) . "-dev";
+            $lowVersion = $this->manipulateVersionString($matches, $position) . '-dev';
+            $highVersion = $this->manipulateVersionString($matches, $position, 1) . '-dev';
 
-            if ($lowVersion === "0.0.0.0-dev") {
+            if ($lowVersion === '0.0.0.0-dev') {
                 return array(new VersionConstraint('<', $highVersion));
             }
 
@@ -427,7 +434,7 @@ class VersionParser
 
             return array(
                 $lowerBound,
-                $upperBound
+                $upperBound,
             );
         }
 
@@ -462,10 +469,11 @@ class VersionParser
      *
      * Support function for {@link parseConstraint()}
      *
-     * @param  array  $matches   Array with version parts in array indexes 1,2,3,4
-     * @param  int    $position  1,2,3,4 - which segment of the version to decrement
-     * @param  int    $increment
-     * @param  string $pad       The string to pad version parts after $position
+     * @param array  $matches   Array with version parts in array indexes 1,2,3,4
+     * @param int    $position  1,2,3,4 - which segment of the version to decrement
+     * @param int    $increment
+     * @param string $pad       The string to pad version parts after $position
+     *
      * @return string The new version
      */
     private function manipulateVersionString($matches, $position, $increment = 0, $pad = '0')
@@ -511,9 +519,10 @@ class VersionParser
     }
 
     /**
-     * Parses a name/version pairs and returns an array of pairs + the
+     * Parses a name/version pairs and returns an array of pairs + the.
      *
-     * @param  array   $pairs a set of package/version pairs separated by ":", "=" or " "
+     * @param array $pairs a set of package/version pairs separated by ":", "=" or " "
+     *
      * @return array[] array of arrays containing a name and (if provided) a version
      */
     public function parseNameVersionPairs(array $pairs)
@@ -529,7 +538,7 @@ class VersionParser
             }
 
             if (strpos($pair, ' ')) {
-                list($name, $version) = explode(" ", $pair, 2);
+                list($name, $version) = explode(' ', $pair, 2);
                 $result[] = array('name' => $name, 'version' => $version);
             } else {
                 $result[] = array('name' => $pair);

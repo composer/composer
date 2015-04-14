@@ -13,7 +13,7 @@
 namespace Composer\DependencyResolver;
 
 /**
- * Wrapper around a Rule which keeps track of the two literals it watches
+ * Wrapper around a Rule which keeps track of the two literals it watches.
  *
  * Used by RuleWatchGraph to store rules in two RuleWatchChains.
  *
@@ -42,7 +42,7 @@ class RuleWatchNode
     }
 
     /**
-     * Places the second watch on the rule's literal, decided at the highest level
+     * Places the second watch on the rule's literal, decided at the highest level.
      *
      * Useful for learned rules where the literal for the highest rule is most
      * likely to quickly lead to further decisions.
@@ -71,7 +71,7 @@ class RuleWatchNode
     }
 
     /**
-     * Returns the rule this node wraps
+     * Returns the rule this node wraps.
      *
      * @return Rule
      */
@@ -81,9 +81,10 @@ class RuleWatchNode
     }
 
     /**
-     * Given one watched literal, this method returns the other watched literal
+     * Given one watched literal, this method returns the other watched literal.
      *
      * @param int The watched literal that should not be returned
+     *
      * @return int A literal
      */
     public function getOtherWatch($literal)
@@ -96,7 +97,7 @@ class RuleWatchNode
     }
 
     /**
-     * Moves a watch from one literal to another
+     * Moves a watch from one literal to another.
      *
      * @param int $from The previously watched literal
      * @param int $to   The literal to be watched now

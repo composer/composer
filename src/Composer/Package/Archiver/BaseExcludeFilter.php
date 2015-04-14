@@ -39,7 +39,7 @@ abstract class BaseExcludeFilter
     }
 
     /**
-     * Checks the given path against all exclude patterns in this filter
+     * Checks the given path against all exclude patterns in this filter.
      *
      * Negated patterns overwrite exclude decisions of previous filters.
      *
@@ -68,7 +68,7 @@ abstract class BaseExcludeFilter
     }
 
     /**
-     * Processes a file containing exclude rules of different formats per line
+     * Processes a file containing exclude rules of different formats per line.
      *
      * @param array    $lines      A set of lines to be parsed
      * @param callback $lineParser The parser to be used on each line
@@ -97,7 +97,7 @@ abstract class BaseExcludeFilter
     }
 
     /**
-     * Generates a set of exclude patterns for filter() from gitignore rules
+     * Generates a set of exclude patterns for filter() from gitignore rules.
      *
      * @param array $rules A list of exclude rules in gitignore syntax
      *
@@ -114,7 +114,7 @@ abstract class BaseExcludeFilter
     }
 
     /**
-     * Generates an exclude pattern for filter() from a gitignore rule
+     * Generates an exclude pattern for filter() from a gitignore rule.
      *
      * @param string $rule An exclude rule in gitignore syntax
      *

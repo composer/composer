@@ -15,7 +15,7 @@ namespace Composer\Json;
 /**
  * Formats json strings used for php < 5.4 because the json_encode doesn't
  * supports the flags JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
- * in these versions
+ * in these versions.
  *
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -23,16 +23,16 @@ namespace Composer\Json;
 class JsonFormatter
 {
     /**
-     *
      * This code is based on the function found at:
-     *  http://recursive-design.com/blog/2008/03/11/format-json-with-php/
+     *  http://recursive-design.com/blog/2008/03/11/format-json-with-php/.
      *
      * Originally licensed under MIT by Dave Perrett <mail@recursive-design.com>
      *
      *
-     * @param  string $json
-     * @param  bool   $unescapeUnicode Un escape unicode
-     * @param  bool   $unescapeSlashes Un escape slashes
+     * @param string $json
+     * @param bool   $unescapeUnicode Un escape unicode
+     * @param bool   $unescapeSlashes Un escape slashes
+     *
      * @return string
      */
     public static function format($json, $unescapeUnicode, $unescapeSlashes)

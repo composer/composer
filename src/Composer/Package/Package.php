@@ -16,7 +16,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Util\ComposerMirror;
 
 /**
- * Core package definitions that are needed to resolve dependencies and install packages
+ * Core package definitions that are needed to resolve dependencies and install packages.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -349,7 +349,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the releaseDate
+     * Set the releaseDate.
      *
      * @param \DateTime $releaseDate
      */
@@ -367,7 +367,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the required packages
+     * Set the required packages.
      *
      * @param array $requires A set of package links
      */
@@ -385,7 +385,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the conflicting packages
+     * Set the conflicting packages.
      *
      * @param array $conflicts A set of package links
      */
@@ -403,7 +403,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the provided virtual packages
+     * Set the provided virtual packages.
      *
      * @param array $provides A set of package links
      */
@@ -421,7 +421,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the packages this one replaces
+     * Set the packages this one replaces.
      *
      * @param array $replaces A set of package links
      */
@@ -439,7 +439,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the recommended packages
+     * Set the recommended packages.
      *
      * @param array $devRequires A set of package links
      */
@@ -457,7 +457,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the suggested packages
+     * Set the suggested packages.
      *
      * @param array $suggests A set of package names/comments
      */
@@ -475,7 +475,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the autoload mapping
+     * Set the autoload mapping.
      *
      * @param array $autoload Mapping of autoloading rules
      */
@@ -493,7 +493,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the dev autoload mapping
+     * Set the dev autoload mapping.
      *
      * @param array $devAutoload Mapping of dev autoloading rules
      */
@@ -529,7 +529,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Sets the notification URL
+     * Sets the notification URL.
      *
      * @param string $notificationUrl
      */
@@ -547,7 +547,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Sets a list of patterns to be excluded from archives
+     * Sets a list of patterns to be excluded from archives.
      *
      * @param array $excludes
      */

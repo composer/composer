@@ -46,7 +46,8 @@ class DownloadManager
     /**
      * Makes downloader prefer source installation over the dist.
      *
-     * @param  bool            $preferSource prefer downloading from source
+     * @param bool $preferSource prefer downloading from source
+     *
      * @return DownloadManager
      */
     public function setPreferSource($preferSource)
@@ -59,7 +60,8 @@ class DownloadManager
     /**
      * Makes downloader prefer dist installation over the source.
      *
-     * @param  bool            $preferDist prefer downloading from dist
+     * @param bool $preferDist prefer downloading from dist
+     *
      * @return DownloadManager
      */
     public function setPreferDist($preferDist)
@@ -71,9 +73,10 @@ class DownloadManager
 
     /**
      * Sets whether to output download progress information for all registered
-     * downloaders
+     * downloaders.
      *
-     * @param  bool            $outputProgress
+     * @param bool $outputProgress
+     *
      * @return DownloadManager
      */
     public function setOutputProgress($outputProgress)
@@ -88,8 +91,9 @@ class DownloadManager
     /**
      * Sets installer downloader for a specific installation type.
      *
-     * @param  string              $type       installation type
-     * @param  DownloaderInterface $downloader downloader instance
+     * @param string              $type       installation type
+     * @param DownloaderInterface $downloader downloader instance
+     *
      * @return DownloadManager
      */
     public function setDownloader($type, DownloaderInterface $downloader)
@@ -103,7 +107,8 @@ class DownloadManager
     /**
      * Returns downloader for a specific installation type.
      *
-     * @param  string              $type installation type
+     * @param string $type installation type
+     *
      * @return DownloaderInterface
      *
      * @throws \InvalidArgumentException if downloader for provided type is not registered
@@ -121,7 +126,8 @@ class DownloadManager
     /**
      * Returns downloader for already installed package.
      *
-     * @param  PackageInterface         $package package instance
+     * @param PackageInterface $package package instance
+     *
      * @return DownloaderInterface|null
      *
      * @throws \InvalidArgumentException if package has no installation source specified

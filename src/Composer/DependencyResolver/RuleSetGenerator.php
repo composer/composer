@@ -36,18 +36,19 @@ class RuleSetGenerator
     }
 
     /**
-     * Creates a new rule for the requirements of a package
+     * Creates a new rule for the requirements of a package.
      *
      * This rule is of the form (-A|B|C), where B and C are the providers of
      * one requirement of the package A.
      *
-     * @param  PackageInterface $package    The package with a requirement
-     * @param  array            $providers  The providers of the requirement
-     * @param  int              $reason     A RULE_* constant describing the
-     *                                      reason for generating this rule
-     * @param  mixed            $reasonData Any data, e.g. the requirement name,
-     *                                      that goes with the reason
-     * @return Rule             The generated rule or null if tautological
+     * @param PackageInterface $package    The package with a requirement
+     * @param array            $providers  The providers of the requirement
+     * @param int              $reason     A RULE_* constant describing the
+     *                                     reason for generating this rule
+     * @param mixed            $reasonData Any data, e.g. the requirement name,
+     *                                     that goes with the reason
+     *
+     * @return Rule The generated rule or null if tautological
      */
     protected function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
     {
@@ -65,16 +66,17 @@ class RuleSetGenerator
     }
 
     /**
-     * Creates a rule to install at least one of a set of packages
+     * Creates a rule to install at least one of a set of packages.
      *
      * The rule is (A|B|C) with A, B and C different packages. If the given
      * set of packages is empty an impossible rule is generated.
      *
-     * @param  array $packages The set of packages to choose from
-     * @param  int   $reason   A RULE_* constant describing the reason for
-     *                         generating this rule
-     * @param  array $job      The job this rule was created from
-     * @return Rule  The generated rule
+     * @param array $packages The set of packages to choose from
+     * @param int   $reason   A RULE_* constant describing the reason for
+     *                        generating this rule
+     * @param array $job      The job this rule was created from
+     *
+     * @return Rule The generated rule
      */
     protected function createInstallOneOfRule(array $packages, $reason, $job)
     {
@@ -87,15 +89,16 @@ class RuleSetGenerator
     }
 
     /**
-     * Creates a rule to remove a package
+     * Creates a rule to remove a package.
      *
      * The rule for a package A is (-A).
      *
-     * @param  PackageInterface $package The package to be removed
-     * @param  int              $reason  A RULE_* constant describing the
-     *                                   reason for generating this rule
-     * @param  array            $job     The job this rule was created from
-     * @return Rule             The generated rule
+     * @param PackageInterface $package The package to be removed
+     * @param int              $reason  A RULE_* constant describing the
+     *                                  reason for generating this rule
+     * @param array            $job     The job this rule was created from
+     *
+     * @return Rule The generated rule
      */
     protected function createRemoveRule(PackageInterface $package, $reason, $job)
     {
@@ -103,18 +106,19 @@ class RuleSetGenerator
     }
 
     /**
-     * Creates a rule for two conflicting packages
+     * Creates a rule for two conflicting packages.
      *
      * The rule for conflicting packages A and B is (-A|-B). A is called the issuer
      * and B the provider.
      *
-     * @param  PackageInterface $issuer     The package declaring the conflict
-     * @param  PackageInterface $provider   The package causing the conflict
-     * @param  int              $reason     A RULE_* constant describing the
-     *                                      reason for generating this rule
-     * @param  mixed            $reasonData Any data, e.g. the package name, that
-     *                                      goes with the reason
-     * @return Rule             The generated rule
+     * @param PackageInterface $issuer     The package declaring the conflict
+     * @param PackageInterface $provider   The package causing the conflict
+     * @param int              $reason     A RULE_* constant describing the
+     *                                     reason for generating this rule
+     * @param mixed            $reasonData Any data, e.g. the package name, that
+     *                                     goes with the reason
+     *
+     * @return Rule The generated rule
      */
     protected function createConflictRule(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
     {
@@ -127,7 +131,7 @@ class RuleSetGenerator
     }
 
     /**
-     * Adds a rule unless it duplicates an existing one of any type
+     * Adds a rule unless it duplicates an existing one of any type.
      *
      * To be able to directly pass in the result of one of the rule creation
      * methods null is allowed which will not insert a rule.
@@ -146,7 +150,7 @@ class RuleSetGenerator
 
     protected function whitelistFromPackage(PackageInterface $package)
     {
-        $workQueue = new \SplQueue;
+        $workQueue = new \SplQueue();
         $workQueue->enqueue($package);
 
         while (!$workQueue->isEmpty()) {
@@ -181,7 +185,7 @@ class RuleSetGenerator
 
     protected function addRulesForPackage(PackageInterface $package, $ignorePlatformReqs)
     {
-        $workQueue = new \SplQueue;
+        $workQueue = new \SplQueue();
         $workQueue->enqueue($package);
 
         while (!$workQueue->isEmpty()) {
@@ -314,7 +318,7 @@ class RuleSetGenerator
     public function getRulesFor($jobs, $installedMap, $ignorePlatformReqs = false)
     {
         $this->jobs = $jobs;
-        $this->rules = new RuleSet;
+        $this->rules = new RuleSet();
         $this->installedMap = $installedMap;
 
         $this->whitelistedMap = array();

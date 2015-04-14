@@ -41,14 +41,14 @@ class PearPackageExtractor
     }
 
     /**
-     * Installs PEAR source files according to package.xml definitions and removes extracted files
+     * Installs PEAR source files according to package.xml definitions and removes extracted files.
      *
-     * @param  string                    $target target install location. all source installation would be performed relative to target path.
-     * @param  array                     $roles  types of files to install. default role for PEAR source files are 'php'.
-     * @param  array                     $vars   used for replacement tasks
+     * @param string $target target install location. all source installation would be performed relative to target path.
+     * @param array  $roles  types of files to install. default role for PEAR source files are 'php'.
+     * @param array  $vars   used for replacement tasks
+     *
      * @throws \RuntimeException
      * @throws \UnexpectedValueException
-     *
      */
     public function extractTo($target, array $roles = array('php' => '/', 'script' => '/bin'), $vars = array())
     {
@@ -71,7 +71,7 @@ class PearPackageExtractor
     }
 
     /**
-     * Perform copy actions on files
+     * Perform copy actions on files.
      *
      * @param array $files array of copy actions ('from', 'to') with relative paths
      * @param $source string path to source dir.
@@ -127,11 +127,13 @@ class PearPackageExtractor
     /**
      * Builds list of copy and list of remove actions that would transform extracted PEAR tarball into installed package.
      *
-     * @param  string            $source string path to extracted files
-     * @param  array             $roles  array [role => roleRoot] relative root for files having that role
-     * @param  array             $vars   list of values can be used for replacement tasks
-     * @return array             array of 'source' => 'target', where source is location of file in the tarball (relative to source
-     *                                  path, and target is destination of file (also relative to $source path)
+     * @param string $source string path to extracted files
+     * @param array  $roles  array [role => roleRoot] relative root for files having that role
+     * @param array  $vars   list of values can be used for replacement tasks
+     *
+     * @return array array of 'source' => 'target', where source is location of file in the tarball (relative to source
+     *               path, and target is destination of file (also relative to $source path)
+     *
      * @throws \RuntimeException
      */
     private function buildCopyActions($source, array $roles, $vars)

@@ -13,7 +13,7 @@
 namespace Composer\DependencyResolver;
 
 /**
- * Stores decisions on installing, removing or keeping packages
+ * Stores decisions on installing, removing or keeping packages.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -186,7 +186,7 @@ class Decisions implements \Iterator, \Countable
             $literalString = $this->pool->literalToString($literal);
             $package = $this->pool->literalToPackage($literal);
             throw new SolverBugException(
-                "Trying to decide $literalString on level $level, even though $package was previously decided as ".(int) $previousDecision."."
+                "Trying to decide $literalString on level $level, even though $package was previously decided as ".(int) $previousDecision.'.'
             );
         }
 

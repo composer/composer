@@ -77,7 +77,7 @@ interface IOInterface
      *
      * @param string|array $messages The message as an array of lines or a single string
      * @param bool         $newline  Whether to add a newline or not
-     * @param integer      $size     The size of line
+     * @param int          $size     The size of line
      */
     public function overwrite($messages, $newline = true, $size = null);
 
@@ -86,7 +86,7 @@ interface IOInterface
      *
      * @param string|array $messages The message as an array of lines or a single string
      * @param bool         $newline  Whether to add a newline or not
-     * @param integer      $size     The size of line
+     * @param int          $size     The size of line
      */
     public function overwriteError($messages, $newline = true, $size = null);
 
@@ -123,7 +123,7 @@ interface IOInterface
      *
      * @param string|array $question  The question to ask
      * @param callback     $validator A PHP callback
-     * @param bool|integer $attempts  Max number of times to ask before giving up (false by default, which means infinite)
+     * @param bool|int     $attempts  Max number of times to ask before giving up (false by default, which means infinite)
      * @param string       $default   The default answer if none is given by the user
      *
      * @return mixed
@@ -153,7 +153,7 @@ interface IOInterface
      *
      * @param string $repositoryName The unique name of repository
      *
-     * @return boolean
+     * @return bool
      */
     public function hasAuthentication($repositoryName);
 
@@ -176,7 +176,7 @@ interface IOInterface
     public function setAuthentication($repositoryName, $username, $password = null);
 
     /**
-     * Loads authentications from a config instance
+     * Loads authentications from a config instance.
      *
      * @param Config $config
      */

@@ -13,14 +13,14 @@
 namespace Composer\Util;
 
 /**
- * Convert PHP errors into exceptions
+ * Convert PHP errors into exceptions.
  *
  * @author Artem Lopata <biozshock@gmail.com>
  */
 class ErrorHandler
 {
     /**
-     * Error handler
+     * Error handler.
      *
      * @param int    $level   Level of the error raised
      * @param string $message Error message
@@ -28,6 +28,7 @@ class ErrorHandler
      * @param int    $line    Line number the error was raised at
      *
      * @static
+     *
      * @throws \ErrorException
      */
     public static function handle($level, $message, $file, $line)
@@ -46,7 +47,7 @@ class ErrorHandler
     }
 
     /**
-     * Register error handler
+     * Register error handler.
      *
      * @static
      */

@@ -46,7 +46,7 @@ class PackageRepository extends ArrayRepository
     {
         parent::initialize();
 
-        $loader = new ValidatingArrayLoader(new ArrayLoader, false);
+        $loader = new ValidatingArrayLoader(new ArrayLoader(), false);
         foreach ($this->config as $package) {
             try {
                 $package = $loader->load($package);

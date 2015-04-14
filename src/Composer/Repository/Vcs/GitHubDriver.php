@@ -35,7 +35,7 @@ class GitHubDriver extends VcsDriver
     protected $isPrivate = false;
 
     /**
-     * Git Driver
+     * Git Driver.
      *
      * @var GitDriver
      */
@@ -276,7 +276,7 @@ class GitHubDriver extends VcsDriver
     }
 
     /**
-     * Generate an SSH URL
+     * Generate an SSH URL.
      *
      * @return string
      */
@@ -393,7 +393,7 @@ class GitHubDriver extends VcsDriver
     }
 
     /**
-     * Fetch root identifier from GitHub
+     * Fetch root identifier from GitHub.
      *
      * @throws TransportException
      */

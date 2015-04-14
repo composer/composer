@@ -13,7 +13,7 @@
 namespace Composer\DependencyResolver;
 
 /**
- * The RuleWatchGraph efficiently propagates decisions to other rules
+ * The RuleWatchGraph efficiently propagates decisions to other rules.
  *
  * All rules generated for solving a SAT problem should be inserted into the
  * graph. When a decision on a literal is made, the graph can be used to
@@ -27,7 +27,7 @@ class RuleWatchGraph
     protected $watchChains = array();
 
     /**
-     * Inserts a rule node into the appropriate chains within the graph
+     * Inserts a rule node into the appropriate chains within the graph.
      *
      * The node is prepended to the watch chains for each of the two literals it
      * watches.
@@ -46,7 +46,7 @@ class RuleWatchGraph
 
         foreach (array($node->watch1, $node->watch2) as $literal) {
             if (!isset($this->watchChains[$literal])) {
-                $this->watchChains[$literal] = new RuleWatchChain;
+                $this->watchChains[$literal] = new RuleWatchChain();
             }
 
             $this->watchChains[$literal]->unshift($node);
@@ -54,7 +54,7 @@ class RuleWatchGraph
     }
 
     /**
-     * Propagates a decision on a literal to all rules watching the literal
+     * Propagates a decision on a literal to all rules watching the literal.
      *
      * If a decision, e.g. +A has been made, then all rules containing -A, e.g.
      * (-A|+B|+C) now need to satisfy at least one of the other literals, so
@@ -69,11 +69,12 @@ class RuleWatchGraph
      * above example the rule was (-A|+B), then A turning true means that
      * B must now be decided true as well.
      *
-     * @param  int       $decidedLiteral The literal which was decided (A in our example)
-     * @param  int       $level          The level at which the decision took place and at which
-     *                                   all resulting decisions should be made.
-     * @param  Decisions $decisions      Used to check previous decisions and to
-     *                                   register decisions resulting from propagation
+     * @param int       $decidedLiteral The literal which was decided (A in our example)
+     * @param int       $level          The level at which the decision took place and at which
+     *                                  all resulting decisions should be made.
+     * @param Decisions $decisions      Used to check previous decisions and to
+     *                                  register decisions resulting from propagation
+     *
      * @return Rule|null If a conflict is found the conflicting rule is returned
      */
     public function propagateLiteral($decidedLiteral, $level, $decisions)
@@ -123,7 +124,7 @@ class RuleWatchGraph
     }
 
     /**
-     * Moves a rule node from one watch chain to another
+     * Moves a rule node from one watch chain to another.
      *
      * The rule node's watched literals are updated accordingly.
      *
@@ -134,7 +135,7 @@ class RuleWatchGraph
     protected function moveWatch($fromLiteral, $toLiteral, $node)
     {
         if (!isset($this->watchChains[$toLiteral])) {
-            $this->watchChains[$toLiteral] = new RuleWatchChain;
+            $this->watchChains[$toLiteral] = new RuleWatchChain();
         }
 
         $node->moveWatch($fromLiteral, $toLiteral);

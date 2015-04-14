@@ -31,6 +31,7 @@ class Rule
 
     /**
      * READ-ONLY: The literals this rule consists of.
+     *
      * @var array
      */
     public $literals;
@@ -105,11 +106,12 @@ class Rule
     }
 
     /**
-     * Checks if this rule is equal to another one
+     * Checks if this rule is equal to another one.
      *
      * Ignores whether either of the rules is disabled.
      *
-     * @param  Rule $rule The rule to check against
+     * @param Rule $rule The rule to check against
+     *
      * @return bool Whether the rules are equal
      */
     public function equals(Rule $rule)
@@ -277,7 +279,7 @@ class Rule
     }
 
     /**
-     * Formats a rule as a string of the format (Literal1|Literal2|...)
+     * Formats a rule as a string of the format (Literal1|Literal2|...).
      *
      * @return string
      */

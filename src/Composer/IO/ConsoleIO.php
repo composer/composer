@@ -110,8 +110,8 @@ class ConsoleIO extends BaseIO
 
     /**
      * @param array $messages
-     * @param boolean $newline
-     * @param boolean $stderr
+     * @param bool  $newline
+     * @param bool  $stderr
      */
     private function doWrite($messages, $newline, $stderr)
     {
@@ -125,12 +125,13 @@ class ConsoleIO extends BaseIO
 
         if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
             $this->output->getErrorOutput()->write($messages, $newline);
-            $this->lastMessageErr = join($newline ? "\n" : '', (array) $messages);
+            $this->lastMessageErr = implode($newline ? "\n" : '', (array) $messages);
+
             return;
         }
 
         $this->output->write($messages, $newline);
-        $this->lastMessage = join($newline ? "\n" : '', (array) $messages);
+        $this->lastMessage = implode($newline ? "\n" : '', (array) $messages);
     }
 
     /**
@@ -151,9 +152,9 @@ class ConsoleIO extends BaseIO
 
     /**
      * @param array $messages
-     * @param boolean $newline
-     * @param integer $size
-     * @param boolean $stderr
+     * @param bool  $newline
+     * @param int   $size
+     * @param bool  $stderr
      */
     private function doOverwrite($messages, $newline, $size, $stderr)
     {
@@ -164,7 +165,7 @@ class ConsoleIO extends BaseIO
         }
 
         // messages can be an array, let's convert it to string anyway
-        $messages = join($newline ? "\n" : '', (array) $messages);
+        $messages = implode($newline ? "\n" : '', (array) $messages);
 
         // since overwrite is supposed to overwrite last message...
         if (!isset($size)) {

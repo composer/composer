@@ -100,10 +100,11 @@ EOT
     }
 
     /**
-     * finds a package by name
+     * finds a package by name.
      *
-     * @param  RepositoryInterface      $repos
-     * @param  string                   $name
+     * @param RepositoryInterface $repos
+     * @param string              $name
+     *
      * @return CompletePackageInterface
      */
     protected function getPackage(RepositoryInterface $repos, $name)
@@ -125,7 +126,7 @@ EOT
     }
 
     /**
-     * opens a url in your system default browser
+     * opens a url in your system default browser.
      *
      * @param string $url
      */
@@ -150,7 +151,7 @@ EOT
     }
 
     /**
-     * Initializes repositories
+     * Initializes repositories.
      *
      * Returns an array of repos in order they should be checked in
      *
@@ -163,7 +164,7 @@ EOT
         if ($composer) {
             return array(
                 $composer->getRepositoryManager()->getLocalRepository(),
-                new CompositeRepository($composer->getRepositoryManager()->getRepositories())
+                new CompositeRepository($composer->getRepositoryManager()->getRepositories()),
             );
         }
 

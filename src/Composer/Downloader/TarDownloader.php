@@ -13,7 +13,7 @@
 namespace Composer\Downloader;
 
 /**
- * Downloader for tar files: tar, tar.gz or tar.bz2
+ * Downloader for tar files: tar, tar.gz or tar.bz2.
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */

@@ -15,7 +15,7 @@ namespace Composer\Package\Archiver;
 use Symfony\Component\Finder;
 
 /**
- * An exclude filter that processes hgignore files
+ * An exclude filter that processes hgignore files.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -25,13 +25,14 @@ class HgExcludeFilter extends BaseExcludeFilter
     const HG_IGNORE_GLOB = 2;
 
     /**
-     * Either HG_IGNORE_REGEX or HG_IGNORE_GLOB
-     * @var integer
+     * Either HG_IGNORE_REGEX or HG_IGNORE_GLOB.
+     *
+     * @var int
      */
     protected $patternMode;
 
     /**
-     * Parses .hgignore file if it exist
+     * Parses .hgignore file if it exist.
      *
      * @param string $sourcePath
      */
@@ -50,7 +51,7 @@ class HgExcludeFilter extends BaseExcludeFilter
     }
 
     /**
-     * Callback line parser which process hgignore lines
+     * Callback line parser which process hgignore lines.
      *
      * @param string $line A line from .hgignore
      *
@@ -76,7 +77,7 @@ class HgExcludeFilter extends BaseExcludeFilter
     }
 
     /**
-     * Generates an exclude pattern for filter() from a hg glob expression
+     * Generates an exclude pattern for filter() from a hg glob expression.
      *
      * @param string $line A line from .hgignore in glob mode
      *
@@ -91,7 +92,7 @@ class HgExcludeFilter extends BaseExcludeFilter
     }
 
     /**
-     * Generates an exclude pattern for filter() from a hg regexp expression
+     * Generates an exclude pattern for filter() from a hg regexp expression.
      *
      * @param string $line A line from .hgignore in regexp mode
      *

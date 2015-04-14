@@ -16,21 +16,21 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 
 /**
- * Plugin interface
+ * Plugin interface.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
 interface PluginInterface
 {
     /**
-     * Version number of the fake composer-plugin-api package
+     * Version number of the fake composer-plugin-api package.
      *
      * @var string
      */
     const PLUGIN_API_VERSION = '1.0.0';
 
     /**
-     * Apply plugin modifications to composer
+     * Apply plugin modifications to composer.
      *
      * @param Composer    $composer
      * @param IOInterface $io

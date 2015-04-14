@@ -16,7 +16,7 @@ use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 
 /**
- * JSON Configuration Source
+ * JSON Configuration Source.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Beau Simensen <beau@dflydev.com>
@@ -34,7 +34,7 @@ class JsonConfigSource implements ConfigSourceInterface
     private $authConfig;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param JsonFile $file
      * @param bool     $authConfig
@@ -180,8 +180,9 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * Prepend a reference to an element to the beginning of an array.
      *
-     * @param  array $array
-     * @param  mixed $value
+     * @param array $array
+     * @param mixed $value
+     *
      * @return array
      */
     private function arrayUnshiftRef(&$array, &$value)

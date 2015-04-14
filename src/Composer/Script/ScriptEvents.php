@@ -105,7 +105,7 @@ class ScriptEvents
 
     /**
      * The POST_CREATE_PROJECT event occurs after the create-project command has been executed.
-     * Note: Event occurs after POST_INSTALL_CMD
+     * Note: Event occurs after POST_INSTALL_CMD.
      *
      * The event listener method receives a Composer\Script\PackageEvent instance.
      *
@@ -137,6 +137,7 @@ class ScriptEvents
      * The event listener method receives a Composer\Script\PackageEvent instance.
      *
      * @deprecated Use Composer\Installer\PackageEvents::PRE_PACKAGE_INSTALL instead.
+     *
      * @var string
      */
     const PRE_PACKAGE_INSTALL = 'pre-package-install';
@@ -147,6 +148,7 @@ class ScriptEvents
      * The event listener method receives a Composer\Script\PackageEvent instance.
      *
      * @deprecated Use Composer\Installer\PackageEvents::POST_PACKAGE_INSTALL instead.
+     *
      * @var string
      */
     const POST_PACKAGE_INSTALL = 'post-package-install';
@@ -157,6 +159,7 @@ class ScriptEvents
      * The event listener method receives a Composer\Script\PackageEvent instance.
      *
      * @deprecated Use Composer\Installer\PackageEvents::PRE_PACKAGE_UPDATE instead.
+     *
      * @var string
      */
     const PRE_PACKAGE_UPDATE = 'pre-package-update';
@@ -167,6 +170,7 @@ class ScriptEvents
      * The event listener method receives a Composer\Script\PackageEvent instance.
      *
      * @deprecated Use Composer\Installer\PackageEvents::POST_PACKAGE_UPDATE instead.
+     *
      * @var string
      */
     const POST_PACKAGE_UPDATE = 'post-package-update';
@@ -177,6 +181,7 @@ class ScriptEvents
      * The event listener method receives a Composer\Script\PackageEvent instance.
      *
      * @deprecated Use Composer\Installer\PackageEvents::PRE_PACKAGE_UNINSTALL instead.
+     *
      * @var string
      */
     const PRE_PACKAGE_UNINSTALL = 'pre-package-uninstall';
@@ -187,6 +192,7 @@ class ScriptEvents
      * The event listener method receives a Composer\Script\PackageEvent instance.
      *
      * @deprecated Use Composer\Installer\PackageEvents::POST_PACKAGE_UNINSTALL instead.
+     *
      * @var string
      */
     const POST_PACKAGE_UNINSTALL = 'post-package-uninstall';

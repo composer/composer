@@ -90,7 +90,7 @@ EOT
         $repos = $composer->getRepositoryManager()->getRepositories();
 
         $this->repos = new CompositeRepository(array_merge(
-            array(new PlatformRepository),
+            array(new PlatformRepository()),
             $repos
         ));
 

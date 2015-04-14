@@ -22,13 +22,15 @@ use Composer\Package\PackageInterface;
 class CompositeRepository implements RepositoryInterface
 {
     /**
-     * List of repositories
+     * List of repositories.
+     *
      * @var array
      */
     private $repositories;
 
     /**
-     * Constructor
+     * Constructor.
+     *
      * @param array $repositories
      */
     public function __construct(array $repositories)
@@ -40,7 +42,7 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
-     * Returns all the wrapped repositories
+     * Returns all the wrapped repositories.
      *
      * @return array
      */
@@ -163,6 +165,7 @@ class CompositeRepository implements RepositoryInterface
 
     /**
      * Add a repository.
+     *
      * @param RepositoryInterface $repository
      */
     public function addRepository(RepositoryInterface $repository)

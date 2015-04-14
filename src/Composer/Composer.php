@@ -78,8 +78,7 @@ class Composer
     private $autoloadGenerator;
 
     /**
-     * @param  Package\RootPackageInterface $package
-     * @return void
+     * @param Package\RootPackageInterface $package
      */
     public function setPackage(RootPackageInterface $package)
     {

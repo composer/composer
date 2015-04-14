@@ -63,10 +63,11 @@ interface RepositoryInterface extends \Countable
     public function getPackages();
 
     /**
-     * Searches the repository for packages containing the query
+     * Searches the repository for packages containing the query.
      *
-     * @param  string  $query search query
-     * @param  int     $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only
+     * @param string $query search query
+     * @param int    $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only
+     *
      * @return array[] an array of array('name' => '...', 'description' => '...')
      */
     public function search($query, $mode = 0);

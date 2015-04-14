@@ -39,7 +39,7 @@ class DebugSolver extends Solver
     {
         echo "DecisionQueue: \n";
         foreach ($this->decisionQueue as $i => $literal) {
-            echo '    ' . $this->pool->literalToString($literal) . ' ' . $this->decisionQueueWhy[$i]." level ".$this->decisionMap[abs($literal)]."\n";
+            echo '    ' . $this->pool->literalToString($literal) . ' ' . $this->decisionQueueWhy[$i].' level '.$this->decisionMap[abs($literal)]."\n";
         }
         echo "\n";
     }
@@ -57,17 +57,17 @@ class DebugSolver extends Solver
                 echo $indent.$watch;
 
                 if ($watch) {
-                    echo ' [id='.$watch->getId().',watch1='.$this->literalFromId($watch->watch1).',watch2='.$this->literalFromId($watch->watch2)."]";
+                    echo ' [id='.$watch->getId().',watch1='.$this->literalFromId($watch->watch1).',watch2='.$this->literalFromId($watch->watch2).']';
                 }
 
                 echo "\n";
 
                 if ($watch && ($watch->next1 == $watch || $watch->next2 == $watch)) {
                     if ($watch->next1 == $watch) {
-                        echo $indent."    1 *RECURSION*";
+                        echo $indent.'    1 *RECURSION*';
                     }
                     if ($watch->next2 == $watch) {
-                        echo $indent."    2 *RECURSION*";
+                        echo $indent.'    2 *RECURSION*';
                     }
                 } elseif ($watch && ($watch->next1 || $watch->next2)) {
                     $indent = str_replace(array('1', '2'), ' ', $indent);

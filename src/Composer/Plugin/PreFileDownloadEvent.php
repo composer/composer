@@ -47,7 +47,7 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Returns the remote filesystem
+     * Returns the remote filesystem.
      *
      * @return RemoteFilesystem
      */
@@ -57,7 +57,7 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Sets the remote filesystem
+     * Sets the remote filesystem.
      *
      * @param RemoteFilesystem $rfs
      */
@@ -67,7 +67,7 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Retrieves the processed URL this remote filesystem will be used for
+     * Retrieves the processed URL this remote filesystem will be used for.
      *
      * @return string
      */

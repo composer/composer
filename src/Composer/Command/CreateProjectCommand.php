@@ -239,7 +239,7 @@ EOT
     {
         if (null === $repositoryUrl) {
             $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
-        } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION) && file_exists($repositoryUrl)) {
+        } elseif ('json' === pathinfo($repositoryUrl, PATHINFO_EXTENSION) && file_exists($repositoryUrl)) {
             $json = new JsonFile($repositoryUrl, new RemoteFilesystem($io, $config));
             $data = $json->read();
             if (!empty($data['packages']) || !empty($data['includes']) || !empty($data['provider-includes'])) {
@@ -250,7 +250,7 @@ EOT
         } elseif (0 === strpos($repositoryUrl, 'http')) {
             $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl), $io, $config);
         } else {
-            throw new \InvalidArgumentException("Invalid repository url given. Has to be a .json file or an http url.");
+            throw new \InvalidArgumentException('Invalid repository url given. Has to be a .json file or an http url.');
         }
 
         $parser = new VersionParser();
@@ -286,7 +286,7 @@ EOT
         }
 
         if (null === $directory) {
-            $parts = explode("/", $name, 2);
+            $parts = explode('/', $name, 2);
             $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
@@ -335,11 +335,12 @@ EOT
     }
 
     /**
-     * Updated preferSource or preferDist based on the preferredInstall config option
+     * Updated preferSource or preferDist based on the preferredInstall config option.
+     *
      * @param Config         $config
      * @param InputInterface $input
-     * @param boolean        $preferSource
-     * @param boolean        $preferDist
+     * @param bool           $preferSource
+     * @param bool           $preferDist
      */
     protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist)
     {

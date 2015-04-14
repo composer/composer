@@ -15,28 +15,28 @@ namespace Composer\Package;
 use Composer\Repository\RepositoryInterface;
 
 /**
- * Defines the essential information a package has that is used during solving/installation
+ * Defines the essential information a package has that is used during solving/installation.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 interface PackageInterface
 {
     /**
-     * Returns the package's name without version info, thus not a unique identifier
+     * Returns the package's name without version info, thus not a unique identifier.
      *
      * @return string package name
      */
     public function getName();
 
     /**
-     * Returns the package's pretty (i.e. with proper case) name
+     * Returns the package's pretty (i.e. with proper case) name.
      *
      * @return string package name
      */
     public function getPrettyName();
 
     /**
-     * Returns a set of names that could refer to this package
+     * Returns a set of names that could refer to this package.
      *
      * No version or release type information should be included in any of the
      * names. Provided or replaced package names need to be returned as well.
@@ -53,35 +53,35 @@ interface PackageInterface
     public function setId($id);
 
     /**
-     * Retrieves the package's id set through setId
+     * Retrieves the package's id set through setId.
      *
      * @return int The previously set package id
      */
     public function getId();
 
     /**
-     * Returns whether the package is a development virtual package or a concrete one
+     * Returns whether the package is a development virtual package or a concrete one.
      *
      * @return bool
      */
     public function isDev();
 
     /**
-     * Returns the package type, e.g. library
+     * Returns the package type, e.g. library.
      *
      * @return string The package type
      */
     public function getType();
 
     /**
-     * Returns the package targetDir property
+     * Returns the package targetDir property.
      *
      * @return string The package targetDir
      */
     public function getTargetDir();
 
     /**
-     * Returns the package extra data
+     * Returns the package extra data.
      *
      * @return array The package extra data
      */
@@ -102,105 +102,105 @@ interface PackageInterface
     public function getInstallationSource();
 
     /**
-     * Returns the repository type of this package, e.g. git, svn
+     * Returns the repository type of this package, e.g. git, svn.
      *
      * @return string The repository type
      */
     public function getSourceType();
 
     /**
-     * Returns the repository url of this package, e.g. git://github.com/naderman/composer.git
+     * Returns the repository url of this package, e.g. git://github.com/naderman/composer.git.
      *
      * @return string The repository url
      */
     public function getSourceUrl();
 
     /**
-     * Returns the repository urls of this package including mirrors, e.g. git://github.com/naderman/composer.git
+     * Returns the repository urls of this package including mirrors, e.g. git://github.com/naderman/composer.git.
      *
      * @return array
      */
     public function getSourceUrls();
 
     /**
-     * Returns the repository reference of this package, e.g. master, 1.0.0 or a commit hash for git
+     * Returns the repository reference of this package, e.g. master, 1.0.0 or a commit hash for git.
      *
      * @return string The repository reference
      */
     public function getSourceReference();
 
     /**
-     * Returns the source mirrors of this package
+     * Returns the source mirrors of this package.
      *
      * @return array|null
      */
     public function getSourceMirrors();
 
     /**
-     * Returns the type of the distribution archive of this version, e.g. zip, tarball
+     * Returns the type of the distribution archive of this version, e.g. zip, tarball.
      *
      * @return string The repository type
      */
     public function getDistType();
 
     /**
-     * Returns the url of the distribution archive of this version
+     * Returns the url of the distribution archive of this version.
      *
      * @return string
      */
     public function getDistUrl();
 
     /**
-     * Returns the urls of the distribution archive of this version, including mirrors
+     * Returns the urls of the distribution archive of this version, including mirrors.
      *
      * @return array
      */
     public function getDistUrls();
 
     /**
-     * Returns the reference of the distribution archive of this version, e.g. master, 1.0.0 or a commit hash for git
+     * Returns the reference of the distribution archive of this version, e.g. master, 1.0.0 or a commit hash for git.
      *
      * @return string
      */
     public function getDistReference();
 
     /**
-     * Returns the sha1 checksum for the distribution archive of this version
+     * Returns the sha1 checksum for the distribution archive of this version.
      *
      * @return string
      */
     public function getDistSha1Checksum();
 
     /**
-     * Returns the dist mirrors of this package
+     * Returns the dist mirrors of this package.
      *
      * @return array|null
      */
     public function getDistMirrors();
 
     /**
-     * Returns the version of this package
+     * Returns the version of this package.
      *
      * @return string version
      */
     public function getVersion();
 
     /**
-     * Returns the pretty (i.e. non-normalized) version string of this package
+     * Returns the pretty (i.e. non-normalized) version string of this package.
      *
      * @return string version
      */
     public function getPrettyVersion();
 
     /**
-     * Returns the release date of the package
+     * Returns the release date of the package.
      *
      * @return \DateTime
      */
     public function getReleaseDate();
 
     /**
-     * Returns the stability of this package: one of (dev, alpha, beta, RC, stable)
+     * Returns the stability of this package: one of (dev, alpha, beta, RC, stable).
      *
      * @return string
      */
@@ -208,7 +208,7 @@ interface PackageInterface
 
     /**
      * Returns a set of links to packages which need to be installed before
-     * this package can be installed
+     * this package can be installed.
      *
      * @return array An array of package links defining required packages
      */
@@ -216,7 +216,7 @@ interface PackageInterface
 
     /**
      * Returns a set of links to packages which must not be installed at the
-     * same time as this package
+     * same time as this package.
      *
      * @return array An array of package links defining conflicting packages
      */
@@ -224,7 +224,7 @@ interface PackageInterface
 
     /**
      * Returns a set of links to virtual packages that are provided through
-     * this package
+     * this package.
      *
      * @return array An array of package links defining provided packages
      */
@@ -232,7 +232,7 @@ interface PackageInterface
 
     /**
      * Returns a set of links to packages which can alternatively be
-     * satisfied by installing this package
+     * satisfied by installing this package.
      *
      * @return array An array of package links defining replaced packages
      */
@@ -255,7 +255,7 @@ interface PackageInterface
     public function getSuggests();
 
     /**
-     * Returns an associative array of autoloading rules
+     * Returns an associative array of autoloading rules.
      *
      * {"<type>": {"<namespace": "<directory>"}}
      *
@@ -267,7 +267,7 @@ interface PackageInterface
     public function getAutoload();
 
     /**
-     * Returns an associative array of dev autoloading rules
+     * Returns an associative array of dev autoloading rules.
      *
      * {"<type>": {"<namespace": "<directory>"}}
      *
@@ -287,21 +287,21 @@ interface PackageInterface
     public function getIncludePaths();
 
     /**
-     * Stores a reference to the repository that owns the package
+     * Stores a reference to the repository that owns the package.
      *
      * @param RepositoryInterface $repository
      */
     public function setRepository(RepositoryInterface $repository);
 
     /**
-     * Returns a reference to the repository that owns the package
+     * Returns a reference to the repository that owns the package.
      *
      * @return RepositoryInterface
      */
     public function getRepository();
 
     /**
-     * Returns the package binaries
+     * Returns the package binaries.
      *
      * @return array
      */
@@ -315,35 +315,35 @@ interface PackageInterface
     public function getUniqueName();
 
     /**
-     * Returns the package notification url
+     * Returns the package notification url.
      *
      * @return string
      */
     public function getNotificationUrl();
 
     /**
-     * Converts the package into a readable and unique string
+     * Converts the package into a readable and unique string.
      *
      * @return string
      */
     public function __toString();
 
     /**
-     * Converts the package into a pretty readable string
+     * Converts the package into a pretty readable string.
      *
      * @return string
      */
     public function getPrettyString();
 
     /**
-     * Returns a list of patterns to exclude from package archives
+     * Returns a list of patterns to exclude from package archives.
      *
      * @return array
      */
     public function getArchiveExcludes();
 
     /**
-     * Returns a list of options to download package dist files
+     * Returns a list of options to download package dist files.
      *
      * @return array
      */

@@ -20,7 +20,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * ValidateCommand
+ * ValidateCommand.
  *
  * @author Robert Schönthal <seroscho@googlemail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -28,7 +28,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ValidateCommand extends Command
 {
     /**
-     * configure
+     * configure.
      */
     protected function configure()
     {
@@ -38,7 +38,7 @@ class ValidateCommand extends Command
             ->setDefinition(array(
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not make a complete validation'),
                 new InputOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors'),
-                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
+                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json'),
             ))
             ->setHelp(<<<EOT
 The validate command validates a given composer.json

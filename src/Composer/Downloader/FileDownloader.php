@@ -24,7 +24,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
 
 /**
- * Base downloader for files
+ * Base downloader for files.
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -81,7 +81,7 @@ class FileDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('The given package is missing url information');
         }
 
-        $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+        $this->io->writeError('  - Installing <info>' . $package->getName() . '</info> (<comment>' . VersionParser::formatVersion($package) . '</comment>)');
 
         $urls = $package->getDistUrls();
         while ($url = array_shift($urls)) {
@@ -138,7 +138,7 @@ class FileDownloader implements DownloaderInterface
                         break;
                     } catch (TransportException $e) {
                         // if we got an http response with a proper code, then requesting again will probably not help, abort
-                        if ((0 !== $e->getCode() && !in_array($e->getCode(),array(500, 502, 503, 504))) || !$retries) {
+                        if ((0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
                             throw $e;
                         }
                         if ($this->io->isVerbose()) {
@@ -205,18 +205,19 @@ class FileDownloader implements DownloaderInterface
      */
     public function remove(PackageInterface $package, $path)
     {
-        $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+        $this->io->writeError('  - Removing <info>' . $package->getName() . '</info> (<comment>' . VersionParser::formatVersion($package) . '</comment>)');
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
         }
     }
 
     /**
-     * Gets file name for specific package
+     * Gets file name for specific package.
      *
-     * @param  PackageInterface $package package instance
-     * @param  string           $path    download path
-     * @return string           file name
+     * @param PackageInterface $package package instance
+     * @param string           $path    download path
+     *
+     * @return string file name
      */
     protected function getFileName(PackageInterface $package, $path)
     {
@@ -224,11 +225,12 @@ class FileDownloader implements DownloaderInterface
     }
 
     /**
-     * Process the download url
+     * Process the download url.
      *
-     * @param  PackageInterface $package package the url is coming from
-     * @param  string           $url     download url
-     * @return string           url
+     * @param PackageInterface $package package the url is coming from
+     * @param string           $url     download url
+     *
+     * @return string url
      *
      * @throws \RuntimeException If any problem with the url
      */

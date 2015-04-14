@@ -34,7 +34,7 @@ interface OperationInterface
     public function getReason();
 
     /**
-     * Serializes the operation in a human readable format
+     * Serializes the operation in a human readable format.
      *
      * @return string
      */

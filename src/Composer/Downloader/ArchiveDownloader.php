@@ -16,7 +16,7 @@ use Composer\Package\PackageInterface;
 use Symfony\Component\Finder\Finder;
 
 /**
- * Base downloader for archives
+ * Base downloader for archives.
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -125,7 +125,7 @@ abstract class ArchiveDownloader extends FileDownloader
     }
 
     /**
-     * Extract file to directory
+     * Extract file to directory.
      *
      * @param string $file Extracted file
      * @param string $path Directory
@@ -135,9 +135,10 @@ abstract class ArchiveDownloader extends FileDownloader
     abstract protected function extract($file, $path);
 
     /**
-     * Returns the folder content, excluding dotfiles
+     * Returns the folder content, excluding dotfiles.
      *
-     * @param  string         $dir Directory
+     * @param string $dir Directory
+     *
      * @return \SplFileInfo[]
      */
     private function getFolderContent($dir)

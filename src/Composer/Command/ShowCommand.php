@@ -65,10 +65,10 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->versionParser = new VersionParser;
+        $this->versionParser = new VersionParser();
 
         // init repos
-        $platformRepo = new PlatformRepository;
+        $platformRepo = new PlatformRepository();
 
         $composer = $this->getComposer(false);
         if ($input->getOption('self')) {
@@ -233,13 +233,15 @@ EOT
     }
 
     /**
-     * finds a package by name and version if provided
+     * finds a package by name and version if provided.
      *
-     * @param  RepositoryInterface       $installedRepo
-     * @param  RepositoryInterface       $repos
-     * @param  string                    $name
-     * @param  string                    $version
-     * @return array                     array(CompletePackageInterface, array of versions)
+     * @param RepositoryInterface $installedRepo
+     * @param RepositoryInterface $repos
+     * @param string              $name
+     * @param string              $version
+     *
+     * @return array array(CompletePackageInterface, array of versions)
+     *
      * @throws \InvalidArgumentException
      */
     protected function getPackage(RepositoryInterface $installedRepo, RepositoryInterface $repos, $name, $version = null)
@@ -282,13 +284,13 @@ EOT
     }
 
     /**
-     * prints package meta data
+     * prints package meta data.
      */
     protected function printMeta(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo)
     {
         $this->getIO()->write('<info>name</info>     : ' . $package->getPrettyName());
         $this->getIO()->write('<info>descrip.</info> : ' . $package->getDescription());
-        $this->getIO()->write('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
+        $this->getIO()->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: array()));
         $this->printVersions($package, $versions, $installedRepo);
         $this->getIO()->write('<info>type</info>     : ' . $package->getType());
         $this->printLicenses($package);
@@ -338,7 +340,7 @@ EOT
     }
 
     /**
-     * prints all available versions of this package and highlights the installed one if any
+     * prints all available versions of this package and highlights the installed one if any.
      */
     protected function printVersions(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo)
     {
@@ -360,7 +362,7 @@ EOT
     }
 
     /**
-     * print link objects
+     * print link objects.
      *
      * @param CompletePackageInterface $package
      * @param string                   $linkType
@@ -370,7 +372,7 @@ EOT
     {
         $title = $title ?: $linkType;
         if ($links = $package->{'get'.ucfirst($linkType)}()) {
-            $this->getIO()->write("\n<info>" . $title . "</info>");
+            $this->getIO()->write("\n<info>" . $title . '</info>');
 
             foreach ($links as $link) {
                 $this->getIO()->write($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
@@ -379,21 +381,21 @@ EOT
     }
 
     /**
-     * Prints the licenses of a package with metadata
+     * Prints the licenses of a package with metadata.
      *
      * @param CompletePackageInterface $package
      */
     protected function printLicenses(CompletePackageInterface $package)
     {
-        $spdxLicense = new SpdxLicense;
+        $spdxLicense = new SpdxLicense();
 
         $licenses = $package->getLicense();
 
-        foreach($licenses as $licenseId) {
+        foreach ($licenses as $licenseId) {
             $license = $spdxLicense->getLicenseByIdentifier($licenseId); // keys: 0 fullname, 1 osi, 2 url
 
             // is license OSI approved?
-            if($license[1] === true) {
+            if ($license[1] === true) {
                 $out = sprintf('%s (%s) (OSI approved) %s', $license[0], $licenseId, $license[2]);
             } else {
                 $out = sprintf('%s (%s) %s', $license[0], $licenseId, $license[2]);

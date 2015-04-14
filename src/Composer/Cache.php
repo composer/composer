@@ -17,7 +17,7 @@ use Composer\Util\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 /**
- * Reads/writes to a filesystem cache
+ * Reads/writes to a filesystem cache.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -111,7 +111,7 @@ class Cache
     }
 
     /**
-     * Copy a file into the cache
+     * Copy a file into the cache.
      */
     public function copyFrom($file, $source)
     {
@@ -130,7 +130,7 @@ class Cache
     }
 
     /**
-     * Copy a file out of the cache
+     * Copy a file out of the cache.
      */
     public function copyTo($file, $target)
     {

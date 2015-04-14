@@ -18,7 +18,7 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 
 /**
- * Selects the best possible version for a package
+ * Selects the best possible version for a package.
  *
  * @author Ryan Weaver <ryan@knpuniversity.com>
  */
@@ -37,8 +37,9 @@ class VersionSelector
      * Given a package name and optional version, returns the latest PackageInterface
      * that matches.
      *
-     * @param  string                $packageName
-     * @param  string                $targetPackageVersion
+     * @param string $packageName
+     * @param string $targetPackageVersion
+     *
      * @return PackageInterface|bool
      */
     public function findBestCandidate($packageName, $targetPackageVersion = null)
@@ -73,7 +74,8 @@ class VersionSelector
      *  * dev-master    -> ~2.1@dev      (dev version with alias)
      *  * dev-master    -> dev-master    (dev versions are untouched)
      *
-     * @param  PackageInterface $package
+     * @param PackageInterface $package
+     *
      * @return string
      */
     public function findRecommendedRequireVersion(PackageInterface $package)

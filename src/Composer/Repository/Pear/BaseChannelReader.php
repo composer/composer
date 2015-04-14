@@ -24,7 +24,7 @@ use Composer\Util\RemoteFilesystem;
 abstract class BaseChannelReader
 {
     /**
-     * PEAR REST Interface namespaces
+     * PEAR REST Interface namespaces.
      */
     const CHANNEL_NS = 'http://pear.php.net/channel-1.0';
     const ALL_CATEGORIES_NS = 'http://pear.php.net/dtd/rest.allcategories';
@@ -46,7 +46,9 @@ abstract class BaseChannelReader
      *
      * @param $origin string server
      * @param $path   string relative path to content
+     *
      * @throws \UnexpectedValueException
+     *
      * @return \SimpleXMLElement
      */
     protected function requestContent($origin, $path)
@@ -61,17 +63,19 @@ abstract class BaseChannelReader
     }
 
     /**
-     * Read xml content from remote filesystem
+     * Read xml content from remote filesystem.
      *
      * @param $origin string server
      * @param $path   string relative path to content
+     *
      * @throws \UnexpectedValueException
+     *
      * @return \SimpleXMLElement
      */
     protected function requestXml($origin, $path)
     {
         // http://components.ez.no/p/packages.xml is malformed. to read it we must ignore parsing errors.
-        $xml = simplexml_load_string($this->requestContent($origin, $path), "SimpleXMLElement", LIBXML_NOERROR);
+        $xml = simplexml_load_string($this->requestContent($origin, $path), 'SimpleXMLElement', LIBXML_NOERROR);
 
         if (false == $xml) {
             $url = rtrim($origin, '/') . '/' . ltrim($path, '/');
