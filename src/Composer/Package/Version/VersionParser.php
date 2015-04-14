@@ -416,7 +416,6 @@ class VersionParser
             $lowVersion = $this->normalize($matches['from']);
             $lowerBound = new VersionConstraint('>=', $lowVersion . $lowStabilitySuffix);
 
-            $highVersion = $matches[10];
             if ((!empty($matches[11]) && !empty($matches[12])) || !empty($matches[14]) || !empty($matches[16])) {
                 $highVersion = $this->normalize($matches['to']);
                 $upperBound = new VersionConstraint('<=', $highVersion);
