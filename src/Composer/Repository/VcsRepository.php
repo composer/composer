@@ -115,7 +115,7 @@ class VcsRepository extends ArrayRepository
             throw new \InvalidArgumentException('No driver found to handle VCS repository '.$this->url);
         }
 
-        $this->versionParser = new VersionParser;
+        $this->versionParser = new VersionParser();
         if (!$this->loader) {
             $this->loader = new ArrayLoader($this->versionParser);
         }

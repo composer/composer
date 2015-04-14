@@ -21,7 +21,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command as BaseCommand;
 
 /**
- * Base class for Composer commands
+ * Base class for Composer commands.
  *
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
@@ -39,9 +39,11 @@ abstract class Command extends BaseCommand
     private $io;
 
     /**
-     * @param  bool              $required
-     * @param  bool              $disablePlugins
+     * @param bool $required
+     * @param bool $disablePlugins
+     *
      * @throws \RuntimeException
+     *
      * @return Composer
      */
     public function getComposer($required = true, $disablePlugins = false)
@@ -71,7 +73,7 @@ abstract class Command extends BaseCommand
     }
 
     /**
-     * Removes the cached composer instance
+     * Removes the cached composer instance.
      */
     public function resetComposer()
     {

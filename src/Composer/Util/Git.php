@@ -62,9 +62,9 @@ class Git
             $messages = array();
             foreach ($protocols as $protocol) {
                 if ('ssh' === $protocol) {
-                    $url = "git@" . $match[1] . ":" . $match[2];
+                    $url = 'git@' . $match[1] . ':' . $match[2];
                 } else {
-                    $url = $protocol ."://" . $match[1] . "/" . $match[2];
+                    $url = $protocol .'://' . $match[1] . '/' . $match[2];
                 }
 
                 if (0 === $this->process->execute(call_user_func($commandCallable, $url), $ignoredOutput, $cwd)) {
@@ -105,7 +105,7 @@ class Git
                         return;
                     }
                 }
-            } elseif ( // private non-github repo that failed to authenticate
+            } elseif (// private non-github repo that failed to authenticate
                 $this->isAuthenticationFailure($url, $match)
             ) {
                 if (strpos($match[2], '@')) {
@@ -119,7 +119,7 @@ class Git
                     $defaultUsername = null;
                     if (isset($authParts) && $authParts) {
                         if (false !== strpos($authParts, ':')) {
-                            list($defaultUsername,) = explode(':', $authParts, 2);
+                            list($defaultUsername) = explode(':', $authParts, 2);
                         } else {
                             $defaultUsername = $authParts;
                         }
@@ -154,7 +154,8 @@ class Git
         }
     }
 
-    private function isAuthenticationFailure ($url, &$match) {
+    private function isAuthenticationFailure($url, &$match)
+    {
         if (!preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match)) {
             return false;
         }
@@ -197,7 +198,7 @@ class Git
         }
 
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
-        putenv("DYLD_LIBRARY_PATH");
+        putenv('DYLD_LIBRARY_PATH');
         unset($_SERVER['DYLD_LIBRARY_PATH']);
     }
 

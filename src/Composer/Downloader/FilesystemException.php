@@ -13,7 +13,7 @@
 namespace Composer\Downloader;
 
 /**
- * Exception thrown when issues exist on local filesystem
+ * Exception thrown when issues exist on local filesystem.
  *
  * @author Javier Spagnoletti <jspagnoletti@javierspagnoletti.com.ar>
  */

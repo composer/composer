@@ -13,7 +13,7 @@
 namespace Composer\Repository\Pear;
 
 /**
- * PEAR channel info
+ * PEAR channel info.
  *
  * @author Alexey Prilipko <palex@farpost.com>
  */
@@ -36,7 +36,7 @@ class ChannelInfo
     }
 
     /**
-     * Name of the channel
+     * Name of the channel.
      *
      * @return string
      */
@@ -46,7 +46,7 @@ class ChannelInfo
     }
 
     /**
-     * Alias of the channel
+     * Alias of the channel.
      *
      * @return string
      */
@@ -56,7 +56,7 @@ class ChannelInfo
     }
 
     /**
-     * List of channel packages
+     * List of channel packages.
      *
      * @return PackageInfo[]
      */

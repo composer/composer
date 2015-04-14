@@ -13,7 +13,7 @@
 namespace Composer\Util;
 
 /**
- * Allows the creation of a basic context supporting http proxy
+ * Allows the creation of a basic context supporting http proxy.
  *
  * @author Jordan Alliot <jordan.alliot@gmail.com>
  * @author Markus Tacker <m@coderbyheart.de>
@@ -21,12 +21,14 @@ namespace Composer\Util;
 final class StreamContextFactory
 {
     /**
-     * Creates a context supporting HTTP proxies
+     * Creates a context supporting HTTP proxies.
      *
-     * @param  string            $url            URL the context is to be used for
-     * @param  array             $defaultOptions Options to merge with the default
-     * @param  array             $defaultParams  Parameters to specify on the context
-     * @return resource          Default context
+     * @param string $url            URL the context is to be used for
+     * @param array  $defaultOptions Options to merge with the default
+     * @param array  $defaultParams  Parameters to specify on the context
+     *
+     * @return resource Default context
+     *
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
      */
     public static function getContext($url, array $defaultOptions = array(), array $defaultParams = array())
@@ -61,11 +63,11 @@ final class StreamContextFactory
             $proxyURL .= isset($proxy['host']) ? $proxy['host'] : '';
 
             if (isset($proxy['port'])) {
-                $proxyURL .= ":" . $proxy['port'];
+                $proxyURL .= ':' . $proxy['port'];
             } elseif ('http://' == substr($proxyURL, 0, 7)) {
-                $proxyURL .= ":80";
+                $proxyURL .= ':80';
             } elseif ('https://' == substr($proxyURL, 0, 8)) {
-                $proxyURL .= ":443";
+                $proxyURL .= ':443';
             }
 
             // http(s):// is not supported in proxy
@@ -132,12 +134,14 @@ final class StreamContextFactory
 
     /**
      * A bug in PHP prevents the headers from correctly being sent when a content-type header is present and
-     * NOT at the end of the array
+     * NOT at the end of the array.
      *
      * This method fixes the array by moving the content-type header to the end
      *
      * @link https://bugs.php.net/bug.php?id=61548
+     *
      * @param $header
+     *
      * @return array
      */
     private static function fixHttpHeaderField($header)

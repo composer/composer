@@ -13,7 +13,7 @@
 namespace Composer\Package\LinkConstraint;
 
 /**
- * Defines a conjunctive or disjunctive set of constraints on the target of a package link
+ * Defines a conjunctive or disjunctive set of constraints on the target of a package link.
  *
  * @author Nils Adermann <naderman@naderman.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -25,7 +25,7 @@ class MultiConstraint implements LinkConstraintInterface
     protected $conjunctive;
 
     /**
-     * Sets operator and version to compare a package with
+     * Sets operator and version to compare a package with.
      *
      * @param array $constraints A set of constraints
      * @param bool  $conjunctive Whether the constraints should be treated as conjunctive or disjunctive

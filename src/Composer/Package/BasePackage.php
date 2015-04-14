@@ -16,7 +16,7 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
 
 /**
- * Base class for packages providing name storage and default match implementation
+ * Base class for packages providing name storage and default match implementation.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -45,7 +45,8 @@ abstract class BasePackage implements PackageInterface
     );
 
     /**
-     * READ-ONLY: The package id, public for fast access in dependency solver
+     * READ-ONLY: The package id, public for fast access in dependency solver.
+     *
      * @var int
      */
     public $id;
@@ -57,7 +58,7 @@ abstract class BasePackage implements PackageInterface
     protected $transportOptions;
 
     /**
-     * All descendants' constructors should call this parent constructor
+     * All descendants' constructors should call this parent constructor.
      *
      * @param string $name The package's name
      */
@@ -149,7 +150,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * Configures the list of options to download package dist files
+     * Configures the list of options to download package dist files.
      *
      * @param array $options
      */
@@ -159,9 +160,9 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * checks if this package is a platform package
+     * checks if this package is a platform package.
      *
-     * @return boolean
+     * @return bool
      */
     public function isPlatform()
     {
@@ -192,7 +193,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * Converts the package into a readable and unique string
+     * Converts the package into a readable and unique string.
      *
      * @return string
      */

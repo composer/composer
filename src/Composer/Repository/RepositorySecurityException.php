@@ -13,7 +13,7 @@
 namespace Composer\Repository;
 
 /**
- * Thrown when a security problem, like a broken or missing signature
+ * Thrown when a security problem, like a broken or missing signature.
  *
  * @author Eric Daspet <edaspet@survol.fr>
  */

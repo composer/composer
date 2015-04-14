@@ -57,7 +57,7 @@ class CommandEvent extends Event
     }
 
     /**
-     * Returns the command input interface
+     * Returns the command input interface.
      *
      * @return InputInterface
      */
@@ -67,7 +67,7 @@ class CommandEvent extends Event
     }
 
     /**
-     * Retrieves the command output interface
+     * Retrieves the command output interface.
      *
      * @return OutputInterface
      */
@@ -77,7 +77,7 @@ class CommandEvent extends Event
     }
 
     /**
-     * Retrieves the name of the command being run
+     * Retrieves the name of the command being run.
      *
      * @return string
      */

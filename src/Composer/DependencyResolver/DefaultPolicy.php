@@ -177,8 +177,9 @@ class DefaultPolicy implements PolicyInterface
      * Replace constraints are ignored. This method should only be used for
      * prioritisation, not for actual constraint verification.
      *
-     * @param  PackageInterface $source
-     * @param  PackageInterface $target
+     * @param PackageInterface $source
+     * @param PackageInterface $target
+     *
      * @return bool
      */
     protected function replaces(PackageInterface $source, PackageInterface $target)
@@ -219,7 +220,7 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-     * Assumes that installed packages come first and then all highest priority packages
+     * Assumes that installed packages come first and then all highest priority packages.
      */
     protected function pruneToHighestPriorityOrInstalled(Pool $pool, array $installedMap, array $literals)
     {
@@ -250,7 +251,7 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-     * Assumes that locally aliased (in root package requires) packages take priority over branch-alias ones
+     * Assumes that locally aliased (in root package requires) packages take priority over branch-alias ones.
      *
      * If no package is a local alias, nothing happens
      */

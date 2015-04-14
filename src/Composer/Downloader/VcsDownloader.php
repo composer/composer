@@ -34,7 +34,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor($io);
-        $this->filesystem = $fs ?: new Filesystem;
+        $this->filesystem = $fs ?: new Filesystem();
     }
 
     /**
@@ -54,7 +54,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
 
-        $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+        $this->io->writeError('  - Installing <info>' . $package->getName() . '</info> (<comment>' . VersionParser::formatVersion($package) . '</comment>)');
         $this->filesystem->emptyDirectory($path);
 
         $urls = $package->getSourceUrls();
@@ -104,7 +104,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             $to = VersionParser::formatVersion($target);
         }
 
-        $this->io->writeError("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
+        $this->io->writeError('  - Updating <info>' . $name . '</info> (<comment>' . $from . '</comment> => <comment>' . $to . '</comment>)');
 
         $this->cleanChanges($initial, $path, true);
         $urls = $target->getSourceUrls();
@@ -159,7 +159,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      */
     public function remove(PackageInterface $package, $path)
     {
-        $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
+        $this->io->writeError('  - Removing <info>' . $package->getName() . '</info> (<comment>' . $package->getPrettyVersion() . '</comment>)');
         $this->cleanChanges($package, $path, false);
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
@@ -176,12 +176,13 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * Prompt the user to check if changes should be stashed/removed or the operation aborted
+     * Prompt the user to check if changes should be stashed/removed or the operation aborted.
      *
-     * @param  PackageInterface  $package
-     * @param  string            $path
-     * @param  bool              $update  if true (update) the changes can be stashed and reapplied after an update,
-     *                                    if false (remove) the changes should be assumed to be lost if the operation is not aborted
+     * @param PackageInterface $package
+     * @param string           $path
+     * @param bool             $update  if true (update) the changes can be stashed and reapplied after an update,
+     *                                  if false (remove) the changes should be assumed to be lost if the operation is not aborted
+     *
      * @throws \RuntimeException in case the operation must be aborted
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)
@@ -193,9 +194,10 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * Guarantee that no changes have been made to the local copy
+     * Guarantee that no changes have been made to the local copy.
      *
-     * @param  string            $path
+     * @param string $path
+     *
      * @throws \RuntimeException in case the operation must be aborted or the patch does not apply cleanly
      */
     protected function reapplyChanges($path)
@@ -222,11 +224,12 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     abstract protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url);
 
     /**
-     * Fetches the commit logs between two commits
+     * Fetches the commit logs between two commits.
      *
-     * @param  string $fromReference the source reference
-     * @param  string $toReference   the target reference
-     * @param  string $path          the package path
+     * @param string $fromReference the source reference
+     * @param string $toReference   the target reference
+     * @param string $path          the package path
+     *
      * @return string
      */
     abstract protected function getCommitLogs($fromReference, $toReference, $path);

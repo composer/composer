@@ -13,21 +13,21 @@
 namespace Composer\Package;
 
 /**
- * Defines package metadata that is not necessarily needed for solving and installing packages
+ * Defines package metadata that is not necessarily needed for solving and installing packages.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
 interface CompletePackageInterface extends PackageInterface
 {
     /**
-     * Returns the scripts of this package
+     * Returns the scripts of this package.
      *
      * @return array array('script name' => array('listeners'))
      */
     public function getScripts();
 
     /**
-     * Returns an array of repositories
+     * Returns an array of repositories.
      *
      * {"<type>": {<config key/values>}}
      *
@@ -36,35 +36,35 @@ interface CompletePackageInterface extends PackageInterface
     public function getRepositories();
 
     /**
-     * Returns the package license, e.g. MIT, BSD, GPL
+     * Returns the package license, e.g. MIT, BSD, GPL.
      *
      * @return array The package licenses
      */
     public function getLicense();
 
     /**
-     * Returns an array of keywords relating to the package
+     * Returns an array of keywords relating to the package.
      *
      * @return array
      */
     public function getKeywords();
 
     /**
-     * Returns the package description
+     * Returns the package description.
      *
      * @return string
      */
     public function getDescription();
 
     /**
-     * Returns the package homepage
+     * Returns the package homepage.
      *
      * @return string
      */
     public function getHomepage();
 
     /**
-     * Returns an array of authors of the package
+     * Returns an array of authors of the package.
      *
      * Each item can contain name/homepage/email keys
      *
@@ -73,21 +73,21 @@ interface CompletePackageInterface extends PackageInterface
     public function getAuthors();
 
     /**
-     * Returns the support information
+     * Returns the support information.
      *
      * @return array
      */
     public function getSupport();
 
     /**
-     * Returns if the package is abandoned or not
+     * Returns if the package is abandoned or not.
      *
-     * @return boolean
+     * @return bool
      */
     public function isAbandoned();
 
     /**
-     * If the package is abandoned and has a suggested replacement, this method returns it
+     * If the package is abandoned and has a suggested replacement, this method returns it.
      *
      * @return string
      */

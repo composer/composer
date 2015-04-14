@@ -13,7 +13,7 @@
 namespace Composer\Package;
 
 /**
- * The root package represents the project's composer.json and contains additional metadata
+ * The root package represents the project's composer.json and contains additional metadata.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -26,7 +26,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     protected $aliases = array();
 
     /**
-     * Set the minimumStability
+     * Set the minimumStability.
      *
      * @param string $minimumStability
      */
@@ -44,7 +44,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the stabilityFlags
+     * Set the stabilityFlags.
      *
      * @param array $stabilityFlags
      */
@@ -62,7 +62,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the preferStable
+     * Set the preferStable.
      *
      * @param bool $preferStable
      */
@@ -80,7 +80,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the references
+     * Set the references.
      *
      * @param array $references
      */
@@ -98,7 +98,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the aliases
+     * Set the aliases.
      *
      * @param array $aliases
      */

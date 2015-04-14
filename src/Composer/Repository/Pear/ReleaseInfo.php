@@ -13,7 +13,7 @@
 namespace Composer\Repository\Pear;
 
 /**
- * PEAR package release info
+ * PEAR package release info.
  *
  * @author Alexey Prilipko <palex@farpost.com>
  */

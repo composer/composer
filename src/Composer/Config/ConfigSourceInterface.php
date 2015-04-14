@@ -13,7 +13,7 @@
 namespace Composer\Config;
 
 /**
- * Configuration Source Interface
+ * Configuration Source Interface.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Beau Simensen <beau@dflydev.com>
@@ -21,7 +21,7 @@ namespace Composer\Config;
 interface ConfigSourceInterface
 {
     /**
-     * Add a repository
+     * Add a repository.
      *
      * @param string $name   Name
      * @param array  $config Configuration
@@ -29,14 +29,14 @@ interface ConfigSourceInterface
     public function addRepository($name, $config);
 
     /**
-     * Remove a repository
+     * Remove a repository.
      *
      * @param string $name
      */
     public function removeRepository($name);
 
     /**
-     * Add a config setting
+     * Add a config setting.
      *
      * @param string $name  Name
      * @param string $value Value
@@ -44,14 +44,14 @@ interface ConfigSourceInterface
     public function addConfigSetting($name, $value);
 
     /**
-     * Remove a config setting
+     * Remove a config setting.
      *
      * @param string $name
      */
     public function removeConfigSetting($name);
 
     /**
-     * Add a package link
+     * Add a package link.
      *
      * @param string $type  Type (require, require-dev, provide, suggest, replace, conflict)
      * @param string $name  Name
@@ -60,7 +60,7 @@ interface ConfigSourceInterface
     public function addLink($type, $name, $value);
 
     /**
-     * Remove a package link
+     * Remove a package link.
      *
      * @param string $type Type (require, require-dev, provide, suggest, replace, conflict)
      * @param string $name Name
@@ -68,7 +68,7 @@ interface ConfigSourceInterface
     public function removeLink($type, $name);
 
     /**
-     * Gives a user-friendly name to this source (file path or so)
+     * Gives a user-friendly name to this source (file path or so).
      *
      * @return string
      */

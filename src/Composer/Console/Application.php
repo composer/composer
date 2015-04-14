@@ -29,7 +29,7 @@ use Composer\Json\JsonValidationException;
 use Composer\Util\ErrorHandler;
 
 /**
- * The console application that handles the commands
+ * The console application that handles the commands.
  *
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -158,8 +158,10 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param  InputInterface    $input
+     * @param InputInterface $input
+     *
      * @return string
+     *
      * @throws \RuntimeException
      */
     private function getNewWorkingDir(InputInterface $input)
@@ -211,9 +213,11 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param  bool                    $required
-     * @param  bool                    $disablePlugins
+     * @param bool $required
+     * @param bool $disablePlugins
+     *
      * @throws JsonValidationException
+     *
      * @return \Composer\Composer
      */
     public function getComposer($required = true, $disablePlugins = false)
@@ -237,7 +241,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * Removes the cached composer instance
+     * Removes the cached composer instance.
      */
     public function resetComposer()
     {
@@ -258,7 +262,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * Initializes all the composer commands
+     * Initializes all the composer commands.
      */
     protected function getDefaultCommands()
     {

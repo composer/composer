@@ -25,7 +25,7 @@ use Composer\Util\Git as GitUtil;
 use Composer\Util\Svn as SvnUtil;
 
 /**
- * ArrayLoader built for the sole purpose of loading the root package
+ * ArrayLoader built for the sole purpose of loading the root package.
  *
  * Sets additional defaults and loads repositories
  *

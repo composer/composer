@@ -77,7 +77,7 @@ class Locker
     }
 
     /**
-     * Checks whether the lock file is still up to date with the current hash
+     * Checks whether the lock file is still up to date with the current hash.
      *
      * @return bool
      */
@@ -91,8 +91,10 @@ class Locker
     /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
-     * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
+     * @param bool $withDevReqs true to retrieve the locked dev packages
+     *
      * @throws \RuntimeException
+     *
      * @return \Composer\Repository\RepositoryInterface
      */
     public function getLockedRepository($withDevReqs = false)
@@ -125,9 +127,10 @@ class Locker
     }
 
     /**
-     * Returns the platform requirements stored in the lock file
+     * Returns the platform requirements stored in the lock file.
      *
-     * @param  bool                     $withDevReqs if true, the platform requirements from the require-dev block are also returned
+     * @param bool $withDevReqs if true, the platform requirements from the require-dev block are also returned
+     *
      * @return \Composer\Package\Link[]
      */
     public function getPlatformRequirements($withDevReqs = false)
@@ -231,7 +234,7 @@ class Locker
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
                                'Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
-                               'This file is @gener'.'ated automatically'),
+                               'This file is @gener'.'ated automatically', ),
             'hash' => $this->hash,
             'packages' => null,
             'packages-dev' => null,
@@ -333,8 +336,9 @@ class Locker
     /**
      * Returns the packages's datetime for its source reference.
      *
-     * @param  PackageInterface $package The package to scan.
-     * @return string|null      The formatted datetime or null if none was found.
+     * @param PackageInterface $package The package to scan.
+     *
+     * @return string|null The formatted datetime or null if none was found.
      */
     private function getPackageTime(PackageInterface $package)
     {

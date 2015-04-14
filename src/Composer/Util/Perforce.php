@@ -102,7 +102,7 @@ class Perforce
 
     public function generateUniquePerforceClientName()
     {
-        return gethostname() . "_" . time();
+        return gethostname() . '_' . time();
     }
 
     public function cleanupClientSpec()
@@ -119,7 +119,7 @@ class Perforce
 
     protected function executeCommand($command)
     {
-        $this->commandResult = "";
+        $this->commandResult = '';
         $exit_code = $this->process->execute($command, $this->commandResult);
 
         return $exit_code;
@@ -297,7 +297,7 @@ class Perforce
                 }
                 throw new \Exception('p4 command not found in path: ' . $errorOutput);
             }
-            throw new \Exception('Invalid user name: ' . $this->getUser() );
+            throw new \Exception('Invalid user name: ' . $this->getUser());
         }
 
         return true;
@@ -305,7 +305,7 @@ class Perforce
 
     public function connectClient()
     {
-        $p4CreateClientCommand = $this->generateP4Command('client -i < ' . str_replace( " ", "\\ ", $this->getP4ClientSpec() ));
+        $p4CreateClientCommand = $this->generateP4Command('client -i < ' . str_replace(' ', "\\ ", $this->getP4ClientSpec()));
         $this->executeCommand($p4CreateClientCommand);
     }
 
@@ -390,7 +390,7 @@ class Perforce
                 $exitCode = $this->executeCommand($command);
                 $result = trim($this->commandResult);
                 if ($exitCode) {
-                    throw new \Exception("Error logging in:" . $this->process->getErrorOutput());
+                    throw new \Exception('Error logging in:' . $this->process->getErrorOutput());
                 }
             }
         }
@@ -446,7 +446,7 @@ class Perforce
             }
         }
 
-        return "";
+        return '';
     }
 
     public function getBranches()

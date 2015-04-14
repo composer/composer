@@ -19,7 +19,6 @@ use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -57,7 +56,7 @@ EOT
         $root = $composer->getPackage();
         $repo = $composer->getRepositoryManager()->getLocalRepository();
 
-        $versionParser = new VersionParser;
+        $versionParser = new VersionParser();
 
         if ($input->getOption('no-dev')) {
             $packages = $this->filterRequiredPackages($repo, $root);
@@ -112,7 +111,7 @@ EOT
     }
 
     /**
-     * Find package requires and child requires
+     * Find package requires and child requires.
      *
      * @param RepositoryInterface $repo
      * @param PackageInterface    $package
@@ -139,10 +138,11 @@ EOT
     }
 
     /**
-     * Adds packages to the package list
+     * Adds packages to the package list.
      *
-     * @param  array $packages the list of packages to add
-     * @param  array $bucket   the list to add packages to
+     * @param array $packages the list of packages to add
+     * @param array $bucket   the list to add packages to
+     *
      * @return array
      */
     public function appendPackages(array $packages, array $bucket)

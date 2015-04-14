@@ -24,9 +24,10 @@ use Composer\Repository\InstalledRepositoryInterface;
 interface InstallerInterface
 {
     /**
-     * Decides if the installer supports the given type
+     * Decides if the installer supports the given type.
      *
-     * @param  string $packageType
+     * @param string $packageType
+     *
      * @return bool
      */
     public function supports($packageType);
@@ -69,10 +70,11 @@ interface InstallerInterface
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package);
 
     /**
-     * Returns the installation path of a package
+     * Returns the installation path of a package.
      *
-     * @param  PackageInterface $package
-     * @return string           path
+     * @param PackageInterface $package
+     *
+     * @return string path
      */
     public function getInstallPath(PackageInterface $package);
 }

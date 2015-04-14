@@ -13,7 +13,7 @@
 namespace Composer\Repository;
 
 /**
- * Exception thrown when a package repository is utterly broken
+ * Exception thrown when a package repository is utterly broken.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */

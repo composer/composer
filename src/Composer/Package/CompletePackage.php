@@ -13,7 +13,7 @@
 namespace Composer\Package;
 
 /**
- * Package containing additional metadata that is not used by the solver
+ * Package containing additional metadata that is not used by the solver.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -46,7 +46,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * Set the repositories
+     * Set the repositories.
      *
      * @param array $repositories
      */
@@ -64,7 +64,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * Set the license
+     * Set the license.
      *
      * @param array $license
      */
@@ -82,7 +82,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * Set the keywords
+     * Set the keywords.
      *
      * @param array $keywords
      */
@@ -100,7 +100,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * Set the authors
+     * Set the authors.
      *
      * @param array $authors
      */
@@ -118,7 +118,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * Set the description
+     * Set the description.
      *
      * @param string $description
      */
@@ -136,7 +136,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * Set the homepage
+     * Set the homepage.
      *
      * @param string $homepage
      */
@@ -154,7 +154,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * Set the support information
+     * Set the support information.
      *
      * @param array $support
      */
@@ -172,7 +172,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isAbandoned()
     {
@@ -180,7 +180,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * @param boolean|string $abandoned
+     * @param bool|string $abandoned
      */
     public function setAbandoned($abandoned)
     {
@@ -188,7 +188,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * If the package is abandoned and has a suggested replacement, this method returns it
+     * If the package is abandoned and has a suggested replacement, this method returns it.
      *
      * @return string|null
      */

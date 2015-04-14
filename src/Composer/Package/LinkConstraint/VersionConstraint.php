@@ -13,7 +13,7 @@
 namespace Composer\Package\LinkConstraint;
 
 /**
- * Constrains a package link based on package version
+ * Constrains a package link based on package version.
  *
  * Version numbers must be compatible with version_compare
  *
@@ -25,7 +25,7 @@ class VersionConstraint extends SpecificConstraint
     private $version;
 
     /**
-     * Sets operator and version to compare a package with
+     * Sets operator and version to compare a package with.
      *
      * @param string $operator A comparison operator
      * @param string $version  A version to compare to
@@ -61,8 +61,9 @@ class VersionConstraint extends SpecificConstraint
     }
 
     /**
-     * @param  VersionConstraint $provider
-     * @param  bool              $compareBranches
+     * @param VersionConstraint $provider
+     * @param bool              $compareBranches
+     *
      * @return bool
      */
     public function matchSpecific(VersionConstraint $provider, $compareBranches = false)
@@ -77,8 +78,9 @@ class VersionConstraint extends SpecificConstraint
     }
 
     /**
-     * @param  VersionConstraint $provider
-     * @param  bool              $compareBranches
+     * @param VersionConstraint $provider
+     * @param bool              $compareBranches
+     *
      * @return bool
      */
     private function doMatchSpecific(VersionConstraint $provider, $compareBranches = false)

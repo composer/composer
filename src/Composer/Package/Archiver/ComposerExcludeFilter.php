@@ -13,7 +13,7 @@
 namespace Composer\Package\Archiver;
 
 /**
- * An exclude filter which processes composer's own exclude rules
+ * An exclude filter which processes composer's own exclude rules.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */

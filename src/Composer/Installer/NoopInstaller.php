@@ -16,7 +16,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 
 /**
- * Does not install anything but marks packages installed in the repo
+ * Does not install anything but marks packages installed in the repo.
  *
  * Useful for dry runs
  *

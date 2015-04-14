@@ -20,7 +20,6 @@ use Composer\Script\ScriptEvents;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\Version\VersionParser;
-
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -83,7 +82,7 @@ EOT
     protected function archive(IOInterface $io, $packageName = null, $version = null, $format = 'tar', $dest = '.')
     {
         $config = Factory::createConfig();
-        $factory = new Factory;
+        $factory = new Factory();
         $downloadManager = $factory->createDownloadManager($io, $config);
         $archiveManager = $factory->createArchiveManager($config, $downloadManager);
 

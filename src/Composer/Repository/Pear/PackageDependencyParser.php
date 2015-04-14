@@ -13,7 +13,7 @@
 namespace Composer\Repository\Pear;
 
 /**
- * Read PEAR packages using REST 1.0 interface
+ * Read PEAR packages using REST 1.0 interface.
  *
  * @author Alexey Prilipko <palex@farpost.com>
  */
@@ -23,6 +23,7 @@ class PackageDependencyParser
      * Builds dependency information. It detects used package.xml format.
      *
      * @param $depArray array
+     *
      * @return DependencyInfo
      */
     public function buildDependencyInfo($depArray)
@@ -38,7 +39,7 @@ class PackageDependencyParser
     }
 
     /**
-     * Builds dependency information from package.xml 1.0 format
+     * Builds dependency information from package.xml 1.0 format.
      *
      * http://pear.php.net/manual/en/guide.developers.package2.dependencies.php
      *
@@ -47,6 +48,7 @@ class PackageDependencyParser
      *   channel="channelName" name="extName|packageName" }
      *
      * @param $depArray array Dependency data in package.xml 1.0 format
+     *
      * @return DependencyConstraint[]
      */
     private function buildDependency10Info($depArray)
@@ -113,9 +115,10 @@ class PackageDependencyParser
     }
 
     /**
-     * Builds dependency information from package.xml 2.0 format
+     * Builds dependency information from package.xml 2.0 format.
      *
      * @param $depArray array Dependency data in package.xml 1.0 format
+     *
      * @return DependencyInfo
      */
     private function buildDependency20Info($depArray)
@@ -185,10 +188,11 @@ class PackageDependencyParser
     }
 
     /**
-     * Builds dependency constraint of 'extension' type
+     * Builds dependency constraint of 'extension' type.
      *
      * @param $depItem array dependency constraint or array of dependency constraints
      * @param $depType string target type of building constraint.
+     *
      * @return DependencyConstraint[]
      */
     private function buildDepExtensionConstraints($depItem, $depType)
@@ -215,10 +219,11 @@ class PackageDependencyParser
     }
 
     /**
-     * Builds dependency constraint of 'package' type
+     * Builds dependency constraint of 'package' type.
      *
      * @param $depItem array dependency constraint or array of dependency constraints
      * @param $depType string target type of building constraint.
+     *
      * @return DependencyConstraint[]
      */
     private function buildDepPackageConstraints($depItem, $depType)
@@ -248,9 +253,10 @@ class PackageDependencyParser
     }
 
     /**
-     * Parses version constraint
+     * Parses version constraint.
      *
-     * @param  array  $data array containing several 'min', 'max', 'has', 'exclude' and other keys.
+     * @param array $data array containing several 'min', 'max', 'has', 'exclude' and other keys.
+     *
      * @return string
      */
     private function parse20VersionConstraint(array $data)
@@ -282,9 +288,10 @@ class PackageDependencyParser
     }
 
     /**
-     * Softened version parser
+     * Softened version parser.
      *
      * @param $version
+     *
      * @return null|string
      */
     private function parseVersion($version)
@@ -302,9 +309,10 @@ class PackageDependencyParser
     }
 
     /**
-     * Test if array is associative or hash type
+     * Test if array is associative or hash type.
      *
-     * @param  array $array
+     * @param array $array
+     *
      * @return bool
      */
     private function isHash(array $array)

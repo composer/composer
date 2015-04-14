@@ -13,7 +13,7 @@
 namespace Composer\Repository\Pear;
 
 /**
- * Read PEAR packages using REST 1.1 interface
+ * Read PEAR packages using REST 1.1 interface.
  *
  * At version 1.1 package descriptions read from:
  *  {baseUrl}/c/categories.xml
@@ -33,7 +33,7 @@ class ChannelRest11Reader extends BaseChannelReader
     }
 
     /**
-     * Reads package descriptions using PEAR Rest 1.1 interface
+     * Reads package descriptions using PEAR Rest 1.1 interface.
      *
      * @param $baseUrl  string base Url interface
      *
@@ -46,16 +46,17 @@ class ChannelRest11Reader extends BaseChannelReader
 
     /**
      * Read list of channel categories from
-     *  {baseUrl}/c/categories.xml
+     *  {baseUrl}/c/categories.xml.
      *
      * @param $baseUrl string
+     *
      * @return PackageInfo[]
      */
     private function readChannelPackages($baseUrl)
     {
         $result = array();
 
-        $xml = $this->requestXml($baseUrl, "/c/categories.xml");
+        $xml = $this->requestXml($baseUrl, '/c/categories.xml');
         $xml->registerXPathNamespace('ns', self::ALL_CATEGORIES_NS);
         foreach ($xml->xpath('ns:c') as $node) {
             $categoryName = (string) $node;
@@ -68,10 +69,11 @@ class ChannelRest11Reader extends BaseChannelReader
 
     /**
      * Read packages from
-     *  {baseUrl}/c/{category}/packagesinfo.xml
+     *  {baseUrl}/c/{category}/packagesinfo.xml.
      *
      * @param $baseUrl      string
      * @param $categoryName string
+     *
      * @return PackageInfo[]
      */
     private function readCategoryPackages($baseUrl, $categoryName)
@@ -93,6 +95,7 @@ class ChannelRest11Reader extends BaseChannelReader
      * Parses package node.
      *
      * @param $packageInfo  \SimpleXMLElement   xml element describing package
+     *
      * @return PackageInfo
      */
     private function parsePackage($packageInfo)

@@ -85,8 +85,9 @@ class PearRepository extends ArrayRepository
     /**
      * Builds CompletePackages from PEAR package definition data.
      *
-     * @param  ChannelInfo     $channelInfo
-     * @param  VersionParser   $versionParser
+     * @param ChannelInfo   $channelInfo
+     * @param VersionParser $versionParser
+     *
      * @return CompletePackage
      */
     private function buildComposerPackages(ChannelInfo $channelInfo, VersionParser $versionParser)
@@ -179,7 +180,7 @@ class PearRepository extends ArrayRepository
     private function buildComposerPackageName($channelName, $packageName)
     {
         if ('php' === $channelName) {
-            return "php";
+            return 'php';
         }
         if ('ext' === $channelName) {
             return "ext-{$packageName}";

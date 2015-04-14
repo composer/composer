@@ -13,11 +13,10 @@
 namespace Composer\Package\Archiver;
 
 use Composer\Util\Filesystem;
-
 use Symfony\Component\Finder;
 
 /**
- * A Symfony Finder wrapper which locates files that should go into archives
+ * A Symfony Finder wrapper which locates files that should go into archives.
  *
  * Handles .gitignore, .gitattributes and .hgignore files as well as composer's
  * own exclude rules from composer.json
@@ -32,7 +31,7 @@ class ArchivableFilesFinder extends \FilterIterator
     protected $finder;
 
     /**
-     * Initializes the internal Symfony Finder with appropriate filters
+     * Initializes the internal Symfony Finder with appropriate filters.
      *
      * @param string $sources  Path to source files to be archived
      * @param array  $excludes Composer's own exclude rules from composer.json

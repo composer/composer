@@ -104,7 +104,7 @@ EOT
             self::OLD_INSTALL_EXT
         );
 
-        $this->getIO()->writeError(sprintf("Updating to version <info>%s</info>.", $updateVersion));
+        $this->getIO()->writeError(sprintf('Updating to version <info>%s</info>.', $updateVersion));
         $remoteFilename = $baseUrl . (preg_match('{^[0-9a-f]{40}$}', $updateVersion) ? '/composer.phar' : "/download/{$updateVersion}/composer.phar");
         $remoteFilesystem->copy(self::HOMEPAGE, $remoteFilename, $tempFilename, !$input->getOption('no-progress'));
         if (!file_exists($tempFilename)) {
@@ -117,7 +117,7 @@ EOT
         if ($input->getOption('clean-backups')) {
             $finder = $this->getOldInstallationFinder($rollbackDir);
 
-            $fs = new Filesystem;
+            $fs = new Filesystem();
             foreach ($finder as $file) {
                 $file = (string) $file;
                 $this->getIO()->writeError('<info>Removing: '.$file.'</info>');
@@ -160,7 +160,7 @@ EOT
         }
 
         $oldFile = $rollbackDir . "/{$rollbackVersion}" . self::OLD_INSTALL_EXT;
-        $this->getIO()->writeError(sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
+        $this->getIO()->writeError(sprintf('Rolling back to version <info>%s</info>.', $rollbackVersion));
         if ($err = $this->setLocalPhar($localFilename, $oldFile)) {
             $this->getIO()->writeError('<error>The backup file was corrupted ('.$err->getMessage().') and has been removed.</error>');
 

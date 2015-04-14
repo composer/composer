@@ -27,7 +27,8 @@ class JsonLoader
     }
 
     /**
-     * @param  string|JsonFile                    $json A filename, json string or JsonFile instance to load the package from
+     * @param string|JsonFile $json A filename, json string or JsonFile instance to load the package from
+     *
      * @return \Composer\Package\PackageInterface
      */
     public function load($json)

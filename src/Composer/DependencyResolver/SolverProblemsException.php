@@ -32,7 +32,7 @@ class SolverProblemsException extends \RuntimeException
     {
         $text = "\n";
         foreach ($this->problems as $i => $problem) {
-            $text .= "  Problem ".($i+1).$problem->getPrettyString($this->installedMap)."\n";
+            $text .= '  Problem '.($i+1).$problem->getPrettyString($this->installedMap)."\n";
         }
 
         if (strpos($text, 'could not be found') || strpos($text, 'no matching package found')) {

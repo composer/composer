@@ -13,7 +13,7 @@
 namespace Composer\Util;
 
 /**
- * Composer mirror utilities
+ * Composer mirror utilities.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
