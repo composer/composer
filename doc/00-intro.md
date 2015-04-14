@@ -179,7 +179,7 @@ downloads. To use it, just add the following line to your code's bootstrap
 process:
 
 ```php
-require 'vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 ```
 
 Woah! Now start using monolog! To keep learning more about Composer, keep
