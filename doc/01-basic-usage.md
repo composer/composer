@@ -45,7 +45,7 @@ smaller decoupled parts.
 
 ### Package Versions
 
-In the previous example we were requiring version `1.0.*` of monolog. This
+In the previous example we were requiring version [`1.0.*`](http://semver.mwl.be/#?package=monolog%2Fmonolog&version=1.0.*) of monolog. This
 means any version in the `1.0` development branch. It would match `1.0.0`,
 `1.0.2` or `1.0.20`.
 
@@ -93,6 +93,13 @@ to also get RC, beta, alpha or dev versions of your dependencies you can do
 so using [stability flags](04-schema.md#package-links). To change that for all
 packages instead of doing per dependency you can also use the
 [minimum-stability](04-schema.md#minimum-stability) setting.
+
+### Test version constraints
+
+You can test version constraints using [semver.mwl.be](http://semver.mwl.be). Fill in
+a package name and it will autofill the default version constraint which Composer would add
+to your `composer.json` file. You can adjust the version constraint and the tool will highlight
+all releases that match.
 
 ## Installing Dependencies
 
