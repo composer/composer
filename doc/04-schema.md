@@ -880,7 +880,7 @@ Optional.
 
 ### non-feature-branches
 
-A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something), that will NOT be handled as feature branches. This is an array of string.
+A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something), that will NOT be handled as feature branches. This is an array of strings.
 
 If you have non-numeric branch names, for example like "latest", "current", "latest-stable"
 or something, that do not look like a version number, then composer handles such branches
