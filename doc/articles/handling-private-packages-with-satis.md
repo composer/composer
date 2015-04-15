@@ -29,7 +29,7 @@ or install via CLI:
 
 For example let's assume you have a few packages you want to reuse across your
 company but don't really want to open-source. You would first define a Satis
-configuration: a json file with an arbitrary name that lists your curated 
+configuration: a json file with an arbitrary name that lists your curated
 [repositories](../05-repositories.md).
 
 Here is an example configuration, you see that it holds a few VCS repositories,
@@ -157,17 +157,37 @@ Example using HTTP over SSL using a client certificate:
 
 > **Tip:** See [ssl context options](http://www.php.net/manual/en/context.ssl.php) for more information.
 
+Example using a custom HTTP Header field for token authentication:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "options":  {
+                "http": {
+                    "header": [
+                        "API-TOKEN: YOUR-API-TOKEN"
+                    ]
+                }
+            }
+        }
+    ]
+}
+```
+
 ### Authentification
 
-When your private repositories are password protected, you can store the authentification details permanently. 
-The first time Composer needs to authenticate against some domain it will prompt you for a username/password 
-and then you will be asked whether you want to store it. 
+When your private repositories are password protected, you can store the authentification details permanently.
+The first time Composer needs to authenticate against some domain it will prompt you for a username/password
+and then you will be asked whether you want to store it.
 
-The storage can be done either globally in the `COMPOSER_HOME/auth.json` file (`COMPOSER_HOME` defaults to 
+The storage can be done either globally in the `COMPOSER_HOME/auth.json` file (`COMPOSER_HOME` defaults to
 `~/.composer` or `%APPDATA%/Composer` on Windows) or also in the project directory directly sitting besides your
 composer.json.
 
-You can also configure these by hand using the config command if you need to configure a production machine 
+You can also configure these by hand using the config command if you need to configure a production machine
 to be able to run non-interactive installs. For example to enter credentials for example.org one could type:
 
     composer config http-basic.example.org username password
