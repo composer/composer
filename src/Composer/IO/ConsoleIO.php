@@ -126,6 +126,7 @@ class ConsoleIO extends BaseIO
         if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
             $this->output->getErrorOutput()->write($messages, $newline);
             $this->lastMessageErr = join($newline ? "\n" : '', (array) $messages);
+
             return;
         }
 

@@ -19,7 +19,6 @@ use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;

@@ -389,11 +389,11 @@ EOT
 
         $licenses = $package->getLicense();
 
-        foreach($licenses as $licenseId) {
+        foreach ($licenses as $licenseId) {
             $license = $spdxLicense->getLicenseByIdentifier($licenseId); // keys: 0 fullname, 1 osi, 2 url
 
             // is license OSI approved?
-            if($license[1] === true) {
+            if ($license[1] === true) {
                 $out = sprintf('%s (%s) (OSI approved) %s', $license[0], $licenseId, $license[2]);
             } else {
                 $out = sprintf('%s (%s) %s', $license[0], $licenseId, $license[2]);

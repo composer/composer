@@ -154,7 +154,8 @@ class Git
         }
     }
 
-    private function isAuthenticationFailure ($url, &$match) {
+    private function isAuthenticationFailure($url, &$match)
+    {
         if (!preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match)) {
             return false;
         }

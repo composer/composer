@@ -34,7 +34,7 @@ class SpdxLicense
 
     private function loadLicenses()
     {
-        if(is_array($this->licenses)) {
+        if (is_array($this->licenses)) {
             return $this->licenses;
         }
 
@@ -71,7 +71,7 @@ class SpdxLicense
     public function getIdentifierByName($name)
     {
         foreach ($this->licenses as $identifier => $licenseData) {
-            if($licenseData[0] === $name) { // key 0 = fullname
+            if ($licenseData[0] === $name) { // key 0 = fullname
                 return $identifier;
             }
         }
@@ -89,7 +89,7 @@ class SpdxLicense
 
     /**
      * Check, if the identifier for a license is valid.
-     * 
+     *
      * @param string $identifier
      *
      * @return bool

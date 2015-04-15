@@ -42,14 +42,14 @@ class SpdxLicensesUpdater
         $trs = $xPath->query('//table//tbody//tr');
 
         // iterate over each row in the table
-        foreach($trs as $tr) {
+        foreach ($trs as $tr) {
             $tds = $tr->getElementsByTagName('td'); // get the columns in this row
 
-            if($tds->length < 4) {
+            if ($tds->length < 4) {
                 throw new \Exception('Obtaining the license table failed. Wrong table format. Found less than 4 cells in a row.');
             }
 
-            if(trim($tds->item(3)->nodeValue) == 'License Text') {
+            if (trim($tds->item(3)->nodeValue) == 'License Text') {
                 $fullname    = trim($tds->item(0)->nodeValue);
                 $identifier  = trim($tds->item(1)->nodeValue);
                 $osiApproved = ((isset($tds->item(2)->nodeValue) && $tds->item(2)->nodeValue === 'Y')) ? true : false;
