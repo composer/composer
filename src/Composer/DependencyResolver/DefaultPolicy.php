@@ -62,6 +62,14 @@ class DefaultPolicy implements PolicyInterface
         return $pool->getPriority($package->getRepository());
     }
 
+    /**
+     * @deprecated Method has been renamed to selectPreferredPackages, you should update usages
+     */
+    public function selectPreferedPackages(Pool $pool, array $installedMap, array $literals, $requiredPackage = null)
+    {
+        return $this->selectPreferredPackages($pool, $installedMap, $literals, $requiredPackage);
+    }
+
     public function selectPreferredPackages(Pool $pool, array $installedMap, array $literals, $requiredPackage = null)
     {
         $packages = $this->groupLiteralsByNamePreferInstalled($pool, $installedMap, $literals);
