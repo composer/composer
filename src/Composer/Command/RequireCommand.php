@@ -82,6 +82,10 @@ EOT
             return 1;
         }
 
+        if (filesize($file) === 0) {
+            file_put_contents($file, "{\n}\n");
+        }
+
         $json = new JsonFile($file);
         $composerDefinition = $json->read();
         $composerBackup = file_get_contents($json->getPath());
