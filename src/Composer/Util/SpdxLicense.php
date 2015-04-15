@@ -49,10 +49,14 @@ class SpdxLicense
      *
      * @param string $identifier
      *
-     * @return array
+     * @return array|false
      */
     public function getLicenseByIdentifier($identifier)
     {
+        if (!isset($this->licenses[$identifier])) {
+            return false;
+        }
+
         $license = $this->licenses[$identifier];
 
         // add URL for the license text (it's not included in the json)
