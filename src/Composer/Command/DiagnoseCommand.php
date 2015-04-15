@@ -118,7 +118,7 @@ EOT
                 }
             } catch (\Exception $e) {
                 if ($e instanceof TransportException && $e->getCode() === 401) {
-                    $this->outputResult('<comment>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</comment>');
+                    $this->outputResult('<comment>The oauth token for github.com seems invalid, run "composer config --global --unset github-oauth.github.com" to remove it</comment>');
                 } else {
                     $this->outputResult($e);
                 }
