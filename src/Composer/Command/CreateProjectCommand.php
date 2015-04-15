@@ -101,10 +101,6 @@ EOT
     {
         $config = Factory::createConfig();
 
-        $preferSource = false;
-        $preferDist = false;
-        $this->updatePreferredOptions($config, $input, $preferSource, $preferDist);
-
         if ($input->getOption('no-custom-installers')) {
             $this->getIO()->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
@@ -117,8 +113,8 @@ EOT
             $input->getArgument('directory'),
             $input->getArgument('version'),
             $input->getOption('stability'),
-            $preferSource,
-            $preferDist,
+            false,
+            false,
             !$input->getOption('no-dev'),
             $input->getOption('repository-url'),
             $input->getOption('no-plugins'),
@@ -134,6 +130,8 @@ EOT
     public function installProject(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, InputInterface $input)
     {
         $oldCwd = getcwd();
+
+        $this->updatePreferredOptions($config, $input, $preferSource, $preferDist);
 
         // we need to manually load the configuration to pass the auth credentials to the io interface!
         $io->loadConfiguration($config);
@@ -153,9 +151,6 @@ EOT
             // dispatch event
             $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
         }
-
-        $rootPackageConfig = $composer->getConfig();
-        $this->updatePreferredOptions($rootPackageConfig, $input, $preferSource, $preferDist);
 
         // install dependencies of the created project
         if ($noInstall === false) {
