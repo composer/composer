@@ -46,7 +46,7 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA->getId());
         $expected = array($packageA->getId());
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -60,7 +60,7 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA2->getId());
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -74,7 +74,7 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA2->getId());
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -89,7 +89,7 @@ class DefaultPolicyTest extends TestCase
         $expected = array($packageA1->getId());
 
         $policy = new DefaultPolicy(true);
-        $selected = $policy->selectPreferedPackages($this->pool, array(), $literals);
+        $selected = $policy->selectPreferredPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -103,7 +103,7 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA2->getId());
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -118,7 +118,7 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA->getId(), $packageAInstalled->getId());
         $expected = array($packageA->getId());
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, $this->mapFromRepo($this->repoInstalled), $literals);
+        $selected = $this->policy->selectPreferredPackages($this->pool, $this->mapFromRepo($this->repoInstalled), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -137,7 +137,7 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA->getId(), $packageAImportant->getId());
         $expected = array($packageAImportant->getId());
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -166,7 +166,7 @@ class DefaultPolicyTest extends TestCase
 
         $expected = array($packageAAliasImportant->getId());
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -184,7 +184,7 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA->getId(), $packageB->getId());
         $expected = $literals;
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -201,7 +201,7 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA->getId(), $packageB->getId());
         $expected = $literals;
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -220,7 +220,7 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA->getId(), $packageB->getId());
         $expected = $literals;
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals, 'vendor-a/package');
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals, 'vendor-a/package');
         $this->assertEquals($expected, $selected);
 
         // test with reversed order in repo
@@ -234,7 +234,7 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA->getId(), $packageB->getId());
         $expected = $literals;
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals, 'vendor-a/package');
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals, 'vendor-a/package');
         $this->assertEquals($expected, $selected);
     }
 
@@ -259,7 +259,7 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA1->getId());
 
-        $selected = $policy->selectPreferedPackages($this->pool, array(), $literals);
+        $selected = $policy->selectPreferredPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }

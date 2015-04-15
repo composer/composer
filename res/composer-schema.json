@@ -289,7 +289,7 @@
         },
         "prefer-stable": {
             "type": ["boolean"],
-            "description": "If set to true, stable packages will be prefered to dev packages when possible, even if the minimum-stability allows unstable packages."
+            "description": "If set to true, stable packages will be preferred to dev packages when possible, even if the minimum-stability allows unstable packages."
         },
         "bin": {
             "type": ["array"],

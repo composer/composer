@@ -273,9 +273,9 @@ EOT
             $matches[$index] = $package->getId();
         }
 
-        // select prefered package according to policy rules
-        if (!$matchedPackage && $matches && $prefered = $policy->selectPreferedPackages($pool, array(), $matches)) {
-            $matchedPackage = $pool->literalToPackage($prefered[0]);
+        // select preferred package according to policy rules
+        if (!$matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($pool, array(), $matches)) {
+            $matchedPackage = $pool->literalToPackage($preferred[0]);
         }
 
         return array($matchedPackage, $versions);

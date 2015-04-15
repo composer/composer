@@ -137,7 +137,7 @@
 ### 1.0.0-alpha6 (2012-10-23)
 
   * Schema: Added ability to pass additional options to repositories (i.e. ssh keys/client certificates to secure private repos)
-  * Schema: Added a new `~` operator that should be prefered over `>=`, see http://getcomposer.org/doc/01-basic-usage.md#package-versions
+  * Schema: Added a new `~` operator that should be preferred over `>=`, see http://getcomposer.org/doc/01-basic-usage.md#package-versions
   * Schema: Version constraints `<x.y` are assumed to be `<x.y-dev` unless specified as `<x.y-stable` to reduce confusion
   * Added `config` command to edit/list config values, including --global switch for system config
   * Added OAuth token support for the GitHub API
@@ -145,7 +145,7 @@
   * Added --prefer-dist flag to force installs of dev packages from zip archives instead of clones
   * Added --working-dir (-d) flag to change the working directory
   * Added --profile flag to all commands to display execution time and memory usage
-  * Added `github-protocols` config key to define the order of prefered protocols for github.com clones
+  * Added `github-protocols` config key to define the order of preferred protocols for github.com clones
   * Added ability to interactively reset changes to vendor dirs while updating
   * Added support for hg bookmarks in the hg driver
   * Added support for svn repositories not following the standard trunk/branch/tags scheme

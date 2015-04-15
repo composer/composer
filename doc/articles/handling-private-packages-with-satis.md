@@ -177,9 +177,9 @@ Example using a custom HTTP Header field for token authentication:
 }
 ```
 
-### Authentification
+### Authentication
 
-When your private repositories are password protected, you can store the authentification details permanently.
+When your private repositories are password protected, you can store the authentication details permanently.
 The first time Composer needs to authenticate against some domain it will prompt you for a username/password
 and then you will be asked whether you want to store it.
 
