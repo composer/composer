@@ -215,6 +215,11 @@ class GitDownloader extends VcsDownloader
      */
     protected function updateToCommit($path, $reference, $branch, $date)
     {
+        // This uses the "--" sequence to separate branch from file parameters.
+        //
+        // Otherwise git tries the branch name as well as file name.
+        // If the non-existent branch is actually the name of a file, the file
+        // is checked out.
         $template = 'git checkout %s -- && git reset --hard %1$s';
         $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
 
