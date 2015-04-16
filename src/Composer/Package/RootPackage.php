@@ -120,6 +120,6 @@ class RootPackage extends CompletePackage implements RootPackageInterface
      */
     public function hasDependencies()
     {
-        return (!empty($this->getRequires()) || !empty($this->getDevRequires()));
+        return (count($this->getRequires()) > 0 || count($this->getDevRequires()) > 0);
     }
 }
