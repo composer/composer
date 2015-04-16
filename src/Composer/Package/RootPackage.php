@@ -114,4 +114,12 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     {
         return $this->aliases;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasDependencies()
+    {
+        return (!empty($this->getRequires()) || !empty($this->getDevRequires()));
+    }
 }

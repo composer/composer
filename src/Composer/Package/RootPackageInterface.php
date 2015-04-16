@@ -71,4 +71,11 @@ interface RootPackageInterface extends CompletePackageInterface
      * @param array $devRequires A set of package links
      */
     public function setDevRequires(array $devRequires);
+
+    /**
+     * Does the package have any dependencies?
+     *
+     * @return bool
+     */
+    public function hasDependencies();
 }
