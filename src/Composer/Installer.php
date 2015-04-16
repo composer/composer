@@ -384,7 +384,7 @@ class Installer
             $pool->addRepository($lockedRepository, $aliases);
         }
 
-        if (!$installFromLock) {
+        if (!$installFromLock && $this->package->hasDependencies()) {
             $repositories = $this->repositoryManager->getRepositories();
             foreach ($repositories as $repository) {
                 $pool->addRepository($repository, $aliases);
