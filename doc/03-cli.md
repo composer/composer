@@ -375,6 +375,9 @@ sudo composer self-update
 
 * **--rollback (-r):** Rollback to the last version you had installed.
 * **--clean-backups:** Delete old backups during an update. This makes the current version of composer the only backup available after the update.
+* **--no-progress:** Removes the progress display that can mess with some
+  terminals or scripts which don't handle backspace characters.
+* **--if-outdated:** Update only, when Composer is more than 30 days old.
 
 ## config
 
