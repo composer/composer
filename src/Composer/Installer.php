@@ -384,7 +384,7 @@ class Installer
             $pool->addRepository($lockedRepository, $aliases);
         }
 
-        if (!$installFromLock) {
+        if (!$installFromLock && $this->package->hasDependencies()) {
             $repositories = $this->repositoryManager->getRepositories();
             foreach ($repositories as $repository) {
                 $pool->addRepository($repository, $aliases);
@@ -496,17 +496,20 @@ class Installer
         // force dev packages to have the latest links if we update or install from a (potentially new) lock
         $this->processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, 'force-links');
 
-        // solve dependencies
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request);
-        $solver = new Solver($policy, $pool, $installedRepo);
-        try {
-            $operations = $solver->solve($request, $this->ignorePlatformReqs);
-            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
-        } catch (SolverProblemsException $e) {
-            $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>');
-            $this->io->writeError($e->getMessage());
+        $operations = array();
+        if ($this->package->hasDependencies()) {
+            // solve dependencies
+            $solver = new Solver($policy, $pool, $installedRepo);
+            try {
+                $operations = $solver->solve($request, $this->ignorePlatformReqs);
+                $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
+            } catch (SolverProblemsException $e) {
+                $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>');
+                $this->io->writeError($e->getMessage());
 
-            return max(1, $e->getCode());
+                return max(1, $e->getCode());
+            }
         }
 
         // force dev packages to be updated if we update or install from a (potentially new) lock

@@ -78,6 +78,11 @@ class RootAliasPackage extends AliasPackage implements RootPackageInterface
         return $this->aliasOf->setDevRequires($devRequire);
     }
 
+    public function hasDependencies()
+    {
+        return $this->aliasOf->hasDependencies();
+    }
+
     public function __clone()
     {
         parent::__clone();
