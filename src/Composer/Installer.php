@@ -496,10 +496,10 @@ class Installer
         // force dev packages to have the latest links if we update or install from a (potentially new) lock
         $this->processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, 'force-links');
 
+        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request);
         $operations = array();
         if ($this->package->hasDependencies()) {
             // solve dependencies
-            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request);
             $solver = new Solver($policy, $pool, $installedRepo);
             try {
                 $operations = $solver->solve($request, $this->ignorePlatformReqs);
