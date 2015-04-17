@@ -29,7 +29,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DiagnoseCommand extends Command
 {
-    /** @var RemoteFileSystem */
+    /** @var RemoteFilesystem */
     protected $rfs;
 
     /** @var ProcessExecutor */

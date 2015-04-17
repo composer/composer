@@ -19,6 +19,7 @@ use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
 use Composer\Config;
+use React\EventLoop\LoopInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -37,7 +38,7 @@ class GitDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doDownload(PackageInterface $package, $path, $url)
+    public function doDownload(PackageInterface $package, $path, $url, LoopInterface $loop = null)
     {
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
@@ -51,19 +52,20 @@ class GitDownloader extends VcsDownloader
             return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($path), ProcessExecutor::escape($ref));
         };
 
-        $this->gitUtil->runCommand($commandCallable, $url, $path, true);
-        if ($url !== $package->getSourceUrl()) {
-            $url = $package->getSourceUrl();
-            $this->process->execute(sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
-        }
-        $this->setPushUrl($path, $url);
-
-        if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
-            if ($package->getDistReference() === $package->getSourceReference()) {
-                $package->setDistReference($newRef);
+        return $this->gitUtil->runCommand($commandCallable, $url, $path, true, $loop)->then(function () use ($url, $package, $path, $ref) {
+            if ($url !== $package->getSourceUrl()) {
+                $url = $package->getSourceUrl();
+                $this->process->execute(sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
             }
-            $package->setSourceReference($newRef);
-        }
+            $this->setPushUrl($path, $url);
+
+            if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
+                if ($package->getDistReference() === $package->getSourceReference()) {
+                    $package->setDistReference($newRef);
+                }
+                $package->setSourceReference($newRef);
+            }
+        });
     }
 
     /**

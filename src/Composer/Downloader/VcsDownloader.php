@@ -18,6 +18,9 @@ use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use React\EventLoop\LoopInterface;
+use React\Promise\Deferred;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -48,7 +51,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path, LoopInterface $loop = null)
     {
         if (!$package->getSourceReference()) {
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
@@ -58,32 +61,63 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         $this->filesystem->emptyDirectory($path);
 
         $urls = $package->getSourceUrls();
-        while ($url = array_shift($urls)) {
+
+        $deferred = new Deferred();
+        $retryLoop = function (\Exception $e = null) use ($package, $path, &$urls, $loop, $deferred, &$retryLoop) {
+            if (isset($e)) {
+                if ($this->io->isDebug()) {
+                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
+                } elseif ($urls) {
+                    $this->io->writeError('    Failed, trying the next URL');
+                }
+            }
+            if (!$urls) {
+                $deferred->reject($e);
+
+                return;
+            }
             try {
+                $url = array_shift($urls);
+
                 if (Filesystem::isLocalPath($url)) {
                     $url = realpath($url);
                 }
-                $this->doDownload($package, $path, $url);
-                break;
+
+                $onDownload = function ($result) use ($deferred) {
+                    $this->io->writeError('');
+                    $deferred->resolve($result);
+                };
+
+                $promise = $this->doDownload($package, $path, $url, $loop);
+                if ($promise instanceof PromiseInterface) {
+                    $promise->then($onDownload, $retryLoop);
+                } else {
+                    $onDownload($promise);
+                }
             } catch (\Exception $e) {
-                if ($this->io->isDebug()) {
-                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
-                } elseif (count($urls)) {
-                    $this->io->writeError('    Failed, trying the next URL');
-                }
-                if (!count($urls)) {
-                    throw $e;
-                }
+                $retryLoop($e);
             }
+        };
+
+        $promise = $deferred->promise();
+        if (!$loop) {
+            $promise->done(function ($result) use (&$promise) {$promise = $result;});
+        }
+        try {
+            $retryLoop();
+            $retryLoop = null;
+        } catch (\Exception $e) {
+            $retryLoop = null;
+            throw $e;
         }
 
-        $this->io->writeError('');
+        return $promise;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $path)
+    public function update(PackageInterface $initial, PackageInterface $target, $path, LoopInterface $loop = null)
     {
         if (!$target->getSourceReference()) {
             throw new \InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');

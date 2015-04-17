@@ -17,6 +17,7 @@ use Composer\Util\Filesystem;
 use Composer\TestCase;
 use Composer\Composer;
 use Composer\Config;
+use React\Promise\Deferred;
 
 class LibraryInstallerTest extends TestCase
 {
@@ -105,6 +106,9 @@ class LibraryInstallerTest extends TestCase
         $library = new LibraryInstaller($this->io, $this->composer);
         $package = $this->createPackageMock();
 
+        $deferred = new Deferred();
+        $deferred->resolve();
+
         $package
             ->expects($this->any())
             ->method('getPrettyName')
@@ -113,7 +117,8 @@ class LibraryInstallerTest extends TestCase
         $this->dm
             ->expects($this->once())
             ->method('download')
-            ->with($package, $this->vendorDir.'/some/package');
+            ->with($package, $this->vendorDir.'/some/package')
+            ->will($this->returnValue($deferred->promise()));
 
         $this->repository
             ->expects($this->once())
@@ -140,6 +145,9 @@ class LibraryInstallerTest extends TestCase
 
         $initial = $this->createPackageMock();
         $target  = $this->createPackageMock();
+
+        $deferred = new Deferred();
+        $deferred->resolve();
 
         $initial
             ->expects($this->once())
@@ -169,7 +177,8 @@ class LibraryInstallerTest extends TestCase
         $this->dm
             ->expects($this->once())
             ->method('update')
-            ->with($initial, $target, $this->vendorDir.'/package1/newtarget');
+            ->with($initial, $target, $this->vendorDir.'/package1/newtarget')
+            ->will($this->returnValue($deferred->promise()));
 
         $this->repository
             ->expects($this->once())

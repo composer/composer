@@ -18,6 +18,7 @@ use Composer\Downloader\PearPackageExtractor;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
+use React\EventLoop\LoopInterface;
 
 /**
  * Package installation manager.
@@ -42,43 +43,44 @@ class PearInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target, LoopInterface $loop = null)
     {
         $this->uninstall($repo, $initial);
-        $this->install($repo, $target);
+        return $this->install($repo, $target, $loop);
     }
 
-    protected function installCode(PackageInterface $package)
+    protected function installCode(PackageInterface $package, LoopInterface $loop = null)
     {
-        parent::installCode($package);
-        parent::initializeBinDir();
+        return parent::installCode($package, $loop)->then(function () use ($package) {
+            parent::initializeBinDir();
 
-        $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
-        $php_bin = $this->binDir . ($isWindows ? '/composer-php.bat' : '/composer-php');
+            $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
+            $php_bin = $this->binDir . ($isWindows ? '/composer-php.bat' : '/composer-php');
 
-        if (!$isWindows) {
-            $php_bin = '/usr/bin/env ' . $php_bin;
-        }
+            if (!$isWindows) {
+                $php_bin = '/usr/bin/env ' . $php_bin;
+            }
 
-        $installPath = $this->getInstallPath($package);
-        $vars = array(
-            'os' => $isWindows ? 'windows' : 'linux',
-            'php_bin' => $php_bin,
-            'pear_php' => $installPath,
-            'php_dir' => $installPath,
-            'bin_dir' => $installPath . '/bin',
-            'data_dir' => $installPath . '/data',
-            'version' => $package->getPrettyVersion(),
-        );
+            $installPath = $this->getInstallPath($package);
+            $vars = array(
+                'os' => $isWindows ? 'windows' : 'linux',
+                'php_bin' => $php_bin,
+                'pear_php' => $installPath,
+                'php_dir' => $installPath,
+                'bin_dir' => $installPath . '/bin',
+                'data_dir' => $installPath . '/data',
+                'version' => $package->getPrettyVersion(),
+            );
 
-        $packageArchive = $this->getInstallPath($package).'/'.pathinfo($package->getDistUrl(), PATHINFO_BASENAME);
-        $pearExtractor = new PearPackageExtractor($packageArchive);
-        $pearExtractor->extractTo($this->getInstallPath($package), array('php' => '/', 'script' => '/bin', 'data' => '/data'), $vars);
+            $packageArchive = $this->getInstallPath($package).'/'.pathinfo($package->getDistUrl(), PATHINFO_BASENAME);
+            $pearExtractor = new PearPackageExtractor($packageArchive);
+            $pearExtractor->extractTo($this->getInstallPath($package), array('php' => '/', 'script' => '/bin', 'data' => '/data'), $vars);
 
-        if ($this->io->isVerbose()) {
-            $this->io->writeError('    Cleaning up');
-        }
-        $this->filesystem->unlink($packageArchive);
+            if ($this->io->isVerbose()) {
+                $this->io->writeError('    Cleaning up');
+            }
+            $this->filesystem->unlink($packageArchive);
+        });
     }
 
     protected function getBinaries(PackageInterface $package)

@@ -44,6 +44,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Script\ScriptEvents;
+use React;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -522,6 +523,9 @@ class Installer
         $operations = $this->movePluginsToFront($operations);
         $operations = $this->moveUninstallsToFront($operations);
 
+        $loop = React\EventLoop\Factory::create();
+        $postOperations = array();
+
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
@@ -569,15 +573,12 @@ class Installer
             }
 
             // output non-alias ops in dry run, output alias ops in debug verbosity
-            if ($this->dryRun && false === strpos($operation->getJobType(), 'Alias')) {
-                $this->io->writeError('  - ' . $operation);
-                $this->io->writeError('');
-            } elseif ($this->io->isDebug() && false !== strpos($operation->getJobType(), 'Alias')) {
+            if (false === strpos($operation->getJobType(), 'Alias') ? $this->dryRun : $this->io->isDebug()) {
                 $this->io->writeError('  - ' . $operation);
                 $this->io->writeError('');
             }
 
-            $this->installationManager->execute($localRepo, $operation);
+            $this->installationManager->execute($localRepo, $operation, $loop);
 
             // output reasons why the operation was ran, only for install/update operations
             if ($this->verbose && $this->io->isVeryVerbose() && in_array($operation->getJobType(), array('install', 'update'))) {
@@ -598,8 +599,15 @@ class Installer
 
             $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
             if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
+                $postEvents[] = $operation;
             }
+        }
+
+        $loop->run();
+
+        foreach ($postOperations as $operation) {
+            $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
+            $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
 
             if (!$this->dryRun) {
                 $localRepo->write();

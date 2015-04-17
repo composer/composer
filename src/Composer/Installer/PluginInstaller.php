@@ -17,6 +17,7 @@ use Composer\Package\Package;
 use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
+use React\EventLoop\LoopInterface;
 
 /**
  * Installer for plugin packages
@@ -50,28 +51,30 @@ class PluginInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package, LoopInterface $loop = null)
     {
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
             throw new \UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
         }
 
-        parent::install($repo, $package);
-        $this->composer->getPluginManager()->registerPackage($package, true);
+        return parent::install($repo, $package, $loop)->then(function () use ($package) {
+            $this->composer->getPluginManager()->registerPackage($package, true);
+        });
     }
 
     /**
      * {@inheritDoc}
      */
-    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target, LoopInterface $loop = null)
     {
         $extra = $target->getExtra();
         if (empty($extra['class'])) {
             throw new \UnexpectedValueException('Error while installing '.$target->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
         }
 
-        parent::update($repo, $initial, $target);
-        $this->composer->getPluginManager()->registerPackage($target, true);
+        return parent::update($repo, $initial, $target, $loop)->then(function () use ($target) {
+            $this->composer->getPluginManager()->registerPackage($target, true);
+        });
     }
 }

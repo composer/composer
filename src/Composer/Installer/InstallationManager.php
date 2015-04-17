@@ -23,6 +23,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\Util\StreamContextFactory;
+use React\EventLoop\LoopInterface;
 
 /**
  * Package operation manager.
@@ -36,6 +37,7 @@ class InstallationManager
     private $installers = array();
     private $cache = array();
     private $notifiablePackages = array();
+    private $loop;
 
     public function reset()
     {
@@ -133,10 +135,12 @@ class InstallationManager
      * @param RepositoryInterface $repo      repository in which to check
      * @param OperationInterface  $operation operation instance
      */
-    public function execute(RepositoryInterface $repo, OperationInterface $operation)
+    public function execute(RepositoryInterface $repo, OperationInterface $operation, LoopInterface $loop = null)
     {
         $method = $operation->getJobType();
+        $this->loop = $loop;
         $this->$method($repo, $operation);
+        $this->loop = null;
     }
 
     /**
@@ -149,7 +153,7 @@ class InstallationManager
     {
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
-        $installer->install($repo, $package);
+        $installer->install($repo, $package, $this->loop);
         $this->markForNotification($package);
     }
 
@@ -169,11 +173,11 @@ class InstallationManager
 
         if ($initialType === $targetType) {
             $installer = $this->getInstaller($initialType);
-            $installer->update($repo, $initial, $target);
+            $installer->update($repo, $initial, $target, $this->loop);
             $this->markForNotification($target);
         } else {
             $this->getInstaller($initialType)->uninstall($repo, $initial);
-            $this->getInstaller($targetType)->install($repo, $target);
+            $this->getInstaller($targetType)->install($repo, $target, $this->loop);
         }
     }
 

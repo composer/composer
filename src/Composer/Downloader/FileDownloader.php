@@ -22,6 +22,9 @@ use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
+use React\EventLoop\LoopInterface;
+use React\Promise\Deferred;
+use React\Promise\PromiseInterface;
 
 /**
  * Base downloader for files
@@ -75,7 +78,7 @@ class FileDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path, LoopInterface $loop = null)
     {
         if (!$package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
@@ -84,28 +87,58 @@ class FileDownloader implements DownloaderInterface
         $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
         $urls = $package->getDistUrls();
-        while ($url = array_shift($urls)) {
-            try {
-                return $this->doDownload($package, $path, $url);
-            } catch (\Exception $e) {
+
+        $deferred = new Deferred();
+        $retryLoop = function (\Exception $e = null) use (&$urls, $package, $path, $loop, $deferred, &$retryLoop) {
+            if (isset($e)) {
                 if ($this->io->isDebug()) {
                     $this->io->writeError('');
                     $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
-                } elseif (count($urls)) {
+                } elseif ($urls) {
                     $this->io->writeError('');
                     $this->io->writeError('    Failed, trying the next URL ('.$e->getCode().': '.$e->getMessage().')');
                 }
-
-                if (!count($urls)) {
-                    throw $e;
-                }
             }
+            if (!$urls) {
+                $deferred->reject($e);
+
+                return;
+            }
+            try {
+                $url = array_shift($urls);
+
+                $onDownload = function ($fileName) use ($deferred) {
+                    $this->io->writeError('');
+                    $deferred->resolve($fileName);
+                };
+
+                $promise = $this->doDownload($package, $path, $url, $loop);
+                if ($promise instanceof PromiseInterface) {
+                    $promise->then($onDownload, $retryLoop);
+                } else {
+                    $onDownload($promise);
+                }
+            } catch (\Exception $e) {
+                $retryLoop($e);
+            }
+        };
+
+        $promise = $deferred->promise();
+        if (!$loop) {
+            $promise->done(function ($result) use (&$promise) {$promise = $result;});
+        }
+        try {
+            $retryLoop();
+            $retryLoop = null;
+        } catch (\Exception $e) {
+            $retryLoop = null;
+            throw $e;
         }
 
-        $this->io->writeError('');
+        return $promise;
     }
 
-    protected function doDownload(PackageInterface $package, $path, $url)
+    protected function doDownload(PackageInterface $package, $path, $url, LoopInterface $loop = null)
     {
         $this->filesystem->emptyDirectory($path);
 
@@ -194,10 +227,10 @@ class FileDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $path)
+    public function update(PackageInterface $initial, PackageInterface $target, $path, LoopInterface $loop = null)
     {
         $this->remove($initial, $path);
-        $this->download($target, $path);
+        return $this->download($target, $path, $loop);
     }
 
     /**
