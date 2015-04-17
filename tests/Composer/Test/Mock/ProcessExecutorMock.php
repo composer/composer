@@ -12,6 +12,7 @@
 namespace Composer\Test\Mock;
 
 use Composer\Util\ProcessExecutor;
+use React\EventLoop\LoopInterface;
 
 class ProcessExecutorMock extends ProcessExecutor
 {
@@ -22,7 +23,7 @@ class ProcessExecutorMock extends ProcessExecutor
         $this->execute = $execute;
     }
 
-    public function execute($command, &$output = null, $cwd = null)
+    public function execute($command, &$output = null, $cwd = null, LoopInterface $loop = null)
     {
         $execute = $this->execute;
 

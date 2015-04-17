@@ -12,9 +12,9 @@
 
 namespace Composer\Util;
 
-use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessUtils;
 use Composer\IO\IOInterface;
+use React;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -41,11 +41,13 @@ class ProcessExecutor
      * @param  string $cwd     the working directory
      * @return int    statuscode
      */
-    public function execute($command, &$output = null, $cwd = null)
+    public function execute($command, &$output = null, $cwd = null, React\EventLoop\LoopInterface $loop = null)
     {
-        if ($this->io && $this->io->isDebug()) {
+        $that = clone $this;
+
+        if ($that->io && $that->io->isDebug()) {
             $safeCommand = preg_replace('{(://[^:/\s]+:)[^@\s/]+}i', '$1****', $command);
-            $this->io->writeError('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
+            $that->io->writeError('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
         }
 
         // make sure that null translate to the proper directory in case the dir is a symlink
@@ -54,20 +56,69 @@ class ProcessExecutor
             $cwd = realpath(getcwd());
         }
 
-        $this->captureOutput = count(func_get_args()) > 1;
+        $that->captureOutput = func_num_args() > 1;
         $this->errorOutput = null;
-        $process = new Process($command, $cwd, null, null, static::getTimeout());
 
-        $callback = is_callable($output) ? $output : array($this, 'outputHandler');
-        $process->run($callback);
+        $result = (object) array(
+            'status' => null,
+            'stdout' => null,
+            'stderr' => null,
+        );
 
-        if ($this->captureOutput && !is_callable($output)) {
-            $output = $process->getOutput();
+        if (is_callable($output)) {
+            $callback = $output;
+        } else {
+            $callback = array($that, 'outputHandler');
+            if ($that->captureOutput) {
+                $result->stdout =& $output;
+                $output = '';
+            }
         }
 
-        $this->errorOutput = $process->getErrorOutput();
+        $deferred = new React\Promise\Deferred();
+        $runLoop = !$loop;
+        $loop = $loop ?: React\EventLoop\Factory::create();
+        $process = new React\ChildProcess\Process($command, $cwd);
 
-        return $process->getExitCode();
+        $timeout = static::getTimeout();
+        $timer = $loop->addTimer($timeout, function () use ($process, $deferred, $timeout, $command) {
+            if ($process->isRunning()) {
+                $process->terminate();
+
+                $deferred->reject(new \RuntimeException(sprintf('The process "%s" exceeded the timeout of %s seconds.', $command, $timeout)));
+            }
+        });
+        $process->on('exit', function($status, $signal) use ($timer, $deferred, $result) {
+            $timer->cancel();
+            $result->status = $status;
+            $deferred->resolve($result);
+        });
+
+        $process->start($loop);
+
+        $process->stdout->on('data', function ($data) use ($result, $callback) {
+            if (null !== $result->stdout) {
+                $result->stdout .= $data;
+            }
+            call_user_func($callback, 'out', $data);
+        });
+
+        $process->stderr->on('data', function ($data) use ($result, $callback) {
+            $result->stderr .= $data;
+            call_user_func($callback, 'err', $data);
+        });
+
+        $promise = $deferred->promise();
+
+        if (!$runLoop) {
+            return $promise;
+        }
+
+        $promise->done();
+        $loop->run();
+        $this->errorOutput = $result->stderr;
+
+        return $result->status;
     }
 
     public function splitLines($output)
