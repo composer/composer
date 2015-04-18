@@ -49,12 +49,12 @@ class SpdxLicense
      *
      * @param string $identifier
      *
-     * @return array|false
+     * @return array|null
      */
     public function getLicenseByIdentifier($identifier)
     {
         if (!isset($this->licenses[$identifier])) {
-            return false;
+            return;
         }
 
         $license = $this->licenses[$identifier];
