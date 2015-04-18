@@ -208,12 +208,8 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
 
     private function expectParseException($text, $json)
     {
-        try {
-            JsonFile::parseJson($json);
-            $this->fail();
-        } catch (ParsingException $e) {
-            $this->assertContains($text, $e->getMessage());
-        }
+        $this->setExpectedException('Seld\JsonLint\ParsingException', $text);
+        JsonFile::parseJson($json);
     }
 
     private function assertJsonFormat($json, $data, $options = null)
