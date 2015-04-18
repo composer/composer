@@ -116,8 +116,9 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     {
         $config = new Config(false);
         $config->merge(array('config' => array('preferred-install' => 'source')));
+        $config->merge(array('config' => array('preferred-install' => 'dist')));
 
-        $this->assertEquals(array('*' => 'source'), $config->get('preferred-install'));
+        $this->assertEquals('dist', $config->get('preferred-install'));
     }
 
     public function testMergePreferredInstall()
