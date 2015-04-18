@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use Composer\Config;
 use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -198,17 +199,7 @@ class DownloadManager
             throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }
 
-        if (!$this->preferDist && !$preferSource) {
-            foreach ($this->packagePreferences as $pattern => $preference) {
-                $pattern = '{^'.str_replace('*', '.*', $pattern).'$}i';
-                if (preg_match($pattern, $package->getName())) {
-                    if ('dist' === $preference || (!$package->isDev() && 'auto' === $preference)) {
-                        $sources = array_reverse($sources);
-                    }
-                    break;
-                }
-            }
-        } elseif ((!$package->isDev() || $this->preferDist) && !$preferSource) {
+        if (Config::INSTALL_PREFERENCE_DIST === $this->resolvePackageInstallPreference($package, $preferSource)) {
             $sources = array_reverse($sources);
         }
 
@@ -295,5 +286,26 @@ class DownloadManager
         if ($downloader) {
             $downloader->remove($package, $targetDir);
         }
+    }
+
+    protected function resolvePackageInstallPreference(PackageInterface $package, $preferSource = false)
+    {
+        if ($this->preferSource || $preferSource) {
+            return Config::INSTALL_PREFERENCE_SOURCE;
+        }
+        if ($this->preferDist) {
+            return Config::INSTALL_PREFERENCE_DIST;
+        }
+        foreach ($this->packagePreferences as $pattern => $preference) {
+            $pattern = '{^'.str_replace('*', '.*', $pattern).'$}i';
+            if (preg_match($pattern, $package->getName())) {
+                if (Config::INSTALL_PREFERENCE_DIST === $preference || (!$package->isDev() && Config::INSTALL_PREFERENCE_AUTO === $preference)) {
+                    return Config::INSTALL_PREFERENCE_DIST;
+                }
+                return Config::INSTALL_PREFERENCE_SOURCE;
+            }
+        }
+
+        return $package->isDev() ? Config::INSTALL_PREFERENCE_SOURCE : Config::INSTALL_PREFERENCE_DIST;
     }
 }
