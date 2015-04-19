@@ -830,9 +830,9 @@ preferred-install Example:
     "config": {
         "preferred-install": {
             "my-organization/stable-package": "dist",
-		    "my-organization/*": "source",
-			"partner-organization/*": "auto",
-			"*": "dist"
+            "my-organization/*": "source",
+            "partner-organization/*": "auto",
+            "*": "dist"
         }
     }
 }
