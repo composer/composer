@@ -743,7 +743,8 @@ The following options are supported:
   will also look for classes in the PHP include path.
 * **preferred-install:** Defaults to `auto` and can be any of `source`, `dist` or
   `auto`. This option allows you to set the install method Composer will prefer to
-  use.
+  use. Can optionally be a hash of patterns for more granular install preferences.
+  See example below.
 * **store-auths:** What to do after prompting for authentication, one of:
   `true` (always store), `false` (do not store) and `"prompt"` (ask every
   time), defaults to `"prompt"`.
@@ -821,6 +822,26 @@ Example:
 > `github-oauth` can also be specified inside a `auth.json` file that goes
 > besides your `composer.json`. That way you can gitignore it and every
 > developer can place their own credentials in there.
+
+preferred-install Example:
+
+```json
+{
+    "config": {
+        "preferred-install": {
+            "my-organization/stable-package": "dist",
+		    "my-organization/*": "source",
+			"partner-organization/*": "auto",
+			"*": "dist"
+        }
+    }
+}
+```
+
+> **Note:** Order matters. More specific patterns should be earlier than
+> more relaxed patterns. When mixing the string notation with the hash
+> configuration in global and package configurations the string notation
+> is translated to a `*` package pattern.
 
 ### scripts <span>(root-only)</span>
 
