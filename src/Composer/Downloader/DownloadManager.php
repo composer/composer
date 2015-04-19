@@ -199,7 +199,7 @@ class DownloadManager
             throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }
 
-        if (Config::INSTALL_PREFERENCE_DIST === $this->resolvePackageInstallPreference($package, $preferSource)) {
+        if (!$preferSource && ($this->preferDist || Config::INSTALL_PREFERENCE_DIST === $this->resolvePackageInstallPreference($package))) {
             $sources = array_reverse($sources);
         }
 
@@ -288,14 +288,15 @@ class DownloadManager
         }
     }
 
-    protected function resolvePackageInstallPreference(PackageInterface $package, $preferSource = false)
+    /**
+     * Determines the install preference of a package
+     *
+     * @param PackageInterface $package package instance
+     *
+     * @return string
+     */
+    protected function resolvePackageInstallPreference(PackageInterface $package)
     {
-        if ($this->preferSource || $preferSource) {
-            return Config::INSTALL_PREFERENCE_SOURCE;
-        }
-        if ($this->preferDist) {
-            return Config::INSTALL_PREFERENCE_DIST;
-        }
         foreach ($this->packagePreferences as $pattern => $preference) {
             $pattern = '{^'.str_replace('*', '.*', $pattern).'$}i';
             if (preg_match($pattern, $package->getName())) {
