@@ -153,41 +153,58 @@ class FileDownloader implements DownloaderInterface
         }
         $rfs = $preFileDownloadEvent->getRemoteFilesystem();
 
-        try {
-            $checksum = $package->getDistSha1Checksum();
-            $cacheKey = $this->getCacheKey($package);
+        $checksum = $package->getDistSha1Checksum();
+        $cacheKey = $this->getCacheKey($package);
 
-            // download if we don't have it in cache or the cache is invalidated
-            if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
-                if (!$this->outputProgress) {
-                    $this->io->writeError('    Downloading');
-                }
+        $deferred = new Deferred();
 
-                // try to download 3 times then fail hard
-                $retries = 3;
-                while ($retries--) {
-                    try {
-                        $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress, $package->getTransportOptions());
-                        break;
-                    } catch (TransportException $e) {
-                        // if we got an http response with a proper code, then requesting again will probably not help, abort
-                        if ((0 !== $e->getCode() && !in_array($e->getCode(),array(500, 502, 503, 504))) || !$retries) {
-                            throw $e;
-                        }
-                        if ($this->io->isVerbose()) {
-                            $this->io->writeError('    Download failed, retrying...');
-                        }
-                        usleep(500000);
-                    }
-                }
+        // download if we don't have it in cache or the cache is invalidated
+        if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
+            if (!$this->outputProgress) {
+                $this->io->writeError('    Downloading');
+            }
 
+            // try to download 3 times then fail hard
+            $retries = 3;
+            $onCopy = function () use ($cacheKey, $fileName, $deferred) {
                 if ($this->cache) {
                     $this->cache->copyFrom($cacheKey, $fileName);
                 }
-            } else {
-                $this->io->writeError('    Loading from cache');
-            }
+                $deferred->resolve();
+            };
+            $onException = function (\Exception $e) use (&$retries, $deferred, &$retryLoop) {
+                // if we got an http response with a proper code, then requesting again will probably not help, abort
+                if (!$e instanceof TransportException || (0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries--) {
+                    $deferred->reject($e);
 
+                    return;
+                }
+                if ($this->io->isVerbose()) {
+                    $this->io->writeError('    Download failed, retrying...');
+                }
+                usleep(500000);
+                $retryLoop();
+            };
+            $retryLoop = function () use ($rfs, $hostname, $processedUrl, $fileName, $package, $loop, $onCopy, $onException, &$retryLoop) {
+                try {
+                    $promise = $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress, $package->getTransportOptions(), $loop);
+                    if ($promise instanceof PromiseInterface) {
+                        $promise->then($onCopy)->then(null, $onException);
+                    } else {
+                        $onCopy($promise);
+                    }
+                } catch (\Exception $e) {
+                    $onException($e);
+                }
+            };
+        } else {
+            $retryLoop = function () use ($deferred) {
+                $this->io->writeError('    Loading from cache');
+                $deferred->resolve();
+            };
+        }
+
+        $promise = $deferred->promise()->then(function () use ($fileName, $url, $checksum) {
             if (!file_exists($fileName)) {
                 throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
                     .' directory is writable and you have internet connectivity');
@@ -196,14 +213,28 @@ class FileDownloader implements DownloaderInterface
             if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
                 throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url.')');
             }
-        } catch (\Exception $e) {
+
+            return $fileName;
+        })->then(null, function (\Exception $e) use ($path, $package) {
             // clean up
             $this->filesystem->removeDirectory($path);
             $this->clearCache($package, $path);
+
+            throw $e;
+        });
+
+        if (!$loop) {
+            $promise->done(function ($result) use (&$promise) {$promise = $result;});
+        }
+        try {
+            $retryLoop();
+            $retryLoop = null;
+        } catch (\Exception $e) {
+            $retryLoop = null;
             throw $e;
         }
 
-        return $fileName;
+        return $promise;
     }
 
     /**
