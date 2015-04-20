@@ -98,7 +98,7 @@ class ProcessExecutor
 
     public static function getTimeout()
     {
-        return static::$timeout;
+        return getenv('COMPOSER_PROCESS_TIMEOUT') ?: static::$timeout;
     }
 
     public static function setTimeout($timeout)
