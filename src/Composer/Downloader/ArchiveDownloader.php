@@ -14,6 +14,9 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Symfony\Component\Finder\Finder;
+use React\EventLoop\LoopInterface;
+use React\Promise\Deferred;
+use React\Promise\PromiseInterface;
 
 /**
  * Base downloader for archives
@@ -27,68 +30,88 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path, LoopInterface $loop = null)
     {
         $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
-        $retries = 3;
-        while ($retries--) {
-            $fileName = parent::download($package, $path);
 
+        $retries = 3;
+        $future = (object) array('deferred' => new Deferred());
+        $future->onDownload = function ($fileName) use ($temporaryDir, $package, $path, $future) {
             if ($this->io->isVerbose()) {
                 $this->io->writeError('    Extracting archive');
             }
 
+            $this->filesystem->ensureDirectoryExists($temporaryDir);
             try {
-                $this->filesystem->ensureDirectoryExists($temporaryDir);
-                try {
-                    $this->extract($fileName, $temporaryDir);
-                } catch (\Exception $e) {
-                    // remove cache if the file was corrupted
-                    parent::clearCache($package, $path);
-                    throw $e;
-                }
-
-                $this->filesystem->unlink($fileName);
-
-                $contentDir = $this->getFolderContent($temporaryDir);
-
-                // only one dir in the archive, extract its contents out of it
-                if (1 === count($contentDir) && is_dir(reset($contentDir))) {
-                    $contentDir = $this->getFolderContent((string) reset($contentDir));
-                }
-
-                // move files back out of the temp dir
-                foreach ($contentDir as $file) {
-                    $file = (string) $file;
-                    $this->filesystem->rename($file, $path . '/' . basename($file));
-                }
-
-                $this->filesystem->removeDirectory($temporaryDir);
-                if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
-                    $this->filesystem->removeDirectory($this->config->get('vendor-dir').'/composer/');
-                }
-                if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
-                    $this->filesystem->removeDirectory($this->config->get('vendor-dir'));
-                }
+                $this->extract($fileName, $temporaryDir);
             } catch (\Exception $e) {
-                // clean up
-                $this->filesystem->removeDirectory($path);
-                $this->filesystem->removeDirectory($temporaryDir);
-
-                // retry downloading if we have an invalid zip file
-                if ($retries && $e instanceof \UnexpectedValueException && class_exists('ZipArchive') && $e->getCode() === \ZipArchive::ER_NOZIP) {
-                    $this->io->writeError('    Invalid zip file, retrying...');
-                    usleep(500000);
-                    continue;
-                }
-
+                // remove cache if the file was corrupted
+                parent::clearCache($package, $path);
                 throw $e;
             }
 
-            break;
-        }
+            $this->filesystem->unlink($fileName);
 
-        $this->io->writeError('');
+            $contentDir = $this->getFolderContent($temporaryDir);
+
+            // only one dir in the archive, extract its contents out of it
+            if (1 === count($contentDir) && is_dir(reset($contentDir))) {
+                $contentDir = $this->getFolderContent((string) reset($contentDir));
+            }
+
+            // move files back out of the temp dir
+            foreach ($contentDir as $file) {
+                $file = (string) $file;
+                $this->filesystem->rename($file, $path . '/' . basename($file));
+            }
+
+            $this->filesystem->removeDirectory($temporaryDir);
+            if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
+                $this->filesystem->removeDirectory($this->config->get('vendor-dir').'/composer/');
+            }
+            if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
+                $this->filesystem->removeDirectory($this->config->get('vendor-dir'));
+            }
+
+            $this->io->writeError('');
+            $future->onDownload = $future->onException = $future->retryLoop = null;
+            $future->deferred->resolve($fileName);
+        };
+        $future->onException = function (\Exception $e) use (&$retries, $path, $temporaryDir, $future) {
+            // clean up
+            $this->filesystem->removeDirectory($path);
+            $this->filesystem->removeDirectory($temporaryDir);
+
+            // retry downloading if we have an invalid zip file
+            if ($retries-- && $e instanceof \UnexpectedValueException && class_exists('ZipArchive') && $e->getCode() === \ZipArchive::ER_NOZIP) {
+                $this->io->writeError('    Invalid zip file, retrying...');
+                usleep(500000);
+                call_user_func($future->retryLoop);
+            } else {
+                $future->onDownload = $future->onException = $future->retryLoop = null;
+                $future->deferred->reject($e);
+            }
+        };
+        $future->retryLoop = function () use ($package, $path, $loop, $future) {
+            try {
+                $promise = parent::download($package, $path, $loop);
+                if ($promise instanceof PromiseInterface) {
+                    $promise->then($future->onDownload)->then(null, $future->onException);
+                } else {
+                    call_user_func($future->onDownload, $promise);
+                }
+            } catch (\Exception $e) {
+                call_user_func($future->onException, $e);
+            }
+        };
+
+        $promise = $future->deferred->promise();
+        if (!$loop) {
+            $promise->done(function ($result) use (&$promise) {$promise = $result;});
+        }
+        call_user_func($future->retryLoop);
+
+        return $promise;
     }
 
     /**
