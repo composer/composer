@@ -249,9 +249,6 @@ class Factory
         if ($fullLoad) {
             // load auth configs into the IO instance
             $io->loadConfiguration($config);
-
-            // setup process timeout
-            ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
         }
 
         // initialize event dispatcher
