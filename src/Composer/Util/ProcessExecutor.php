@@ -96,11 +96,17 @@ class ProcessExecutor
         echo $buffer;
     }
 
+    /**
+     * @return int
+     */
     public static function getTimeout()
     {
         return getenv('COMPOSER_PROCESS_TIMEOUT') ?: static::$timeout;
     }
 
+    /**
+     * @param int $timeout
+     */
     public static function setTimeout($timeout)
     {
         static::$timeout = $timeout;
@@ -113,7 +119,6 @@ class ProcessExecutor
      *
      * @return string The escaped argument
      */
-
     public static function escape($argument)
     {
         return ProcessUtils::escapeArgument($argument);
