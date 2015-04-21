@@ -24,6 +24,8 @@ use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\Util\StreamContextFactory;
 use React\EventLoop\LoopInterface;
+use React\Promise\Deferred;
+use React\Promise\PromiseInterface;
 
 /**
  * Package operation manager.
@@ -138,9 +140,45 @@ class InstallationManager
     public function execute(RepositoryInterface $repo, OperationInterface $operation, LoopInterface $loop = null)
     {
         $method = $operation->getJobType();
-        $this->loop = $loop;
-        $this->$method($repo, $operation);
-        $this->loop = null;
+        if ($loop) {
+            $deferred = new Deferred();
+            $loop->composerOperations[] = array($method, $repo, $operation, $deferred);
+
+            if (1 === count($loop->composerOperations)) {
+                $loop->composerOperationsCount = 0;
+                $loop->composerTick = function ($loop) {
+                    if (empty($loop->composerOperations)) {
+                        unset($loop->composerOperations, $loop->composerOperationsCount, $loop->composerTick, $loop->composerReTick);
+
+                        return;
+                    }
+                    list($method, $repo, $operation, $deferred) = array_shift($loop->composerOperations);
+                    try {
+                        $this->loop = $loop;
+                        $promise = $this->$method($repo, $operation);
+                        $this->loop = null;
+                        if ($promise instanceof PromiseInterface) {
+                            $promise->then(array($deferred, 'resolve'))->then(null, array($deferred, 'reject'));
+                        } else {
+                            $deferred->resolve($promise);
+                        }
+                    } catch (\Exception $e) {
+                        $deferred->reject($e);
+                    }
+                };
+                $loop->composerReTick = function () use ($loop) {
+                    $loop->futureTick($loop->composerTick);
+                };
+            }
+
+            if (8 > $loop->composerOperationsCount++) {
+                $loop->futureTick($loop->composerTick);
+            }
+
+            return $deferred->promise()->then($loop->composerReTick, $loop->composerReTick);
+        } else {
+            $this->$method($repo, $operation);
+        }
     }
 
     /**
@@ -153,8 +191,10 @@ class InstallationManager
     {
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
-        $installer->install($repo, $package, $this->loop);
+        $promise = $installer->install($repo, $package, $this->loop);
         $this->markForNotification($package);
+
+        return $promise;
     }
 
     /**
@@ -173,12 +213,14 @@ class InstallationManager
 
         if ($initialType === $targetType) {
             $installer = $this->getInstaller($initialType);
-            $installer->update($repo, $initial, $target, $this->loop);
+            $promise = $installer->update($repo, $initial, $target, $this->loop);
             $this->markForNotification($target);
         } else {
             $this->getInstaller($initialType)->uninstall($repo, $initial);
-            $this->getInstaller($targetType)->install($repo, $target, $this->loop);
+            $promise = $this->getInstaller($targetType)->install($repo, $target, $this->loop);
         }
+
+        return $promise;
     }
 
     /**
