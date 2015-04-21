@@ -189,7 +189,6 @@ class FilesystemTest extends TestCase
         @mkdir($basepath . "/real", 0777, true);
         touch($basepath . "/real/FILE");
 
-        $this->skipTestIfSymlinkPhpFunctionIsMissing();
         $result = @symlink($basepath . "/real", $symlinked);
 
         if (!$result) {
@@ -219,7 +218,6 @@ class FilesystemTest extends TestCase
         $symlinked              = $basepath . "/linked";
         $symlinkedTrailingSlash = $symlinked . "/";
 
-        $this->skipTestIfSymlinkPhpFunctionIsMissing();
         $result = @symlink($basepath . "/real", $symlinked);
 
         if (!$result) {
