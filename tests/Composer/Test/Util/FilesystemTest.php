@@ -179,6 +179,7 @@ class FilesystemTest extends TestCase
 
     /**
      * @link https://github.com/composer/composer/issues/3157
+     * @requires function symlink
      */
     public function testUnlinkSymlinkedDirectory()
     {
@@ -207,6 +208,7 @@ class FilesystemTest extends TestCase
 
     /**
      * @link https://github.com/composer/composer/issues/3144
+     * @requires function symlink
      */
     public function testRemoveSymlinkedDirectoryWithTrailingSlash()
     {
@@ -238,12 +240,5 @@ class FilesystemTest extends TestCase
         $this->assertTrue($result);
         $this->assertFalse(file_exists($symlinkedTrailingSlash));
         $this->assertFalse(file_exists($symlinked));
-    }
-
-    private function skipTestIfSymlinkPhpFunctionIsMissing()
-    {
-        if (!function_exists('symlink')) {
-            $this->markTestSkipped('The php symlink() function for symbolic links is not available on this platform');
-        }
     }
 }
