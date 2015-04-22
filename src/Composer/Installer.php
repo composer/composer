@@ -110,6 +110,8 @@ class Installer
     protected $ignorePlatformReqs = false;
     protected $preferStable = false;
     protected $preferLowest = false;
+    protected $install = true;
+
     /**
      * Array of package names/globs flagged for update
      *
@@ -169,6 +171,12 @@ class Installer
         if ($this->dryRun) {
             $this->verbose = true;
             $this->runScripts = false;
+            $this->installationManager->addInstaller(new NoopInstaller);
+            $this->mockLocalRepositories($this->repositoryManager);
+        } else if (!$this->install) {
+            // Do not install packages, but perform all other tasks.
+            $this->runScripts = false;
+            $this->dumpAutoloader = false;
             $this->installationManager->addInstaller(new NoopInstaller);
             $this->mockLocalRepositories($this->repositoryManager);
         }
@@ -568,8 +576,8 @@ class Installer
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
-            // output non-alias ops in dry run, output alias ops in debug verbosity
-            if ($this->dryRun && false === strpos($operation->getJobType(), 'Alias')) {
+            // Output non-alias ops in dry run and no-install, output alias ops in debug verbosity.
+            if ((!$this->install || $this->dryRun) && false === strpos($operation->getJobType(), 'Alias')) {
                 $this->io->writeError('  - ' . $operation);
                 $this->io->writeError('');
             } elseif ($this->io->isDebug() && false !== strpos($operation->getJobType(), 'Alias')) {
@@ -601,7 +609,7 @@ class Installer
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
-            if (!$this->dryRun) {
+            if (!$this->dryRun && $this->install) {
                 $localRepo->write();
             }
         }
@@ -1391,6 +1399,19 @@ class Installer
     public function setPreferLowest($preferLowest = true)
     {
         $this->preferLowest = (boolean) $preferLowest;
+
+        return $this;
+    }
+
+    /**
+     * Should packages actually be installed?
+     *
+     * @param boolean   $install
+     * @return Installer
+     */
+    public function setInstall($install = false)
+    {
+        $this->install = (boolean) $install;
 
         return $this;
     }

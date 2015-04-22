@@ -1,0 +1,57 @@
+--TEST--
+Updates lockfile for updateable packages
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "a/a", "version": "1.0.1" },
+                { "name": "a/a", "version": "1.1.0" },
+
+                { "name": "a/b", "version": "1.0.0" },
+                { "name": "a/b", "version": "1.0.1" },
+                { "name": "a/b", "version": "2.0.0" },
+
+                { "name": "a/c", "version": "1.0.0" },
+                { "name": "a/c", "version": "2.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.*",
+        "a/c": "1.*"
+    },
+    "require-dev": {
+        "a/b": "*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "a/a", "version": "1.0.0" },
+    { "name": "a/c", "version": "1.0.0" },
+    { "name": "a/b", "version": "1.0.0" }
+]
+--RUN--
+update --no-install
+--EXPECT--
+Updating a/a (1.0.0) to a/a (1.0.1)
+Updating a/b (1.0.0) to a/b (2.0.0)
+--EXPECT-LOCK--
+{
+    "packages": [
+        { "name": "a/a", "version": "1.0.1", "type": "library" },
+        { "name": "a/c", "version": "1.0.0", "type": "library" }
+    ],
+    "packages-dev": [
+        { "name": "a/b", "version": "2.0.0", "type": "library" }
+    ],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
