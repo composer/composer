@@ -12,9 +12,11 @@
 
 namespace Composer\Util;
 
+use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessUtils;
 use Composer\IO\IOInterface;
 use React;
+use React\Promise\Deferred;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -41,7 +43,7 @@ class ProcessExecutor
      * @param  string $cwd     the working directory
      * @return int    statuscode
      */
-    public function execute($command, &$output = null, $cwd = null, React\EventLoop\LoopInterface $loop = null)
+    public function execute($command, &$output = null, $cwd = null, $loop = null)
     {
         $that = clone $this;
 
@@ -59,6 +61,7 @@ class ProcessExecutor
         $that->captureOutput = func_num_args() > 1;
         $this->errorOutput = null;
 
+        $timeout = static::getTimeout();
         $result = (object) array(
             'status' => null,
             'stdout' => null,
@@ -75,50 +78,52 @@ class ProcessExecutor
             }
         }
 
-        $deferred = new React\Promise\Deferred();
-        $runLoop = !$loop;
-        $loop = $loop ?: React\EventLoop\Factory::create();
-        $process = new React\ChildProcess\Process($command, $cwd);
+        if ($loop) {
+            $deferred = new Deferred();
+            $process = new React\ChildProcess\Process($command, $cwd);
 
-        $timeout = static::getTimeout();
-        $timer = $loop->addTimer($timeout, function () use ($process, $deferred, $timeout, $command) {
-            if ($process->isRunning()) {
-                $process->terminate();
+            $timer = $loop->addTimer($timeout, function () use ($process, $deferred, $timeout, $command) {
+                if ($process->isRunning()) {
+                    $process->terminate();
 
-                $deferred->reject(new \RuntimeException(sprintf('The process "%s" exceeded the timeout of %s seconds.', $command, $timeout)));
-            }
-        });
-        $process->on('exit', function($status, $signal) use ($timer, $deferred, $result) {
-            $timer->cancel();
-            $result->status = $status;
-            $deferred->resolve($result);
-        });
+                    $deferred->reject(new \RuntimeException(sprintf('The process "%s" exceeded the timeout of %s seconds.', $command, $timeout)));
+                }
+            });
+            $process->on('exit', function($status, $signal) use ($timer, $deferred, $result) {
+                $timer->cancel();
+                $result->status = $status;
+                $deferred->resolve($result);
+            });
 
-        $process->start($loop);
+            $process->start($loop);
 
-        $process->stdout->on('data', function ($data) use ($result, $callback) {
-            if (null !== $result->stdout) {
-                $result->stdout .= $data;
-            }
-            call_user_func($callback, 'out', $data);
-        });
+            $process->stdout->on('data', function ($data) use ($result, $callback) {
+                if (null !== $result->stdout) {
+                    $result->stdout .= $data;
+                }
+                call_user_func($callback, 'out', $data);
+            });
 
-        $process->stderr->on('data', function ($data) use ($result, $callback) {
-            $result->stderr .= $data;
-            call_user_func($callback, 'err', $data);
-        });
+            $process->stderr->on('data', function ($data) use ($result, $callback) {
+                $result->stderr .= $data;
+                call_user_func($callback, 'err', $data);
+            });
 
-        $promise = $deferred->promise();
-
-        if (!$runLoop) {
-            return $promise;
+            return $deferred->promise();
         }
 
-        $promise->done();
-        $loop->run();
-        $this->errorOutput = $result->stderr;
+        $process = new Process($command, $cwd, null, null, $timeout);
 
-        return $result->status;
+        $callback = is_callable($output) ? $output : array($that, 'outputHandler');
+        $process->run($callback);
+
+        if ('' === $output) {
+            $output = $process->getOutput();
+        }
+
+        $this->errorOutput = $process->getErrorOutput();
+
+        return $process->getExitCode();
     }
 
     public function splitLines($output)

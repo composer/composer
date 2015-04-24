@@ -14,8 +14,7 @@ namespace Composer\Util;
 
 use Composer\Config;
 use Composer\IO\IOInterface;
-use React\EventLoop\LoopInterface;
-use React\Promise\Deferred;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -35,7 +34,7 @@ class Git
         $this->filesystem = $fs;
     }
 
-    public function runCommand($commandCallable, $url, $cwd, $initialClone = false, LoopInterface $loop = null)
+    public function runCommand($commandCallable, $url, $cwd, $initialClone = false, $loop = null)
     {
         if ($initialClone) {
             $initialClone = $cwd;
@@ -59,56 +58,12 @@ class Git
             throw new \RuntimeException('Config value "github-protocols" must be an array, got '.gettype($protocols));
         }
 
-        $deferred = new Deferred();
-        if (!$loop) {
-            $deferred->promise()->done();
-        }
-
         // public github, autoswitch protocols
         if (preg_match('{^(?:https?|git)://'.self::getGitHubDomainsRegex($this->config).'/(.*)}', $url, $match)) {
             $messages = array();
-            $retryLoop = function ($i, $url) use (&$messages, $protocols, $match, $commandCallable, $cwd, $initialClone, $deferred, $loop, &$retryLoop) {
-                try {
-                    if (!isset($protocols[$i])) {
-                        // failed to checkout, first check git accessibility
-                        $this->throwException('Failed to clone ' . self::sanitizeUrl($url) .' via '.implode(', ', $protocols).' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
-                    }
-                    $protocol = $protocols[$i++];
-                    if ('ssh' === $protocol) {
-                        $url = "git@" . $match[1] . ":" . $match[2];
-                    } else {
-                        $url = $protocol ."://" . $match[1] . "/" . $match[2];
-                    }
 
-                    $onExecute = function ($result) use ($deferred, &$messages, $initialClone, &$retryLoop, $i, $url) {
-                        if (0 === $result->status) {
-                            $deferred->resolve();
-                        } else {
-                            $messages[] = '- ' . $url . "\n" . preg_replace('#^#m', '  ', $result->stderr);
-                            if ($initialClone) {
-                                $this->filesystem->removeDirectory($initialClone);
-                            }
-                            $retryLoop($i, $url);
-                        }
-                    };
-
-                    $promise = $this->process->execute(call_user_func($commandCallable, $url), $ignoredOutput, $cwd, $loop);
-                    if ($loop) {
-                        $promise->then($onExecute, array($deferred, 'reject'));
-                    } else {
-                        $onExecute((object) array('status' => $promise, 'stderr' => 0 !== $promise ? $this->process->getErrorOutput() : ''));
-                    }
-                } catch (\Exception $e) {
-                    $deferred->reject($e);
-                }
-            };
-
-            $retryLoop(0, $url);
-
-            return $deferred->promise();
+            return $this->retryCommand(0, $protocols, $url, $messages, $match[1], $match[2], $commandCallable, $cwd, $initialClone, $loop);
         }
-
-        $deferred->resolve();
 
         // if we have a private github url and the ssh protocol is disabled then we skip it and directly fallback to https
         $bypassSshForGitHub = preg_match('{^git@'.self::getGitHubDomainsRegex($this->config).':(.+?)\.git$}i', $url) && !in_array('ssh', $protocols, true);
@@ -132,7 +87,7 @@ class Git
 
                     $command = call_user_func($commandCallable, $url);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
-                        return $deferred->promise();
+                        return;
                     }
                 }
             } elseif ( // private non-github repo that failed to authenticate
@@ -172,7 +127,7 @@ class Git
                         $authHelper = new AuthHelper($this->io, $this->config);
                         $authHelper->storeAuth($match[2], $storeAuth);
 
-                        return $deferred->promise();
+                        return;
                     }
                 }
             }
@@ -182,8 +137,40 @@ class Git
             }
             $this->throwException('Failed to execute ' . self::sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput(), $url);
         }
+    }
 
-        return $deferred->promise();
+    private function retryCommand($i, $protocols, $url, &$messages, $ghHost, $ghRepos, $commandCallable, $cwd, $initialClone, $loop) {
+        if (!isset($protocols[$i])) {
+            // failed to checkout, first check git accessibility
+            $this->throwException('Failed to clone ' . self::sanitizeUrl($url) .' via '.implode(', ', $protocols).' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
+        }
+        $protocol = $protocols[$i++];
+        if ('ssh' === $protocol) {
+            $url = "git@" . $ghHost . ":" . $ghRepos;
+        } else {
+            $url = $protocol ."://" . $ghHost . "/" . $ghRepos;
+        }
+
+        return $this->onExecute($this->process->execute(call_user_func($commandCallable, $url), $ignoredOutput, $cwd, $loop), $i, $protocols, $url, $messages, $ghHost, $ghRepos, $commandCallable, $cwd, $initialClone, $loop);
+    }
+
+    private function onExecute($result, $i, $protocols, $url, &$messages, $ghHost, $ghRepos, $commandCallable, $cwd, $initialClone, $loop)
+    {
+        if ($result instanceof PromiseInterface) {
+            return $result->then(function ($result) use ($i, $protocols, $url, &$messages, $ghHost, $ghRepos, $commandCallable, $cwd, $initialClone, $loop) {
+                return $this->onExecute($result, $i, $protocols, $url, $messages, $ghHost, $ghRepos, $commandCallable, $cwd, $initialClone, $loop);
+            });
+        } elseif (!$result instanceof \stdClass) {
+            $result = (object) array('status' => $result, 'stderr' => 0 !== $result ? $this->process->getErrorOutput() : '');
+        }
+
+        if (0 !== $result->status) {
+            $messages[] = '- ' . $url . "\n" . preg_replace('#^#m', '  ', $result->stderr);
+            if ($initialClone) {
+                $this->filesystem->removeDirectory($initialClone);
+            }
+            return $this->retryCommand($i, $protocols, $url, $messages, $ghHost, $ghRepos, $commandCallable, $cwd, $initialClone, $loop);
+        }
     }
 
     private function isAuthenticationFailure($url, &$match)

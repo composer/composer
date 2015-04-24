@@ -27,8 +27,8 @@ matrix:
 
 before_script:
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
-    - composer install
-    - bin/composer install
+    - composer install --ignore-platform-reqs
+    - bin/composer install --ignore-platform-reqs
     - git config --global user.name travis-ci
     - git config --global user.email travis@example.com
 

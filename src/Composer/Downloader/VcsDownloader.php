@@ -18,8 +18,6 @@ use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
-use React\EventLoop\LoopInterface;
-use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 
 /**
@@ -51,7 +49,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path, LoopInterface $loop = null)
+    public function download(PackageInterface $package, $path, $loop = null)
     {
         if (!$package->getSourceReference()) {
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
@@ -62,62 +60,51 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
 
         $urls = $package->getSourceUrls();
 
-        $deferred = new Deferred();
-        $retryLoop = function (\Exception $e = null) use ($package, $path, &$urls, $loop, $deferred, &$retryLoop) {
-            if (isset($e)) {
-                if ($this->io->isDebug()) {
-                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
-                } elseif ($urls) {
-                    $this->io->writeError('    Failed, trying the next URL');
-                }
+        return $this->retryVcsDownload($package, $path, $urls, $loop);
+    }
+
+    private function retryVcsDownload($package, $path, &$urls, $loop, \Exception $e = null)
+    {
+        $io = $this->io;
+
+        if (isset($e)) {
+            if ($io->isDebug()) {
+                $io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
+            } elseif ($urls) {
+                $io->writeError('    Failed, trying the next URL');
             }
             if (!$urls) {
-                $deferred->reject($e);
-
-                return;
+                throw $e;
             }
-            try {
-                $url = array_shift($urls);
+        }
+        $url = array_shift($urls);
 
-                if (Filesystem::isLocalPath($url)) {
-                    $url = realpath($url);
-                }
+        if (Filesystem::isLocalPath($url)) {
+            $url = realpath($url);
+        }
 
-                $onDownload = function ($result) use ($deferred) {
-                    $this->io->writeError('');
-                    $deferred->resolve($result);
-                };
-
-                $promise = $this->doDownload($package, $path, $url, $loop);
-                if ($promise instanceof PromiseInterface) {
-                    $promise->then($onDownload, $retryLoop);
-                } else {
-                    $onDownload($promise);
-                }
-            } catch (\Exception $e) {
-                $retryLoop($e);
-            }
+        $onDownload = function ($result) use ($io) {
+            $io->writeError('');
+            return $result;
         };
-
-        $promise = $deferred->promise();
-        if (!$loop) {
-            $promise->done(function ($result) use (&$promise) {$promise = $result;});
-        }
         try {
-            $retryLoop();
-            $retryLoop = null;
+            $result = $this->doDownload($package, $path, $url, $loop);
+            if ($result instanceof PromiseInterface) {
+                return $result->then($onDownload, function (\Exception $e) use ($package, $path, &$urls, $loop) {
+                    return $this->retryVcsDownload($package, $path, $urls, $loop, $e);
+                });
+            } else {
+                return $onDownload($result);
+            }
         } catch (\Exception $e) {
-            $retryLoop = null;
-            throw $e;
+            return $this->retryVcsDownload($package, $path, $urls, $loop, $e);
         }
-
-        return $promise;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $path, LoopInterface $loop = null)
+    public function update(PackageInterface $initial, PackageInterface $target, $path, $loop = null)
     {
         if (!$target->getSourceReference()) {
             throw new \InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');

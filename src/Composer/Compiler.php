@@ -112,6 +112,8 @@ class Compiler
             ->exclude('Tests')
             ->exclude('tests')
             ->exclude('docs')
+            ->in(__DIR__.'/../../vendor/evenement/')
+            ->in(__DIR__.'/../../vendor/react/')
             ->in(__DIR__.'/../../vendor/symfony/')
             ->in(__DIR__.'/../../vendor/seld/jsonlint/')
             ->in(__DIR__.'/../../vendor/seld/cli-prompt/')

@@ -58,7 +58,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package, $loop = null)
     {
         $installPath = $this->installPath;
         if (file_exists($installPath) && !$this->filesystem->isDirEmpty($installPath)) {
@@ -67,7 +67,7 @@ class ProjectInstaller implements InstallerInterface
         if (!is_dir($installPath)) {
             mkdir($installPath, 0777, true);
         }
-        $this->downloadManager->download($package, $installPath);
+        return $this->downloadManager->download($package, $installPath, $loop);
     }
 
     /**

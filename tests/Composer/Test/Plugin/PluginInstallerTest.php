@@ -20,7 +20,6 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Plugin\PluginManager;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Util\Filesystem;
-use React\Promise\Deferred;
 
 class PluginInstallerTest extends \PHPUnit_Framework_TestCase
 {
@@ -35,9 +34,6 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $deferred = new Deferred();
-        $deferred->resolve();
-
         $loader = new JsonLoader(new ArrayLoader());
         $this->packages = array();
         $this->directory = sys_get_temp_dir() . '/' . uniqid();
@@ -50,12 +46,6 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
         $dm = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->disableOriginalConstructor()
             ->getMock();
-        $dm->expects($this->any())
-            ->method('download')
-            ->will($this->returnValue($deferred->promise()));
-        $dm->expects($this->any())
-            ->method('update')
-            ->will($this->returnValue($deferred->promise()));
 
         $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
 

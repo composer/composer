@@ -18,7 +18,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
-use React\EventLoop\LoopInterface;
+use React\Promise\PromiseInterface;
 
 /**
  * Package installation manager.
@@ -75,7 +75,7 @@ class LibraryInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function install(InstalledRepositoryInterface $repo, PackageInterface $package, LoopInterface $loop = null)
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package, $loop = null)
     {
         $this->initializeVendorDir();
         $downloadPath = $this->getInstallPath($package);
@@ -85,18 +85,13 @@ class LibraryInstaller implements InstallerInterface
             $this->removeBinaries($package);
         }
 
-        return $this->installCode($package, $loop)->then(function () use ($repo, $package) {
-            $this->installBinaries($package);
-            if (!$repo->hasPackage($package)) {
-                $repo->addPackage(clone $package);
-            }
-        });
+        return $this->onLibraryInstallCode($this->installCode($package, $loop), $repo, $package);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target, LoopInterface $loop = null)
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target, $loop = null)
     {
         if (!$repo->hasPackage($initial)) {
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
@@ -106,13 +101,24 @@ class LibraryInstaller implements InstallerInterface
 
         $this->removeBinaries($initial);
 
-        return $this->updateCode($initial, $target, $loop)->then(function () use ($repo, $initial, $target) {
-            $this->installBinaries($target);
+        return $this->onLibraryInstallCode($this->updateCode($initial, $target, $loop), $repo, $target, $initial);
+    }
+
+    private function onLibraryInstallCode($result, $repo, $target, $initial = null)
+    {
+        if ($result instanceof PromiseInterface) {
+            return $result->then(function () use ($repo, $target, $initial) {
+                $this->onLibraryInstallCode(null, $repo, $target, $initial);
+            });
+        }
+
+        $this->installBinaries($target);
+        if ($initial) {
             $repo->removePackage($initial);
-            if (!$repo->hasPackage($target)) {
-                $repo->addPackage(clone $target);
-            }
-        });
+        }
+        if (!$repo->hasPackage($target)) {
+            $repo->addPackage(clone $target);
+        }
     }
 
     /**
@@ -154,13 +160,13 @@ class LibraryInstaller implements InstallerInterface
         return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getPrettyName();
     }
 
-    protected function installCode(PackageInterface $package, LoopInterface $loop = null)
+    protected function installCode(PackageInterface $package, $loop = null)
     {
         $downloadPath = $this->getInstallPath($package);
         return $this->downloadManager->download($package, $downloadPath, null, $loop);
     }
 
-    protected function updateCode(PackageInterface $initial, PackageInterface $target, LoopInterface $loop = null)
+    protected function updateCode(PackageInterface $initial, PackageInterface $target, $loop = null)
     {
         $initialDownloadPath = $this->getInstallPath($initial);
         $targetDownloadPath = $this->getInstallPath($target);

@@ -23,9 +23,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\Util\StreamContextFactory;
-use React\EventLoop\LoopInterface;
 use React\Promise\Deferred;
-use React\Promise\PromiseInterface;
 
 /**
  * Package operation manager.
@@ -137,7 +135,7 @@ class InstallationManager
      * @param RepositoryInterface $repo      repository in which to check
      * @param OperationInterface  $operation operation instance
      */
-    public function execute(RepositoryInterface $repo, OperationInterface $operation, LoopInterface $loop = null)
+    public function execute(RepositoryInterface $repo, OperationInterface $operation, $loop = null)
     {
         $method = $operation->getJobType();
         if ($loop) {
@@ -149,25 +147,23 @@ class InstallationManager
                 $loop->composerTick = function ($loop) {
                     if (empty($loop->composerOperations)) {
                         unset($loop->composerOperations, $loop->composerOperationsCount, $loop->composerTick, $loop->composerReTick);
+                    } else {
+                        list($method, $repo, $operation, $deferred) = array_shift($loop->composerOperations);
 
-                        return;
-                    }
-                    list($method, $repo, $operation, $deferred) = array_shift($loop->composerOperations);
-                    try {
-                        $this->loop = $loop;
-                        $promise = $this->$method($repo, $operation);
-                        $this->loop = null;
-                        if ($promise instanceof PromiseInterface) {
-                            $promise->then(array($deferred, 'resolve'))->then(null, array($deferred, 'reject'));
-                        } else {
-                            $deferred->resolve($promise);
+                        try {
+                            $result = $this->$method($repo, $operation, $loop);
+                            if ($result instanceof PromiseInterface) {
+                                $result->then(array($deferred, 'resolve'), array($deferred, 'reject'));
+                            } else {
+                                $deferred->resolve($result);
+                            }
+                        } catch (\Exception $e) {
+                            $deferred->reject($e);
                         }
-                    } catch (\Exception $e) {
-                        $deferred->reject($e);
                     }
                 };
-                $loop->composerReTick = function () use ($loop) {
-                    $loop->futureTick($loop->composerTick);
+                $loop->composerReTick = function (\Exception $e = null) use ($loop) {
+                    $loop->futureTick($e ? function () use ($e) {throw $e;} : $loop->composerTick);
                 };
             }
 
@@ -187,11 +183,11 @@ class InstallationManager
      * @param RepositoryInterface $repo      repository in which to check
      * @param InstallOperation    $operation operation instance
      */
-    public function install(RepositoryInterface $repo, InstallOperation $operation)
+    public function install(RepositoryInterface $repo, InstallOperation $operation, $loop = null)
     {
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
-        $promise = $installer->install($repo, $package, $this->loop);
+        $promise = $installer->install($repo, $package, $loop);
         $this->markForNotification($package);
 
         return $promise;
@@ -203,7 +199,7 @@ class InstallationManager
      * @param RepositoryInterface $repo      repository in which to check
      * @param UpdateOperation     $operation operation instance
      */
-    public function update(RepositoryInterface $repo, UpdateOperation $operation)
+    public function update(RepositoryInterface $repo, UpdateOperation $operation, $loop = null)
     {
         $initial = $operation->getInitialPackage();
         $target = $operation->getTargetPackage();
@@ -213,11 +209,11 @@ class InstallationManager
 
         if ($initialType === $targetType) {
             $installer = $this->getInstaller($initialType);
-            $promise = $installer->update($repo, $initial, $target, $this->loop);
+            $promise = $installer->update($repo, $initial, $target, $loop);
             $this->markForNotification($target);
         } else {
             $this->getInstaller($initialType)->uninstall($repo, $initial);
-            $promise = $this->getInstaller($targetType)->install($repo, $target, $this->loop);
+            $promise = $this->getInstaller($targetType)->install($repo, $target, $loop);
         }
 
         return $promise;

@@ -527,10 +527,10 @@ class Installer
         );
 
         $operations = call_user_func_array('array_merge', $opsGroups);
+        $loop = PHP_VERSION_ID >= 50500 ? React\EventLoop\Factory::create() : null;
+        $loopEnableIndex = 2;
 
-        $loop = React\EventLoop\Factory::create();
-
-        foreach ($opsGroups as $ops) {
+        foreach ($opsGroups as $i => $ops) {
             $postOps = array();
 
             foreach ($ops as $operation) {
@@ -585,7 +585,7 @@ class Installer
                     $this->io->writeError('');
                 }
 
-                $this->installationManager->execute($localRepo, $operation, $loop);
+                $this->installationManager->execute($localRepo, $operation, $i >= $loopEnableIndex ? $loop : null);
 
                 // output reasons why the operation was ran, only for install/update operations
                 if ($this->verbose && $this->io->isVeryVerbose() && in_array($operation->getJobType(), array('install', 'update'))) {
@@ -610,7 +610,9 @@ class Installer
                 }
             }
 
-            $loop->run();
+            if ($loop) {
+                $loop->run();
+            }
 
             foreach ($postOps as $operation) {
                 $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());

@@ -15,8 +15,6 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
-use React\EventLoop\LoopInterface;
-use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 
 /**
@@ -169,7 +167,7 @@ class DownloadManager
      * @throws \InvalidArgumentException if package have no urls to download from
      * @throws \RuntimeException
      */
-    public function download(PackageInterface $package, $targetDir, $preferSource = null, LoopInterface $loop = null)
+    public function download(PackageInterface $package, $targetDir, $preferSource = null, $loop = null)
     {
         $preferSource = null !== $preferSource ? $preferSource : $this->preferSource;
         $sourceType   = $package->getSourceType();
@@ -193,51 +191,39 @@ class DownloadManager
 
         $this->filesystem->ensureDirectoryExists($targetDir);
 
-        $i = 0;
-        $deferred = new Deferred();
-        $retryLoop = function (\Exception $e = null) use ($sources, $package, $targetDir, $loop, &$i, $deferred, &$retryLoop) {
-            if (!isset($sources[$i])) {
-                $deferred->reject($e);
+        return $this->retryDownload(0, $sources, $package, $targetDir, $loop);
+    }
 
-                return;
-            }
-            $source = $sources[$i++];
-            try {
-                if (isset($e)) {
-                    $this->io->writeError(
-                        '    <warning>Failed to download '.
-                        $package->getPrettyName().
-                        ' from ' . $sources[$i - 1] . ': '.
-                        $e->getMessage().'</warning>'
-                    );
-                    $this->io->writeError('    <warning>Now trying to download from ' . $source . '</warning>');
-                }
-                $package->setInstallationSource($source);
-                $downloader = $this->getDownloaderForInstalledPackage($package);
-                $promise = $downloader ? $downloader->download($package, $targetDir, $loop) : null;
-                if ($promise instanceof PromiseInterface) {
-                    $promise->then(array($deferred, 'resolve'), $retryLoop);
-                } else {
-                    $deferred->resolve($promise);
-                }
-            } catch (\RuntimeException $e) {
-                $retryLoop($e);
-            }
-        };
-
-        $promise = $deferred->promise();
-        if (!$loop) {
-            $promise->done(function ($result) use (&$promise) {$promise = $result;});
-        }
-        try {
-            $retryLoop();
-            $retryLoop = null;
-        } catch (\Exception $e) {
-            $retryLoop = null;
+    private function retryDownload($i, $sources, $package, $targetDir, $loop, \Exception $e = null)
+    {
+        if (!isset($sources[$i])) {
             throw $e;
         }
+        $source = $sources[$i++];
+        if (isset($e)) {
+            $this->io->writeError(
+                '    <warning>Failed to download '.
+                $package->getPrettyName().
+                ' from ' . $sources[$i - 1] . ': '.
+                $e->getMessage().'</warning>'
+            );
+            $this->io->writeError('    <warning>Now trying to download from ' . $source . '</warning>');
+        }
+        $package->setInstallationSource($source);
+        $downloader = $this->getDownloaderForInstalledPackage($package);
 
-        return $promise;
+        if ($downloader) {
+            try {
+                $result = $downloader->download($package, $targetDir, $loop);
+                if ($result instanceof PromiseInterface) {
+                    return $result->then(null, function (\Exception $e) use ($i, $sources, $package, $targetDir, $loop) {
+                        return $this->retryDownload($i, $sources, $package, $targetDir, $loop, $e);
+                    });
+                }
+            } catch (\Exception $e) {
+                return $this->retryDownload($i, $sources, $package, $targetDir, $loop, $e);
+            }
+        }
     }
 
     /**
@@ -249,9 +235,8 @@ class DownloadManager
      *
      * @throws \InvalidArgumentException if initial package is not installed
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $targetDir, LoopInterface $loop = null)
+    public function update(PackageInterface $initial, PackageInterface $target, $targetDir, $loop = null)
     {
-        $promise = null;
         $downloader = $this->getDownloaderForInstalledPackage($initial);
         if ($downloader) {
             $installationSource = $initial->getInstallationSource();
@@ -267,23 +252,15 @@ class DownloadManager
             // upgrading from a dist stable package to a dev package, force source reinstall
             if ($target->isDev() && 'dist' === $installationSource) {
                 $downloader->remove($initial, $targetDir);
-                $promise = $this->download($target, $targetDir, $loop);
-            } elseif ($initialType === $targetType) {
-                $target->setInstallationSource($installationSource);
-                $promise = $downloader->update($initial, $target, $targetDir, $loop);
-            } else {
-                $downloader->remove($initial, $targetDir);
-                $promise = $this->download($target, $targetDir, 'source' === $installationSource, $loop);
+                return $this->download($target, $targetDir, $loop);
             }
+            if ($initialType === $targetType) {
+                $target->setInstallationSource($installationSource);
+                return $downloader->update($initial, $target, $targetDir, $loop);
+            }
+            $downloader->remove($initial, $targetDir);
+            return $this->download($target, $targetDir, 'source' === $installationSource, $loop);
         }
-
-        if (!$promise) {
-            $deferred = new Deferred();
-            $deferred->resolve();
-            $promise = $deferred->promise();
-        }
-
-        return $promise;
     }
 
     /**

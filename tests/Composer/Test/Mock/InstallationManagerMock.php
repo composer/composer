@@ -38,14 +38,14 @@ class InstallationManagerMock extends InstallationManager
         return $repo->hasPackage($package);
     }
 
-    public function install(RepositoryInterface $repo, InstallOperation $operation)
+    public function install(RepositoryInterface $repo, InstallOperation $operation, $loop = null)
     {
         $this->installed[] = $operation->getPackage();
         $this->trace[] = (string) $operation;
         $repo->addPackage(clone $operation->getPackage());
     }
 
-    public function update(RepositoryInterface $repo, UpdateOperation $operation)
+    public function update(RepositoryInterface $repo, UpdateOperation $operation, $loop = null)
     {
         $this->updated[] = array($operation->getInitialPackage(), $operation->getTargetPackage());
         $this->trace[] = (string) $operation;

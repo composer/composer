@@ -22,8 +22,6 @@ use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
-use React\EventLoop\LoopInterface;
-use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 
 /**
@@ -78,7 +76,7 @@ class FileDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path, LoopInterface $loop = null)
+    public function download(PackageInterface $package, $path, $loop = null)
     {
         if (!$package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
@@ -88,57 +86,44 @@ class FileDownloader implements DownloaderInterface
 
         $urls = $package->getDistUrls();
 
-        $deferred = new Deferred();
-        $retryLoop = function (\Exception $e = null) use (&$urls, $package, $path, $loop, $deferred, &$retryLoop) {
-            if (isset($e)) {
-                if ($this->io->isDebug()) {
-                    $this->io->writeError('');
-                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
-                } elseif ($urls) {
-                    $this->io->writeError('');
-                    $this->io->writeError('    Failed, trying the next URL ('.$e->getCode().': '.$e->getMessage().')');
-                }
-            }
-            if (!$urls) {
-                $deferred->reject($e);
-
-                return;
-            }
-            try {
-                $url = array_shift($urls);
-
-                $onDownload = function ($fileName) use ($deferred) {
-                    $this->io->writeError('');
-                    $deferred->resolve($fileName);
-                };
-
-                $promise = $this->doDownload($package, $path, $url, $loop);
-                if ($promise instanceof PromiseInterface) {
-                    $promise->then($onDownload, $retryLoop);
-                } else {
-                    $onDownload($promise);
-                }
-            } catch (\Exception $e) {
-                $retryLoop($e);
-            }
-        };
-
-        $promise = $deferred->promise();
-        if (!$loop) {
-            $promise->done(function ($result) use (&$promise) {$promise = $result;});
-        }
-        try {
-            $retryLoop();
-            $retryLoop = null;
-        } catch (\Exception $e) {
-            $retryLoop = null;
-            throw $e;
-        }
-
-        return $promise;
+        return $this->retryFileDownload($urls, $package, $path, $loop);
     }
 
-    protected function doDownload(PackageInterface $package, $path, $url, LoopInterface $loop = null)
+    private function retryFileDownload(&$urls, $package, $path, $loop, \Exception $e = null)
+    {
+        if (isset($e)) {
+            if ($this->io->isDebug()) {
+                $this->io->writeError('');
+                $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
+            } elseif ($urls) {
+                $this->io->writeError('');
+                $this->io->writeError('    Failed, trying the next URL ('.$e->getCode().': '.$e->getMessage().')');
+            }
+        }
+        if (!$urls) {
+            throw $e;
+        }
+        $url = array_shift($urls);
+
+        try {
+            $result = $this->doDownload($package, $path, $url, $loop);
+            if ($result instanceof PromiseInterface) {
+                return $result->then(function ($result) {
+                    $this->io->writeError('');
+                    return $result;
+                })->then(null, function (\Exception $e) use (&$urls, $package, $path, $loop) {
+                    return $this->retryFileDownload($urls, $package, $path, $loop, $e);
+                });
+            } else {
+                $this->io->writeError('');
+                return $result;
+            }
+        } catch (\Exception $e) {
+            return $this->retryFileDownload($urls, $package, $path, $loop, $e);
+        }
+    }
+
+    protected function doDownload(PackageInterface $package, $path, $url, $loop = null)
     {
         $this->filesystem->emptyDirectory($path);
 
@@ -153,88 +138,84 @@ class FileDownloader implements DownloaderInterface
         }
         $rfs = $preFileDownloadEvent->getRemoteFilesystem();
 
-        $checksum = $package->getDistSha1Checksum();
-        $cacheKey = $this->getCacheKey($package);
+        try {
+            $checksum = $package->getDistSha1Checksum();
+            $cacheKey = $this->getCacheKey($package);
+            $result = $fileName;
 
-        $deferred = new Deferred();
+            // download if we don't have it in cache or the cache is invalidated
+            if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
+                if (!$this->outputProgress) {
+                    $this->io->writeError('    Downloading');
+                }
 
-        // download if we don't have it in cache or the cache is invalidated
-        if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
-            if (!$this->outputProgress) {
-                $this->io->writeError('    Downloading');
-            }
-
-            // try to download 3 times then fail hard
-            $retries = 3;
-            $onCopy = function () use ($cacheKey, $fileName, $deferred) {
-                if ($this->cache) {
-                    $this->cache->copyFrom($cacheKey, $fileName);
-                }
-                $deferred->resolve();
-            };
-            $onException = function (\Exception $e) use (&$retries, $deferred, &$retryLoop) {
-                // if we got an http response with a proper code, then requesting again will probably not help, abort
-                if (!$e instanceof TransportException || (0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries--) {
-                    $deferred->reject($e);
-
-                    return;
-                }
-                if ($this->io->isVerbose()) {
-                    $this->io->writeError('    Download failed, retrying...');
-                }
-                usleep(500000);
-                $retryLoop();
-            };
-            $retryLoop = function () use ($rfs, $hostname, $processedUrl, $fileName, $package, $loop, $onCopy, $onException, &$retryLoop) {
-                try {
-                    $promise = $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress, $package->getTransportOptions(), $loop);
-                    if ($promise instanceof PromiseInterface) {
-                        $promise->then($onCopy)->then(null, $onException);
-                    } else {
-                        $onCopy($promise);
-                    }
-                } catch (\Exception $e) {
-                    $onException($e);
-                }
-            };
-        } else {
-            $retryLoop = function () use ($deferred) {
+                // try to download 3 times then fail hard
+                $result = $this->retryCopy(3, $rfs, $hostname, $processedUrl, $fileName, $package, $loop);
+            } else {
                 $this->io->writeError('    Loading from cache');
-                $deferred->resolve();
-            };
-        }
-
-        $promise = $deferred->promise()->then(function () use ($fileName, $url, $checksum) {
-            if (!file_exists($fileName)) {
-                throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
-                    .' directory is writable and you have internet connectivity');
             }
-
-            if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
-                throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url.')');
+            $result = $this->onCopy($result, $cacheKey, $fileName, $url, $checksum);
+            if ($result instanceof PromiseInterface) {
+                $result = $result->then(null, function (\Exception $e) use ($path, $package) {
+                    // clean up
+                    $this->filesystem->removeDirectory($path);
+                    $this->clearCache($package, $path);
+                    throw $e;
+                });
             }
-
-            return $fileName;
-        })->then(null, function (\Exception $e) use ($path, $package) {
+            return $result;
+        } catch (\Exception $e) {
             // clean up
             $this->filesystem->removeDirectory($path);
             $this->clearCache($package, $path);
-
             throw $e;
-        });
+        }
+    }
 
-        if (!$loop) {
-            $promise->done(function ($result) use (&$promise) {$promise = $result;});
+    private function retryCopy($retries, $rfs, $hostname, $processedUrl, $fileName, $package, $loop, \Exception $e = null)
+    {
+        if ($e) {
+            // if we got an http response with a proper code, then requesting again will probably not help, abort
+            if (!$retries || !$e instanceof TransportException || (0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504)))) {
+                throw $e;
+            }
+            if ($this->io->isVerbose()) {
+                $this->io->writeError('    Download failed, retrying...');
+            }
+            usleep(500000);
         }
         try {
-            $retryLoop();
-            $retryLoop = null;
+            $result = $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress, $package->getTransportOptions(), $loop);
+            if ($result instanceof PromiseInterface) {
+                return $result->then(null, function (\Exception $e) use ($retries, $rfs, $hostname, $processedUrl, $fileName, $package, $loop, $e) {
+                    return $this->retryCopy(--$retries, $rfs, $hostname, $processedUrl, $fileName, $package, $loop, $e);
+                });
+            } else {
+                return $result;
+            }
         } catch (\Exception $e) {
-            $retryLoop = null;
-            throw $e;
+            return $this->retryCopy(--$retries, $rfs, $hostname, $processedUrl, $fileName, $package, $loop, $e);
         }
+    }
 
-        return $promise;
+    private function onCopy($result, $cacheKey, $fileName, $url, $checksum)
+    {
+        if ($result instanceof PromiseInterface) {
+            return $result->then(function ($result) use ($cacheKey, $fileName, $url, $checksum) {
+                return $this->onCopy($result, $cacheKey, $fileName, $url, $checksum);
+            });
+        }
+        if ($this->cache) {
+            $this->cache->copyFrom($cacheKey, $fileName);
+        }
+        if (!file_exists($fileName)) {
+            throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
+                .' directory is writable and you have internet connectivity');
+        }
+        if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
+            throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url.')');
+        }
+        return $fileName;
     }
 
     /**
@@ -258,7 +239,7 @@ class FileDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $path, LoopInterface $loop = null)
+    public function update(PackageInterface $initial, PackageInterface $target, $path, $loop = null)
     {
         $this->remove($initial, $path);
         return $this->download($target, $path, $loop);

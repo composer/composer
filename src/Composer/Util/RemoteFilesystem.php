@@ -16,7 +16,9 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
-use React;
+use React\Stream\Stream;
+use React\Promise\Deferred;
+use React\Promise\FulfilledPromise;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
@@ -64,7 +66,7 @@ class RemoteFilesystem
      *
      * @return bool true
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array(), React\EventLoop\LoopInterface $loop = null)
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array(), $loop = null)
     {
         return $this->get($originUrl, $fileUrl, $options, $fileName, $progress, $loop);
     }
@@ -118,7 +120,7 @@ class RemoteFilesystem
      *
      * @return bool|string
      */
-    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true, React\EventLoop\LoopInterface $loop = null)
+    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true, $loop = null)
     {
         if (strpos($originUrl, '.github.com') === (strlen($originUrl) - 11)) {
             $originUrl = 'github.com';
@@ -233,26 +235,32 @@ class RemoteFilesystem
             $this->lastHeaders = $http_response_header;
         }
 
-        $deferred = new React\Promise\Deferred();
-        $runLoop = !$loop;
-        $loop = $loop ?: React\EventLoop\Factory::create();
-        $stream = new React\Stream\Stream($handle, $loop);
-
         $result = (object) array(
             'headers' => isset($http_response_header) ? $http_response_header : array(),
             'body' => '',
         );
-        $stream->on('data', function ($data) use ($result) {
-            $result->body .= $data;
-        });
-        $stream->on('error', function (\Exception $e) use ($deferred) {
-            $deferred->reject($e);
-        });
-        $stream->on('close', function () use ($deferred, $result) {
-            $deferred->resolve($result);
-        });
 
-        $promise = $deferred->promise();
+        if ($loop) {
+            $deferred = new Deferred();
+            $stream = new Stream($handle, $loop);
+
+            $stream->on('data', function ($data) use ($result) {
+                $result->body .= $data;
+            });
+            $stream->on('error', function (\Exception $e) use ($deferred) {
+                $deferred->reject($e);
+            });
+            $stream->on('close', function () use ($deferred, $result) {
+                $deferred->resolve($result);
+            });
+
+            $promise = $deferred->promise();
+        } else {
+            $result->body = stream_get_contents($handle);
+            fclose($handle);
+
+            $promise = new FulfilledPromise($result);
+        }
 
         // decode gzip
         if (extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
@@ -318,12 +326,15 @@ class RemoteFilesystem
             });
         };
 
-        if (!$runLoop) {
+        if ($loop) {
             return $promise;
         }
 
-        $promise->done();
-        $loop->run();
+        $promise->then(null, function (\Exception $e) use ($result) {$result->error = $e;});
+
+        if (isset($result->error)) {
+            throw $result->error;
+        }
 
         return $result->body;
     }

@@ -19,7 +19,7 @@ use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
 use Composer\Config;
-use React\EventLoop\LoopInterface;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -38,7 +38,7 @@ class GitDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doDownload(PackageInterface $package, $path, $url, LoopInterface $loop = null)
+    public function doDownload(PackageInterface $package, $path, $url, $loop = null)
     {
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
@@ -52,26 +52,13 @@ class GitDownloader extends VcsDownloader
             return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($path), ProcessExecutor::escape($ref));
         };
 
-        return $this->gitUtil->runCommand($commandCallable, $url, $path, true, $loop)->then(function () use ($url, $package, $path, $ref) {
-            if ($url !== $package->getSourceUrl()) {
-                $url = $package->getSourceUrl();
-                $this->process->execute(sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
-            }
-            $this->setPushUrl($path, $url);
-
-            if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
-                if ($package->getDistReference() === $package->getSourceReference()) {
-                    $package->setDistReference($newRef);
-                }
-                $package->setSourceReference($newRef);
-            }
-        });
+        return $this->onDownload($this->gitUtil->runCommand($commandCallable, $url, $path, true, $loop), $package, $path, $url);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
+    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url, $loop = null)
     {
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
@@ -87,12 +74,39 @@ class GitDownloader extends VcsDownloader
             return sprintf($command, ProcessExecutor::escape ($url));
         };
 
-        $this->gitUtil->runCommand($commandCallable, $url, $path);
-        if ($newRef =  $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate())) {
-            if ($target->getDistReference() === $target->getSourceReference()) {
-                $target->setDistReference($newRef);
+        return $this->onUpdate($this->gitUtil->runCommand($commandCallable, $url, $path, $loop), $target, $path);
+    }
+
+    private function onDownload($result, $package, $path, $url)
+    {
+        if ($result instanceof PromiseInterface) {
+            return $result->then(function () use ($package, $path, $url) {
+                $this->onDownload(null, $package, $path, $url);
+            });
+        }
+
+        if ($url !== $package->getSourceUrl()) {
+            $url = $package->getSourceUrl();
+            $this->process->execute(sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
+        }
+        $this->setPushUrl($path, $url);
+        $this->onUpdate(null, $package, $path);
+    }
+
+    private function onUpdate($result, $package, $path)
+    {
+        if ($result instanceof Promise) {
+            return $result->then(function () use ($package, $path) {
+                $this->onUpdate(null, $package, $path);
+            });
+        }
+
+        $ref = $package->getSourceReference();
+        if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
+            if ($package->getDistReference() === $ref) {
+                $package->setDistReference($newRef);
             }
-            $target->setSourceReference($newRef);
+            $package->setSourceReference($newRef);
         }
     }
 
