@@ -21,6 +21,11 @@ use Composer\Package\PackageInterface;
  */
 class UpdateOperation extends SolverOperation
 {
+    /**
+     * The operation type.
+     */
+    const TYPE = 'update';
+
     protected $initialPackage;
     protected $targetPackage;
 
@@ -60,13 +65,11 @@ class UpdateOperation extends SolverOperation
     }
 
     /**
-     * Returns job type.
-     *
-     * @return string
+     * {@inheritDoc}
      */
     public function getJobType()
     {
-        return 'update';
+        return self::TYPE;
     }
 
     /**
@@ -74,7 +77,15 @@ class UpdateOperation extends SolverOperation
      */
     public function __toString()
     {
-        return 'Updating '.$this->initialPackage->getPrettyName().' ('.$this->formatVersion($this->initialPackage).') to '.
+        return 'Updating '.$this->getChangeAsString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getChangeAsString()
+    {
+        return $this->initialPackage->getPrettyName().' ('.$this->formatVersion($this->initialPackage).') to '.
             $this->targetPackage->getPrettyName(). ' ('.$this->formatVersion($this->targetPackage).')';
     }
 }

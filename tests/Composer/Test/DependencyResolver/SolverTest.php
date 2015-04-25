@@ -344,13 +344,13 @@ class SolverTest extends TestCase
 
         $this->checkSolverResult(array(
             array(
+                'job' => 'remove',
+                'package' => $packageB,
+            ),
+            array(
                 'job' => 'update',
                 'from' => $packageA,
                 'to' => $newPackageA,
-            ),
-            array(
-                'job' => 'remove',
-                'package' => $packageB,
             ),
         ));
     }
@@ -375,10 +375,10 @@ class SolverTest extends TestCase
         $this->request->remove('D');
 
         $this->checkSolverResult(array(
+            array('job' => 'remove',  'package' => $packageD),
             array('job' => 'update',  'from' => $oldPackageC, 'to' => $packageC),
             array('job' => 'install', 'package' => $packageB),
             array('job' => 'install', 'package' => $packageA),
-            array('job' => 'remove',  'package' => $packageD),
         ));
     }
 

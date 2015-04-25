@@ -21,6 +21,11 @@ use Composer\Package\PackageInterface;
  */
 class InstallOperation extends SolverOperation
 {
+    /**
+     * The operation type.
+     */
+    const TYPE = 'install';
+
     protected $package;
 
     /**
@@ -47,13 +52,11 @@ class InstallOperation extends SolverOperation
     }
 
     /**
-     * Returns job type.
-     *
-     * @return string
+     * {@inheritDoc}
      */
     public function getJobType()
     {
-        return 'install';
+        return self::TYPE;
     }
 
     /**
@@ -61,6 +64,14 @@ class InstallOperation extends SolverOperation
      */
     public function __toString()
     {
-        return 'Installing '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+        return 'Installing '.$this->getChangeAsString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getChangeAsString()
+    {
+        return $this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
     }
 }

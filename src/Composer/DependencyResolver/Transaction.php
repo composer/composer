@@ -31,7 +31,7 @@ class Transaction
         $this->pool = $pool;
         $this->installedMap = $installedMap;
         $this->decisions = $decisions;
-        $this->transaction = array();
+        $this->transaction = new Operation\OperationCollection();
     }
 
     public function getOperations()
@@ -212,12 +212,12 @@ class Transaction
             return $this->markAliasInstalled($package, $reason);
         }
 
-        $this->transaction[] = new Operation\InstallOperation($package, $reason);
+        $this->transaction->add(new Operation\InstallOperation($package, $reason));
     }
 
     protected function update($from, $to, $reason)
     {
-        $this->transaction[] = new Operation\UpdateOperation($from, $to, $reason);
+        $this->transaction->add(new Operation\UpdateOperation($from, $to, $reason));
     }
 
     protected function uninstall($package, $reason)
@@ -226,16 +226,16 @@ class Transaction
             return $this->markAliasUninstalled($package, $reason);
         }
 
-        $this->transaction[] = new Operation\UninstallOperation($package, $reason);
+        $this->transaction->add(new Operation\UninstallOperation($package, $reason));
     }
 
     protected function markAliasInstalled($package, $reason)
     {
-        $this->transaction[] = new Operation\MarkAliasInstalledOperation($package, $reason);
+        $this->transaction->add(new Operation\MarkAliasInstalledOperation($package, $reason));
     }
 
     protected function markAliasUninstalled($package, $reason)
     {
-        $this->transaction[] = new Operation\MarkAliasUninstalledOperation($package, $reason);
+        $this->transaction->add(new Operation\MarkAliasUninstalledOperation($package, $reason));
     }
 }

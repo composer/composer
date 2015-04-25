@@ -21,6 +21,11 @@ use Composer\Package\PackageInterface;
  */
 class UninstallOperation extends SolverOperation
 {
+    /**
+     * The operation type.
+     */
+    const TYPE = 'uninstall';
+
     protected $package;
 
     /**
@@ -47,13 +52,11 @@ class UninstallOperation extends SolverOperation
     }
 
     /**
-     * Returns job type.
-     *
-     * @return string
+     * {@inheritDoc}
      */
     public function getJobType()
     {
-        return 'uninstall';
+        return self::TYPE;
     }
 
     /**
@@ -61,6 +64,14 @@ class UninstallOperation extends SolverOperation
      */
     public function __toString()
     {
-        return 'Uninstalling '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+        return 'Uninstalling '.$this->getChangeAsString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getChangeAsString()
+    {
+        return $this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
     }
 }

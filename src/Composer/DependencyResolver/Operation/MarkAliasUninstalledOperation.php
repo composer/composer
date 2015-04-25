@@ -21,6 +21,11 @@ use Composer\Package\AliasPackage;
  */
 class MarkAliasUninstalledOperation extends SolverOperation
 {
+    /**
+     * The operation type.
+     */
+    const TYPE = 'markAliasUninstalled';
+
     protected $package;
 
     /**
@@ -47,13 +52,11 @@ class MarkAliasUninstalledOperation extends SolverOperation
     }
 
     /**
-     * Returns job type.
-     *
-     * @return string
+     * {@inheritDoc}
      */
     public function getJobType()
     {
-        return 'markAliasUninstalled';
+        return self::TYPE;
     }
 
     /**
@@ -62,5 +65,13 @@ class MarkAliasUninstalledOperation extends SolverOperation
     public function __toString()
     {
         return 'Marking '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).') as uninstalled, alias of '.$this->package->getAliasOf()->getPrettyName().' ('.$this->formatVersion($this->package->getAliasOf()).')';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getChangeAsString()
+    {
+        return 'Marking '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).') as uninstalled - alias of '.$this->package->getAliasOf()->getPrettyName().' ('.$this->formatVersion($this->package->getAliasOf()).')';
     }
 }
