@@ -405,6 +405,8 @@ class RemoteFilesystem
         }
 
         $options = array_replace_recursive($this->options, $additionalOptions);
+        $options['http']['protocol_version'] = 1.1;
+        $headers[] = 'Connection: close';
 
         if ($this->io->hasAuthentication($originUrl)) {
             $auth = $this->io->getAuthentication($originUrl);
