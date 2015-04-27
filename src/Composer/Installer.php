@@ -37,6 +37,7 @@ use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Progress\ProgressInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\InstalledFilesystemRepository;
@@ -57,6 +58,11 @@ class Installer
      * @var IOInterface
      */
     protected $io;
+
+    /**
+     * @var ProgressInterface
+     */
+    protected $progress;
 
     /**
      * @var Config
@@ -131,17 +137,28 @@ class Installer
     /**
      * Constructor
      *
-     * @param IOInterface          $io
-     * @param Config               $config
-     * @param RootPackageInterface $package
-     * @param DownloadManager      $downloadManager
-     * @param RepositoryManager    $repositoryManager
-     * @param Locker               $locker
-     * @param InstallationManager  $installationManager
-     * @param EventDispatcher      $eventDispatcher
-     * @param AutoloadGenerator    $autoloadGenerator
+     * @param IOInterface            $io
+     * @param Config                 $config
+     * @param RootPackageInterface   $package
+     * @param DownloadManager        $downloadManager
+     * @param RepositoryManager      $repositoryManager
+     * @param Locker                 $locker
+     * @param InstallationManager    $installationManager
+     * @param EventDispatcher        $eventDispatcher
+     * @param AutoloadGenerator      $autoloadGenerator
+     * @param ProgressInterface      $progress
      */
-    public function __construct(IOInterface $io, Config $config, RootPackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
+    public function __construct(
+        IOInterface $io,
+        Config $config,
+        RootPackageInterface $package,
+        DownloadManager $downloadManager,
+        RepositoryManager $repositoryManager,
+        Locker $locker,
+        InstallationManager $installationManager,
+        EventDispatcher $eventDispatcher,
+        AutoloadGenerator $autoloadGenerator,
+        ProgressInterface $progress = null)
     {
         $this->io = $io;
         $this->config = $config;
@@ -152,6 +169,7 @@ class Installer
         $this->installationManager = $installationManager;
         $this->eventDispatcher = $eventDispatcher;
         $this->autoloadGenerator = $autoloadGenerator;
+        $this->progress = $progress;
     }
 
     /**
@@ -326,11 +344,21 @@ class Installer
                     $this->io->writeError('<info>Generating autoload files</info>');
                 }
 
+                if($this->progress) {
+                    $this->progress->section('Generating Autoload Files');
+                    $this->progress->indeterminate();
+                }
+
                 $this->autoloadGenerator->setDevMode($this->devMode);
                 $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
             }
 
             if ($this->runScripts) {
+                if ($this->progress) {
+                    $this->progress->section('Running Scripts');
+                    $this->progress->indeterminate();
+                }
+
                 // dispatch post event
                 $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
                 $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
@@ -498,7 +526,8 @@ class Installer
 
         // solve dependencies
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request);
-        $solver = new Solver($policy, $pool, $installedRepo);
+        $solver = new Solver($policy, $pool, $installedRepo, $this->progress);
+
         try {
             $operations = $solver->solve($request, $this->ignorePlatformReqs);
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
@@ -515,12 +544,24 @@ class Installer
         // execute operations
         if (!$operations) {
             $this->io->writeError('Nothing to install or update');
+            if($this->progress) {
+                $this->progress->notification('Nothing to install or update');
+            }
         }
 
         $operations = $this->movePluginsToFront($operations);
         $operations = $this->moveUninstallsToFront($operations);
 
+        if(!empty($operations) && $this->progress) {
+            $this->progress->section('Installing');
+            $this->progress->total(count($operations));
+        }
+
         foreach ($operations as $operation) {
+            if($this->progress) {
+                $this->progress->write($operation->__toString());
+            }
+
             // collect suggestions
             if ('install' === $operation->getJobType()) {
                 foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
@@ -771,7 +812,19 @@ class Installer
             $operations = array();
         }
 
-        foreach ($localRepo->getCanonicalPackages() as $package) {
+        $packages = $localRepo->getCanonicalPackages();
+        $count = count($packages);
+
+        if($this->progress) {
+            $this->progress->section("Processing Dev Packages (Task: '" . $task . "')");
+            $this->progress->total(count($packages));
+        }
+
+        foreach ($packages as $package) {
+            if($this->progress) {
+                $this->progress->write($package->getName());
+            }
+
             // skip non-dev packages
             if (!$package->isDev()) {
                 continue;
@@ -1064,11 +1117,12 @@ class Installer
     /**
      * Create Installer
      *
-     * @param  IOInterface $io
-     * @param  Composer    $composer
+     * @param  IOInterface       $io
+     * @param  Composer          $composer
+     * @param  ProgressInterface $progress
      * @return Installer
      */
-    public static function create(IOInterface $io, Composer $composer)
+    public static function create(IOInterface $io, Composer $composer, ProgressInterface $progress = null)
     {
         return new static(
             $io,
@@ -1079,7 +1133,8 @@ class Installer
             $composer->getLocker(),
             $composer->getInstallationManager(),
             $composer->getEventDispatcher(),
-            $composer->getAutoloadGenerator()
+            $composer->getAutoloadGenerator(),
+            $progress
         );
     }
 

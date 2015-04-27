@@ -181,4 +181,5 @@ interface IOInterface
      * @param Config $config
      */
     public function loadConfiguration(Config $config);
+
 }

@@ -12,6 +12,7 @@
 
 namespace Composer\IO;
 
+use Composer\Progress\ProgressInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -36,9 +37,9 @@ class ConsoleIO extends BaseIO
     /**
      * Constructor.
      *
-     * @param InputInterface  $input     The input instance
-     * @param OutputInterface $output    The output instance
-     * @param HelperSet       $helperSet The helperSet instance
+     * @param InputInterface   $input     The input instance
+     * @param OutputInterface  $output    The output instance
+     * @param HelperSet        $helperSet The helperSet instance
      */
     public function __construct(InputInterface $input, OutputInterface $output, HelperSet $helperSet)
     {
@@ -320,4 +321,5 @@ class ConsoleIO extends BaseIO
         // not able to hide the answer, proceed with normal question handling
         return $this->ask($question);
     }
+
 }

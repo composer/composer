@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\IO\IOInterface;
+use Composer\Progress\ProgressInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
 
@@ -42,21 +44,36 @@ class Solver
     protected $learnedPool = array();
     protected $learnedWhy = array();
 
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
+    protected $progress;
+
+    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, ProgressInterface $progress = null)
     {
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
-        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
+        $this->progress = $progress;
+        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool, $progress);
     }
 
     // aka solver_makeruledecisions
-    private function makeAssertionRuleDecisions()
+    private function
+    makeAssertionRuleDecisions()
     {
         $decisionStart = count($this->decisions) - 1;
 
         $rulesCount = count($this->rules);
+
+        if($this->progress) {
+            $this->progress->section('Solving Dependencies - Making Decisions');
+            $this->progress->total($rulesCount);
+        }
+
         for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
+            // random remainder check is used to slow down progress updates
+            if($this->progress && ($ruleIndex % 1763) === 0) {
+                $this->progress->write('Rule ' . $ruleIndex, $ruleIndex);
+            }
+
             $rule = $this->rules->ruleById[$ruleIndex];
 
             if (!$rule->isAssertion() || $rule->isDisabled()) {
@@ -174,7 +191,17 @@ class Solver
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
 
-        foreach ($this->rules as $rule) {
+        $count = count($this->rules);
+        if($this->progress) {
+            $this->progress->section('Solving Dependencies - Inserting Rules into Watch Graph');
+            $this->progress->total(count($this->rules));
+        }
+        foreach ($this->rules as $i => $rule) {
+            // random remainder is used to slow down progress updates
+            if($this->progress && ($rule->getId() % 783) === 0) {
+                $this->progress->write('Rule ' . $rule->getId(), $rule->getId());
+            } else {
+            }
             $this->watchGraph->insert(new RuleWatchNode($rule));
         }
 
@@ -683,6 +710,11 @@ class Solver
                 $systemLevel = $level;
             }
 
+            if($this->progress) {
+                $this->progress->section('Running SAT - Looping Through Rules');
+                $this->progress->indeterminate();
+            }
+
             for ($i = 0, $n = 0; $n < count($this->rules); $i++, $n++) {
                 if ($i == count($this->rules)) {
                     $i = 0;
@@ -690,6 +722,10 @@ class Solver
 
                 $rule = $this->rules->ruleById[$i];
                 $literals = $rule->literals;
+
+                if($this->progress && ($n % 831) === 0) {
+                    $this->progress->write('Rule ' . $n);
+                }
 
                 if ($rule->isDisabled()) {
                     continue;
@@ -746,8 +782,17 @@ class Solver
                 $lastBranchOffset  = 0;
                 $l = 0;
 
+                if($this->progress) {
+                    $this->progress->section('Running SAT - Minimization Step');
+                    $this->progress->total(count($this->branches));
+                }
+
                 for ($i = count($this->branches) - 1; $i >= 0; $i--) {
                     list($literals, $l) = $this->branches[$i];
+
+                    if($this->progress) {
+                        $this->progress->write('Branch ' . $i);
+                    }
 
                     foreach ($literals as $offset => $literal) {
                         if ($literal && $literal > 0 && $this->decisions->decisionLevel($literal) > $l + 1) {

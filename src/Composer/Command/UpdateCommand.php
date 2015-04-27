@@ -90,7 +90,7 @@ EOT
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
-        $install = Installer::create($io, $composer);
+        $install = Installer::create($io, $composer, $this->getApplication()->getProgress());
 
         $preferSource = false;
         $preferDist = false;

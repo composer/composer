@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Progress\ProgressInterface;
 use Composer\Repository\PlatformRepository;
 
 /**
@@ -28,11 +29,13 @@ class RuleSetGenerator
     protected $installedMap;
     protected $whitelistedMap;
     protected $addedMap;
+    protected $progress;
 
-    public function __construct(PolicyInterface $policy, Pool $pool)
+    public function __construct(PolicyInterface $policy, Pool $pool, ProgressInterface $progress = null)
     {
         $this->policy = $policy;
         $this->pool = $pool;
+        $this->progress = $progress;
     }
 
     /**
@@ -318,15 +321,30 @@ class RuleSetGenerator
         $this->installedMap = $installedMap;
 
         $this->whitelistedMap = array();
-        foreach ($this->installedMap as $package) {
+        if($this->progress) {
+            $this->progress->section("Solving Dependencies - Whitelisting");
+            $this->progress->total(count($this->installedMap));
+        }
+        foreach ($this->installedMap as $i => $package) {
+            if($this->progress) {
+                $this->progress->write($package->getName());
+            }
             $this->whitelistFromPackage($package);
         }
+
         $this->whitelistFromJobs();
 
         $this->pool->setWhitelist($this->whitelistedMap);
 
         $this->addedMap = array();
-        foreach ($this->installedMap as $package) {
+        if($this->progress) {
+            $this->progress->section('Solving Dependencies - Adding Rules');
+            $this->progress->total(count($this->installedMap));
+        }
+        foreach ($this->installedMap as $i => $package) {
+            if($this->progress) {
+                $this->progress->write($package->getName());
+            }
             $this->addRulesForPackage($package, $ignorePlatformReqs);
         }
 
