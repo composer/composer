@@ -121,10 +121,7 @@ class Svn
         }
 
         $errorOutput = $this->process->getErrorOutput();
-        if (empty($output)) {
-            $output = $errorOutput;
-        }
-        $fullOutput = "$output\n$errorOutput";
+        $fullOutput = join("\n", array($output, $errorOutput));
 
         // the error is not auth-related
         if (false === stripos($fullOutput, 'Could not authenticate to server:')
@@ -145,7 +142,7 @@ class Svn
         }
 
         throw new \RuntimeException(
-            'wrong credentials provided ('.$output.')'
+            'wrong credentials provided ('.$fullOutput.')'
         );
     }
 
