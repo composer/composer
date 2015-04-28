@@ -121,7 +121,7 @@ class Svn
         }
 
         $errorOutput = $this->process->getErrorOutput();
-        $fullOutput = join("\n", array($output, $errorOutput));
+        $fullOutput = implode("\n", array($output, $errorOutput));
 
         // the error is not auth-related
         if (false === stripos($fullOutput, 'Could not authenticate to server:')
