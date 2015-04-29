@@ -82,7 +82,7 @@ resolution.
   have a proper setup.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the `platform` [config option](04-schema.md#config).
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
@@ -127,7 +127,7 @@ php composer.phar update vendor/*
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the `platform` [config option](04-schema.md#config).
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
@@ -171,7 +171,7 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the `platform` [config option](04-schema.md#config).
 * **--dev:** Add packages to `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -195,7 +195,7 @@ uninstalled.
 ### Options
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the `platform` [config option](04-schema.md#config).
 * **--dev:** Remove packages from `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some

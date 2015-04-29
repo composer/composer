@@ -191,6 +191,13 @@ class Locker
         return isset($lockData['prefer-lowest']) ? $lockData['prefer-lowest'] : null;
     }
 
+    public function getPlatformOverrides()
+    {
+        $lockData = $this->getLockData();
+
+        return isset($lockData['platform-overrides']) ? $lockData['platform-overrides'] : array();
+    }
+
     public function getAliases()
     {
         $lockData = $this->getLockData();
@@ -214,19 +221,20 @@ class Locker
     /**
      * Locks provided data into lockfile.
      *
-     * @param array  $packages         array of packages
-     * @param mixed  $devPackages      array of dev packages or null if installed without --dev
-     * @param array  $platformReqs     array of package name => constraint for required platform packages
-     * @param mixed  $platformDevReqs  array of package name => constraint for dev-required platform packages
-     * @param array  $aliases          array of aliases
+     * @param array  $packages          array of packages
+     * @param mixed  $devPackages       array of dev packages or null if installed without --dev
+     * @param array  $platformReqs      array of package name => constraint for required platform packages
+     * @param mixed  $platformDevReqs   array of package name => constraint for dev-required platform packages
+     * @param array  $aliases           array of aliases
      * @param string $minimumStability
      * @param array  $stabilityFlags
      * @param bool   $preferStable
      * @param bool   $preferLowest
+     * @param array  $platformOverrides
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides)
     {
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
@@ -260,6 +268,9 @@ class Locker
 
         $lock['platform'] = $platformReqs;
         $lock['platform-dev'] = $platformDevReqs;
+        if ($platformOverrides) {
+            $lock['platform-overrides'] = $platformOverrides;
+        }
 
         if (empty($lock['packages']) && empty($lock['packages-dev']) && empty($lock['platform']) && empty($lock['platform-dev'])) {
             if ($this->lockFile->exists()) {

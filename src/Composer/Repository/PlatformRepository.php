@@ -24,12 +24,22 @@ class PlatformRepository extends ArrayRepository
 {
     const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit)?|hhvm|(?:ext|lib)-[^/]+)$}i';
 
+    /**
+     * Defines overrides so that the platform can be mocked
+     *
+     * Should be an array of package name => version number mappings
+     *
+     * @var array
+     */
     private $overrides;
 
-    public function __construct(array $overrides = array())
+    public function __construct(array $packages = array(), array $overrides = array())
     {
-        parent::__construct(array());
-        $this->overrides = $overrides;
+        parent::__construct($packages);
+        $this->overrides = array();
+        foreach ($overrides as $name => $version) {
+            $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
+        }
     }
 
     protected function initialize()
@@ -40,19 +50,17 @@ class PlatformRepository extends ArrayRepository
 
         // Add each of the override versions as options.
         // Later we might even replace the extensions instead.
-        foreach( $this->overrides as $name => $prettyVersion ) {
+        foreach ($this->overrides as $override) {
             // Check that it's a platform package.
-            if( preg_match(self::PLATFORM_PACKAGE_REGEX, $name) ) {
-                $version = $versionParser->normalize($prettyVersion);
-                $package = new CompletePackage($name, $version, $prettyVersion);
-                $package->setDescription("Overridden virtual platform package $name.");
-                parent::addPackage($package);
+            if (!preg_match(self::PLATFORM_PACKAGE_REGEX, $override['name'])) {
+                throw new \InvalidArgumentException('Invalid platform package name in config.platform: '.$override['name']);
             }
-            else {
-                throw new \InvalidArgumentException('Invalid platform package '.$name);
-            }
-        }
 
+            $version = $versionParser->normalize($override['version']);
+            $package = new CompletePackage($override['name'], $version, $override['version']);
+            $package->setDescription('Overridden virtual platform package '.$override['name']);
+            parent::addPackage($package);
+        }
 
         $prettyVersion = PluginInterface::PLUGIN_API_VERSION;
         $version = $versionParser->normalize($prettyVersion);
@@ -186,21 +194,13 @@ class PlatformRepository extends ArrayRepository
         }
     }
 
-    // TODO: Is it a good thing to redefine the public interface
-    // like this, or is it better to make the "only-add-if-no-in-platform"
-    // feature in a
-    // protected function addOverriddenPackage()
-    // instead?
+    /**
+     * {@inheritDoc}
+     */
     public function addPackage(PackageInterface $package)
     {
-        /*
-           If we can find the package in this repository,
-           in any version, it can only mean that it has been
-           added by the config key 'platform' and should
-           the real package (i.e. this one) should not be added.
-        */
-        if( count($this->findPackages($package->getName())) > 0 ) {
-            // Log a warning that we're ignoring existing package?
+        // Skip if overridden
+        if (isset($this->overrides[strtolower($package->getName())])) {
             return;
         }
         parent::addPackage($package);

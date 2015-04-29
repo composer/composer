@@ -410,6 +410,15 @@ EOT
             throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
         }
 
+        // handle platform
+        if (preg_match('/^platform\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                return $this->configSource->removeConfigSetting($settingKey);
+            }
+
+            return $this->configSource->addConfigSetting($settingKey, $values[0]);
+        }
+
         // handle github-oauth
         if (preg_match('/^(github-oauth|http-basic)\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {

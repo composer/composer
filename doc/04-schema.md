@@ -761,6 +761,9 @@ The following options are supported:
   against them. For example using
   `{"example.org": {"username": "alice", "password": "foo"}` as the value of this
   option will let composer authenticate against example.org.
+* **platform:** Lets you fake platform packages (PHP and extensions) so that
+  you can emulate a production env or define your target platform in the
+  config. e.g. `{"php": "5.4", "ext-something": "4.0"}`.
 * **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
   different directory if you want to. `$HOME` and `~` will be replaced by your
   home directory's path in vendor-dir and all `*-dir` options below.

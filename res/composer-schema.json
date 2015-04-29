@@ -145,6 +145,11 @@
                     "type": ["string", "boolean"],
                     "description": "What to do after prompting for authentication, one of: true (store), false (do not store) or \"prompt\" (ask every time), defaults to prompt."
                 },
+                "platform": {
+                    "type": "object",
+                    "description": "This is a hash of package name (keys) and version (values) that will be used to mock the platform packages on this machine.",
+                    "additionalProperties": true
+                },
                 "vendor-dir": {
                     "type": "string",
                     "description": "The location where all packages are installed, defaults to \"vendor\"."

@@ -206,9 +206,12 @@ class Installer
 
         // create installed repo, this contains all local packages + platform packages (php & extensions)
         $localRepo = $this->repositoryManager->getLocalRepository();
-        $platformOverride = $this->config->get('platform');
-        $platformOverride = is_array($platformOverride) ? $platformOverride : array();
-        $platformRepo = new PlatformRepository($platformOverride);
+        if (!$this->update && $this->locker->isLocked()) {
+            $platformOverrides = $this->locker->getPlatformOverrides();
+        } else {
+            $platformOverrides = $this->config->get('platform') ?: array();
+        }
+        $platformRepo = new PlatformRepository(array(), $platformOverrides);
         $repos = array(
             $localRepo,
             new InstalledArrayRepository(array($installedRootPackage)),
@@ -313,7 +316,8 @@ class Installer
                     $this->package->getMinimumStability(),
                     $this->package->getStabilityFlags(),
                     $this->preferStable || $this->package->getPreferStable(),
-                    $this->preferLowest
+                    $this->preferLowest,
+                    $this->config->get('platform') ?: array()
                 );
                 if ($updatedLock) {
                     $this->io->writeError('<info>Writing lock file</info>');
