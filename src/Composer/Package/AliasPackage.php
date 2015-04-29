@@ -163,17 +163,29 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
 
     /**
      * @param array $links
-     * @param string $linkDescription
+     * @param string $linkType
      * @internal param string $prettyVersion
      * @return array
      */
-    protected function replaceSelfVersionDependencies(array $links, $linkDescription = 'relates to')
+    protected function replaceSelfVersionDependencies(array $links, $linkType)
     {
-        foreach ($links as $index => $link) {
-            if ('self.version' === $link->getPrettyConstraint()) {
-                $links[$index] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $linkDescription, $this->prettyVersion);
+        if (in_array($linkType, array('conflicts', 'provides', 'replaces'), true)) {
+            $newLinks = array();
+            foreach ($links as $link) {
+                // link is self.version, but must be replacing also the replaced version
+                if ('self.version' === $link->getPrettyConstraint()) {
+                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $linkType, $this->prettyVersion);
+                }
+            }
+            $links = array_merge($links, $newLinks);
+        } else {
+            foreach ($links as $index => $link) {
+                if ('self.version' === $link->getPrettyConstraint()) {
+                    $links[$index] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $linkType, $this->prettyVersion);
+                }
             }
         }
+
         return $links;
     }
 
