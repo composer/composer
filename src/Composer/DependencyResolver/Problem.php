@@ -97,7 +97,7 @@ class Problem
                         return $msg . 'you are running this with PHP and not HHVM.';
                     }
 
-                    return $msg . 'your PHP version does not satisfy that requirement.';
+                    return $msg . 'your PHP version ('.  phpversion().') does not satisfy that requirement.';
                 }
 
                 // handle php extensions
