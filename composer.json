@@ -30,8 +30,10 @@
         "symfony/process": "~2.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.5"
+        "phpunit/phpunit": "~4.5",
+        "phpunit/phpunit-mock-objects": "2.3.0"
     },
+    "_": "phpunit/phpunit-mock-objects required in 2.3.0 due to https://github.com/sebastianbergmann/phpunit-mock-objects/issues/223",
     "config": {
         "platform": {
             "php": "5.3.3"
