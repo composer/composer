@@ -28,6 +28,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     protected $stability;
 
     protected $requires;
+    protected $devRequires;
     protected $conflicts;
     protected $provides;
     protected $replaces;
@@ -51,32 +52,15 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         $this->stability = VersionParser::parseStability($version);
         $this->dev = $this->stability === 'dev';
 
-        // replace self.version dependencies
-        foreach (array('requires', 'devRequires') as $type) {
-            $links = $aliasOf->{'get'.ucfirst($type)}();
-            foreach ($links as $index => $link) {
-                // link is self.version, but must be replacing also the replaced version
-                if ('self.version' === $link->getPrettyConstraint()) {
-                    $links[$index] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $type, $prettyVersion);
-                }
-            }
-            $this->$type = $links;
-        }
-
-        // duplicate self.version provides
-        foreach (array('conflicts', 'provides', 'replaces') as $type) {
-            $links = $aliasOf->{'get'.ucfirst($type)}();
-            $newLinks = array();
-            foreach ($links as $link) {
-                // link is self.version, but must be replacing also the replaced version
-                if ('self.version' === $link->getPrettyConstraint()) {
-                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $type, $prettyVersion);
-                }
-            }
-            $this->$type = array_merge($links, $newLinks);
+        foreach (array('requires', 'devRequires', 'conflicts', 'provides', 'replaces') as $type) {
+            $links = $aliasOf->{'get' . ucfirst($type)}();
+            $this->$type = $this->replaceSelfVersionDependencies($links, $type);
         }
     }
 
+    /**
+     * @return PackageInterface
+     */
     public function getAliasOf()
     {
         return $this->aliasOf;
@@ -175,6 +159,22 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     public function isRootPackageAlias()
     {
         return $this->rootPackageAlias;
+    }
+
+    /**
+     * @param array $links
+     * @param string $linkDescription
+     * @internal param string $prettyVersion
+     * @return array
+     */
+    protected function replaceSelfVersionDependencies(array $links, $linkDescription = 'relates to')
+    {
+        foreach ($links as $index => $link) {
+            if ('self.version' === $link->getPrettyConstraint()) {
+                $links[$index] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $linkDescription, $this->prettyVersion);
+            }
+        }
+        return $links;
     }
 
     /***************************************
