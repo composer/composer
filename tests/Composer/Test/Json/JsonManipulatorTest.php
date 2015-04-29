@@ -803,6 +803,22 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddConfigSettingWorksFromScratch()
+    {
+        $manipulator = new JsonManipulator('{
+}');
+
+        $this->assertTrue($manipulator->addConfigSetting('foo.bar', 'baz'));
+        $this->assertEquals('{
+    "config": {
+        "foo": {
+            "bar": "baz"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testAddConfigSettingCanAdd()
     {
         $manipulator = new JsonManipulator('{
