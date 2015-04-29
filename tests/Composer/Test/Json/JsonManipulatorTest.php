@@ -1114,4 +1114,26 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 ', $manipulator->getContents());
     }
+
+    public function testIndentDetection()
+    {
+        $manipulator = new JsonManipulator('{
+
+  "require": {
+    "php": "5.*"
+  }
+}');
+
+        $this->assertTrue($manipulator->addMainKey('require-dev', array('foo' => 'qux')));
+        $this->assertEquals('{
+
+  "require": {
+    "php": "5.*"
+  },
+  "require-dev": {
+    "foo": "qux"
+  }
+}
+', $manipulator->getContents());
+    }
 }
