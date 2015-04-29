@@ -87,7 +87,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
 
     public function testSchemaValidation()
     {
-        $json = new JsonFile(__DIR__.'/../../../../composer.json');
+        $json = new JsonFile(__DIR__.'/fixtures/composer.json');
         $this->assertTrue($json->validateSchema());
     }
 
