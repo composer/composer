@@ -369,10 +369,6 @@ EOT
             $errors['hash'] = true;
         }
 
-        if (!extension_loaded('ctype')) {
-            $errors['ctype'] = true;
-        }
-
         if (!ini_get('allow_url_fopen')) {
             $errors['allow_url_fopen'] = true;
         }
@@ -439,11 +435,6 @@ EOT
                     case 'hash':
                         $text = PHP_EOL."The hash extension is missing.".PHP_EOL;
                         $text .= "Install it or recompile php without --disable-hash";
-                        break;
-
-                    case 'ctype':
-                        $text = PHP_EOL."The ctype extension is missing.".PHP_EOL;
-                        $text .= "Install it or recompile php without --disable-ctype";
                         break;
 
                     case 'unicode':
