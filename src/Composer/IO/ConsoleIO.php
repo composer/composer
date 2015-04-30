@@ -16,6 +16,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Process\ExecutableFinder;
 
 /**
@@ -208,10 +210,11 @@ class ConsoleIO extends BaseIO
             $output = $output->getErrorOutput();
         }
 
-        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
-        $dialog = $this->helperSet->get('dialog');
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        $question = new Question($question, $default);
 
-        return $dialog->ask($output, $question, $default);
+        return $helper->ask($this->input, $output, $question);
     }
 
     /**
@@ -225,16 +228,17 @@ class ConsoleIO extends BaseIO
             $output = $output->getErrorOutput();
         }
 
-        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
-        $dialog = $this->helperSet->get('dialog');
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        $question = new ConfirmationQuestion($question, $default);
 
-        return $dialog->askConfirmation($output, $question, $default);
+        return $helper->ask($this->input, $output, $question);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function askAndValidate($question, $validator, $attempts = false, $default = null)
+    public function askAndValidate($question, $validator, $attempts = null, $default = null)
     {
         $output = $this->output;
 
@@ -242,10 +246,13 @@ class ConsoleIO extends BaseIO
             $output = $output->getErrorOutput();
         }
 
-        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
-        $dialog = $this->helperSet->get('dialog');
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        $question = new Question($question, $default);
+        $question->setValidator($validator);
+        $question->setMaxAttempts($attempts);
 
-        return $dialog->askAndValidate($output, $question, $validator, $attempts, $default);
+        return $helper->ask($this->input, $output, $question);
     }
 
     /**
