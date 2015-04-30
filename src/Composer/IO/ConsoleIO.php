@@ -16,6 +16,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Process\ExecutableFinder;
 
 /**
@@ -81,7 +83,7 @@ class ConsoleIO extends BaseIO
      */
     public function isVeryVerbose()
     {
-        return $this->output->getVerbosity() >= 3; // OutputInterface::VERSOBITY_VERY_VERBOSE
+        return $this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE;
     }
 
     /**
@@ -89,7 +91,7 @@ class ConsoleIO extends BaseIO
      */
     public function isDebug()
     {
-        return $this->output->getVerbosity() >= 4; // OutputInterface::VERBOSITY_DEBUG
+        return $this->output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG;
     }
 
     /**
@@ -158,12 +160,6 @@ class ConsoleIO extends BaseIO
      */
     private function doOverwrite($messages, $newline, $size, $stderr)
     {
-        if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
-            $output = $this->output->getErrorOutput();
-        } else {
-            $output = $this->output;
-        }
-
         // messages can be an array, let's convert it to string anyway
         $messages = join($newline ? "\n" : '', (array) $messages);
 
@@ -208,10 +204,11 @@ class ConsoleIO extends BaseIO
             $output = $output->getErrorOutput();
         }
 
-        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
-        $dialog = $this->helperSet->get('dialog');
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        $question = new Question($question, $default);
 
-        return $dialog->ask($output, $question, $default);
+        return $helper->ask($this->input, $output, $question);
     }
 
     /**
@@ -225,16 +222,17 @@ class ConsoleIO extends BaseIO
             $output = $output->getErrorOutput();
         }
 
-        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
-        $dialog = $this->helperSet->get('dialog');
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        $question = new ConfirmationQuestion($question, $default);
 
-        return $dialog->askConfirmation($output, $question, $default);
+        return $helper->ask($this->input, $output, $question);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function askAndValidate($question, $validator, $attempts = false, $default = null)
+    public function askAndValidate($question, $validator, $attempts = null, $default = null)
     {
         $output = $this->output;
 
@@ -242,10 +240,13 @@ class ConsoleIO extends BaseIO
             $output = $output->getErrorOutput();
         }
 
-        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
-        $dialog = $this->helperSet->get('dialog');
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        $question = new Question($question, $default);
+        $question->setValidator($validator);
+        $question->setMaxAttempts($attempts);
 
-        return $dialog->askAndValidate($output, $question, $validator, $attempts, $default);
+        return $helper->ask($this->input, $output, $question);
     }
 
     /**

@@ -74,9 +74,8 @@ EOT
                 $json->removeLink($type, $package);
             } elseif (isset($composer[$altType][$package])) {
                 $this->getIO()->writeError('<warning>'.$package.' could not be found in '.$type.' but it is present in '.$altType.'</warning>');
-                $dialog = $this->getHelperSet()->get('dialog');
                 if ($this->getIO()->isInteractive()) {
-                    if ($dialog->askConfirmation($output, $dialog->getQuestion('Do you want to remove it from '.$altType, 'yes', '?'), true)) {
+                    if ($this->getIO()->askConfirmation('Do you want to remove it from '.$altType.' [<comment>yes</comment>]? ', true)) {
                         $json->removeLink($altType, $package);
                     }
                 }

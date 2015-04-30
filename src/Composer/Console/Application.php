@@ -20,7 +20,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Composer\Command;
-use Composer\Command\Helper\DialogHelper;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\IO\IOInterface;
@@ -320,16 +319,5 @@ class Application extends BaseApplication
         $definition->addOption(new InputOption('--working-dir', '-d', InputOption::VALUE_REQUIRED, 'If specified, use the given directory as working directory.'));
 
         return $definition;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function getDefaultHelperSet()
-    {
-        $helperSet = parent::getDefaultHelperSet();
-        $helperSet->set(new DialogHelper());
-
-        return $helperSet;
     }
 }

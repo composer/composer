@@ -123,14 +123,14 @@ interface IOInterface
      *
      * @param string|array $question  The question to ask
      * @param callback     $validator A PHP callback
-     * @param bool|integer $attempts  Max number of times to ask before giving up (false by default, which means infinite)
+     * @param null|integer $attempts  Max number of times to ask before giving up (default of null means infinite)
      * @param string       $default   The default answer if none is given by the user
      *
      * @return mixed
      *
      * @throws \Exception When any of the validators return an error
      */
-    public function askAndValidate($question, $validator, $attempts = false, $default = null);
+    public function askAndValidate($question, $validator, $attempts = null, $default = null);
 
     /**
      * Asks a question to the user and hide the answer.
