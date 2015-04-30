@@ -33,12 +33,18 @@ use Symfony\Component\Process\ExecutableFinder;
  */
 class InitCommand extends Command
 {
+    /** @var CompositeRepository */
     protected $repos;
 
+    /** @var array */
     private $gitConfig;
+
+    /** @var Pool */
     private $pool;
 
-
+    /**
+     * {@inheritdoc}
+     */
     protected function configure()
     {
         $this
@@ -67,6 +73,9 @@ EOT
         ;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $dialog = $this->getHelperSet()->get('dialog');
@@ -133,12 +142,16 @@ EOT
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         $git = $this->getGitConfig();
 
         $dialog = $this->getHelperSet()->get('dialog');
         $formatter = $this->getHelperSet()->get('formatter');
+
         $this->getIO()->writeError(array(
             '',
             $formatter->formatBlock('Welcome to the Composer config generator', 'bg=blue;fg=white', true),
