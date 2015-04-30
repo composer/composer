@@ -160,12 +160,6 @@ class ConsoleIO extends BaseIO
      */
     private function doOverwrite($messages, $newline, $size, $stderr)
     {
-        if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
-            $output = $this->output->getErrorOutput();
-        } else {
-            $output = $this->output;
-        }
-
         // messages can be an array, let's convert it to string anyway
         $messages = join($newline ? "\n" : '', (array) $messages);
 
