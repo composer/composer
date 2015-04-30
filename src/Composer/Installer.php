@@ -610,6 +610,12 @@ class Installer
             }
         }
 
+        if (!$this->dryRun) {
+            // force source/dist urls to be updated for all packages
+            $operations = $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
+            $localRepo->write();
+        }
+
         return 0;
     }
 
@@ -860,7 +866,7 @@ class Installer
                 }
 
                 if ($task === 'force-updates') {
-                    // force installed package to update to referenced version if it does not match the installed version
+                    // force installed package to update to referenced version in root package if it does not match the installed version
                     $references = $this->package->getReferences();
 
                     if (isset($references[$package->getName()]) && $references[$package->getName()] !== $package->getSourceReference()) {
@@ -892,6 +898,42 @@ class Installer
         }
 
         return $normalizedAliases;
+    }
+
+    private function processPackageUrls($pool, $policy, $localRepo, $repositories)
+    {
+        if (!$this->update) {
+            return;
+        }
+
+        foreach ($localRepo->getCanonicalPackages() as $package) {
+            // find similar packages (name/version) in all repositories
+            $matches = $pool->whatProvides($package->getName(), new VersionConstraint('=', $package->getVersion()));
+            foreach ($matches as $index => $match) {
+                // skip local packages
+                if (!in_array($match->getRepository(), $repositories, true)) {
+                    unset($matches[$index]);
+                    continue;
+                }
+
+                // skip providers/replacers
+                if ($match->getName() !== $package->getName()) {
+                    unset($matches[$index]);
+                    continue;
+                }
+
+                $matches[$index] = $match->getId();
+            }
+
+            // select preferred package according to policy rules
+            if ($matches && $matches = $policy->selectPreferredPackages($pool, array(), $matches)) {
+                $newPackage = $pool->literalToPackage($matches[0]);
+
+                // update the dist and source URLs
+                $package->setSourceUrl($newPackage->getSourceUrl());
+                $package->setDistUrl($newPackage->getDistUrl());
+            }
+        }
     }
 
     private function aliasPlatformPackages(PlatformRepository $platformRepo, $aliases)
