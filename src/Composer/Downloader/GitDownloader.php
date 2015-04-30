@@ -51,7 +51,20 @@ class GitDownloader extends VcsDownloader
             return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($path), ProcessExecutor::escape($ref));
         };
 
-        $this->gitUtil->runCommand($commandCallable, $url, $path, true);
+        $attemptCounter = 5;
+        while ($attemptCounter-- > 0) {
+            try {
+                $this->gitUtil->runCommand($commandCallable, $url, $path, true);
+                break;
+            } catch (\RuntimeException $e) {
+                if (128 === $e->getCode() && $attemptCounter) {
+                    sleep(1);
+                    continue;
+                }
+                throw $e;
+            }
+        }
+
         if ($url !== $package->getSourceUrl()) {
             $url = $package->getSourceUrl();
             $this->process->execute(sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
