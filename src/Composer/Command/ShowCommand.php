@@ -302,7 +302,7 @@ EOT
                 : null;
 
             $this->getIO()->writeError(
-                sprintf('<error>Attention: This package is abandoned and no longer maintained.%s</error>', $replacement)
+                sprintf('<warning>Attention: This package is abandoned and no longer maintained.%s</warning>', $replacement)
             );
         }
 

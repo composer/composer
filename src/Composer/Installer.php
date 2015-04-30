@@ -264,7 +264,7 @@ class Installer
 
             $this->io->writeError(
                 sprintf(
-                    "<error>Package %s is abandoned, you should avoid using it. %s.</error>",
+                    "<warning>Package %s is abandoned, you should avoid using it. %s.</warning>",
                     $package->getPrettyName(),
                     $replacement
                 )
