@@ -136,7 +136,7 @@ class Cache
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
-            touch($this->root . $file);
+            touch($this->root . $file, filemtime($this->root . $file), time());
 
             if ($this->io->isDebug()) {
                 $this->io->writeError('Reading '.$this->root . $file.' from cache');
