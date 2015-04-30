@@ -12,6 +12,13 @@ resulting order in which the solver will try to install them.
 
 The rules are to be applied in the order of these descriptions.
 
+### Repository priorities
+
+Packages Repo1.Av1, Repo2.Av1
+
+* priority(Repo1) >= priority(Repo2) => (Repo1.Av1, Repo2.Av1)
+* priority(Repo1) <  priority(Repo2) => (Repo2.Av1, Repo1.Av1)
+
 ### Package versions
 
 Packages: Av1, Av2, Av3
@@ -21,13 +28,6 @@ Packages: Av1, Av2, Av3
 Request: install A
 
 * (Av3)
-
-### Repository priorities
-
-Packages Repo1.Av1, Repo2.Av1
-
-* priority(Repo1) >= priority(Repo2) => (Repo1.Av1, Repo2.Av1)
-* priority(Repo1) <  priority(Repo2) => (Repo2.Av1, Repo1.Av1)
 
 ### Virtual Packages (provides)
 
