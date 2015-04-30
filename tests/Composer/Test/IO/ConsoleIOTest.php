@@ -224,7 +224,7 @@ class ConsoleIOTest extends TestCase
         );
     }
 
-    public function testgetAuthenticationWhenDidNotSet()
+    public function testGetAuthenticationWhenDidNotSet()
     {
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
@@ -238,7 +238,7 @@ class ConsoleIOTest extends TestCase
         );
     }
 
-    public function testhasAuthentication()
+    public function testHasAuthentication()
     {
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
