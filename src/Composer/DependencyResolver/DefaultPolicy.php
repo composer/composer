@@ -82,9 +82,9 @@ class DefaultPolicy implements PolicyInterface
         }
 
         foreach ($packages as &$literals) {
-            $literals = $this->pruneToBestVersion($pool, $literals);
-
             $literals = $this->pruneToHighestPriorityOrInstalled($pool, $installedMap, $literals);
+
+            $literals = $this->pruneToBestVersion($pool, $literals);
 
             $literals = $this->pruneRemoteAliases($pool, $literals);
         }
