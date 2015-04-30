@@ -78,8 +78,6 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $dialog = $this->getHelperSet()->get('dialog');
-
         $whitelist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license');
 
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
@@ -107,16 +105,11 @@ EOT
         }
 
         $file = new JsonFile('composer.json');
-
         $json = $file->encode($options);
 
         if ($input->isInteractive()) {
-            $this->getIO()->writeError(array(
-                '',
-                $json,
-                ''
-            ));
-            if (!$dialog->askConfirmation($output, $dialog->getQuestion('Do you confirm generation', 'yes', '?'), true)) {
+            $this->getIO()->writeError(array('', $json, ''));
+            if (!$this->getIO()->askConfirmation('Do you confirm generation [<comment>yes</comment>]? ', true)) {
                 $this->getIO()->writeError('<error>Command aborted</error>');
 
                 return 1;
@@ -133,9 +126,9 @@ EOT
             }
 
             if (!$this->hasVendorIgnore($ignoreFile)) {
-                $question = 'Would you like the <info>vendor</info> directory added to your <info>.gitignore</info> [<comment>yes</comment>]?';
+                $question = 'Would you like the <info>vendor</info> directory added to your <info>.gitignore</info> [<comment>yes</comment>]? ';
 
-                if ($dialog->askConfirmation($output, $question, true)) {
+                if ($this->getIO()->askConfirmation($question, true)) {
                     $this->addVendorIgnore($ignoreFile);
                 }
             }
@@ -149,7 +142,6 @@ EOT
     {
         $git = $this->getGitConfig();
 
-        $dialog = $this->getHelperSet()->get('dialog');
         $formatter = $this->getHelperSet()->get('formatter');
 
         $this->getIO()->writeError(array(
@@ -189,9 +181,8 @@ EOT
             }
         }
 
-        $name = $dialog->askAndValidate(
-            $output,
-            $dialog->getQuestion('Package name (<vendor>/<name>)', $name),
+        $name = $this->getIO()->askAndValidate(
+            'Package name (<vendor>/<name>) [<comment>'.$name.'</comment>]: ',
             function ($value) use ($name) {
                 if (null === $value) {
                     return $name;
@@ -204,14 +195,15 @@ EOT
                 }
 
                 return $value;
-            }
+            },
+            null,
+            $name
         );
         $input->setOption('name', $name);
 
         $description = $input->getOption('description') ?: false;
-        $description = $dialog->ask(
-            $output,
-            $dialog->getQuestion('Description', $description),
+        $description = $this->getIO()->ask(
+            'Description [<comment>'.$description.'</comment>]: ',
             $description
         );
         $input->setOption('description', $description);
@@ -223,22 +215,22 @@ EOT
         }
 
         $self = $this;
-        $author = $dialog->askAndValidate(
-            $output,
-            $dialog->getQuestion('Author', $author),
+        $author = $this->getIO()->askAndValidate(
+            'Author [<comment>'.$author.'</comment>]: ',
             function ($value) use ($self, $author) {
                 $value = $value ?: $author;
                 $author = $self->parseAuthorString($value);
 
                 return sprintf('%s <%s>', $author['name'], $author['email']);
-            }
+            },
+            null,
+            $author
         );
         $input->setOption('author', $author);
 
-        $minimumStability = $input->getOption('stability') ?: '';
-        $minimumStability = $dialog->askAndValidate(
-            $output,
-            $dialog->getQuestion('Minimum Stability', $minimumStability),
+        $minimumStability = $input->getOption('stability') ?: null;
+        $minimumStability = $this->getIO()->askAndValidate(
+            'Minimum Stability [<comment>'.$minimumStability.'</comment>]: ',
             function ($value) use ($self, $minimumStability) {
                 if (null === $value) {
                     return $minimumStability;
@@ -252,39 +244,38 @@ EOT
                 }
 
                 return $value;
-            }
+            },
+            null,
+            $minimumStability
         );
         $input->setOption('stability', $minimumStability);
 
         $type = $input->getOption('type') ?: false;
-        $type = $dialog->ask(
-            $output,
-            $dialog->getQuestion('Package Type', $type),
+        $type = $this->getIO()->ask(
+            'Package Type [<comment>'.$type.'</comment>]: ',
             $type
         );
         $input->setOption('type', $type);
 
         $license = $input->getOption('license') ?: false;
-        $license = $dialog->ask(
-            $output,
-            $dialog->getQuestion('License', $license),
+        $license = $this->getIO()->ask(
+            'License [<comment>'.$license.'</comment>]: ',
             $license
         );
         $input->setOption('license', $license);
 
-        $this->getIO()->writeError(array(
-            '',
-            'Define your dependencies.',
-            ''
-        ));
+        $this->getIO()->writeError(array('', 'Define your dependencies.', ''));
 
+        $question = 'Would you like to define your dependencies (require) interactively [<comment>yes</comment>]? ';
         $requirements = array();
-        if ($dialog->askConfirmation($output, $dialog->getQuestion('Would you like to define your dependencies (require) interactively', 'yes', '?'), true)) {
+        if ($this->getIO()->askConfirmation($question, true)) {
             $requirements = $this->determineRequirements($input, $output, $input->getOption('require'));
         }
         $input->setOption('require', $requirements);
+
+        $question = 'Would you like to define your dev dependencies (require-dev) interactively [<comment>yes</comment>]? ';
         $devRequirements = array();
-        if ($dialog->askConfirmation($output, $dialog->getQuestion('Would you like to define your dev dependencies (require-dev) interactively', 'yes', '?'), true)) {
+        if ($this->getIO()->askConfirmation($question, true)) {
             $devRequirements = $this->determineRequirements($input, $output, $input->getOption('require-dev'));
         }
         $input->setOption('require-dev', $devRequirements);
@@ -330,9 +321,6 @@ EOT
 
     protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array())
     {
-        $dialog = $this->getHelperSet()->get('dialog');
-        $prompt = $dialog->getQuestion('Search for a package', false, ':');
-
         if ($requires) {
             $requires = $this->normalizeRequirements($requires);
             $result = array();
@@ -357,7 +345,7 @@ EOT
         }
 
         $versionParser = new VersionParser();
-        while (null !== $package = $dialog->ask($output, $prompt)) {
+        while (null !== $package = $this->getIO()->ask('Search for a package: ')) {
             $matches = $this->findPackages($package);
 
             if (count($matches)) {
@@ -410,7 +398,12 @@ EOT
                         throw new \Exception('Not a valid selection');
                     };
 
-                    $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or the complete package name if it is not listed', false, ':'), $validator, 3);
+                    $package = $this->getIO()->askAndValidate(
+                        'Enter package # to add, or the complete package name if it is not listed: ',
+                        $validator,
+                        3,
+                        false
+                    );
                 }
 
                 // no constraint yet, determine the best version automatically
@@ -421,12 +414,13 @@ EOT
                         return $input ?: false;
                     };
 
-                    $constraint = $dialog->askAndValidate(
-                        $output,
-                        $dialog->getQuestion('Enter the version constraint to require (or leave blank to use the latest version)', false, ':'),
+                    $constraint = $this->getIO()->askAndValidate(
+                        'Enter the version constraint to require (or leave blank to use the latest version): ',
                         $validator,
-                        3)
-                    ;
+                        3,
+                        false
+                    );
+
                     if (false === $constraint) {
                         $constraint = $this->findBestVersionForPackage($input, $package);
 
