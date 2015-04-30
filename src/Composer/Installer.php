@@ -287,7 +287,7 @@ class Installer
                     $pool->addRepository($installedRepo, $aliases);
 
                     // creating requirements request
-                    $request = $this->createRequest($pool, $this->package, $platformRepo);
+                    $request = $this->createRequest($this->package, $platformRepo);
                     $request->updateAll();
                     foreach ($this->package->getRequires() as $link) {
                         $request->install($link->getTarget(), $link->getConstraint());
@@ -398,7 +398,7 @@ class Installer
         }
 
         // creating requirements request
-        $request = $this->createRequest($pool, $this->package, $platformRepo);
+        $request = $this->createRequest($this->package, $platformRepo);
 
         if (!$installFromLock) {
             // remove unstable packages from the localRepo if they don't match the current stability settings
@@ -735,9 +735,9 @@ class Installer
         return new DefaultPolicy($preferStable, $preferLowest);
     }
 
-    private function createRequest(Pool $pool, RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
+    private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
     {
-        $request = new Request($pool);
+        $request = new Request();
 
         $constraint = new VersionConstraint('=', $rootPackage->getVersion());
         $constraint->setPrettyString($rootPackage->getPrettyVersion());
