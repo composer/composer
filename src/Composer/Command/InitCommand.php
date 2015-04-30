@@ -282,6 +282,7 @@ EOT
     }
 
     /**
+     * @private
      * @param string $author
      * @return array
      */
