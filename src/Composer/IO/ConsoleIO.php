@@ -254,71 +254,8 @@ class ConsoleIO extends BaseIO
      */
     public function askAndHideAnswer($question)
     {
-        // handle windows
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $finder = new ExecutableFinder();
+        $this->writeError($question, false);
 
-            // use bash if it's present
-            if ($finder->find('bash') && $finder->find('stty')) {
-                $this->writeError($question, false);
-                $value = rtrim(shell_exec('bash -c "stty -echo; read -n0 discard; read -r mypassword; stty echo; echo $mypassword"'));
-                $this->writeError('');
-
-                return $value;
-            }
-
-            // fallback to hiddeninput executable
-            $exe = __DIR__.'\\hiddeninput.exe';
-
-            // handle code running from a phar
-            if ('phar:' === substr(__FILE__, 0, 5)) {
-                $tmpExe = sys_get_temp_dir().'/hiddeninput.exe';
-
-                // use stream_copy_to_stream instead of copy
-                // to work around https://bugs.php.net/bug.php?id=64634
-                $source = fopen(__DIR__.'\\hiddeninput.exe', 'r');
-                $target = fopen($tmpExe, 'w+');
-                stream_copy_to_stream($source, $target);
-                fclose($source);
-                fclose($target);
-                unset($source, $target);
-
-                $exe = $tmpExe;
-            }
-
-            $this->writeError($question, false);
-            $value = rtrim(shell_exec($exe));
-            $this->writeError('');
-
-            // clean up
-            if (isset($tmpExe)) {
-                unlink($tmpExe);
-            }
-
-            return $value;
-        }
-
-        if (file_exists('/usr/bin/env')) {
-            // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
-            $test = "/usr/bin/env %s -c 'echo OK' 2> /dev/null";
-            foreach (array('bash', 'zsh', 'ksh', 'csh') as $sh) {
-                if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
-                    $shell = $sh;
-                    break;
-                }
-            }
-            if (isset($shell)) {
-                $this->writeError($question, false);
-                $readCmd = ($shell === 'csh') ? 'set mypassword = $<' : 'read -r mypassword';
-                $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
-                $value = rtrim(shell_exec($command));
-                $this->writeError('');
-
-                return $value;
-            }
-        }
-
-        // not able to hide the answer, proceed with normal question handling
-        return $this->ask($question);
+        return \Seld\CliPrompt\CliPrompt::hiddenPrompt(true);
     }
 }
