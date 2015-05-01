@@ -145,7 +145,7 @@ class Compiler
 
         unset($phar);
 
-        // resign the phar with reproducible timestamp / signature
+        // re-sign the phar with reproducible timestamp / signature
         $util = new Timestamps($pharFile);
         $util->updateTimestamps($this->versionDate);
         $util->save($pharFile, \Phar::SHA1);
