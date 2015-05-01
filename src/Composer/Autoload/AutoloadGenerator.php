@@ -214,7 +214,7 @@ EOF;
         $classmapFile .= ");\n";
 
         if (!$suffix) {
-            if (is_readable($vendorPath.'/autoload.php')) {
+            if (!$config->get('autoloader-suffix') && is_readable($vendorPath.'/autoload.php')) {
                 $content = file_get_contents($vendorPath.'/autoload.php');
                 if (preg_match('{ComposerAutoloaderInit([^:\s]+)::}', $content, $match)) {
                     $suffix = $match[1];
