@@ -12,6 +12,8 @@
 
 namespace Composer\Json;
 
+use Composer\Repository\PlatformRepository;
+
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -111,23 +113,27 @@ class JsonManipulator
     private function sortPackages(array &$packages = array())
     {
         $prefix = function ($requirement) {
-            return preg_replace(
-                array(
-                    '/^php$/',
-                    '/^hhvm$/',
-                    '/^ext-\w+$/',
-                    '/^lib-\w+$/',
-                    '/^.+$/',
-                ),
-                array(
-                    '0-$0',
-                    '1-$0',
-                    '2-$0',
-                    '3-$0',
-                    '4-$0',
-                ),
-                $requirement
-            );
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $requirement)) {
+                return preg_replace(
+                    array(
+                        '/^php/',
+                        '/^hhvm/',
+                        '/^ext/',
+                        '/^lib/',
+                        '/^\D/',
+                    ),
+                    array(
+                        '0-$0',
+                        '1-$0',
+                        '2-$0',
+                        '3-$0',
+                        '4-$0',
+                    ),
+                    $requirement
+                );
+            }
+
+            return '5-'.$requirement;
         };
 
         uksort($packages, function ($a, $b) use ($prefix) {
