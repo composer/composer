@@ -26,8 +26,8 @@ install
 --EXPECT-OUTPUT--
 <info>Loading composer repositories with package information</info>
 <info>Installing dependencies (including require-dev)</info>
-<error>Package a/a is abandoned, you should avoid using it. No replacement was suggested.</error>
-<error>Package c/c is abandoned, you should avoid using it. Use b/b instead.</error>
+<warning>Package a/a is abandoned, you should avoid using it. No replacement was suggested.</warning>
+<warning>Package c/c is abandoned, you should avoid using it. Use b/b instead.</warning>
 <info>Writing lock file</info>
 <info>Generating autoload files</info>
 
