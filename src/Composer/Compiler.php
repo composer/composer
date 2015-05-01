@@ -73,6 +73,10 @@ class Compiler
 
         $phar->startBuffering();
 
+        $finderSort = function ($a, $b) {
+            return strcmp($a, $b);
+        };
+
         $finder = new Finder();
         $finder->files()
             ->ignoreVCS(true)
@@ -80,6 +84,7 @@ class Compiler
             ->notName('Compiler.php')
             ->notName('ClassLoader.php')
             ->in(__DIR__.'/..')
+            ->sort($finderSort)
         ;
 
         foreach ($finder as $file) {
@@ -91,6 +96,7 @@ class Compiler
         $finder->files()
             ->name('*.json')
             ->in(__DIR__ . '/../../res')
+            ->sort($finderSort)
         ;
 
         foreach ($finder as $file) {
@@ -109,6 +115,7 @@ class Compiler
             ->in(__DIR__.'/../../vendor/symfony/')
             ->in(__DIR__.'/../../vendor/seld/jsonlint/')
             ->in(__DIR__.'/../../vendor/justinrainbow/json-schema/')
+            ->sort($finderSort)
         ;
 
         foreach ($finder as $file) {

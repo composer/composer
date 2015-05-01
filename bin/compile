@@ -1,6 +1,11 @@
 #!/usr/bin/env php
 <?php
 
+$cwd = getcwd();
+chdir(__DIR__.'/../');
+shell_exec('php bin/composer install -q');
+chdir($cwd);
+
 require __DIR__.'/../src/bootstrap.php';
 
 use Composer\Compiler;
@@ -12,6 +17,6 @@ try {
     $compiler = new Compiler();
     $compiler->compile();
 } catch (\Exception $e) {
-    echo 'Failed to compile phar: ['.get_class($e).'] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine();
+    echo 'Failed to compile phar: ['.get_class($e).'] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine().PHP_EOL;
     exit(1);
 }
