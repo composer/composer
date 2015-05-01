@@ -51,9 +51,8 @@ class Compiler
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
 
-        $date = new \DateTime(trim($process->getOutput()));
-        $date->setTimezone(new \DateTimeZone('UTC'));
-        $this->versionDate = $date->format('Y-m-d H:i:s');
+        $this->versionDate = new \DateTime(trim($process->getOutput()));
+        $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
         $process = new Process('git describe --tags --exact-match HEAD');
         if ($process->run() == 0) {
@@ -74,7 +73,7 @@ class Compiler
         $phar->startBuffering();
 
         $finderSort = function ($a, $b) {
-            return strcmp($a, $b);
+            return strcmp(strtr($a->getRealPath(), '\\', '/'), strtr($b->getRealPath(), '\\', '/'));
         };
 
         $finder = new Finder();
@@ -160,7 +159,7 @@ class Compiler
         if ($path === 'src/Composer/Composer.php') {
             $content = str_replace('@package_version@', $this->version, $content);
             $content = str_replace('@package_branch_alias_version@', $this->branchAliasVersion, $content);
-            $content = str_replace('@release_date@', $this->versionDate, $content);
+            $content = str_replace('@release_date@', $this->versionDate->format('Y-m-d H:i:s'), $content);
         }
 
         $phar->addFromString($path, $content);
@@ -236,9 +235,9 @@ Phar::mapPhar('composer.phar');
 
 EOF;
 
-        // add warning once the phar is older than 30 days
+        // add warning once the phar is older than 60 days
         if (preg_match('{^[a-f0-9]+$}', $this->version)) {
-            $warningTime = time() + 30*86400;
+            $warningTime = $this->versionDate->format('U') + 60 * 86400;
             $stub .= "define('COMPOSER_DEV_WARNING_TIME', $warningTime);\n";
         }
 
