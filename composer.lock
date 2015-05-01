@@ -124,12 +124,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/phar-utils.git",
-                "reference": "9e36488921bc9252f9712190931966b2fe817e51"
+                "reference": "336bb5ee20de511f3c1a164222fcfd194afcab3a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/phar-utils/zipball/9e36488921bc9252f9712190931966b2fe817e51",
-                "reference": "9e36488921bc9252f9712190931966b2fe817e51",
+                "url": "https://api.github.com/repos/Seldaek/phar-utils/zipball/336bb5ee20de511f3c1a164222fcfd194afcab3a",
+                "reference": "336bb5ee20de511f3c1a164222fcfd194afcab3a",
                 "shasum": ""
             },
             "require": {
@@ -160,7 +160,7 @@
             "keywords": [
                 "phra"
             ],
-            "time": "2015-05-01 12:39:58"
+            "time": "2015-05-01 12:45:48"
         },
         {
             "name": "symfony/console",
