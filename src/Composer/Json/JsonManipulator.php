@@ -137,7 +137,7 @@ class JsonManipulator
         };
 
         uksort($packages, function ($a, $b) use ($prefix) {
-            return strcmp($prefix($a), $prefix($b));
+            return strnatcmp($prefix($a), $prefix($b));
         });
     }
 

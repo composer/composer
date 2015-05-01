@@ -336,8 +336,8 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
                 '{
     "require": {
         "foo": "baz",
-        "ext-mcrypt": "*",
-        "ext-gd": "*",
+        "ext-10gd": "*",
+        "ext-2mcrypt": "*",
         "lib-foo": "*",
         "hhvm": "*",
         "php": ">=5.5"
@@ -351,8 +351,8 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     "require": {
         "php": ">=5.5",
         "hhvm": "*",
-        "ext-gd": "*",
-        "ext-mcrypt": "*",
+        "ext-2mcrypt": "*",
+        "ext-10gd": "*",
         "lib-foo": "*",
         "foo": "baz",
         "igorw/retry": "*"
