@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Json\JsonFile;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
+use Seld\PharUtils\Timestamps;
 
 /**
  * The Compiler class compiles composer into a phar
@@ -143,6 +144,11 @@ class Compiler
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../LICENSE'), false);
 
         unset($phar);
+
+        // resign the phar with reproducible timestamp / signature
+        $util = new Timestamps($pharFile);
+        $util->updateTimestamps($this->versionDate);
+        $util->save($pharFile, \Phar::SHA1);
     }
 
     private function addFile($phar, $file, $strip = true)

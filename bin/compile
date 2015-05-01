@@ -3,7 +3,9 @@
 
 $cwd = getcwd();
 chdir(__DIR__.'/../');
-shell_exec('php bin/composer install -q');
+// Install with the current version to force it having the right ClassLoader version
+// Install without dev packages to clean up the included classmap from phpunit classes
+shell_exec('php bin/composer install -q --no-dev');
 chdir($cwd);
 
 require __DIR__.'/../src/bootstrap.php';
