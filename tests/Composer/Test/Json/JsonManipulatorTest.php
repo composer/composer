@@ -332,6 +332,34 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 '
             ),
+            array(
+                '{
+    "require": {
+        "foo": "baz",
+        "ext-mcrypt": "*",
+        "ext-gd": "*",
+        "lib-foo": "*",
+        "hhvm": "*",
+        "php": ">=5.5"
+    }
+}',
+                'require',
+                'igorw/retry',
+                '*',
+                true,
+                '{
+    "require": {
+        "php": ">=5.5",
+        "hhvm": "*",
+        "ext-gd": "*",
+        "ext-mcrypt": "*",
+        "lib-foo": "*",
+        "foo": "baz",
+        "igorw/retry": "*"
+    }
+}
+',
+            ),
         );
     }
 
