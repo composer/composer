@@ -157,7 +157,7 @@ The recommended notation for the most common licenses is (alphabetical):
 - MIT
 
 Optional, but it is highly recommended to supply this. More identifiers are
-listed at the [SPDX Open Source License Registry](http://www.spdx.org/licenses/).
+listed at the [SPDX Open Source License Registry](https://www.spdx.org/licenses/).
 
 For closed-source software, you may use `"proprietary"` as the license identifier.
 
@@ -703,7 +703,7 @@ Example:
         },
         {
             "type": "pear",
-            "url": "http://pear2.php.net"
+            "url": "https://pear2.php.net"
         },
         {
             "type": "package",
@@ -715,7 +715,7 @@ Example:
                     "type": "zip"
                 },
                 "source": {
-                    "url": "http://smarty-php.googlecode.com/svn/",
+                    "url": "https://smarty-php.googlecode.com/svn/",
                     "type": "svn",
                     "reference": "tags/Smarty_3_1_7/distribution/"
                 }

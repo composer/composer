@@ -17,7 +17,7 @@ of credentials inline with the repository specification such as:
     "repositories": [
         {
             "type": "composer",
-            "url": "http://extremely:secret@repo.example.org"
+            "url": "https://extremely:secret@repo.example.org"
         }
     ]
 }

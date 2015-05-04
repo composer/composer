@@ -118,7 +118,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'repositories' => array(
                         array(
                             'type' => 'composer',
-                            'url' => 'http://packagist.org/',
+                            'url' => 'https://packagist.org/',
                         )
                     ),
                     'config' => array(

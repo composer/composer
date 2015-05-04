@@ -21,4 +21,4 @@ Fork the project, create a feature branch, and send us a pull request.
 To ensure a consistent code base, you should make sure the code follows
 the [PSR-2 Coding Standards](http://www.php-fig.org/psr/psr-2/).
 
-If you would like to help, take a look at the [list of issues](http://github.com/composer/composer/issues).
+If you would like to help, take a look at the [list of issues](https://github.com/composer/composer/issues).

@@ -19,7 +19,7 @@ Installation / Usage
 2. Create a composer.json defining your dependencies. Note that this example is
 a short version for applications that are not meant to be published as packages
 themselves. To create libraries/packages please read the
-[documentation](http://getcomposer.org/doc/02-libraries.md).
+[documentation](https://getcomposer.org/doc/02-libraries.md).
 
     ``` json
     {
@@ -35,7 +35,7 @@ themselves. To create libraries/packages please read the
 Global installation of Composer (manual)
 ----------------------------------------
 
-Follow instructions [in the documentation](http://getcomposer.org/doc/00-intro.md#globally)
+Follow instructions [in the documentation](https://getcomposer.org/doc/00-intro.md#globally)
 
 Updating Composer
 -----------------
@@ -47,14 +47,14 @@ install with the latest version.
 Community
 ---------
 
-Mailing lists for [user support](http://groups.google.com/group/composer-users) and
-[development](http://groups.google.com/group/composer-dev).
+Mailing lists for [user support](https://groups.google.com/group/composer-users) and
+[development](https://groups.google.com/group/composer-dev).
 
 IRC channels are on irc.freenode.org: [#composer](irc://irc.freenode.org/composer)
 for users and [#composer-dev](irc://irc.freenode.org/composer-dev) for development.
 
 Stack Overflow has a growing collection of
-[Composer related questions](http://stackoverflow.com/questions/tagged/composer-php).
+[Composer related questions](https://stackoverflow.com/questions/tagged/composer-php).
 
 Requirements
 ------------
@@ -64,8 +64,8 @@ PHP 5.3.2 or above (at least 5.3.4 recommended to avoid potential bugs)
 Authors
 -------
 
-Nils Adermann - <naderman@naderman.de> - <http://twitter.com/naderman> - <http://www.naderman.de><br />
-Jordi Boggiano - <j.boggiano@seld.be> - <http://twitter.com/seldaek> - <http://seld.be><br />
+Nils Adermann - <naderman@naderman.de> - <https://twitter.com/naderman> - <http://www.naderman.de><br />
+Jordi Boggiano - <j.boggiano@seld.be> - <https://twitter.com/seldaek> - <http://seld.be><br />
 
 See also the list of [contributors](https://github.com/composer/composer/contributors) who participated in this project.
 
@@ -78,6 +78,6 @@ Acknowledgments
 ---------------
 
 - This project's Solver started out as a PHP port of openSUSE's
-  [Libzypp satsolver](http://en.opensuse.org/openSUSE:Libzypp_satsolver).
+  [Libzypp satsolver](https://en.opensuse.org/openSUSE:Libzypp_satsolver).
 - This project uses hiddeninput.exe to prompt for passwords on windows, sources
   and details can be found on the [github page of the project](https://github.com/Seldaek/hidden-input).

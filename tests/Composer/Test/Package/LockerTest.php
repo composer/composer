@@ -121,7 +121,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->method('write')
             ->with(array(
                 '_readme' => array('This file locks the dependencies of your project to a known state',
-                                   'Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
+                                   'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
                                    'This file is @gener'.'ated automatically'),
                 'hash' => 'md5',
                 'packages' => array(
