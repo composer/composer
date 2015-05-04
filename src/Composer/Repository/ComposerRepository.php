@@ -180,21 +180,11 @@ class ComposerRepository extends ArrayRepository
                 }
 
                 // avoid loading the same objects twice
-                if (isset($this->providersByUid[$version['uid']])) {die("wtf?");
-                    // skip if already assigned
-                    if (!isset($this->providers[$name][$version['uid']])) {
-                        // expand alias in two packages
-                        if ($this->providersByUid[$version['uid']] instanceof AliasPackage) {
-                            $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']]->getAliasOf();
-                            $this->providers[$name][$version['uid'].'-alias'] = $this->providersByUid[$version['uid']];
-                        } else {
-                            $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']];
-                        }
-                        // check for root aliases
-                        if (isset($this->providersByUid[$version['uid'].'-root'])) {
-                            $this->providers[$name][$version['uid'].'-root'] = $this->providersByUid[$version['uid'].'-root'];
-                        }
-                    }
+                if (isset($this->providersByUid[$version['uid']])) {
+                    /**
+                     * @todo verify and remove
+                     */
+                    throw new \RuntimeException("Should not happen anymore");
                 } else {
                     if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                         continue;
@@ -415,108 +405,11 @@ class ComposerRepository extends ArrayRepository
         if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
             return array();
         }
-        var_dump($name);
-        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        die("should not reach\n");
 
-        if (null === $this->providerListing) {
-            $this->loadProviderListings($this->loadRootServerFile());
-        }
-
-        if ($this->lazyProvidersUrl && !isset($this->providerListing[$name])) {
-            $hash = null;
-            $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
-            $cacheKey = false;
-        } elseif ($this->providersUrl) {
-            // package does not exist in this repo
-            if (!isset($this->providerListing[$name])) {
-                return array();
-            }
-
-            $hash = $this->providerListing[$name]['sha256'];
-            $url = str_replace(array('%package%', '%hash%'), array($name, $hash), $this->providersUrl);
-            $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
-        } else {
-            // BC handling for old providers-includes
-            $url = 'p/'.$name.'.json';
-
-            // package does not exist in this repo
-            if (!isset($this->providerListing[$url])) {
-                return array();
-            }
-            $hash = $this->providerListing[$url]['sha256'];
-            $cacheKey = null;
-        }
-
-        if ($cacheKey && $this->cache->sha256($cacheKey) === $hash) {
-            $packages = json_decode($this->cache->read($cacheKey), true);
-        } else {
-            $packages = $this->fetchFile($url, $cacheKey, $hash);
-        }
-
-        $this->providers[$name] = array();
-        foreach ($packages['packages'] as $versions) {
-            foreach ($versions as $version) {
-                // avoid loading the same objects twice
-                if (isset($this->providersByUid[$version['uid']])) {
-                    // skip if already assigned
-                    if (!isset($this->providers[$name][$version['uid']])) {
-                        // expand alias in two packages
-                        if ($this->providersByUid[$version['uid']] instanceof AliasPackage) {
-                            $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']]->getAliasOf();
-                            $this->providers[$name][$version['uid'].'-alias'] = $this->providersByUid[$version['uid']];
-                        } else {
-                            $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']];
-                        }
-                        // check for root aliases
-                        if (isset($this->providersByUid[$version['uid'].'-root'])) {
-                            $this->providers[$name][$version['uid'].'-root'] = $this->providersByUid[$version['uid'].'-root'];
-                        }
-                    }
-                } else {
-                    if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
-                        continue;
-                    }
-
-                    // load acceptable packages in the providers
-                    $package = $this->createPackage($version, 'Composer\Package\Package');
-                    $package->setRepository($this);
-
-                    if ($package instanceof AliasPackage) {
-                        $aliased = $package->getAliasOf();
-                        $aliased->setRepository($this);
-
-                        $this->providers[$name][$version['uid']] = $aliased;
-                        $this->providers[$name][$version['uid'].'-alias'] = $package;
-
-                        // override provider with its alias so it can be expanded in the if block above
-                        $this->providersByUid[$version['uid']] = $package;
-                    } else {
-                        $this->providers[$name][$version['uid']] = $package;
-                        $this->providersByUid[$version['uid']] = $package;
-                    }
-
-                    // handle root package aliases
-                    unset($rootAliasData);
-
-                    if (isset($this->rootAliases[$package->getName()][$package->getVersion()])) {
-                        $rootAliasData = $this->rootAliases[$package->getName()][$package->getVersion()];
-                    } elseif ($package instanceof AliasPackage && isset($this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()])) {
-                        $rootAliasData = $this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()];
-                    }
-
-                    if (isset($rootAliasData)) {
-                        $alias = $this->createAliasPackage($package, $rootAliasData['alias_normalized'], $rootAliasData['alias']);
-                        $alias->setRepository($this);
-
-                        $this->providers[$name][$version['uid'].'-root'] = $alias;
-                        $this->providersByUid[$version['uid'].'-root'] = $alias;
-                    }
-                }
-            }
-        }
-
-        return $this->providers[$name];
+        /**
+         * @todo verify this is no longer possible and change code to remove this
+         */
+        throw new \RuntimeException("Could not find package that should have been loaded.");
     }
 
     /**
