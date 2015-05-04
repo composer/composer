@@ -128,7 +128,7 @@ class ComposerRepository extends ArrayRepository
     }
 
     protected function loadName($pool, $name)
-    {echo "Loading $name\n";
+    {
         // skip platform packages
         if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
             return array();
