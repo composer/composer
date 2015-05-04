@@ -169,6 +169,21 @@ class Solver
         $this->jobs = $request->getJobs();
 
         $this->setupInstalledMap();
+
+        $constrainedNames = array();
+        foreach ($this->jobs as $job) {
+            switch ($job['cmd']) {
+                case 'install':
+                    $constrainedNames[] = array(
+                        'name' => $job['packageName'],
+                        'constraint' => $job['constraint'],
+                    );
+                    break;
+            }
+        }
+
+        $this->pool->ensureLoaded($constrainedNames);
+
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);

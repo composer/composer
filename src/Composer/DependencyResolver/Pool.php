@@ -160,6 +160,13 @@ class Pool
         return $this->packages[$id - 1];
     }
 
+    public function ensureLoaded($constrainedNames)
+    {
+        foreach ($this->providerRepos as $repo) {
+            $repo->ensureLoaded($this, $constrainedNames);
+        }
+    }
+
     /**
      * Searches all packages providing the given package name and match the constraint
      *
