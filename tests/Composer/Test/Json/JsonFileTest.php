@@ -150,7 +150,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
 
     public function testUnicode()
     {
-        if (!function_exists('mb_convert_encoding') && version_compare(PHP_VERSION, '5.4', '<')) {
+        if (!function_exists('mb_convert_encoding') && PHP_VERSION_ID < 50400) {
             $this->markTestSkipped('Test requires the mbstring extension');
         }
 
@@ -164,7 +164,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
 
     public function testOnlyUnicode()
     {
-        if (!function_exists('mb_convert_encoding') && version_compare(PHP_VERSION, '5.4', '<')) {
+        if (!function_exists('mb_convert_encoding') && PHP_VERSION_ID < 50400) {
             $this->markTestSkipped('Test requires the mbstring extension');
         }
 

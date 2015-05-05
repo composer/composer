@@ -182,7 +182,7 @@ class JsonFile
      */
     public static function encode($data, $options = 448)
     {
-        if (version_compare(PHP_VERSION, '5.4', '>=')) {
+        if (PHP_VERSION_ID >= 50400) {
             $json = json_encode($data, $options);
             if (false === $json) {
                 self::throwEncodeError(json_last_error());

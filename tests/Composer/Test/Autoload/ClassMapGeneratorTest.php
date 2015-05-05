@@ -64,7 +64,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             array(__DIR__.'/Fixtures/template', array()),
         );
 
-        if (version_compare(PHP_VERSION, '5.4', '>=')) {
+        if (PHP_VERSION_ID >= 50400) {
             $data[] = array(__DIR__.'/Fixtures/php5.4', array(
                 'TFoo' => __DIR__.'/Fixtures/php5.4/traits.php',
                 'CFoo' => __DIR__.'/Fixtures/php5.4/traits.php',
