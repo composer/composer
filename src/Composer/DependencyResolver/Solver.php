@@ -179,7 +179,7 @@ class Solver
             }
         }
 
-        $this->pool->loadRecursively(array_keys($packageNames), true);
+        $this->pool->loadRecursively(array_keys($packageNames));
 
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);

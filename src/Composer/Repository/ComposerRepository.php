@@ -100,7 +100,7 @@ class ComposerRepository extends ArrayRepository
         return $this->rootAliases;
     }
 
-    public function loadRecursively(array $packageNames, $loadDev, $acceptableCallback)
+    public function loadRecursively(array $packageNames, $acceptableCallback)
     {
         $workQueue = new \SplQueue;
 
@@ -123,9 +123,6 @@ class ComposerRepository extends ArrayRepository
             foreach ($packages as $package) {
                 $loadedPackages[] = $package;
                 $requires = $package->getRequires();
-                if ($loadDev) {
-                    $requires = array_merge($requires, $package->getDevRequires());
-                }
                 foreach ($requires as $link) {
                     $workQueue->enqueue($link->getTarget());
                 }

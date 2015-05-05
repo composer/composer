@@ -167,7 +167,7 @@ class Pool
         return $this->packages[$id - 1];
     }
 
-    public function loadRecursively(array $packageNames, $loadDev)
+    public function loadRecursively(array $packageNames)
     {
         $loadedMap = array();
         do {
@@ -177,7 +177,6 @@ class Pool
             foreach ($this->providerRepos as $repo) {
                 $packages = $repo->loadRecursively(
                     $packageNames,
-                    $loadDev,
                     array($this, 'isPackageAcceptable')
                 );
 
