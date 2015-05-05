@@ -181,7 +181,9 @@ class ComposerRepository extends ArrayRepository
                     continue;
                 }
 
-                if ($acceptableCallback && !$acceptableCallback(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
+                if ($acceptableCallback && !call_user_func(
+                    $acceptableCallback, strtolower($version['name']), VersionParser::parseStability($version['version'])
+                )) {
                     continue;
                 }
 
