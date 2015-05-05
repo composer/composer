@@ -70,6 +70,21 @@ class DownloadManager
     }
 
     /**
+     * Makes downloader prefer source installation over the dist.
+     *
+     * @param  bool            $preferSymlink prefer symlinking local depdendencies
+     * @return DownloadManager
+     */
+    public function setPreferSymlink($preferSymlink)
+    {
+        foreach ($this->downloaders as $downloader) {
+            $downloader->setPreferSymlink($preferSymlink);
+        }
+
+        return $this;
+    }
+
+    /**
      * Sets whether to output download progress information for all registered
      * downloaders
      *

@@ -61,4 +61,12 @@ interface DownloaderInterface
      * @return DownloaderInterface
      */
     public function setOutputProgress($outputProgress);
+
+    /**
+     * Some downloaders supports setting symlink instead of downloading the resources.
+     *
+     * @param  bool                $preferSymlink
+     * @return DownloaderInterface
+     */
+    public function setPreferSymlink($preferSymlink);
 }

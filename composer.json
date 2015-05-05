@@ -27,6 +27,7 @@
         "seld/jsonlint": "~1.0",
         "symfony/console": "~2.5",
         "symfony/finder": "~2.2",
+        "symfony/filesystem": "~2.2",
         "symfony/process": "~2.1",
         "seld/phar-utils": "~1.0",
         "seld/cli-prompt": "~1.0"

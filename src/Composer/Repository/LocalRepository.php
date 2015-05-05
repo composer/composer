@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Package;
 
 /**
  * @author Tim Glabisch <tim.glabisch@sensiolabs.de>
@@ -40,6 +41,39 @@ class LocalRepository extends ArrayRepository
         $this->scanDirectory($this->lookup);
     }
 
+    private function getPathBlacklist($path)
+    {
+        $blacklist = [];
+
+        $directory = new \RecursiveDirectoryIterator($path);
+        $iterator = new \RecursiveIteratorIterator($directory);
+        $regex = new \RegexIterator($iterator, '/composer.json/i');
+        foreach ($regex as $file) {
+
+            /* @var $file \SplFileInfo */
+
+            // urgh, this should be the vendor-dir of the package
+            if (strpos($file->getPathname(), 'vendor/') !== false) {
+                $blacklist[] = $file->getPath();
+                continue;
+            }
+
+            // don't try to find vendors that are managed by composer/installers
+            $package = $this->getComposerInformation($file);
+            if (in_array('composer/installers', array_keys($package->getRequires()))) {
+                $blacklist[] = $file->getPath();
+                continue;
+            }
+        }
+
+        return $blacklist;
+    }
+
+    private function isLocalDependency(Package $package)
+    {
+        return in_array('local-dependency', array_keys($package->getExtra()));
+    }
+
     private function scanDirectory($path)
     {
         $io = $this->io;
@@ -50,16 +84,24 @@ class LocalRepository extends ArrayRepository
         foreach ($regex as $file) {
 
             /* @var $file \SplFileInfo */
-
-            if (strpos($file->getPathname(), 'vendor/') !== false) {
-                continue;
-            }
-
             if (!$file->isFile()) {
                 continue;
             }
 
             $package = $this->getComposerInformation($file);
+            foreach($this->getPathBlacklist($path) as $pathBlacklist) {
+                if (strpos($file->getPathname(), $pathBlacklist) !== false) {
+                    continue 2;
+                }
+            }
+
+            if (!$this->isLocalDependency($package)) {
+                if ($io->isVerbose()) {
+                    $io->writeError("Package <comment>{$package->getName()}</comment> seems to hold a local package, but the extra key 'local-dependency' is not defined.");
+                }
+                continue;
+            }
+
             if (!$package) {
                 if ($io->isVerbose()) {
                     $io->writeError("File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package");

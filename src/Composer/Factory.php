@@ -404,7 +404,7 @@ class Factory
         $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('local', new Downloader\LocalDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('local', new Downloader\LocalDownloader($io, $config, $dm));
 
         return $dm;
     }

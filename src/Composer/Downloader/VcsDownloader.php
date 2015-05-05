@@ -48,6 +48,14 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * {@inheritDoc}
      */
+    public function setPreferSymlink($preferSymlink)
+    {
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function download(PackageInterface $package, $path)
     {
         if (!$package->getSourceReference()) {

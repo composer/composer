@@ -2,40 +2,30 @@
 
 namespace Composer\Downloader;
 
-use Composer\Cache;
 use Composer\Config;
-use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
-use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\RemoteFilesystem;
+use Symfony\Component\Filesystem\Filesystem;
 
 class LocalDownloader implements DownloaderInterface
 {
     protected $io;
-    protected $config;
-    protected $rfs;
-    protected $filesystem;
-    protected $cache;
-    protected $outputProgress = true;
+
     protected $process;
 
+    protected $downloadManager;
+
+    protected $preferSymlink = false;
+
+    protected $filesystem;
+
     public function __construct(
-        IOInterface $io,
-        Config $config,
-        EventDispatcher $eventDispatcher = null,
-        Cache $cache = null,
-        RemoteFilesystem $rfs = null,
-        Filesystem $filesystem = null
+        IOInterface $io
     ) {
         $this->io = $io;
-        $this->config = $config;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->rfs = $rfs ?: new RemoteFilesystem($io, $config);
-        $this->filesystem = $filesystem ?: new Filesystem();
-        $this->cache = $cache;
         $this->process = new ProcessExecutor($io);
+        $this->filesystem = new Filesystem();
     }
 
     /**
@@ -58,15 +48,18 @@ class LocalDownloader implements DownloaderInterface
     {
         $source = dirname($package->getDistUrl());
 
-        if (!is_dir($target)) {
-            mkdir($target, 0777, true);
+        if (!$this->filesystem->exists($target)) {
+            $this->filesystem->mkdir($target);
         }
 
-        if (0 ==! ($command = $this->process->execute("cp -r ".ProcessExecutor::escape($source.'/')." ".ProcessExecutor::escape($target)))) {
-            $this->io->write('Failed to execute command.'.$command. "\n\n" . $this->process->getErrorOutput());
+        if ($this->preferSymlink) {
+            $this->filesystem->remove($target);
+            $this->filesystem->symlink($source, $target, true);
+        } else {
+            $this->filesystem->mirror($source, $target);
         }
 
-        $this->io->write('<info>Update Package</info> '.$package->getName());
+        $this->io->write('<info>Update Package</info> ' . $package->getName());
     }
 
     /**
@@ -90,9 +83,7 @@ class LocalDownloader implements DownloaderInterface
      */
     public function remove(PackageInterface $package, $target)
     {
-        if (0 ==! ($command = $this->process->execute("rm -rf ".ProcessExecutor::escape($target)))) {
-            $this->io->write('Failed to execute command.'.$command. "\n\n" . $this->process->getErrorOutput());
-        }
+        $this->filesystem->remove($target);
     }
 
     /**
@@ -104,6 +95,17 @@ class LocalDownloader implements DownloaderInterface
     public function setOutputProgress($outputProgress)
     {
         // TODO: Implement setOutputProgress() method.
+    }
+
+    /**
+     * Some downloaders supports setting symlink instead of downloading the resources.
+     *
+     * @param  bool $preferSymlink
+     * @return DownloaderInterface
+     */
+    public function setPreferSymlink($preferSymlink)
+    {
+        $this->preferSymlink = $preferSymlink;
     }
 
 
