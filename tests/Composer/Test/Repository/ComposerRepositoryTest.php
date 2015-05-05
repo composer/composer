@@ -148,7 +148,7 @@ class ComposerRepositoryTest extends TestCase
 
         $that = $this;
         $packages = $repo->loadRecursively(array('a'), function ($name, $stability) use ($that) {
-            $this->assertEquals('a', $name);
+            $that->assertEquals('a', $name);
             return true;
         });
 
