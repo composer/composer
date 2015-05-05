@@ -120,16 +120,15 @@ class Svn
             return $output;
         }
 
-        if (empty($output)) {
-            $output = $this->process->getErrorOutput();
-        }
+        $errorOutput = $this->process->getErrorOutput();
+        $fullOutput = implode("\n", array($output, $errorOutput));
 
         // the error is not auth-related
-        if (false === stripos($output, 'Could not authenticate to server:')
-            && false === stripos($output, 'authorization failed')
-            && false === stripos($output, 'svn: E170001:')
-            && false === stripos($output, 'svn: E215004:')) {
-            throw new \RuntimeException($output);
+        if (false === stripos($fullOutput, 'Could not authenticate to server:')
+            && false === stripos($fullOutput, 'authorization failed')
+            && false === stripos($fullOutput, 'svn: E170001:')
+            && false === stripos($fullOutput, 'svn: E215004:')) {
+            throw new \RuntimeException($fullOutput);
         }
 
         if (!$this->hasAuth()) {
@@ -143,7 +142,7 @@ class Svn
         }
 
         throw new \RuntimeException(
-            'wrong credentials provided ('.$output.')'
+            'wrong credentials provided ('.$fullOutput.')'
         );
     }
 
