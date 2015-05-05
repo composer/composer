@@ -132,76 +132,6 @@ class ComposerRepository extends ArrayRepository
         return $loadedPackages;
     }
 
-    protected function loadName($name, $acceptableCallback, $exactMatch = true)
-    {
-        // skip platform packages
-        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
-            return array();
-        }
-
-        if (null === $this->providerListing) {
-            $this->loadProviderListings($this->loadRootServerFile());
-        }
-
-        if ($this->lazyProvidersUrl && !isset($this->providerListing[$name])) {
-            $hash = null;
-            $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
-            $cacheKey = false;
-        } elseif ($this->providersUrl) {
-            // package does not exist in this repo
-            if (!isset($this->providerListing[$name])) {
-                return array();
-            }
-
-            $hash = $this->providerListing[$name]['sha256'];
-            $url = str_replace(array('%package%', '%hash%'), array($name, $hash), $this->providersUrl);
-            $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
-        } else {
-            // BC handling for old providers-includes
-            $url = 'p/'.$name.'.json';
-
-            // package does not exist in this repo
-            if (!isset($this->providerListing[$url])) {
-                return array();
-            }
-            $hash = $this->providerListing[$url]['sha256'];
-            $cacheKey = null;
-        }
-
-        if ($cacheKey && $this->cache->sha256($cacheKey) === $hash) {
-            $packages = json_decode($this->cache->read($cacheKey), true);
-        } else {
-            $packages = $this->fetchFile($url, $cacheKey, $hash);
-        }
-
-        $loadedPackages = array();
-        foreach ($packages['packages'] as $versions) {
-            foreach ($versions as $version) {
-                if ($exactMatch && $version['name'] !== $name) {
-                    continue;
-                }
-
-                if ($acceptableCallback && !call_user_func(
-                    $acceptableCallback, strtolower($version['name']), VersionParser::parseStability($version['version'])
-                )) {
-                    continue;
-                }
-
-                // load acceptable packages in the providers
-                $package = $this->createPackage($version, 'Composer\Package\Package');
-                $this->addPackage($package);
-
-                $loadedPackages[] = $package;
-
-                if ($package instanceof AliasPackage) {
-                    $loadedPackages[] = $package->getAliasOf();
-                }
-            }
-        }
-
-        return $loadedPackages;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -327,6 +257,86 @@ class ComposerRepository extends ArrayRepository
 
         return $providers;
     }
+
+    /**
+     * Loads package data for a given package name or provider name
+     *
+     * @param string $name
+     * @param callable $acceptableCallback A callback to check if a package should be loaded
+     * @param bool $exactMatch Whether packages only providing the name should be ignored
+     *
+     * @return array All packages that were loaded
+     */
+    protected function loadName($name, $acceptableCallback, $exactMatch = true)
+    {
+        // skip platform packages
+        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
+            return array();
+        }
+
+        if (null === $this->providerListing) {
+            $this->loadProviderListings($this->loadRootServerFile());
+        }
+
+        if ($this->lazyProvidersUrl && !isset($this->providerListing[$name])) {
+            $hash = null;
+            $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
+            $cacheKey = false;
+        } elseif ($this->providersUrl) {
+            // package does not exist in this repo
+            if (!isset($this->providerListing[$name])) {
+                return array();
+            }
+
+            $hash = $this->providerListing[$name]['sha256'];
+            $url = str_replace(array('%package%', '%hash%'), array($name, $hash), $this->providersUrl);
+            $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
+        } else {
+            // BC handling for old providers-includes
+            $url = 'p/'.$name.'.json';
+
+            // package does not exist in this repo
+            if (!isset($this->providerListing[$url])) {
+                return array();
+            }
+            $hash = $this->providerListing[$url]['sha256'];
+            $cacheKey = null;
+        }
+
+        if ($cacheKey && $this->cache->sha256($cacheKey) === $hash) {
+            $packages = json_decode($this->cache->read($cacheKey), true);
+        } else {
+            $packages = $this->fetchFile($url, $cacheKey, $hash);
+        }
+
+        $loadedPackages = array();
+        foreach ($packages['packages'] as $versions) {
+            foreach ($versions as $version) {
+                if ($exactMatch && $version['name'] !== $name) {
+                    continue;
+                }
+
+                if ($acceptableCallback && !call_user_func(
+                    $acceptableCallback, strtolower($version['name']), VersionParser::parseStability($version['version'])
+                )) {
+                    continue;
+                }
+
+                // load acceptable packages in the providers
+                $package = $this->createPackage($version, 'Composer\Package\Package');
+                $this->addPackage($package);
+
+                $loadedPackages[] = $package;
+
+                if ($package instanceof AliasPackage) {
+                    $loadedPackages[] = $package->getAliasOf();
+                }
+            }
+        }
+
+        return $loadedPackages;
+    }
+
 
     protected function configurePackageTransportOptions(PackageInterface $package)
     {
