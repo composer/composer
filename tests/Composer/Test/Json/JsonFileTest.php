@@ -209,8 +209,8 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
     private function expectParseException($text, $json)
     {
         try {
-            JsonFile::parseJson($json);
-            $this->fail();
+            $result = JsonFile::parseJson($json);
+            $this->fail(sprintf("Parsing should have failed but didn't.\nExpected:\n\"%s\"\nFor:\n\"%s\"\nGot:\n\"%s\"", $text, $json, var_export($result, true)));
         } catch (ParsingException $e) {
             $this->assertContains($text, $e->getMessage());
         }
