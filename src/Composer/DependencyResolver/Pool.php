@@ -99,7 +99,6 @@ class Pool
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
                 $this->providerRepos[] = $repo;
                 $repo->setRootAliases($rootAliases);
-                $repo->resetPackageIds();
             } else {
                 foreach ($repo->getPackages() as $package) {
                     $this->loadPackage($package, $rootAliases, $exempt);
@@ -222,26 +221,13 @@ class Pool
     private function computeWhatProvides($name, $constraint, $mustMatchName = false)
     {
         $candidates = array();
-/*
-        foreach ($this->providerRepos as $repo) {
-            foreach ($repo->whatProvides($this, $name) as $candidate) {
-                $candidates[] = $candidate;
-                if ($candidate->id < 1) {
-                    $candidate->setId($this->id++);
-                    $this->packages[$this->id - 2] = $candidate;
-                }
-            }
-        }*/
 
         if ($mustMatchName) {
-            $candidates = array_filter($candidates, function ($candidate) use ($name) {
-                return $candidate->getName() == $name;
-            });
             if (isset($this->packageByExactName[$name])) {
-                $candidates = array_merge($candidates, $this->packageByExactName[$name]);
+                $candidates = $this->packageByExactName[$name];
             }
         } elseif (isset($this->packageByName[$name])) {
-            $candidates = array_merge($candidates, $this->packageByName[$name]);
+            $candidates = $this->packageByName[$name];
         }
 
         $matches = $provideMatches = array();

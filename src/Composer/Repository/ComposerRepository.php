@@ -135,7 +135,7 @@ class ComposerRepository extends ArrayRepository
         return $loadedPackages;
     }
 
-    protected function loadName($name, $acceptableCallback)
+    protected function loadName($name, $acceptableCallback, $exactMatch = true)
     {
         // skip platform packages
         if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
@@ -180,25 +180,22 @@ class ComposerRepository extends ArrayRepository
         $loadedPackages = array();
         foreach ($packages['packages'] as $versions) {
             foreach ($versions as $version) {
-                if ($version['name'] !== $name) {
+                if ($exactMatch && $version['name'] !== $name) {
                     continue;
                 }
 
-                if (!$acceptableCallback(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
+                if ($acceptableCallback && !$acceptableCallback(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                     continue;
                 }
 
                 // load acceptable packages in the providers
                 $package = $this->createPackage($version, 'Composer\Package\Package');
-                $package->setRepository($this);
+                $this->addPackage($package);
 
                 $loadedPackages[] = $package;
 
                 if ($package instanceof AliasPackage) {
-                    $aliased = $package->getAliasOf();
-                    $aliased->setRepository($this);
-
-                    $loadedPackages[] = $aliased;
+                    $loadedPackages[] = $package->getAliasOf();
                 }
             }
         }
@@ -221,7 +218,7 @@ class ComposerRepository extends ArrayRepository
 
         foreach ($this->getProviderNames() as $providerName) {
             if ($name === $providerName) {
-                $packages = $this->whatProvides(new Pool('dev'), $providerName);
+                $packages = $this->loadName($providerName, null, false);
                 foreach ($packages as $package) {
                     if ($name == $package->getName() && $version === $package->getVersion()) {
                         return $package;
@@ -252,7 +249,7 @@ class ComposerRepository extends ArrayRepository
 
         foreach ($this->getProviderNames() as $providerName) {
             if ($name === $providerName) {
-                $packages = $this->whatProvides(new Pool('dev'), $providerName);
+                $packages = $this->loadName($providerName, null, false);
                 foreach ($packages as $package) {
                     if ($name == $package->getName() && (null === $version || $version === $package->getVersion())) {
                         $packages[] = $package;
@@ -348,11 +345,6 @@ class ComposerRepository extends ArrayRepository
         $this->loadRootServerFile();
 
         return $this->hasProviders;
-    }
-
-    public function whatProvides(Pool $pool, $name)
-    {
-        throw new \RuntimeException("Runtime repository provider calculation no longer occurs");
     }
 
     /**
