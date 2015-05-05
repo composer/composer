@@ -25,6 +25,12 @@ class Git
     protected $process;
     protected $filesystem;
 
+    /**
+     * @param IOInterface $io
+     * @param Config $config
+     * @param ProcessExecutor $process
+     * @param Filesystem $fs
+     */
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process, Filesystem $fs)
     {
         $this->io = $io;
