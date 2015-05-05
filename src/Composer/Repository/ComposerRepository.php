@@ -43,10 +43,9 @@ class ComposerRepository extends ArrayRepository
     protected $searchUrl;
     protected $hasProviders = false;
     protected $providersUrl;
+    protected $loadedMap = array();
     protected $lazyProvidersUrl;
     protected $providerListing;
-    protected $providers = array();
-    protected $providersByUid = array();
     protected $loader;
     protected $rootAliases;
     protected $allowSslDowngrade = false;
@@ -96,38 +95,47 @@ class ComposerRepository extends ArrayRepository
         $this->rootAliases = $rootAliases;
     }
 
-    public function ensureLoaded($pool, array $constrainedNames)
+    public function getRootAliases()
+    {
+        return $this->rootAliases;
+    }
+
+    public function loadRecursively(array $packageNames, $loadDev, $acceptableCallback)
     {
         $workQueue = new \SplQueue;
 
-        foreach ($constrainedNames as $packageSpec) {
-            $workQueue->enqueue($packageSpec);
+        foreach ($packageNames as $packageName) {
+            $workQueue->enqueue($packageName);
         }
 
-        $loadedMap = array();
+        $loadedPackages = array();
 
         while (!$workQueue->isEmpty()) {
-            $packageSpec = $workQueue->dequeue();
-            if (isset($this->loadedMap[$packageSpec['name']])) {
+            $packageName = $workQueue->dequeue();
+            if (isset($this->loadedMap[$packageName])) {
                 continue;
             }
 
-            $this->loadedMap[$packageSpec['name']] = true;
+            $this->loadedMap[$packageName] = true;
 
-            $packages = $this->loadName($pool, $packageSpec['name']);
+            $packages = $this->loadName($packageName, $acceptableCallback);
 
             foreach ($packages as $package) {
-                foreach ($package->getRequires() as $link) {
-                    $workQueue->enqueue(array(
-                        'name' => $link->getTarget(),
-                        'constraint' => $link->getConstraint()
-                    ));
+                $loadedPackages[] = $package;
+                $requires = $package->getRequires();
+                if ($loadDev) {
+                    $requires = array_merge($requires, $package->getDevRequires());
+                }
+                foreach ($requires as $link) {
+                    $workQueue->enqueue($link->getTarget());
                 }
             }
         }
+
+        return $loadedPackages;
     }
 
-    protected function loadName($pool, $name)
+    protected function loadName($name, $acceptableCallback)
     {
         // skip platform packages
         if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
@@ -145,7 +153,6 @@ class ComposerRepository extends ArrayRepository
         } elseif ($this->providersUrl) {
             // package does not exist in this repo
             if (!isset($this->providerListing[$name])) {
-                $this->providers[$name] = array();
                 return array();
             }
 
@@ -158,7 +165,6 @@ class ComposerRepository extends ArrayRepository
 
             // package does not exist in this repo
             if (!isset($this->providerListing[$url])) {
-                $this->providers[$name] = array();
                 return array();
             }
             $hash = $this->providerListing[$url]['sha256'];
@@ -171,7 +177,6 @@ class ComposerRepository extends ArrayRepository
             $packages = $this->fetchFile($url, $cacheKey, $hash);
         }
 
-        $this->providers[$name] = array();
         $loadedPackages = array();
         foreach ($packages['packages'] as $versions) {
             foreach ($versions as $version) {
@@ -179,61 +184,21 @@ class ComposerRepository extends ArrayRepository
                     continue;
                 }
 
-                // avoid loading the same objects twice
-                if (isset($this->providersByUid[$version['uid']])) {
-                    /**
-                     * @todo verify and remove
-                     */
-                    throw new \RuntimeException("Should not happen anymore");
-                } else {
-                    if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
-                        continue;
-                    }
+                if (!$acceptableCallback(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
+                    continue;
+                }
 
-                    // load acceptable packages in the providers
-                    $package = $this->createPackage($version, 'Composer\Package\Package');
-                    $package->setRepository($this);
+                // load acceptable packages in the providers
+                $package = $this->createPackage($version, 'Composer\Package\Package');
+                $package->setRepository($this);
 
-                    $loadedPackages[] = $package;
+                $loadedPackages[] = $package;
 
-                    if ($package instanceof AliasPackage) {
-                        $aliased = $package->getAliasOf();
-                        $aliased->setRepository($this);
+                if ($package instanceof AliasPackage) {
+                    $aliased = $package->getAliasOf();
+                    $aliased->setRepository($this);
 
-                        $loadedPackages[] = $aliased;
-
-                        foreach ($aliased->getNames() as $providedName) {
-                            $this->providers[$providedName][$version['uid']] = $aliased;
-                            $this->providers[$providedName][$version['uid'].'-alias'] = $package;
-                        }
-
-                        // override provider with its alias so it can be expanded in the if block above
-                        $this->providersByUid[$version['uid']] = $package;
-                    } else {
-                        foreach ($package->getNames() as $providedName) {
-                            $this->providers[$providedName][$version['uid']] = $package;
-                        }
-                        $this->providersByUid[$version['uid']] = $package;
-                    }
-
-                    // handle root package aliases
-                    unset($rootAliasData);
-
-                    if (isset($this->rootAliases[$package->getName()][$package->getVersion()])) {
-                        $rootAliasData = $this->rootAliases[$package->getName()][$package->getVersion()];
-                    } elseif ($package instanceof AliasPackage && isset($this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()])) {
-                        $rootAliasData = $this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()];
-                    }
-
-                    if (isset($rootAliasData)) {
-                        $alias = $this->createAliasPackage($package, $rootAliasData['alias_normalized'], $rootAliasData['alias']);
-                        $alias->setRepository($this);
-
-                        $loadedPackages[] = $alias;
-
-                        $this->providers[$name][$version['uid'].'-root'] = $alias;
-                        $this->providersByUid[$version['uid'].'-root'] = $alias;
-                    }
+                    $loadedPackages[] = $aliased;
                 }
             }
         }
@@ -385,31 +350,9 @@ class ComposerRepository extends ArrayRepository
         return $this->hasProviders;
     }
 
-    public function resetPackageIds()
-    {
-        foreach ($this->providersByUid as $package) {
-            if ($package instanceof AliasPackage) {
-                $package->getAliasOf()->setId(-1);
-            }
-            $package->setId(-1);
-        }
-    }
-
     public function whatProvides(Pool $pool, $name)
     {
-        if (isset($this->providers[$name])) {
-            return $this->providers[$name];
-        }
-
-        // skip platform packages
-        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
-            return array();
-        }
-
-        /**
-         * @todo verify this is no longer possible and change code to remove this
-         */
-        throw new \RuntimeException("Could not find package that should have been loaded.");
+        throw new \RuntimeException("Runtime repository provider calculation no longer occurs");
     }
 
     /**

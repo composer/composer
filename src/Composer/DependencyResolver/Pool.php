@@ -102,38 +102,46 @@ class Pool
                 $repo->resetPackageIds();
             } else {
                 foreach ($repo->getPackages() as $package) {
-                    $names = $package->getNames();
-                    $stability = $package->getStability();
-                    if ($exempt || $this->isPackageAcceptable($names, $stability)) {
-                        $package->setId($this->id++);
-                        $this->packages[] = $package;
-                        $this->packageByExactName[$package->getName()][$package->id] = $package;
-
-                        foreach ($names as $provided) {
-                            $this->packageByName[$provided][] = $package;
-                        }
-
-                        // handle root package aliases
-                        $name = $package->getName();
-                        if (isset($rootAliases[$name][$package->getVersion()])) {
-                            $alias = $rootAliases[$name][$package->getVersion()];
-                            if ($package instanceof AliasPackage) {
-                                $package = $package->getAliasOf();
-                            }
-                            $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
-                            $aliasPackage->setRootPackageAlias(true);
-                            $aliasPackage->setId($this->id++);
-
-                            $package->getRepository()->addPackage($aliasPackage);
-                            $this->packages[] = $aliasPackage;
-                            $this->packageByExactName[$aliasPackage->getName()][$aliasPackage->id] = $aliasPackage;
-
-                            foreach ($aliasPackage->getNames() as $name) {
-                                $this->packageByName[$name][] = $aliasPackage;
-                            }
-                        }
-                    }
+                    $this->loadPackage($package, $rootAliases, $exempt);
                 }
+            }
+        }
+    }
+
+    private function loadPackage(PackageInterface $package, array $rootAliases, $acceptableExemption = false)
+    {
+        $names = $package->getNames();
+        $stability = $package->getStability();
+
+        if (!$acceptableExemption && !$this->isPackageAcceptable($names, $stability)) {
+            return;
+        }
+
+        $package->setId($this->id++);
+        $this->packages[] = $package;
+        $this->packageByExactName[$package->getName()][$package->id] = $package;
+
+        foreach ($names as $provided) {
+            $this->packageByName[$provided][] = $package;
+        }
+
+        // handle root package aliases
+        $name = $package->getName();
+        if (isset($rootAliases[$name][$package->getVersion()])) {
+            $alias = $rootAliases[$name][$package->getVersion()];
+            if ($package instanceof AliasPackage) {
+                $package = $package->getAliasOf();
+            }
+            $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
+            $aliasPackage->setRootPackageAlias(true);
+            $aliasPackage->setId($this->id++);
+
+            $package->getRepository()->addPackage($aliasPackage);
+            $this->packages[] = $aliasPackage;
+            $this->packageByExactName[$aliasPackage->getName()][$aliasPackage->id] = $aliasPackage;
+
+            foreach ($aliasPackage->getNames() as $name) {
+                $this->packageByName[$name][] = $aliasPackage;
             }
         }
     }
@@ -160,11 +168,32 @@ class Pool
         return $this->packages[$id - 1];
     }
 
-    public function ensureLoaded($constrainedNames)
+    public function loadRecursively(array $packageNames, $loadDev)
     {
-        foreach ($this->providerRepos as $repo) {
-            $repo->ensureLoaded($this, $constrainedNames);
-        }
+        $loadedMap = array();
+        do {
+            $newPackageNames = array();
+            $loadedCount = count($loadedMap);
+
+            foreach ($this->providerRepos as $repo) {
+                $packages = $repo->loadRecursively(
+                    $packageNames,
+                    $loadDev,
+                    array($this, 'isPackageAcceptable')
+                );
+
+                foreach ($packages as $package) {
+                    $name = $package->getName();
+                    if (!isset($loadedMap[$name])) {
+                        $loadedMap[$name] = true;
+                        $newPackageNames[] = $name;
+                    }
+                    $this->loadPackage($package, $repo->getRootAliases());
+                }
+            }
+
+            $packageNames = $newPackageNames;
+        } while (count($loadedMap) > $loadedCount);
     }
 
     /**
@@ -193,7 +222,7 @@ class Pool
     private function computeWhatProvides($name, $constraint, $mustMatchName = false)
     {
         $candidates = array();
-
+/*
         foreach ($this->providerRepos as $repo) {
             foreach ($repo->whatProvides($this, $name) as $candidate) {
                 $candidates[] = $candidate;
@@ -202,7 +231,7 @@ class Pool
                     $this->packages[$this->id - 2] = $candidate;
                 }
             }
-        }
+        }*/
 
         if ($mustMatchName) {
             $candidates = array_filter($candidates, function ($candidate) use ($name) {
