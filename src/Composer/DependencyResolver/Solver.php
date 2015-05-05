@@ -174,12 +174,12 @@ class Solver
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'install':
-                    $packageNames[] = $job['packageName'];
+                    $packageNames[$job['packageName']] = true;
                     break;
             }
         }
 
-        $this->pool->loadRecursively($packageNames, true);
+        $this->pool->loadRecursively(array_keys($packageNames), true);
 
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);

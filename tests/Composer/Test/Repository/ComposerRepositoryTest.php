@@ -96,8 +96,8 @@ class ComposerRepositoryTest extends TestCase
         );
     }
 
-    public function testWhatProvides()
-    {/*
+    public function testLoadRecursively()
+    {
         $repo = $this->getMockBuilder('Composer\Repository\ComposerRepository')
             ->disableOriginalConstructor()
             ->setMethods(array('fetchFile'))
@@ -144,25 +144,19 @@ class ComposerRepositoryTest extends TestCase
                 )
             )));
 
-        $pool = $this->getMock('Composer\DependencyResolver\Pool');
-        $pool->expects($this->any())
-            ->method('isPackageAcceptable')
-            ->will($this->returnValue(true));
-
         $versionParser = new VersionParser();
-        $repo->setRootAliases(array(
-            'a' => array(
-                $versionParser->normalize('0.6') => array('alias' => 'dev-feature', 'alias_normalized' => $versionParser->normalize('dev-feature')),
-                $versionParser->normalize('1.1.x-dev') => array('alias' => '1.0', 'alias_normalized' => $versionParser->normalize('1.0')),
-            ),
-        ));
 
-        $packages = $repo->whatProvides($pool, 'a');
+        $that = $this;
+        $packages = $repo->loadRecursively(array('a'), true, function ($name, $stability) use ($that) {
+            $this->assertEquals('a', $name);
+            return true;
+        });
 
-        $this->assertCount(7, $packages);
-        $this->assertEquals(array('1', '1-alias', '2', '2-alias', '2-root', '3', '3-root'), array_keys($packages));
-        $this->assertInstanceOf('Composer\Package\AliasPackage', $packages['2-root']);
-        $this->assertSame($packages['2'], $packages['2-root']->getAliasOf());
-        $this->assertSame($packages['2'], $packages['2-alias']->getAliasOf());*/
+        $this->assertCount(5, $packages);
+        $this->assertEquals(array('1.0.x-dev', 'dev-master', '1.1.x-dev', 'dev-develop', '0.6'), array_map(function ($p) {
+            return $p->getPrettyVersion();
+        }, $packages));
+        $this->assertInstanceOf('Composer\Package\AliasPackage', $packages[2]);
+        $this->assertSame($packages[3], $packages[2]->getAliasOf());
     }
 }
