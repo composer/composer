@@ -107,44 +107,6 @@ class Pool
         }
     }
 
-    private function loadPackage(PackageInterface $package, array $rootAliases, $acceptableExemption = false)
-    {
-        $names = $package->getNames();
-        $stability = $package->getStability();
-
-        if (!$acceptableExemption && !$this->isPackageAcceptable($names, $stability)) {
-            return;
-        }
-
-        $package->setId($this->id++);
-        $this->packages[] = $package;
-        $this->packageByExactName[$package->getName()][$package->id] = $package;
-
-        foreach ($names as $provided) {
-            $this->packageByName[$provided][] = $package;
-        }
-
-        // handle root package aliases
-        $name = $package->getName();
-        if (isset($rootAliases[$name][$package->getVersion()])) {
-            $alias = $rootAliases[$name][$package->getVersion()];
-            if ($package instanceof AliasPackage) {
-                $package = $package->getAliasOf();
-            }
-            $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
-            $aliasPackage->setRootPackageAlias(true);
-            $aliasPackage->setId($this->id++);
-
-            $package->getRepository()->addPackage($aliasPackage);
-            $this->packages[] = $aliasPackage;
-            $this->packageByExactName[$aliasPackage->getName()][$aliasPackage->id] = $aliasPackage;
-
-            foreach ($aliasPackage->getNames() as $name) {
-                $this->packageByName[$name][] = $aliasPackage;
-            }
-        }
-    }
-
     public function getPriority(RepositoryInterface $repo)
     {
         $priority = array_search($repo, $this->repositories, true);
@@ -167,6 +129,11 @@ class Pool
         return $this->packages[$id - 1];
     }
 
+    /**
+     * Ensures that all given names and their requirements are loaded.
+     *
+     * @param array $packageNames A list of names that need to be available
+     */
     public function loadRecursively(array $packageNames)
     {
         $loadedMap = array();
@@ -212,6 +179,44 @@ class Pool
         }
 
         return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $mustMatchName);
+    }
+
+    private function loadPackage(PackageInterface $package, array $rootAliases, $acceptableExemption = false)
+    {
+        $names = $package->getNames();
+        $stability = $package->getStability();
+
+        if (!$acceptableExemption && !$this->isPackageAcceptable($names, $stability)) {
+            return;
+        }
+
+        $package->setId($this->id++);
+        $this->packages[] = $package;
+        $this->packageByExactName[$package->getName()][$package->id] = $package;
+
+        foreach ($names as $provided) {
+            $this->packageByName[$provided][] = $package;
+        }
+
+        // handle root package aliases
+        $name = $package->getName();
+        if (isset($rootAliases[$name][$package->getVersion()])) {
+            $alias = $rootAliases[$name][$package->getVersion()];
+            if ($package instanceof AliasPackage) {
+                $package = $package->getAliasOf();
+            }
+            $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
+            $aliasPackage->setRootPackageAlias(true);
+            $aliasPackage->setId($this->id++);
+
+            $package->getRepository()->addPackage($aliasPackage);
+            $this->packages[] = $aliasPackage;
+            $this->packageByExactName[$aliasPackage->getName()][$aliasPackage->id] = $aliasPackage;
+
+            foreach ($aliasPackage->getNames() as $name) {
+                $this->packageByName[$name][] = $aliasPackage;
+            }
+        }
     }
 
     /**
