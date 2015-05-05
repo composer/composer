@@ -90,7 +90,7 @@ class Application extends BaseApplication
     {
         $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
 
-        if (version_compare(PHP_VERSION, '5.3.2', '<')) {
+        if (PHP_VERSION_ID < 50302) {
             $this->getIO()->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
         }
 

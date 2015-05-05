@@ -377,11 +377,11 @@ EOT
             $errors['ioncube'] = ioncube_loader_version();
         }
 
-        if (version_compare(PHP_VERSION, '5.3.2', '<')) {
+        if (PHP_VERSION_ID < 50302) {
             $errors['php'] = PHP_VERSION;
         }
 
-        if (!isset($errors['php']) && version_compare(PHP_VERSION, '5.3.4', '<')) {
+        if (!isset($errors['php']) && PHP_VERSION_ID < 50304) {
             $warnings['php'] = PHP_VERSION;
         }
 

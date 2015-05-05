@@ -548,7 +548,7 @@ EOT
         }
 
         // php <5.3.3 has a very broken email validator, so bypass checks
-        if (version_compare(PHP_VERSION, '5.3.3', '<')) {
+        if (PHP_VERSION_ID < 50303) {
             return true;
         }
 
