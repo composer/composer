@@ -78,11 +78,11 @@ EOT
             $this->getIO()->write('<info>' . $file . ' is valid</info>');
         } elseif (!$errors && !$publishErrors) {
             $this->getIO()->writeError('<info>' . $file . ' is valid, but with a few warnings</info>');
-            $this->getIO()->writeError('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            $this->getIO()->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         } elseif (!$errors) {
             $this->getIO()->writeError('<info>' . $file . ' is valid for simple usage with composer but has</info>');
             $this->getIO()->writeError('<info>strict errors that make it unable to be published as a package:</info>');
-            $this->getIO()->writeError('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            $this->getIO()->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         } else {
             $this->getIO()->writeError('<error>' . $file . ' is invalid, the following errors/warnings were found:</error>');
         }

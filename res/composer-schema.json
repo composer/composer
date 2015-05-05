@@ -35,7 +35,7 @@
         },
         "version": {
             "type": "string",
-            "description": "Package version, see http://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
+            "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
         },
         "time": {
             "type": "string",

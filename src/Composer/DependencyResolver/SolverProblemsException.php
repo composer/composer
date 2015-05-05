@@ -36,7 +36,7 @@ class SolverProblemsException extends \RuntimeException
         }
 
         if (strpos($text, 'could not be found') || strpos($text, 'no matching package found')) {
-            $text .= "\nPotential causes:\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion> for more details.\n\nRead <http://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
+            $text .= "\nPotential causes:\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion> for more details.\n\nRead <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
         }
 
         return $text;

@@ -40,7 +40,7 @@ class PackageDependencyParser
     /**
      * Builds dependency information from package.xml 1.0 format
      *
-     * http://pear.php.net/manual/en/guide.developers.package2.dependencies.php
+     * https://pear.php.net/manual/en/guide.developers.package2.dependencies.php
      *
      * package.xml 1.0 format consists of array of
      * { type="php|os|sapi|ext|pkg" rel="has|not|eq|ge|gt|le|lt" optional="yes"

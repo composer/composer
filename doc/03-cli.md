@@ -259,8 +259,8 @@ name     : monolog/monolog
 versions : master-dev, 1.0.2, 1.0.1, 1.0.0, 1.0.0-RC1
 type     : library
 names    : monolog/monolog
-source   : [git] http://github.com/Seldaek/monolog.git 3d4e60d0cbc4b888fe5ad223d77964428b1978da
-dist     : [zip] http://github.com/Seldaek/monolog/zipball/3d4e60d0cbc4b888fe5ad223d77964428b1978da 3d4e60d0cbc4b888fe5ad223d77964428b1978da
+source   : [git] https://github.com/Seldaek/monolog.git 3d4e60d0cbc4b888fe5ad223d77964428b1978da
+dist     : [zip] https://github.com/Seldaek/monolog/zipball/3d4e60d0cbc4b888fe5ad223d77964428b1978da 3d4e60d0cbc4b888fe5ad223d77964428b1978da
 license  : MIT
 
 autoload
@@ -418,7 +418,7 @@ In addition to modifying the config section, the `config` command also supports 
 changes to the repositories section by using it the following way:
 
 ```sh
-php composer.phar config repositories.foo vcs http://github.com/foo/bar
+php composer.phar config repositories.foo vcs https://github.com/foo/bar
 ```
 
 ## create-project

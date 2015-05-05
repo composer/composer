@@ -216,7 +216,7 @@ repository.
 
 The `packages.json` file is loaded using a PHP stream. You can set extra options
 on that stream using the `options` parameter. You can set any valid PHP stream
-context option. See [Context options and parameters](http://php.net/manual/en/context.php)
+context option. See [Context options and parameters](https://php.net/manual/en/context.php)
 for more information.
 
 ### VCS
@@ -293,8 +293,8 @@ The only requirement is the installation of SSH keys for a git client.
 Git is not the only version control system supported by the VCS repository.
 The following are supported:
 
-* **Git:** [git-scm.com](http://git-scm.com)
-* **Subversion:** [subversion.apache.org](http://subversion.apache.org)
+* **Git:** [git-scm.com](https://git-scm.com)
+* **Subversion:** [subversion.apache.org](https://subversion.apache.org)
 * **Mercurial:** [mercurial.selenic.com](http://mercurial.selenic.com)
 
 To get packages from these systems you need to have their respective clients
@@ -389,7 +389,7 @@ Example using `pear2.php.net`:
     "repositories": [
         {
             "type": "pear",
-            "url": "http://pear2.php.net"
+            "url": "https://pear2.php.net"
         }
     ],
     "require": {

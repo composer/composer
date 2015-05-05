@@ -11,8 +11,8 @@ it manages them on a per-project basis, installing them in a directory (e.g. `ve
 inside your project. By default it will never install anything globally. Thus,
 it is a dependency manager.
 
-This idea is not new and Composer is strongly inspired by node's [npm](http://npmjs.org/)
-and ruby's [bundler](http://gembundler.com/). But there has not been such a tool
+This idea is not new and Composer is strongly inspired by node's [npm](https://npmjs.org/)
+and ruby's [bundler](http://bundler.io/). But there has not been such a tool
 for PHP.
 
 The problem that Composer solves is this:
