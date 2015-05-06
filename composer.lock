@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "dd65ea08e3c8b23e1376ccdc635240be",
+    "hash": "556ac817fc0b456bddc48918ef09930d",
     "packages": [
         {
             "name": "justinrainbow/json-schema",
