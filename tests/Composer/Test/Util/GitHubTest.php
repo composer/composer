@@ -39,14 +39,8 @@ class GitHubTest extends \PHPUnit_Framework_TestCase
         ;
         $io
             ->expects($this->once())
-            ->method('ask')
-            ->with('Username: ')
-            ->willReturn($this->username)
-        ;
-        $io
-            ->expects($this->once())
             ->method('askAndHideAnswer')
-            ->with('Password: ')
+            ->with('Token (hidden): ')
             ->willReturn($this->password)
         ;
 
@@ -56,11 +50,11 @@ class GitHubTest extends \PHPUnit_Framework_TestCase
             ->method('getContents')
             ->with(
                 $this->equalTo($this->origin),
-                $this->equalTo(sprintf('https://api.%s/authorizations', $this->origin)),
+                $this->equalTo(sprintf('https://api.%s/rate_limit', $this->origin)),
                 $this->isFalse(),
                 $this->anything()
             )
-            ->willReturn(sprintf('{"token": "%s"}', $this->token))
+            ->willReturn(sprintf('{}', $this->token))
         ;
 
         $config = $this->getConfigMock();
@@ -80,29 +74,19 @@ class GitHubTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($github->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Invalid GitHub credentials 5 times in a row, aborting.
-     */
     public function testUsernamePasswordFailure()
     {
         $io = $this->getIOMock();
         $io
-            ->expects($this->exactly(5))
-            ->method('ask')
-            ->with('Username: ')
-            ->willReturn($this->username)
-        ;
-        $io
-            ->expects($this->exactly(5))
+            ->expects($this->exactly(1))
             ->method('askAndHideAnswer')
-            ->with('Password: ')
+            ->with('Token (hidden): ')
             ->willReturn($this->password)
         ;
 
         $rfs = $this->getRemoteFilesystemMock();
         $rfs
-            ->expects($this->exactly(5))
+            ->expects($this->exactly(1))
             ->method('getContents')
             ->will($this->throwException(new TransportException('', 401)))
         ;
@@ -116,78 +100,7 @@ class GitHubTest extends \PHPUnit_Framework_TestCase
 
         $github = new GitHub($io, $config, null, $rfs);
 
-        $github->authorizeOAuthInteractively($this->origin);
-    }
-
-    public function testTwoFactorAuthentication()
-    {
-        $io = $this->getIOMock();
-        $io
-            ->expects($this->exactly(2))
-            ->method('hasAuthentication')
-            ->will($this->onConsecutiveCalls(true, true))
-        ;
-        $io
-            ->expects($this->exactly(2))
-            ->method('ask')
-            ->withConsecutive(
-                array('Username: '),
-                array('Authentication Code: ')
-            )
-            ->will($this->onConsecutiveCalls($this->username, $this->authcode))
-        ;
-        $io
-            ->expects($this->once())
-            ->method('askAndHideAnswer')
-            ->with('Password: ')
-            ->willReturn($this->password)
-        ;
-
-        $exception = new TransportException('', 401);
-        $exception->setHeaders(array('X-GitHub-OTP: required; app'));
-
-        $rfs = $this->getRemoteFilesystemMock();
-        $rfs
-            ->expects($this->at(0))
-            ->method('getContents')
-            ->will($this->throwException($exception))
-        ;
-        $rfs
-            ->expects($this->at(1))
-            ->method('getContents')
-            ->with(
-                $this->equalTo($this->origin),
-                $this->equalTo(sprintf('https://api.%s/authorizations', $this->origin)),
-                $this->isFalse(),
-                $this->callback(function ($array) {
-                    $headers = GitHubTest::recursiveFind($array, 'header');
-                    foreach ($headers as $string) {
-                        if ('X-GitHub-OTP: authcode' === $string) {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                })
-            )
-            ->willReturn(sprintf('{"token": "%s"}', $this->token))
-        ;
-
-        $config = $this->getConfigMock();
-        $config
-            ->expects($this->atLeastOnce())
-            ->method('getAuthConfigSource')
-            ->willReturn($this->getAuthJsonMock())
-        ;
-        $config
-            ->expects($this->atLeastOnce())
-            ->method('getConfigSource')
-            ->willReturn($this->getConfJsonMock())
-        ;
-
-        $github = new GitHub($io, $config, null, $rfs);
-
-        $this->assertTrue($github->authorizeOAuthInteractively($this->origin));
+        $this->assertFalse($github->authorizeOAuthInteractively($this->origin));
     }
 
     private function getIOMock()

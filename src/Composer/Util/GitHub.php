@@ -90,7 +90,7 @@ class GitHub
         $this->io->writeError(sprintf('Head to %s', $url));
         $this->io->writeError(sprintf('to retrieve a token. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
 
-        $token = $this->io->askAndHideAnswer('Token (hidden): ');
+        $token = trim($this->io->askAndHideAnswer('Token (hidden): '));
 
         if (!$token) {
             $this->io->writeError('<warning>No token given, aborting.</warning>');
