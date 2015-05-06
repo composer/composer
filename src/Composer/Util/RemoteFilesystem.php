@@ -342,7 +342,7 @@ class RemoteFilesystem
     protected function promptAuthAndRetry($httpStatus, $reason = null)
     {
         if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
-            $message = "\n".'Could not fetch '.$this->fileUrl.', enter your GitHub credentials '.($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
+            $message = "\n".'Could not fetch '.$this->fileUrl.', please create a GitHub OAuth token '.($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
             $gitHubUtil = new GitHub($this->io, $this->config, null);
             if (!$gitHubUtil->authorizeOAuth($this->originUrl)
                 && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
