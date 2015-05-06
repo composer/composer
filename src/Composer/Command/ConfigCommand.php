@@ -141,6 +141,11 @@ EOT
             ? ($this->config->get('home') . '/config.json')
             : $input->getOption('file');
 
+        // create global composer.json if this was invoked using `composer global config`
+        if ($configFile === 'composer.json' && !file_exists($configFile) && realpath(getcwd()) === realpath($this->config->get('home'))) {
+            file_put_contents($configFile, "{\n}\n");
+        }
+
         $this->configFile = new JsonFile($configFile);
         $this->configSource = new JsonConfigSource($this->configFile);
 
