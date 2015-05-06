@@ -308,6 +308,11 @@ class RemoteFilesystem
 
             case STREAM_NOTIFY_AUTH_RESULT:
                 if (403 === $messageCode) {
+                    // Bail if the caller is going to handle authentication failures itself.
+                    if (!$this->retryAuthFailure) {
+                        break;
+                    }
+
                     $this->promptAuthAndRetry($messageCode, $message);
                     break;
                 }
