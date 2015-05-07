@@ -242,7 +242,7 @@
   * Removed dependency on filter_var
   * Various robustness & error handling improvements, docs fixes and more bug fixes
 
-### 1.0.0-alpha1 (2012-03-01)
+### 1.0.0-alpha1 - 2012-03-01
 
   * Initial release
 
