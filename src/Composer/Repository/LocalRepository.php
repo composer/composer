@@ -128,8 +128,11 @@ class LocalRepository extends ArrayRepository
             'url' => $file->getRealPath(),
             'shasum' => sha1_file($file->getRealPath())
         );
-        $package['version'] = '1.0.'.time();
+        $package['version'] = '1.0.0';
 
-        return $this->loader->load($package);
+        $pkg = $this->loader->load($package);
+        $pkg->ensurePackageReinstalls();
+
+        return $pkg;
     }
 }

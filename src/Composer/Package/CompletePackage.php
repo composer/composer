@@ -28,6 +28,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     protected $scripts = array();
     protected $support = array();
     protected $abandoned = false;
+    protected $reinstall = false;
 
     /**
      * @param array $scripts
@@ -195,5 +196,19 @@ class CompletePackage extends Package implements CompletePackageInterface
     public function getReplacementPackage()
     {
         return is_string($this->abandoned) ? $this->abandoned : null;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function shouldReinstall()
+    {
+        return $this->reinstall;
+    }
+
+
+    public function ensurePackageReinstalls()
+    {
+        $this->reinstall = true;
     }
 }

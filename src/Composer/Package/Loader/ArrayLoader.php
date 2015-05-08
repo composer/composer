@@ -172,6 +172,10 @@ class ArrayLoader implements LoaderInterface
                 $package->setScripts($config['scripts']);
             }
 
+            if (isset($config['force-reinstall']) && $config['force-reinstall']) {
+                $package->ensurePackageReinstalls();
+            }
+
             if (!empty($config['description']) && is_string($config['description'])) {
                 $package->setDescription($config['description']);
             }

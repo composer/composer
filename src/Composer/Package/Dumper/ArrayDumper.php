@@ -13,6 +13,7 @@
 namespace Composer\Package\Dumper;
 
 use Composer\Package\BasePackage;
+use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\RootPackageInterface;
@@ -120,6 +121,10 @@ class ArrayDumper
 
         if (count($package->getTransportOptions()) > 0) {
             $data['transport-options'] = $package->getTransportOptions();
+        }
+
+        if ($package instanceof CompletePackage) { // todo, use the interface here
+            $data['force-reinstall'] = $package->shouldReinstall();
         }
 
         return $data;
