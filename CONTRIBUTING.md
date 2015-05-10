@@ -1,6 +1,10 @@
 Contributing to Composer
 ========================
 
+Please note that this project is released with a
+[Contributor Code of Conduct](http://contributor-covenant.org/version/1/0/0/).
+By participating in this project you agree to abide by its terms.
+
 Installation from Source
 ------------------------
 
