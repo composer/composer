@@ -41,20 +41,21 @@ Updating Composer
 -----------------
 
 Running `php composer.phar self-update` or equivalent will update a phar
-install with the latest version.
+install to the latest version.
 
 
 Community
 ---------
 
-Mailing lists for [user support](https://groups.google.com/group/composer-users) and
-[development](https://groups.google.com/group/composer-dev).
-
 IRC channels are on irc.freenode.org: [#composer](irc://irc.freenode.org/composer)
 for users and [#composer-dev](irc://irc.freenode.org/composer-dev) for development.
 
-Stack Overflow has a growing collection of
+For support, Stack Overflow also offers a good collection of
 [Composer related questions](https://stackoverflow.com/questions/tagged/composer-php).
+
+Please note that this project is released with a
+[Contributor Code of Conduct](http://contributor-covenant.org/version/1/0/0/).
+By participating in this project and its community you agree to abide by those terms.
 
 Requirements
 ------------
