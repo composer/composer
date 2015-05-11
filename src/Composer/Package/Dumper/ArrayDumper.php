@@ -123,8 +123,8 @@ class ArrayDumper
             $data['transport-options'] = $package->getTransportOptions();
         }
 
-        if ($package instanceof CompletePackage) { // todo, use the interface here
-            $data['force-reinstall'] = $package->shouldReinstall();
+        if ($package instanceof CompletePackageInterface && $package->shouldReinstall()) {
+            $data['force-reinstall'] = true;
         }
 
         return $data;
