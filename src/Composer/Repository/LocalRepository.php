@@ -12,8 +12,10 @@
 
 namespace Composer\Repository;
 
+use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Package;
 
@@ -27,11 +29,14 @@ class LocalRepository extends ArrayRepository
 
     protected $lookup;
 
-    public function __construct(array $repoConfig, IOInterface $io)
+    protected $config;
+
+    public function __construct(array $repoConfig, IOInterface $io, Config $config = null)
     {
         $this->loader = new ArrayLoader();
         $this->lookup = $repoConfig['url'];
         $this->io = $io;
+        $this->config = $config;
     }
 
     protected function initialize()
@@ -47,19 +52,28 @@ class LocalRepository extends ArrayRepository
 
         $directory = new \RecursiveDirectoryIterator($path);
         $iterator = new \RecursiveIteratorIterator($directory);
-        $regex = new \RegexIterator($iterator, '/composer.json/i');
+        $regex = new \RegexIterator($iterator, '/\/composer.json$/i');
         foreach ($regex as $file) {
 
             /* @var $file \SplFileInfo */
 
-            // urgh, this should be the vendor-dir of the package
-            if (strpos($file->getPathname(), 'vendor/') !== false) {
+            $package = $this->getComposerInformation($file);
+
+            if ($package instanceof CompletePackageInterface) {
+                //$package->getV
+            }
+
+            // if the package is a part of the vendor dir, exclude it.
+            // exclude all other vendor directories
+            if ($this->config->has('vendor-dir') && strpos($file->getRealpath(), $this->config->get('vendor-dir')) === 0) {
+                $blacklist[] = $file->getPath();
+                continue;
+            } elseif (strpos($file->getPathname(), '/vendor/') !== false) {
                 $blacklist[] = $file->getPath();
                 continue;
             }
 
             // don't try to find vendors that are managed by composer/installers
-            $package = $this->getComposerInformation($file);
             if (in_array('composer/installers', array_keys($package->getRequires()))) {
                 $blacklist[] = $file->getPath();
                 continue;

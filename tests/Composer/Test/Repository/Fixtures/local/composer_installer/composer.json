@@ -1,0 +1,11 @@
+{
+    "name": "test/composer_installer",
+    "description": "....",
+    "keywords": ["package", "dependency", "autoload"],
+    "homepage": "http://getcomposer.org/",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "composer/installers": "*"
+    }
+}
