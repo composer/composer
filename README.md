@@ -6,6 +6,8 @@ Composer helps you declare, manage and install dependencies of PHP projects, ens
 See [https://getcomposer.org/](https://getcomposer.org/) for more information and documentation.
 
 [![Build Status](https://travis-ci.org/composer/composer.svg?branch=master)](https://travis-ci.org/composer/composer)
+[![Dependency Status](https://www.versioneye.com/php/composer:composer/dev-master/badge.svg)](https://www.versioneye.com/php/composer:composer/dev-master) 
+[![Reference Status](https://www.versioneye.com/php/composer:composer/reference_badge.svg?style=flat)](https://www.versioneye.com/php/composer:composer/references)
 
 Installation / Usage
 --------------------
