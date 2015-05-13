@@ -659,4 +659,9 @@ This env var controls the discard-changes [config option](04-schema.md#config).
 If set to 1, this env var will make composer behave as if you passed the
 `--no-interaction` flag to every command. This can be set on build boxes/CI.
 
+### COMPOSER_PARALLEL_OPERATIONS
+
+On PHP 5.5 and above, composer handles up to 8 concurrent install/update operations.
+This env var allows changing this default value. If set to 1, concurrency is disabled.
+
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

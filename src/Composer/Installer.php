@@ -527,7 +527,8 @@ class Installer
         );
 
         $operations = call_user_func_array('array_merge', $opsGroups);
-        $loop = PHP_VERSION_ID >= 50500 ? React\EventLoop\Factory::create() : null;
+        $parallelOps = $this->config->get('parallel-operations');
+        $loop = $parallelOps > 1 && PHP_VERSION_ID >= 50500 ? React\EventLoop\Factory::create() : null;
         $loopEnableIndex = 2;
 
         foreach ($opsGroups as $i => $ops) {
@@ -585,7 +586,7 @@ class Installer
                     $this->io->writeError('');
                 }
 
-                $this->installationManager->execute($localRepo, $operation, $i >= $loopEnableIndex ? $loop : null);
+                $this->installationManager->execute($localRepo, $operation, $i >= $loopEnableIndex ? $loop : null, $parallelOps);
 
                 // output reasons why the operation was ran, only for install/update operations
                 if ($this->verbose && $this->io->isVeryVerbose() && in_array($operation->getJobType(), array('install', 'update'))) {

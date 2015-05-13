@@ -45,6 +45,7 @@ class Config
         'github-expose-hostname' => true,
         'store-auths' => 'prompt',
         'platform' => array(),
+        'parallel-operations' => 8,
         // valid keys without defaults (auth config stuff):
         // github-oauth
         // http-basic
@@ -168,6 +169,7 @@ class Config
             case 'cache-files-dir':
             case 'cache-repo-dir':
             case 'cache-vcs-dir':
+            case 'parallel-operations':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 

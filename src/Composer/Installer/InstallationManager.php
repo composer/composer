@@ -135,7 +135,7 @@ class InstallationManager
      * @param RepositoryInterface $repo      repository in which to check
      * @param OperationInterface  $operation operation instance
      */
-    public function execute(RepositoryInterface $repo, OperationInterface $operation, $loop = null)
+    public function execute(RepositoryInterface $repo, OperationInterface $operation, $loop = null, $parallelOps = 8)
     {
         $method = $operation->getJobType();
         if ($loop) {
@@ -167,7 +167,7 @@ class InstallationManager
                 };
             }
 
-            if (8 > $loop->composerOperationsCount++) {
+            if ($parallelOps > $loop->composerOperationsCount++) {
                 $loop->futureTick($loop->composerTick);
             }
 
