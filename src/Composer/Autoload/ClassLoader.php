@@ -337,8 +337,7 @@ class ClassLoader
             // Remember that this class does not exist.
             return $this->classMap[$class] = false;
         }
-
-        return $file;
+        return $this->classMap[$class] = $file;
     }
 
     private function findFileWithExtension($class, $ext)
