@@ -56,10 +56,12 @@ class ProcessExecutor
 
         $this->captureOutput = count(func_get_args()) > 1;
         $this->errorOutput = null;
-        $process = new Process($command, $cwd, null, null, static::getTimeout());
+        $input = fopen('php://stdin', 'r');
+        $process = new Process($command, $cwd, null, $input, static::getTimeout());
 
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
         $process->run($callback);
+        fclose($input);
 
         if ($this->captureOutput && !is_callable($output)) {
             $output = $process->getOutput();
