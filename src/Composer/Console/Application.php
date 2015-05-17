@@ -78,6 +78,7 @@ class Application extends BaseApplication
             $styles = Factory::createAdditionalStyles();
             $formatter = new OutputFormatter(null, $styles);
             $output = new ConsoleOutput(ConsoleOutput::VERBOSITY_NORMAL, null, $formatter);
+            ErrorHandler::setOutput($output);
         }
 
         return parent::run($input, $output);

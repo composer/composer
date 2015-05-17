@@ -54,4 +54,16 @@ class ErrorHandlerTest extends TestCase
 
         @trigger_error('test', E_USER_NOTICE);
     }
+
+    /**
+     * Test ErrorHandler ignored deprecation notices
+     */
+    public function testErrorHandlerIgnoresDeprecationNotices()
+    {
+        ErrorHandler::register();
+
+        ob_start();
+        trigger_error('A user deprecation notice', E_USER_DEPRECATED);
+        ob_end_clean();
+    }
 }
