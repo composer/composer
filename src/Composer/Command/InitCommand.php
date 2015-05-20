@@ -599,7 +599,7 @@ EOT
 
         if (!$package) {
             throw new \InvalidArgumentException(sprintf(
-                'Could not find package %s at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
+                'Could not find package "%s" at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
                 $name,
                 $this->getMinimumStability($input)
             ));
