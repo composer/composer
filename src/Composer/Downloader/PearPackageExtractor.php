@@ -244,7 +244,7 @@ class PearPackageExtractor
                     $fileSource = $this->combine($source, (string) $child['name']);
                     $fileTarget = $this->combine((string) ($child['baseinstalldir'] ?: $target), (string) $child['name']);
                     $fileTasks = array();
-                    foreach ($child->children('http://pear.php.net/dtd/tasks-1.0') as $taskNode) {
+                    foreach ($child->children('https://pear.php.net/dtd/tasks-1.0') as $taskNode) {
                         if ('replace' == $taskNode->getName()) {
                             $fileTasks[] = array('from' => (string) $taskNode->attributes()->from, 'to' => (string) $taskNode->attributes()->to);
                         }

@@ -90,7 +90,7 @@ To setup a developer workable version you should create the project using the so
 controlled code by appending the <info>'--prefer-source'</info> flag.
 
 To install a package from another repository than the default one you
-can pass the <info>'--repository-url=http://myrepository.org'</info> flag.
+can pass the <info>'--repository-url=https://myrepository.org'</info> flag.
 
 EOT
             )
@@ -247,10 +247,10 @@ EOT
             } else {
                 $sourceRepo = new FilesystemRepository($json);
             }
-        } elseif (0 === strpos($repositoryUrl, 'http')) {
+        } elseif (0 === strpos($repositoryUrl, 'https')) {
             $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl), $io, $config);
         } else {
-            throw new \InvalidArgumentException("Invalid repository url given. Has to be a .json file or an http url.");
+            throw new \InvalidArgumentException("Invalid repository url given. Has to be a .json file or an https url.");
         }
 
         $parser = new VersionParser();

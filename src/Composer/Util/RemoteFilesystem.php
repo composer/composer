@@ -146,7 +146,7 @@ class RemoteFilesystem
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
 
         if ($this->io->isDebug()) {
-            $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
+            $this->io->writeError((substr($fileUrl, 0, 5) === 'https' ? 'Downloading ' : 'Reading ') . $fileUrl);
         }
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];

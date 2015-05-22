@@ -47,7 +47,7 @@ class PearRepository extends ArrayRepository
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, RemoteFilesystem $rfs = null)
     {
         if (!preg_match('{^https?://}', $repoConfig['url'])) {
-            $repoConfig['url'] = 'http://'.$repoConfig['url'];
+            $repoConfig['url'] = 'https://'.$repoConfig['url'];
         }
 
         $urlBits = parse_url($repoConfig['url']);
@@ -108,7 +108,7 @@ class PearRepository extends ArrayRepository
                 // distribution url must be read from /r/{packageName}/{version}.xml::/r/g:text()
                 // but this location is 'de-facto' standard
                 $urlBits = parse_url($this->url);
-                $scheme = (isset($urlBits['scheme']) && 'https' === $urlBits['scheme'] && extension_loaded('openssl')) ? 'https' : 'http';
+                $scheme = 'https';
                 $distUrl = "{$scheme}://{$packageDefinition->getChannelName()}/get/{$packageDefinition->getPackageName()}-{$version}.tgz";
 
                 $requires = array();

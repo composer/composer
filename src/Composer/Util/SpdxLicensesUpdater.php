@@ -22,7 +22,7 @@ use Composer\Json\JsonFormatter;
  */
 class SpdxLicensesUpdater
 {
-    private $licensesUrl = 'http://www.spdx.org/licenses/';
+    private $licensesUrl = 'https://www.spdx.org/licenses/';
 
     public function update()
     {

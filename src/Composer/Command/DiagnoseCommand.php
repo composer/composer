@@ -81,15 +81,13 @@ EOT
         $this->getIO()->write('Checking git settings: ', false);
         $this->outputResult($this->checkGit());
 
-        $this->getIO()->write('Checking http connectivity: ', false);
-        $this->outputResult($this->checkHttp());
+        $this->getIO()->write('Checking https connectivity: ', false);
+        $this->outputResult($this->checkHttps());
 
-        $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
+        $opts = stream_context_get_options(StreamContextFactory::getContext('https://example.org'));
         if (!empty($opts['http']['proxy'])) {
-            $this->getIO()->write('Checking HTTP proxy: ', false);
-            $this->outputResult($this->checkHttpProxy());
-            $this->getIO()->write('Checking HTTP proxy support for request_fulluri: ', false);
-            $this->outputResult($this->checkHttpProxyFullUriRequestParam());
+            $this->getIO()->write('Checking HTTPS proxy: ', false);
+            $this->outputResult($this->checkHttpsProxy());
             $this->getIO()->write('Checking HTTPS proxy support for request_fulluri: ', false);
             $this->outputResult($this->checkHttpsProxyFullUriRequestParam());
         }
@@ -168,11 +166,10 @@ EOT
         return true;
     }
 
-    private function checkHttp()
+    private function checkHttps()
     {
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false);
+            $this->rfs->getContents('packagist.org', 'https://packagist.org/packages.json', false);
         } catch (\Exception $e) {
             return $e;
         }
@@ -180,18 +177,17 @@ EOT
         return true;
     }
 
-    private function checkHttpProxy()
+    private function checkHttpsProxy()
     {
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $json = json_decode($this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false), true);
+            $json = json_decode($this->rfs->getContents('packagist.org', 'https://packagist.org/packages.json', false), true);
             $hash = reset($json['provider-includes']);
             $hash = $hash['sha256'];
             $path = str_replace('%hash%', $hash, key($json['provider-includes']));
-            $provider = $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/'.$path, false);
+            $provider = $this->rfs->getContents('packagist.org', 'https://packagist.org/'.$path, false);
 
             if (hash('sha256', $provider) !== $hash) {
-                return 'It seems that your proxy is modifying http traffic on the fly';
+                return 'It seems that your proxy is modifying https traffic on the fly';
             }
         } catch (\Exception $e) {
             return $e;
@@ -201,32 +197,7 @@ EOT
     }
 
     /**
-     * Due to various proxy servers configurations, some servers can't handle non-standard HTTP "http_proxy_request_fulluri" parameter,
-     * and will return error 500/501 (as not implemented), see discussion @ https://github.com/composer/composer/pull/1825.
-     * This method will test, if you need to disable this parameter via setting extra environment variable in your system.
-     *
-     * @return bool|string
-     */
-    private function checkHttpProxyFullUriRequestParam()
-    {
-        $url = 'http://packagist.org/packages.json';
-        try {
-            $this->rfs->getContents('packagist.org', $url, false);
-        } catch (TransportException $e) {
-            try {
-                $this->rfs->getContents('packagist.org', $url, false, array('http' => array('request_fulluri' => false)));
-            } catch (TransportException $e) {
-                return 'Unable to assess the situation, maybe packagist.org is down ('.$e->getMessage().')';
-            }
-
-            return 'It seems there is a problem with your proxy server, try setting the "HTTP_PROXY_REQUEST_FULLURI" and "HTTPS_PROXY_REQUEST_FULLURI" environment variables to "false"';
-        }
-
-        return true;
-    }
-
-    /**
-     * Due to various proxy servers configurations, some servers can't handle non-standard HTTP "http_proxy_request_fulluri" parameter,
+     * Due to various proxy servers configurations, some servers can't handle non-standard HTTPS "https_proxy_request_fulluri" parameter,
      * and will return error 500/501 (as not implemented), see discussion @ https://github.com/composer/composer/pull/1825.
      * This method will test, if you need to disable this parameter via setting extra environment variable in your system.
      *
@@ -305,8 +276,7 @@ EOT
 
     private function checkVersion()
     {
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
-        $latest = trim($this->rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/version', false));
+        $latest = trim($this->rfs->getContents('getcomposer.org', 'https://getcomposer.org/version', false));
 
         if (Composer::VERSION !== $latest && Composer::VERSION !== '@package_version@') {
             return '<comment>You are not running the latest version</comment>';

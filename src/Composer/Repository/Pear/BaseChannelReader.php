@@ -26,12 +26,12 @@ abstract class BaseChannelReader
     /**
      * PEAR REST Interface namespaces
      */
-    const CHANNEL_NS = 'http://pear.php.net/channel-1.0';
-    const ALL_CATEGORIES_NS = 'http://pear.php.net/dtd/rest.allcategories';
-    const CATEGORY_PACKAGES_INFO_NS = 'http://pear.php.net/dtd/rest.categorypackageinfo';
-    const ALL_PACKAGES_NS = 'http://pear.php.net/dtd/rest.allpackages';
-    const ALL_RELEASES_NS = 'http://pear.php.net/dtd/rest.allreleases';
-    const PACKAGE_INFO_NS = 'http://pear.php.net/dtd/rest.package';
+    const CHANNEL_NS = 'https://pear.php.net/channel-1.0';
+    const ALL_CATEGORIES_NS = 'https://pear.php.net/dtd/rest.allcategories';
+    const CATEGORY_PACKAGES_INFO_NS = 'https://pear.php.net/dtd/rest.categorypackageinfo';
+    const ALL_PACKAGES_NS = 'https://pear.php.net/dtd/rest.allpackages';
+    const ALL_RELEASES_NS = 'https://pear.php.net/dtd/rest.allreleases';
+    const PACKAGE_INFO_NS = 'https://pear.php.net/dtd/rest.package';
 
     /** @var RemoteFilesystem */
     private $rfs;

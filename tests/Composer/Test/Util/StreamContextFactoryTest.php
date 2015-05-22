@@ -39,7 +39,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetContext($expectedOptions, $defaultOptions, $expectedParams, $defaultParams)
     {
-        $context = StreamContextFactory::getContext('http://example.org', $defaultOptions, $defaultParams);
+        $context = StreamContextFactory::getContext('https://example.org', $defaultOptions, $defaultParams);
         $options = stream_context_get_options($context);
         $params = stream_context_get_params($context);
 
@@ -63,28 +63,34 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testHttpProxy()
     {
-        $_SERVER['http_proxy'] = 'http://username:p%40ssword@proxyserver.net:3128/';
-        $_SERVER['HTTP_PROXY'] = 'http://proxyserver/';
+        $_SERVER['http_proxy'] = 'https://username:p%40ssword@proxyserver.net:3128/';
+        $_SERVER['HTTP_PROXY'] = 'https://proxyserver/';
 
-        $context = StreamContextFactory::getContext('http://example.org', array('http' => array('method' => 'GET')));
+        $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET')));
         $options = stream_context_get_options($context);
 
-        $this->assertEquals(array('http' => array(
-            'proxy' => 'tcp://proxyserver.net:3128',
-            'request_fulluri' => true,
-            'method' => 'GET',
-            'header' => array("Proxy-Authorization: Basic " . base64_encode('username:p@ssword')),
-            'max_redirects' => 20,
-            'follow_location' => 1,
-        )), $options);
+        $this->assertEquals(
+            array(
+                'http' => array(
+                    'proxy' => 'ssl://proxyserver.net:3128',
+                    'request_fulluri' => true,
+                    'method' => 'GET',
+                    'header' => array("Proxy-Authorization: Basic " . base64_encode('username:p@ssword')),
+                    'max_redirects' => 20,
+                    'follow_location' => 1,
+                ),
+                'ssl' => array (
+                    'SNI_enabled' => true,
+                )
+        ), $options);
     }
 
     public function testHttpProxyWithNoProxy()
     {
-        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
+        $_SERVER['http_proxy'] = 'https://username:password@proxyserver.net:3128/';
         $_SERVER['no_proxy'] = 'foo,example.org';
 
-        $context = StreamContextFactory::getContext('http://example.org', array('http' => array('method' => 'GET')));
+        $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET')));
         $options = stream_context_get_options($context);
 
         $this->assertEquals(array('http' => array(
@@ -96,10 +102,10 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testHttpProxyWithNoProxyWildcard()
     {
-        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
+        $_SERVER['http_proxy'] = 'https://username:password@proxyserver.net:3128/';
         $_SERVER['no_proxy'] = '*';
 
-        $context = StreamContextFactory::getContext('http://example.org', array('http' => array('method' => 'GET')));
+        $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET')));
         $options = stream_context_get_options($context);
 
         $this->assertEquals(array('http' => array(
@@ -111,31 +117,40 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testOptionsArePreserved()
     {
-        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
+        $_SERVER['http_proxy'] = 'https://username:password@proxyserver.net:3128/';
 
-        $context = StreamContextFactory::getContext('http://example.org', array('http' => array('method' => 'GET', 'header' => array("X-Foo: bar"), 'request_fulluri' => false)));
+        $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET', 'header' => array("X-Foo: bar"), 'request_fulluri' => false)));
         $options = stream_context_get_options($context);
 
-        $this->assertEquals(array('http' => array(
-            'proxy' => 'tcp://proxyserver.net:3128',
-            'request_fulluri' => false,
-            'method' => 'GET',
-            'header' => array("X-Foo: bar", "Proxy-Authorization: Basic " . base64_encode('username:password')),
-            'max_redirects' => 20,
-            'follow_location' => 1,
-        )), $options);
+        $this->assertEquals(array(
+            'http' => array(
+                'proxy' => 'ssl://proxyserver.net:3128',
+                'request_fulluri' => false,
+                'method' => 'GET',
+                'header' => array(
+                    "X-Foo: bar",
+                    "Proxy-Authorization: Basic " . base64_encode('username:password')
+                ),
+                'max_redirects' => 20,
+                'follow_location' => 1
+            ),
+            'ssl' => array(
+                'SNI_enabled' => true
+            )
+        )
+        , $options);
     }
 
     public function testHttpProxyWithoutPort()
     {
-        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
+        $_SERVER['http_proxy'] = 'https://username:password@proxyserver.net';
 
         $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET')));
         $options = stream_context_get_options($context);
 
         $expected = array(
             'http' => array(
-                'proxy' => 'tcp://proxyserver.net:80',
+                'proxy' => 'ssl://proxyserver.net:443',
                 'request_fulluri' => true,
                 'method' => 'GET',
                 'header' => array("Proxy-Authorization: Basic " . base64_encode('username:password')),
@@ -190,18 +205,23 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         $_SERVER['http_proxy'] = $proxy;
 
         if (extension_loaded('openssl')) {
-            $context = StreamContextFactory::getContext('http://example.org');
+            $context = StreamContextFactory::getContext('https://example.org');
             $options = stream_context_get_options($context);
 
-            $this->assertEquals(array('http' => array(
-                'proxy' => $expected,
-                'request_fulluri' => true,
-                'max_redirects' => 20,
-                'follow_location' => 1,
-            )), $options);
+            $this->assertEquals(array(
+                'http' => array(
+                    'proxy' => $expected,
+                    'request_fulluri' => true,
+                    'max_redirects' => 20,
+                    'follow_location' => 1
+                ),
+                'ssl' => array(
+                    'SNI_enabled' => true
+                )
+            ), $options);
         } else {
             try {
-                StreamContextFactory::getContext('http://example.org');
+                StreamContextFactory::getContext('https://example.org');
                 $this->fail();
             } catch (\RuntimeException $e) {
                 $this->assertInstanceOf('RuntimeException', $e);
