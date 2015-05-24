@@ -49,7 +49,7 @@ class InitCommand extends Command
     {
         $this
             ->setName('init')
-            ->setDescription('Creates a basic composer.json file in current directory.')
+            ->setDescription('Creates a basic composer.json file in current directory')
             ->setDefinition(array(
                 new InputOption('name', null, InputOption::VALUE_REQUIRED, 'Name of the package'),
                 new InputOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package'),

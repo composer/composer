@@ -42,7 +42,7 @@ class DiagnoseCommand extends Command
     {
         $this
             ->setName('diagnose')
-            ->setDescription('Diagnoses the system to identify common errors.')
+            ->setDescription('Diagnoses the system to identify common errors')
             ->setHelp(<<<EOT
 The <info>diagnose</info> command checks common errors to help debugging problems.
 

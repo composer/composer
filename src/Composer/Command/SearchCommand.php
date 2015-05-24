@@ -41,7 +41,7 @@ class SearchCommand extends Command
             ->setDescription('Search for packages')
             ->setDefinition(array(
                 new InputOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in name'),
-                new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
+                new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Tokens to search for'),
             ))
             ->setHelp(<<<EOT
 The search command searches for packages by its name

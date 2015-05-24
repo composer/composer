@@ -36,11 +36,11 @@ class HomeCommand extends Command
         $this
             ->setName('browse')
             ->setAliases(array('home'))
-            ->setDescription('Opens the package\'s repository URL or homepage in your browser.')
+            ->setDescription('Opens the package\'s repository URL or homepage in your browser')
             ->setDefinition(array(
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Package(s) to browse to.'),
-                new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL.'),
-                new InputOption('show', 's', InputOption::VALUE_NONE, 'Only show the homepage or repository URL.'),
+                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Package(s) to browse to'),
+                new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL'),
+                new InputOption('show', 's', InputOption::VALUE_NONE, 'Only show the homepage or repository URL'),
             ))
             ->setHelp(<<<EOT
 The home command opens or shows a package's repository URL or
