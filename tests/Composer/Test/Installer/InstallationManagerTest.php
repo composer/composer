@@ -264,8 +264,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
 
         $package
             ->expects($this->never())
-            ->method('getType')
-            ->will($this->returnValue('library'));
+            ->method('getType');
 
         $installer
             ->expects($this->once())
