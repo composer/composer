@@ -27,7 +27,7 @@ class NoopInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function supports($packageType)
+    public function supports(PackageInterface $package)
     {
         return true;
     }

@@ -45,9 +45,9 @@ class PluginInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function supports($packageType)
+    public function supports(PackageInterface $package)
     {
-        return $packageType === 'composer-plugin' || $packageType === 'composer-installer';
+        return $package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer';
     }
 
     /**

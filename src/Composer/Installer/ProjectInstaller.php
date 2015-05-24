@@ -39,10 +39,10 @@ class ProjectInstaller implements InstallerInterface
     /**
      * Decides if the installer supports the given type
      *
-     * @param  string $packageType
+     * @param PackageInterface $package package instance
      * @return bool
      */
-    public function supports($packageType)
+    public function supports(PackageInterface $package)
     {
         return true;
     }
