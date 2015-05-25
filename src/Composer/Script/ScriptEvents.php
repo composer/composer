@@ -74,8 +74,6 @@ class ScriptEvents
      */
     const POST_STATUS_CMD = 'post-status-cmd';
 
-    /** Deprecated constants below */
-
     /**
      * The PRE_AUTOLOAD_DUMP event occurs before the autoload file is generated.
      *
