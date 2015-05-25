@@ -358,8 +358,8 @@ EOT
                 break;
         }
 
-        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist')) {
-            $preferSource = $input->getOption('prefer-source');
+        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist') || $input->getOption('keep-vcs')) {
+            $preferSource = $input->getOption('prefer-source') || $input->getOption('keep-vcs');
             $preferDist = $input->getOption('prefer-dist');
         }
     }
