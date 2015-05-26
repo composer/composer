@@ -43,13 +43,14 @@ class ArchiveCommand extends Command
                 new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar or zip', 'tar'),
                 new InputOption('dir', false, InputOption::VALUE_REQUIRED, 'Write the archive to this directory', '.'),
+                new InputOption('filename', false, InputOption::VALUE_OPTIONAL, 'Override the default archive filename'),
             ))
             ->setHelp(<<<EOT
 The <info>archive</info> command creates an archive of the specified format
 containing the files and directories of the Composer project or the specified
 package in the specified version and writes it to the specified directory.
 
-<info>php composer.phar archive [--format=zip] [--dir=/foo] [package [version]]</info>
+<info>php composer.phar archive [--filename=my-package] [--format=zip] [--dir=/foo] [package [version]]</info>
 
 EOT
             )
@@ -70,7 +71,8 @@ EOT
             $input->getArgument('package'),
             $input->getArgument('version'),
             $input->getOption('format'),
-            $input->getOption('dir')
+            $input->getOption('dir'),
+            $input->getOption('filename')
         );
 
         if (0 === $returnCode && $composer) {
@@ -80,7 +82,7 @@ EOT
         return $returnCode;
     }
 
-    protected function archive(IOInterface $io, $packageName = null, $version = null, $format = 'tar', $dest = '.')
+    protected function archive(IOInterface $io, $packageName = null, $version = null, $format = 'tar', $dest = '.', $filename = null)
     {
         $config = Factory::createConfig();
         $factory = new Factory;
@@ -98,7 +100,7 @@ EOT
         }
 
         $io->writeError('<info>Creating the archive.</info>');
-        $archiveManager->archive($package, $format, $dest);
+        $archiveManager->archive($package, $format, $dest, $filename);
 
         return 0;
     }

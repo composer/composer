@@ -540,6 +540,7 @@ php composer.phar archive vendor/package 2.0.21 --format=zip
 * **--format (-f):** Format of the resulting archive: tar or zip (default:
   "tar")
 * **--dir:** Write the archive to this directory (default: ".")
+* **--filename:** Overwrites the default archive filename (the file extension is unaffected)
 
 ## help
 
