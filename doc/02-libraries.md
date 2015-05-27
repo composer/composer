@@ -96,9 +96,9 @@ Here are a few examples of valid tag names:
 ### Branches
 
 For every branch, a package development version will be created. If the branch
-name looks like a version, the version will be `{branchname}-dev`. For example
-a branch `2.0` will get a version `2.0.x-dev` (the `.x` is added for technical
-reasons, to make sure it is recognized as a branch, a `2.0.x` branch would also
+name looks like a version, the version will be `{branchname}-dev`. For example,
+the branch `2.0` will get the `2.0.x-dev` version (the `.x` is added for technical
+reasons, to make sure it is recognized as a branch). The `2.0.x` branch would also
 be valid and be turned into `2.0.x-dev` as well. If the branch does not look
 like a version, it will be `dev-{branchname}`. `master` results in a
 `dev-master` version.
