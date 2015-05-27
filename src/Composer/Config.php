@@ -46,6 +46,8 @@ class Config
         'github-expose-hostname' => true,
         'store-auths' => 'prompt',
         'platform' => array(),
+        'archive-format' => 'tar',
+        'archive-dir' => '.',
         // valid keys without defaults (auth config stuff):
         // github-oauth
         // http-basic
