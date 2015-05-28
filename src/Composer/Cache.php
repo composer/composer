@@ -136,7 +136,13 @@ class Cache
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
-            touch($this->root . $file, filemtime($this->root . $file), time());
+            try {
+                touch($this->root . $file, filemtime($this->root . $file), time());
+            } catch (\ErrorException $e) {
+                // fallback in case the above failed due to incorrect ownership
+                // see https://github.com/composer/composer/issues/4070
+                touch($this->root . $file);
+            }
 
             if ($this->io->isDebug()) {
                 $this->io->writeError('Reading '.$this->root . $file.' from cache');
