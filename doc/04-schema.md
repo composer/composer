@@ -235,11 +235,12 @@ Various information to get support about the project.
 Support information includes the following:
 
 * **email:** Email address for support.
-* **issues:** URL to the Issue Tracker.
-* **forum:** URL to the Forum.
-* **wiki:** URL to the Wiki.
+* **issues:** URL to the issue tracker.
+* **forum:** URL to the forum.
+* **wiki:** URL to the wiki.
 * **irc:** IRC channel for support, as irc://server/channel.
 * **source:** URL to browse or download the sources.
+* **docs:** URL to the documentation.
 
 An example:
 
