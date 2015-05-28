@@ -220,6 +220,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
     {
         $file = new JsonFile('composer.json');
 
+        $json = str_replace("\r", '', $json);
         if (null === $options) {
             $this->assertEquals($json, $file->encode($data));
         } else {

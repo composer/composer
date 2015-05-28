@@ -1201,4 +1201,22 @@ EOF;
         $b = $dir.'/autoload_'.$type.'.php';
         $this->assertFileEquals($a, $b);
     }
+
+    public static function assertFileEquals($expected, $actual, $message = '', $canonicalize = false, $ignoreCase = false)
+    {
+        return self::assertEquals(
+            file_get_contents($expected),
+            file_get_contents($actual),
+            $message ?: $expected.' equals '.$actual,
+            0,
+            10,
+            $canonicalize,
+            $ignoreCase
+        );
+    }
+
+    public static function assertEquals($expected, $actual, $message = '', $delta = 0, $maxDepth = 10, $canonicalize = false, $ignoreCase = false)
+    {
+        return parent::assertEquals(str_replace("\r", '', $expected), str_replace("\r", '', $actual), $message, $delta, $maxDepth, $canonicalize, $ignoreCase);
+    }
 }

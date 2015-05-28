@@ -34,12 +34,11 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
                 'require',
                 'vendor/baz',
                 'qux',
-                '{
-    "require": {
-        "vendor/baz": "qux"
-    }
-}
-'
+                "{\n".
+"    \"require\": {\n".
+"        \"vendor/baz\": \"qux\"\n".
+"    }\n".
+"}\n"
             ),
             array(
                 '{
