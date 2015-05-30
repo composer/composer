@@ -113,14 +113,14 @@ class PluginManager
      */
     public function loadRepository(RepositoryInterface $repo)
     {
-        foreach ($repo->getPackages() as $package) {
+        foreach ($repo->getPackages() as $package) { /** @var PackageInterface $package */
             if ($package instanceof AliasPackage) {
                 continue;
             }
             if ('composer-plugin' === $package->getType()) {
                 $requiresComposer = null;
-                foreach ($package->getRequires() as $link) {
-                    if ($link->getTarget() == 'composer-plugin-api') {
+                foreach ($package->getRequires() as $link) { /** @var Link $link */
+                    if ('composer-plugin-api' === $link->getTarget()) {
                         $requiresComposer = $link->getConstraint();
                     }
                 }
