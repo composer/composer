@@ -220,7 +220,7 @@ class GitDownloader extends VcsDownloader
         // Otherwise git tries the branch name as well as file name.
         // If the non-existent branch is actually the name of a file, the file
         // is checked out.
-        $template = 'git checkout %s -- && git reset --hard %1$s';
+        $template = 'git checkout %s -- && git reset --hard %1$s --';
         $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
 
         $branches = null;
@@ -234,7 +234,7 @@ class GitDownloader extends VcsDownloader
             && $branches
             && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $branches)
         ) {
-            $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
+            $command = sprintf('git checkout -B %s %s -- && git reset --hard %2$s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 return;
             }
@@ -248,11 +248,11 @@ class GitDownloader extends VcsDownloader
             }
 
             $command = sprintf('git checkout %s --', ProcessExecutor::escape($branch));
-            $fallbackCommand = sprintf('git checkout -B %s %s', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$branch));
+            $fallbackCommand = sprintf('git checkout -B %s %s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$branch));
             if (0 === $this->process->execute($command, $output, $path)
                 || 0 === $this->process->execute($fallbackCommand, $output, $path)
             ) {
-                $command = sprintf('git reset --hard %s', ProcessExecutor::escape($reference));
+                $command = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
                 if (0 === $this->process->execute($command, $output, $path)) {
                     return;
                 }
