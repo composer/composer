@@ -65,7 +65,6 @@ class Application extends BaseApplication
             date_default_timezone_set(@date_default_timezone_get());
         }
 
-        ErrorHandler::register();
         parent::__construct('Composer', Composer::VERSION);
     }
 
@@ -89,6 +88,7 @@ class Application extends BaseApplication
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
+        ErrorHandler::register($this->io);
 
         if (PHP_VERSION_ID < 50302) {
             $this->getIO()->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
