@@ -56,7 +56,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
 
         $self = $this;
         $createPackage = function ($arr) use ($self) {
-            $package = $self->getMock('\Composer\Package\PackageInterface');
+            $package = $self->getMockForAbstractClass('\Composer\Package\BasePackage', array(), '', false);
             $package->expects($self->once())->method('isDev')->will($self->returnValue(true));
             $package->expects($self->once())->method('getSourceType')->will($self->returnValue('git'));
             $package->expects($self->once())->method('getPrettyVersion')->will($self->returnValue('PrettyVersion'));
