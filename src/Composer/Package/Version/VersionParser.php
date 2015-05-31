@@ -69,8 +69,14 @@ class VersionParser
         return $stability === 'rc' ? 'RC' : $stability;
     }
 
+    /**
+     * @deprecated Use PackageInterface::getFullPrettyVersion instead
+     */
     public static function formatVersion(PackageInterface $package, $truncate = true)
     {
+        trigger_error(__METHOD__.' is deprecated. Use '.
+            '\Composer\Package\PackageInterface::getFullPrettyVersion() instead', E_USER_DEPRECATED);
+
         return $package->getFullPrettyVersion($truncate);
     }
 
