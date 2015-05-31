@@ -181,7 +181,7 @@ EOT
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
                         $nameLength = max($nameLength, strlen($package->getPrettyName()));
-                        $versionLength = max($versionLength, strlen($this->versionParser->formatVersion($package)));
+                        $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
                     } else {
                         $nameLength = max($nameLength, $package);
                     }
@@ -209,7 +209,7 @@ EOT
                         $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
 
                         if ($writeVersion) {
-                            $output->write(' ' . str_pad($this->versionParser->formatVersion($package), $versionLength, ' '), false);
+                            $output->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
                         }
 
                         if ($writeDescription) {

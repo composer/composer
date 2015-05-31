@@ -298,7 +298,7 @@ EOT
             });
         }
 
-        $io->writeError('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>');
+        $io->writeError('<info>Installing ' . $package->getName() . ' (' . $package->getFullPrettyVersion(false) . ')</info>');
 
         if ($disablePlugins) {
             $io->writeError('<info>Plugins have been disabled.</info>');
