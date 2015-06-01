@@ -71,5 +71,5 @@ class ComposerAutoloaderInitTargetDir
 
 function composerRequireTargetDir($file)
 {
-    require $file;
+    require_once $file;
 }

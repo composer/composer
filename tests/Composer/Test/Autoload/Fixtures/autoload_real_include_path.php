@@ -67,5 +67,5 @@ class ComposerAutoloaderInitIncludePath
 
 function composerRequireIncludePath($file)
 {
-    require $file;
+    require_once $file;
 }
