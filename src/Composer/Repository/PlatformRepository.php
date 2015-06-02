@@ -35,10 +35,10 @@ class PlatformRepository extends ArrayRepository
 
     public function __construct(array $packages = array(), array $overrides = array())
     {
-        parent::__construct($packages);
         foreach ($overrides as $name => $version) {
             $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
         }
+        parent::__construct($packages);
     }
 
     protected function initialize()
