@@ -20,7 +20,7 @@ You can now run Composer by executing the `bin/composer` script: `php /path/to/c
 Contributing policy
 -------------------
 
-Fork the project, create a feature branch, and send us a pull request.
+Fork the project, create a feature branch and send us a pull request.
 
 To ensure a consistent code base, you should make sure the code follows
 the [PSR-2 Coding Standards](http://www.php-fig.org/psr/psr-2/).
