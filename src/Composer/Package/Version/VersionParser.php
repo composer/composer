@@ -416,12 +416,16 @@ class VersionParser
             $lowVersion = $this->normalize($matches['from']);
             $lowerBound = new VersionConstraint('>=', $lowVersion . $lowStabilitySuffix);
 
-            if ((!empty($matches[11]) && !empty($matches[12])) || !empty($matches[14]) || !empty($matches[16])) {
+            $empty = function ($x) {
+                return ($x === 0 || $x === "0") ? false : empty($x);
+            };
+
+            if ((!$empty($matches[11]) && !$empty($matches[12])) || !empty($matches[14]) || !empty($matches[16])) {
                 $highVersion = $this->normalize($matches['to']);
                 $upperBound = new VersionConstraint('<=', $highVersion);
             } else {
                 $highMatch = array('', $matches[10], $matches[11], $matches[12], $matches[13]);
-                $highVersion = $this->manipulateVersionString($highMatch, empty($matches[11]) ? 1 : 2, 1) . '-dev';
+                $highVersion = $this->manipulateVersionString($highMatch, $empty($matches[11]) ? 1 : 2, 1) . '-dev';
                 $upperBound = new VersionConstraint('<', $highVersion);
             }
 

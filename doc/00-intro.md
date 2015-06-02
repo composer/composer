@@ -142,6 +142,8 @@ Create a new `composer.bat` file alongside `composer.phar`:
 C:\bin>echo @php "%~dp0composer.phar" %*>composer.bat
 ```
 
+Add the directory to your PATH environment variable if it isn't already.
+
 Close your current terminal. Test usage with a new terminal:
 
 ```sh
