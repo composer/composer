@@ -13,6 +13,7 @@
 namespace Composer;
 
 use Composer\Config\ConfigSourceInterface;
+use Composer\Plugin\PluginInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -339,5 +340,15 @@ class Config
         }
 
         return false;
+    }
+
+    /**
+     * Returns the version of the internal composer-plugin-api package.
+     *
+     * @return string
+     */
+    public function getPluginApiVersion()
+    {
+        return PluginInterface::PLUGIN_API_VERSION;
     }
 }

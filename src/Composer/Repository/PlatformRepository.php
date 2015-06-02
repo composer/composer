@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\Config;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Version\VersionParser;
@@ -32,6 +33,11 @@ class PlatformRepository extends ArrayRepository
      * @var array
      */
     private $overrides;
+
+    /**
+     * @var Config
+     */
+    private $config;
 
     public function __construct(array $packages = array(), array $overrides = array())
     {
@@ -62,7 +68,7 @@ class PlatformRepository extends ArrayRepository
             parent::addPackage($package);
         }
 
-        $prettyVersion = PluginInterface::PLUGIN_API_VERSION;
+        $prettyVersion = $this->getConfig()->getPluginApiVersion();
         $version = $versionParser->normalize($prettyVersion);
         $composerPluginApi = new CompletePackage('composer-plugin-api', $version, $prettyVersion);
         $composerPluginApi->setDescription('The Composer Plugin API');
@@ -209,5 +215,24 @@ class PlatformRepository extends ArrayRepository
     private function buildPackageName($name)
     {
         return 'ext-' . str_replace(' ', '-', $name);
+    }
+
+    /**
+     * @param Config $config
+     */
+    public function setConfig(Config $config)
+    {
+        $this->config = $config;
+    }
+
+    /**
+     * @return Config
+     */
+    public function getConfig()
+    {
+        if (!$this->config) {
+            $this->config = new Config;
+        }
+        return $this->config;
     }
 }

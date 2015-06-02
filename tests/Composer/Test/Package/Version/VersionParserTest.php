@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Package\Version;
 
+use Composer\Package\Link;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
@@ -512,5 +513,71 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('alpha',  '1.2_a1'),
             array('RC',     '2.0.0rc1')
         );
+    }
+
+    public function oldStylePluginApiVersions()
+    {
+        return array(
+            array('1.0'),
+            array('1.0.0'),
+            array('1.0.0.0'),
+        );
+    }
+
+    public function newStylePluginApiVersions()
+    {
+        return array(
+            array('1'),
+            array('=1.0.0'),
+            array('==1.0'),
+            array('~1.0.0'),
+            array('*'),
+            array('3.0.*'),
+            array('@stable'),
+            array('1.0.0@stable'),
+            array('^5.1'),
+            array('>=1.0.0 <2.5'),
+            array('x'),
+            array('1.0.0-dev'),
+        );
+    }
+
+    /**
+     * @dataProvider oldStylePluginApiVersions
+     */
+    public function testOldStylePluginApiVersionGetsConvertedIntoAnotherConstraintToKeepBc($apiVersion)
+    {
+        $parser = new VersionParser;
+
+        /** @var Link[] $links */
+        $links = $parser->parseLinks('Plugin', '9.9.9', '', array('composer-plugin-api' => $apiVersion));
+
+        $this->assertArrayHasKey('composer-plugin-api', $links);
+        $this->assertSame('^1.0', $links['composer-plugin-api']->getConstraint()->getPrettyString());
+    }
+
+    /**
+     * @dataProvider newStylePluginApiVersions
+     */
+    public function testNewStylePluginApiVersionAreKeptAsDeclared($apiVersion)
+    {
+        $parser = new VersionParser;
+
+        /** @var Link[] $links */
+        $links = $parser->parseLinks('Plugin', '9.9.9', '', array('composer-plugin-api' => $apiVersion));
+
+        $this->assertArrayHasKey('composer-plugin-api', $links);
+        $this->assertSame($apiVersion, $links['composer-plugin-api']->getConstraint()->getPrettyString());
+    }
+
+    public function testPluginApiVersionDoesSupportSelfVersion()
+    {
+        $parser = new VersionParser;
+
+        /** @var Link[] $links */
+        $links = $parser->parseLinks('Plugin', '6.6.6', '', array('composer-plugin-api' => 'self.version'));
+
+        $this->assertArrayHasKey('composer-plugin-api', $links);
+        $this->assertSame('6.6.6', $links['composer-plugin-api']->getConstraint()->getPrettyString());
     }
 }
