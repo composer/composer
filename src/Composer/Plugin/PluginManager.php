@@ -130,7 +130,7 @@ class PluginManager
                     throw new \RuntimeException("Plugin ".$package->getName()." is missing a require statement for a version of the composer-plugin-api package.");
                 }
 
-                $currentPluginApiVersion    = $this->getPluginApiVersion();
+                $currentPluginApiVersion = $this->getPluginApiVersion();
                 $currentPluginApiConstraint = new VersionConstraint('==', $this->versionParser->normalize($currentPluginApiVersion));
 
                 if (!$requiresComposer->matches($currentPluginApiConstraint)) {
