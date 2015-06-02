@@ -374,12 +374,15 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function hyphenConstraints()
     {
         return array(
-            array('1 - 2',                  new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<',  '3.0.0.0-dev')),
-            array('1.2.3 - 2.3.4.5',        new VersionConstraint('>=', '1.2.3.0-dev'),   new VersionConstraint('<=', '2.3.4.5')),
-            array('1.2-beta - 2.3',         new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<',  '2.4.0.0-dev')),
-            array('1.2-beta - 2.3-dev',     new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<=', '2.3.0.0-dev')),
-            array('1.2-RC - 2.3.1',         new VersionConstraint('>=', '1.2.0.0-RC'),    new VersionConstraint('<=', '2.3.1.0')),
-            array('1.2.3-alpha - 2.3-RC',   new VersionConstraint('>=', '1.2.3.0-alpha'), new VersionConstraint('<=', '2.3.0.0-RC')),
+            array('1 - 2',                new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<',  '3.0.0.0-dev')),
+            array('1.2.3 - 2.3.4.5',      new VersionConstraint('>=', '1.2.3.0-dev'),   new VersionConstraint('<=', '2.3.4.5')),
+            array('1.2-beta - 2.3',       new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<',  '2.4.0.0-dev')),
+            array('1.2-beta - 2.3-dev',   new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<=', '2.3.0.0-dev')),
+            array('1.2-RC - 2.3.1',       new VersionConstraint('>=', '1.2.0.0-RC'),    new VersionConstraint('<=', '2.3.1.0')),
+            array('1.2.3-alpha - 2.3-RC', new VersionConstraint('>=', '1.2.3.0-alpha'), new VersionConstraint('<=', '2.3.0.0-RC')),
+            array('1 - 2.1',              new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<', '2.2.0.0-dev')),
+            array('1.2 - 2.1.0',          new VersionConstraint('>=', '1.2.0.0-dev'),   new VersionConstraint('<=', '2.1.0.0')),
+            array('1.2 - 2.1.3',          new VersionConstraint('>=', '1.2.0.0-dev'),   new VersionConstraint('<=', '2.1.3.0')),
         );
     }
 
