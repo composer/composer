@@ -26,7 +26,6 @@ interface PluginInterface
      * Version number of the fake composer-plugin-api package
      *
      * @var string
-     * @deprecated Use \Composer\Config::getPluginApiVersion() instead.
      */
     const PLUGIN_API_VERSION = '1.0.0';
 

@@ -246,7 +246,7 @@ class VersionParser
     private function isOldStylePluginApiVersion($requiredPluginApiVersion)
     {
         // catch "1.0", "1.0.0", "1.0.0.0" etc.
-        return (bool) preg_match('#^1(\.0)+$#', trim($requiredPluginApiVersion));
+        return (bool) preg_match('#^1(\.0)++$#', trim($requiredPluginApiVersion));
     }
 
     /**

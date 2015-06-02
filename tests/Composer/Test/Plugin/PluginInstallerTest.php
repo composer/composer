@@ -222,19 +222,15 @@ class PluginInstallerTest extends TestCase
     private function setPluginApiVersionWithPlugins($newPluginApiVersion, array $plugins = array())
     {
         // reset the plugin manager's installed plugins
-        $this->pm = new PluginManager($this->io, $this->composer);
+        $this->pm = $this->getMockBuilder('Composer\Plugin\PluginManager')
+                         ->setMethods(array('getPluginApiVersion'))
+                         ->setConstructorArgs(array($this->io, $this->composer))
+                         ->getMock();
 
-        /** @var \PHPUnit_Framework_MockObject_MockObject $config */
-        $config = $this->getMock('Composer\Config', array('getPluginApiVersion'));
-
-        // mock Config to return whatever Plugin API version we wish
-        $config->expects($this->any())
-               ->method('getPluginApiVersion')
-               ->will($this->returnValue($newPluginApiVersion));
-
-        // transfer the defaults in our Config mock and set it
-        $config->merge($this->composer->getConfig()->raw());
-        $this->composer->setConfig($config);
+        // mock the Plugin API version
+        $this->pm->expects($this->any())
+                 ->method('getPluginApiVersion')
+                 ->will($this->returnValue($newPluginApiVersion));
 
         $plugApiInternalPackage = $this->getPackage(
             'composer-plugin-api',

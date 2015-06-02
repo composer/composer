@@ -341,14 +341,4 @@ class Config
 
         return false;
     }
-
-    /**
-     * Returns the version of the internal composer-plugin-api package.
-     *
-     * @return string
-     */
-    public function getPluginApiVersion()
-    {
-        return PluginInterface::PLUGIN_API_VERSION;
-    }
 }

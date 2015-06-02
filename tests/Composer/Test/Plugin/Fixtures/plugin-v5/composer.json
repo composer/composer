@@ -4,7 +4,7 @@
     "type": "composer-plugin",
     "autoload": { "psr-0": { "Installer": "" } },
     "extra": {
-        "class": "Installer\\Plugin"
+        "class": "Installer\\Plugin5"
     },
     "require": {
         "composer-plugin-api": "*"
