@@ -70,7 +70,7 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->validateArray('scripts'); // TODO validate event names & listener syntax
         $this->validateString('description');
         $this->validateUrl('homepage');
-        $this->validateFlatArray('keywords', '[A-Za-z0-9 ._-]+');
+        $this->validateFlatArray('keywords', '[\p{N}\p{L} ._-]+');
 
         if (isset($this->config['license'])) {
             if (is_string($this->config['license'])) {
