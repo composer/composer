@@ -112,6 +112,7 @@ class FilesystemTest extends TestCase
             array('/foo/bar_vendor', '/foo/bar', '../bar', true),
             array('/foo/bar_vendor', '/foo/bar/src', '../bar/src', true),
             array('/foo/bar_vendor/src2', '/foo/bar/src/lib', '../../bar/src/lib', true),
+            array('C:/', 'C:/foo/bar/', "foo/bar", true),
         );
     }
 
