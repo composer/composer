@@ -65,9 +65,8 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 
 ## Need to override a package version
 
-Let say your project depends on package A which in turn depends on a specific
-version of package B (say 0.1) and you need a different version of that
-package - version 0.11.
+Let's say your project depends on package A, which in turn depends on a specific
+version of package B (say 0.1). But you need a different version of said package B (say 0.11).
 
 You can fix this by aliasing version 0.11 to 0.1:
 
