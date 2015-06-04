@@ -179,6 +179,7 @@ class FilesystemTest extends TestCase
 
     /**
      * @link https://github.com/composer/composer/issues/3157
+     * @requires function symlink
      */
     public function testUnlinkSymlinkedDirectory()
     {
@@ -206,6 +207,7 @@ class FilesystemTest extends TestCase
 
     /**
      * @link https://github.com/composer/composer/issues/3144
+     * @requires function symlink
      */
     public function testRemoveSymlinkedDirectoryWithTrailingSlash()
     {

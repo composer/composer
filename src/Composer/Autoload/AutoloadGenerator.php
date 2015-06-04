@@ -63,6 +63,7 @@ class AutoloadGenerator
         $vendorPath = $filesystem->normalizePath(realpath($config->get('vendor-dir')));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
+        $classMapAuthoritative = $config->get('classmap-authoritative');
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
@@ -213,7 +214,16 @@ EOF;
         $classmapFile .= ");\n";
 
         if (!$suffix) {
-            $suffix = $config->get('autoloader-suffix') ?: md5(uniqid('', true));
+            if (!$config->get('autoloader-suffix') && is_readable($vendorPath.'/autoload.php')) {
+                $content = file_get_contents($vendorPath.'/autoload.php');
+                if (preg_match('{ComposerAutoloaderInit([^:\s]+)::}', $content, $match)) {
+                    $suffix = $match[1];
+                }
+            }
+
+            if (!$suffix) {
+                $suffix = $config->get('autoloader-suffix') ?: md5(uniqid('', true));
+            }
         }
 
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
@@ -226,7 +236,7 @@ EOF;
             file_put_contents($targetDir.'/autoload_files.php', $includeFilesFile);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader));
+        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative));
 
         // use stream_copy_to_stream instead of copy
         // to work around https://bugs.php.net/bug.php?id=64634
@@ -382,7 +392,7 @@ EOF;
         }
 
         if (!$filesCode) {
-            return FALSE;
+            return false;
         }
 
         return <<<EOF
@@ -443,7 +453,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader)
+    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative)
     {
         // TODO the class ComposerAutoloaderInit should be revert to a closure
         // when APC has been fixed:
@@ -518,6 +528,13 @@ PSR4;
 
 
 CLASSMAP;
+        }
+
+        if ($classMapAuthoritative) {
+            $file .= <<<'CLASSMAPAUTHORITATIVE'
+        $loader->setClassMapAuthoritative(true);
+
+CLASSMAPAUTHORITATIVE;
         }
 
         if ($useGlobalIncludePath) {

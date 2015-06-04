@@ -21,6 +21,7 @@ use Composer\Package\Dumper\ArrayDumper;
  * Selects the best possible version for a package
  *
  * @author Ryan Weaver <ryan@knpuniversity.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class VersionSelector
 {
@@ -44,7 +45,7 @@ class VersionSelector
     public function findBestCandidate($packageName, $targetPackageVersion = null)
     {
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
-        $candidates = $this->pool->whatProvides($packageName, $constraint, true);
+        $candidates = $this->pool->whatProvides(strtolower($packageName), $constraint, true);
 
         if (!$candidates) {
             return false;
@@ -66,11 +67,11 @@ class VersionSelector
      * that should be used, for example, in composer.json.
      *
      * For example:
-     *  * 1.2.1         -> ~1.2
-     *  * 1.2           -> ~1.2
-     *  * v3.2.1        -> ~3.2
-     *  * 2.0-beta.1    -> ~2.0@beta
-     *  * dev-master    -> ~2.1@dev      (dev version with alias)
+     *  * 1.2.1         -> ^1.2
+     *  * 1.2           -> ^1.2
+     *  * v3.2.1        -> ^3.2
+     *  * 2.0-beta.1    -> ^2.0@beta
+     *  * dev-master    -> ^2.1@dev      (dev version with alias)
      *  * dev-master    -> dev-master    (dev versions are untouched)
      *
      * @param  PackageInterface $package
@@ -103,10 +104,15 @@ class VersionSelector
         // attempt to transform 2.1.1 to 2.1
         // this allows you to upgrade through minor versions
         $semanticVersionParts = explode('.', $version);
+
         // check to see if we have a semver-looking version
         if (count($semanticVersionParts) == 4 && preg_match('{^0\D?}', $semanticVersionParts[3])) {
             // remove the last parts (i.e. the patch version number and any extra)
-            unset($semanticVersionParts[2], $semanticVersionParts[3]);
+            if ($semanticVersionParts[0] === '0') {
+                unset($semanticVersionParts[3]);
+            } else {
+                unset($semanticVersionParts[2], $semanticVersionParts[3]);
+            }
             $version = implode('.', $semanticVersionParts);
         } else {
             return $prettyVersion;
@@ -117,8 +123,8 @@ class VersionSelector
             $version .= '@'.$stability;
         }
 
-        // 2.1 -> ~2.1
-        return '~'.$version;
+        // 2.1 -> ^2.1
+        return '^' . $version;
     }
 
     private function getParser()

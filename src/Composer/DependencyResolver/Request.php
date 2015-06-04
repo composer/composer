@@ -20,11 +20,9 @@ use Composer\Package\LinkConstraint\LinkConstraintInterface;
 class Request
 {
     protected $jobs;
-    protected $pool;
 
-    public function __construct(Pool $pool)
+    public function __construct()
     {
-        $this->pool = $pool;
         $this->jobs = array();
     }
 

@@ -66,7 +66,7 @@ class GitDriver extends VcsDriver
                     };
                     $gitUtil->runCommand($commandCallable, $this->url, $this->repoDir);
                 } catch (\Exception $e) {
-                    $this->io->write('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$e->getMessage().')</error>');
+                    $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$e->getMessage().')</error>');
                 }
             } else {
                 // clean up directory and do a fresh clone into it
@@ -156,7 +156,7 @@ class GitDriver extends VcsDriver
 
             $composer = JsonFile::parseJson($composer, $resource);
 
-            if (!isset($composer['time'])) {
+            if (empty($composer['time'])) {
                 $this->process->execute(sprintf('git log -1 --format=%%at %s', ProcessExecutor::escape($identifier)), $output, $this->repoDir);
                 $date = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
@@ -202,7 +202,7 @@ class GitDriver extends VcsDriver
             $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
-                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match)) {
                         $branches[$match[1]] = $match[2];
                     }
                 }
@@ -227,7 +227,7 @@ class GitDriver extends VcsDriver
         if (Filesystem::isLocalPath($url)) {
             $url = Filesystem::getPlatformPath($url);
             if (!is_dir($url)) {
-                throw new \RuntimeException('Directory does not exist: '.$url);
+                return false;
             }
 
             $process = new ProcessExecutor($io);
@@ -241,7 +241,11 @@ class GitDriver extends VcsDriver
             return false;
         }
 
-        // TODO try to connect to the server
+        $process = new ProcessExecutor($io);
+        if ($process->execute('git ls-remote --heads ' . ProcessExecutor::escape($url), $output) === 0) {
+            return true;
+        }
+
         return false;
     }
 }

@@ -44,11 +44,16 @@ abstract class BasePackage implements PackageInterface
         'dev'    => self::STABILITY_DEV,
     );
 
+    /**
+     * READ-ONLY: The package id, public for fast access in dependency solver
+     * @var int
+     */
+    public $id;
+
     protected $name;
     protected $prettyName;
 
     protected $repository;
-    protected $id;
     protected $transportOptions;
 
     /**

@@ -42,7 +42,8 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         }
         if ($this->oldenv) {
             $fs->removeDirectory(getenv('COMPOSER_HOME'));
-            putenv('COMPOSER_HOME='.$this->oldenv);
+            $_SERVER['COMPOSER_HOME'] = $this->oldenv;
+            putenv('COMPOSER_HOME='.$_SERVER['COMPOSER_HOME']);
             $this->oldenv = null;
         }
     }
@@ -60,12 +61,29 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
 
     public function testBuildPhar()
     {
-        $fs = new Filesystem;
-        $fs->removeDirectory(dirname(self::$pharPath));
-        $fs->ensureDirectoryExists(dirname(self::$pharPath));
-        chdir(dirname(self::$pharPath));
+        if (defined('HHVM_VERSION')) {
+            $this->markTestSkipped('Building the phar does not work on HHVM.');
+        }
 
-        $proc = new Process('php '.escapeshellarg(__DIR__.'/../../../bin/compile'), dirname(self::$pharPath));
+        $target = dirname(self::$pharPath);
+        $fs = new Filesystem;
+        $fs->removeDirectory($target);
+        $fs->ensureDirectoryExists($target);
+        chdir($target);
+
+        $it = new \RecursiveDirectoryIterator(__DIR__.'/../../../', \RecursiveDirectoryIterator::SKIP_DOTS);
+        $ri = new \RecursiveIteratorIterator($it, \RecursiveIteratorIterator::SELF_FIRST);
+
+        foreach ($ri as $file) {
+            $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
+            if ($file->isDir()) {
+                $fs->ensureDirectoryExists($targetPath);
+            } else {
+                copy($file->getPathname(), $targetPath);
+            }
+        }
+
+        $proc = new Process('php '.escapeshellarg('./bin/compile'), $target);
         $exitcode = $proc->run();
         if ($exitcode !== 0 || trim($proc->getOutput())) {
             $this->fail($proc->getOutput());
@@ -82,10 +100,11 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         $testData = $this->parseTestFile($testFile);
 
         $this->oldenv = getenv('COMPOSER_HOME');
-        putenv('COMPOSER_HOME='.$this->testDir.'home');
+        $_SERVER['COMPOSER_HOME'] = $this->testDir.'home';
+        putenv('COMPOSER_HOME='.$_SERVER['COMPOSER_HOME']);
 
         $cmd = 'php '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
-        $proc = new Process($cmd, __DIR__.'/Fixtures/functional');
+        $proc = new Process($cmd, __DIR__.'/Fixtures/functional', null, null, 300);
         $exitcode = $proc->run();
 
         if (isset($testData['EXPECT'])) {

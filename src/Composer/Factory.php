@@ -17,10 +17,9 @@ use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
 use Composer\Repository\RepositoryManager;
-use Composer\Repository\RepositoryInterface;
+use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
-use Composer\Util\Filesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
@@ -88,8 +87,10 @@ class Factory
      * @param  IOInterface|null $io
      * @return Config
      */
-    public static function createConfig(IOInterface $io = null)
+    public static function createConfig(IOInterface $io = null, $cwd = null)
     {
+        $cwd = $cwd ?: getcwd();
+
         // determine home and cache dirs
         $home     = self::getHomeDir();
         $cacheDir = self::getCacheDir($home);
@@ -106,16 +107,16 @@ class Factory
             }
         }
 
-        $config = new Config();
+        $config = new Config(true, $cwd);
 
         // add dirs to the config
         $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir)));
 
         // load global config
-        $file = new JsonFile($home.'/config.json');
+        $file = new JsonFile($config->get('home').'/config.json');
         if ($file->exists()) {
             if ($io && $io->isDebug()) {
-                $io->write('Loading config file ' . $file->getPath());
+                $io->writeError('Loading config file ' . $file->getPath());
             }
             $config->merge($file->read());
         }
@@ -125,7 +126,7 @@ class Factory
         $file = new JsonFile($config->get('home').'/auth.json');
         if ($file->exists()) {
             if ($io && $io->isDebug()) {
-                $io->write('Loading config file ' . $file->getPath());
+                $io->writeError('Loading config file ' . $file->getPath());
             }
             $config->merge(array('config' => $file->read()));
         }
@@ -163,11 +164,14 @@ class Factory
         }
 
         foreach ($config->getRepositories() as $index => $repo) {
+            if (is_string($repo)) {
+                throw new \UnexpectedValueException('"repositories" should be an array of repository definitions, only a single repository was given');
+            }
             if (!is_array($repo)) {
-                throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
+                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
             }
             if (!isset($repo['type'])) {
-                throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') must have a type defined');
+                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') must have a type defined');
             }
             $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
             while (isset($repos[$name])) {
@@ -186,12 +190,15 @@ class Factory
      * @param  array|string|null         $localConfig    either a configuration array or a filename to read from, if null it will
      *                                                   read from the default filename
      * @param  bool                      $disablePlugins Whether plugins should not be loaded
+     * @param  bool                      $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
      * @throws \InvalidArgumentException
      * @throws \UnexpectedValueException
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false)
+    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true)
     {
+        $cwd = $cwd ?: getcwd();
+
         // load Composer configuration
         if (null === $localConfig) {
             $localConfig = static::getComposerFile();
@@ -203,11 +210,11 @@ class Factory
 
             if (!$file->exists()) {
                 if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
-                    $message = 'Composer could not find a composer.json file in '.getcwd();
+                    $message = 'Composer could not find a composer.json file in '.$cwd;
                 } else {
                     $message = 'Composer could not find the config file: '.$localConfig;
                 }
-                $instructions = 'To initialize a project, please create a composer.json file as described in the http://getcomposer.org/ "Getting Started" section';
+                $instructions = 'To initialize a project, please create a composer.json file as described in the https://getcomposer.org/ "Getting Started" section';
                 throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
             }
 
@@ -216,40 +223,41 @@ class Factory
         }
 
         // Load config and override with local config/auth config
-        $config = static::createConfig($io);
+        $config = static::createConfig($io, $cwd);
         $config->merge($localConfig);
         if (isset($composerFile)) {
             if ($io && $io->isDebug()) {
-                $io->write('Loading config file ' . $composerFile);
+                $io->writeError('Loading config file ' . $composerFile);
             }
             $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json');
             if ($localAuthFile->exists()) {
                 if ($io && $io->isDebug()) {
-                    $io->write('Loading config file ' . $localAuthFile->getPath());
+                    $io->writeError('Loading config file ' . $localAuthFile->getPath());
                 }
                 $config->merge(array('config' => $localAuthFile->read()));
                 $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
         }
 
-        // load auth configs into the IO instance
-        $io->loadConfiguration($config);
-
         $vendorDir = $config->get('vendor-dir');
         $binDir = $config->get('bin-dir');
-
-        // setup process timeout
-        ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
 
         // initialize composer
         $composer = new Composer();
         $composer->setConfig($config);
 
+        if ($fullLoad) {
+            // load auth configs into the IO instance
+            $io->loadConfiguration($config);
+        }
+
         // initialize event dispatcher
         $dispatcher = new EventDispatcher($composer, $io);
+        $composer->setEventDispatcher($dispatcher);
 
         // initialize repository manager
         $rm = $this->createRepositoryManager($io, $config, $dispatcher);
+        $composer->setRepositoryManager($rm);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
@@ -258,41 +266,43 @@ class Factory
         $parser = new VersionParser;
         $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
         $package = $loader->load($localConfig);
+        $composer->setPackage($package);
 
         // initialize installation manager
         $im = $this->createInstallationManager();
-
-        // Composer composition
-        $composer->setPackage($package);
-        $composer->setRepositoryManager($rm);
         $composer->setInstallationManager($im);
 
-        // initialize download manager
-        $dm = $this->createDownloadManager($io, $config, $dispatcher);
+        if ($fullLoad) {
+            // initialize download manager
+            $dm = $this->createDownloadManager($io, $config, $dispatcher);
+            $composer->setDownloadManager($dm);
 
-        $composer->setDownloadManager($dm);
-        $composer->setEventDispatcher($dispatcher);
-
-        // initialize autoload generator
-        $generator = new AutoloadGenerator($dispatcher, $io);
-        $composer->setAutoloadGenerator($generator);
-
-        // add installers to the manager
-        $this->createDefaultInstallers($im, $composer, $io);
-
-        $globalRepository = $this->createGlobalRepository($config, $vendorDir);
-        $pm = $this->createPluginManager($composer, $io, $globalRepository);
-        $composer->setPluginManager($pm);
-
-        if (!$disablePlugins) {
-            $pm->loadInstalledPlugins();
+            // initialize autoload generator
+            $generator = new AutoloadGenerator($dispatcher, $io);
+            $composer->setAutoloadGenerator($generator);
         }
 
-        // purge packages if they have been deleted on the filesystem
-        $this->purgePackages($rm, $im);
+        // add installers to the manager (must happen after download manager is created since they read it out of $composer)
+        $this->createDefaultInstallers($im, $composer, $io);
+
+        if ($fullLoad) {
+            $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
+            $pm = $this->createPluginManager($io, $composer, $globalComposer);
+            $composer->setPluginManager($pm);
+
+            if (!$disablePlugins) {
+                $pm->loadInstalledPlugins();
+            }
+
+            // once we have plugins and custom installers we can
+            // purge packages from local repos if they have been deleted on the filesystem
+            if ($rm->getLocalRepository()) {
+                $this->purgePackages($rm->getLocalRepository(), $im);
+            }
+        }
 
         // init locker if possible
-        if (isset($composerFile)) {
+        if ($fullLoad && isset($composerFile)) {
             $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
@@ -334,23 +344,26 @@ class Factory
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
     }
 
-     /**
-     * @param  Config                                        $config
-     * @param  string                                        $vendorDir
-     * @return Repository\InstalledFilesystemRepository|null
+    /**
+     * @param  Config        $config
+     * @return Composer|null
      */
-    protected function createGlobalRepository(Config $config, $vendorDir)
+    protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins)
     {
-        if ($config->get('home') == $vendorDir) {
-            return null;
+        if (realpath($config->get('home')) === getcwd()) {
+            return;
         }
 
-        $path = $config->get('home').'/vendor/composer/installed.json';
-        if (!file_exists($path)) {
-            return null;
+        $composer = null;
+        try {
+            $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), false);
+        } catch (\Exception $e) {
+            if ($io->isDebug()) {
+                $io->writeError('Failed to initialize global composer: '.$e->getMessage());
+            }
         }
 
-        return new Repository\InstalledFilesystemRepository(new JsonFile($path));
+        return $composer;
     }
 
     /**
@@ -415,14 +428,14 @@ class Factory
     }
 
     /**
-     * @param  Composer             $composer
      * @param  IOInterface          $io
-     * @param  RepositoryInterface  $globalRepository
+     * @param  Composer             $composer
+     * @param  Composer             $globalComposer
      * @return Plugin\PluginManager
      */
-    protected function createPluginManager(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
+    protected function createPluginManager(IOInterface $io, Composer $composer, Composer $globalComposer = null)
     {
-        return new Plugin\PluginManager($composer, $io, $globalRepository);
+        return new Plugin\PluginManager($io, $composer, $globalComposer);
     }
 
     /**
@@ -447,12 +460,11 @@ class Factory
     }
 
     /**
-     * @param Repository\RepositoryManager  $rm
-     * @param Installer\InstallationManager $im
+     * @param WritableRepositoryInterface   $repo repository to purge packages from
+     * @param Installer\InstallationManager $im   manager to check whether packages are still installed
      */
-    protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
+    protected function purgePackages(WritableRepositoryInterface $repo, Installer\InstallationManager $im)
     {
-        $repo = $rm->getLocalRepository();
         foreach ($repo->getPackages() as $package) {
             if (!$im->isPackageInstalled($repo, $package)) {
                 $repo->removePackage($package);

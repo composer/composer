@@ -36,6 +36,7 @@ Partial update from lock file should update everything to the state of the lock,
         "b/unstable": 15
     },
     "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }
@@ -59,10 +60,11 @@ update b/unstable
     "minimum-stability": "stable",
     "stability-flags": [],
     "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }
 --EXPECT--
+Updating b/unstable (1.1.0-alpha) to b/unstable (1.0.0)
 Updating a/old (0.9.0) to a/old (1.0.0)
 Updating c/uptodate (2.0.0) to c/uptodate (1.0.0)
-Updating b/unstable (1.1.0-alpha) to b/unstable (1.0.0)

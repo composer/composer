@@ -78,6 +78,18 @@ class ArchiveManagerTest extends ArchiverTest
             throw new \RuntimeException('Could not init: '.$this->process->getErrorOutput());
         }
 
+        $result = $this->process->execute('git config user.email "you@example.com"', $output, $this->testDir);
+        if ($result > 0) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not config: '.$this->process->getErrorOutput());
+        }
+
+        $result = $this->process->execute('git config user.name "Your Name"', $output, $this->testDir);
+        if ($result > 0) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not config: '.$this->process->getErrorOutput());
+        }
+
         $result = file_put_contents('composer.json', '{"name":"faker/faker", "description": "description", "license": "MIT"}');
         if (false === $result) {
             chdir($currentWorkDir);

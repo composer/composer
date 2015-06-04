@@ -57,7 +57,7 @@ EOT
         $im = $composer->getInstallationManager();
 
         // Dispatch pre-status-command
-        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::PRE_STATUS_CMD, true);
+        $composer->getEventDispatcher()->dispatchScript(ScriptEvents::PRE_STATUS_CMD, true);
 
         $errors = array();
 
@@ -76,9 +76,9 @@ EOT
 
         // output errors/warnings
         if (!$errors) {
-            $output->writeln('<info>No local changes</info>');
+            $this->getIO()->writeError('<info>No local changes</info>');
         } else {
-            $output->writeln('<error>You have changes in the following dependencies:</error>');
+            $this->getIO()->writeError('<error>You have changes in the following dependencies:</error>');
         }
 
         foreach ($errors as $path => $changes) {
@@ -86,19 +86,19 @@ EOT
                 $indentedChanges = implode("\n", array_map(function ($line) {
                     return '    ' . ltrim($line);
                 }, explode("\n", $changes)));
-                $output->writeln('<info>'.$path.'</info>:');
-                $output->writeln($indentedChanges);
+                $this->getIO()->write('<info>'.$path.'</info>:');
+                $this->getIO()->write($indentedChanges);
             } else {
-                $output->writeln($path);
+                $this->getIO()->write($path);
             }
         }
 
         if ($errors && !$input->getOption('verbose')) {
-            $output->writeln('Use --verbose (-v) to see modified files');
+            $this->getIO()->writeError('Use --verbose (-v) to see modified files');
         }
 
         // Dispatch post-status-command
-        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_STATUS_CMD, true);
+        $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_STATUS_CMD, true);
 
         return $errors ? 1 : 0;
     }

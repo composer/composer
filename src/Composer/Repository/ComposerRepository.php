@@ -53,8 +53,6 @@ class ComposerRepository extends ArrayRepository
     protected $eventDispatcher;
     protected $sourceMirrors;
     protected $distMirrors;
-    private $rawData;
-    private $minimalPackages;
     private $degradedMode = false;
     private $rootData;
 
@@ -85,7 +83,7 @@ class ComposerRepository extends ArrayRepository
         $this->config = $config;
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
-        $this->baseUrl = rtrim(preg_replace('{^(.*)(?:/packages.json)?(?:[?#].*)?$}', '$1', $this->url), '/');
+        $this->baseUrl = rtrim(preg_replace('{^(.*)(?:/[^/\\]+.json)?(?:[?#].*)?$}', '$1', $this->url), '/');
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
@@ -204,6 +202,11 @@ class ComposerRepository extends ArrayRepository
 
         if (null === $this->providerListing) {
             $this->loadProviderListings($this->loadRootServerFile());
+        }
+
+        if ($this->lazyProvidersUrl) {
+            // Can not determine list of provided packages for lazy repositories
+            return array();
         }
 
         if ($this->providersUrl) {
@@ -395,7 +398,7 @@ class ComposerRepository extends ArrayRepository
 
         $jsonUrlParts = parse_url($this->url);
 
-        if (isset($jsonUrlParts['path']) && false !== strpos($jsonUrlParts['path'], '/packages.json')) {
+        if (isset($jsonUrlParts['path']) && false !== strpos($jsonUrlParts['path'], '.json')) {
             $jsonUrl = $this->url;
         } else {
             $jsonUrl = $this->url . '/packages.json';
@@ -431,7 +434,7 @@ class ComposerRepository extends ArrayRepository
         }
 
         if (!empty($data['warning'])) {
-            $this->io->write('<warning>Warning from '.$this->url.': '.$data['warning'].'</warning>');
+            $this->io->writeError('<warning>Warning from '.$this->url.': '.$data['warning'].'</warning>');
         }
 
         if (!empty($data['providers-lazy-url'])) {
@@ -610,8 +613,8 @@ class ComposerRepository extends ArrayRepository
 
                 if ($cacheKey && ($contents = $this->cache->read($cacheKey))) {
                     if (!$this->degradedMode) {
-                        $this->io->write('<warning>'.$e->getMessage().'</warning>');
-                        $this->io->write('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
+                        $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
+                        $this->io->writeError('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
                     }
                     $this->degradedMode = true;
                     $data = JsonFile::parseJson($contents, $this->cache->getRoot().$cacheKey);

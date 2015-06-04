@@ -114,7 +114,7 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 'homepage',
-                'http://getcomposer.org'
+                'https://getcomposer.org'
             ),
             array(
                 'description',

@@ -28,12 +28,13 @@ use Composer\DependencyResolver\Pool;
  * Plugin manager
  *
  * @author Nils Adermann <naderman@naderman.de>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class PluginManager
 {
     protected $composer;
     protected $io;
-    protected $globalRepository;
+    protected $globalComposer;
     protected $versionParser;
 
     protected $plugins = array();
@@ -44,15 +45,15 @@ class PluginManager
     /**
      * Initializes plugin manager
      *
-     * @param Composer            $composer
      * @param IOInterface         $io
-     * @param RepositoryInterface $globalRepository
+     * @param Composer            $composer
+     * @param Composer            $globalComposer
      */
-    public function __construct(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
+    public function __construct(IOInterface $io, Composer $composer, Composer $globalComposer = null)
     {
-        $this->composer = $composer;
         $this->io = $io;
-        $this->globalRepository = $globalRepository;
+        $this->composer = $composer;
+        $this->globalComposer = $globalComposer;
         $this->versionParser = new VersionParser();
     }
 
@@ -62,12 +63,12 @@ class PluginManager
     public function loadInstalledPlugins()
     {
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
-
+        $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
         if ($repo) {
             $this->loadRepository($repo);
         }
-        if ($this->globalRepository) {
-            $this->loadRepository($this->globalRepository);
+        if ($globalRepo) {
+            $this->loadRepository($globalRepo);
         }
     }
 
@@ -78,6 +79,9 @@ class PluginManager
      */
     public function addPlugin(PluginInterface $plugin)
     {
+        if ($this->io->isDebug()) {
+            $this->io->writeError('Loading plugin '.get_class($plugin));
+        }
         $this->plugins[] =  $plugin;
         $plugin->activate($this->composer, $this->io);
 
@@ -109,15 +113,16 @@ class PluginManager
      */
     public function loadRepository(RepositoryInterface $repo)
     {
-        foreach ($repo->getPackages() as $package) {
+        foreach ($repo->getPackages() as $package) { /** @var PackageInterface $package */
             if ($package instanceof AliasPackage) {
                 continue;
             }
             if ('composer-plugin' === $package->getType()) {
                 $requiresComposer = null;
-                foreach ($package->getRequires() as $link) {
-                    if ($link->getTarget() == 'composer-plugin-api') {
+                foreach ($package->getRequires() as $link) { /** @var Link $link */
+                    if ('composer-plugin-api' === $link->getTarget()) {
                         $requiresComposer = $link->getConstraint();
+                        break;
                     }
                 }
 
@@ -125,14 +130,18 @@ class PluginManager
                     throw new \RuntimeException("Plugin ".$package->getName()." is missing a require statement for a version of the composer-plugin-api package.");
                 }
 
-                if (!$requiresComposer->matches(new VersionConstraint('==', $this->versionParser->normalize(PluginInterface::PLUGIN_API_VERSION)))) {
-                    $this->io->write("<warning>The plugin ".$package->getName()." requires a version of composer-plugin-api that does not match your composer installation. You may need to run composer update with the '--no-plugins' option.</warning>");
+                $currentPluginApiVersion = $this->getPluginApiVersion();
+                $currentPluginApiConstraint = new VersionConstraint('==', $this->versionParser->normalize($currentPluginApiVersion));
+
+                if (!$requiresComposer->matches($currentPluginApiConstraint)) {
+                    $this->io->writeError('<warning>The "' . $package->getName() . '" plugin was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
+                    continue;
                 }
 
                 $this->registerPackage($package);
-            }
+
             // Backward compatibility
-            if ('composer-installer' === $package->getType()) {
+            } elseif ('composer-installer' === $package->getType()) {
                 $this->registerPackage($package);
             }
         }
@@ -189,10 +198,11 @@ class PluginManager
      * instead for BC
      *
      * @param PackageInterface $package
+     * @param bool             $failOnMissingClasses By default this silently skips plugins that can not be found, but if set to true it fails with an exception
      *
      * @throws \UnexpectedValueException
      */
-    public function registerPackage(PackageInterface $package)
+    public function registerPackage(PackageInterface $package, $failOnMissingClasses = false)
     {
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
 
@@ -206,11 +216,13 @@ class PluginManager
         }
         $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
 
-        $pool = new Pool('dev');
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
+        $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
+
+        $pool = new Pool('dev');
         $pool->addRepository($localRepo);
-        if ($this->globalRepository) {
-            $pool->addRepository($this->globalRepository);
+        if ($globalRepo) {
+            $pool->addRepository($globalRepo);
         }
 
         $autoloadPackages = array($package->getName() => $package);
@@ -219,7 +231,7 @@ class PluginManager
         $generator = $this->composer->getAutoloadGenerator();
         $autoloads = array();
         foreach ($autoloadPackages as $autoloadPackage) {
-            $downloadPath = $this->getInstallPath($autoloadPackage, ($this->globalRepository && $this->globalRepository->hasPackage($autoloadPackage)));
+            $downloadPath = $this->getInstallPath($autoloadPackage, ($globalRepo && $globalRepo->hasPackage($autoloadPackage)));
             $autoloads[] = array($autoloadPackage, $downloadPath);
         }
 
@@ -239,10 +251,12 @@ class PluginManager
             if ($oldInstallerPlugin) {
                 $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
-            } else {
+            } elseif (class_exists($class)) {
                 $plugin = new $class();
                 $this->addPlugin($plugin);
                 $this->registeredPlugins[] = $package->getName();
+            } elseif ($failOnMissingClasses) {
+                throw new \UnexpectedValueException('Plugin '.$package->getName().' could not be initialized, class not found: '.$class);
             }
         }
     }
@@ -261,9 +275,16 @@ class PluginManager
             return $this->composer->getInstallationManager()->getInstallPath($package);
         }
 
-        $targetDir = $package->getTargetDir();
-        $vendorDir = $this->composer->getConfig()->get('home').'/vendor';
+        return $this->globalComposer->getInstallationManager()->getInstallPath($package);
+    }
 
-        return ($vendorDir ? $vendorDir.'/' : '').$package->getPrettyName().($targetDir ? '/'.$targetDir : '');
+    /**
+     * Returns the version of the internal composer-plugin-api package.
+     *
+     * @return string
+     */
+    protected function getPluginApiVersion()
+    {
+        return PluginInterface::PLUGIN_API_VERSION;
     }
 }

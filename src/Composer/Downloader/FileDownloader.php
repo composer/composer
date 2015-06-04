@@ -81,7 +81,7 @@ class FileDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('The given package is missing url information');
         }
 
-        $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+        $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
         $urls = $package->getDistUrls();
         while ($url = array_shift($urls)) {
@@ -89,11 +89,11 @@ class FileDownloader implements DownloaderInterface
                 return $this->doDownload($package, $path, $url);
             } catch (\Exception $e) {
                 if ($this->io->isDebug()) {
-                    $this->io->write('');
-                    $this->io->write('Failed: ['.get_class($e).'] '.$e->getMessage());
+                    $this->io->writeError('');
+                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
                 } elseif (count($urls)) {
-                    $this->io->write('');
-                    $this->io->write('    Failed, trying the next URL');
+                    $this->io->writeError('');
+                    $this->io->writeError('    Failed, trying the next URL ('.$e->getCode().': '.$e->getMessage().')');
                 }
 
                 if (!count($urls)) {
@@ -102,7 +102,7 @@ class FileDownloader implements DownloaderInterface
             }
         }
 
-        $this->io->write('');
+        $this->io->writeError('');
     }
 
     protected function doDownload(PackageInterface $package, $path, $url)
@@ -127,7 +127,7 @@ class FileDownloader implements DownloaderInterface
             // download if we don't have it in cache or the cache is invalidated
             if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
                 if (!$this->outputProgress) {
-                    $this->io->write('    Downloading');
+                    $this->io->writeError('    Downloading');
                 }
 
                 // try to download 3 times then fail hard
@@ -142,7 +142,7 @@ class FileDownloader implements DownloaderInterface
                             throw $e;
                         }
                         if ($this->io->isVerbose()) {
-                            $this->io->write('    Download failed, retrying...');
+                            $this->io->writeError('    Download failed, retrying...');
                         }
                         usleep(500000);
                     }
@@ -152,7 +152,7 @@ class FileDownloader implements DownloaderInterface
                     $this->cache->copyFrom($cacheKey, $fileName);
                 }
             } else {
-                $this->io->write('    Loading from cache');
+                $this->io->writeError('    Loading from cache');
             }
 
             if (!file_exists($fileName)) {
@@ -205,7 +205,7 @@ class FileDownloader implements DownloaderInterface
      */
     public function remove(PackageInterface $package, $path)
     {
-        $this->io->write("  - Removing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+        $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
         }

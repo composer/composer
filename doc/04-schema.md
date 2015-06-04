@@ -54,8 +54,8 @@ The version of the package. In most cases this is not required and should
 be omitted (see below).
 
 This must follow the format of `X.Y.Z` or `vX.Y.Z` with an optional suffix
-of `-dev`, `-patch`, `-alpha`, `-beta` or `-RC`. The patch, alpha, beta and
-RC suffixes can also be followed by a number.
+of `-dev`, `-patch` (`-p`), `-alpha` (`-a`), `-beta` (`-b`) or `-RC`.
+The patch, alpha, beta and RC suffixes can also be followed by a number.
 
 Examples:
 
@@ -67,6 +67,7 @@ Examples:
 - 1.0.0-alpha3
 - 1.0.0-beta2
 - 1.0.0-RC5
+- v2.0.4-p1
 
 Optional if the package repository can infer the version from somewhere, such
 as the VCS tag name in the VCS repository. In that case it is also recommended
@@ -156,7 +157,7 @@ The recommended notation for the most common licenses is (alphabetical):
 - MIT
 
 Optional, but it is highly recommended to supply this. More identifiers are
-listed at the [SPDX Open Source License Registry](http://www.spdx.org/licenses/).
+listed at the [SPDX Open Source License Registry](https://www.spdx.org/licenses/).
 
 For closed-source software, you may use `"proprietary"` as the license identifier.
 
@@ -234,11 +235,12 @@ Various information to get support about the project.
 Support information includes the following:
 
 * **email:** Email address for support.
-* **issues:** URL to the Issue Tracker.
-* **forum:** URL to the Forum.
-* **wiki:** URL to the Wiki.
+* **issues:** URL to the issue tracker.
+* **forum:** URL to the forum.
+* **wiki:** URL to the wiki.
 * **irc:** IRC channel for support, as irc://server/channel.
 * **source:** URL to browse or download the sources.
+* **docs:** URL to the documentation.
 
 An example:
 
@@ -345,10 +347,10 @@ dependencies from being installed.
 Lists packages that conflict with this version of this package. They
 will not be allowed to be installed together with your package.
 
-Note that when specifying ranges like `<1.0, >= 1.1` in a `conflict` link,
+Note that when specifying ranges like `<1.0 >=1.1` in a `conflict` link,
 this will state a conflict with all versions that are less than 1.0 *and* equal
 or newer than 1.1 at the same time, which is probably not what you want. You
-probably want to go for `<1.0 | >= 1.1` in this case.
+probably want to go for `<1.0 | >=1.1` in this case.
 
 #### replace
 
@@ -375,7 +377,7 @@ useful for common interfaces. A package could depend on some virtual
 `logger` package, any library that implements this logger interface would
 simply list it in `provide`.
 
-### suggest
+#### suggest
 
 Suggested packages that can enhance or work well with this package. These are
 just informational and are displayed after the package is installed, to give
@@ -702,7 +704,7 @@ Example:
         },
         {
             "type": "pear",
-            "url": "http://pear2.php.net"
+            "url": "https://pear2.php.net"
         },
         {
             "type": "package",
@@ -714,7 +716,7 @@ Example:
                     "type": "zip"
                 },
                 "source": {
-                    "url": "http://smarty-php.googlecode.com/svn/",
+                    "url": "https://smarty-php.googlecode.com/svn/",
                     "type": "svn",
                     "reference": "tags/Smarty_3_1_7/distribution/"
                 }
@@ -758,13 +760,17 @@ The following options are supported:
   on how to get an OAuth token for GitHub.
 * **http-basic:** A list of domain names and username/passwords to authenticate
   against them. For example using
-  `{"example.org": {"username": "alice", "password": "foo"}` as the value of this option will let composer authenticate against example.org.
+  `{"example.org": {"username": "alice", "password": "foo"}` as the value of this
+  option will let composer authenticate against example.org.
+* **platform:** Lets you fake platform packages (PHP and extensions) so that
+  you can emulate a production env or define your target platform in the
+  config. e.g. `{"php": "5.4", "ext-something": "4.0"}`.
 * **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
   different directory if you want to. `$HOME` and `~` will be replaced by your
   home directory's path in vendor-dir and all `*-dir` options below.
 * **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
   will be symlinked into this directory.
-* **cache-dir:** Defaults to `$home/cache` on unix systems and
+* **cache-dir:** Defaults to `$COMPOSER_HOME/cache` on unix systems and
   `C:\Users\<user>\AppData\Local\Composer` on Windows. Stores all the caches
   used by composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
 * **cache-files-dir:** Defaults to `$cache-dir/files`. Stores the zip archives
@@ -788,6 +794,9 @@ The following options are supported:
   the generated Composer autoloader. When null a random one will be generated.
 * **optimize-autoloader** Defaults to `false`. Always optimize when dumping
   the autoloader.
+* **classmap-authoritative:** Defaults to `false`. If true, the composer
+  autoloader will not scan the filesystem for classes that are not found in
+  the class map. Implies 'optimize-autoloader'.
 * **github-domains:** Defaults to `["github.com"]`. A list of domains to use in
   github mode. This is used for GitHub Enterprise setups.
 * **github-expose-hostname:** Defaults to `true`. If set to false, the OAuth
@@ -870,6 +879,38 @@ Example:
 
 The example will include `/dir/foo/bar/file`, `/foo/bar/baz`, `/file.php`,
 `/foo/my.test` but it will exclude `/foo/bar/any`, `/foo/baz`, and `/my.test`.
+
+Optional.
+
+### non-feature-branches
+
+A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something), that will NOT be handled as feature branches. This is an array of strings.
+
+If you have non-numeric branch names, for example like "latest", "current", "latest-stable"
+or something, that do not look like a version number, then composer handles such branches
+as feature branches. This means it searches for parent branches, that look like a version
+or ends at special branches (like master) and the root package version number becomes the
+version of the parent branch or at least master or something.
+
+To handle non-numeric named branches as versions instead of searching for a parent branch
+with a valid version or special branch name like master, you can set patterns for branch
+names, that should be handled as dev version branches.
+
+This is really helpful when you have dependencies using "self.version", so that not dev-master,
+but the same branch is installed (in the example: latest-testing).
+
+An example:
+
+If you have a testing branch, that is heavily maintained during a testing phase and is
+deployed to your staging environment, normally "composer show -s" will give you `versions : * dev-master`.
+
+If you configure latest-.* as a pattern for non-feature-branches like this:
+
+    {
+        "non-feature-branches": ["latest-.*"]
+    }
+
+Then "composer show -s" will give you `versions : * dev-latest-testing`.
 
 Optional.
 

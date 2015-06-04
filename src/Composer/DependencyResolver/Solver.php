@@ -40,6 +40,7 @@ class Solver
     protected $branches = array();
     protected $problems = array();
     protected $learnedPool = array();
+    protected $learnedWhy = array();
 
     public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
     {
@@ -56,13 +57,13 @@ class Solver
 
         $rulesCount = count($this->rules);
         for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
-            $rule = $this->rules->ruleById($ruleIndex);
+            $rule = $this->rules->ruleById[$ruleIndex];
 
             if (!$rule->isAssertion() || $rule->isDisabled()) {
                 continue;
             }
 
-            $literals = $rule->getLiterals();
+            $literals = $rule->literals;
             $literal = $literals[0];
 
             if (!$this->decisions->decided(abs($literal))) {
@@ -104,7 +105,7 @@ class Solver
                     continue;
                 }
 
-                $assertRuleLiterals = $assertRule->getLiterals();
+                $assertRuleLiterals = $assertRule->literals;
                 $assertRuleLiteral = $assertRuleLiterals[0];
 
                 if (abs($literal) !== abs($assertRuleLiteral)) {
@@ -125,7 +126,7 @@ class Solver
     {
         $this->installedMap = array();
         foreach ($this->installed->getPackages() as $package) {
-            $this->installedMap[$package->getId()] = $package;
+            $this->installedMap[$package->id] = $package;
         }
     }
 
@@ -136,15 +137,15 @@ class Solver
                 case 'update':
                     $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
                     foreach ($packages as $package) {
-                        if (isset($this->installedMap[$package->getId()])) {
-                            $this->updateMap[$package->getId()] = true;
+                        if (isset($this->installedMap[$package->id])) {
+                            $this->updateMap[$package->id] = true;
                         }
                     }
                     break;
 
                 case 'update-all':
                     foreach ($this->installedMap as $package) {
-                        $this->updateMap[$package->getId()] = true;
+                        $this->updateMap[$package->id] = true;
                     }
                     break;
 
@@ -155,7 +156,7 @@ class Solver
 
                     if (!$this->pool->whatProvides($job['packageName'], $job['constraint'])) {
                         $problem = new Problem($this->pool);
-                        $problem->addRule(new Rule($this->pool, array(), null, null, $job));
+                        $problem->addRule(new Rule(array(), null, null, $job));
                         $this->problems[] = $problem;
                     }
                     break;
@@ -328,7 +329,7 @@ class Solver
     private function selectAndInstall($level, array $decisionQueue, $disableRules, Rule $rule)
     {
         // choose best package to install from decisionQueue
-        $literals = $this->policy->selectPreferedPackages($this->pool, $this->installedMap, $decisionQueue, $rule->getRequiredPackage());
+        $literals = $this->policy->selectPreferredPackages($this->pool, $this->installedMap, $decisionQueue, $rule->getRequiredPackage());
 
         $selectedLiteral = array_shift($literals);
 
@@ -356,7 +357,7 @@ class Solver
         while (true) {
             $this->learnedPool[count($this->learnedPool) - 1][] = $rule;
 
-            foreach ($rule->getLiterals() as $literal) {
+            foreach ($rule->literals as $literal) {
                 // skip the one true literal
                 if ($this->decisions->satisfy($literal)) {
                     continue;
@@ -441,7 +442,7 @@ class Solver
             );
         }
 
-        $newRule = new Rule($this->pool, $learnedLiterals, Rule::RULE_LEARNED, $why);
+        $newRule = new Rule($learnedLiterals, Rule::RULE_LEARNED, $why);
 
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
@@ -480,7 +481,7 @@ class Solver
         $this->problems[] = $problem;
 
         $seen = array();
-        $literals = $conflictRule->getLiterals();
+        $literals = $conflictRule->literals;
 
         foreach ($literals as $literal) {
             // skip the one true literal
@@ -503,7 +504,7 @@ class Solver
             $problem->addRule($why);
             $this->analyzeUnsolvableRule($problem, $why);
 
-            $literals = $why->getLiterals();
+            $literals = $why->literals;
 
             foreach ($literals as $literal) {
                 // skip the one true literal
@@ -627,7 +628,7 @@ class Solver
                         $decisionQueue = array();
                         $noneSatisfied = true;
 
-                        foreach ($rule->getLiterals() as $literal) {
+                        foreach ($rule->literals as $literal) {
                             if ($this->decisions->satisfy($literal)) {
                                 $noneSatisfied = false;
                                 break;
@@ -687,8 +688,8 @@ class Solver
                     $i = 0;
                 }
 
-                $rule = $this->rules->ruleById($i);
-                $literals = $rule->getLiterals();
+                $rule = $this->rules->ruleById[$i];
+                $literals = $rule->literals;
 
                 if ($rule->isDisabled()) {
                     continue;

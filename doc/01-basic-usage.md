@@ -1,29 +1,8 @@
 # Basic usage
 
-## Installation
+## Installing
 
-To install Composer, you just need to download the `composer.phar` executable.
-
-```sh
-curl -sS https://getcomposer.org/installer | php
-```
-
-For the details, see the [Introduction](00-intro.md) chapter.
-
-To check if Composer is working, just run the PHAR through `php`:
-
-```sh
-php composer.phar
-```
-
-This should give you a list of available commands.
-
-> **Note:** You can also perform the checks only without downloading Composer
-> by using the `--check` option. For more information, just use `--help`.
->
-> ```sh
-> curl -sS https://getcomposer.org/installer | php -- --help
-> ```
+If you have not yet installed Composer, refer to the [Intro](00-intro.md) chapter.
 
 ## `composer.json`: Project Setup
 
@@ -66,29 +45,37 @@ smaller decoupled parts.
 
 ### Package Versions
 
-In the previous example we were requiring version `1.0.*` of monolog. This
+In the previous example we were requiring version [`1.0.*`](http://semver.mwl.be/#?package=monolog%2Fmonolog&version=1.0.*) of monolog. This
 means any version in the `1.0` development branch. It would match `1.0.0`,
 `1.0.2` or `1.0.20`.
 
 Version constraints can be specified in a few different ways.
 
-Name           | Example                                                            | Description
--------------- | ------------------------------------------------------------------ | -----------
-Exact version  | `1.0.2`                                                            | You can specify the exact version of a package.
-Range          | `>=1.0` `>=1.0,<2.0` <code>&gt;=1.0,&lt;1.1 &#124; &gt;=1.2</code> | By using comparison operators you can specify ranges of valid versions. Valid operators are `>`, `>=`, `<`, `<=`, `!=`. <br />You can define multiple ranges. Ranges separated by a comma (`,`) will be treated as a **logical AND**. A pipe (<code>&#124;</code>) will be treated as a **logical OR**. AND has higher precedence than OR.
-Wildcard       | `1.0.*`                                                            | You can specify a pattern with a `*` wildcard. `1.0.*` is the equivalent of `>=1.0,<1.1`.
-Tilde Operator | `~1.2`                                                             | Very useful for projects that follow semantic versioning. `~1.2` is equivalent to `>=1.2,<2.0`. For more details, read the next section below.
+Name           | Example                                                                  | Description
+-------------- | ------------------------------------------------------------------------ | -----------
+Exact version  | `1.0.2`                                                                  | You can specify the exact version of a package.
+Range          | `>=1.0` `>=1.0 <2.0` <code>&gt;=1.0 &lt;1.1 &#124;&#124; &gt;=1.2</code> | By using comparison operators you can specify ranges of valid versions. Valid operators are `>`, `>=`, `<`, `<=`, `!=`. <br />You can define multiple ranges. Ranges separated by a space (<code> </code>) or comma (`,`) will be treated as a **logical AND**. A double pipe (<code>&#124;&#124;</code>) will be treated as a **logical OR**. AND has higher precedence than OR.
+Hyphen Range   | `1.0 - 2.0`                                                              | Inclusive set of versions. Partial versions on the right include are completed with a wildcard. For example `1.0 - 2.0` is equivalent to `>=1.0.0 <2.1` as the `2.0` becomes `2.0.*`. On the other hand `1.0.0 - 2.1.0` is equivalent to `>=1.0.0 <=2.1.0`.
+Wildcard       | `1.0.*`                                                                  | You can specify a pattern with a `*` wildcard. `1.0.*` is the equivalent of `>=1.0 <1.1`.
+Tilde Operator | `~1.2`                                                                   | Very useful for projects that follow semantic versioning. `~1.2` is equivalent to `>=1.2 <2.0`. For more details, read the next section below.
+Caret Operator | `^1.2.3`                                                                 | Very useful for projects that follow semantic versioning. `^1.2.3` is equivalent to `>=1.2.3 <2.0`. For more details, read the next section below.
 
-### Next Significant Release (Tilde Operator)
+### Next Significant Release (Tilde and Caret Operators)
 
 The `~` operator is best explained by example: `~1.2` is equivalent to
-`>=1.2,<2.0`, while `~1.2.3` is equivalent to `>=1.2.3,<1.3`. As you can see
+`>=1.2 <2.0.0`, while `~1.2.3` is equivalent to `>=1.2.3 <1.3.0`. As you can see
 it is mostly useful for projects respecting [semantic
 versioning](http://semver.org/). A common usage would be to mark the minimum
 minor version you depend on, like `~1.2` (which allows anything up to, but not
 including, 2.0). Since in theory there should be no backwards compatibility
 breaks until 2.0, that works well. Another way of looking at it is that using
 `~` specifies a minimum version, but allows the last digit specified to go up.
+
+The `^` operator behaves very similarly but it sticks closer to semantic
+versioning, and will always allow non-breaking updates. For example `^1.2.3`
+is equivalent to `>=1.2.3 <2.0.0` as none of the releases until 2.0 should
+break backwards compatibility. For pre-1.0 versions it also acts with safety
+in mind and treats `^0.3` as `>=0.3.0 <0.4.0`
 
 > **Note:** Though `2.0-beta.1` is strictly before `2.0`, a version constraint
 > like `~1.2` would not install it. As said above `~1.2` only means the `.2`
@@ -106,6 +93,13 @@ to also get RC, beta, alpha or dev versions of your dependencies you can do
 so using [stability flags](04-schema.md#package-links). To change that for all
 packages instead of doing per dependency you can also use the
 [minimum-stability](04-schema.md#minimum-stability) setting.
+
+### Test version constraints
+
+You can test version constraints using [semver.mwl.be](http://semver.mwl.be). Fill in
+a package name and it will autofill the default version constraint which Composer would add
+to your `composer.json` file. You can adjust the version constraint and the tool will highlight
+all releases that match.
 
 ## Installing Dependencies
 
@@ -153,7 +147,7 @@ versions from `composer.json` and  create the lock file after executing the `upd
 command.
 
 This means that if any of the dependencies get a new version, you won't get the updates
-automatically. To update to the new version, use `update` command. This will fetch
+automatically. To update to the new version, use the `update` command. This will fetch
 the latest matching versions (according to your `composer.json` file) and also update
 the lock file with the new version.
 
@@ -226,7 +220,7 @@ You define a mapping from namespaces to directories. The `src` directory would
 be in your project root, on the same level as `vendor` directory is. An example
 filename would be `src/Foo.php` containing an `Acme\Foo` class.
 
-After adding the `autoload` field, you have to re-run `install` to re-generate
+After adding the `autoload` field, you have to re-run `dump-autoload` to re-generate
 the `vendor/autoload.php` file.
 
 Including that file will also return the autoloader instance, so you can store

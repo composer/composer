@@ -105,8 +105,11 @@ class Installer
     protected $dryRun = false;
     protected $verbose = false;
     protected $update = false;
+    protected $dumpAutoloader = true;
     protected $runScripts = true;
     protected $ignorePlatformReqs = false;
+    protected $preferStable = false;
+    protected $preferLowest = false;
     /**
      * Array of package names/globs flagged for update
      *
@@ -160,6 +163,9 @@ class Installer
      */
     public function run()
     {
+        gc_collect_cycles();
+        gc_disable();
+
         if ($this->dryRun) {
             $this->verbose = true;
             $this->runScripts = false;
@@ -171,7 +177,7 @@ class Installer
         // purge old require-dev packages to avoid conflicts with the new way of handling dev requirements
         $devRepo = new InstalledFilesystemRepository(new JsonFile($this->config->get('vendor-dir').'/composer/installed_dev.json'));
         if ($devRepo->getPackages()) {
-            $this->io->write('<warning>BC Notice: Removing old dev packages to migrate to the new require-dev handling.</warning>');
+            $this->io->writeError('<warning>BC Notice: Removing old dev packages to migrate to the new require-dev handling.</warning>');
             foreach ($devRepo->getPackages() as $package) {
                 if ($this->installationManager->isPackageInstalled($devRepo, $package)) {
                     $this->installationManager->uninstall($devRepo, new UninstallOperation($package));
@@ -185,7 +191,7 @@ class Installer
         if ($this->runScripts) {
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
-            $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
+            $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
         }
 
         $this->downloadManager->setPreferSource($this->preferSource);
@@ -200,7 +206,12 @@ class Installer
 
         // create installed repo, this contains all local packages + platform packages (php & extensions)
         $localRepo = $this->repositoryManager->getLocalRepository();
-        $platformRepo = new PlatformRepository();
+        if (!$this->update && $this->locker->isLocked()) {
+            $platformOverrides = $this->locker->getPlatformOverrides();
+        } else {
+            $platformOverrides = $this->config->get('platform') ?: array();
+        }
+        $platformRepo = new PlatformRepository(array(), $platformOverrides);
         $repos = array(
             $localRepo,
             new InstalledArrayRepository(array($installedRootPackage)),
@@ -237,7 +248,7 @@ class Installer
                     }
                 }
 
-                $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
+                $this->io->writeError($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
             }
         }
 
@@ -251,9 +262,9 @@ class Installer
                 ? 'Use ' . $package->getReplacementPackage() . ' instead'
                 : 'No replacement was suggested';
 
-            $this->io->write(
+            $this->io->writeError(
                 sprintf(
-                    "<error>Package %s is abandoned, you should avoid using it. %s.</error>",
+                    "<warning>Package %s is abandoned, you should avoid using it. %s.</warning>",
                     $package->getPrettyName(),
                     $replacement
                 )
@@ -276,16 +287,16 @@ class Installer
                     $pool->addRepository($installedRepo, $aliases);
 
                     // creating requirements request
-                    $request = $this->createRequest($pool, $this->package, $platformRepo);
+                    $request = $this->createRequest($this->package, $platformRepo);
                     $request->updateAll();
                     foreach ($this->package->getRequires() as $link) {
                         $request->install($link->getTarget(), $link->getConstraint());
                     }
 
-                    $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request);
+                    $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request);
                     $solver = new Solver($policy, $pool, $installedRepo);
                     $ops = $solver->solve($request, $this->ignorePlatformReqs);
-                    $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request, $ops);
+                    $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request, $ops);
                     foreach ($ops as $op) {
                         if ($op->getJobType() === 'uninstall') {
                             $devPackages[] = $op->getPackage();
@@ -304,27 +315,31 @@ class Installer
                     $aliases,
                     $this->package->getMinimumStability(),
                     $this->package->getStabilityFlags(),
-                    $this->package->getPreferStable()
+                    $this->preferStable || $this->package->getPreferStable(),
+                    $this->preferLowest,
+                    $this->config->get('platform') ?: array()
                 );
                 if ($updatedLock) {
-                    $this->io->write('<info>Writing lock file</info>');
+                    $this->io->writeError('<info>Writing lock file</info>');
                 }
             }
 
-            // write autoloader
-            if ($this->optimizeAutoloader) {
-                $this->io->write('<info>Generating optimized autoload files</info>');
-            } else {
-                $this->io->write('<info>Generating autoload files</info>');
-            }
+            if ($this->dumpAutoloader) {
+                // write autoloader
+                if ($this->optimizeAutoloader) {
+                    $this->io->writeError('<info>Generating optimized autoload files</info>');
+                } else {
+                    $this->io->writeError('<info>Generating autoload files</info>');
+                }
 
-            $this->autoloadGenerator->setDevMode($this->devMode);
-            $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+                $this->autoloadGenerator->setDevMode($this->devMode);
+                $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+            }
 
             if ($this->runScripts) {
                 // dispatch post event
                 $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-                $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
+                $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
             }
 
             $vendorDir = $this->config->get('vendor-dir');
@@ -343,9 +358,12 @@ class Installer
         $repositories = null;
 
         // initialize locker to create aliased packages
-        $installFromLock = false;
-        if (!$this->update && $this->locker->isLocked()) {
-            $installFromLock = true;
+        $installFromLock = !$this->update && $this->locker->isLocked();
+
+        // initialize locked repo if we are installing from lock or in a partial update
+        // and a lock file is present as we need to force install non-whitelisted lock file
+        // packages in that case
+        if ($installFromLock || (!empty($this->updateWhitelist) && $this->locker->isLocked())) {
             try {
                 $lockedRepository = $this->locker->getLockedRepository($withDevReqs);
             } catch (\RuntimeException $e) {
@@ -365,25 +383,27 @@ class Installer
             $this->package->getDevRequires()
         );
 
-        $this->io->write('<info>Loading composer repositories with package information</info>');
+        $this->io->writeError('<info>Loading composer repositories with package information</info>');
 
         // creating repository pool
         $policy = $this->createPolicy();
-        $pool = $this->createPool($withDevReqs);
+        $pool = $this->createPool($withDevReqs, $installFromLock ? $lockedRepository : null);
         $pool->addRepository($installedRepo, $aliases);
-        if ($installFromLock) {
-            $pool->addRepository($lockedRepository, $aliases);
-        }
-
         if (!$installFromLock) {
             $repositories = $this->repositoryManager->getRepositories();
             foreach ($repositories as $repository) {
                 $pool->addRepository($repository, $aliases);
             }
         }
+        // Add the locked repository after the others in case we are doing a
+        // partial update so missing packages can be found there still.
+        // For installs from lock it's the only one added so it is first
+        if ($lockedRepository) {
+            $pool->addRepository($lockedRepository, $aliases);
+        }
 
         // creating requirements request
-        $request = $this->createRequest($pool, $this->package, $platformRepo);
+        $request = $this->createRequest($this->package, $platformRepo);
 
         if (!$installFromLock) {
             // remove unstable packages from the localRepo if they don't match the current stability settings
@@ -400,7 +420,7 @@ class Installer
         }
 
         if ($this->update) {
-            $this->io->write('<info>Updating dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
+            $this->io->writeError('<info>Updating dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
 
             $request->updateAll();
 
@@ -417,16 +437,7 @@ class Installer
             // if the updateWhitelist is enabled, packages not in it are also fixed
             // to the version specified in the lock, or their currently installed version
             if ($this->updateWhitelist) {
-                if ($this->locker->isLocked()) {
-                    try {
-                        $currentPackages = $this->locker->getLockedRepository($withDevReqs)->getPackages();
-                    } catch (\RuntimeException $e) {
-                        // fetch only non-dev packages from lock if doing a dev update fails due to a previously incomplete lock file
-                        $currentPackages = $this->locker->getLockedRepository()->getPackages();
-                    }
-                } else {
-                    $currentPackages = $installedRepo->getPackages();
-                }
+                $currentPackages = $this->getCurrentPackages($withDevReqs, $installedRepo);
 
                 // collect packages to fixate from root requirements as well as installed packages
                 $candidates = array();
@@ -451,10 +462,10 @@ class Installer
                 }
             }
         } elseif ($installFromLock) {
-            $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').' from lock file</info>');
+            $this->io->writeError('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').' from lock file</info>');
 
             if (!$this->locker->isFresh()) {
-                $this->io->write('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. Run update to update them.</warning>');
+                $this->io->writeError('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. Run update to update them.</warning>');
             }
 
             foreach ($lockedRepository->getPackages() as $package) {
@@ -471,7 +482,7 @@ class Installer
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } else {
-            $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
+            $this->io->writeError('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
 
             if ($withDevReqs) {
                 $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
@@ -485,27 +496,27 @@ class Installer
         }
 
         // force dev packages to have the latest links if we update or install from a (potentially new) lock
-        $this->processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, 'force-links');
+        $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $installFromLock, $withDevReqs, 'force-links');
 
         // solve dependencies
-        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request);
+        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request);
         $solver = new Solver($policy, $pool, $installedRepo);
         try {
             $operations = $solver->solve($request, $this->ignorePlatformReqs);
-            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request, $operations);
+            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
-            $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
-            $this->io->write($e->getMessage());
+            $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>');
+            $this->io->writeError($e->getMessage());
 
             return max(1, $e->getCode());
         }
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
-        $operations = $this->processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, 'force-updates', $operations);
+        $operations = $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $installFromLock, $withDevReqs, 'force-updates', $operations);
 
         // execute operations
         if (!$operations) {
-            $this->io->write('Nothing to install or update');
+            $this->io->writeError('Nothing to install or update');
         }
 
         $operations = $this->movePluginsToFront($operations);
@@ -544,26 +555,26 @@ class Installer
                     && $operation->getTargetPackage()->getSourceReference() === $operation->getInitialPackage()->getSourceReference()
                 ) {
                     if ($this->io->isDebug()) {
-                        $this->io->write('  - Skipping update of '. $operation->getTargetPackage()->getPrettyName().' to the same reference-locked version');
-                        $this->io->write('');
+                        $this->io->writeError('  - Skipping update of '. $operation->getTargetPackage()->getPrettyName().' to the same reference-locked version');
+                        $this->io->writeError('');
                     }
 
                     continue;
                 }
             }
 
-            $event = 'Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
+            $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
             if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $operation);
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
             // output non-alias ops in dry run, output alias ops in debug verbosity
             if ($this->dryRun && false === strpos($operation->getJobType(), 'Alias')) {
-                $this->io->write('  - ' . $operation);
-                $this->io->write('');
+                $this->io->writeError('  - ' . $operation);
+                $this->io->writeError('');
             } elseif ($this->io->isDebug() && false !== strpos($operation->getJobType(), 'Alias')) {
-                $this->io->write('  - ' . $operation);
-                $this->io->write('');
+                $this->io->writeError('  - ' . $operation);
+                $this->io->writeError('');
             }
 
             $this->installationManager->execute($localRepo, $operation);
@@ -574,25 +585,31 @@ class Installer
                 if ($reason instanceof Rule) {
                     switch ($reason->getReason()) {
                         case Rule::RULE_JOB_INSTALL:
-                            $this->io->write('    REASON: Required by root: '.$reason->getPrettyString());
-                            $this->io->write('');
+                            $this->io->writeError('    REASON: Required by root: '.$reason->getPrettyString($pool));
+                            $this->io->writeError('');
                             break;
                         case Rule::RULE_PACKAGE_REQUIRES:
-                            $this->io->write('    REASON: '.$reason->getPrettyString());
-                            $this->io->write('');
+                            $this->io->writeError('    REASON: '.$reason->getPrettyString($pool));
+                            $this->io->writeError('');
                             break;
                     }
                 }
             }
 
-            $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
+            $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
             if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $operation);
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
             if (!$this->dryRun) {
                 $localRepo->write();
             }
+        }
+
+        if (!$this->dryRun) {
+            // force source/dist urls to be updated for all packages
+            $operations = $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
+            $localRepo->write();
         }
 
         return 0;
@@ -662,27 +679,39 @@ class Installer
         return array_merge($uninstOps, $operations);
     }
 
-    private function createPool($withDevReqs)
+    private function createPool($withDevReqs, RepositoryInterface $lockedRepository = null)
     {
-        $minimumStability = $this->package->getMinimumStability();
-        $stabilityFlags = $this->package->getStabilityFlags();
-
-        if (!$this->update && $this->locker->isLocked()) {
+        if (!$this->update && $this->locker->isLocked()) { // install from lock
             $minimumStability = $this->locker->getMinimumStability();
             $stabilityFlags = $this->locker->getStabilityFlags();
+
+            $requires = array();
+            foreach ($lockedRepository->getPackages() as $package) {
+                $constraint = new VersionConstraint('=', $package->getVersion());
+                $constraint->setPrettyString($package->getPrettyVersion());
+                $requires[$package->getName()] = $constraint;
+            }
+        } else {
+            $minimumStability = $this->package->getMinimumStability();
+            $stabilityFlags = $this->package->getStabilityFlags();
+
+            $requires = $this->package->getRequires();
+            if ($withDevReqs) {
+                $requires = array_merge($requires, $this->package->getDevRequires());
+            }
         }
 
-        $requires = $this->package->getRequires();
-        if ($withDevReqs) {
-            $requires = array_merge($requires, $this->package->getDevRequires());
-        }
         $rootConstraints = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
             if ($this->ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
                 continue;
             }
-            $rootConstraints[$req] = $constraint->getConstraint();
+            if ($constraint instanceof Link) {
+                $rootConstraints[$req] = $constraint->getConstraint();
+            } else {
+                $rootConstraints[$req] = $constraint;
+            }
         }
 
         return new Pool($minimumStability, $stabilityFlags, $rootConstraints);
@@ -691,21 +720,26 @@ class Installer
     private function createPolicy()
     {
         $preferStable = null;
+        $preferLowest = null;
         if (!$this->update && $this->locker->isLocked()) {
             $preferStable = $this->locker->getPreferStable();
+            $preferLowest = $this->locker->getPreferLowest();
         }
-        // old lock file without prefer stable will return null
+        // old lock file without prefer stable/lowest will return null
         // so in this case we use the composer.json info
         if (null === $preferStable) {
-            $preferStable = $this->package->getPreferStable();
+            $preferStable = $this->preferStable || $this->package->getPreferStable();
+        }
+        if (null === $preferLowest) {
+            $preferLowest = $this->preferLowest;
         }
 
-        return new DefaultPolicy($preferStable);
+        return new DefaultPolicy($preferStable, $preferLowest);
     }
 
-    private function createRequest(Pool $pool, RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
+    private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
     {
-        $request = new Request($pool);
+        $request = new Request();
 
         $constraint = new VersionConstraint('=', $rootPackage->getVersion());
         $constraint->setPrettyString($rootPackage->getPrettyVersion());
@@ -736,13 +770,17 @@ class Installer
         return $request;
     }
 
-    private function processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, $task, array $operations = null)
+    private function processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $installFromLock, $withDevReqs, $task, array $operations = null)
     {
         if ($task === 'force-updates' && null === $operations) {
             throw new \InvalidArgumentException('Missing operations argument');
         }
         if ($task === 'force-links') {
             $operations = array();
+        }
+
+        if (!$installFromLock && $this->updateWhitelist) {
+            $currentPackages = $this->getCurrentPackages($withDevReqs, $installedRepo);
         }
 
         foreach ($localRepo->getCanonicalPackages() as $package) {
@@ -785,6 +823,26 @@ class Installer
                 if ($this->update) {
                     // skip package if the whitelist is enabled and it is not in it
                     if ($this->updateWhitelist && !$this->isUpdateable($package)) {
+                        // check if non-updateable packages are out of date compared to the lock file to ensure we don't corrupt it
+                        foreach ($currentPackages as $curPackage) {
+                            if ($curPackage->isDev() && $curPackage->getName() === $package->getName() && $curPackage->getVersion() === $package->getVersion()) {
+                                if ($task === 'force-links') {
+                                    $package->setRequires($curPackage->getRequires());
+                                    $package->setConflicts($curPackage->getConflicts());
+                                    $package->setProvides($curPackage->getProvides());
+                                    $package->setReplaces($curPackage->getReplaces());
+                                } elseif ($task === 'force-updates') {
+                                    if (($curPackage->getSourceReference() && $curPackage->getSourceReference() !== $package->getSourceReference())
+                                        || ($curPackage->getDistReference() && $curPackage->getDistReference() !== $package->getDistReference())
+                                    ) {
+                                        $operations[] = new UpdateOperation($package, $curPackage);
+                                    }
+                                }
+
+                                break;
+                            }
+                        }
+
                         continue;
                     }
 
@@ -806,8 +864,8 @@ class Installer
                         $matches[$index] = $match->getId();
                     }
 
-                    // select prefered package according to policy rules
-                    if ($matches && $matches = $policy->selectPreferedPackages($pool, array(), $matches)) {
+                    // select preferred package according to policy rules
+                    if ($matches && $matches = $policy->selectPreferredPackages($pool, array(), $matches)) {
                         $newPackage = $pool->literalToPackage($matches[0]);
 
                         if ($task === 'force-links' && $newPackage) {
@@ -828,7 +886,7 @@ class Installer
                 }
 
                 if ($task === 'force-updates') {
-                    // force installed package to update to referenced version if it does not match the installed version
+                    // force installed package to update to referenced version in root package if it does not match the installed version
                     $references = $this->package->getReferences();
 
                     if (isset($references[$package->getName()]) && $references[$package->getName()] !== $package->getSourceReference()) {
@@ -840,6 +898,23 @@ class Installer
         }
 
         return $operations;
+    }
+
+    /**
+     * Loads the most "current" list of packages that are installed meaning from lock ideally or from installed repo as fallback
+     */
+    private function getCurrentPackages($withDevReqs, $installedRepo)
+    {
+        if ($this->locker->isLocked()) {
+            try {
+                return $this->locker->getLockedRepository($withDevReqs)->getPackages();
+            } catch (\RuntimeException $e) {
+                // fetch only non-dev packages from lock if doing a dev update fails due to a previously incomplete lock file
+                return $this->locker->getLockedRepository()->getPackages();
+            }
+        }
+
+        return $installedRepo->getPackages();
     }
 
     private function getRootAliases()
@@ -860,6 +935,46 @@ class Installer
         }
 
         return $normalizedAliases;
+    }
+
+    private function processPackageUrls($pool, $policy, $localRepo, $repositories)
+    {
+        if (!$this->update) {
+            return;
+        }
+
+        foreach ($localRepo->getCanonicalPackages() as $package) {
+            // find similar packages (name/version) in all repositories
+            $matches = $pool->whatProvides($package->getName(), new VersionConstraint('=', $package->getVersion()));
+            foreach ($matches as $index => $match) {
+                // skip local packages
+                if (!in_array($match->getRepository(), $repositories, true)) {
+                    unset($matches[$index]);
+                    continue;
+                }
+
+                // skip providers/replacers
+                if ($match->getName() !== $package->getName()) {
+                    unset($matches[$index]);
+                    continue;
+                }
+
+                $matches[$index] = $match->getId();
+            }
+
+            // select preferred package according to policy rules
+            if ($matches && $matches = $policy->selectPreferredPackages($pool, array(), $matches)) {
+                $newPackage = $pool->literalToPackage($matches[0]);
+
+                // update the dist and source URLs
+                $package->setSourceUrl($newPackage->getSourceUrl());
+                // only update dist url for github dists as they use a combination of dist url + dist reference to install
+                // but for other urls this is ambiguous and could result in bad outcomes
+                if (preg_match('{^https?://(api\.)?github\.com/}', $newPackage->getDistUrl())) {
+                    $package->setDistUrl($newPackage->getDistUrl());
+                }
+            }
+        }
     }
 
     private function aliasPlatformPackages(PlatformRepository $platformRepo, $aliases)
@@ -975,7 +1090,7 @@ class Installer
             }
 
             if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock'))) {
-                $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
+                $this->io->writeError('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 
             foreach ($depPackages as $depPackage) {
@@ -1153,6 +1268,19 @@ class Installer
     }
 
     /**
+     * set whether to run autoloader or not
+     *
+     * @param boolean $dumpAutoloader
+     * @return Installer
+     */
+    public function setDumpAutoloader($dumpAutoloader = true)
+    {
+        $this->dumpAutoloader = (boolean) $dumpAutoloader;
+
+        return $this;
+    }
+
+    /**
      * set whether to run scripts or not
      *
      * @param  boolean   $runScripts
@@ -1237,6 +1365,32 @@ class Installer
     public function setWhitelistDependencies($updateDependencies = true)
     {
         $this->whitelistDependencies = (boolean) $updateDependencies;
+
+        return $this;
+    }
+
+    /**
+     * Should packages be preferred in a stable version when updating?
+     *
+     * @param  boolean   $preferStable
+     * @return Installer
+     */
+    public function setPreferStable($preferStable = true)
+    {
+        $this->preferStable = (boolean) $preferStable;
+
+        return $this;
+    }
+
+    /**
+     * Should packages be preferred in a lowest version when updating?
+     *
+     * @param  boolean   $preferLowest
+     * @return Installer
+     */
+    public function setPreferLowest($preferLowest = true)
+    {
+        $this->preferLowest = (boolean) $preferLowest;
 
         return $this;
     }

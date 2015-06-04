@@ -28,14 +28,14 @@ class RuleTest extends TestCase
 
     public function testGetHash()
     {
-        $rule = new Rule($this->pool, array(123), 'job1', null);
+        $rule = new Rule(array(123), 'job1', null);
 
         $this->assertEquals(substr(md5('123'), 0, 5), $rule->getHash());
     }
 
     public function testSetAndGetId()
     {
-        $rule = new Rule($this->pool, array(), 'job1', null);
+        $rule = new Rule(array(), 'job1', null);
         $rule->setId(666);
 
         $this->assertEquals(666, $rule->getId());
@@ -43,31 +43,31 @@ class RuleTest extends TestCase
 
     public function testEqualsForRulesWithDifferentHashes()
     {
-        $rule = new Rule($this->pool, array(1, 2), 'job1', null);
-        $rule2 = new Rule($this->pool, array(1, 3), 'job1', null);
+        $rule = new Rule(array(1, 2), 'job1', null);
+        $rule2 = new Rule(array(1, 3), 'job1', null);
 
         $this->assertFalse($rule->equals($rule2));
     }
 
     public function testEqualsForRulesWithDifferLiteralsQuantity()
     {
-        $rule = new Rule($this->pool, array(1, 12), 'job1', null);
-        $rule2 = new Rule($this->pool, array(1), 'job1', null);
+        $rule = new Rule(array(1, 12), 'job1', null);
+        $rule2 = new Rule(array(1), 'job1', null);
 
         $this->assertFalse($rule->equals($rule2));
     }
 
     public function testEqualsForRulesWithSameLiterals()
     {
-        $rule = new Rule($this->pool, array(1, 12), 'job1', null);
-        $rule2 = new Rule($this->pool, array(1, 12), 'job1', null);
+        $rule = new Rule(array(1, 12), 'job1', null);
+        $rule2 = new Rule(array(1, 12), 'job1', null);
 
         $this->assertTrue($rule->equals($rule2));
     }
 
     public function testSetAndGetType()
     {
-        $rule = new Rule($this->pool, array(), 'job1', null);
+        $rule = new Rule(array(), 'job1', null);
         $rule->setType('someType');
 
         $this->assertEquals('someType', $rule->getType());
@@ -75,7 +75,7 @@ class RuleTest extends TestCase
 
     public function testEnable()
     {
-        $rule = new Rule($this->pool, array(), 'job1', null);
+        $rule = new Rule(array(), 'job1', null);
         $rule->disable();
         $rule->enable();
 
@@ -85,7 +85,7 @@ class RuleTest extends TestCase
 
     public function testDisable()
     {
-        $rule = new Rule($this->pool, array(), 'job1', null);
+        $rule = new Rule(array(), 'job1', null);
         $rule->enable();
         $rule->disable();
 
@@ -95,22 +95,22 @@ class RuleTest extends TestCase
 
     public function testIsAssertions()
     {
-        $rule = new Rule($this->pool, array(1, 12), 'job1', null);
-        $rule2 = new Rule($this->pool, array(1), 'job1', null);
+        $rule = new Rule(array(1, 12), 'job1', null);
+        $rule2 = new Rule(array(1), 'job1', null);
 
         $this->assertFalse($rule->isAssertion());
         $this->assertTrue($rule2->isAssertion());
     }
 
-    public function testToString()
+    public function testPrettyString()
     {
         $repo = new ArrayRepository;
         $repo->addPackage($p1 = $this->getPackage('foo', '2.1'));
         $repo->addPackage($p2 = $this->getPackage('baz', '1.1'));
         $this->pool->addRepository($repo);
 
-        $rule = new Rule($this->pool, array($p1->getId(), -$p2->getId()), 'job1', null);
+        $rule = new Rule(array($p1->getId(), -$p2->getId()), 'job1', null);
 
-        $this->assertEquals('(-baz-1.1.0.0|+foo-2.1.0.0)', $rule->__toString());
+        $this->assertEquals('(don\'t install baz 1.1|install foo 2.1)', $rule->getPrettyString($this->pool));
     }
 }

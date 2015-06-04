@@ -187,6 +187,8 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
         $this->finder = new ArchivableFilesFinder($this->sources, array());
 
         $this->assertArchivableFiles($this->getArchivedFiles('git init && '.
+            'git config user.email "you@example.com" && '.
+            'git config user.name "Your Name" && '.
             'git add .git* && '.
             'git commit -m "ignore rules" && '.
             'git add . && '.

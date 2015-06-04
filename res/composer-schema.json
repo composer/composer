@@ -1,12 +1,13 @@
 {
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "name": "Package",
     "type": "object",
     "additionalProperties": false,
+    "required": [ "name", "description" ],
     "properties": {
         "name": {
             "type": "string",
-            "description": "Package name, including 'vendor-name/' prefix.",
-            "required": true
+            "description": "Package name, including 'vendor-name/' prefix."
         },
         "type": {
             "description": "Package type, either 'library' for common packages, 'composer-plugin' for plugins, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
@@ -18,8 +19,7 @@
         },
         "description": {
             "type": "string",
-            "description": "Short package description.",
-            "required": true
+            "description": "Short package description."
         },
         "keywords": {
             "type": "array",
@@ -35,7 +35,7 @@
         },
         "version": {
             "type": "string",
-            "description": "Package version, see http://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
+            "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
         },
         "time": {
             "type": "string",
@@ -51,11 +51,11 @@
             "items": {
                 "type": "object",
                 "additionalProperties": false,
+                "required": [ "name"],
                 "properties": {
                     "name": {
                         "type": "string",
-                        "description": "Full name of the author.",
-                        "required": true
+                        "description": "Full name of the author."
                     },
                     "email": {
                         "type": "string",
@@ -145,6 +145,11 @@
                     "type": ["string", "boolean"],
                     "description": "What to do after prompting for authentication, one of: true (store), false (do not store) or \"prompt\" (ask every time), defaults to prompt."
                 },
+                "platform": {
+                    "type": "object",
+                    "description": "This is a hash of package name (keys) and version (values) that will be used to mock the platform packages on this machine.",
+                    "additionalProperties": true
+                },
                 "vendor-dir": {
                     "type": "string",
                     "description": "The location where all packages are installed, defaults to \"vendor\"."
@@ -196,6 +201,10 @@
                 "prepend-autoloader": {
                     "type": "boolean",
                     "description": "If false, the composer autoloader will not be prepended to existing autoloaders, defaults to true."
+                },
+                "classmap-authoritative": {
+                    "type": "boolean",
+                    "description": "If true, the composer autoloader will not scan the filesystem for classes that are not found in the class map, defaults to false."
                 },
                 "github-domains": {
                     "type": "array",
@@ -280,11 +289,12 @@
         },
         "minimum-stability": {
             "type": ["string"],
-            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable."
+            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable.",
+            "pattern": "^dev|alpha|beta|rc|RC|stable$"
         },
         "prefer-stable": {
             "type": ["boolean"],
-            "description": "If set to true, stable packages will be prefered to dev packages when possible, even if the minimum-stability allows unstable packages."
+            "description": "If set to true, stable packages will be preferred to dev packages when possible, even if the minimum-stability allows unstable packages."
         },
         "bin": {
             "type": ["array"],
@@ -380,17 +390,17 @@
                 },
                 "issues": {
                     "type": "string",
-                    "description": "URL to the Issue Tracker.",
+                    "description": "URL to the issue tracker.",
                     "format": "uri"
                 },
                 "forum": {
                     "type": "string",
-                    "description": "URL to the Forum.",
+                    "description": "URL to the forum.",
                     "format": "uri"
                 },
                 "wiki": {
                     "type": "string",
-                    "description": "URL to the Wiki.",
+                    "description": "URL to the wiki.",
                     "format": "uri"
                 },
                 "irc": {
@@ -402,7 +412,19 @@
                     "type": "string",
                     "description": "URL to browse or download the sources.",
                     "format": "uri"
+                },
+                "docs": {
+                    "type": "string",
+                    "description": "URL to the documentation.",
+                    "format": "uri"
                 }
+            }
+        },
+        "non-feature-branches": {
+            "type": ["array"],
+            "description": "A set of string or regex patterns for non-numeric branch names that will not be handled as feature branches.",
+            "items": {
+                "type": "string"
             }
         }
     }

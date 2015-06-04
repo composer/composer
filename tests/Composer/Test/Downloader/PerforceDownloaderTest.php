@@ -120,7 +120,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $ref = 'SOURCE_REF@123';
         $label = 123;
         $this->package->expects($this->once())->method('getSourceReference')->will($this->returnValue($ref));
-        $this->io->expects($this->once())->method('write')->with($this->stringContains('Cloning '.$ref));
+        $this->io->expects($this->once())->method('writeError')->with($this->stringContains('Cloning '.$ref));
         $perforceMethods = array('setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec');
         $perforce = $this->getMockBuilder('Composer\Util\Perforce', $perforceMethods)->disableOriginalConstructor()->getMock();
         $perforce->expects($this->at(0))->method('initializePath')->with($this->equalTo($this->testPath));
@@ -143,7 +143,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $ref = 'SOURCE_REF';
         $label = null;
         $this->package->expects($this->once())->method('getSourceReference')->will($this->returnValue($ref));
-        $this->io->expects($this->once())->method('write')->with($this->stringContains('Cloning '.$ref));
+        $this->io->expects($this->once())->method('writeError')->with($this->stringContains('Cloning '.$ref));
         $perforceMethods = array('setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec');
         $perforce = $this->getMockBuilder('Composer\Util\Perforce', $perforceMethods)->disableOriginalConstructor()->getMock();
         $perforce->expects($this->at(0))->method('initializePath')->with($this->equalTo($this->testPath));

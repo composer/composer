@@ -103,7 +103,7 @@ It may include any of the other fields specified in the [schema](04-schema.md).
 
 #### notify-batch
 
-The `notify-batch` field allows you to specify an URL that will be called
+The `notify-batch` field allows you to specify a URL that will be called
 every time a user installs a package. The URL can be either an absolute path
 (that will use the same domain as the repository) or a fully qualified URL.
 
@@ -122,7 +122,7 @@ JSON request body:
 ```json
 {
     "downloads": [
-        {"name": "monolog/monolog", "version": "1.2.1.0"},
+        {"name": "monolog/monolog", "version": "1.2.1.0"}
     ]
 }
 ```
@@ -216,7 +216,7 @@ repository.
 
 The `packages.json` file is loaded using a PHP stream. You can set extra options
 on that stream using the `options` parameter. You can set any valid PHP stream
-context option. See [Context options and parameters](http://php.net/manual/en/context.php)
+context option. See [Context options and parameters](https://php.net/manual/en/context.php)
 for more information.
 
 ### VCS
@@ -234,7 +234,7 @@ project to use the patched version. If the library is on GitHub (this is the
 case most of the time), you can simply fork it there and push your changes to
 your fork. After that you update the project's `composer.json`. All you have
 to do is add your fork as a repository and update the version constraint to
-point to your custom branch. For version constraint naming conventions see
+point to your custom branch. Your custom branch name must be prefixed with `"dev-"`. For version constraint naming conventions see
 [Libraries](02-libraries.md) for more information.
 
 Example assuming you patched monolog to fix a bug in the `bugfix` branch:
@@ -293,8 +293,8 @@ The only requirement is the installation of SSH keys for a git client.
 Git is not the only version control system supported by the VCS repository.
 The following are supported:
 
-* **Git:** [git-scm.com](http://git-scm.com)
-* **Subversion:** [subversion.apache.org](http://subversion.apache.org)
+* **Git:** [git-scm.com](https://git-scm.com)
+* **Subversion:** [subversion.apache.org](https://subversion.apache.org)
 * **Mercurial:** [mercurial.selenic.com](http://mercurial.selenic.com)
 
 To get packages from these systems you need to have their respective clients
@@ -389,7 +389,7 @@ Example using `pear2.php.net`:
     "repositories": [
         {
             "type": "pear",
-            "url": "http://pear2.php.net"
+            "url": "https://pear2.php.net"
         }
     ],
     "require": {
@@ -533,10 +533,9 @@ There are a few tools that can help you create a `composer` repository.
 ### Packagist
 
 The underlying application used by packagist is open source. This means that you
-can just install your own copy of packagist, re-brand, and use it. It's really
-quite straight-forward to do. However due to its size and complexity, for most
-small and medium sized companies willing to track a few packages will be better
-off using Satis.
+can technically install your own copy of packagist. However it is not a
+supported use case and changes will happen without caring for third parties
+using the code.
 
 Packagist is a Symfony2 application, and it is [available on
 GitHub](https://github.com/composer/packagist). It uses composer internally and
@@ -544,8 +543,11 @@ acts as a proxy between VCS repositories and the composer users. It holds a list
 of all VCS packages, periodically re-crawls them, and exposes them as a composer
 repository.
 
-To set your own copy, simply follow the instructions from the [packagist
-github repository](https://github.com/composer/packagist).
+### Toran Proxy
+
+[Toran Proxy](https://toranproxy.com/) is a web app much like Packagist but
+providing private package hosting as well as mirroring/proxying of GitHub and packagist.org. Check its homepage and the [Satis/Toran Proxy article](articles/handling-private-packages-with-satis.md)
+for more information.
 
 ### Satis
 

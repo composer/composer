@@ -1,0 +1,97 @@
+--TEST--
+Partial update forces updates dev reference from lock file for non whitelisted packages
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+                    "source": { "reference": "newmaster-a2", "type": "git", "url": "" }
+                },
+                {
+                    "name": "b/b", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+                    "source": { "reference": "newmaster-b2", "type": "git", "url": "" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "~2.1",
+        "b/b": "~2.1"
+    },
+    "minimum-stability": "dev"
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-master", "version_normalized": "9999999-dev",
+        "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+        "source": { "reference": "oldmaster-a", "type": "git", "url": "" },
+        "type": "library"
+    },
+    {
+        "name": "b/b", "version": "dev-master", "version_normalized": "9999999-dev",
+        "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+        "source": { "reference": "oldmaster-b", "type": "git", "url": "" },
+        "type": "library"
+    }
+]
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+            "source": { "reference": "newmaster-a", "type": "git", "url": "" },
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+            "source": { "reference": "oldmaster-b", "type": "git", "url": "" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update b/b
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+            "source": { "reference": "newmaster-a", "type": "git", "url": "" },
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+            "source": { "reference": "newmaster-b2", "type": "git", "url": "" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Updating a/a (dev-master oldmaster-a) to a/a (dev-master newmaster-a)
+Updating b/b (dev-master oldmaster-b) to b/b (dev-master newmaster-b2)

@@ -82,12 +82,13 @@ resolution.
   have a proper setup.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the `platform` [config option](04-schema.md#config).
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
-* **--no-dev:** Skip installing packages listed in `require-dev`.
+* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
+* **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -126,10 +127,11 @@ php composer.phar update vendor/*
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the `platform` [config option](04-schema.md#config).
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
-* **--no-dev:** Skip installing packages listed in `require-dev`.
+* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
+* **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -140,7 +142,9 @@ php composer.phar update vendor/*
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
 * **--with-dependencies** Add also all dependencies of whitelisted packages to the whitelist.
-  So all packages with their dependencies are updated recursively.
+* **--prefer-stable:** Prefer stable versions of dependencies.
+* **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
+  versions of requirements, generally used with `--prefer-stable`.
 
 ## require
 
@@ -167,7 +171,7 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the `platform` [config option](04-schema.md#config).
 * **--dev:** Add packages to `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -191,7 +195,7 @@ uninstalled.
 ### Options
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the `platform` [config option](04-schema.md#config).
 * **--dev:** Remove packages from `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -255,8 +259,8 @@ name     : monolog/monolog
 versions : master-dev, 1.0.2, 1.0.1, 1.0.0, 1.0.0-RC1
 type     : library
 names    : monolog/monolog
-source   : [git] http://github.com/Seldaek/monolog.git 3d4e60d0cbc4b888fe5ad223d77964428b1978da
-dist     : [zip] http://github.com/Seldaek/monolog/zipball/3d4e60d0cbc4b888fe5ad223d77964428b1978da 3d4e60d0cbc4b888fe5ad223d77964428b1978da
+source   : [git] https://github.com/Seldaek/monolog.git 3d4e60d0cbc4b888fe5ad223d77964428b1978da
+dist     : [zip] https://github.com/Seldaek/monolog/zipball/3d4e60d0cbc4b888fe5ad223d77964428b1978da 3d4e60d0cbc4b888fe5ad223d77964428b1978da
 license  : MIT
 
 autoload
@@ -395,16 +399,18 @@ options.
 ### Options
 
 * **--global (-g):** Operate on the global config file located at
-`$COMPOSER_HOME/config.json` by default.  Without this option, this command
-affects the local composer.json file or a file specified by `--file`.
+  `$COMPOSER_HOME/config.json` by default.  Without this option, this command
+  affects the local composer.json file or a file specified by `--file`.
 * **--editor (-e):** Open the local composer.json file using in a text editor as
-defined by the `EDITOR` env variable.  With the `--global` option, this opens
-the global config file.
+  defined by the `EDITOR` env variable.  With the `--global` option, this opens
+  the global config file.
 * **--unset:** Remove the configuration element named by `setting-key`.
 * **--list (-l):** Show the list of current config variables.  With the `--global`
- option this lists the global configuration only.
+  option this lists the global configuration only.
 * **--file="..." (-f):** Operate on a specific file instead of composer.json. Note
- that this cannot be used in conjunction with the `--global` option.
+  that this cannot be used in conjunction with the `--global` option.
+* **--absolute:** Returns absolute paths when fetching *-dir config values
+  instead of relative.
 
 ### Modifying Repositories
 
@@ -412,7 +418,7 @@ In addition to modifying the config section, the `config` command also supports 
 changes to the repositories section by using it the following way:
 
 ```sh
-php composer.phar config repositories.foo vcs http://github.com/foo/bar
+php composer.phar config repositories.foo vcs https://github.com/foo/bar
 ```
 
 ## create-project
@@ -461,6 +467,9 @@ By default the command checks for the packages on packagist.org.
 * **--keep-vcs:** Skip the deletion of the VCS metadata for the created
   project. This is mostly useful if you run the command in non-interactive
   mode.
+* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
+  requirements and force the installation even if the local machine does not
+  fulfill these.
 
 ## dump-autoload
 
@@ -482,15 +491,29 @@ performance.
   a bit of time to run so it is currently not done by default.
 * **--no-dev:** Disables autoload-dev rules.
 
+## clear-cache
+
+Deletes all content from Composer's cache directories.
+
 ## licenses
 
 Lists the name, version and license of every package installed. Use
 `--format=json` to get machine readable output.
 
+### Options
+
+* **--no-dev:** Remove dev dependencies from the output
+* **--format:** Format of the output: text or json (default: "text")
+
 ## run-script
 
+### Options
+
+* **--no-dev:** Disable dev mode
+* **--list:** List user defined scripts
+
 To run [scripts](articles/scripts.md) manually you can use this command,
-just give it the script name and optionally --no-dev to disable the dev mode.
+just give it the script name and optionally any required arguments.
 
 ## diagnose
 

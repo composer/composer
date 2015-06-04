@@ -16,7 +16,7 @@ specific logic.
 
 ## Creating a Plugin
 
-A plugin is a regular composer package which ships its code as part of the
+A plugin is a regular Composer package which ships its code as part of the
 package and may also depend on further packages.
 
 ### Plugin Package
@@ -24,23 +24,36 @@ package and may also depend on further packages.
 The package file is the same as any other package file but with the following
 requirements:
 
-1. the [type][1] attribute must be `composer-plugin`.
-2. the [extra][2] attribute must contain an element `class` defining the
+1. The [type][1] attribute must be `composer-plugin`.
+2. The [extra][2] attribute must contain an element `class` defining the
    class name of the plugin (including namespace). If a package contains
-   multiple plugins this can be array of class names.
+   multiple plugins, this can be array of class names.
+3. You must require the special package called `composer-plugin-api`
+   to define which Plugin API versions your plugin is compatible with.
 
-Additionally you must require the special package called `composer-plugin-api`
-to define which composer API versions your plugin is compatible with. The
-current composer plugin API version is 1.0.0.
+The required version of the `composer-plugin-api` follows the same [rules][7]
+as a normal package's, except for the `1.0`, `1.0.0` and `1.0.0.0` _exact_ 
+values. In only these three cases, Composer will assume your plugin 
+actually meant `^1.0` instead. This was introduced to maintain BC with 
+the old style of declaring the Plugin API version.  
+  
+In other words, `"require": { "composer-plugin-api": "1.0.0" }` means
+`"require": { "composer-plugin-api": "^1.0" }`.
 
-For example
+The current composer plugin API version is 1.0.0.
+
+An example of a valid plugin `composer.json` file (with the autoloading 
+part omitted):
 
 ```json
 {
     "name": "my/plugin-package",
     "type": "composer-plugin",
     "require": {
-        "composer-plugin-api": "1.0.0"
+        "composer-plugin-api": "~1.0"
+    },
+    "extra": {
+        "class": "My\\Plugin"
     }
 }
 ```
@@ -82,15 +95,7 @@ Furthermore plugins may implement the
 event handlers automatically registered with the `EventDispatcher` when the
 plugin is loaded.
 
-The events available for plugins are:
-
-* **COMMAND**, is called at the beginning of all commands that load plugins.
-  It provides you with access to the input and output objects of the program.
-* **PRE_FILE_DOWNLOAD**, is triggered before files are downloaded and allows
-  you to manipulate the `RemoteFilesystem` object prior to downloading files
-  based on the URL to be downloaded.
-
-> A plugin can also subscribe to [script events][7].
+Plugin can subscribe to any of the available [script events](scripts.md#event-names).
 
 Example:
 
@@ -148,7 +153,7 @@ list of installed packages. Additionally all plugin packages installed in the
 local project plugins are loaded.
 
 > You may pass the `--no-plugins` option to composer commands to disable all
-> installed commands. This may be particularly helpful if any of the plugins
+> installed plugins. This may be particularly helpful if any of the plugins
 > causes errors and you wish to update or uninstall it.
 
 [1]: ../04-schema.md#type
@@ -157,4 +162,4 @@ local project plugins are loaded.
 [4]: https://github.com/composer/composer/blob/master/src/Composer/Composer.php
 [5]: https://github.com/composer/composer/blob/master/src/Composer/IO/IOInterface.php
 [6]: https://github.com/composer/composer/blob/master/src/Composer/EventDispatcher/EventSubscriberInterface.php
-[7]: ./scripts.md#event-names
+[7]: ../01-basic-usage.md#package-versions

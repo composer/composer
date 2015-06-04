@@ -77,8 +77,8 @@ you can just add a `version` field:
 
 For every tag that looks like a version, a package version of that tag will be
 created. It should match 'X.Y.Z' or 'vX.Y.Z', with an optional suffix
-of `-patch`, `-alpha`, `-beta` or `-RC`. The suffixes can also be followed by
-a number.
+of `-patch` (`-p`), `-alpha` (`-a`), `-beta` (`-b`) or `-RC`. The suffixes
+can also be followed by a number.
 
 Here are a few examples of valid tag names:
 
@@ -96,9 +96,9 @@ Here are a few examples of valid tag names:
 ### Branches
 
 For every branch, a package development version will be created. If the branch
-name looks like a version, the version will be `{branchname}-dev`. For example
-a branch `2.0` will get a version `2.0.x-dev` (the `.x` is added for technical
-reasons, to make sure it is recognized as a branch, a `2.0.x` branch would also
+name looks like a version, the version will be `{branchname}-dev`. For example,
+the branch `2.0` will get the `2.0.x-dev` version (the `.x` is added for technical
+reasons, to make sure it is recognized as a branch). The `2.0.x` branch would also
 be valid and be turned into `2.0.x-dev` as well. If the branch does not look
 like a version, it will be `dev-{branchname}`. `master` results in a
 `dev-master` version.

@@ -137,7 +137,7 @@ class PearPackageExtractor
     private function buildCopyActions($source, array $roles, $vars)
     {
         /** @var $package \SimpleXmlElement */
-        $package = simplexml_load_file($this->combine($source, 'package.xml'));
+        $package = simplexml_load_string(file_get_contents($this->combine($source, 'package.xml')));
         if (false === $package) {
             throw new \RuntimeException('Package definition file is not valid.');
         }
