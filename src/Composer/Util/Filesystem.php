@@ -316,7 +316,7 @@ class Filesystem
         $to = lcfirst($this->normalizePath($to));
 
         if ($directories) {
-            $from .= $this->isDirectory($from) ? 'dummy_file' : '/dummy_file';
+            $from = rtrim($from, '/') . '/dummy_file';
         }
 
         if (dirname($from) === dirname($to)) {
@@ -459,17 +459,6 @@ class Filesystem
     public static function isLocalPath($path)
     {
         return (bool) preg_match('{^(file://|/|[a-z]:[\\\\/]|\.\.[\\\\/]|[a-z0-9_.-]+[\\\\/])}i', $path);
-    }
-    
-    /**
-     * Return if the given path is a directory
-     *
-     * @param  string $path
-     * @return bool
-     */
-    public static function isDirectory($path)
-    {
-        return substr($path, -1) === '/';
     }
 
     public static function getPlatformPath($path)
