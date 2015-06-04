@@ -11,7 +11,6 @@ interface ProgressInterface {
      *
      * @return void
      */
-
     public function section($message);
 
     /**
@@ -22,7 +21,6 @@ interface ProgressInterface {
      *
      * @return void
      */
-
     public function total($total, $type = 'item');
 
     /**
@@ -33,7 +31,6 @@ interface ProgressInterface {
      *
      * @return void
      */
-
     public function write($message, $count = null);
 
     /**
@@ -41,7 +38,6 @@ interface ProgressInterface {
      *
      * @return void
      */
-
     public function indeterminate();
 
     /**
@@ -51,7 +47,6 @@ interface ProgressInterface {
      * @param string $status
      * @return void
      */
-
     public function notification($message, $status = 'success');
 
     /**
@@ -59,7 +54,6 @@ interface ProgressInterface {
      *
      * @return void
      */
-
     public function stopPolling();
 
     /**
@@ -67,7 +61,6 @@ interface ProgressInterface {
      *
      * @return void
      */
-
     public function reset();
 
 }

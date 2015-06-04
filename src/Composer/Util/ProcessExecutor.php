@@ -113,7 +113,6 @@ class ProcessExecutor
      *
      * @return string The escaped argument
      */
-
     public static function escape($argument)
     {
         return ProcessUtils::escapeArgument($argument);

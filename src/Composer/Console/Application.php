@@ -350,7 +350,6 @@ class Application extends BaseApplication
      * Returns the progress interface.
      * @return \Composer\Progress\ProgressInterface
      */
-
     public function getProgress() {
         return $this->progress;
     }

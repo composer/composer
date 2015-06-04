@@ -11,7 +11,6 @@ class NullProgress implements ProgressInterface {
      *
      * @return void
      */
-
     public function section($message) {
 
     }
@@ -21,7 +20,6 @@ class NullProgress implements ProgressInterface {
      *
      * @return void
      */
-
     public function indeterminate() {
 
     }
@@ -34,7 +32,6 @@ class NullProgress implements ProgressInterface {
      *
      * @return void
      */
-
     public function total($total, $type = 'item') {
 
     }
@@ -46,7 +43,6 @@ class NullProgress implements ProgressInterface {
      * @param $count
      * @return void
      */
-
     public function write($message, $count = null) {
 
     }
@@ -58,7 +54,6 @@ class NullProgress implements ProgressInterface {
      * @param string $status
      * @return void
      */
-
     public function notification($message, $status = 'success') {
 
     }
@@ -68,7 +63,6 @@ class NullProgress implements ProgressInterface {
      *
      * @return void
      */
-
     public function stopPolling() {
 
     }
@@ -78,7 +72,6 @@ class NullProgress implements ProgressInterface {
      *
      * @return void
      */
-
     public function reset() {
 
     }

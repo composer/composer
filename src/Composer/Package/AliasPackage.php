@@ -180,7 +180,6 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     /***************************************
      * Wrappers around the aliased package *
      ***************************************/
-
     public function getType()
     {
         return $this->aliasOf->getType();

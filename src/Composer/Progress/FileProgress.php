@@ -36,7 +36,6 @@ class FileProgress implements ProgressInterface {
      * @param                 $filename
      * @param OutputInterface $output
      */
-
     public function __construct($filename, OutputInterface $output)  {
         $this->sectionCounter = 1;
         $this->itemCounter = 1;
@@ -58,7 +57,6 @@ class FileProgress implements ProgressInterface {
      *
      * @return void
      */
-
     public function section($message) {
         $this->progress['progress']['section']['count'] = $this->sectionCounter++;
         $this->progress['progress']['section']['message'] = $message;
@@ -78,7 +76,6 @@ class FileProgress implements ProgressInterface {
      *
      * @return void
      */
-
     public function total($total, $type = 'item') {
         $this->progress['progress'][$type]['total'] = $total;
         $this->persist();
@@ -89,7 +86,6 @@ class FileProgress implements ProgressInterface {
      *
      * @return void
      */
-
     public function indeterminate() {
         $this->progress['progress']['item']['count'] = 1;
         $this->progress['progress']['item']['total'] = 1;
@@ -104,7 +100,6 @@ class FileProgress implements ProgressInterface {
      * @param int|null $count
      * @return void
      */
-
     public function write($message, $count = null) {
         $count = $count === null ? $this->itemCounter++ : $count;
         $this->progress['progress']['item']['count'] = $count;
@@ -119,7 +114,6 @@ class FileProgress implements ProgressInterface {
      * @param string $status
      * @return void
      */
-
     public function notification($message, $status = 'success') {
         $this->progress['notification'] = array(
             'content' => $message,
@@ -134,7 +128,6 @@ class FileProgress implements ProgressInterface {
      *
      * @return void
      */
-
     public function stopPolling() {
         $this->progress['stopPolling'] = true;
         $this->persist();
@@ -145,7 +138,6 @@ class FileProgress implements ProgressInterface {
      *
      * @return void
      */
-
     public function reset() {
         $this->progress['progress'] = false;
         $this->persist();
