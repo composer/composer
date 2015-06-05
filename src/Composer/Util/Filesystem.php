@@ -316,7 +316,7 @@ class Filesystem
         $to = lcfirst($this->normalizePath($to));
 
         if ($directories) {
-            $from .= '/dummy_file';
+            $from = rtrim($from, '/') . '/dummy_file';
         }
 
         if (dirname($from) === dirname($to)) {
