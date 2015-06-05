@@ -197,6 +197,12 @@ EOT
                 }
 
                 $writePath = !$input->getOption('name-only') && $input->getOption('path');
+
+                if ($writePath && null === $composer) {
+                    $this->getIO()->writeError('No composer.json found in the current directory, disabling "path" option');
+                    $writePath = false;
+                }
+
                 $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
                 $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
                 foreach ($packages[$type] as $package) {
