@@ -8,7 +8,7 @@ By participating in this project you agree to abide by its terms.
 Installation from Source
 ------------------------
 
-Prior to contributing to Composer, you must use be able to run the tests.
+Prior to contributing to Composer, you must be able to run the tests.
 To achieve this, you must use the sources and not the phar file.
 
 1. Run `git clone https://github.com/composer/composer.git`
