@@ -47,10 +47,10 @@ Composer fires the following named events during its execution process:
 ### Package Events
 
 - **pre-package-install**: occurs before a package is installed.
-- **post-package-install**: occurs after a package is installed.
+- **post-package-install**: occurs after a package has been installed.
 - **pre-package-update**: occurs before a package is updated.
-- **post-package-update**: occurs after a package is updated.
-- **pre-package-uninstall**: occurs before a package has been uninstalled.
+- **post-package-update**: occurs after a package has been updated.
+- **pre-package-uninstall**: occurs before a package is uninstalled.
 - **post-package-uninstall**: occurs after a package has been uninstalled.
 
 ### Plugin Events
