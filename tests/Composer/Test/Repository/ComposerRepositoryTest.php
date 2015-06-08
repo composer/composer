@@ -124,23 +124,25 @@ class ComposerRepositoryTest extends TestCase
             ->method('fetchFile')
             ->will($this->returnValue(array(
                 'packages' => array(
-                    array(array(
-                        'uid' => 1,
-                        'name' => 'a',
-                        'version' => 'dev-master',
-                        'extra' => array('branch-alias' => array('dev-master' => '1.0.x-dev')),
-                    )),
-                    array(array(
-                        'uid' => 2,
-                        'name' => 'a',
-                        'version' => 'dev-develop',
-                        'extra' => array('branch-alias' => array('dev-develop' => '1.1.x-dev')),
-                    )),
-                    array(array(
-                        'uid' => 3,
-                        'name' => 'a',
-                        'version' => '0.6',
-                    )),
+                    'a' => array(
+                        'dev-master' => array(
+                            'uid' => 1,
+                            'name' => 'a',
+                            'version' => 'dev-master',
+                            'extra' => array('branch-alias' => array('dev-master' => '1.0.x-dev')),
+                        ),
+                        'dev-develop' => array(
+                            'uid' => 2,
+                            'name' => 'a',
+                            'version' => 'dev-develop',
+                            'extra' => array('branch-alias' => array('dev-develop' => '1.1.x-dev')),
+                        ),
+                        '0.6' => array(
+                            'uid' => 3,
+                            'name' => 'a',
+                            'version' => '0.6',
+                        ),
+                    ),
                 )
             )));
 
