@@ -228,25 +228,10 @@ class VersionParser
                 $parsedConstraint = $this->parseConstraints($constraint);
             }
 
-            // if the required Plugin API version is exactly "1.0.0", convert it to "^1.0", to keep BC
-            if ('composer-plugin-api' === strtolower($target) && $this->isOldStylePluginApiVersion($constraint)) {
-                $parsedConstraint = $this->parseConstraints('^1.0');
-            }
-
             $res[strtolower($target)] = new Link($source, $target, $parsedConstraint, $description, $constraint);
         }
 
         return $res;
-    }
-
-    /**
-     * @param string $requiredPluginApiVersion
-     * @return bool
-     */
-    private function isOldStylePluginApiVersion($requiredPluginApiVersion)
-    {
-        // catch "1.0", "1.0.0", "1.0.0.0" etc.
-        return (bool) preg_match('#^1(\.0)++$#', trim($requiredPluginApiVersion));
     }
 
     /**

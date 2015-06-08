@@ -32,13 +32,7 @@ requirements:
    to define which Plugin API versions your plugin is compatible with.
 
 The required version of the `composer-plugin-api` follows the same [rules][7]
-as a normal package's, except for the `1.0`, `1.0.0` and `1.0.0.0` _exact_ 
-values. In only these three cases, Composer will assume your plugin 
-actually meant `^1.0` instead. This was introduced to maintain BC with 
-the old style of declaring the Plugin API version.  
-  
-In other words, `"require": { "composer-plugin-api": "1.0.0" }` means
-`"require": { "composer-plugin-api": "^1.0" }`.
+as a normal package's.
 
 The current composer plugin API version is 1.0.0.
 
