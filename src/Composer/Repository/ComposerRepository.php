@@ -100,6 +100,14 @@ class ComposerRepository extends ArrayRepository
         return $this->rootAliases;
     }
 
+    /**
+     * Load all packages with given names and dependencies
+     *
+     * @param array $packageNames
+     * @param callable|null $acceptableCallback Callback to filter packages
+     *
+     * @return array The loaded package objects
+     */
     public function loadRecursively(array $packageNames, $acceptableCallback)
     {
         $workQueue = new \SplQueue;
@@ -258,11 +266,29 @@ class ComposerRepository extends ArrayRepository
         return $providers;
     }
 
+    protected function configurePackageTransportOptions(PackageInterface $package)
+    {
+        foreach ($package->getDistUrls() as $url) {
+            if (strpos($url, $this->baseUrl) === 0) {
+                $package->setTransportOptions($this->options);
+
+                return;
+            }
+        }
+    }
+
+    public function hasProviders()
+    {
+        $this->loadRootServerFile();
+
+        return $this->hasProviders;
+    }
+
     /**
      * Loads package data for a given package name or provider name
      *
      * @param string $name
-     * @param callable $acceptableCallback A callback to check if a package should be loaded
+     * @param callable|null $acceptableCallback A callback to check if a package should be loaded
      * @param bool $exactMatch Whether packages only providing the name should be ignored
      *
      * @return array All packages that were loaded
@@ -335,25 +361,6 @@ class ComposerRepository extends ArrayRepository
         }
 
         return $loadedPackages;
-    }
-
-
-    protected function configurePackageTransportOptions(PackageInterface $package)
-    {
-        foreach ($package->getDistUrls() as $url) {
-            if (strpos($url, $this->baseUrl) === 0) {
-                $package->setTransportOptions($this->options);
-
-                return;
-            }
-        }
-    }
-
-    public function hasProviders()
-    {
-        $this->loadRootServerFile();
-
-        return $this->hasProviders;
     }
 
     /**
