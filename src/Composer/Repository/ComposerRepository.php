@@ -336,12 +336,12 @@ class ComposerRepository extends ArrayRepository
         }
 
         $loadedPackages = array();
-        foreach ($packages['packages'] as $versions) {
-            foreach ($versions as $version) {
-                if ($exactMatch && $version['name'] !== $name) {
-                    continue;
-                }
+        foreach ($packages['packages'] as $packageName => $versions) {
+            if ($exactMatch && $packageName !== $name) {
+                continue;
+            }
 
+            foreach ($versions as $version) {
                 if ($acceptableCallback && !call_user_func(
                     $acceptableCallback, strtolower($version['name']), VersionParser::parseStability($version['version'])
                 )) {
