@@ -23,6 +23,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
 use Composer\DependencyResolver\Pool;
+use Composer\Plugin\Capability\Capability;
 
 /**
  * Plugin manager
@@ -186,16 +187,6 @@ class PluginManager
     }
 
     /**
-     * Returns the version of the internal composer-plugin-api package.
-     *
-     * @return string
-     */
-    protected function getPluginApiVersion()
-    {
-        return PluginInterface::PLUGIN_API_VERSION;
-    }
-
-    /**
      * Adds a plugin, activates it and registers it with the event dispatcher
      *
      * @param PluginInterface $plugin plugin instance
@@ -298,5 +289,58 @@ class PluginManager
         }
 
         return $this->globalComposer->getInstallationManager()->getInstallPath($package);
+    }
+
+    /**
+     * Returns the version of the internal composer-plugin-api package.
+     *
+     * @return string
+     */
+    protected function getPluginApiVersion()
+    {
+        return PluginInterface::PLUGIN_API_VERSION;
+    }
+
+    /**
+     * @param PluginInterface $plugin
+     * @param string $capability
+     * @return bool|string The fully qualified class of the implementation or false if none was provided
+     */
+    protected function getCapabilityImplementationClassName(PluginInterface $plugin, $capability)
+    {
+        if (!($plugin instanceof Capable)) {
+            return false;
+        }
+
+        $capabilities = (array) $plugin->getCapabilities();
+
+        if (empty($capabilities[$capability]) || !is_string($capabilities[$capability])) {
+            return false;
+        }
+
+        return trim($capabilities[$capability]);
+    }
+
+    /**
+     * @param PluginInterface $plugin
+     * @param string          $capability The fully qualified name of the API interface which the plugin may provide
+     *                                    an implementation.
+     * @param array           $ctorArgs   Arguments passed to Capability's constructor.
+     *                                    Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @return Capability|boolean         Bool false if the Plugin has no implementation of the requested Capability.
+     */
+    public function getPluginCapability(PluginInterface $plugin, $capability, array $ctorArgs = array())
+    {
+        if ($capabilityClass = $this->getCapabilityImplementationClassName($plugin, $capability)) {
+            if (class_exists($capabilityClass)) {
+                $capabilityObj = new $capabilityClass($ctorArgs);
+                if ($capabilityObj instanceof Capability &&
+                    $capabilityObj instanceof $capability
+                ) {
+                    return $capabilityObj;
+                }
+            }
+        }
+        return false;
     }
 }

@@ -314,4 +314,67 @@ class PluginInstallerTest extends TestCase
         $this->setPluginApiVersionWithPlugins('5.5.0', $pluginWithApiConstraint);
         $this->assertCount(0, $this->pm->getPlugins());
     }
+
+    public function testIncapablePluginIsCorrectlyDetected()
+    {
+        $plugin = $this->getMockBuilder('Composer\Plugin\PluginInterface')
+                       ->getMock();
+
+        $this->assertFalse($this->pm->getPluginCapability($plugin, 'Fake\Ability'));
+    }
+
+    public function testCapabilityImplementsComposerPluginApiClassAndIsConstructedWithArgs()
+    {
+        $capabilityApi = 'Composer\Plugin\Capability\Capability';
+        $capabilitySpi = 'Composer\Test\Plugin\Mock\Capability';
+
+        $plugin = $this->getMockBuilder('Composer\Test\Plugin\Mock\CapablePluginInterface')
+                       ->getMock();
+
+        $plugin->expects($this->once())
+               ->method('getCapabilities')
+               ->will($this->returnCallback(function() use ($capabilitySpi, $capabilityApi) {
+                   return array($capabilityApi => $capabilitySpi);
+               }));
+
+        $capability = $this->pm->getPluginCapability($plugin, $capabilityApi, array('a' => 1, 'b' => 2));
+
+        $this->assertInstanceOf($capabilityApi, $capability);
+        $this->assertInstanceOf($capabilitySpi, $capability);
+        $this->assertSame(array('a' => 1, 'b' => 2), $capability->args);
+    }
+
+    public function invalidSpiValues()
+    {
+        return array(
+            array(null),
+            array(""),
+            array(0),
+            array(1000),
+            array("   "),
+            array(array(1)),
+            array(array()),
+            array(new \stdClass()),
+            array("NonExistentClassLikeMiddleClass"),
+        );
+    }
+
+    /**
+     * @dataProvider invalidSpiValues
+     */
+    public function testInvalidCapabilitySpiDeclarationsAreDisregarded($invalidSpi)
+    {
+        $capabilityApi = 'Composer\Plugin\Capability\Capability';
+
+        $plugin = $this->getMockBuilder('Composer\Test\Plugin\Mock\CapablePluginInterface')
+                       ->getMock();
+
+        $plugin->expects($this->once())
+               ->method('getCapabilities')
+               ->will($this->returnCallback(function() use ($invalidSpi, $capabilityApi) {
+                   return array($capabilityApi => $invalidSpi);
+               }));
+
+        $this->assertFalse($this->pm->getPluginCapability($plugin, $capabilityApi));
+    }
 }
