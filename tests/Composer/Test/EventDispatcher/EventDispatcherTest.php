@@ -150,12 +150,12 @@ class EventDispatcherTest extends TestCase
         );
     }
 
-    public function testDispatcherOutputsCommands()
+    public function testDispatcherOutputsCommandsInVerboseMode()
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->getMock('Composer\Composer'),
-                $this->getMock('Composer\IO\IOInterface'),
+                $io = $this->getMock('Composer\IO\IOInterface'),
                 new ProcessExecutor,
             ))
             ->setMethods(array('getListeners'))
@@ -165,6 +165,14 @@ class EventDispatcherTest extends TestCase
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
             ->will($this->returnValue($listener));
+
+        $io->expects($this->once())
+            ->method('isVerbose')
+            ->willReturn(true);
+
+        $io->expects($this->once())
+            ->method('writeError')
+            ->with($this->equalTo('> echo foo'));
 
         ob_start();
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
