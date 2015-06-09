@@ -150,7 +150,7 @@ class EventDispatcherTest extends TestCase
         );
     }
 
-    public function testDispatcherOutputsCommandsInVerboseMode()
+    public function testDispatcherOutputsCommand()
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
@@ -165,10 +165,6 @@ class EventDispatcherTest extends TestCase
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
             ->will($this->returnValue($listener));
-
-        $io->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(true);
 
         $io->expects($this->once())
             ->method('writeError')
@@ -196,7 +192,11 @@ class EventDispatcherTest extends TestCase
             ->method('getListeners')
             ->will($this->returnValue($listener));
 
-        $io->expects($this->once())
+        $io->expects($this->at(0))
+            ->method('writeError')
+            ->willReturn('> exit 1');
+
+        $io->expects($this->at(1))
             ->method('writeError')
             ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with an error</error>'));
 

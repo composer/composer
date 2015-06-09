@@ -172,9 +172,7 @@ class EventDispatcher
             } else {
                 $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
                 $exec = $callable . ($args === '' ? '' : ' '.$args);
-                if ($this->io->isVerbose()) {
-                    $this->io->writeError(sprintf('> %s', $exec));
-                }
+                $this->io->writeError(sprintf('> %s', $exec));
                 if (0 !== ($exitCode = $this->process->execute($exec))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 
