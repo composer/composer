@@ -515,18 +515,12 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function oldStylePluginApiVersions()
+    public function pluginApiVersions()
     {
         return array(
             array('1.0'),
             array('1.0.0'),
             array('1.0.0.0'),
-        );
-    }
-
-    public function newStylePluginApiVersions()
-    {
-        return array(
             array('1'),
             array('=1.0.0'),
             array('==1.0'),
@@ -543,23 +537,9 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider oldStylePluginApiVersions
+     * @dataProvider pluginApiVersions
      */
-    public function testOldStylePluginApiVersionGetsConvertedIntoAnotherConstraintToKeepBc($apiVersion)
-    {
-        $parser = new VersionParser;
-
-        /** @var Link[] $links */
-        $links = $parser->parseLinks('Plugin', '9.9.9', '', array('composer-plugin-api' => $apiVersion));
-
-        $this->assertArrayHasKey('composer-plugin-api', $links);
-        $this->assertSame('^1.0', $links['composer-plugin-api']->getConstraint()->getPrettyString());
-    }
-
-    /**
-     * @dataProvider newStylePluginApiVersions
-     */
-    public function testNewStylePluginApiVersionAreKeptAsDeclared($apiVersion)
+    public function testPluginApiVersionAreKeptAsDeclared($apiVersion)
     {
         $parser = new VersionParser;
 
