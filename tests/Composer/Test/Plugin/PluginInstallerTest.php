@@ -249,24 +249,6 @@ class PluginInstallerTest extends TestCase
         $this->pm->loadInstalledPlugins();
     }
 
-    public function testExactPluginVersionStyleAreRegisteredCorrectly()
-    {
-        $pluginsWithFixedAPIVersions = array(
-            $this->packages[0],
-            $this->packages[1],
-            $this->packages[2],
-        );
-
-        $this->setPluginApiVersionWithPlugins('1.0.0', $pluginsWithFixedAPIVersions);
-        $this->assertCount(3, $this->pm->getPlugins());
-
-        $this->setPluginApiVersionWithPlugins('1.0.1', $pluginsWithFixedAPIVersions);
-        $this->assertCount(0, $this->pm->getPlugins());
-
-        $this->setPluginApiVersionWithPlugins('2.0.0-dev', $pluginsWithFixedAPIVersions);
-        $this->assertCount(0, $this->pm->getPlugins());
-    }
-
     public function testStarPluginVersionWorksWithAnyAPIVersion()
     {
         $starVersionPlugin = array($this->packages[4]);
