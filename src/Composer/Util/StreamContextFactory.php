@@ -57,34 +57,29 @@ final class StreamContextFactory
         }
 
         if (!empty($proxy)) {
+
+            if (!extension_loaded('openssl')) {
+                throw new \RuntimeException('You must enable the openssl extension to use a proxy');
+            }
+
             $proxyURL = isset($proxy['scheme']) ? $proxy['scheme'] . '://' : '';
             $proxyURL .= isset($proxy['host']) ? $proxy['host'] : '';
 
             if (isset($proxy['port'])) {
                 $proxyURL .= ":" . $proxy['port'];
             } elseif ('http://' == substr($proxyURL, 0, 7)) {
-                $proxyURL .= ":80";
+                throw new \RuntimeException('You must use https for proxy.');
             } elseif ('https://' == substr($proxyURL, 0, 8)) {
                 $proxyURL .= ":443";
             }
 
             // http(s):// is not supported in proxy
-            $proxyURL = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $proxyURL);
-
-            if (0 === strpos($proxyURL, 'ssl:') && !extension_loaded('openssl')) {
-                throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
-            }
+            $proxyURL = str_replace('https://', 'ssl://', $proxyURL);
 
             $options['http']['proxy'] = $proxyURL;
 
             // enabled request_fulluri unless it is explicitly disabled
             switch (parse_url($url, PHP_URL_SCHEME)) {
-                case 'http': // default request_fulluri to true
-                    $reqFullUriEnv = getenv('HTTP_PROXY_REQUEST_FULLURI');
-                    if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
-                        $options['http']['request_fulluri'] = true;
-                    }
-                    break;
                 case 'https': // default request_fulluri to true
                     $reqFullUriEnv = getenv('HTTPS_PROXY_REQUEST_FULLURI');
                     if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {

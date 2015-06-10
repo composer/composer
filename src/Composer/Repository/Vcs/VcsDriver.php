@@ -77,14 +77,11 @@ abstract class VcsDriver implements VcsDriverInterface
      * Call this only if you know that the server supports both.
      *
      * @return string The correct type of protocol
+     * @deprecated  Should always use a https scheme for retreiving code.
      */
     protected function getScheme()
     {
-        if (extension_loaded('openssl')) {
-            return 'https';
-        }
-
-        return 'http';
+        return 'https';
     }
 
     /**

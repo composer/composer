@@ -60,7 +60,7 @@ class SpdxLicense
         $license = $this->licenses[$identifier];
 
         // add URL for the license text (it's not included in the json)
-        $license[2] = 'http://spdx.org/licenses/' . $identifier . '#licenseText';
+        $license[2] = 'https://spdx.org/licenses/' . $identifier . '#licenseText';
 
         return $license;
     }

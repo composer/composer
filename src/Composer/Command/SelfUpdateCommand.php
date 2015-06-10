@@ -58,7 +58,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $baseUrl = (extension_loaded('openssl') ? 'https' : 'http') . '://' . self::HOMEPAGE;
+        $baseUrl = 'https://' . self::HOMEPAGE;
         $config = Factory::createConfig();
         $remoteFilesystem = new RemoteFilesystem($this->getIO(), $config);
         $cacheDir = $config->get('cache-dir');

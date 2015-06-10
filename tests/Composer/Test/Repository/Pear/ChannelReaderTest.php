@@ -24,14 +24,14 @@ class ChannelReaderTest extends TestCase
     public function testShouldBuildPackagesFromPearSchema()
     {
         $rfs = new RemoteFilesystemMock(array(
-            'http://pear.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.1.xml'),
-            'http://test.loc/rest11/c/categories.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/categories.xml'),
-            'http://test.loc/rest11/c/Default/packagesinfo.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/packagesinfo.xml'),
+            'https://pear.php.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.1.xml'),
+            'https://test.loc/rest11/c/categories.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/categories.xml'),
+            'https://test.loc/rest11/c/Default/packagesinfo.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/packagesinfo.xml'),
         ));
 
         $reader = new \Composer\Repository\Pear\ChannelReader($rfs);
 
-        $channelInfo = $reader->read('http://pear.net/');
+        $channelInfo = $reader->read('https://pear.php.net/');
         $packages = $channelInfo->getPackages();
 
         $this->assertCount(3, $packages);
@@ -46,19 +46,19 @@ class ChannelReaderTest extends TestCase
     public function testShouldSelectCorrectReader()
     {
         $rfs = new RemoteFilesystemMock(array(
-            'http://pear.1.0.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.0.xml'),
-            'http://test.loc/rest10/p/packages.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/packages.xml'),
-            'http://test.loc/rest10/p/http_client/info.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_client_info.xml'),
-            'http://test.loc/rest10/p/http_request/info.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_request_info.xml'),
-            'http://pear.1.1.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.1.xml'),
-            'http://test.loc/rest11/c/categories.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/categories.xml'),
-            'http://test.loc/rest11/c/Default/packagesinfo.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/packagesinfo.xml'),
+            'https://pear.1.0.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.0.xml'),
+            'https://test.loc/rest10/p/packages.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/packages.xml'),
+            'https://test.loc/rest10/p/http_client/info.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_client_info.xml'),
+            'https://test.loc/rest10/p/http_request/info.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_request_info.xml'),
+            'https://pear.1.1.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.1.xml'),
+            'https://test.loc/rest11/c/categories.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/categories.xml'),
+            'https://test.loc/rest11/c/Default/packagesinfo.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/packagesinfo.xml'),
         ));
 
         $reader = new \Composer\Repository\Pear\ChannelReader($rfs);
 
-        $reader->read('http://pear.1.0.net/');
-        $reader->read('http://pear.1.1.net/');
+        $reader->read('https://pear.1.0.net/');
+        $reader->read('https://pear.1.1.net/');
     }
 
     public function testShouldCreatePackages()
@@ -122,7 +122,7 @@ class ChannelReaderTest extends TestCase
         $expectedPackage->setDistType('file');
         $expectedPackage->setDescription('description');
         $expectedPackage->setLicense(array('license'));
-        $expectedPackage->setDistUrl("http://test.loc/get/sample-1.0.0.1.tgz");
+        $expectedPackage->setDistUrl("https://test.loc/get/sample-1.0.0.1.tgz");
         $expectedPackage->setAutoload(array('classmap' => array('')));
         $expectedPackage->setIncludePaths(array('/'));
         $expectedPackage->setRequires(array(

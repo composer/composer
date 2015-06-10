@@ -20,15 +20,15 @@ class ChannelRest11ReaderTest extends TestCase
     public function testShouldBuildPackagesFromPearSchema()
     {
         $rfs = new RemoteFilesystemMock(array(
-            'http://pear.1.1.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.1.xml'),
-            'http://test.loc/rest11/c/categories.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/categories.xml'),
-            'http://test.loc/rest11/c/Default/packagesinfo.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/packagesinfo.xml'),
+            'https://pear.1.1.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.1.xml'),
+            'https://test.loc/rest11/c/categories.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/categories.xml'),
+            'https://test.loc/rest11/c/Default/packagesinfo.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/packagesinfo.xml'),
         ));
 
         $reader = new \Composer\Repository\Pear\ChannelRest11Reader($rfs);
 
         /** @var $packages \Composer\Package\PackageInterface[] */
-        $packages = $reader->read('http://test.loc/rest11');
+        $packages = $reader->read('https://test.loc/rest11');
 
         $this->assertCount(3, $packages);
         $this->assertEquals('HTTP_Client', $packages[0]->getPackageName());

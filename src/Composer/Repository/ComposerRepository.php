@@ -49,7 +49,6 @@ class ComposerRepository extends ArrayRepository
     protected $providersByUid = array();
     protected $loader;
     protected $rootAliases;
-    protected $allowSslDowngrade = false;
     protected $eventDispatcher;
     protected $sourceMirrors;
     protected $distMirrors;
@@ -59,14 +58,10 @@ class ComposerRepository extends ArrayRepository
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
     {
         if (!preg_match('{^[\w.]+\??://}', $repoConfig['url'])) {
-            // assume http as the default protocol
-            $repoConfig['url'] = 'http://'.$repoConfig['url'];
+            // assume https as the default protocol
+            $repoConfig['url'] = 'https://'.$repoConfig['url'];
         }
         $repoConfig['url'] = rtrim($repoConfig['url'], '/');
-
-        if ('https?' === substr($repoConfig['url'], 0, 6)) {
-            $repoConfig['url'] = (extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
-        }
 
         $urlBits = parse_url($repoConfig['url']);
         if ($urlBits === false || empty($urlBits['scheme'])) {
@@ -75,9 +70,6 @@ class ComposerRepository extends ArrayRepository
 
         if (!isset($repoConfig['options'])) {
             $repoConfig['options'] = array();
-        }
-        if (isset($repoConfig['allow_ssl_downgrade']) && true === $repoConfig['allow_ssl_downgrade']) {
-            $this->allowSslDowngrade = true;
         }
 
         $this->config = $config;
@@ -440,10 +432,6 @@ class ComposerRepository extends ArrayRepository
         if (!empty($data['providers-lazy-url'])) {
             $this->lazyProvidersUrl = $this->canonicalizeUrl($data['providers-lazy-url']);
             $this->hasProviders = true;
-        }
-
-        if ($this->allowSslDowngrade) {
-            $this->url = str_replace('https://', 'http://', $this->url);
         }
 
         if (!empty($data['providers-url'])) {

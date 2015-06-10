@@ -117,8 +117,8 @@ abstract class ArchiveDownloader extends FileDownloader
             }
         }
 
-        if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
-            throw new \RuntimeException('You must enable the openssl extension to download files via https');
+        if (!extension_loaded('openssl')) {
+            throw new \RuntimeException('You must enable the openssl extension to download files.');
         }
 
         return parent::processUrl($package, $url);
