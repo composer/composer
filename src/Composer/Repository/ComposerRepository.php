@@ -444,6 +444,7 @@ class ComposerRepository extends ArrayRepository
 
         if ($this->allowSslDowngrade) {
             $this->url = str_replace('https://', 'http://', $this->url);
+            $this->baseUrl = str_replace('https://', 'http://', $this->baseUrl);
         }
 
         if (!empty($data['providers-url'])) {
