@@ -81,8 +81,11 @@ EOT
         $this->getIO()->write('Checking git settings: ', false);
         $this->outputResult($this->checkGit());
 
-        $this->getIO()->write('Checking http connectivity: ', false);
-        $this->outputResult($this->checkHttp());
+        $this->getIO()->write('Checking http connectivity to packagist: ', false);
+        $this->outputResult($this->checkHttp('http'));
+
+        $this->getIO()->write('Checking https connectivity to packagist: ', false);
+        $this->outputResult($this->checkHttp('https'));
 
         $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
         if (!empty($opts['http']['proxy'])) {
@@ -168,11 +171,10 @@ EOT
         return true;
     }
 
-    private function checkHttp()
+    private function checkHttp($proto)
     {
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false);
+            $this->rfs->getContents('packagist.org', $proto . '://packagist.org/packages.json', false);
         } catch (\Exception $e) {
             return $e;
         }
