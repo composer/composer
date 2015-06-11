@@ -290,6 +290,17 @@ EOT
             $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
+        // handler Ctrl+C for unix-like systems
+        if (function_exists('pcntl_signal')) {
+            declare(ticks = 100);
+            $isPcntlHandler = true;
+            pcntl_signal(SIGINT, function() use ($directory) {
+                $fs = new Filesystem();
+                $fs->removeDirectory($directory);
+                exit();
+            });
+        }
+
         $io->writeError('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>');
 
         if ($disablePlugins) {
