@@ -44,7 +44,7 @@ part omitted):
     "name": "my/plugin-package",
     "type": "composer-plugin",
     "require": {
-        "composer-plugin-api": "~1.0"
+        "composer-plugin-api": "^1.0"
     },
     "extra": {
         "class": "My\\Plugin"
