@@ -13,16 +13,19 @@
 namespace Composer;
 
 use Composer\Console\HtmlOutputFormatter;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
 class HtmlOutputFormatterTest extends \PHPUnit_Framework_TestCase
 {
     public function testFormatting()
     {
-        $formatter = new HtmlOutputFormatter;
+        $formatter = new HtmlOutputFormatter(array(
+            'warning' => new OutputFormatterStyle('black', 'yellow'),
+        ));
 
         return $this->assertEquals(
-            'Reading composer.json of <span style="color:green;">https://github.com/ccqgithub/sherry-php</span> (<span style="color:yellow;">master</span>)',
-            $formatter->format('Reading composer.json of <info>https://github.com/ccqgithub/sherry-php</info> (<comment>master</comment>)')
+            'text <span style="color:green;">green</span> <span style="color:yellow;">yellow</span> <span style="color:black;background-color:yellow;">black w/ yello bg</span>',
+            $formatter->format('text <info>green</info> <comment>yellow</comment> <warning>black w/ yello bg</warning>')
         );
     }
 }
