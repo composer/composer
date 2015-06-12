@@ -191,7 +191,8 @@ class InstallerTest extends TestCase
                 }));
         }
 
-        $locker = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), md5(json_encode($composerConfig)));
+        $hash   = md5(json_encode($composerConfig));
+        $locker = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), $hash, $hash);
         $composer->setLocker($locker);
 
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
@@ -237,6 +238,7 @@ class InstallerTest extends TestCase
 
         if ($expectLock) {
             unset($actualLock['hash']);
+            unset($actualLock['content-hash']);
             unset($actualLock['_readme']);
             $this->assertEquals($expectLock, $actualLock);
         }

@@ -20,7 +20,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
     public function testIsLocked()
     {
         $json   = $this->createJsonFileMock();
-        $locker = new Locker(new NullIO, $json, $this->createRepositoryManagerMock(), $this->createInstallationManagerMock(), 'md5');
+        $locker = new Locker(new NullIO, $json, $this->createRepositoryManagerMock(), $this->createInstallationManagerMock(), 'md5', 'contentMd5');
 
         $json
             ->expects($this->any())
@@ -40,7 +40,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5', 'contentMd5');
 
         $json
             ->expects($this->once())
@@ -58,7 +58,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5', 'contentMd5');
 
         $json
             ->expects($this->once())
@@ -85,7 +85,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5', 'contentMd5');
 
         $package1 = $this->createPackageMock();
         $package2 = $this->createPackageMock();
@@ -124,6 +124,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
                                    'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
                                    'This file is @gener'.'ated automatically'),
                 'hash' => 'md5',
+                'content-hash' => 'contentMd5',
                 'packages' => array(
                     array('name' => 'pkg1', 'version' => '1.0.0-beta'),
                     array('name' => 'pkg2', 'version' => '0.1.10')
@@ -148,7 +149,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5', 'md5');
 
         $package1 = $this->createPackageMock();
         $package1
@@ -167,7 +168,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5', 'contentMd5');
 
         $json
             ->expects($this->once())
@@ -183,12 +184,44 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5', 'contentMd5');
 
         $json
             ->expects($this->once())
             ->method('read')
             ->will($this->returnValue(array('hash' => 'oldmd5')));
+
+        $this->assertFalse($locker->isFresh());
+    }
+
+    public function testIsFreshWithContentHash()
+    {
+        $json = $this->createJsonFileMock();
+        $repo = $this->createRepositoryManagerMock();
+        $inst = $this->createInstallationManagerMock();
+
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5', 'contentMd5');
+
+        $json
+            ->expects($this->once())
+            ->method('read')
+            ->will($this->returnValue(array('hash' => 'oldMd5', 'content-hash' => 'contentMd5')));
+
+        $this->assertTrue($locker->isFresh());
+    }
+
+    public function testIsFreshFalseWithContentHash()
+    {
+        $json = $this->createJsonFileMock();
+        $repo = $this->createRepositoryManagerMock();
+        $inst = $this->createInstallationManagerMock();
+
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5', 'contentMd5');
+
+        $json
+            ->expects($this->once())
+            ->method('read')
+            ->will($this->returnValue(array('hash' => 'md5', 'content-hash' => 'oldMd5')));
 
         $this->assertFalse($locker->isFresh());
     }

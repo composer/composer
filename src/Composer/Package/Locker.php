@@ -35,6 +35,7 @@ class Locker
     private $repositoryManager;
     private $installationManager;
     private $hash;
+    private $contentHash;
     private $loader;
     private $dumper;
     private $process;
@@ -48,13 +49,15 @@ class Locker
      * @param RepositoryManager   $repositoryManager   repository manager instance
      * @param InstallationManager $installationManager installation manager instance
      * @param string              $hash                unique hash of the current composer configuration
+     * @param string              $contentHash         unique hash of the content of the current composer configuration
      */
-    public function __construct(IOInterface $io, JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $hash)
+    public function __construct(IOInterface $io, JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $hash, $contentHash)
     {
         $this->lockFile = $lockFile;
         $this->repositoryManager = $repositoryManager;
         $this->installationManager = $installationManager;
         $this->hash = $hash;
+        $this->contentHash = $contentHash;
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
         $this->process = new ProcessExecutor($io);
@@ -84,6 +87,11 @@ class Locker
     public function isFresh()
     {
         $lock = $this->lockFile->read();
+
+        if (!empty($lock['content-hash'])) {
+            // There is a content hash key, use that instead of the file hash
+            return $this->contentHash == $lock['content-hash'];
+        }
 
         return $this->hash === $lock['hash'];
     }
@@ -241,6 +249,7 @@ class Locker
                                'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
                                'This file is @gener'.'ated automatically'),
             'hash' => $this->hash,
+            'content-hash' => $this->contentHash,
             'packages' => null,
             'packages-dev' => null,
             'aliases' => array(),

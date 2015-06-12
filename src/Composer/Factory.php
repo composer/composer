@@ -306,7 +306,7 @@ class Factory
             $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
-            $locker = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io, $config)), $rm, $im, md5_file($composerFile));
+            $locker = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io, $config)), $rm, $im, md5_file($composerFile), $this->getContentHash($composerFile));
             $composer->setLocker($locker);
         }
 
@@ -484,5 +484,19 @@ class Factory
         $factory = new static();
 
         return $factory->createComposer($io, $config, $disablePlugins);
+    }
+
+    /**
+     * Returns the md5 hash of the sorted content of the composer file.
+     *
+     * @param string $composerFilePath Path to the composer file.
+     *
+     * @return string
+     */
+    private function getContentHash($composerFilePath)
+    {
+        $content = json_decode(file_get_contents($composerFilePath), true);
+        ksort($content);
+        return md5(json_encode($content));
     }
 }
