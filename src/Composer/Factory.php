@@ -496,7 +496,26 @@ class Factory
     private function getContentHash($composerFilePath)
     {
         $content = json_decode(file_get_contents($composerFilePath), true);
-        ksort($content);
-        return md5(json_encode($content));
+
+        $relevantKeys = array(
+            'require',
+            'require-dev',
+            'conflict',
+            'replace',
+            'provide',
+            'suggest',
+            'minimum-stability',
+            'prefer-stable',
+            'repositories',
+        );
+
+        $relevantContent = array();
+
+        foreach (array_intersect($relevantKeys, array_keys($content)) as $key) {
+            $relevantContent[$key] = $content[$key];
+        }
+
+        ksort($relevantContent);
+        return md5(json_encode($relevantContent));
     }
 }
