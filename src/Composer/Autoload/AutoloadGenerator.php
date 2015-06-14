@@ -183,7 +183,7 @@ EOF;
                             continue;
                         }
                         $whitelist = sprintf(
-                            '{%s/%s.+(?<!(?<!/)Test\.php)$}',
+                            '{%s/%s.+$}',
                             preg_quote($dir),
                             ($psrType === 'psr-0' && strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
                         );
