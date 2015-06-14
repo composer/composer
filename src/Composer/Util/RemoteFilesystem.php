@@ -162,7 +162,6 @@ class RemoteFilesystem
         }
 
         $errorMessage = '';
-        $errorCode = 0;
         $result = false;
         set_error_handler(function ($code, $msg) use (&$errorMessage) {
             if ($errorMessage) {
@@ -190,6 +189,7 @@ class RemoteFilesystem
         }
 
         // fail 4xx and 5xx responses and capture the response
+        $errorCode = 0;
         if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ ([45]\d\d)}i', $http_response_header[0], $match)) {
             $errorCode = $match[1];
             if (!$this->retry) {
