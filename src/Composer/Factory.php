@@ -507,6 +507,7 @@ class Factory
             'minimum-stability',
             'prefer-stable',
             'repositories',
+            'extra',
         );
 
         $relevantContent = array();
