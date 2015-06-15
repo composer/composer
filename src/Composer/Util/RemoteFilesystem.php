@@ -155,11 +155,60 @@ class RemoteFilesystem
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
-        $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
             $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
         }
+
+        list($errorCode, $errorMessage, $responseHeaders, $result) = $this->download($fileUrl, $options);
+
+        if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
+            $this->gzipDecode($responseHeaders, $result);
+        }
+
+        if ($this->progress && !$this->retry) {
+            $this->io->overwriteError("    Downloading: <comment>100%</comment>");
+        }
+
+        // handle copy command if download was successful
+        if (false !== $result && null !== $fileName) {
+            if ('' === $result) {
+                throw new TransportException('"'.$this->fileUrl.'" appears broken, and returned an empty 200 response');
+            }
+
+            $this->persist($fileName, $result);
+        }
+
+        if ($this->retry) {
+            $this->retry = false;
+
+            $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+
+            $authHelper = new AuthHelper($this->io, $this->config);
+            $authHelper->storeAuth($this->originUrl, $this->storeAuth);
+            $this->storeAuth = false;
+
+            return $result;
+        }
+
+        if (false === $result) {
+            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+            if (!empty($responseHeaders[0])) {
+                $e->setHeaders($responseHeaders);
+            }
+
+            throw $e;
+        }
+
+        if (!empty($responseHeaders[0])) {
+            $this->lastHeaders = $responseHeaders;
+        }
+
+        return $result;
+    }
+
+    private function download($fileUrl, array $options) {
+        $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         $errorMessage = '';
         $result = false;
@@ -201,82 +250,47 @@ class RemoteFilesystem
             $result = false;
         }
 
-        // decode gzip
-        if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
-            $decode = false;
-            foreach ($http_response_header as $header) {
-                if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
-                    $decode = true;
-                    continue;
-                } elseif (preg_match('{^HTTP/}i', $header)) {
-                    $decode = false;
-                }
+        return array($errorCode, $errorMessage, !empty($http_response_header) ? $http_response_header : array(), $result);
+    }
+
+    private function persist($fileName, &$result) {
+        $errorMessage = '';
+        set_error_handler(function ($code, $msg) use (&$errorMessage) {
+            if ($errorMessage) {
+                $errorMessage .= "\n";
             }
-
-            if ($decode) {
-                if (PHP_VERSION_ID >= 50400) {
-                    $result = zlib_decode($result);
-                } else {
-                    // work around issue with gzuncompress & co that do not work with all gzip checksums
-                    $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
-                }
-
-                if (!$result) {
-                    throw new TransportException('Failed to decode zlib stream');
-                }
-            }
-        }
-
-        if ($this->progress && !$this->retry) {
-            $this->io->overwriteError("    Downloading: <comment>100%</comment>");
-        }
-
-        // handle copy command if download was successful
-        if (false !== $result && null !== $fileName) {
-            if ('' === $result) {
-                throw new TransportException('"'.$this->fileUrl.'" appears broken, and returned an empty 200 response');
-            }
-
-            $errorMessage = '';
-            set_error_handler(function ($code, $msg) use (&$errorMessage) {
-                if ($errorMessage) {
-                    $errorMessage .= "\n";
-                }
-                $errorMessage .= preg_replace('{^file_put_contents\(.*?\): }', '', $msg);
-            });
-            $result = (bool) file_put_contents($fileName, $result);
-            restore_error_handler();
-            if (false === $result) {
-                throw new TransportException('The "'.$this->fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
-            }
-        }
-
-        if ($this->retry) {
-            $this->retry = false;
-
-            $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
-
-            $authHelper = new AuthHelper($this->io, $this->config);
-            $authHelper->storeAuth($this->originUrl, $this->storeAuth);
-            $this->storeAuth = false;
-
-            return $result;
-        }
-
+            $errorMessage .= preg_replace('{^file_put_contents\(.*?\): }', '', $msg);
+        });
+        $result = (bool) file_put_contents($fileName, $result);
+        restore_error_handler();
         if (false === $result) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
-            if (!empty($http_response_header[0])) {
-                $e->setHeaders($http_response_header);
+            throw new TransportException('The "'.$this->fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
+        }
+    }
+
+    private function gzipDecode($responseHeaders, &$result) {
+        $decode = false;
+        foreach ($responseHeaders as $header) {
+            if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
+                $decode = true;
+                continue;
+            } elseif (preg_match('{^HTTP/}i', $header)) {
+                $decode = false;
+            }
+        }
+
+        if ($decode) {
+            if (PHP_VERSION_ID >= 50400) {
+                $result = zlib_decode($result);
+            } else {
+                // work around issue with gzuncompress & co that do not work with all gzip checksums
+                $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
             }
 
-            throw $e;
+            if (!$result) {
+                throw new TransportException('Failed to decode zlib stream');
+            }
         }
-
-        if (!empty($http_response_header[0])) {
-            $this->lastHeaders = $http_response_header;
-        }
-
-        return $result;
     }
 
     /**
