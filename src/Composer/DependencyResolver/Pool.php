@@ -99,40 +99,9 @@ class Pool
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
                 $this->providerRepos[] = $repo;
                 $repo->setRootAliases($rootAliases);
-                $repo->resetPackageIds();
             } else {
                 foreach ($repo->getPackages() as $package) {
-                    $names = $package->getNames();
-                    $stability = $package->getStability();
-                    if ($exempt || $this->isPackageAcceptable($names, $stability)) {
-                        $package->setId($this->id++);
-                        $this->packages[] = $package;
-                        $this->packageByExactName[$package->getName()][$package->id] = $package;
-
-                        foreach ($names as $provided) {
-                            $this->packageByName[$provided][] = $package;
-                        }
-
-                        // handle root package aliases
-                        $name = $package->getName();
-                        if (isset($rootAliases[$name][$package->getVersion()])) {
-                            $alias = $rootAliases[$name][$package->getVersion()];
-                            if ($package instanceof AliasPackage) {
-                                $package = $package->getAliasOf();
-                            }
-                            $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
-                            $aliasPackage->setRootPackageAlias(true);
-                            $aliasPackage->setId($this->id++);
-
-                            $package->getRepository()->addPackage($aliasPackage);
-                            $this->packages[] = $aliasPackage;
-                            $this->packageByExactName[$aliasPackage->getName()][$aliasPackage->id] = $aliasPackage;
-
-                            foreach ($aliasPackage->getNames() as $name) {
-                                $this->packageByName[$name][] = $aliasPackage;
-                            }
-                        }
-                    }
+                    $this->loadPackage($package, $rootAliases, $exempt);
                 }
             }
         }
@@ -161,6 +130,38 @@ class Pool
     }
 
     /**
+     * Ensures that all given names and their requirements are loaded.
+     *
+     * @param array $packageNames A list of names that need to be available
+     */
+    public function loadRecursively(array $packageNames)
+    {
+        $loadedMap = array();
+        do {
+            $newPackageNames = array();
+            $loadedCount = count($loadedMap);
+
+            foreach ($this->providerRepos as $repo) {
+                $packages = $repo->loadRecursively(
+                    $packageNames,
+                    array($this, 'isPackageAcceptable')
+                );
+
+                foreach ($packages as $package) {
+                    $name = $package->getName();
+                    if (!isset($loadedMap[$name])) {
+                        $loadedMap[$name] = true;
+                        $newPackageNames[] = $name;
+                    }
+                    $this->loadPackage($package, $repo->getRootAliases());
+                }
+            }
+
+            $packageNames = $newPackageNames;
+        } while (count($loadedMap) > $loadedCount);
+    }
+
+    /**
      * Searches all packages providing the given package name and match the constraint
      *
      * @param  string                  $name          The package name to be searched for
@@ -180,6 +181,44 @@ class Pool
         return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $mustMatchName);
     }
 
+    private function loadPackage(PackageInterface $package, array $rootAliases, $acceptableExemption = false)
+    {
+        $names = $package->getNames();
+        $stability = $package->getStability();
+
+        if (!$acceptableExemption && !$this->isPackageAcceptable($names, $stability)) {
+            return;
+        }
+
+        $package->setId($this->id++);
+        $this->packages[] = $package;
+        $this->packageByExactName[$package->getName()][$package->id] = $package;
+
+        foreach ($names as $provided) {
+            $this->packageByName[$provided][] = $package;
+        }
+
+        // handle root package aliases
+        $name = $package->getName();
+        if (isset($rootAliases[$name][$package->getVersion()])) {
+            $alias = $rootAliases[$name][$package->getVersion()];
+            if ($package instanceof AliasPackage) {
+                $package = $package->getAliasOf();
+            }
+            $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
+            $aliasPackage->setRootPackageAlias(true);
+            $aliasPackage->setId($this->id++);
+
+            $package->getRepository()->addPackage($aliasPackage);
+            $this->packages[] = $aliasPackage;
+            $this->packageByExactName[$aliasPackage->getName()][$aliasPackage->id] = $aliasPackage;
+
+            foreach ($aliasPackage->getNames() as $name) {
+                $this->packageByName[$name][] = $aliasPackage;
+            }
+        }
+    }
+
     /**
      * @see whatProvides
      */
@@ -187,25 +226,12 @@ class Pool
     {
         $candidates = array();
 
-        foreach ($this->providerRepos as $repo) {
-            foreach ($repo->whatProvides($this, $name) as $candidate) {
-                $candidates[] = $candidate;
-                if ($candidate->id < 1) {
-                    $candidate->setId($this->id++);
-                    $this->packages[$this->id - 2] = $candidate;
-                }
-            }
-        }
-
         if ($mustMatchName) {
-            $candidates = array_filter($candidates, function ($candidate) use ($name) {
-                return $candidate->getName() == $name;
-            });
             if (isset($this->packageByExactName[$name])) {
-                $candidates = array_merge($candidates, $this->packageByExactName[$name]);
+                $candidates = $this->packageByExactName[$name];
             }
         } elseif (isset($this->packageByName[$name])) {
-            $candidates = array_merge($candidates, $this->packageByName[$name]);
+            $candidates = $this->packageByName[$name];
         }
 
         $matches = $provideMatches = array();

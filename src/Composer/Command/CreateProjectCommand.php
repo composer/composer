@@ -276,6 +276,7 @@ EOT
 
         $pool = new Pool($stability);
         $pool->addRepository($sourceRepo);
+        $pool->loadRecursively(array($name));
 
         // find the latest version if there are multiple
         $versionSelector = new VersionSelector($pool);
