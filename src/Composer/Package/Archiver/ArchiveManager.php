@@ -96,12 +96,13 @@ class ArchiveManager
      *
      * @param  PackageInterface          $package   The package to archive
      * @param  string                    $format    The format of the archive (zip, tar, ...)
-     * @param  string                    $targetDir The diretory where to build the archive
+     * @param  string                    $targetDir The directory where to build the archive
+     * @param  string                    $filename  Overrides the archive's default filename
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      * @return string                    The path of the created archive
      */
-    public function archive(PackageInterface $package, $format, $targetDir)
+    public function archive(PackageInterface $package, $format, $targetDir, $filename = null)
     {
         if (empty($format)) {
             throw new \InvalidArgumentException('Format must be specified');
@@ -123,6 +124,9 @@ class ArchiveManager
 
         $filesystem = new Filesystem();
         $packageName = $this->getPackageFilename($package);
+        if ($filename) {
+            $packageName = $filename;
+        }
 
         // Archive filename
         $filesystem->ensureDirectoryExists($targetDir);

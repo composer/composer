@@ -55,6 +55,23 @@ class ArchiveManagerTest extends ArchiverTest
         unlink($target);
     }
 
+    public function testArchiveFilename()
+    {
+        $this->setupGitRepo();
+
+        $package = $this->setupPackage();
+
+        $this->manager->archive($package, 'tar', $this->targetDir, 'override');
+
+        $target = $this->targetDir.'/override.tar';
+        $this->assertFileExists($target);
+
+        $tmppath = sys_get_temp_dir().'/composer_archiver/'.$this->manager->getPackageFilename($package);
+        $this->assertFileNotExists($tmppath);
+
+        unlink($target);
+    }
+
     protected function getTargetName(PackageInterface $package, $format)
     {
         $packageName = $this->manager->getPackageFilename($package);
