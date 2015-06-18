@@ -117,6 +117,7 @@ class ComposerRepository extends ArrayRepository
         }
 
         $loadedPackages = array();
+        $newNames = array();
 
         while (!$workQueue->isEmpty()) {
             $packageName = $workQueue->dequeue();
@@ -132,12 +133,16 @@ class ComposerRepository extends ArrayRepository
                 $loadedPackages[] = $package;
                 $requires = $package->getRequires();
                 foreach ($requires as $link) {
-                    $workQueue->enqueue($link->getTarget());
+                    $dependency = $link->getTarget();
+                    if (!isset($this->loadedMap[$dependency])) {
+                        $newNames[] = $dependency;
+                        $workQueue->enqueue($dependency);
+                    }
                 }
             }
         }
 
-        return $loadedPackages;
+        return array($loadedPackages, $newNames);
     }
 
     /**

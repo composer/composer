@@ -136,22 +136,31 @@ class Pool
      */
     public function loadRecursively(array $packageNames)
     {
+        // first add all dependencies of packages we already know
+        foreach ($this->packages as $loadedPackage) {
+            $requires = $loadedPackage->getRequires();
+            foreach ($requires as $link) {
+                $packageNames[] = $link->getTarget();
+            }
+        }
+        $packageNames = array_unique($packageNames);
+
         $loadedMap = array();
         do {
             $newPackageNames = array();
             $loadedCount = count($loadedMap);
 
             foreach ($this->providerRepos as $repo) {
-                $packages = $repo->loadRecursively(
+                list($packages, $foundNames) = $repo->loadRecursively(
                     $packageNames,
                     array($this, 'isPackageAcceptable')
                 );
+                $newPackageNames = array_merge($newPackageNames, $foundNames);
 
                 foreach ($packages as $package) {
                     $name = $package->getName();
                     if (!isset($loadedMap[$name])) {
                         $loadedMap[$name] = true;
-                        $newPackageNames[] = $name;
                     }
                     $this->loadPackage($package, $repo->getRootAliases());
                 }
