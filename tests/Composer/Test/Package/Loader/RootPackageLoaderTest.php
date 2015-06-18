@@ -118,6 +118,31 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("dev-foo", $package->getVersion());
     }
 
+    public function testNoVersionIsVisibleInPrettyVersion()
+    {
+        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $self = $this;
+
+        /* Can do away with this mock object when https://github.com/sebastianbergmann/phpunit-mock-objects/issues/81 is fixed */
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $processExecutor->expects($this->any())
+            ->method('execute')
+            ->willReturn(null);
+
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $loader = new RootPackageLoader($manager, $config, null, $processExecutor);
+        $package = $loader->load(array());
+
+        $this->assertEquals("1.0.0.0", $package->getVersion());
+        $this->assertEquals("No version set (parsed as 1.0.0)", $package->getPrettyVersion());
+    }
+
     protected function loadPackage($data)
     {
         $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
