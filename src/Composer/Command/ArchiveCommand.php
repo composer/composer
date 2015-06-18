@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Factory;
 use Composer\IO\IOInterface;
+use Composer\Config;
 use Composer\DependencyResolver\Pool;
 use Composer\Repository\CompositeRepository;
 use Composer\Script\ScriptEvents;
@@ -33,18 +34,16 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ArchiveCommand extends Command
 {
-    private $config;
     protected function configure()
     {
-        $this->config = Factory::createConfig();
         $this
             ->setName('archive')
             ->setDescription('Create an archive of this composer package')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),
-                new InputOption('format', 'f', InputOption::VALUE_OPTIONAL, 'Format of the resulting archive: tar or zip', null),
-                new InputOption('dir', false, InputOption::VALUE_OPTIONAL, 'Write the archive to this directory', null),
+                new InputOption('format', 'f', InputOption::VALUE_OPTIONAL, 'Format of the resulting archive: tar or zip'),
+                new InputOption('dir', false, InputOption::VALUE_OPTIONAL, 'Write the archive to this directory'),
             ))
             ->setHelp(<<<EOT
 The <info>archive</info> command creates an archive of the specified format
@@ -60,27 +59,28 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $config = Factory::createConfig();
         $composer = $this->getComposer(false);
         if ($composer) {
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'archive', $input, $output);
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
             $composer->getEventDispatcher()->dispatchScript(ScriptEvents::PRE_ARCHIVE_CMD);
         }
-        $format = $input->getOption('format');
-        $dir = $input->getOption('dir');
-        if ($format==null) {
-            $format = $this->config->get('archive-format');
+
+        if (null === $input->getOption('format')) {
+            $input->setOption('format', $config->get('archive-format'));
         }
-        if ($dir==null) {
-            $dir = $this->config->get('archive-dir');
+        if (null === $input->getOption('dir')) {
+            $input->setOption('dir', $config->get('archive-dir'));
         }
 
         $returnCode = $this->archive(
             $this->getIO(),
+            $config,
             $input->getArgument('package'),
             $input->getArgument('version'),
-            $format,
-            $dir
+            $input->getOption('format'),
+            $input->getOption('dir')
         );
 
         if (0 === $returnCode && $composer) {
@@ -90,11 +90,11 @@ EOT
         return $returnCode;
     }
 
-    protected function archive(IOInterface $io, $packageName = null, $version = null, $format = 'tar', $dest = '.')
+    protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.')
     {
         $factory = new Factory;
-        $downloadManager = $factory->createDownloadManager($io, $this->config);
-        $archiveManager = $factory->createArchiveManager($this->config, $downloadManager);
+        $downloadManager = $factory->createDownloadManager($io, $config);
+        $archiveManager = $factory->createArchiveManager($config, $downloadManager);
 
         if ($packageName) {
             $package = $this->selectPackage($io, $packageName, $version);
