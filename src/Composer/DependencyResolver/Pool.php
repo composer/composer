@@ -52,6 +52,7 @@ class Pool
     protected $filterRequires;
     protected $whitelist = null;
     protected $id = 1;
+    protected $loadedProviders = false;
 
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
     {
@@ -136,6 +137,10 @@ class Pool
      */
     public function loadRecursively(array $packageNames)
     {
+        if ($this->loadedProviders) {
+            throw new \RuntimeException("Cannot recursively load the pool multiple times");
+        }
+
         // first add all dependencies of packages we already know
         foreach ($this->packages as $loadedPackage) {
             $requires = $loadedPackage->getRequires();
@@ -168,6 +173,8 @@ class Pool
 
             $packageNames = $newPackageNames;
         } while (count($loadedMap) > $loadedCount);
+
+        $this->loadedProviders = true;
     }
 
     /**
@@ -182,6 +189,10 @@ class Pool
      */
     public function whatProvides($name, LinkConstraintInterface $constraint = null, $mustMatchName = false)
     {
+        if (!$this->loadedProviders) {
+            throw new \RuntimeException("You must first call loadRecursively() with a list of packages of interest, to initialize the Pool.");
+        }
+
         $key = ((int) $mustMatchName).$constraint;
         if (isset($this->providerCache[$name][$key])) {
             return $this->providerCache[$name][$key];
