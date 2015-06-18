@@ -102,7 +102,7 @@ class ConfigValidator
             $suggestName = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $manifest['name']);
             $suggestName = strtolower($suggestName);
 
-            $warnings[] = sprintf(
+            $publishErrors[] = sprintf(
                 'Name "%s" does not match the best practice (e.g. lower-cased/with-dashes). We suggest using "%s" instead. As such you will not be able to submit it to Packagist.',
                 $manifest['name'],
                 $suggestName
