@@ -101,9 +101,7 @@ EOT
     {
         $config = Factory::createConfig();
 
-        $preferSource = false;
-        $preferDist = false;
-        $this->updatePreferredOptions($config, $input, $preferSource, $preferDist);
+        $this->updatePreferredOptions($config, $input, $preferSource, $preferDist, true);
 
         if ($input->getOption('no-custom-installers')) {
             $this->getIO()->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
@@ -351,15 +349,16 @@ EOT
      * @param boolean        $preferSource
      * @param boolean        $preferDist
      */
-    protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist)
+    protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist, $keepVcsRequiresPreferSource = false)
     {
+        $preferSource = false;
+        $preferDist = false;
+
         switch ($config->get('preferred-install')) {
             case 'source':
                 $preferSource = true;
-                $preferDist = false;
                 break;
             case 'dist':
-                $preferSource = false;
                 $preferDist = true;
                 break;
             case 'auto':
@@ -368,8 +367,8 @@ EOT
                 break;
         }
 
-        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist') || $input->getOption('keep-vcs')) {
-            $preferSource = $input->getOption('prefer-source') || $input->getOption('keep-vcs');
+        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist') || ($keepVcsRequiresPreferSource && $input->getOption('keep-vcs'))) {
+            $preferSource = $input->getOption('prefer-source') || ($keepVcsRequiresPreferSource && $input->getOption('keep-vcs'));
             $preferDist = $input->getOption('prefer-dist');
         }
     }
