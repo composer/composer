@@ -970,7 +970,7 @@ class Installer
                 $package->setSourceUrl($newPackage->getSourceUrl());
                 // only update dist url for github dists as they use a combination of dist url + dist reference to install
                 // but for other urls this is ambiguous and could result in bad outcomes
-                if (preg_match('{^https?://(api\.)?github\.com/}', $newPackage->getDistUrl())) {
+                if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}', $newPackage->getDistUrl())) {
                     $package->setDistUrl($newPackage->getDistUrl());
                 }
             }
