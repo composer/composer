@@ -1,6 +1,7 @@
 # Config
 
-This chapter will describe the `config` section of the `composer.json` schema.
+This chapter will describe the `config` section of the `composer.json` 
+[schema](04-schema.md).
 
 ## config <span>([root-only](04-schema.md#root-package))</span>
 
