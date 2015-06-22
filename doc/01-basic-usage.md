@@ -2,11 +2,12 @@
 
 ## Introduction
 
-If you have not yet installed Composer, refer to the [Intro](00-intro.md)
-chapter. For our basic usage introduction, we will be installing 
-`monolog/monolog`, a logging library. Note that for the sake of simplicity, 
-this introduction will assume you have performed a [local](00-intro.md#locally) 
-install of Composer.
+For our basic usage introduction, we will be installing `monolog/monolog`,
+a logging library. If you have not yet installed Composer, refer to the 
+[Intro](00-intro.md) chapter.
+
+> **Note:** for the sake of simplicity, this introduction will assume you
+> have performed a [local](00-intro.md#locally) install of Composer.
 
 ## `composer.json`: Project Setup
 
@@ -61,36 +62,6 @@ like to also get RC, beta, alpha or dev versions of your dependencies you can
 do so using [stability flags](04-schema.md#package-links). To change that for
 all packages instead of doing per dependency you can also use the
 [minimum-stability](04-schema.md#minimum-stability) setting.
-
-If you are using range comparisons when selecting non-stable packages, and you
-specify a numeric version number (that is, no suffix indicating alpha, beta,
-rc, or stable), then both non-stable and stable versions of a particular
-release number will be treated as equally valid.
-
- * `>=`/`<=` will accept non-stable releases as well as the stable release.
- * `<`/`>` will reject non-stable releasese as well as the stable release.
-
-If you wish to consider only the stable release in the comparison, add the
-suffix `-stable` to the version number.
-
-Here are some examples:
-
- Example         | Interpretation
- --------------- | --------------
-`>=1.0.0`        | Any release, stable or non-, of 1.0.0 will be allowed
-`>=1.0.0-stable` | Only the stable release of 1.0.0 will be allowed
-`<2.0.0`         | Neither release, stable or non-, of 2.0.0 will be allowed
-`<2.0.0-stable`  | Only the stable release of 2.0.0 will be disallowed; non-stable releases will be allowed
-
-Note that the packages matched by these constraints are still checked against
-the `minimum-stability` setting and each package's stability flags.
-
-### Test version constraints
-
-You can test version constraints using [semver.mwl.be](http://semver.mwl.be).
-Fill in a package name and it will autofill the default version constraint
-which Composer would add to your `composer.json` file. You can adjust the
-version constraint and the tool will highlight all releases that match.
 
 ## Installing Dependencies
 

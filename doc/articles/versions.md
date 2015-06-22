@@ -8,7 +8,7 @@
 
 ### Exact
 
-You can specify the exact version of a package. This will tell Composer to 
+You can specify the exact version of a package. This will tell Composer to
 install this version and this version only. If other dependencies require
 a different version, the solver will ultimately fail and abort any install
 or update procedures.
@@ -17,26 +17,32 @@ Example: `1.0.2`
 
 ### Range
 
-By using comparison operators you can specify ranges of valid versions. Valid 
-operators are `>`, `>=`, `<`, `<=`, `!=`. <br />You can define multiple ranges. 
-Ranges separated by a space (<code> </code>) or comma (`,`) will be treated as 
-a **logical AND**. A double pipe (<code>&#124;&#124;</code>) will be treated as 
-a **logical OR**. AND has higher precedence than OR.
+By using comparison operators you can specify ranges of valid versions. Valid
+operators are `>`, `>=`, `<`, `<=`, `!=`.
 
-Example: `>=1.0` `>=1.0 <2.0` `>=1.0 <1.1 || >=1.2`
+You can define multiple ranges. Ranges separated by a space (<code> </code>) or
+comma (`,`) will be treated as a **logical AND**. A double pipe
+(<code>&#124;&#124;</code>) will be treated as a **logical OR**. AND has higher
+precedence than OR.
+
+Examples:
+
+* `>=1.0`
+* `>=1.0 <2.0`
+* `>=1.0 <1.1 || >=1.2`
 
 ### Range (Hyphen)
 
-Inclusive set of versions. Partial versions on the right include are completed 
-with a wildcard. For example `1.0 - 2.0` is equivalent to `>=1.0.0 <2.1` as the 
-`2.0` becomes `2.0.*`. On the other hand `1.0.0 - 2.1.0` is equivalent to 
+Inclusive set of versions. Partial versions on the right include are completed
+with a wildcard. For example `1.0 - 2.0` is equivalent to `>=1.0.0 <2.1` as the
+`2.0` becomes `2.0.*`. On the other hand `1.0.0 - 2.1.0` is equivalent to
 `>=1.0.0 <=2.1.0`.
 
 Example: `1.0 - 2.0`
 
 ### Wildcard
 
-You can specify a pattern with a `*` wildcard. `1.0.*` is the equivalent of 
+You can specify a pattern with a `*` wildcard. `1.0.*` is the equivalent of
 `>=1.0 <1.1`.
 
 Example: `1.0.*`
@@ -97,3 +103,11 @@ Examples:
  `1 - 2`            | `>=1.0.0.0-dev <3.0.0.0-dev`
  `~1.3`             | `>=1.3.0.0-dev <2.0.0.0-dev`
  `1.4.*`            | `>=1.4.0.0-dev <1.5.0.0-dev`
+
+## Test version constraints
+
+You can test version constraints using [semver.mwl.be](http://semver.mwl.be).
+Fill in a package name and it will autofill the default version constraint
+which Composer would add to your `composer.json` file. You can adjust the
+version constraint and the tool will highlight all releases that match.
+
