@@ -77,15 +77,16 @@ The installer will just check a few PHP settings and then download
 is a PHAR (PHP archive), which is an archive format for PHP which can be run on
 the command line, amongst other things.
 
+Now just run `php composer.phar` in order to run Composer.
+
 You can install Composer to a specific directory by using the `--install-dir`
-option and providing a target directory (it can be an absolute or relative
-path):
+option and additionally (re)name it as well using the `--filename` option:
 
 ```sh
-curl -sS https://getcomposer.org/installer | php -- --install-dir=bin
+curl -sS https://getcomposer.org/installer | php -- --install-dir=bin --filename=composer
 ```
 
-Now just run `php composer.phar` in order to run Composer.
+Now just run `php bin/composer` in order to run Composer.
 
 #### Globally
 
