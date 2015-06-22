@@ -87,7 +87,7 @@ that needs some special logic, you can define a custom type. This could be a
 all be specific to certain projects, and they will need to provide an
 installer capable of installing packages of that type.
 
-Out of the box, composer supports four types:
+Out of the box, Composer supports four types:
 
 - **library:** This is the default. It will simply copy the files to `vendor`.
 - **project:** This denotes a project rather than a library. For example
@@ -656,7 +656,7 @@ Use `"prefer-stable": true` to enable.
 
 Custom package repositories to use.
 
-By default composer just uses the packagist repository. By specifying
+By default Composer just uses the packagist repository. By specifying
 repositories you can get packages from elsewhere.
 
 Repositories are not resolved recursively. You can only add them to your main
@@ -665,14 +665,14 @@ ignored.
 
 The following repository types are supported:
 
-* **composer:** A composer repository is simply a `packages.json` file served
+* **composer:** A Composer repository is simply a `packages.json` file served
   via the network (HTTP, FTP, SSH), that contains a list of `composer.json`
   objects with additional `dist` and/or `source` information. The `packages.json`
   file is loaded using a PHP stream. You can set extra options on that stream
   using the `options` parameter.
 * **vcs:** The version control system repository can fetch packages from git,
   svn and hg repositories.
-* **pear:** With this you can import any pear repository into your composer
+* **pear:** With this you can import any pear repository into your Composer
   project.
 * **package:** If you depend on a project that does not have any support for
   composer whatsoever you can define the package inline using a `package`
@@ -794,10 +794,11 @@ Optional.
 
 ### non-feature-branches
 
-A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something), that will NOT be handled as feature branches. This is an array of strings.
+A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something), 
+that will NOT be handled as feature branches. This is an array of strings.
 
 If you have non-numeric branch names, for example like "latest", "current", "latest-stable"
-or something, that do not look like a version number, then composer handles such branches
+or something, that do not look like a version number, then Composer handles such branches
 as feature branches. This means it searches for parent branches, that look like a version
 or ends at special branches (like master) and the root package version number becomes the
 version of the parent branch or at least master or something.

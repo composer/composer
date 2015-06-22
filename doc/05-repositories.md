@@ -6,7 +6,7 @@ of repositories are available, and how they work.
 ## Concepts
 
 Before we look at the different types of repositories that exist, we need to
-understand some of the basic concepts that composer is built on.
+understand some of the basic concepts that Composer is built on.
 
 ### Package
 
@@ -16,8 +16,8 @@ code, but in theory it could be anything. And it contains a package
 description which has a name and a version. The name and the version are used
 to identify the package.
 
-In fact, internally composer sees every version as a separate package. While
-this distinction does not matter when you are using composer, it's quite
+In fact, internally Composer sees every version as a separate package. While
+this distinction does not matter when you are using Composer, it's quite
 important when you want to change it.
 
 In addition to the name and the version, there is useful metadata. The information
@@ -312,7 +312,7 @@ should you need to specify one for whatever reason, you can use `git`, `svn` or
 
 If you set the `no-api` key to `true` on a github repository it will clone the
 repository as it would with any other git repository instead of using the
-GitHub API. But unlike using the `git` driver directly, composer will still
+GitHub API. But unlike using the `git` driver directly, Composer will still
 attempt to use github's zip files.
 
 #### Subversion Options
@@ -341,7 +341,7 @@ If you have no branches or tags directory you can disable them entirely by
 setting the `branches-path` or `tags-path` to `false`.
 
 If the package is in a sub-directory, e.g. `/trunk/foo/bar/composer.json` and
-`/tags/1.0/foo/bar/composer.json`, then you can make composer access it by
+`/tags/1.0/foo/bar/composer.json`, then you can make Composer access it by
 setting the `"package-path"` option to the sub-directory, in this example it
 would be `"package-path": "foo/bar/"`.
 
@@ -462,7 +462,7 @@ and `IntermediatePackage` from a Github repository:
 
 ### Package
 
-If you want to use a project that does not support composer through any of the
+If you want to use a project that does not support Composer through any of the
 means above, you still can define the package yourself by using a `package`
 repository.
 
@@ -517,7 +517,7 @@ Typically you would leave the source part off, as you don't really need it.
 While you will probably want to put your packages on packagist most of the time,
 there are some use cases for hosting your own repository.
 
-* **Private company packages:** If you are part of a company that uses composer
+* **Private company packages:** If you are part of a company that uses Composer
   for their packages internally, you might want to keep those packages private.
 
 * **Separate ecosystem:** If you have a project which has its own ecosystem,
@@ -538,15 +538,16 @@ supported use case and changes will happen without caring for third parties
 using the code.
 
 Packagist is a Symfony2 application, and it is [available on
-GitHub](https://github.com/composer/packagist). It uses composer internally and
-acts as a proxy between VCS repositories and the composer users. It holds a list
-of all VCS packages, periodically re-crawls them, and exposes them as a composer
+GitHub](https://github.com/composer/packagist). It uses Composer internally and
+acts as a proxy between VCS repositories and the Composer users. It holds a list
+of all VCS packages, periodically re-crawls them, and exposes them as a Composer
 repository.
 
 ### Toran Proxy
 
 [Toran Proxy](https://toranproxy.com/) is a web app much like Packagist but
-providing private package hosting as well as mirroring/proxying of GitHub and packagist.org. Check its homepage and the [Satis/Toran Proxy article](articles/handling-private-packages-with-satis.md)
+providing private package hosting as well as mirroring/proxying of GitHub and 
+packagist.org. Check its homepage and the [Satis/Toran Proxy article](articles/handling-private-packages-with-satis.md)
 for more information.
 
 ### Satis

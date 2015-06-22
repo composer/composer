@@ -16,7 +16,7 @@ slow connection or huge vendors.
 
 ### use-include-path
 
-Defaults to `false`. If true, the Composer autoloader will also look for classes
+Defaults to `false`. If `true`, the Composer autoloader will also look for classes
 in the PHP include path.
 
 ### preferred-install
@@ -49,12 +49,12 @@ an OAuth token for GitHub.
 
 A list of domain names and username/passwords to authenticate against them. For
 example using `{"example.org": {"username": "alice", "password": "foo"}` as the
-value of this option will let composer authenticate against example.org.
+value of this option will let Composer authenticate against example.org.
 
 ### platform
 
 Lets you fake platform packages (PHP and extensions) so that you can emulate a
-production env or define your target platform in the config. e.g. `{"php":
+production env or define your target platform in the config. Example: `{"php":
 "5.4", "ext-something": "4.0"}`.
 
 ### vendor-dir
@@ -72,7 +72,7 @@ into this directory.
 
 Defaults to `$COMPOSER_HOME/cache` on unix systems and
 `C:\Users\<user>\AppData\Local\Composer` on Windows. Stores all the caches used
-by composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
+by Composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
 
 ### cache-files-dir
 
@@ -104,7 +104,7 @@ first until the cache fits.
 
 ### prepend-autoloader
 
-Defaults to `true`. If false, the composer autoloader will not be prepended to
+Defaults to `true`. If false, the Composer autoloader will not be prepended to
 existing autoloaders. This is sometimes required to fix interoperability issues
 with other autoloaders.
 
@@ -119,7 +119,7 @@ Defaults to `false`. Always optimize when dumping the autoloader.
 
 ### classmap-authoritative
 
-Defaults to `false`. If true, the composer autoloader will not scan the
+Defaults to `false`. If `true`, the Composer autoloader will not scan the
 filesystem for classes that are not found in the class map. Implies
 'optimize-autoloader'.
 
@@ -130,7 +130,7 @@ used for GitHub Enterprise setups.
 
 ### github-expose-hostname
 
-Defaults to `true`. If set to false, the OAuth tokens created to access the
+Defaults to `true`. If set to `false`, the OAuth tokens created to access the
 github API will have a date instead of the machine hostname.
 
 ### notify-on-install
