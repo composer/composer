@@ -188,23 +188,23 @@ dependency in the `require` field.
 
 ## Publishing to packagist
 
-Alright, so now you can publish packages. But specifying the vcs repository
+Alright, so now you can publish packages. But specifying the VCS repository
 every time is cumbersome. You don't want to force all your users to do that.
 
 The other thing that you may have noticed is that we did not specify a package
-repository for `monolog/monolog`. How did that work? The answer is packagist.
+repository for `monolog/monolog`. How did that work? The answer is Packagist.
 
 [Packagist](https://packagist.org/) is the main package repository for
 Composer, and it is enabled by default. Anything that is published on
-packagist is available automatically through Composer. Since monolog
+Packagist is available automatically through Composer. Since monolog
 [is on packagist](https://packagist.org/packages/monolog/monolog), we can depend
 on it without having to specify any additional repositories.
 
 If we wanted to share `hello-world` with the world, we would publish it on
-packagist as well. Doing so is really easy.
+Packagist as well. Doing so is really easy.
 
 You simply hit the big "Submit Package" button and sign up. Then you submit
-the URL to your VCS repository, at which point packagist will start crawling
+the URL to your VCS repository, at which point Packagist will start crawling
 it. Once it is done, your package will be available to anyone.
 
 &larr; [Basic usage](01-basic-usage.md) |  [Command-line interface](03-cli.md) &rarr;

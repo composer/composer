@@ -1,12 +1,14 @@
 # Community
 
-There are many people using composer already, and quite a few of them are
+There are many people using Composer already, and quite a few of them are
 contributing.
 
 ## Contributing
 
-If you would like to contribute to composer, please read the
-[README](https://github.com/composer/composer).
+If you would like to contribute to Composer, please read the
+[README](https://github.com/composer/composer) and 
+[CONTRIBUTING](https://github.com//composer/composer/blob/master/CONTRIBUTING.md)
+documents.
 
 The most important guidelines are described as follows:
 
@@ -31,4 +33,4 @@ for users and [#composer-dev](irc://irc.freenode.org/composer-dev) for developme
 Stack Overflow has a growing collection of
 [Composer related questions](https://stackoverflow.com/questions/tagged/composer-php).
 
-&larr; [Repositories](05-repositories.md)
+&larr; [Config](06-config.md)
