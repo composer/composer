@@ -20,9 +20,6 @@ this is the `config` field. Only the root package can define configuration.
 The config of dependencies is ignored. This makes the `config` field
 `root-only`.
 
-If you clone one of those dependencies to work on it, then that package is the
-root package. The `composer.json` is identical, but the context is different.
-
 > **Note:** A package can be the root package or not, depending on the context.
 > For example, if your project depends on the `monolog` library, your project
 > is the root package. However, if you clone `monolog` from GitHub in order to
