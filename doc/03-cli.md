@@ -82,7 +82,7 @@ resolution.
   have a proper setup.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these. See also the `platform` [config option](04-schema.md#config).
+  fulfill these. See also the [`platform`](06-config.md#platform) config option.
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
@@ -128,7 +128,7 @@ php composer.phar update vendor/*
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these. See also the `platform` [config option](04-schema.md#config).
+  fulfill these. See also the [`platform`](06-config.md#platform) config option.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
@@ -172,7 +172,7 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these. See also the `platform` [config option](04-schema.md#config).
+  fulfill these. See also the [`platform`](06-config.md#platform) config option.
 * **--dev:** Add packages to `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -196,7 +196,7 @@ uninstalled.
 ### Options
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these. See also the `platform` [config option](04-schema.md#config).
+  fulfill these. See also the [`platform`](06-config.md#platform) config option.
 * **--dev:** Remove packages from `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -395,8 +395,7 @@ php composer.phar config --list
 configuration value.  For settings that can take an array of values (like
 `github-protocols`), more than one setting-value arguments are allowed.
 
-See the [config schema section](04-schema.md#config) for valid configuration
-options.
+See the [Config](06-config.md) chapter for valid configuration options.
 
 ### Options
 
@@ -633,8 +632,8 @@ You may put a `config.json` file into the location which `COMPOSER_HOME` points
 to. Composer will merge this configuration with your project's `composer.json`
 when you run the `install` and `update` commands.
 
-This file allows you to set [configuration](04-schema.md#config) and
-[repositories](05-repositories.md) for the user's projects.
+This file allows you to set [repositories](05-repositories.md) and
+[configuration](06-config.md) for the user's projects.
 
 In case global configuration matches _local_ configuration, the _local_
 configuration in the project's `composer.json` always wins.
@@ -642,7 +641,7 @@ configuration in the project's `composer.json` always wins.
 ### COMPOSER_CACHE_DIR
 
 The `COMPOSER_CACHE_DIR` var allows you to change the Composer cache directory,
-which is also configurable via the [`cache-dir`](04-schema.md#config) option.
+which is also configurable via the [`cache-dir`](06-config.md#cache-dir) option.
 
 By default it points to $COMPOSER_HOME/cache on \*nix and OSX, and
 `C:\Users\<user>\AppData\Local\Composer` (or `%LOCALAPPDATA%/Composer`) on Windows.
@@ -654,7 +653,7 @@ commands) to finish executing. The default value is 300 seconds (5 minutes).
 
 ### COMPOSER_DISCARD_CHANGES
 
-This env var controls the discard-changes [config option](04-schema.md#config).
+This env var controls the [`discard-changes`](06-config.md#discard-changes) config option.
 
 ### COMPOSER_NO_INTERACTION
 
