@@ -731,4 +731,9 @@ will look from the first to the last repository, and pick the first match.
 By default Packagist is added last which means that custom repositories can
 override packages from it.
 
+### config <span>([root-only](04-schema.md#root-package))</span>
+
+A set of configuration options. It is only used for projects. See 
+[Config](06-config.md) for a description of each individual option.
+
 &larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
