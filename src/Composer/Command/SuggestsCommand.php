@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
@@ -27,6 +28,7 @@ class SuggestsCommand extends Command
             ->setDescription('Show package suggestions')
             ->setDefinition(array(
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Exclude suggestions from require-dev packages'),
+                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that you want to list suggestions from.'),
             ))
             ->setHelp(<<<EOT
 
@@ -50,14 +52,16 @@ EOT
             $stderr = $output->getErrorOutput();
         }
 
-        $packages = $lock['packages'];
+        $list = $lock['packages'];
 
         if (!$input->getOption('no-dev')) {
-            $packages += $lock['packages-dev'];
+            $list += $lock['packages-dev'];
         }
 
-        foreach ($packages as $package) {
-            if (!empty($package['suggest'])) {
+        $packages = $input->getArgument('packages');
+
+        foreach ($list as $package) {
+            if (!empty($package['suggest']) && (empty($packages) || in_array($package['name'], $packages))) {
                 $stderr->writeln(sprintf('%s suggests:', $package['name']));
                 foreach ($package['suggest'] as $target => $reason) {
                     if (empty($reason)) {
