@@ -296,11 +296,15 @@ in your browser.
 
 ## suggests
 
-Lists all packages suggested by currently installed set of packages.
+Lists all packages suggested by currently installed set of packages. You can
+optionally pass one or multiple package names in the format of `vendor/package`
+to limit output to suggestions made by those packages only.
 
 ### Options
 
 * **--no-dev:** Exludes suggestions from `require-dev` packages.
+* **-v[v]:** Increased verbosity adds suggesting package name (`-v`) and
+  reason for suggestion (`-vv`).
 
 ## depends
 
