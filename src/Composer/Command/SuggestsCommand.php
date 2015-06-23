@@ -14,44 +14,57 @@ namespace Composer\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 
-/**
- * @author Gusakov Nikita <dev@nkt.me>
- */
 class SuggestsCommand extends Command
 {
     protected function configure()
     {
         $this
             ->setName('suggests')
-            ->setDescription('Show packages suggests')
+            ->setDescription('Show package suggestions')
             ->setDefinition(array(
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Show dev suggests'),
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Exclude suggestions from require-dev packages'),
             ))
             ->setHelp(<<<EOT
 
-The <info>suggests</info> command show packages that suggesting to install other packages.
+The <info>%command.name%</info> command shows suggested packages.
 
 EOT
-            );
+            )
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $lockData = $this->getComposer()->getLocker()->getLockData();
-        $this->printSuggests($output, $lockData['packages']);
-        if ($input->getOption('dev')) {
-            $this->printSuggests($output, $lockData['packages-dev']);
-        }
-    }
+        $lock = $this->getComposer()->getLocker()->getLockData();
 
-    private function printSuggests(OutputInterface $output, array $packages)
-    {
+        if (empty($lock)) {
+            throw new \RuntimeException('Lockfile seems to be empty?');
+        }
+
+        $stderr = $output;
+        if ($output instanceof ConsoleOutputInterface) {
+            $stderr = $output->getErrorOutput();
+        }
+
+        $packages = $lock['packages'];
+
+        if (!$input->getOption('no-dev')) {
+            $packages += $lock['packages-dev'];
+        }
+
         foreach ($packages as $package) {
-            if (isset($package['suggest'])) {
+            if (!empty($package['suggest'])) {
+                $stderr->writeln(sprintf('%s suggests:', $package['name']));
                 foreach ($package['suggest'] as $target => $reason) {
-                    $output->writeln($package['name'].' suggests installing '.$target.' ('.$reason.')');
+                    if (empty($reason)) {
+                        $reason = '*';
+                    }
+
+                    $output->writeln(sprintf('<info>%s</info>: <comment>%s</comment>', $target, $reason));
                 }
             }
         }

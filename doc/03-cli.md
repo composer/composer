@@ -296,14 +296,11 @@ in your browser.
 
 ## suggests
 
-To list all of vendors suggesting to install packages, you can use the `suggests` command.
-
-    $ php composer.phar suggests
-
+Lists all packages suggested by currently installed set of packages.
 
 ### Options
 
-* **--dev:** Show dev suggests.
+* **--no-dev:** Exludes suggestions from `require-dev` packages.
 
 ## depends
 
