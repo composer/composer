@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Package\Version;
 
+use Composer\Package\Link;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
@@ -349,6 +350,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('^1.2.3',        new VersionConstraint('>=', '1.2.3.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
             array('^0.2.3',        new VersionConstraint('>=', '0.2.3.0-dev'), new VersionConstraint('<', '0.3.0.0-dev')),
             array('^0.2',          new VersionConstraint('>=', '0.2.0.0-dev'), new VersionConstraint('<', '0.3.0.0-dev')),
+            array('^0.2.0',        new VersionConstraint('>=', '0.2.0.0-dev'), new VersionConstraint('<', '0.3.0.0-dev')),
             array('^0.0.3',        new VersionConstraint('>=', '0.0.3.0-dev'), new VersionConstraint('<', '0.0.4.0-dev')),
             array('^0.0.3-alpha',  new VersionConstraint('>=', '0.0.3.0-alpha'), new VersionConstraint('<', '0.0.4.0-dev')),
             array('^0.0.3-dev',    new VersionConstraint('>=', '0.0.3.0-dev'), new VersionConstraint('<', '0.0.4.0-dev')),
@@ -373,12 +375,16 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function hyphenConstraints()
     {
         return array(
-            array('1 - 2',                  new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<',  '3.0.0.0-dev')),
-            array('1.2.3 - 2.3.4.5',        new VersionConstraint('>=', '1.2.3.0-dev'),   new VersionConstraint('<=', '2.3.4.5')),
-            array('1.2-beta - 2.3',         new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<',  '2.4.0.0-dev')),
-            array('1.2-beta - 2.3-dev',     new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<=', '2.3.0.0-dev')),
-            array('1.2-RC - 2.3.1',         new VersionConstraint('>=', '1.2.0.0-RC'),    new VersionConstraint('<=', '2.3.1.0')),
-            array('1.2.3-alpha - 2.3-RC',   new VersionConstraint('>=', '1.2.3.0-alpha'), new VersionConstraint('<=', '2.3.0.0-RC')),
+            array('1 - 2',                new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<',  '3.0.0.0-dev')),
+            array('1.2.3 - 2.3.4.5',      new VersionConstraint('>=', '1.2.3.0-dev'),   new VersionConstraint('<=', '2.3.4.5')),
+            array('1.2-beta - 2.3',       new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<',  '2.4.0.0-dev')),
+            array('1.2-beta - 2.3-dev',   new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<=', '2.3.0.0-dev')),
+            array('1.2-RC - 2.3.1',       new VersionConstraint('>=', '1.2.0.0-RC'),    new VersionConstraint('<=', '2.3.1.0')),
+            array('1.2.3-alpha - 2.3-RC', new VersionConstraint('>=', '1.2.3.0-alpha'), new VersionConstraint('<=', '2.3.0.0-RC')),
+            array('1 - 2.0',              new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<', '2.1.0.0-dev')),
+            array('1 - 2.1',              new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<', '2.2.0.0-dev')),
+            array('1.2 - 2.1.0',          new VersionConstraint('>=', '1.2.0.0-dev'),   new VersionConstraint('<=', '2.1.0.0')),
+            array('1.3 - 2.1.3',          new VersionConstraint('>=', '1.3.0.0-dev'),   new VersionConstraint('<=', '2.1.3.0')),
         );
     }
 
@@ -507,5 +513,51 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('alpha',  '1.2_a1'),
             array('RC',     '2.0.0rc1')
         );
+    }
+
+    public function pluginApiVersions()
+    {
+        return array(
+            array('1.0'),
+            array('1.0.0'),
+            array('1.0.0.0'),
+            array('1'),
+            array('=1.0.0'),
+            array('==1.0'),
+            array('~1.0.0'),
+            array('*'),
+            array('3.0.*'),
+            array('@stable'),
+            array('1.0.0@stable'),
+            array('^5.1'),
+            array('>=1.0.0 <2.5'),
+            array('x'),
+            array('1.0.0-dev'),
+        );
+    }
+
+    /**
+     * @dataProvider pluginApiVersions
+     */
+    public function testPluginApiVersionAreKeptAsDeclared($apiVersion)
+    {
+        $parser = new VersionParser;
+
+        /** @var Link[] $links */
+        $links = $parser->parseLinks('Plugin', '9.9.9', '', array('composer-plugin-api' => $apiVersion));
+
+        $this->assertArrayHasKey('composer-plugin-api', $links);
+        $this->assertSame($apiVersion, $links['composer-plugin-api']->getConstraint()->getPrettyString());
+    }
+
+    public function testPluginApiVersionDoesSupportSelfVersion()
+    {
+        $parser = new VersionParser;
+
+        /** @var Link[] $links */
+        $links = $parser->parseLinks('Plugin', '6.6.6', '', array('composer-plugin-api' => 'self.version'));
+
+        $this->assertArrayHasKey('composer-plugin-api', $links);
+        $this->assertSame('6.6.6', $links['composer-plugin-api']->getConstraint()->getPrettyString());
     }
 }

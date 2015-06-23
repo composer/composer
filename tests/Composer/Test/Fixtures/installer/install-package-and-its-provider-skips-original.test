@@ -1,0 +1,22 @@
+--TEST--
+Install package and it's replacer skips the original
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "ext-foo", "version": "1.0.0" },
+                { "name": "ext-foo/fork", "version": "0.5.0", "replace": { "ext-foo": "1.0.*" } }
+            ]
+        }
+    ],
+    "require": {
+        "ext-foo": "1.0.0",
+        "ext-foo/fork": "0.5.*"
+    }
+}
+--RUN--
+install
+--EXPECT--
+Installing ext-foo/fork (0.5.0)

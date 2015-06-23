@@ -9,6 +9,17 @@ use Composer\Autoload\ClassLoader;
  */
 class ClassLoaderTest extends \PHPUnit_Framework_TestCase
 {
+    public function testLoadClassDotPhp()
+    {
+        $loader = new ClassLoader();
+        $loader->add('DirDotPhp\\', __DIR__ . '/Fixtures');
+        $loader->addPsr4('DirDotPhp\\', __DIR__ . '/Fixtures/DirDotPhp/psr4');
+
+        $class = 'DirDotPhp\\Dir';
+        $loader->loadClass($class);
+        $this->assertTrue(class_exists($class, false), "->loadClass() loads '$class'.");
+    }
+
     /**
      * Tests regular PSR-0 and PSR-4 class loading.
      *

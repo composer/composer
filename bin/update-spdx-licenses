@@ -1,0 +1,9 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/../src/bootstrap.php';
+
+use Composer\Util\SpdxLicensesUpdater;
+
+$licenses = new SpdxLicensesUpdater;
+$licenses->update();

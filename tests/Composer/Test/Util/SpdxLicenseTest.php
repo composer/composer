@@ -2,12 +2,28 @@
 namespace Composer\Test\Util;
 
 use Composer\TestCase;
-use Composer\Util\SpdxLicenseIdentifier;
+use Composer\Util\SpdxLicense;
 
-class SpdxLicenseIdentifierTest extends TestCase
+class SpdxLicenseTest extends TestCase
 {
+    /**
+     * @var object
+     */
+    private $license;
+
+    public function setUp()
+    {
+        $this->license = new SpdxLicense;
+    }
+
     public static function provideValidLicenses()
     {
+        $json = file_get_contents(__DIR__ . '/../../../../res/spdx-licenses.json');
+
+        $licenses = json_decode($json, true);
+
+        $identifiers = array_keys($licenses);
+
         $valid = array_merge(
             array(
                 "MIT",
@@ -18,7 +34,7 @@ class SpdxLicenseIdentifierTest extends TestCase
                 "(LGPL-2.0 or GPL-3.0+)",
                 "(EUDatagrid and GPL-3.0+)",
             ),
-            json_decode(file_get_contents(__DIR__ . '/../../../../res/spdx-identifier.json'))
+            $identifiers
         );
 
         foreach ($valid as &$r) {
@@ -68,8 +84,7 @@ class SpdxLicenseIdentifierTest extends TestCase
      */
     public function testValidate($license)
     {
-        $validator = new SpdxLicenseIdentifier();
-        $this->assertTrue($validator->validate($license));
+        $this->assertTrue($this->license->validate($license));
     }
 
     /**
@@ -78,8 +93,7 @@ class SpdxLicenseIdentifierTest extends TestCase
      */
     public function testInvalidLicenses($invalidLicense)
     {
-        $validator = new SpdxLicenseIdentifier();
-        $this->assertFalse($validator->validate($invalidLicense));
+        $this->assertFalse($this->license->validate($invalidLicense));
     }
 
     /**
@@ -88,7 +102,31 @@ class SpdxLicenseIdentifierTest extends TestCase
      */
     public function testInvalidArgument($invalidArgument)
     {
-        $validator = new SpdxLicenseIdentifier();
-        $validator->validate($invalidArgument);
+        $this->license->validate($invalidArgument);
+    }
+
+    public function testGetLicenseByIdentifier()
+    {
+        $license = $this->license->getLicenseByIdentifier('AGPL-1.0');
+        $this->assertEquals($license[0], 'Affero General Public License v1.0'); // fullname
+        $this->assertFalse($license[1]); // osi approved
+    }
+
+    public function testGetIdentifierByName()
+    {
+        $identifier = $this->license->getIdentifierByName('Affero General Public License v1.0');
+        $this->assertEquals($identifier, 'AGPL-1.0');
+
+        $identifier = $this->license->getIdentifierByName('BSD 2-clause "Simplified" License');
+        $this->assertEquals($identifier, 'BSD-2-Clause');
+    }
+
+    public function testIsOsiApprovedByIdentifier()
+    {
+        $osiApproved = $this->license->isOsiApprovedByIdentifier('MIT');
+        $this->assertTrue($osiApproved);
+
+        $osiApproved = $this->license->isOsiApprovedByIdentifier('AGPL-1.0');
+        $this->assertFalse($osiApproved);
     }
 }

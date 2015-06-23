@@ -121,7 +121,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->method('write')
             ->with(array(
                 '_readme' => array('This file locks the dependencies of your project to a known state',
-                                   'Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
+                                   'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
                                    'This file is @gener'.'ated automatically'),
                 'hash' => 'md5',
                 'packages' => array(
@@ -134,11 +134,12 @@ class LockerTest extends \PHPUnit_Framework_TestCase
                 'stability-flags' => array(),
                 'platform' => array(),
                 'platform-dev' => array(),
+                'platform-overrides' => array('foo/bar' => '1.0'),
                 'prefer-stable' => false,
                 'prefer-lowest' => false,
             ));
 
-        $locker->setLockData(array($package1, $package2), array(), array(), array(), array(), 'dev', array(), false, false);
+        $locker->setLockData(array($package1, $package2), array(), array(), array(), array(), 'dev', array(), false, false, array('foo/bar' => '1.0'));
     }
 
     public function testLockBadPackages()
@@ -157,7 +158,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
 
         $this->setExpectedException('LogicException');
 
-        $locker->setLockData(array($package1), array(), array(), array(), array(), 'dev', array(), false, false);
+        $locker->setLockData(array($package1), array(), array(), array(), array(), 'dev', array(), false, false, array());
     }
 
     public function testIsFresh()

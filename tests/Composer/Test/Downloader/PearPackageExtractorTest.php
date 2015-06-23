@@ -18,11 +18,15 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
 {
     public function testShouldExtractPackage_1_0()
     {
+        $state = libxml_disable_entity_loader(true);
+
         $extractor = $this->getMockForAbstractClass('Composer\Downloader\PearPackageExtractor', array(), '', false);
         $method = new \ReflectionMethod($extractor, 'buildCopyActions');
         $method->setAccessible(true);
 
         $fileActions = $method->invoke($extractor, __DIR__ . '/Fixtures/Package_v1.0', array('php' => '/'), array());
+
+        libxml_disable_entity_loader($state);
 
         $expectedFileActions = array(
             'Gtk.php' => array(
@@ -49,11 +53,15 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
 
     public function testShouldExtractPackage_2_0()
     {
+        $state = libxml_disable_entity_loader(true);
+
         $extractor = $this->getMockForAbstractClass('Composer\Downloader\PearPackageExtractor', array(), '', false);
         $method = new \ReflectionMethod($extractor, 'buildCopyActions');
         $method->setAccessible(true);
 
         $fileActions = $method->invoke($extractor, __DIR__ . '/Fixtures/Package_v2.0', array('php' => '/'), array());
+
+        libxml_disable_entity_loader($state);
 
         $expectedFileActions = array(
             'URL.php' => array(
@@ -68,11 +76,15 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
 
     public function testShouldExtractPackage_2_1()
     {
+        $state = libxml_disable_entity_loader(true);
+
         $extractor = $this->getMockForAbstractClass('Composer\Downloader\PearPackageExtractor', array(), '', false);
         $method = new \ReflectionMethod($extractor, 'buildCopyActions');
         $method->setAccessible(true);
 
         $fileActions = $method->invoke($extractor, __DIR__ . '/Fixtures/Package_v2.1', array('php' => '/', 'script' => '/bin'), array());
+
+        libxml_disable_entity_loader($state);
 
         $expectedFileActions = array(
             'php/Zend/Authentication/Storage/StorageInterface.php' => array(

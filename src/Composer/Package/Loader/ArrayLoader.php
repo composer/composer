@@ -147,7 +147,7 @@ class ArrayLoader implements LoaderInterface
         }
 
         if (!empty($config['time'])) {
-            $time = ctype_digit($config['time']) ? '@'.$config['time'] : $config['time'];
+            $time = preg_match('/^\d+$/D', $config['time']) ? '@'.$config['time'] : $config['time'];
 
             try {
                 $date = new \DateTime($time, new \DateTimeZone('UTC'));
@@ -249,7 +249,7 @@ class ArrayLoader implements LoaderInterface
             }
 
             // If using numeric aliases ensure the alias is a valid subversion
-            if(($sourcePrefix = $this->versionParser->parseNumericAliasPrefix($sourceBranch))
+            if (($sourcePrefix = $this->versionParser->parseNumericAliasPrefix($sourceBranch))
                 && ($targetPrefix = $this->versionParser->parseNumericAliasPrefix($targetBranch))
                 && (stripos($targetPrefix, $sourcePrefix) !== 0)
             ) {

@@ -67,19 +67,23 @@ EOT
 
         $newlyCreated = !file_exists($file);
         if (!file_exists($file) && !file_put_contents($file, "{\n}\n")) {
-            $output->writeln('<error>'.$file.' could not be created.</error>');
+            $this->getIO()->writeError('<error>'.$file.' could not be created.</error>');
 
             return 1;
         }
         if (!is_readable($file)) {
-            $output->writeln('<error>'.$file.' is not readable.</error>');
+            $this->getIO()->writeError('<error>'.$file.' is not readable.</error>');
 
             return 1;
         }
         if (!is_writable($file)) {
-            $output->writeln('<error>'.$file.' is not writable.</error>');
+            $this->getIO()->writeError('<error>'.$file.' is not writable.</error>');
 
             return 1;
+        }
+
+        if (filesize($file) === 0) {
+            file_put_contents($file, "{\n}\n");
         }
 
         $json = new JsonFile($file);
@@ -122,7 +126,7 @@ EOT
             $json->write($composerDefinition);
         }
 
-        $output->writeln('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
+        $this->getIO()->writeError('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
 
         if ($input->getOption('no-update')) {
             return 0;
@@ -154,10 +158,10 @@ EOT
         $status = $install->run();
         if ($status !== 0) {
             if ($newlyCreated) {
-                $output->writeln("\n".'<error>Installation failed, deleting '.$file.'.</error>');
+                $this->getIO()->writeError("\n".'<error>Installation failed, deleting '.$file.'.</error>');
                 unlink($json->getPath());
             } else {
-                $output->writeln("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
+                $this->getIO()->writeError("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
                 file_put_contents($json->getPath(), $composerBackup);
             }
         }

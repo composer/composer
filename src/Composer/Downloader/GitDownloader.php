@@ -45,7 +45,7 @@ class GitDownloader extends VcsDownloader
         $ref = $package->getSourceReference();
         $flag = defined('PHP_WINDOWS_VERSION_MAJOR') ? '/D ' : '';
         $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
-        $this->io->write("    Cloning ".$ref);
+        $this->io->writeError("    Cloning ".$ref);
 
         $commandCallable = function ($url) use ($ref, $path, $command) {
             return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($path), ProcessExecutor::escape($ref));
@@ -74,11 +74,11 @@ class GitDownloader extends VcsDownloader
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
         if (!is_dir($path.'/.git')) {
-            throw new \RuntimeException('The .git directory is missing from '.$path.', see http://getcomposer.org/commit-deps for more information');
+            throw new \RuntimeException('The .git directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
         $ref = $target->getSourceReference();
-        $this->io->write("    Checking out ".$ref);
+        $this->io->writeError("    Checking out ".$ref);
         $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
         $commandCallable = function ($url) use ($command) {
@@ -143,10 +143,10 @@ class GitDownloader extends VcsDownloader
         $changes = array_map(function ($elem) {
             return '    '.$elem;
         }, preg_split('{\s*\r?\n\s*}', $changes));
-        $this->io->write('    <error>The package has modified files:</error>');
-        $this->io->write(array_slice($changes, 0, 10));
+        $this->io->writeError('    <error>The package has modified files:</error>');
+        $this->io->writeError(array_slice($changes, 0, 10));
         if (count($changes) > 10) {
-            $this->io->write('    <info>'.count($changes) - 10 . ' more files modified, choose "v" to view the full list</info>');
+            $this->io->writeError('    <info>'.count($changes) - 10 . ' more files modified, choose "v" to view the full list</info>');
         }
 
         while (true) {
@@ -167,21 +167,21 @@ class GitDownloader extends VcsDownloader
                     throw new \RuntimeException('Update aborted');
 
                 case 'v':
-                    $this->io->write($changes);
+                    $this->io->writeError($changes);
                     break;
 
                 case '?':
                 default:
                     help:
-                    $this->io->write(array(
+                    $this->io->writeError(array(
                         '    y - discard changes and apply the '.($update ? 'update' : 'uninstall'),
                         '    n - abort the '.($update ? 'update' : 'uninstall').' and let you manually clean things up',
                         '    v - view modified files',
                     ));
                     if ($update) {
-                        $this->io->write('    s - stash changes and try to reapply them after the update');
+                        $this->io->writeError('    s - stash changes and try to reapply them after the update');
                     }
-                    $this->io->write('    ? - print help');
+                    $this->io->writeError('    ? - print help');
                     break;
             }
         }
@@ -195,7 +195,7 @@ class GitDownloader extends VcsDownloader
         $path = $this->normalizePath($path);
         if ($this->hasStashedChanges) {
             $this->hasStashedChanges = false;
-            $this->io->write('    <info>Re-applying stashed changes</info>');
+            $this->io->writeError('    <info>Re-applying stashed changes</info>');
             if (0 !== $this->process->execute('git stash pop', $output, $path)) {
                 throw new \RuntimeException("Failed to apply stashed changes:\n\n".$this->process->getErrorOutput());
             }
@@ -215,7 +215,12 @@ class GitDownloader extends VcsDownloader
      */
     protected function updateToCommit($path, $reference, $branch, $date)
     {
-        $template = 'git checkout %s && git reset --hard %1$s';
+        // This uses the "--" sequence to separate branch from file parameters.
+        //
+        // Otherwise git tries the branch name as well as file name.
+        // If the non-existent branch is actually the name of a file, the file
+        // is checked out.
+        $template = 'git checkout %s -- && git reset --hard %1$s --';
         $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
 
         $branches = null;
@@ -229,7 +234,7 @@ class GitDownloader extends VcsDownloader
             && $branches
             && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $branches)
         ) {
-            $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
+            $command = sprintf('git checkout -B %s %s -- && git reset --hard %2$s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 return;
             }
@@ -242,12 +247,12 @@ class GitDownloader extends VcsDownloader
                 $branch = 'v' . $branch;
             }
 
-            $command = sprintf('git checkout %s', ProcessExecutor::escape($branch));
-            $fallbackCommand = sprintf('git checkout -B %s %s', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$branch));
+            $command = sprintf('git checkout %s --', ProcessExecutor::escape($branch));
+            $fallbackCommand = sprintf('git checkout -B %s %s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$branch));
             if (0 === $this->process->execute($command, $output, $path)
                 || 0 === $this->process->execute($fallbackCommand, $output, $path)
             ) {
-                $command = sprintf('git reset --hard %s', ProcessExecutor::escape($reference));
+                $command = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
                 if (0 === $this->process->execute($command, $output, $path)) {
                     return;
                 }
@@ -261,7 +266,7 @@ class GitDownloader extends VcsDownloader
 
         // reference was not found (prints "fatal: reference is not a tree: $ref")
         if (false !== strpos($this->process->getErrorOutput(), $reference)) {
-            $this->io->write('    <warning>'.$reference.' is gone (history was rewritten?)</warning>');
+            $this->io->writeError('    <warning>'.$reference.' is gone (history was rewritten?)</warning>');
         }
 
         throw new \RuntimeException('Failed to execute ' . GitUtil::sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput());

@@ -67,7 +67,9 @@ class RootAliasPackage extends AliasPackage implements RootPackageInterface
      */
     public function setRequires(array $require)
     {
-        return $this->aliasOf->setRequires($require);
+        $this->requires = $this->replaceSelfVersionDependencies($require, 'requires');
+
+        $this->aliasOf->setRequires($require);
     }
 
     /**
@@ -75,7 +77,9 @@ class RootAliasPackage extends AliasPackage implements RootPackageInterface
      */
     public function setDevRequires(array $devRequire)
     {
-        return $this->aliasOf->setDevRequires($devRequire);
+        $this->devRequires = $this->replaceSelfVersionDependencies($devRequire, 'devRequires');
+
+        $this->aliasOf->setDevRequires($devRequire);
     }
 
     public function __clone()

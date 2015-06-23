@@ -18,7 +18,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
-use Symfony\Component\Console\Helper\TableHelper;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -68,14 +68,17 @@ EOT
 
         switch ($format = $input->getOption('format')) {
             case 'text':
-                $output->writeln('Name: <comment>'.$root->getPrettyName().'</comment>');
-                $output->writeln('Version: <comment>'.$versionParser->formatVersion($root).'</comment>');
-                $output->writeln('Licenses: <comment>'.(implode(', ', $root->getLicense()) ?: 'none').'</comment>');
-                $output->writeln('Dependencies:');
+                $this->getIO()->write('Name: <comment>'.$root->getPrettyName().'</comment>');
+                $this->getIO()->write('Version: <comment>'.$versionParser->formatVersion($root).'</comment>');
+                $this->getIO()->write('Licenses: <comment>'.(implode(', ', $root->getLicense()) ?: 'none').'</comment>');
+                $this->getIO()->write('Dependencies:');
+                $this->getIO()->write('');
 
-                $table = $this->getHelperSet()->get('table');
-                $table->setLayout(TableHelper::LAYOUT_BORDERLESS);
-                $table->setHorizontalBorderChar('');
+                $table = new Table($output);
+                $table->setStyle('compact');
+                $table->getStyle()->setVerticalBorderChar('');
+                $table->getStyle()->setCellRowContentFormat('%s  ');
+                $table->setHeaders(array('Name', 'Version', 'License'));
                 foreach ($packages as $package) {
                     $table->addRow(array(
                         $package->getPrettyName(),
@@ -83,7 +86,7 @@ EOT
                         implode(', ', $package->getLicense()) ?: 'none',
                     ));
                 }
-                $table->render($output);
+                $table->render();
                 break;
 
             case 'json':
@@ -94,7 +97,7 @@ EOT
                     );
                 }
 
-                $output->writeln(JsonFile::encode(array(
+                $this->getIO()->write(JsonFile::encode(array(
                     'name'         => $root->getPrettyName(),
                     'version'      => $versionParser->formatVersion($root),
                     'license'      => $root->getLicense(),

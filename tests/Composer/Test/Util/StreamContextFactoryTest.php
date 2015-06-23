@@ -146,7 +146,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
                 'SNI_server_name' => 'example.org'
             )
         );
-        if (version_compare(PHP_VERSION, '5.6.0', '>=')) {
+        if (PHP_VERSION_ID >= 50600) {
             unset($expected['ssl']['SNI_server_name']);
         }
         $this->assertEquals($expected, $options);
@@ -176,7 +176,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
                 'SNI_server_name' => 'example.org'
             )
         );
-        if (version_compare(PHP_VERSION, '5.6.0', '>=')) {
+        if (PHP_VERSION_ID >= 50600) {
             unset($expected['ssl']['SNI_server_name']);
         }
         $this->assertEquals($expected, $options);

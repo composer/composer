@@ -96,9 +96,9 @@ EOT
 
         if ($messages) {
             sort($messages);
-            $output->writeln($messages);
+            $this->getIO()->write($messages);
         } else {
-            $output->writeln('<info>There is no installed package depending on "'.$needle.'".</info>');
+            $this->getIO()->writeError('<info>There is no installed package depending on "'.$needle.'".</info>');
         }
     }
 }

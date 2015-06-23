@@ -183,7 +183,7 @@ EOF;
                             continue;
                         }
                         $whitelist = sprintf(
-                            '{%s/%s.+(?<!(?<!/)Test\.php)$}',
+                            '{%s/%s.+$}',
                             preg_quote($dir),
                             ($psrType === 'psr-0' && strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
                         );
@@ -214,7 +214,16 @@ EOF;
         $classmapFile .= ");\n";
 
         if (!$suffix) {
-            $suffix = $config->get('autoloader-suffix') ?: md5(uniqid('', true));
+            if (!$config->get('autoloader-suffix') && is_readable($vendorPath.'/autoload.php')) {
+                $content = file_get_contents($vendorPath.'/autoload.php');
+                if (preg_match('{ComposerAutoloaderInit([^:\s]+)::}', $content, $match)) {
+                    $suffix = $match[1];
+                }
+            }
+
+            if (!$suffix) {
+                $suffix = $config->get('autoloader-suffix') ?: md5(uniqid('', true));
+            }
         }
 
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
@@ -383,7 +392,7 @@ EOF;
         }
 
         if (!$filesCode) {
-            return FALSE;
+            return false;
         }
 
         return <<<EOF

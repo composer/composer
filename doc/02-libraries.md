@@ -96,9 +96,9 @@ Here are a few examples of valid tag names:
 ### Branches
 
 For every branch, a package development version will be created. If the branch
-name looks like a version, the version will be `{branchname}-dev`. For example
-a branch `2.0` will get a version `2.0.x-dev` (the `.x` is added for technical
-reasons, to make sure it is recognized as a branch, a `2.0.x` branch would also
+name looks like a version, the version will be `{branchname}-dev`. For example,
+the branch `2.0` will get the `2.0.x-dev` version (the `.x` is added for technical
+reasons, to make sure it is recognized as a branch). The `2.0.x` branch would also
 be valid and be turned into `2.0.x-dev` as well. If the branch does not look
 like a version, it will be `dev-{branchname}`. `master` results in a
 `dev-master` version.
@@ -188,23 +188,23 @@ dependency in the `require` field.
 
 ## Publishing to packagist
 
-Alright, so now you can publish packages. But specifying the vcs repository
+Alright, so now you can publish packages. But specifying the VCS repository
 every time is cumbersome. You don't want to force all your users to do that.
 
 The other thing that you may have noticed is that we did not specify a package
-repository for `monolog/monolog`. How did that work? The answer is packagist.
+repository for `monolog/monolog`. How did that work? The answer is Packagist.
 
 [Packagist](https://packagist.org/) is the main package repository for
 Composer, and it is enabled by default. Anything that is published on
-packagist is available automatically through Composer. Since monolog
+Packagist is available automatically through Composer. Since monolog
 [is on packagist](https://packagist.org/packages/monolog/monolog), we can depend
 on it without having to specify any additional repositories.
 
 If we wanted to share `hello-world` with the world, we would publish it on
-packagist as well. Doing so is really easy.
+Packagist as well. Doing so is really easy.
 
 You simply hit the big "Submit Package" button and sign up. Then you submit
-the URL to your VCS repository, at which point packagist will start crawling
+the URL to your VCS repository, at which point Packagist will start crawling
 it. Once it is done, your package will be available to anyone.
 
 &larr; [Basic usage](01-basic-usage.md) |  [Command-line interface](03-cli.md) &rarr;

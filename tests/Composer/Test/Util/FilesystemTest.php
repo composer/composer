@@ -112,6 +112,7 @@ class FilesystemTest extends TestCase
             array('/foo/bar_vendor', '/foo/bar', '../bar', true),
             array('/foo/bar_vendor', '/foo/bar/src', '../bar/src', true),
             array('/foo/bar_vendor/src2', '/foo/bar/src/lib', '../../bar/src/lib', true),
+            array('C:/', 'C:/foo/bar/', "foo/bar", true),
         );
     }
 
@@ -179,6 +180,7 @@ class FilesystemTest extends TestCase
 
     /**
      * @link https://github.com/composer/composer/issues/3157
+     * @requires function symlink
      */
     public function testUnlinkSymlinkedDirectory()
     {
@@ -206,6 +208,7 @@ class FilesystemTest extends TestCase
 
     /**
      * @link https://github.com/composer/composer/issues/3144
+     * @requires function symlink
      */
     public function testRemoveSymlinkedDirectoryWithTrailingSlash()
     {

@@ -64,30 +64,31 @@ If there is a `composer.lock` file in the current directory, it will use the
 exact versions from there instead of resolving them. This ensures that
 everyone using the library will get the same versions of the dependencies.
 
-If there is no `composer.lock` file, composer will create one after dependency
+If there is no `composer.lock` file, Composer will create one after dependency
 resolution.
 
 ### Options
 
 * **--prefer-source:** There are two ways of downloading a package: `source`
-  and `dist`. For stable versions composer will use the `dist` by default.
+  and `dist`. For stable versions Composer will use the `dist` by default.
   The `source` is a version control repository. If `--prefer-source` is
-  enabled, composer will install from `source` if there is one. This is
+  enabled, Composer will install from `source` if there is one. This is
   useful if you want to make a bugfix to a project and get a local git
   clone of the dependency directly.
-* **--prefer-dist:** Reverse of `--prefer-source`, composer will install
+* **--prefer-dist:** Reverse of `--prefer-source`, Composer will install
   from `dist` if possible. This can speed up installs substantially on build
   servers and other use cases where you typically do not run updates of the
   vendors. It is also a way to circumvent problems with git if you do not
   have a proper setup.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the [`platform`](06-config.md#platform) config option.
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
-* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
+* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader 
+  generation skips the `autoload-dev` rules.
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-plugins:** Disables plugins.
@@ -127,7 +128,7 @@ php composer.phar update vendor/*
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the [`platform`](06-config.md#platform) config option.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
@@ -171,7 +172,7 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the [`platform`](06-config.md#platform) config option.
 * **--dev:** Add packages to `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -195,7 +196,7 @@ uninstalled.
 ### Options
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. See also the [`platform`](06-config.md#platform) config option.
 * **--dev:** Remove packages from `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -259,8 +260,8 @@ name     : monolog/monolog
 versions : master-dev, 1.0.2, 1.0.1, 1.0.0, 1.0.0-RC1
 type     : library
 names    : monolog/monolog
-source   : [git] http://github.com/Seldaek/monolog.git 3d4e60d0cbc4b888fe5ad223d77964428b1978da
-dist     : [zip] http://github.com/Seldaek/monolog/zipball/3d4e60d0cbc4b888fe5ad223d77964428b1978da 3d4e60d0cbc4b888fe5ad223d77964428b1978da
+source   : [git] https://github.com/Seldaek/monolog.git 3d4e60d0cbc4b888fe5ad223d77964428b1978da
+dist     : [zip] https://github.com/Seldaek/monolog/zipball/3d4e60d0cbc4b888fe5ad223d77964428b1978da 3d4e60d0cbc4b888fe5ad223d77964428b1978da
 license  : MIT
 
 autoload
@@ -326,7 +327,7 @@ php composer.phar validate
 
 ### Options
 
-* **--no-check-all:** Whether or not composer do a complete validation.
+* **--no-check-all:** Whether or not Composer does a complete validation.
 
 ## status
 
@@ -351,7 +352,7 @@ vendor/seld/jsonlint:
 
 ## self-update
 
-To update composer itself to the latest version, just run the `self-update`
+To update Composer itself to the latest version, just run the `self-update`
 command. It will replace your `composer.phar` with the latest version.
 
 ```sh
@@ -364,7 +365,7 @@ If you would like to instead update to a specific release simply specify it:
 php composer.phar self-update 1.0.0-alpha7
 ```
 
-If you have installed composer for your entire system (see [global installation](00-intro.md#globally)),
+If you have installed Composer for your entire system (see [global installation](00-intro.md#globally)),
 you may have to run the command with `root` privileges
 
 ```sh
@@ -374,11 +375,12 @@ sudo composer self-update
 ### Options
 
 * **--rollback (-r):** Rollback to the last version you had installed.
-* **--clean-backups:** Delete old backups during an update. This makes the current version of composer the only backup available after the update.
+* **--clean-backups:** Delete old backups during an update. This makes the 
+  current version of Composer the only backup available after the update.
 
 ## config
 
-The `config` command allows you to edit some basic composer settings in either
+The `config` command allows you to edit some basic Composer settings in either
 the local composer.json file or the global config.json file.
 
 ```sh
@@ -393,8 +395,7 @@ php composer.phar config --list
 configuration value.  For settings that can take an array of values (like
 `github-protocols`), more than one setting-value arguments are allowed.
 
-See the [config schema section](04-schema.md#config) for valid configuration
-options.
+See the [Config](06-config.md) chapter for valid configuration options.
 
 ### Options
 
@@ -418,13 +419,13 @@ In addition to modifying the config section, the `config` command also supports 
 changes to the repositories section by using it the following way:
 
 ```sh
-php composer.phar config repositories.foo vcs http://github.com/foo/bar
+php composer.phar config repositories.foo vcs https://github.com/foo/bar
 ```
 
 ## create-project
 
 You can use Composer to create new projects from an existing package. This is
-the equivalent of doing a git clone/svn checkout followed by a composer install
+the equivalent of doing a git clone/svn checkout followed by a "composer install"
 of the vendors.
 
 There are several applications for this:
@@ -434,7 +435,7 @@ There are several applications for this:
 3. Projects with multiple developers can use this feature to bootstrap the
    initial application for development.
 
-To create a new project using composer you can use the "create-project" command.
+To create a new project using Composer you can use the "create-project" command.
 Pass it a package name, and the directory to create the project in. You can also
 provide a version as third argument, otherwise the latest version is used.
 
@@ -507,8 +508,13 @@ Lists the name, version and license of every package installed. Use
 
 ## run-script
 
+### Options
+
+* **--no-dev:** Disable dev mode
+* **--list:** List user defined scripts
+
 To run [scripts](articles/scripts.md) manually you can use this command,
-just give it the script name and optionally --no-dev to disable the dev mode.
+just give it the script name and optionally any required arguments.
 
 ## diagnose
 
@@ -569,7 +575,7 @@ not be guessed from VCS info and is not present in `composer.json`.
 
 ### COMPOSER_VENDOR_DIR
 
-By setting this var you can make composer install the dependencies into a
+By setting this var you can make Composer install the dependencies into a
 directory other than `vendor`.
 
 ### COMPOSER_BIN_DIR
@@ -579,7 +585,7 @@ directory to something other than `vendor/bin`.
 
 ### http_proxy or HTTP_PROXY
 
-If you are using composer from behind an HTTP proxy, you can use the standard
+If you are using Composer from behind an HTTP proxy, you can use the standard
 `http_proxy` or `HTTP_PROXY` env vars. Simply set it to the URL of your proxy.
 Many operating systems already set this variable for you.
 
@@ -601,18 +607,18 @@ can also set it to `*` to ignore the proxy for all HTTP requests.
 ### HTTP_PROXY_REQUEST_FULLURI
 
 If you use a proxy but it does not support the request_fulluri flag, then you
-should set this env var to `false` or `0` to prevent composer from setting the
+should set this env var to `false` or `0` to prevent Composer from setting the
 request_fulluri option.
 
 ### HTTPS_PROXY_REQUEST_FULLURI
 
 If you use a proxy but it does not support the request_fulluri flag for HTTPS
-requests, then you should set this env var to `false` or `0` to prevent composer
+requests, then you should set this env var to `false` or `0` to prevent Composer
 from setting the request_fulluri option.
 
 ### COMPOSER_HOME
 
-The `COMPOSER_HOME` var allows you to change the composer home directory. This
+The `COMPOSER_HOME` var allows you to change the Composer home directory. This
 is a hidden, global (per-user on the machine) directory that is shared between
 all projects.
 
@@ -628,32 +634,32 @@ You may put a `config.json` file into the location which `COMPOSER_HOME` points
 to. Composer will merge this configuration with your project's `composer.json`
 when you run the `install` and `update` commands.
 
-This file allows you to set [configuration](04-schema.md#config) and
-[repositories](05-repositories.md) for the user's projects.
+This file allows you to set [repositories](05-repositories.md) and
+[configuration](06-config.md) for the user's projects.
 
 In case global configuration matches _local_ configuration, the _local_
 configuration in the project's `composer.json` always wins.
 
 ### COMPOSER_CACHE_DIR
 
-The `COMPOSER_CACHE_DIR` var allows you to change the composer cache directory,
-which is also configurable via the [`cache-dir`](04-schema.md#config) option.
+The `COMPOSER_CACHE_DIR` var allows you to change the Composer cache directory,
+which is also configurable via the [`cache-dir`](06-config.md#cache-dir) option.
 
 By default it points to $COMPOSER_HOME/cache on \*nix and OSX, and
 `C:\Users\<user>\AppData\Local\Composer` (or `%LOCALAPPDATA%/Composer`) on Windows.
 
 ### COMPOSER_PROCESS_TIMEOUT
 
-This env var controls the time composer waits for commands (such as git
+This env var controls the time Composer waits for commands (such as git
 commands) to finish executing. The default value is 300 seconds (5 minutes).
 
 ### COMPOSER_DISCARD_CHANGES
 
-This env var controls the discard-changes [config option](04-schema.md#config).
+This env var controls the [`discard-changes`](06-config.md#discard-changes) config option.
 
 ### COMPOSER_NO_INTERACTION
 
-If set to 1, this env var will make composer behave as if you passed the
+If set to 1, this env var will make Composer behave as if you passed the
 `--no-interaction` flag to every command. This can be set on build boxes/CI.
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

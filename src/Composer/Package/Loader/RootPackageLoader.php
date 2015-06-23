@@ -50,6 +50,7 @@ class RootPackageLoader extends ArrayLoader
         if (!isset($config['name'])) {
             $config['name'] = '__root__';
         }
+        $autoVersioned = false;
         if (!isset($config['version'])) {
             // override with env var if available
             if (getenv('COMPOSER_ROOT_VERSION')) {
@@ -60,15 +61,19 @@ class RootPackageLoader extends ArrayLoader
 
             if (!$version) {
                 $version = '1.0.0';
+                $autoVersioned = true;
             }
 
             $config['version'] = $version;
         }
 
         $realPackage = $package = parent::load($config, $class);
-
         if ($realPackage instanceof AliasPackage) {
             $realPackage = $package->getAliasOf();
+        }
+
+        if ($autoVersioned) {
+            $realPackage->replaceVersion($realPackage->getVersion(), 'No version set (parsed as 1.0.0)');
         }
 
         if (isset($config['minimum-stability'])) {
@@ -277,7 +282,18 @@ class RootPackageLoader extends ArrayLoader
         ) {
             $branch = preg_replace('{^dev-}', '', $version);
             $length = PHP_INT_MAX;
+
+            $nonFeatureBranches = '';
+            if (!empty($config['non-feature-branches'])) {
+                $nonFeatureBranches = implode('|', $config['non-feature-branches']);
+            }
+
             foreach ($branches as $candidate) {
+                // return directly, if branch is configured to be non-feature branch
+                if ($candidate === $branch && preg_match('{^(' . $nonFeatureBranches . ')$}', $candidate)) {
+                    return $version;
+                }
+
                 // do not compare against other feature branches
                 if ($candidate === $branch || !preg_match('{^(master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
                     continue;

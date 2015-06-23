@@ -39,6 +39,11 @@ class InstallerEvent extends Event
     private $io;
 
     /**
+     * @var bool
+     */
+    private $devMode;
+
+    /**
      * @var PolicyInterface
      */
     private $policy;
@@ -69,18 +74,20 @@ class InstallerEvent extends Event
      * @param string               $eventName
      * @param Composer             $composer
      * @param IOInterface          $io
+     * @param bool                 $devMode
      * @param PolicyInterface      $policy
      * @param Pool                 $pool
      * @param CompositeRepository  $installedRepo
      * @param Request              $request
      * @param OperationInterface[] $operations
      */
-    public function __construct($eventName, Composer $composer, IOInterface $io, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations = array())
+    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations = array())
     {
         parent::__construct($eventName);
 
         $this->composer = $composer;
         $this->io = $io;
+        $this->devMode = $devMode;
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installedRepo = $installedRepo;
@@ -102,6 +109,14 @@ class InstallerEvent extends Event
     public function getIO()
     {
         return $this->io;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDevMode()
+    {
+        return $this->devMode;
     }
 
     /**

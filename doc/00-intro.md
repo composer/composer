@@ -11,8 +11,8 @@ it manages them on a per-project basis, installing them in a directory (e.g. `ve
 inside your project. By default it will never install anything globally. Thus,
 it is a dependency manager.
 
-This idea is not new and Composer is strongly inspired by node's [npm](http://npmjs.org/)
-and ruby's [bundler](http://gembundler.com/). But there has not been such a tool
+This idea is not new and Composer is strongly inspired by node's [npm](https://npmjs.org/)
+and ruby's [bundler](http://bundler.io/). But there has not been such a tool
 for PHP.
 
 The problem that Composer solves is this:
@@ -142,6 +142,8 @@ Create a new `composer.bat` file alongside `composer.phar`:
 C:\bin>echo @php "%~dp0composer.phar" %*>composer.bat
 ```
 
+Add the directory to your PATH environment variable if it isn't already.
+
 Close your current terminal. Test usage with a new terminal:
 
 ```sh
@@ -179,7 +181,7 @@ downloads. To use it, just add the following line to your code's bootstrap
 process:
 
 ```php
-require 'vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 ```
 
 Woah! Now start using monolog! To keep learning more about Composer, keep

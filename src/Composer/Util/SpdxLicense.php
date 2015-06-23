@@ -20,16 +20,89 @@ use Composer\Json\JsonFile;
  *
  * @author Tom Klingenberg <tklingenberg@lastflood.net>
  */
-class SpdxLicenseIdentifier
+class SpdxLicense
 {
     /**
      * @var array
      */
-    private $identifiers;
+    private $licenses;
 
     public function __construct()
     {
-        $this->initIdentifiers();
+        $this->loadLicenses();
+    }
+
+    private function loadLicenses()
+    {
+        if (is_array($this->licenses)) {
+            return $this->licenses;
+        }
+
+        $jsonFile = new JsonFile(__DIR__ . '/../../../res/spdx-licenses.json');
+        $this->licenses = $jsonFile->read();
+
+        return $this->licenses;
+    }
+
+    /**
+     * Returns license metadata by license identifier.
+     *
+     * @param string $identifier
+     *
+     * @return array|null
+     */
+    public function getLicenseByIdentifier($identifier)
+    {
+        if (!isset($this->licenses[$identifier])) {
+            return;
+        }
+
+        $license = $this->licenses[$identifier];
+
+        // add URL for the license text (it's not included in the json)
+        $license[2] = 'http://spdx.org/licenses/' . $identifier . '#licenseText';
+
+        return $license;
+    }
+
+    /**
+     * Returns the short identifier of a license by full name.
+     *
+     * @param string $identifier
+     *
+     * @return string
+     */
+    public function getIdentifierByName($name)
+    {
+        foreach ($this->licenses as $identifier => $licenseData) {
+            if ($licenseData[0] === $name) { // key 0 = fullname
+                return $identifier;
+            }
+        }
+    }
+
+    /**
+     * Returns the OSI Approved status for a license by identifier.
+     *
+     * @return bool
+     */
+    public function isOsiApprovedByIdentifier($identifier)
+    {
+        return $this->licenses[$identifier][1]; // key 1 = osi approved
+    }
+
+    /**
+     * Check, if the identifier for a license is valid.
+     *
+     * @param string $identifier
+     *
+     * @return bool
+     */
+    private function isValidLicenseIdentifier($identifier)
+    {
+        $identifiers = array_keys($this->licenses);
+
+        return in_array($identifier, $identifiers);
     }
 
     /**
@@ -47,6 +120,7 @@ class SpdxLicenseIdentifier
             }
             $license = $count > 1  ? '('.implode(' or ', $license).')' : (string) reset($license);
         }
+
         if (!is_string($license)) {
             throw new \InvalidArgumentException(sprintf(
                 'Array or String expected, %s given.', gettype($license)
@@ -54,25 +128,6 @@ class SpdxLicenseIdentifier
         }
 
         return $this->isValidLicenseString($license);
-    }
-
-    /**
-     * Loads SPDX identifiers
-     */
-    private function initIdentifiers()
-    {
-        $jsonFile = new JsonFile(__DIR__ . '/../../../res/spdx-identifier.json');
-        $this->identifiers = $jsonFile->read();
-    }
-
-    /**
-     * @param string $identifier
-     *
-     * @return bool
-     */
-    private function isValidLicenseIdentifier($identifier)
-    {
-        return in_array($identifier, $this->identifiers);
     }
 
     /**

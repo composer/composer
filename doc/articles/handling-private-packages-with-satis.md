@@ -6,16 +6,22 @@
 
 # Toran Proxy
 
-[Toran Proxy](https://toranproxy.com/) is a commercial alternative to Satis offering professional support as well as a web UI to manage everything and a better integration with Composer.
+[Toran Proxy](https://toranproxy.com/) is a commercial alternative to Satis
+offering professional support as well as a web UI to manage everything and a
+better integration with Composer. It also provides proxying/mirroring for git
+repos and package zip files which makes installs faster and independent from
+third party systems.
 
-Toran's revenue is also used to pay for Composer and Packagist development and hosting so using it is a good way to support open source financially. You can find more information about how to set it up and use it on the [Toran Proxy](https://toranproxy.com/) website.
+Toran's revenue is also used to pay for Composer and Packagist development and
+hosting so using it is a good way to support open source financially. You can
+find more information about how to set it up and use it on the [Toran Proxy](https://toranproxy.com/) website.
 
 # Satis
 
 Satis on the other hand is open source but only a static `composer`
 repository generator. It is a bit like an ultra-lightweight, static file-based
 version of packagist and can be used to host the metadata of your company's
-private packages, or your own. You can get it from [GitHub](http://github.com/composer/satis)
+private packages, or your own. You can get it from [GitHub](https://github.com/composer/satis)
 or install via CLI:
 `php composer.phar create-project composer/satis --stability=dev --keep-vcs`.
 
@@ -23,7 +29,7 @@ or install via CLI:
 
 For example let's assume you have a few packages you want to reuse across your
 company but don't really want to open-source. You would first define a Satis
-configuration: a json file with an arbitrary name that lists your curated 
+configuration: a json file with an arbitrary name that lists your curated
 [repositories](../05-repositories.md).
 
 Here is an example configuration, you see that it holds a few VCS repositories,
@@ -38,9 +44,9 @@ The default file Satis looks for is `satis.json` in the root of the repository.
     "name": "My Repository",
     "homepage": "http://packages.example.org",
     "repositories": [
-        { "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
+        { "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
         { "type": "vcs", "url": "http://svn.example.org/private/repo" },
-        { "type": "vcs", "url": "http://github.com/mycompany/privaterepo2" }
+        { "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
     ],
     "require-all": true
 }
@@ -54,9 +60,9 @@ constraint if you want really specific versions.
 ```json
 {
     "repositories": [
-        { "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
+        { "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
         { "type": "vcs", "url": "http://svn.example.org/private/repo" },
-        { "type": "vcs", "url": "http://github.com/mycompany/privaterepo2" }
+        { "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
     ],
     "require": {
         "company/package": "*",
@@ -129,7 +135,7 @@ Example using a custom repository using SSH (requires the SSH2 PECL extension):
 }
 ```
 
-> **Tip:** See [ssh2 context options](http://www.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options) for more information.
+> **Tip:** See [ssh2 context options](https://www.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options) for more information.
 
 Example using HTTP over SSL using a client certificate:
 
@@ -149,7 +155,45 @@ Example using HTTP over SSL using a client certificate:
 }
 ```
 
-> **Tip:** See [ssl context options](http://www.php.net/manual/en/context.ssl.php) for more information.
+> **Tip:** See [ssl context options](https://www.php.net/manual/en/context.ssl.php) for more information.
+
+Example using a custom HTTP Header field for token authentication:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "options":  {
+                "http": {
+                    "header": [
+                        "API-TOKEN: YOUR-API-TOKEN"
+                    ]
+                }
+            }
+        }
+    ]
+}
+```
+
+### Authentication
+
+When your private repositories are password protected, you can store the authentication details permanently.
+The first time Composer needs to authenticate against some domain it will prompt you for a username/password
+and then you will be asked whether you want to store it.
+
+The storage can be done either globally in the `COMPOSER_HOME/auth.json` file (`COMPOSER_HOME` defaults to
+`~/.composer` or `%APPDATA%/Composer` on Windows) or also in the project directory directly sitting besides your
+composer.json.
+
+You can also configure these by hand using the config command if you need to configure a production machine
+to be able to run non-interactive installs. For example to enter credentials for example.org one could type:
+
+    composer config http-basic.example.org username password
+
+That will store it in the current directory's auth.json, but if you want it available globally you can use the
+`--global` (`-g`) flag.
 
 ### Downloads
 
@@ -188,8 +232,8 @@ Once enabled, all downloads (include those from GitHub and BitBucket) will be re
 Prefixing the URL with another host is especially helpful if the downloads end up in a private Amazon S3
 bucket or on a CDN host. A CDN would drastically improve download times and therefore package installation.
 
-Example: A `prefix-url` of `http://my-bucket.s3.amazonaws.com` (and `directory` set to `dist`) creates download URLs
-which look like the following: `http://my-bucket.s3.amazonaws.com/dist/vendor-package-version-ref.zip`.
+Example: A `prefix-url` of `https://my-bucket.s3.amazonaws.com` (and `directory` set to `dist`) creates download URLs
+which look like the following: `https://my-bucket.s3.amazonaws.com/dist/vendor-package-version-ref.zip`.
 
 
 ### Resolving dependencies
