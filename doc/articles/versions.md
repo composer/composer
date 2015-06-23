@@ -20,10 +20,9 @@ Example: `1.0.2`
 By using comparison operators you can specify ranges of valid versions. Valid
 operators are `>`, `>=`, `<`, `<=`, `!=`.
 
-You can define multiple ranges. Ranges separated by a space (<code> </code>) or
-comma (`,`) will be treated as a **logical AND**. A double pipe
-(<code>&#124;&#124;</code>) will be treated as a **logical OR**. AND has higher
-precedence than OR.
+You can define multiple ranges. Ranges separated by a space (` `) or comma (`,`)
+will be treated as a **logical AND**. A double pipe (`||`) will be treated as a
+**logical OR**. AND has higher precedence than OR.
 
 Examples:
 
