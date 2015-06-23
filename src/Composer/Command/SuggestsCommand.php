@@ -15,9 +15,7 @@ namespace Composer\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 class SuggestsCommand extends Command
 {
@@ -47,11 +45,7 @@ EOT
             throw new \RuntimeException('Lockfile seems to be empty?');
         }
 
-        $stderr = $output;
-        if ($output instanceof ConsoleOutputInterface) {
-            $stderr = $output->getErrorOutput();
-        }
-
+        $io = $this->getIO();
         $list = $lock['packages'];
 
         if (!$input->getOption('no-dev')) {
@@ -62,14 +56,26 @@ EOT
 
         foreach ($list as $package) {
             if (!empty($package['suggest']) && (empty($packages) || in_array($package['name'], $packages))) {
-                $stderr->writeln(sprintf('%s suggests:', $package['name']));
-                foreach ($package['suggest'] as $target => $reason) {
-                    if (empty($reason)) {
-                        $reason = '*';
-                    }
+                $this->printSuggestions($package['name'], $package['suggest']);
+            }
+        }
+    }
 
-                    $output->writeln(sprintf('<info>%s</info>: <comment>%s</comment>', $target, $reason));
-                }
+    protected function printSuggestions($name, $suggests)
+    {
+        $io = $this->getIO();
+
+        foreach ($suggests as $target => $reason) {
+            if (empty($reason)) {
+                $reason = '*';
+            }
+
+            if ($io->isVeryVerbose()) {
+                $io->write(sprintf('<comment>%s</comment> suggests <info>%s</info>: %s', $name, $target, $reason));
+            } elseif ($io->isVerbose()) {
+                $io->write(sprintf('<comment>%s</comment> suggests <info>%s</info>', $name, $target));
+            } else {
+                $io->write(sprintf('<info>%s</info>', $target));
             }
         }
     }
