@@ -45,38 +45,54 @@ EOT
             throw new \RuntimeException('Lockfile seems to be empty?');
         }
 
-        $io = $this->getIO();
-        $list = $lock['packages'];
+        $packages = $lock['packages'];
 
         if (!$input->getOption('no-dev')) {
-            $list += $lock['packages-dev'];
+            $packages += $lock['packages-dev'];
         }
 
-        $packages = $input->getArgument('packages');
+        $filter = $input->getArgument('packages');
 
-        foreach ($list as $package) {
-            if (!empty($package['suggest']) && (empty($packages) || in_array($package['name'], $packages))) {
-                $this->printSuggestions($package['name'], $package['suggest']);
+        foreach ($packages as $package) {
+            if (empty($package['suggest'])) {
+                continue;
             }
+
+            if (!empty($filter) && !in_array($package['name'], $filter)) {
+                continue;
+            }
+
+            $this->printSuggestions($packages, $package['name'], $package['suggest']);
         }
     }
 
-    protected function printSuggestions($name, $suggests)
+    protected function printSuggestions($installed, $source, $suggestions)
     {
-        $io = $this->getIO();
+        foreach ($suggestions as $suggestion => $reason) {
+            foreach ($installed as $package) {
+                if ($package['name'] === $suggestion) {
+                    continue 2;
+                }
+            }
 
-        foreach ($suggests as $target => $reason) {
             if (empty($reason)) {
                 $reason = '*';
             }
 
-            if ($io->isVeryVerbose()) {
-                $io->write(sprintf('<comment>%s</comment> suggests <info>%s</info>: %s', $name, $target, $reason));
-            } elseif ($io->isVerbose()) {
-                $io->write(sprintf('<comment>%s</comment> suggests <info>%s</info>', $name, $target));
-            } else {
-                $io->write(sprintf('<info>%s</info>', $target));
-            }
+            $this->printSuggestion($source, $suggestion, $reason);
+        }
+    }
+
+    protected function printSuggestion($package, $suggestion, $reason)
+    {
+        $io = $this->getIO();
+
+        if ($io->isVeryVerbose()) {
+            $io->write(sprintf('<comment>%s</comment> suggests <info>%s</info>: %s', $package, $suggestion, $reason));
+        } elseif ($io->isVerbose()) {
+            $io->write(sprintf('<comment>%s</comment> suggests <info>%s</info>', $package, $suggestion));
+        } else {
+            $io->write(sprintf('<info>%s</info>', $suggestion));
         }
     }
 }
