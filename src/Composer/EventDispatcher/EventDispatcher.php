@@ -197,6 +197,8 @@ class EventDispatcher
     {
         $event = $this->checkListenerExpectedEvent(array($className, $methodName), $event);
 
+        $this->io->writeError(sprintf('> %s::%s', $className, $methodName));
+
         return $className::$methodName($event);
     }
 
