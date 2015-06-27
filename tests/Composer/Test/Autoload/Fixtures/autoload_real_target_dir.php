@@ -71,5 +71,12 @@ class ComposerAutoloaderInitTargetDir
 
 function composerRequireTargetDir($file)
 {
-    require $file;
+    static $requiredFiles = array();
+    $fileSignature = md5_file($file);
+
+    if (empty($requiredFiles[$fileSignature])) {
+        require $file;
+
+        $requiredFiles[$fileSignature] = true;
+    }
 }
