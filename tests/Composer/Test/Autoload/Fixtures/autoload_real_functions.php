@@ -51,5 +51,12 @@ class ComposerAutoloaderInitFilesAutoload
 
 function composerRequireFilesAutoload($file)
 {
-    require $file;
+    static $requiredFiles = [];
+    $fileSignature = md5_file($file);
+
+    if (empty($requiredFiles[$fileSignature])) {
+        require $file;
+
+        $requiredFiles[$fileSignature] = true;
+    }
 }
