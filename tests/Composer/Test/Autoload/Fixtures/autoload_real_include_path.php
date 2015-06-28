@@ -68,7 +68,7 @@ class ComposerAutoloaderInitIncludePath
 function composerRequireIncludePath($file)
 {
     if (empty($GLOBALS['composerRequiredFiles'])) {
-        $GLOBALS['composerRequiredFiles'] = [];
+        $GLOBALS['composerRequiredFiles'] = array();
     }
     $fileSignature = md5_file($file);
 

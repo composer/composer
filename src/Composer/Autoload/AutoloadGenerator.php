@@ -606,7 +606,7 @@ METHOD_FOOTER;
 function composerRequire$suffix(\$file)
 {
     if (empty(\$GLOBALS['composerRequiredFiles'])) {
-        \$GLOBALS['composerRequiredFiles'] = [];
+        \$GLOBALS['composerRequiredFiles'] = array();
     }
     \$fileSignature = md5_file(\$file);
 
