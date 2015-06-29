@@ -13,7 +13,6 @@
 namespace Composer;
 
 use Composer\Config\ConfigSourceInterface;
-use Composer\Plugin\PluginInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
