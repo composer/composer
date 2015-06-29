@@ -82,8 +82,11 @@ For any given event:
 and command-line executable commands.
 - PHP classes containing defined callbacks must be autoloadable via Composer's
 autoload functionality.
-- If a defined callback relies on functions defined outside of a class, the callback
-must explicitly require the composer autoloader.
+- If a defined callback relies on functions defined outside of a class, the 
+callback must explicitly require the composer autoloader. If used in a 
+context where`vendor/autoload.php` might not yet exist (such as during a 
+`pre-install` or `pre-update` command), the callback should explicitly require
+whatever files within your root package it needs to execute successfully.
 
 Script definition example:
 
