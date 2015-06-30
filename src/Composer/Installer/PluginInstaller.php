@@ -26,7 +26,6 @@ use Composer\Package\PackageInterface;
 class PluginInstaller extends LibraryInstaller
 {
     private $installationManager;
-    private static $classCounter = 0;
 
     /**
      * Initializes Plugin installer.
