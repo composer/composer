@@ -94,6 +94,29 @@ so using [stability flags](04-schema.md#package-links). To change that for all
 packages instead of doing per dependency you can also use the
 [minimum-stability](04-schema.md#minimum-stability) setting.
 
+If you are using range comparisons when selecting non-stable packages, and you
+specify a numeric version number (that is, no suffix indicating alpha, beta,
+rc, or stable), then both non-stable and stable versions of a particular
+release number will be treated as equally valid.
+
+ * `>=`/`<=` will accept non-stable releases as well as the stable release.
+ * `<`/`>` will reject non-stable releasese as well as the stable release.
+
+If you wish to consider only the stable release in the comparison, add the
+suffix `-stable` to the version number.
+
+Here are some examples:
+
+ Example         | Interpretation
+ --------------- | --------------
+`>=1.0.0`        | Any release, stable or non-, of 1.0.0 will be allowed
+`>=1.0.0-stable` | Only the stable release of 1.0.0 will be allowed
+`<2.0.0`         | Neither release, stable or non-, of 2.0.0 will be allowed
+`<2.0.0-stable`  | Only the stable release of 2.0.0 will be disallowed; non-stable releases will be allowed
+
+Note that the packages matched by these constraints are still checked against
+the `minimum-stability` setting and each package's stability flags.
+
 ### Test version constraints
 
 You can test version constraints using [semver.mwl.be](http://semver.mwl.be). Fill in
