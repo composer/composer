@@ -47,6 +47,12 @@ Linux and OSX.
 
 ### Downloading the Composer Executable
 
+Composer offers a convenient installer that you can execute directly from the
+commandline. Feel free to [download this file](https://getcomposer.org/installer)
+or review it on [GitHub](https://github.com/composer/getcomposer.org/blob/master/web/installer)
+if you wish to know more about the inner workings of the installer. The source
+is plain PHP.
+
 There are in short, two ways to install Composer. Locally as part of your
 project, or globally as a system wide executable.
 
@@ -93,11 +99,16 @@ Run these commands to globally install `composer` on your system:
 ```sh
 curl -sS https://getcomposer.org/installer | php
 mv composer.phar /usr/local/bin/composer
-chmod 755 /usr/local/bin/composer
 ```
 
-> **Note:** If the above fails due to permissions, run the `mv` and `chmod` line
-> again with sudo.
+> **Note:** If the above fails due to permissions, run the `mv` line again 
+> with sudo.
+
+A quick copy-paste version including sudo:
+
+```sh
+curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+```
 
 > **Note:** On some versions of OSX the `/usr` directory does not exist by
 > default. If you receive the error "/usr/local/bin/composer: No such file or
