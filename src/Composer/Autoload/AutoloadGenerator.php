@@ -201,9 +201,9 @@ EOF;
 
                         $namespaceFilter = $namespace === '' ? null : $namespace;
                         foreach (ClassMapGenerator::createMap($dir, $whitelist, $this->io, $namespaceFilter) as $class => $path) {
-                            $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
+                            $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
                             if (!isset($classMap[$class])) {
-                                $classMap[$class] = $pathCode.",\n";
+                                $classMap[$class] = $pathCode;
                             } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
                                 $this->io->writeError(
                                     '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
@@ -218,9 +218,9 @@ EOF;
 
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir, null, $this->io) as $class => $path) {
-                $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
+                $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
                 if (!isset($classMap[$class])) {
-                    $classMap[$class] = $pathCode.",\n";
+                    $classMap[$class] = $pathCode;
                 } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
                     $this->io->writeError(
                         '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
