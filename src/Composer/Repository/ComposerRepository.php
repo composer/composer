@@ -13,7 +13,6 @@
 namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;

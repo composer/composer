@@ -15,7 +15,6 @@ namespace Composer\Util;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Downloader\TransportException;
-use Composer\Json\JsonFile;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

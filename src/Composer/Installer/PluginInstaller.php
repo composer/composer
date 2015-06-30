@@ -13,7 +13,6 @@
 namespace Composer\Installer;
 
 use Composer\Composer;
-use Composer\Package\Package;
 use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;

@@ -13,7 +13,6 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Util\GitHub;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
