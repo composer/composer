@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Package\PackageInterface;
 
 /**
  * Repositories manager.

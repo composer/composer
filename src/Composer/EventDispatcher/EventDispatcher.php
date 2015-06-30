@@ -21,6 +21,7 @@ use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Script;
+use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
 use Composer\Util\ProcessExecutor;
 
