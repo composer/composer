@@ -75,7 +75,8 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             'parameters.yml',
             'parameters.yml.dist',
             '!important!.txt',
-            '!important_too!.txt'
+            '!important_too!.txt',
+            '#weirdfile',
         );
 
         foreach ($fileTree as $relativePath) {
@@ -98,7 +99,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             '!/prefixB.foo',
             '/prefixA.foo',
             'prefixC.*',
-            '!*/*/*/prefixC.foo'
+            '!*/*/*/prefixC.foo',
         );
 
         $this->finder = new ArchivableFilesFinder($this->sources, $excludes);
@@ -106,6 +107,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
         $this->assertArchivableFiles(array(
             '/!important!.txt',
             '/!important_too!.txt',
+            '/#weirdfile',
             '/A/prefixA.foo',
             '/A/prefixD.foo',
             '/A/prefixE.foo',
@@ -170,7 +172,8 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             'H/**',
             'J/',
             'parameters.yml',
-            '\!important!.txt'
+            '\!important!.txt',
+            '\#*',
         )));
 
         // git does not currently support negative git attributes
@@ -181,7 +184,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             //'!/prefixB.foo export-ignore',
             '/prefixA.foo export-ignore',
             'prefixC.* export-ignore',
-            //'!/*/*/prefixC.foo export-ignore'
+            //'!/*/*/prefixC.foo export-ignore',
         )));
 
         $this->finder = new ArchivableFilesFinder($this->sources, array());
