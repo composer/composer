@@ -65,16 +65,15 @@ class ComposerAutoloaderInitIncludePath
     }
 }
 
-function composerRequireIncludePath($file)
+function composerRequireIncludePath($fileIdentifier, $file)
 {
     if (empty($GLOBALS['composerRequiredFiles'])) {
         $GLOBALS['composerRequiredFiles'] = array();
     }
-    $fileSignature = md5_file($file);
 
-    if (empty($GLOBALS['composerRequiredFiles'][$fileSignature])) {
+    if (empty($GLOBALS['composerRequiredFiles'][$fileIdentifier])) {
         require $file;
 
-        $GLOBALS['composerRequiredFiles'][$fileSignature] = true;
+        $GLOBALS['composerRequiredFiles'][$fileIdentifier] = true;
     }
 }

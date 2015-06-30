@@ -43,8 +43,8 @@ class ComposerAutoloaderInitTargetDir
         $loader->register(true);
 
         $includeFiles = require __DIR__ . '/autoload_files.php';
-        foreach ($includeFiles as $file) {
-            composerRequireTargetDir($file);
+        foreach ($includeFiles as $fileIdentifier => $file) {
+            composerRequireTargetDir($fileIdentifier, $file);
         }
 
         return $loader;
@@ -69,16 +69,15 @@ class ComposerAutoloaderInitTargetDir
     }
 }
 
-function composerRequireTargetDir($file)
+function composerRequireTargetDir($fileIdentifier, $file)
 {
     if (empty($GLOBALS['composerRequiredFiles'])) {
         $GLOBALS['composerRequiredFiles'] = array();
     }
-    $fileSignature = md5_file($file);
 
-    if (empty($GLOBALS['composerRequiredFiles'][$fileSignature])) {
+    if (empty($GLOBALS['composerRequiredFiles'][$fileIdentifier])) {
         require $file;
 
-        $GLOBALS['composerRequiredFiles'][$fileSignature] = true;
+        $GLOBALS['composerRequiredFiles'][$fileIdentifier] = true;
     }
 }

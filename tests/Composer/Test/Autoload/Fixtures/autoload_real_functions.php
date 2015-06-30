@@ -41,24 +41,23 @@ class ComposerAutoloaderInitFilesAutoload
         $loader->register(true);
 
         $includeFiles = require __DIR__ . '/autoload_files.php';
-        foreach ($includeFiles as $file) {
-            composerRequireFilesAutoload($file);
+        foreach ($includeFiles as $fileIdentifier => $file) {
+            composerRequireFilesAutoload($fileIdentifier, $file);
         }
 
         return $loader;
     }
 }
 
-function composerRequireFilesAutoload($file)
+function composerRequireFilesAutoload($fileIdentifier, $file)
 {
     if (empty($GLOBALS['composerRequiredFiles'])) {
         $GLOBALS['composerRequiredFiles'] = array();
     }
-    $fileSignature = md5_file($file);
 
-    if (empty($GLOBALS['composerRequiredFiles'][$fileSignature])) {
+    if (empty($GLOBALS['composerRequiredFiles'][$fileIdentifier])) {
         require $file;
 
-        $GLOBALS['composerRequiredFiles'][$fileSignature] = true;
+        $GLOBALS['composerRequiredFiles'][$fileIdentifier] = true;
     }
 }

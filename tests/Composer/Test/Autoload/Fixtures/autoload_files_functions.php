@@ -6,9 +6,9 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    $vendorDir . '/a/a/test.php',
-    $vendorDir . '/b/b/test2.php',
-    $vendorDir . '/c/c/foo/bar/test3.php',
-    $vendorDir . '/c/c/foo/bar/test4.php',
-    $baseDir . '/root.php',
+    'b18a3c4a24b1dc69fdd96098e5c28e01' => $vendorDir . '/a/a/test.php',
+    '93797e35718fdafb825b1fe25c08a92c' => $vendorDir . '/b/b/test2.php',
+    'a57008eef928ced7c299bfea724d8441' => $vendorDir . '/c/c/foo/bar/test3.php',
+    '32e13a06a803ac6553a93454bcd3d2da' => $vendorDir . '/c/c/foo/bar/test4.php',
+    '504bb142db8acef729eeeb06b0aedec5' => $baseDir . '/root.php',
 );

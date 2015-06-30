@@ -410,8 +410,9 @@ EOF;
     protected function getIncludeFilesFile(array $files, Filesystem $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)
     {
         $filesCode = '';
-        foreach ($files as $functionFile) {
-            $filesCode .= '    '.$this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile).",\n";
+        foreach ($files as $fileIdentifier => $functionFile) {
+            $filesCode .= '    ' . $fileIdentifier . ' => '
+                . $this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile) . ",\n";
         }
 
         if (!$filesCode) {
@@ -584,8 +585,8 @@ REGISTER_LOADER;
         if ($useIncludeFiles) {
             $file .= <<<INCLUDE_FILES
         \$includeFiles = require __DIR__ . '/autoload_files.php';
-        foreach (\$includeFiles as \$file) {
-            composerRequire$suffix(\$file);
+        foreach (\$includeFiles as \$fileIdentifier => \$file) {
+            composerRequire$suffix(\$fileIdentifier, \$file);
         }
 
 
@@ -603,17 +604,16 @@ METHOD_FOOTER;
         return $file . <<<FOOTER
 }
 
-function composerRequire$suffix(\$file)
+function composerRequire$suffix(\$fileIdentifier, \$file)
 {
     if (empty(\$GLOBALS['composerRequiredFiles'])) {
         \$GLOBALS['composerRequiredFiles'] = array();
     }
-    \$fileSignature = md5_file(\$file);
 
-    if (empty(\$GLOBALS['composerRequiredFiles'][\$fileSignature])) {
+    if (empty(\$GLOBALS['composerRequiredFiles'][\$fileIdentifier])) {
         require \$file;
 
-        \$GLOBALS['composerRequiredFiles'][\$fileSignature] = true;
+        \$GLOBALS['composerRequiredFiles'][\$fileIdentifier] = true;
     }
 }
 
@@ -655,7 +655,11 @@ FOOTER;
 
                     $relativePath = empty($installPath) ? (empty($path) ? '.' : $path) : $installPath.'/'.$path;
 
-                    if ($type === 'files' || $type === 'classmap') {
+                    if ($type === 'files') {
+                        $autoloads[var_export($this->getFileIdentifier($relativePath), true)]
+                            = $relativePath;
+                        continue;
+                    } elseif ($type === 'classmap') {
                         $autoloads[] = $relativePath;
                         continue;
                     }
@@ -666,6 +670,11 @@ FOOTER;
         }
 
         return $autoloads;
+    }
+
+    protected function getFileIdentifier($path)
+    {
+        return md5_file($path);
     }
 
     /**
