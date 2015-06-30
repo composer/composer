@@ -141,10 +141,10 @@ class VersionParser
                 if ('stable' === $matches[$index]) {
                     return $version;
                 }
-                $version .= '-' . $this->expandStability($matches[$index]) . (!empty($matches[$index+1]) ? $matches[$index+1] : '');
+                $version .= '-' . $this->expandStability($matches[$index]) . (!empty($matches[$index + 1]) ? $matches[$index + 1] : '');
             }
 
-            if (!empty($matches[$index+2])) {
+            if (!empty($matches[$index + 2])) {
                 $version .= '-dev';
             }
 
@@ -530,8 +530,8 @@ class VersionParser
 
         for ($i = 0, $count = count($pairs); $i < $count; $i++) {
             $pair = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
-            if (false === strpos($pair, ' ') && isset($pairs[$i+1]) && false === strpos($pairs[$i+1], '/')) {
-                $pair .= ' '.$pairs[$i+1];
+            if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/')) {
+                $pair .= ' '.$pairs[$i + 1];
                 $i++;
             }
 

@@ -12,7 +12,6 @@
 
 namespace Composer\Test\Package\Loader;
 
-use Composer\Package;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
 

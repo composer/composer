@@ -94,6 +94,7 @@ class GitHub
         if (!$token) {
             $this->io->writeError('<warning>No token given, aborting.</warning>');
             $this->io->writeError('You can also add it manually later by using "composer config github-oauth.github.com <token>"');
+
             return false;
         }
 

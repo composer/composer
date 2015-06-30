@@ -58,6 +58,7 @@ class ErrorHandler
                     if (isset($a['line'], $a['file'])) {
                         return '<warning> '.$a['file'].':'.$a['line'].'</warning>';
                     }
+
                     return null;
                 }, array_slice(debug_backtrace(), 2))));
             }

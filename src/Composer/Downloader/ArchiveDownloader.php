@@ -115,7 +115,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 // update api archives to the proper reference
                 $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
             }
-        } else if ($package->getDistReference() && strpos($url, 'bitbucket.org')) {
+        } elseif ($package->getDistReference() && strpos($url, 'bitbucket.org')) {
             if (preg_match('{^https?://(?:www\.)?bitbucket\.org/([^/]+)/([^/]+)/get/(.+)\.(zip|tar\.gz|tar\.bz2)$}i', $url, $match)) {
                 // update Bitbucket archives to the proper reference
                 $url = 'https://bitbucket.org/' . $match[1] . '/'. $match[2] . '/get/' . $package->getDistReference() . '.' . $match[4];

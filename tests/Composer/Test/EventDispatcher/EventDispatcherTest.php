@@ -13,7 +13,6 @@
 namespace Composer\Test\EventDispatcher;
 
 use Composer\EventDispatcher\Event;
-use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallerEvents;
 use Composer\TestCase;
 use Composer\Script\ScriptEvents;
