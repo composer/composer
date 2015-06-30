@@ -443,9 +443,11 @@ class VersionParser
 
                 if (!empty($stabilityModifier) && $this->parseStability($version) === 'stable') {
                     $version .= '-' . $stabilityModifier;
-                } elseif ('<' === $matches[1]) {
+                } elseif ('<' === $matches[1] || '>=' === $matches[1]) {
                     if (!preg_match('/-' . self::$modifierRegex . '$/', strtolower($matches[2]))) {
-                        $version .= '-dev';
+                        if (substr($matches[2], 0, 4) !== 'dev-') {
+                            $version .= '-dev';
+                        }
                     }
                 }
 

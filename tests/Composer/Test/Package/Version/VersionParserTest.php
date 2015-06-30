@@ -244,13 +244,13 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'greater than'      => array('>1.0.0',      new VersionConstraint('>', '1.0.0.0')),
             'lesser than'       => array('<1.2.3.4',    new VersionConstraint('<', '1.2.3.4-dev')),
             'less/eq than'      => array('<=1.2.3',     new VersionConstraint('<=', '1.2.3.0')),
-            'great/eq than'     => array('>=1.2.3',     new VersionConstraint('>=', '1.2.3.0')),
+            'great/eq than'     => array('>=1.2.3',     new VersionConstraint('>=', '1.2.3.0-dev')),
             'equals'            => array('=1.2.3',      new VersionConstraint('=', '1.2.3.0')),
             'double equals'     => array('==1.2.3',     new VersionConstraint('=', '1.2.3.0')),
             'no op means eq'    => array('1.2.3',       new VersionConstraint('=', '1.2.3.0')),
             'completes version' => array('=1.0',        new VersionConstraint('=', '1.0.0.0')),
             'shorthand beta'    => array('1.2.3b5',     new VersionConstraint('=', '1.2.3.0-beta5')),
-            'accepts spaces'    => array('>= 1.2.3',    new VersionConstraint('>=', '1.2.3.0')),
+            'accepts spaces'    => array('>= 1.2.3',    new VersionConstraint('>=', '1.2.3.0-dev')),
             'accepts spaces/2'  => array('< 1.2.3',     new VersionConstraint('<', '1.2.3.0-dev')),
             'accepts spaces/3'  => array('> 1.2.3',     new VersionConstraint('>', '1.2.3.0')),
             'accepts master'    => array('>=dev-master',    new VersionConstraint('>=', '9999999-dev')),
@@ -260,6 +260,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'regression #935'   => array('dev-CAPS',        new VersionConstraint('=', 'dev-CAPS')),
             'ignores aliases'   => array('dev-master as 1.0.0', new VersionConstraint('=', '9999999-dev')),
             'lesser than override'       => array('<1.2.3.4-stable',    new VersionConstraint('<', '1.2.3.4')),
+            'great/eq than override'     => array('>=1.2.3.4-stable',   new VersionConstraint('>=', '1.2.3.4')),
         );
     }
 
