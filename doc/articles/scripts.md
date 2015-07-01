@@ -84,7 +84,8 @@ and command-line executable commands.
 autoload functionality.
 - If a defined callback relies on functions defined outside of a class, the 
 callback itself is responsible for loading the appropriate files, as no files 
-are autoloaded during Composer commands.
+beyond those required for `psr-0`, `psr-4`, and `classmap` autoloading are 
+loaded during Composer commands.
 
 Script definition example:
 
@@ -99,6 +100,9 @@ Script definition example:
             "MyVendor\\MyClass::warmCache",
             "phpunit -c app/"
         ],
+        "post-autoload-dump": [
+            "MyVendor\\MyClass::postAutoloadDump"
+        ]
         "post-create-project-cmd" : [
             "php -r \"copy('config/local-example.php', 'config/local.php');\""
         ]
