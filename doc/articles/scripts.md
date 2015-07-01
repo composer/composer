@@ -83,10 +83,8 @@ and command-line executable commands.
 - PHP classes containing defined callbacks must be autoloadable via Composer's
 autoload functionality.
 - If a defined callback relies on functions defined outside of a class, the 
-callback must explicitly require the composer autoloader. If used in a 
-context where`vendor/autoload.php` might not yet exist (such as during a 
-`pre-install` or `pre-update` command), the callback should explicitly require
-whatever files within your root package it needs to execute successfully.
+callback itself is responsible for loading the appropriate files, as no files 
+are autoloaded during Composer commands.
 
 Script definition example:
 
@@ -130,7 +128,7 @@ class MyClass
     public static function postAutoloadDump(Event $event)
     {
         $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
-        require "$vendorDir/autoload.php";
+        require $vendorDir . '/autoload.php';
         
         some_function_from_an_autoloaded_file();
     }
