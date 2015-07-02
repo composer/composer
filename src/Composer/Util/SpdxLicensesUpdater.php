@@ -12,8 +12,6 @@
 
 namespace Composer\Util;
 
-use Composer\Json\JsonFormatter;
-
 /**
  * The SPDX Licenses Updater scrapes licenses from the spdx website
  * and updates the "res/spdx-licenses.json" file accordingly.
@@ -22,21 +20,57 @@ use Composer\Json\JsonFormatter;
  */
 class SpdxLicensesUpdater
 {
-    private $licensesUrl = 'http://www.spdx.org/licenses/';
-
-    public function update()
+    /**
+     * @param string $file
+     * @param string $url
+     */
+    public function dumpLicenses($file, $url = 'http://www.spdx.org/licenses/')
     {
-        $json = json_encode($this->getLicenses(), true);
-        $prettyJson = JsonFormatter::format($json, true, true);
-        file_put_contents(__DIR__ . '/../../../res/spdx-licenses.json', $prettyJson);
+        $options = 0;
+
+        if (defined('JSON_PRETTY_PRINT')) {
+            $options |= JSON_PRETTY_PRINT;
+        }
+
+        if (defined('JSON_UNESCAPED_SLASHES')) {
+            $options |= JSON_UNESCAPED_SLASHES;
+        }
+
+        $licenses = json_encode($this->getLicenses($url), $options);
+        file_put_contents($file, $licenses);
     }
 
-    private function getLicenses()
+    /**
+     * @param string $file
+     * @param string $url
+     */
+    public function dumpExceptions($file, $url = 'http://www.spdx.org/licenses/exceptions-index.html')
+    {
+        $options = 0;
+
+        if (defined('JSON_PRETTY_PRINT')) {
+            $options |= JSON_PRETTY_PRINT;
+        }
+
+        if (defined('JSON_UNESCAPED_SLASHES')) {
+            $options |= JSON_UNESCAPED_SLASHES;
+        }
+
+        $exceptions = json_encode($this->getExceptions($url), $options);
+        file_put_contents($file, $exceptions);
+    }
+
+    /**
+     * @param string $url
+     *
+     * @return array
+     */
+    private function getLicenses($url)
     {
         $licenses = array();
 
         $dom = new \DOMDocument;
-        $dom->loadHTMLFile($this->licensesUrl);
+        @$dom->loadHTMLFile($url);
 
         $xPath = new \DOMXPath($dom);
         $trs = $xPath->query('//table//tbody//tr');
@@ -45,8 +79,8 @@ class SpdxLicensesUpdater
         foreach ($trs as $tr) {
             $tds = $tr->getElementsByTagName('td'); // get the columns in this row
 
-            if ($tds->length < 4) {
-                throw new \Exception('Obtaining the license table failed. Wrong table format. Found less than 4 cells in a row.');
+            if ($tds->length !== 4) {
+                continue;
             }
 
             if (trim($tds->item(3)->nodeValue) == 'License Text') {
@@ -56,12 +90,50 @@ class SpdxLicensesUpdater
 
                 // The license URL is not scraped intentionally to keep json file size low.
                 // It's build when requested, see SpdxLicense->getLicenseByIdentifier().
-                //$licenseURL = = $tds->item(3)->getAttribute('href');
+                //$licenseURL = $tds->item(3)->getAttribute('href');
 
                 $licenses += array($identifier => array($fullname, $osiApproved));
             }
         }
 
         return $licenses;
+    }
+
+    /**
+     * @param string $url
+     *
+     * @return array
+     */
+    private function getExceptions($url)
+    {
+        $exceptions = array();
+
+        $dom = new \DOMDocument;
+        @$dom->loadHTMLFile($url);
+
+        $xPath = new \DOMXPath($dom);
+        $trs = $xPath->query('//table//tbody//tr');
+
+        // iterate over each row in the table
+        foreach ($trs as $tr) {
+            $tds = $tr->getElementsByTagName('td'); // get the columns in this row
+
+            if ($tds->length !== 3) {
+                continue;
+            }
+
+            if (trim($tds->item(2)->nodeValue) == 'License Exception Text') {
+                $fullname    = trim($tds->item(0)->nodeValue);
+                $identifier  = trim($tds->item(1)->nodeValue);
+
+                // The license URL is not scraped intentionally to keep json file size low.
+                // It's build when requested, see SpdxLicense->getLicenseExceptionByIdentifier().
+                //$licenseURL = $tds->item(2)->getAttribute('href');
+
+                $exceptions += array($identifier => array($fullname));
+            }
+        }
+
+        return $exceptions;
     }
 }
