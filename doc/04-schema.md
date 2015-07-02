@@ -730,7 +730,7 @@ override packages from it.
 
 ### config <span>([root-only](04-schema.md#root-package))</span>
 
-A set of configuration options. It is only used for projects. See 
+A set of configuration options. It is only used for projects. See
 [Config](06-config.md) for a description of each individual option.
 
 ### scripts <span>([root-only](04-schema.md#root-package))</span>
@@ -791,7 +791,7 @@ Optional.
 
 ### non-feature-branches
 
-A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something), 
+A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something),
 that will NOT be handled as feature branches. This is an array of strings.
 
 If you have non-numeric branch names, for example like "latest", "current", "latest-stable"
@@ -821,6 +821,19 @@ If you configure `latest-.*` as a pattern for non-feature-branches like this:
 ```
 
 Then "composer show -s" will give you `versions : * dev-latest-testing`.
+
+Optional.
+
+### extends
+
+Defines a parent JSON configuration filepath to a JSON file that this configuration extends.
+
+All properties from the parent JSON file are loaded and any property defined in the current
+file override (replace) those properties. This is done recursively so if the parent JSON file
+defines a parent that will be loaded (with any properties of it are also replaced) and so on.
+
+Useful for creating environment specific configurations, e.g. `testing.json`, `production.json`
+etc. which may need to override properties like `repositories`.
 
 Optional.
 

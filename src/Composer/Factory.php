@@ -219,7 +219,7 @@ class Factory
             }
 
             $file->validateSchema(JsonFile::LAX_SCHEMA);
-            $localConfig = $file->read();
+            $localConfig = static::readConfig($file);
         }
 
         // Load config and override with local config/auth config
@@ -311,6 +311,31 @@ class Factory
         }
 
         return $composer;
+    }
+
+    public static function readConfig($file, $mergeConfig = array())
+    {
+        $config = $file->read();
+
+        if (!empty($mergeConfig)) {
+            foreach ($mergeConfig as $key => $val) {
+                if (is_array($val) && array_key_exists($key, $config) && is_array($config[$key])) {
+                    // If dealing with arrays, attempt to array_replace into all first-level keys.
+                    $config[$key] = array_replace($config[$key], $val);
+                } else {
+                    // Otherwise, the values in $mergeConfig will take precedence
+                    $config[$key] = $val;
+                }
+            }
+        }
+
+        if (!empty($config['extends'])) {
+            $parent = new JsonFile($config['extends']);
+            unset($config['extends']);
+            $config = static::readConfig($parent, $config);
+        }
+
+        return $config;
     }
 
     /**

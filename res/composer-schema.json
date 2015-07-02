@@ -434,6 +434,10 @@
             "items": {
                 "type": "string"
             }
+        },
+        "extends": {
+           "type": "string",
+            "description": "Relative or absolute path to the parent JSON file this file extends."
         }
     }
 }

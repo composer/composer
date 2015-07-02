@@ -13,6 +13,8 @@
 namespace Composer\Test;
 
 use Composer\Config;
+use Composer\Factory;
+use Composer\Json\JsonFile;
 
 class ConfigTest extends \PHPUnit_Framework_TestCase
 {
@@ -169,5 +171,77 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $config->merge(array('config' => array('github-protocols' => array('https'))));
 
         $this->assertEquals(array('https'), $config->get('github-protocols'));
+    }
+
+    public function testInheritanceReadsParentValues()
+    {
+        $json = '{
+        "foo": "bar",
+        "extends": "composer.json"
+}';
+
+        $jsonFile = new JsonFile('data://text/plain;base64,'.base64_encode($json));
+        $config = Factory::readConfig($jsonFile);
+
+        $this->assertArrayHasKey("foo", $config);
+        $this->assertEquals("bar", $config['foo']);
+        $this->assertArrayHasKey("name", $config);
+        $this->assertEquals("composer/composer", $config['name']);
+    }
+
+    public function testInheritanceMergesArraysWithParentValues()
+    {
+        $json = '{
+        "require": {"foo": "bar"},
+        "extends": "composer.json"
+}';
+
+        $jsonFile = new JsonFile('data://text/plain;base64,'.base64_encode($json));
+        $config = Factory::readConfig($jsonFile);
+
+        $this->assertArrayHasKey("foo", $config['require']);
+        $this->assertEquals("bar", $config['require']['foo']);
+        $this->assertArrayHasKey("php", $config['require']);
+    }
+
+    public function testInheritanceOverwritesParentValuesIfChildValueIsNotArray()
+    {
+        $json = '{
+        "require": "foobar",
+        "extends": "composer.json"
+}';
+
+        $jsonFile = new JsonFile('data://text/plain;base64,'.base64_encode($json));
+        $config = Factory::readConfig($jsonFile);
+
+        $this->assertEquals("foobar", $config['require']);
+    }
+
+    public function testInheritanceOverwritesParentValuesIfParentValueIsNotArray()
+    {
+        $json = '{
+        "name": {"foo": "bar"},
+        "extends": "composer.json"
+}';
+
+        $jsonFile = new JsonFile('data://text/plain;base64,'.base64_encode($json));
+        $config = Factory::readConfig($jsonFile);
+
+        $this->assertEquals(array('foo' => 'bar'), $config['name']);
+    }
+
+    public function testInheritanceSupportsMultiLevel()
+    {
+        $parentJson = '{
+            "extends": "composer.json"
+}';
+
+        $json = '{
+            "extends": "data://text/plain;base64,'.base64_encode($parentJson).'"
+}';
+
+        $jsonFile = new JsonFile('data://text/plain;base64,'.base64_encode($json));
+        $config = Factory::readConfig($jsonFile);
+        $this->assertEquals("composer/composer", $config['name']);
     }
 }
