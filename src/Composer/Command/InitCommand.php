@@ -17,10 +17,13 @@ use Composer\Json\JsonFile;
 use Composer\Factory;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionSelector;
+use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\FilesystemRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -61,6 +64,7 @@ class InitCommand extends Command
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
                 new InputOption('license', 'l', InputOption::VALUE_REQUIRED, 'License of package'),
+                new InputOption('repository-url', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Repository to search for packages', array()),
             ))
             ->setHelp(<<<EOT
 The <info>init</info> command creates a basic composer.json file
@@ -322,6 +326,38 @@ EOT
 
     protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array())
     {
+        $repositories = $input->getOption('repository-url');
+
+        if (!empty($repositories)) {
+            $io = $this->getIO();
+            $config = Factory::createConfig();
+            $composite = $this->getRepos();
+
+            foreach ($repositories as $repository) {
+                if ("json" === pathinfo($repository, PATHINFO_EXTENSION) && file_exists($repository)) {
+                    $json = new JsonFile($repository, new RemoteFilesystem($io));
+                    $data = $json->read();
+                    if (!empty($data['packages']) || !empty($data['includes']) || !empty($data['provider-includes'])) {
+                        $repo = new ComposerRepository(
+                            array('url' => 'file://' . strtr(realpath($repository), '\\', '/')),
+                            $io,
+                            $config
+                        );
+                    } else {
+                        $repo = new FilesystemRepository($json);
+                    }
+                } elseif (0 === strpos($repository, 'http')) {
+                    $repo = new ComposerRepository(array('url' => $repository), $io, $config);
+                } else {
+                    throw new \InvalidArgumentException(
+                        'Invalid repository url given. Has to be a .json file or an http url.'
+                    );
+                }
+
+                $composite->addRepository($repo);
+            }
+        }
+
         if ($requires) {
             $requires = $this->normalizeRequirements($requires);
             $result = array();
