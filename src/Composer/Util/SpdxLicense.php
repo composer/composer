@@ -192,69 +192,115 @@ class SpdxLicense
      * @param string $license
      *
      * @return bool
-     *
      * @throws \RuntimeException
      */
     private function isValidLicenseString($license)
     {
-        $licenses = array_map('preg_quote', array_keys($this->licenses));
-        sort($licenses);
-        $licenses = array_reverse($licenses);
-        $licenses = implode('|', $licenses);
+        $tokens = array(
+            'po' => '\(',
+            'pc' => '\)',
+            'op' => '(?:or|OR|and|AND)',
+            'wi' => '(?:with|WITH)',
+            'lix' => '(?:NONE|NOASSERTION)',
+            'lir' => 'LicenseRef-\d+',
+            'lic' => '[-_.a-zA-Z0-9]{3,}\+?',
+            'ws' => '\s+',
+            '_' => '.',
+        );
 
-        $exceptions = array_map('preg_quote', array_keys($this->exceptions));
-        sort($exceptions);
-        $exceptions = array_reverse($exceptions);
-        $exceptions = implode('|', $exceptions);
+        $next = function () use ($license, $tokens) {
+            static $offset = 0;
 
-        $regex = "{
-            (?(DEFINE)
-                # idstring: 1*( ALPHA / DIGIT / - / . )
-                (?<idstring>[\pL\pN\-\.]{1,})
+            if ($offset >= strlen($license)) {
+                return null;
+            }
 
-                # license-id: taken from list
-                (?<licenseid>${licenses})
+            foreach ($tokens as $name => $token) {
+                if (false === $r = preg_match('{' . $token . '}', $license, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+                    throw new \RuntimeException('Pattern for token %s failed (regex error).', $name);
+                }
+                if ($r === 0) {
+                    continue;
+                }
+                if ($matches[0][1] !== $offset) {
+                    continue;
+                }
+                $offset += strlen($matches[0][0]);
 
-                # license-exception-id: taken from list
-                (?<licenseexceptionid>${exceptions})
+                return array($name, $matches[0][0]);
+            }
 
-                # license-ref: [DocumentRef-1*(idstring):]LicenseRef-1*(idstring)
-                (?<licenseref>(?:DocumentRef-(?&idstring):)?LicenseRef-(?&idstring))
+            throw new \RuntimeException(
+                'At least the last pattern needs to match, but it did not (dot-match-all is missing?).'
+            );
+        };
 
-                # simple-expresssion: license-id / license-id+ / license-ref
-                (?<simple_expression>(?&licenseid)\+? | (?&licenseid) | (?&licenseref))
+        $open = 0;
+        $with = false;
+        $require = true;
+        $lastop = null;
 
-                # compound expression: 1*(
-                #   simple-expression /
-                #   simple-expression WITH license-exception-id /
-                #   compound-expression AND compound-expression /
-                #   compound-expression OR compound-expression
-                # ) / ( compound-expression ) )
-                (?<compound_head>
-                    (?&simple_expression) ( \s+ (?:with|WITH) \s+ (?&licenseexceptionid))?
-                        | \( \s* (?&compound_expression) \s*\)
-                )
-                (?<compound_expression>
-                    (?&compound_head) (?: \s+ (?:and|AND|or|OR) \s+ (?&compound_expression))?
-                )
-
-                # license-expression: 1*1(simple-expression / compound-expression)
-                (?<license_expression>NONE | NOASSERTION | (?&compound_expression) | (?&simple_expression))
-            ) # end of define
-
-            ^(?&license_expression)$
-        }x";
-
-        $match = preg_match($regex, $license);
-
-        if (0 === $match) {
-            return false;
+        while (list($token, $string) = $next()) {
+            switch ($token) {
+                case 'po':
+                    if ($open || !$require || $with) {
+                        return false;
+                    }
+                    $open = 1;
+                    break;
+                case 'pc':
+                    if ($open !== 1 || $require || !$lastop || $with) {
+                        return false;
+                    }
+                    $open = 2;
+                    break;
+                case 'op':
+                    if ($require || !$open || $with) {
+                        return false;
+                    }
+                    $lastop || $lastop = $string;
+                    if ($lastop !== $string) {
+                        return false;
+                    }
+                    $require = true;
+                    break;
+                case 'wi':
+                    $with = true;
+                    break;
+                case 'lix':
+                    if ($open || $with) {
+                        return false;
+                    }
+                    goto lir;
+                case 'lic':
+                    if ($with && $this->isValidExceptionIdentifier($string)) {
+                        $require = true;
+                        $with = false;
+                        goto lir;
+                    }
+                    if ($with) {
+                        return false;
+                    }
+                    if (!$this->isValidLicenseIdentifier(rtrim($string, '+'))) {
+                        return false;
+                    }
+                    // Fall-through intended
+                case 'lir':
+                    lir:
+                    if (!$require) {
+                        return false;
+                    }
+                    $require = false;
+                    break;
+                case 'ws':
+                    break;
+                case '_':
+                    return false;
+                default:
+                    throw new \RuntimeException(sprintf('Unparsed token: %s.', print_r($token, true)));
+            }
         }
 
-        if (false === $match) {
-            throw new \RuntimeException('Regex failed to compile/run.');
-        }
-
-        return true;
+        return !($open % 2 || $require || $with);
     }
 }

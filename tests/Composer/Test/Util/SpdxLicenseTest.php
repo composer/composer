@@ -39,7 +39,6 @@ class SpdxLicenseTest extends TestCase
                 "GPL-2.0 with Autoconf-exception-2.0",
                 "GPL-2.0 WITH Autoconf-exception-2.0",
                 "GPL-2.0+ WITH Autoconf-exception-2.0",
-                "(GPL-3.0 and GPL-2.0 or GPL-3.0+)",
             ),
             $identifiers
         );
@@ -58,6 +57,7 @@ class SpdxLicenseTest extends TestCase
             array(array()),
             array("The system pwns you"),
             array("()"),
+            array("(MIT)"),
             array("(MIT"),
             array("MIT)"),
             array("MIT NONE"),
@@ -66,6 +66,8 @@ class SpdxLicenseTest extends TestCase
             array("(MIT and MIT) MIT"),
             array(array("LGPL-2.0", "The system pwns you")),
             array("and GPL-3.0+"),
+            array("EUDatagrid and GPL-3.0+"),
+            array("(GPL-3.0 and GPL-2.0 or GPL-3.0+)"),
             array("(EUDatagrid and GPL-3.0+ and  )"),
             array("(EUDatagrid xor GPL-3.0+)"),
             array("(MIT Or MIT)"),
