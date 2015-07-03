@@ -431,10 +431,6 @@
         "Eclipse Public License 1.0",
         true
     ],
-    "eCos-2.0": [
-        "eCos license version 2.0",
-        false
-    ],
     "ECL-1.0": [
         "Educational Community License v1.0",
         true
@@ -499,6 +495,10 @@
         "Frameworx Open License 1.0",
         true
     ],
+    "FreeImage": [
+        "FreeImage Public License v1.0",
+        false
+    ],
     "FTL": [
         "Freetype Project License",
         false
@@ -543,76 +543,24 @@
         "GNU General Public License v1.0 only",
         false
     ],
-    "GPL-1.0+": [
-        "GNU General Public License v1.0 or later",
-        false
-    ],
     "GPL-2.0": [
         "GNU General Public License v2.0 only",
-        true
-    ],
-    "GPL-2.0+": [
-        "GNU General Public License v2.0 or later",
-        true
-    ],
-    "GPL-2.0-with-autoconf-exception": [
-        "GNU General Public License v2.0 w/Autoconf exception",
-        true
-    ],
-    "GPL-2.0-with-bison-exception": [
-        "GNU General Public License v2.0 w/Bison exception",
-        true
-    ],
-    "GPL-2.0-with-classpath-exception": [
-        "GNU General Public License v2.0 w/Classpath exception",
-        true
-    ],
-    "GPL-2.0-with-font-exception": [
-        "GNU General Public License v2.0 w/Font exception",
-        true
-    ],
-    "GPL-2.0-with-GCC-exception": [
-        "GNU General Public License v2.0 w/GCC Runtime Library exception",
         true
     ],
     "GPL-3.0": [
         "GNU General Public License v3.0 only",
         true
     ],
-    "GPL-3.0+": [
-        "GNU General Public License v3.0 or later",
-        true
-    ],
-    "GPL-3.0-with-autoconf-exception": [
-        "GNU General Public License v3.0 w/Autoconf exception",
-        true
-    ],
-    "GPL-3.0-with-GCC-exception": [
-        "GNU General Public License v3.0 w/GCC Runtime Library exception",
-        true
-    ],
     "LGPL-2.1": [
         "GNU Lesser General Public License v2.1 only",
-        true
-    ],
-    "LGPL-2.1+": [
-        "GNU Lesser General Public License v2.1 or later",
         true
     ],
     "LGPL-3.0": [
         "GNU Lesser General Public License v3.0 only",
         true
     ],
-    "LGPL-3.0+": [
-        "GNU Lesser General Public License v3.0 or later",
-        true
-    ],
     "LGPL-2.0": [
         "GNU Library General Public License v2 only",
-        true
-    ],
-    "LGPL-2.0+": [
-        "GNU Library General Public License v2 or later",
         true
     ],
     "gnuplot": [
@@ -927,6 +875,10 @@
         "Open LDAP Public License v2.7",
         false
     ],
+    "OLDAP-2.8": [
+        "Open LDAP Public License v2.8",
+        false
+    ],
     "OML": [
         "Open Market License",
         false
@@ -954,10 +906,6 @@
     "OSL-3.0": [
         "Open Software License 3.0",
         true
-    ],
-    "OLDAP-2.8": [
-        "OpenLDAP Public License v2.8",
-        false
     ],
     "OpenSSL": [
         "OpenSSL License",
@@ -1079,10 +1027,6 @@
         "Standard ML of New Jersey License",
         false
     ],
-    "StandardML-NJ": [
-        "Standard ML of New Jersey License",
-        false
-    ],
     "SugarCRM-1.1.3": [
         "SugarCRM Public License v1.1.3",
         false
@@ -1144,16 +1088,16 @@
         true
     ],
     "W3C": [
-        "W3C Software Notice and License",
+        "W3C Software Notice and License (2002-12-31)",
         true
+    ],
+    "W3C-19980720": [
+        "W3C Software Notice and License (1998-07-20)",
+        false
     ],
     "Wsuipa": [
         "Wsuipa License",
         false
-    ],
-    "WXwindows": [
-        "wxWindows Library License",
-        true
     ],
     "Xnet": [
         "X.Net License",
@@ -1203,6 +1147,10 @@
         "Zimbra Public License v1.3",
         false
     ],
+    "Zimbra-1.4": [
+        "Zimbra Public License v1.4",
+        false
+    ],
     "Zlib": [
         "zlib License",
         true
@@ -1221,6 +1169,10 @@
     ],
     "ZPL-2.1": [
         "Zope Public License 2.1",
+        false
+    ],
+    "ICU": [
+        "ICU License",
         false
     ]
 }

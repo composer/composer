@@ -27,12 +27,18 @@ class SpdxLicenseTest extends TestCase
         $valid = array_merge(
             array(
                 "MIT",
+                "MIT+",
                 "NONE",
                 "NOASSERTION",
                 "LicenseRef-3",
                 array("LGPL-2.0", "GPL-3.0+"),
                 "(LGPL-2.0 or GPL-3.0+)",
+                "(LGPL-2.0 OR GPL-3.0+)",
                 "(EUDatagrid and GPL-3.0+)",
+                "(EUDatagrid AND GPL-3.0+)",
+                "GPL-2.0 with Autoconf-exception-2.0",
+                "GPL-2.0 WITH Autoconf-exception-2.0",
+                "GPL-2.0+ WITH Autoconf-exception-2.0",
             ),
             $identifiers
         );
@@ -52,7 +58,10 @@ class SpdxLicenseTest extends TestCase
             array("The system pwns you"),
             array("()"),
             array("(MIT)"),
+            array("(MIT"),
+            array("MIT)"),
             array("MIT NONE"),
+            array("MIT AND NONE"),
             array("MIT (MIT and MIT)"),
             array("(MIT and MIT) MIT"),
             array(array("LGPL-2.0", "The system pwns you")),
@@ -64,6 +73,10 @@ class SpdxLicenseTest extends TestCase
             array("(MIT Or MIT)"),
             array("(NONE or MIT)"),
             array("(NOASSERTION or MIT)"),
+            array("Autoconf-exception-2.0 WITH MIT"),
+            array("MIT WITH"),
+            array("MIT OR"),
+            array("MIT AND"),
         );
     }
 

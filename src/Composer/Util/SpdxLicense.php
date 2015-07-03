@@ -12,8 +12,6 @@
 
 namespace Composer\Util;
 
-use Composer\Json\JsonFile;
-
 /**
  * Supports composer array and SPDX tag notation for disjunctive/conjunctive
  * licenses.
@@ -22,26 +20,16 @@ use Composer\Json\JsonFile;
  */
 class SpdxLicense
 {
-    /**
-     * @var array
-     */
+    /** @var array */
     private $licenses;
+
+    /** @var array */
+    private $exceptions;
 
     public function __construct()
     {
         $this->loadLicenses();
-    }
-
-    private function loadLicenses()
-    {
-        if (is_array($this->licenses)) {
-            return $this->licenses;
-        }
-
-        $jsonFile = new JsonFile(__DIR__ . '/../../../res/spdx-licenses.json');
-        $this->licenses = $jsonFile->read();
-
-        return $this->licenses;
+        $this->loadExceptions();
     }
 
     /**
@@ -58,17 +46,34 @@ class SpdxLicense
         }
 
         $license = $this->licenses[$identifier];
-
-        // add URL for the license text (it's not included in the json)
-        $license[2] = 'http://spdx.org/licenses/' . $identifier . '#licenseText';
+        $license[] = 'http://spdx.org/licenses/' . $identifier . '.html#licenseText';
 
         return $license;
     }
 
     /**
-     * Returns the short identifier of a license by full name.
+     * Returns license exception metadata by license exception identifier.
      *
      * @param string $identifier
+     *
+     * @return array|null
+     */
+    public function getExceptionByIdentifier($identifier)
+    {
+        if (!isset($this->exceptions[$identifier])) {
+            return;
+        }
+
+        $license = $this->exceptions[$identifier];
+        $license[] = 'http://spdx.org/licenses/' . $identifier . '.html#licenseExceptionText';
+
+        return $license;
+    }
+
+    /**
+     * Returns the short identifier of a license (exception) by full name.
+     *
+     * @param string $name
      *
      * @return string
      */
@@ -79,10 +84,18 @@ class SpdxLicense
                 return $identifier;
             }
         }
+
+        foreach ($this->exceptions as $identifier => $licenseData) {
+            if ($licenseData[0] === $name) { // key 0 = fullname
+                return $identifier;
+            }
+        }
     }
 
     /**
      * Returns the OSI Approved status for a license by identifier.
+     *
+     * @param string $identifier
      *
      * @return bool
      */
@@ -106,6 +119,20 @@ class SpdxLicense
     }
 
     /**
+     * Check, if the identifier for a exception is valid.
+     *
+     * @param string $identifier
+     *
+     * @return bool
+     */
+    private function isValidExceptionIdentifier($identifier)
+    {
+        $identifiers = array_keys($this->exceptions);
+
+        return in_array($identifier, $identifiers);
+    }
+
+    /**
      * @param array|string $license
      *
      * @return bool
@@ -118,16 +145,47 @@ class SpdxLicense
             if ($count !== count(array_filter($license, 'is_string'))) {
                 throw new \InvalidArgumentException('Array of strings expected.');
             }
-            $license = $count > 1  ? '('.implode(' or ', $license).')' : (string) reset($license);
+            $license = $count > 1  ? '('.implode(' OR ', $license).')' : (string) reset($license);
         }
 
         if (!is_string($license)) {
             throw new \InvalidArgumentException(sprintf(
-                'Array or String expected, %s given.', gettype($license)
+                'Array or String expected, %s given.',
+                gettype($license)
             ));
         }
 
         return $this->isValidLicenseString($license);
+    }
+
+    /**
+     * @return array
+     */
+    private function loadLicenses()
+    {
+        if (is_array($this->licenses)) {
+            return $this->licenses;
+        }
+
+        $jsonFile = file_get_contents(__DIR__ . '/../../../res/spdx-licenses.json');
+        $this->licenses = json_decode($jsonFile, true);
+
+        return $this->licenses;
+    }
+
+    /**
+     * @return array
+     */
+    private function loadExceptions()
+    {
+        if (is_array($this->exceptions)) {
+            return $this->exceptions;
+        }
+
+        $jsonFile = file_get_contents(__DIR__ . '/../../../res/spdx-exceptions.json');
+        $this->exceptions = json_decode($jsonFile, true);
+
+        return $this->exceptions;
     }
 
     /**
@@ -141,10 +199,11 @@ class SpdxLicense
         $tokens = array(
             'po' => '\(',
             'pc' => '\)',
-            'op' => '(?:or|and)',
+            'op' => '(?:or|OR|and|AND)',
+            'wi' => '(?:with|WITH)',
             'lix' => '(?:NONE|NOASSERTION)',
             'lir' => 'LicenseRef-\d+',
-            'lic' => '[-+_.a-zA-Z0-9]{3,}',
+            'lic' => '[-_.a-zA-Z0-9]{3,}\+?',
             'ws' => '\s+',
             '_' => '.',
         );
@@ -171,44 +230,58 @@ class SpdxLicense
                 return array($name, $matches[0][0]);
             }
 
-            throw new \RuntimeException('At least the last pattern needs to match, but it did not (dot-match-all is missing?).');
+            throw new \RuntimeException(
+                'At least the last pattern needs to match, but it did not (dot-match-all is missing?).'
+            );
         };
 
         $open = 0;
-        $require = 1;
+        $with = false;
+        $require = true;
         $lastop = null;
 
         while (list($token, $string) = $next()) {
             switch ($token) {
                 case 'po':
-                    if ($open || !$require) {
+                    if ($open || !$require || $with) {
                         return false;
                     }
                     $open = 1;
                     break;
                 case 'pc':
-                    if ($open !== 1 || $require || !$lastop) {
+                    if ($open !== 1 || $require || !$lastop || $with) {
                         return false;
                     }
                     $open = 2;
                     break;
                 case 'op':
-                    if ($require || !$open) {
+                    if ($require || !$open || $with) {
                         return false;
                     }
                     $lastop || $lastop = $string;
                     if ($lastop !== $string) {
                         return false;
                     }
-                    $require = 1;
+                    $require = true;
+                    break;
+                case 'wi':
+                    $with = true;
                     break;
                 case 'lix':
-                    if ($open) {
+                    if ($open || $with) {
                         return false;
                     }
                     goto lir;
                 case 'lic':
-                    if (!$this->isValidLicenseIdentifier($string)) {
+                    if ($with && $this->isValidExceptionIdentifier($string)) {
+                        $require = true;
+                        $with = false;
+                        goto lir;
+                    }
+                    if ($with) {
+                        return false;
+                    }
+                    if (!$this->isValidLicenseIdentifier(rtrim($string, '+'))) {
                         return false;
                     }
                     // Fall-through intended
@@ -217,7 +290,7 @@ class SpdxLicense
                     if (!$require) {
                         return false;
                     }
-                    $require = 0;
+                    $require = false;
                     break;
                 case 'ws':
                     break;
@@ -228,6 +301,6 @@ class SpdxLicense
             }
         }
 
-        return !($open % 2 || $require);
+        return !($open % 2 || $require || $with);
     }
 }
