@@ -302,7 +302,6 @@ class RemoteFilesystem
                     }
 
                     $this->promptAuthAndRetry($messageCode);
-                    break;
                 }
                 break;
 
@@ -314,7 +313,6 @@ class RemoteFilesystem
                     }
 
                     $this->promptAuthAndRetry($messageCode, $message);
-                    break;
                 }
                 break;
 
