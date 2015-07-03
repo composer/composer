@@ -69,18 +69,15 @@ class VersionParser
         return $stability === 'rc' ? 'RC' : $stability;
     }
 
+    /**
+     * @deprecated Use PackageInterface::getFullPrettyVersion instead
+     */
     public static function formatVersion(PackageInterface $package, $truncate = true)
     {
-        if (!$package->isDev() || !in_array($package->getSourceType(), array('hg', 'git'))) {
-            return $package->getPrettyVersion();
-        }
+        trigger_error(__METHOD__.' is deprecated. Use '.
+            '\Composer\Package\PackageInterface::getFullPrettyVersion() instead', E_USER_DEPRECATED);
 
-        // if source reference is a sha1 hash -- truncate
-        if ($truncate && strlen($package->getSourceReference()) === 40) {
-            return $package->getPrettyVersion() . ' ' . substr($package->getSourceReference(), 0, 7);
-        }
-
-        return $package->getPrettyVersion() . ' ' . $package->getSourceReference();
+        return $package->getFullPrettyVersion($truncate);
     }
 
     /**

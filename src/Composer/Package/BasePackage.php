@@ -206,6 +206,23 @@ abstract class BasePackage implements PackageInterface
         return $this->getPrettyName().' '.$this->getPrettyVersion();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function getFullPrettyVersion($truncate = true)
+    {
+        if (!$this->isDev() || !in_array($this->getSourceType(), array('hg', 'git'))) {
+            return $this->getPrettyVersion();
+        }
+
+        // if source reference is a sha1 hash -- truncate
+        if ($truncate && strlen($this->getSourceReference()) === 40) {
+            return $this->getPrettyVersion() . ' ' . substr($this->getSourceReference(), 0, 7);
+        }
+
+        return $this->getPrettyVersion() . ' ' . $this->getSourceReference();
+    }
+
     public function __clone()
     {
         $this->repository = null;
