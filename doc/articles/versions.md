@@ -20,9 +20,9 @@ Example: `1.0.2`
 By using comparison operators you can specify ranges of valid versions. Valid
 operators are `>`, `>=`, `<`, `<=`, `!=`.
 
-You can define multiple ranges. Ranges separated by a space (` `) or comma (`,`)
-will be treated as a **logical AND**. A double pipe (`||`) will be treated as a
-**logical OR**. AND has higher precedence than OR.
+You can define multiple ranges. Ranges separated by a space (<code> </code>)
+or comma (`,`) will be treated as a **logical AND**. A double pipe (`||`)
+will be treated as a **logical OR**. AND has higher precedence than OR.
 
 > **Note:** Be careful when using unbounded ranges as you might end up
 > unexpectedly installing versions that break backwards compatibility.
@@ -99,7 +99,7 @@ add the suffix `-stable`.
 Examples:
 
  Constraint         | Internally
-----------------------------------------------
+------------------- | ------------------------
  `1.2.3`            | `=1.2.3.0-stable`
  `>1.2`             | `>1.2.0.0-stable`
  `>=1.2`            | `>=1.2.0.0-dev`
