@@ -303,8 +303,8 @@ to limit output to suggestions made by those packages only.
 ### Options
 
 * **--no-dev:** Excludes suggestions from `require-dev` packages.
-* **-v[v]:** Increased verbosity adds suggesting package name (`-v`) and
-  reason for suggestion (`-vv`).
+* **--verbose (-v):** Increased verbosity adds suggesting package name and
+  reason for suggestion.
 
 ## depends
 

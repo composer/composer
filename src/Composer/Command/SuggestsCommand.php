@@ -32,6 +32,8 @@ class SuggestsCommand extends Command
 
 The <info>%command.name%</info> command shows suggested packages.
 
+With <info>-v</info> you also see which package suggested it and why.
+
 EOT
             )
         ;
@@ -87,10 +89,8 @@ EOT
     {
         $io = $this->getIO();
 
-        if ($io->isVeryVerbose()) {
+        if ($io->isVerbose()) {
             $io->write(sprintf('<comment>%s</comment> suggests <info>%s</info>: %s', $package, $suggestion, $reason));
-        } elseif ($io->isVerbose()) {
-            $io->write(sprintf('<comment>%s</comment> suggests <info>%s</info>', $package, $suggestion));
         } else {
             $io->write(sprintf('<info>%s</info>', $suggestion));
         }
