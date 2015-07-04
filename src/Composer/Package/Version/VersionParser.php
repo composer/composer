@@ -18,6 +18,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\Loader\ArrayLoader;
 
 /**
  * Version parser
@@ -209,6 +210,7 @@ class VersionParser
     }
 
     /**
+     * @deprecated use ArrayLoader::parseLinks() instead
      * @param  string $source        source package name
      * @param  string $sourceVersion source package version (pretty version ideally)
      * @param  string $description   link description (e.g. requires, replaces, ..)
@@ -217,18 +219,11 @@ class VersionParser
      */
     public function parseLinks($source, $sourceVersion, $description, $links)
     {
-        $res = array();
-        foreach ($links as $target => $constraint) {
-            if ('self.version' === $constraint) {
-                $parsedConstraint = $this->parseConstraints($sourceVersion);
-            } else {
-                $parsedConstraint = $this->parseConstraints($constraint);
-            }
+        trigger_error(__METHOD__.' is deprecated. Use '.
+            '\Composer\Package\Loader\ArrayLoader::parseLinks() instead', E_USER_DEPRECATED);
+        $loader = new ArrayLoader($this, false);
 
-            $res[strtolower($target)] = new Link($source, $target, $parsedConstraint, $description, $constraint);
-        }
-
-        return $res;
+        return $loader->parseLinks($source, $sourceVersion, $description, $links);
     }
 
     /**
