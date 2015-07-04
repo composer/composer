@@ -87,7 +87,7 @@ resolution.
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
-* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader 
+* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader
   generation skips the `autoload-dev` rules.
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
@@ -294,6 +294,18 @@ in your browser.
 
 * **--homepage (-H):** Open the homepage instead of the repository URL.
 
+## suggests
+
+Lists all packages suggested by currently installed set of packages. You can
+optionally pass one or multiple package names in the format of `vendor/package`
+to limit output to suggestions made by those packages only.
+
+### Options
+
+* **--no-dev:** Excludes suggestions from `require-dev` packages.
+* **-v[v]:** Increased verbosity adds suggesting package name (`-v`) and
+  reason for suggestion (`-vv`).
+
 ## depends
 
 The `depends` command tells you which other packages depend on a certain
@@ -375,7 +387,7 @@ sudo composer self-update
 ### Options
 
 * **--rollback (-r):** Rollback to the last version you had installed.
-* **--clean-backups:** Delete old backups during an update. This makes the 
+* **--clean-backups:** Delete old backups during an update. This makes the
   current version of Composer the only backup available after the update.
 
 ## config
