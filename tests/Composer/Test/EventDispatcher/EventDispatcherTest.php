@@ -31,7 +31,11 @@ class EventDispatcherTest extends TestCase
             'Composer\Test\EventDispatcher\EventDispatcherTest::call'
         ), $io);
 
-        $io->expects($this->once())
+        $io->expects($this->at(0))
+            ->method('writeError')
+            ->with('> Composer\Test\EventDispatcher\EventDispatcherTest::call');
+
+        $io->expects($this->at(1))
             ->method('writeError')
             ->with('<error>Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
 
@@ -93,12 +97,11 @@ class EventDispatcherTest extends TestCase
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->getMock('Composer\Composer'),
-                $this->getMock('Composer\IO\IOInterface'),
+                $io = $this->getMock('Composer\IO\IOInterface'),
                 $process,
             ))
             ->setMethods(array(
                 'getListeners',
-                'executeEventPhpScript',
             ))
             ->getMock();
 
@@ -111,14 +114,22 @@ class EventDispatcherTest extends TestCase
             'Composer\\Test\\EventDispatcher\\EventDispatcherTest::someMethod',
             'echo -n bar',
         );
+
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
             ->will($this->returnValue($listeners));
 
-        $dispatcher->expects($this->once())
-            ->method('executeEventPhpScript')
-            ->with('Composer\Test\EventDispatcher\EventDispatcherTest', 'someMethod')
-            ->will($this->returnValue(true));
+        $io->expects($this->at(0))
+            ->method('writeError')
+            ->with($this->equalTo('> echo -n foo'));
+
+        $io->expects($this->at(1))
+            ->method('writeError')
+            ->with($this->equalTo('> Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'));
+
+        $io->expects($this->at(2))
+            ->method('writeError')
+            ->with($this->equalTo('> echo -n bar'));
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }
@@ -149,12 +160,12 @@ class EventDispatcherTest extends TestCase
         );
     }
 
-    public function testDispatcherOutputsCommands()
+    public function testDispatcherOutputsCommand()
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->getMock('Composer\Composer'),
-                $this->getMock('Composer\IO\IOInterface'),
+                $io = $this->getMock('Composer\IO\IOInterface'),
                 new ProcessExecutor,
             ))
             ->setMethods(array('getListeners'))
@@ -164,6 +175,10 @@ class EventDispatcherTest extends TestCase
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
             ->will($this->returnValue($listener));
+
+        $io->expects($this->once())
+            ->method('writeError')
+            ->with($this->equalTo('> echo foo'));
 
         ob_start();
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
@@ -187,7 +202,11 @@ class EventDispatcherTest extends TestCase
             ->method('getListeners')
             ->will($this->returnValue($listener));
 
-        $io->expects($this->once())
+        $io->expects($this->at(0))
+            ->method('writeError')
+            ->willReturn('> exit 1');
+
+        $io->expects($this->at(1))
             ->method('writeError')
             ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with an error</error>'));
 

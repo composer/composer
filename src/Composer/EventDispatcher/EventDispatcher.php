@@ -171,8 +171,10 @@ class EventDispatcher
                     throw $e;
                 }
             } else {
-                $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor','escape'), $event->getArguments()));
-                if (0 !== ($exitCode = $this->process->execute($callable . ($args === '' ? '' : ' '.$args)))) {
+                $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
+                $exec = $callable . ($args === '' ? '' : ' '.$args);
+                $this->io->writeError(sprintf('> %s', $exec));
+                if (0 !== ($exitCode = $this->process->execute($exec))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 
                     throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
@@ -195,6 +197,8 @@ class EventDispatcher
     protected function executeEventPhpScript($className, $methodName, Event $event)
     {
         $event = $this->checkListenerExpectedEvent(array($className, $methodName), $event);
+
+        $this->io->writeError(sprintf('> %s::%s', $className, $methodName));
 
         return $className::$methodName($event);
     }
