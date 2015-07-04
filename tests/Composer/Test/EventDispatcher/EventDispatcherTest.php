@@ -32,10 +32,14 @@ class EventDispatcherTest extends TestCase
         ), $io);
 
         $io->expects($this->at(0))
+            ->method('isVerbose')
+            ->willReturn(0);
+
+        $io->expects($this->at(1))
             ->method('writeError')
             ->with('> Composer\Test\EventDispatcher\EventDispatcherTest::call');
 
-        $io->expects($this->at(1))
+        $io->expects($this->at(2))
             ->method('writeError')
             ->with('<error>Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
 
@@ -119,17 +123,21 @@ class EventDispatcherTest extends TestCase
             ->method('getListeners')
             ->will($this->returnValue($listeners));
 
-        $io->expects($this->at(0))
-            ->method('writeError')
-            ->with($this->equalTo('> echo -n foo'));
+        $io->expects($this->any())
+            ->method('isVerbose')
+            ->willReturn(1);
 
         $io->expects($this->at(1))
             ->method('writeError')
-            ->with($this->equalTo('> Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'));
+            ->with($this->equalTo('> post-install-cmd: echo -n foo'));
 
-        $io->expects($this->at(2))
+        $io->expects($this->at(3))
             ->method('writeError')
-            ->with($this->equalTo('> echo -n bar'));
+            ->with($this->equalTo('> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'));
+
+        $io->expects($this->at(5))
+            ->method('writeError')
+            ->with($this->equalTo('> post-install-cmd: echo -n bar'));
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }
@@ -203,10 +211,14 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnValue($listener));
 
         $io->expects($this->at(0))
+            ->method('isVerbose')
+            ->willReturn(0);
+
+        $io->expects($this->at(1))
             ->method('writeError')
             ->willReturn('> exit 1');
 
-        $io->expects($this->at(1))
+        $io->expects($this->at(2))
             ->method('writeError')
             ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with an error</error>'));
 
