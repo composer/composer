@@ -1,5 +1,5 @@
 <!--
-    tagline: The multitude of possibilities that are called version constraints.
+    tagline: Version constraints explained.
 -->
 
 # Versions
@@ -23,6 +23,10 @@ operators are `>`, `>=`, `<`, `<=`, `!=`.
 You can define multiple ranges. Ranges separated by a space (` `) or comma (`,`)
 will be treated as a **logical AND**. A double pipe (`||`) will be treated as a
 **logical OR**. AND has higher precedence than OR.
+
+> **Note:** Be careful when using unbounded ranges as you might end up
+> unexpectedly installing versions that break backwards compatibility.
+> Consider using the [caret](#caret) operator instead for safety.
 
 Examples:
 
@@ -78,6 +82,9 @@ is equivalent to `>=1.2.3 <2.0.0` as none of the releases until 2.0 should
 break backwards compatibility. For pre-1.0 versions it also acts with safety
 in mind and treats `^0.3` as `>=0.3.0 <0.4.0`.
 
+This is the recommended operator for maximum interoperability when writing
+library code.
+
 Example: `^1.2.3`
 
 ## Stability
@@ -109,4 +116,3 @@ You can test version constraints using [semver.mwl.be](http://semver.mwl.be).
 Fill in a package name and it will autofill the default version constraint
 which Composer would add to your `composer.json` file. You can adjust the
 version constraint and the tool will highlight all releases that match.
-
