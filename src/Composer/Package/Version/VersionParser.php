@@ -12,7 +12,6 @@
 
 namespace Composer\Package\Version;
 
-use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\EmptyConstraint;
@@ -27,6 +26,10 @@ use Composer\Package\LinkConstraint\VersionConstraint;
 class VersionParser
 {
     private static $modifierRegex = '[._-]?(?:(stable|beta|b|RC|alpha|a|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
+
+    private static $stabilities = array(
+        'stable', 'RC', 'beta', 'alpha', 'dev',
+    );
 
     /**
      * Returns the stability of a version
@@ -241,7 +244,7 @@ class VersionParser
     {
         $prettyConstraint = $constraints;
 
-        if (preg_match('{^([^,\s]*?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraints, $match)) {
+        if (preg_match('{^([^,\s]*?)@('.implode('|', self::$stabilities).')$}i', $constraints, $match)) {
             $constraints = empty($match[1]) ? '*' : $match[1];
         }
 
@@ -284,7 +287,7 @@ class VersionParser
 
     private function parseConstraint($constraint)
     {
-        if (preg_match('{^([^,\s]+?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraint, $match)) {
+        if (preg_match('{^([^,\s]+?)@('.implode('|', self::$stabilities).')$}i', $constraint, $match)) {
             $constraint = $match[1];
             if ($match[2] !== 'stable') {
                 $stabilityModifier = $match[2];
