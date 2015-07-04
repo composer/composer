@@ -173,7 +173,11 @@ class EventDispatcher
             } else {
                 $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
                 $exec = $callable . ($args === '' ? '' : ' '.$args);
-                $this->io->writeError(sprintf('> %s', $exec));
+                if ($this->io->isVerbose()) {
+                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
+                } else {
+                    $this->io->writeError(sprintf('> %s', $exec));
+                }
                 if (0 !== ($exitCode = $this->process->execute($exec))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 
@@ -198,7 +202,11 @@ class EventDispatcher
     {
         $event = $this->checkListenerExpectedEvent(array($className, $methodName), $event);
 
-        $this->io->writeError(sprintf('> %s::%s', $className, $methodName));
+        if ($this->io->isVerbose()) {
+            $this->io->writeError(sprintf('> %s: %s::%s', $event->getName(), $className, $methodName));
+        } else {
+            $this->io->writeError(sprintf('> %s::%s', $className, $methodName));
+        }
 
         return $className::$methodName($event);
     }
