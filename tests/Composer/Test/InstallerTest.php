@@ -14,7 +14,6 @@ namespace Composer\Test;
 
 use Composer\Installer;
 use Composer\Console\Application;
-use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;

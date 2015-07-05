@@ -302,7 +302,6 @@ class RemoteFilesystem
                     }
 
                     $this->promptAuthAndRetry($messageCode);
-                    break;
                 }
                 break;
 
@@ -314,7 +313,6 @@ class RemoteFilesystem
                     }
 
                     $this->promptAuthAndRetry($messageCode, $message);
-                    break;
                 }
                 break;
 
@@ -326,11 +324,7 @@ class RemoteFilesystem
 
             case STREAM_NOTIFY_PROGRESS:
                 if ($this->bytesMax > 0 && $this->progress) {
-                    $progression = 0;
-
-                    if ($this->bytesMax > 0) {
-                        $progression = round($bytesTransferred / $this->bytesMax * 100);
-                    }
+                    $progression = round($bytesTransferred / $this->bytesMax * 100);
 
                     if ((0 === $progression % 5) && 100 !== $progression && $progression !== $this->lastProgress) {
                         $this->lastProgress = $progression;

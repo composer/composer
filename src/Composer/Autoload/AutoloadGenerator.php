@@ -174,10 +174,21 @@ EOF;
         // flatten array
         $classMap = array();
         if ($scanPsr0Packages) {
+            $namespacesToScan = array();
+
             // Scan the PSR-0/4 directories for class files, and add them to the class map
             foreach (array('psr-0', 'psr-4') as $psrType) {
                 foreach ($autoloads[$psrType] as $namespace => $paths) {
-                    foreach ($paths as $dir) {
+                    $namespacesToScan[$namespace][] = array('paths' => $paths, 'type' => $psrType);
+                }
+            }
+
+            krsort($namespacesToScan);
+
+            foreach ($namespacesToScan as $namespace => $groups) {
+                foreach ($groups as $group) {
+                    $psrType = $group['type'];
+                    foreach ($group['paths'] as $dir) {
                         $dir = $filesystem->normalizePath($filesystem->isAbsolutePath($dir) ? $dir : $basePath.'/'.$dir);
                         if (!is_dir($dir)) {
                             continue;
@@ -190,9 +201,14 @@ EOF;
 
                         $namespaceFilter = $namespace === '' ? null : $namespace;
                         foreach (ClassMapGenerator::createMap($dir, $whitelist, $this->io, $namespaceFilter) as $class => $path) {
+                            $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
                             if (!isset($classMap[$class])) {
-                                $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
-                                $classMap[$class] = $path.",\n";
+                                $classMap[$class] = $pathCode;
+                            } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
+                                $this->io->writeError(
+                                    '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
+                                    ' was found in both "'.str_replace(array('$vendorDir . \'', "',\n"), array($vendorPath, ''), $classMap[$class]).'" and "'.$path.'", the first will be used.</warning>'
+                                );
                             }
                         }
                     }
@@ -202,8 +218,15 @@ EOF;
 
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir, null, $this->io) as $class => $path) {
-                $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
-                $classMap[$class] = $path.",\n";
+                $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
+                if (!isset($classMap[$class])) {
+                    $classMap[$class] = $pathCode;
+                } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
+                    $this->io->writeError(
+                        '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
+                        ' was found in both "'.str_replace(array('$vendorDir . \'', "',\n"), array($vendorPath, ''), $classMap[$class]).'" and "'.$path.'", the first will be used.</warning>'
+                    );
+                }
             }
         }
 
@@ -310,7 +333,7 @@ EOF;
 
         $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $mainPackage);
         $psr4 = $this->parseAutoloadsType($packageMap, 'psr-4', $mainPackage);
-        $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap', $mainPackage);
+        $classmap = $this->parseAutoloadsType(array_reverse($sortedPackageMap), 'classmap', $mainPackage);
         $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage);
 
         krsort($psr0);

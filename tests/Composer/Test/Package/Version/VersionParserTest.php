@@ -21,52 +21,6 @@ use Composer\Package\PackageInterface;
 
 class VersionParserTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @dataProvider formattedVersions
-     */
-    public function testFormatVersionForDevPackage(PackageInterface $package, $truncate, $expected)
-    {
-        $this->assertSame($expected, VersionParser::formatVersion($package, $truncate));
-    }
-
-    public function formattedVersions()
-    {
-        $data = array(
-            array(
-                'sourceReference' => 'v2.1.0-RC2',
-                'truncate' => true,
-                'expected' => 'PrettyVersion v2.1.0-RC2'
-            ),
-            array(
-                'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
-                'truncate' => true,
-                'expected' => 'PrettyVersion bbf527a'
-            ),
-            array(
-                'sourceReference' => 'v1.0.0',
-                'truncate' => false,
-                'expected' => 'PrettyVersion v1.0.0'
-            ),
-            array(
-                'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
-                'truncate' => false,
-                'expected' => 'PrettyVersion bbf527a27356414bfa9bf520f018c5cb7af67c77'
-            ),
-        );
-
-        $self = $this;
-        $createPackage = function ($arr) use ($self) {
-            $package = $self->getMock('\Composer\Package\PackageInterface');
-            $package->expects($self->once())->method('isDev')->will($self->returnValue(true));
-            $package->expects($self->once())->method('getSourceType')->will($self->returnValue('git'));
-            $package->expects($self->once())->method('getPrettyVersion')->will($self->returnValue('PrettyVersion'));
-            $package->expects($self->any())->method('getSourceReference')->will($self->returnValue($arr['sourceReference']));
-
-            return array($package, $arr['truncate'], $arr['expected']);
-        };
-
-        return array_map($createPackage, $data);
-    }
 
     /**
      * @dataProvider numericAliasVersions
@@ -244,13 +198,13 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'greater than'      => array('>1.0.0',      new VersionConstraint('>', '1.0.0.0')),
             'lesser than'       => array('<1.2.3.4',    new VersionConstraint('<', '1.2.3.4-dev')),
             'less/eq than'      => array('<=1.2.3',     new VersionConstraint('<=', '1.2.3.0')),
-            'great/eq than'     => array('>=1.2.3',     new VersionConstraint('>=', '1.2.3.0')),
+            'great/eq than'     => array('>=1.2.3',     new VersionConstraint('>=', '1.2.3.0-dev')),
             'equals'            => array('=1.2.3',      new VersionConstraint('=', '1.2.3.0')),
             'double equals'     => array('==1.2.3',     new VersionConstraint('=', '1.2.3.0')),
             'no op means eq'    => array('1.2.3',       new VersionConstraint('=', '1.2.3.0')),
             'completes version' => array('=1.0',        new VersionConstraint('=', '1.0.0.0')),
             'shorthand beta'    => array('1.2.3b5',     new VersionConstraint('=', '1.2.3.0-beta5')),
-            'accepts spaces'    => array('>= 1.2.3',    new VersionConstraint('>=', '1.2.3.0')),
+            'accepts spaces'    => array('>= 1.2.3',    new VersionConstraint('>=', '1.2.3.0-dev')),
             'accepts spaces/2'  => array('< 1.2.3',     new VersionConstraint('<', '1.2.3.0-dev')),
             'accepts spaces/3'  => array('> 1.2.3',     new VersionConstraint('>', '1.2.3.0')),
             'accepts master'    => array('>=dev-master',    new VersionConstraint('>=', '9999999-dev')),
@@ -260,6 +214,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'regression #935'   => array('dev-CAPS',        new VersionConstraint('=', 'dev-CAPS')),
             'ignores aliases'   => array('dev-master as 1.0.0', new VersionConstraint('=', '9999999-dev')),
             'lesser than override'       => array('<1.2.3.4-stable',    new VersionConstraint('<', '1.2.3.4')),
+            'great/eq than override'     => array('>=1.2.3.4-stable',   new VersionConstraint('>=', '1.2.3.4')),
         );
     }
 

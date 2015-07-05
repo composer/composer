@@ -60,6 +60,7 @@ class HtmlOutputFormatter extends OutputFormatter
         $formatted = parent::format($message);
 
         $clearEscapeCodes = '(?:39|49|0|22|24|25|27|28)';
+
         return preg_replace_callback("{\033\[([0-9;]+)m(.*?)\033\[(?:".$clearEscapeCodes.";)*?".$clearEscapeCodes."m}s", array($this, 'formatHtml'), $formatted);
     }
 

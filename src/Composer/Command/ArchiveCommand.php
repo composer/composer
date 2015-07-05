@@ -15,12 +15,10 @@ namespace Composer\Command;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
-use Composer\DependencyResolver\Pool;
 use Composer\Repository\CompositeRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Package\Version\VersionParser;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -118,19 +116,14 @@ EOT
 
         if ($composer = $this->getComposer(false)) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-            $repos = new CompositeRepository(array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
+            $repo = new CompositeRepository(array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
             $defaultRepos = Factory::createDefaultRepositories($this->getIO());
             $io->writeError('No composer.json found in the current directory, searching packages from ' . implode(', ', array_keys($defaultRepos)));
-            $repos = new CompositeRepository($defaultRepos);
+            $repo = new CompositeRepository($defaultRepos);
         }
 
-        $pool = new Pool();
-        $pool->addRepository($repos);
-
-        $parser = new VersionParser();
-        $constraint = ($version) ? $parser->parseConstraints($version) : null;
-        $packages = $pool->whatProvides($packageName, $constraint, true);
+        $packages = $repo->findPackages($packageName, $version);
 
         if (count($packages) > 1) {
             $package = reset($packages);

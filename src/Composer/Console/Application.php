@@ -181,7 +181,7 @@ class Application extends BaseApplication
             if ($composer) {
                 $config = $composer->getConfig();
 
-                $minSpaceFree = 1024*1024;
+                $minSpaceFree = 1024 * 1024;
                 if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
                     || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
                     || (($df = @disk_free_space($dir = sys_get_temp_dir())) !== false && $df < $minSpaceFree)
@@ -272,6 +272,7 @@ class Application extends BaseApplication
         $commands[] = new Command\SearchCommand();
         $commands[] = new Command\ValidateCommand();
         $commands[] = new Command\ShowCommand();
+        $commands[] = new Command\SuggestsCommand();
         $commands[] = new Command\RequireCommand();
         $commands[] = new Command\DumpAutoloadCommand();
         $commands[] = new Command\StatusCommand();

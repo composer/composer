@@ -13,7 +13,6 @@
 namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
@@ -26,6 +25,8 @@ use Composer\Util\RemoteFilesystem;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Package\LinkConstraint\LinkConstraintInterface;
+use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -148,22 +149,27 @@ class ComposerRepository extends ArrayRepository
     /**
      * {@inheritDoc}
      */
-    public function findPackage($name, $version)
+    public function findPackage($name, $constraint)
     {
         if (!$this->hasProviders()) {
-            return parent::findPackage($name, $version);
+            return parent::findPackage($name, $constraint);
         }
-        // normalize version & name
-        $versionParser = new VersionParser();
-        $version = $versionParser->normalize($version);
+
         $name = strtolower($name);
+        if (!$constraint instanceof LinkConstraintInterface) {
+            $versionParser = new VersionParser();
+            $constraint = $versionParser->parseConstraints($constraint);
+        }
 
         foreach ($this->getProviderNames() as $providerName) {
             if ($name === $providerName) {
                 $packages = $this->loadName($providerName, null, false);
                 foreach ($packages as $package) {
-                    if ($name == $package->getName() && $version === $package->getVersion()) {
-                        return $package;
+                    if ($name === $package->getName()) {
+                        $pkgConstraint = new VersionConstraint('==', $package->getVersion());
+                        if ($constraint->matches($pkgConstraint)) {
+                            return $package;
+                        }
                     }
                 }
             }
@@ -173,18 +179,17 @@ class ComposerRepository extends ArrayRepository
     /**
      * {@inheritDoc}
      */
-    public function findPackages($name, $version = null)
+    public function findPackages($name, $constraint = null)
     {
         if (!$this->hasProviders()) {
-            return parent::findPackages($name, $version);
+            return parent::findPackages($name, $constraint);
         }
         // normalize name
         $name = strtolower($name);
 
-        // normalize version
-        if (null !== $version) {
+        if (null !== $constraint && !$constraint instanceof LinkConstraintInterface) {
             $versionParser = new VersionParser();
-            $version = $versionParser->normalize($version);
+            $constraint = $versionParser->parseConstraints($constraint);
         }
 
         $packages = array();

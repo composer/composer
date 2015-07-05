@@ -69,18 +69,15 @@ class VersionParser
         return $stability === 'rc' ? 'RC' : $stability;
     }
 
+    /**
+     * @deprecated Use PackageInterface::getFullPrettyVersion instead
+     */
     public static function formatVersion(PackageInterface $package, $truncate = true)
     {
-        if (!$package->isDev() || !in_array($package->getSourceType(), array('hg', 'git'))) {
-            return $package->getPrettyVersion();
-        }
+        trigger_error(__METHOD__.' is deprecated. Use '.
+            '\Composer\Package\PackageInterface::getFullPrettyVersion() instead', E_USER_DEPRECATED);
 
-        // if source reference is a sha1 hash -- truncate
-        if ($truncate && strlen($package->getSourceReference()) === 40) {
-            return $package->getPrettyVersion() . ' ' . substr($package->getSourceReference(), 0, 7);
-        }
-
-        return $package->getPrettyVersion() . ' ' . $package->getSourceReference();
+        return $package->getFullPrettyVersion($truncate);
     }
 
     /**
@@ -141,10 +138,10 @@ class VersionParser
                 if ('stable' === $matches[$index]) {
                     return $version;
                 }
-                $version .= '-' . $this->expandStability($matches[$index]) . (!empty($matches[$index+1]) ? $matches[$index+1] : '');
+                $version .= '-' . $this->expandStability($matches[$index]) . (!empty($matches[$index + 1]) ? $matches[$index + 1] : '');
             }
 
-            if (!empty($matches[$index+2])) {
+            if (!empty($matches[$index + 2])) {
                 $version .= '-dev';
             }
 
@@ -443,9 +440,11 @@ class VersionParser
 
                 if (!empty($stabilityModifier) && $this->parseStability($version) === 'stable') {
                     $version .= '-' . $stabilityModifier;
-                } elseif ('<' === $matches[1]) {
+                } elseif ('<' === $matches[1] || '>=' === $matches[1]) {
                     if (!preg_match('/-' . self::$modifierRegex . '$/', strtolower($matches[2]))) {
-                        $version .= '-dev';
+                        if (substr($matches[2], 0, 4) !== 'dev-') {
+                            $version .= '-dev';
+                        }
                     }
                 }
 
@@ -528,8 +527,8 @@ class VersionParser
 
         for ($i = 0, $count = count($pairs); $i < $count; $i++) {
             $pair = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
-            if (false === strpos($pair, ' ') && isset($pairs[$i+1]) && false === strpos($pairs[$i+1], '/')) {
-                $pair .= ' '.$pairs[$i+1];
+            if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/')) {
+                $pair .= ' '.$pairs[$i + 1];
                 $i++;
             }
 
