@@ -13,7 +13,7 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $loader = new ClassLoader();
         $loader->add('DirDotPhp\\', __DIR__ . '/Fixtures');
-        $loader->addPsr4('DirDotPhp\\', __DIR__ . '/Fixtures/DirDotPhp/psr4');
+//        $loader->addPsr4('DirDotPhp\\', __DIR__ . '/Fixtures/DirDotPhp/psr4');
 
         $class = 'DirDotPhp\\Dir';
         $loader->loadClass($class);

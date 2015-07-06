@@ -175,4 +175,20 @@ class CompositeRepository implements RepositoryInterface
             $this->repositories[] = $repository;
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setRootAliases(array $rootAliases)
+    {
+        $this->rootAliases = $rootAliases;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getRootAliases()
+    {
+        return $this->rootAliases;
+    }
 }

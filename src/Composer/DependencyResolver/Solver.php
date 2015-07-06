@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -42,12 +43,16 @@ class Solver
     protected $learnedPool = array();
     protected $learnedWhy = array();
 
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
+    public function __construct(PolicyInterface $policy, RepositorySet $repositorySet, RepositoryInterface $installed)
     {
         $this->policy = $policy;
-        $this->pool = $pool;
+        $this->repositorySet = $repositorySet;
         $this->installed = $installed;
-        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
+    }
+
+    public function getPool()
+    {
+        return $this->pool;
     }
 
     // aka solver_makeruledecisions
@@ -168,8 +173,6 @@ class Solver
     {
         $this->jobs = $request->getJobs();
 
-        $this->setupInstalledMap();
-
         $packageNames = array();
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
@@ -178,9 +181,15 @@ class Solver
                     break;
             }
         }
+        foreach ($this->installed->getPackages() as $package) {
+            $packageNames[$package->getName()] = true;
+        }
 
-        $this->pool->loadRecursively(array_keys($packageNames));
+        $this->pool = $this->repositorySet->getPool(array_keys($packageNames));
 
+        $this->setupInstalledMap();
+
+        $this->ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);

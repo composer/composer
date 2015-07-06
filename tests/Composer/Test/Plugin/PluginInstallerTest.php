@@ -130,9 +130,14 @@ class PluginInstallerTest extends TestCase
     public function testInstallNewPlugin()
     {
         $this->repository
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
+        $this->repository
+            ->expects($this->once())
+            ->method('findPackages')
+            ->will($this->returnValue(array()));
+
         $installer = new PluginInstaller($this->io, $this->composer);
         $this->pm->loadInstalledPlugins();
 
@@ -145,9 +150,14 @@ class PluginInstallerTest extends TestCase
     public function testInstallMultiplePlugins()
     {
         $this->repository
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
+        $this->repository
+            ->expects($this->once())
+            ->method('findPackages')
+            ->will($this->returnValue(array()));
+
         $installer = new PluginInstaller($this->io, $this->composer);
         $this->pm->loadInstalledPlugins();
 
@@ -163,9 +173,13 @@ class PluginInstallerTest extends TestCase
     public function testUpgradeWithNewClassName()
     {
         $this->repository
-            ->expects($this->exactly(3))
+            ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[0])));
+        $this->repository
+            ->expects($this->exactly(2))
+            ->method('findPackages')
+            ->will($this->returnValue(array()));
         $this->repository
             ->expects($this->exactly(2))
             ->method('hasPackage')
@@ -182,9 +196,13 @@ class PluginInstallerTest extends TestCase
     public function testUpgradeWithSameClassName()
     {
         $this->repository
-            ->expects($this->exactly(3))
+            ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[1])));
+        $this->repository
+            ->expects($this->exactly(2))
+            ->method('findPackages')
+            ->will($this->returnValue(array()));
         $this->repository
             ->expects($this->exactly(2))
             ->method('hasPackage')
@@ -201,9 +219,14 @@ class PluginInstallerTest extends TestCase
     public function testRegisterPluginOnlyOneTime()
     {
         $this->repository
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
+        $this->repository
+            ->expects($this->once())
+            ->method('findPackages')
+            ->will($this->returnValue(array()));
+
         $installer = new PluginInstaller($this->io, $this->composer);
         $this->pm->loadInstalledPlugins();
 
@@ -239,12 +262,18 @@ class PluginInstallerTest extends TestCase
         );
 
         // Add the plugins to the repo along with the internal Plugin package on which they all rely.
+        $callback = function () use ($plugApiInternalPackage, $plugins) {
+            return array_merge(array($plugApiInternalPackage), $plugins);
+        };
+
         $this->repository
              ->expects($this->any())
              ->method('getPackages')
-             ->will($this->returnCallback(function () use ($plugApiInternalPackage, $plugins) {
-                return array_merge(array($plugApiInternalPackage), $plugins);
-             }));
+             ->will($this->returnCallback($callback));
+        $this->repository
+             ->expects($this->any())
+             ->method('findPackages')
+             ->will($this->returnCallback($callback));
 
         $this->pm->loadInstalledPlugins();
     }
@@ -257,13 +286,13 @@ class PluginInstallerTest extends TestCase
             $this->packages[2],
         );
 
-        $this->setPluginApiVersionWithPlugins('1.0.0', $pluginsWithFixedAPIVersions);
+        $this->setPluginApiVersionWithPlugins('2.0.0', $pluginsWithFixedAPIVersions);
         $this->assertCount(3, $this->pm->getPlugins());
 
-        $this->setPluginApiVersionWithPlugins('1.0.1', $pluginsWithFixedAPIVersions);
+        $this->setPluginApiVersionWithPlugins('2.0.1', $pluginsWithFixedAPIVersions);
         $this->assertCount(0, $this->pm->getPlugins());
 
-        $this->setPluginApiVersionWithPlugins('2.0.0-dev', $pluginsWithFixedAPIVersions);
+        $this->setPluginApiVersionWithPlugins('3.0.0-dev', $pluginsWithFixedAPIVersions);
         $this->assertCount(0, $this->pm->getPlugins());
     }
 
@@ -271,13 +300,13 @@ class PluginInstallerTest extends TestCase
     {
         $starVersionPlugin = array($this->packages[4]);
 
-        $this->setPluginApiVersionWithPlugins('1.0.0', $starVersionPlugin);
+        $this->setPluginApiVersionWithPlugins('2.0.0', $starVersionPlugin);
         $this->assertCount(1, $this->pm->getPlugins());
 
-        $this->setPluginApiVersionWithPlugins('1.9.9', $starVersionPlugin);
+        $this->setPluginApiVersionWithPlugins('2.9.9', $starVersionPlugin);
         $this->assertCount(1, $this->pm->getPlugins());
 
-        $this->setPluginApiVersionWithPlugins('2.0.0-dev', $starVersionPlugin);
+        $this->setPluginApiVersionWithPlugins('3.0.0-dev', $starVersionPlugin);
         $this->assertCount(1, $this->pm->getPlugins());
 
         $this->setPluginApiVersionWithPlugins('100.0.0-stable', $starVersionPlugin);

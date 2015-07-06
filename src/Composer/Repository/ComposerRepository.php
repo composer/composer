@@ -48,7 +48,6 @@ class ComposerRepository extends ArrayRepository
     protected $lazyProvidersUrl;
     protected $providerListing;
     protected $loader;
-    protected $rootAliases;
     protected $allowSslDowngrade = false;
     protected $eventDispatcher;
     protected $sourceMirrors;
@@ -89,61 +88,6 @@ class ComposerRepository extends ArrayRepository
         $this->loader = new ArrayLoader();
         $this->rfs = new RemoteFilesystem($this->io, $this->config, $this->options);
         $this->eventDispatcher = $eventDispatcher;
-    }
-
-    public function setRootAliases(array $rootAliases)
-    {
-        $this->rootAliases = $rootAliases;
-    }
-
-    public function getRootAliases()
-    {
-        return $this->rootAliases;
-    }
-
-    /**
-     * Load all packages with given names and dependencies
-     *
-     * @param array $packageNames
-     * @param callable|null $acceptableCallback Callback to filter packages
-     *
-     * @return array The loaded package objects
-     */
-    public function loadRecursively(array $packageNames, $acceptableCallback)
-    {
-        $workQueue = new \SplQueue;
-
-        foreach ($packageNames as $packageName) {
-            $workQueue->enqueue($packageName);
-        }
-
-        $loadedPackages = array();
-        $newNames = array();
-
-        while (!$workQueue->isEmpty()) {
-            $packageName = $workQueue->dequeue();
-            if (isset($this->loadedMap[$packageName])) {
-                continue;
-            }
-
-            $this->loadedMap[$packageName] = true;
-
-            $packages = $this->loadName($packageName, $acceptableCallback);
-
-            foreach ($packages as $package) {
-                $loadedPackages[] = $package;
-                $requires = $package->getRequires();
-                foreach ($requires as $link) {
-                    $dependency = $link->getTarget();
-                    if (!isset($this->loadedMap[$dependency])) {
-                        $newNames[] = $dependency;
-                        $workQueue->enqueue($dependency);
-                    }
-                }
-            }
-        }
-
-        return array($loadedPackages, $newNames);
     }
 
     /**
@@ -196,10 +140,13 @@ class ComposerRepository extends ArrayRepository
 
         foreach ($this->getProviderNames() as $providerName) {
             if ($name === $providerName) {
-                $packages = $this->loadName($providerName, null, false);
-                foreach ($packages as $package) {
-                    if ($name == $package->getName() && (null === $version || $version === $package->getVersion())) {
-                        $packages[] = $package;
+                $candidates = $this->loadName($providerName, null, false);
+                foreach ($candidates as $package) {
+                    if ($name === $package->getName()) {
+                        $pkgConstraint = new VersionConstraint('==', $package->getVersion());
+                        if (null === $constraint || $constraint->matches($pkgConstraint)) {
+                            $packages[] = $package;
+                        }
                     }
                 }
             }
@@ -303,7 +250,7 @@ class ComposerRepository extends ArrayRepository
      *
      * @return array All packages that were loaded
      */
-    protected function loadName($name, $acceptableCallback, $exactMatch = true)
+    public function loadName($name, $acceptableCallback, $exactMatch = true)
     {
         // skip platform packages
         if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {

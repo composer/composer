@@ -27,6 +27,7 @@ use Composer\Package\LinkConstraint\VersionConstraint;
 class ArrayRepository implements RepositoryInterface
 {
     protected $packages;
+    protected $rootAliases;
 
     public function __construct(array $packages = array())
     {
@@ -189,6 +190,22 @@ class ArrayRepository implements RepositoryInterface
     public function count()
     {
         return count($this->packages);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setRootAliases(array $rootAliases)
+    {
+        $this->rootAliases = $rootAliases;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getRootAliases()
+    {
+        return $this->rootAliases;
     }
 
     /**

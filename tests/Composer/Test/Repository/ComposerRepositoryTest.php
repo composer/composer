@@ -95,7 +95,7 @@ class ComposerRepositoryTest extends TestCase
         );
     }
 
-    public function testLoadRecursively()
+    public function testLoadName()
     {
         $repo = $this->getMockBuilder('Composer\Repository\ComposerRepository')
             ->disableOriginalConstructor()
@@ -148,7 +148,7 @@ class ComposerRepositoryTest extends TestCase
         $versionParser = new VersionParser();
 
         $that = $this;
-        $packages = $repo->loadRecursively(array('a'), function ($name, $stability) use ($that) {
+        $packages = $repo->loadName('a', function ($name, $stability) use ($that) {
             $that->assertEquals('a', $name);
             return true;
         });

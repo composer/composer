@@ -40,83 +40,24 @@ class Pool
     const MATCH_REPLACE = 3;
     const MATCH_FILTERED = 4;
 
-    protected $repositories = array();
-    protected $providerRepos = array();
     protected $packages = array();
     protected $packageByName = array();
     protected $packageByExactName = array();
-    protected $acceptableStabilities;
-    protected $stabilityFlags;
-    protected $versionParser;
-    protected $providerCache = array();
+    protected $packageToPriority = array();
     protected $filterRequires;
-    protected $whitelist = null;
-    protected $id = 1;
-    protected $loadedProviders = false;
 
-    public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
+    public function __construct(array $packages, array $packageToPriority)
     {
-        $this->versionParser = new VersionParser;
-        $this->acceptableStabilities = array();
-        foreach (BasePackage::$stabilities as $stability => $value) {
-            if ($value <= BasePackage::$stabilities[$minimumStability]) {
-                $this->acceptableStabilities[$stability] = $value;
+        $this->packages = $packages;
+        $this->packageToPriority = $packageToPriority;
+
+        foreach ($this->packages as $id => $package) {
+            $package->setId($id + 1);
+            $this->packageByExactName[$package->getName()][$id + 1] = $package;
+            foreach ($package->getNames() as $name) {
+                $this->packageByName[$name][$id + 1] = $package;
             }
         }
-        $this->stabilityFlags = $stabilityFlags;
-        $this->filterRequires = $filterRequires;
-        foreach ($filterRequires as $name => $constraint) {
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
-                unset($this->filterRequires[$name]);
-            }
-        }
-    }
-
-    public function setWhitelist($whitelist)
-    {
-        $this->whitelist = $whitelist;
-        $this->providerCache = array();
-    }
-
-    /**
-     * Adds a repository and its packages to this package pool
-     *
-     * @param RepositoryInterface $repo        A package repository
-     * @param array               $rootAliases
-     */
-    public function addRepository(RepositoryInterface $repo, $rootAliases = array())
-    {
-        if ($repo instanceof CompositeRepository) {
-            $repos = $repo->getRepositories();
-        } else {
-            $repos = array($repo);
-        }
-
-        foreach ($repos as $repo) {
-            $this->repositories[] = $repo;
-
-            $exempt = $repo instanceof PlatformRepository || $repo instanceof InstalledRepositoryInterface;
-
-            if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
-                $this->providerRepos[] = $repo;
-                $repo->setRootAliases($rootAliases);
-            } else {
-                foreach ($repo->getPackages() as $package) {
-                    $this->loadPackage($package, $rootAliases, $exempt);
-                }
-            }
-        }
-    }
-
-    public function getPriority(RepositoryInterface $repo)
-    {
-        $priority = array_search($repo, $this->repositories, true);
-
-        if (false === $priority) {
-            throw new \RuntimeException("Could not determine repository priority. The repository was not registered in the pool.");
-        }
-
-        return -$priority;
     }
 
     /**
@@ -131,50 +72,14 @@ class Pool
     }
 
     /**
-     * Ensures that all given names and their requirements are loaded.
+     * Retrieves the package's priority in this pool.
      *
-     * @param array $packageNames A list of names that need to be available
+     * @param int $id
+     * @return int Priority
      */
-    public function loadRecursively(array $packageNames)
+    public function getPriority($id)
     {
-        if ($this->loadedProviders) {
-            throw new \RuntimeException("Cannot recursively load the pool multiple times");
-        }
-
-        // first add all dependencies of packages we already know
-        foreach ($this->packages as $loadedPackage) {
-            $requires = $loadedPackage->getRequires();
-            foreach ($requires as $link) {
-                $packageNames[] = $link->getTarget();
-            }
-        }
-        $packageNames = array_unique($packageNames);
-
-        $loadedMap = array();
-        do {
-            $newPackageNames = array();
-            $loadedCount = count($loadedMap);
-
-            foreach ($this->providerRepos as $repo) {
-                list($packages, $foundNames) = $repo->loadRecursively(
-                    $packageNames,
-                    array($this, 'isPackageAcceptable')
-                );
-                $newPackageNames = array_merge($newPackageNames, $foundNames);
-
-                foreach ($packages as $package) {
-                    $name = $package->getName();
-                    if (!isset($loadedMap[$name])) {
-                        $loadedMap[$name] = true;
-                    }
-                    $this->loadPackage($package, $repo->getRootAliases());
-                }
-            }
-
-            $packageNames = $newPackageNames;
-        } while (count($loadedMap) > $loadedCount);
-
-        $this->loadedProviders = true;
+        return $this->packageToPriority[$id - 1];
     }
 
     /**
@@ -189,54 +94,12 @@ class Pool
      */
     public function whatProvides($name, LinkConstraintInterface $constraint = null, $mustMatchName = false)
     {
-        if (!$this->loadedProviders) {
-            throw new \RuntimeException("You must first call loadRecursively() with a list of packages of interest, to initialize the Pool.");
-        }
-
         $key = ((int) $mustMatchName).$constraint;
         if (isset($this->providerCache[$name][$key])) {
             return $this->providerCache[$name][$key];
         }
 
         return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $mustMatchName);
-    }
-
-    private function loadPackage(PackageInterface $package, array $rootAliases, $acceptableExemption = false)
-    {
-        $names = $package->getNames();
-        $stability = $package->getStability();
-
-        if (!$acceptableExemption && !$this->isPackageAcceptable($names, $stability)) {
-            return;
-        }
-
-        $package->setId($this->id++);
-        $this->packages[] = $package;
-        $this->packageByExactName[$package->getName()][$package->id] = $package;
-
-        foreach ($names as $provided) {
-            $this->packageByName[$provided][] = $package;
-        }
-
-        // handle root package aliases
-        $name = $package->getName();
-        if (isset($rootAliases[$name][$package->getVersion()])) {
-            $alias = $rootAliases[$name][$package->getVersion()];
-            if ($package instanceof AliasPackage) {
-                $package = $package->getAliasOf();
-            }
-            $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
-            $aliasPackage->setRootPackageAlias(true);
-            $aliasPackage->setId($this->id++);
-
-            $package->getRepository()->addPackage($aliasPackage);
-            $this->packages[] = $aliasPackage;
-            $this->packageByExactName[$aliasPackage->getName()][$aliasPackage->id] = $aliasPackage;
-
-            foreach ($aliasPackage->getNames() as $name) {
-                $this->packageByName[$name][] = $aliasPackage;
-            }
-        }
     }
 
     /**
@@ -258,20 +121,6 @@ class Pool
         $nameMatch = false;
 
         foreach ($candidates as $candidate) {
-            $aliasOfCandidate = null;
-
-            // alias packages are not white listed, make sure that the package
-            // being aliased is white listed
-            if ($candidate instanceof AliasPackage) {
-                $aliasOfCandidate = $candidate->getAliasOf();
-            }
-
-            if ($this->whitelist !== null && (
-                (!($candidate instanceof AliasPackage) && !isset($this->whitelist[$candidate->id])) ||
-                ($candidate instanceof AliasPackage && !isset($this->whitelist[$aliasOfCandidate->id]))
-            )) {
-                continue;
-            }
             switch ($this->match($candidate, $name, $constraint)) {
                 case self::MATCH_NONE:
                     break;
@@ -332,23 +181,6 @@ class Pool
         }
 
         return $prefix.' '.$package->getPrettyString();
-    }
-
-    public function isPackageAcceptable($name, $stability)
-    {
-        foreach ((array) $name as $n) {
-            // allow if package matches the global stability requirement and has no exception
-            if (!isset($this->stabilityFlags[$n]) && isset($this->acceptableStabilities[$stability])) {
-                return true;
-            }
-
-            // allow if package matches the package-specific stability flag
-            if (isset($this->stabilityFlags[$n]) && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$n]) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

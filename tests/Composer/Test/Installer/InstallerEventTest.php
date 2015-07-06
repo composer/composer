@@ -21,18 +21,18 @@ class InstallerEventTest extends \PHPUnit_Framework_TestCase
         $composer = $this->getMock('Composer\Composer');
         $io = $this->getMock('Composer\IO\IOInterface');
         $policy = $this->getMock('Composer\DependencyResolver\PolicyInterface');
-        $pool = $this->getMockBuilder('Composer\DependencyResolver\Pool')->disableOriginalConstructor()->getMock();
+        $repositorySet = $this->getMockBuilder('Composer\Repository\RepositorySet')->disableOriginalConstructor()->getMock();
         $installedRepo = $this->getMockBuilder('Composer\Repository\CompositeRepository')->disableOriginalConstructor()->getMock();
         $request = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
         $operations = array($this->getMock('Composer\DependencyResolver\Operation\OperationInterface'));
-        $event = new InstallerEvent('EVENT_NAME', $composer, $io, true, $policy, $pool, $installedRepo, $request, $operations);
+        $event = new InstallerEvent('EVENT_NAME', $composer, $io, true, $policy, $repositorySet, $installedRepo, $request, $operations);
 
         $this->assertSame('EVENT_NAME', $event->getName());
         $this->assertInstanceOf('Composer\Composer', $event->getComposer());
         $this->assertInstanceOf('Composer\IO\IOInterface', $event->getIO());
         $this->assertTrue($event->isDevMode());
         $this->assertInstanceOf('Composer\DependencyResolver\PolicyInterface', $event->getPolicy());
-        $this->assertInstanceOf('Composer\DependencyResolver\Pool', $event->getPool());
+        $this->assertInstanceOf('Composer\Repository\RepositorySet', $event->getRepositorySet());
         $this->assertInstanceOf('Composer\Repository\CompositeRepository', $event->getInstalledRepo());
         $this->assertInstanceOf('Composer\DependencyResolver\Request', $event->getRequest());
         $this->assertCount(1, $event->getOperations());

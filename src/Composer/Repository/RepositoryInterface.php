@@ -70,4 +70,18 @@ interface RepositoryInterface extends \Countable
      * @return array[] an array of array('name' => '...', 'description' => '...')
      */
     public function search($query, $mode = 0);
+
+    /**
+     * Store root alias definitions that apply to this repository
+     *
+     * @param array[][][] $rootAliases map of (name, version) to alias info
+     */
+    public function setRootAliases(array $rootAliases);
+
+    /**
+     * Return the stored definitions of root aliases
+     *
+     * @return array[][][] map of (name, version) to alias info
+     */
+    public function getRootAliases();
 }

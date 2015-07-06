@@ -19,13 +19,13 @@ use Composer\Installer\ProjectInstaller;
 use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilesystemRepository;
 use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -272,12 +272,11 @@ EOT
             throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
-        $pool = new Pool($stability);
-        $pool->addRepository($sourceRepo);
-        $pool->loadRecursively(array($name));
+        $repositorySet = new RepositorySet($stability);
+        $repositorySet->addRepository($sourceRepo);
 
         // find the latest version if there are multiple
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $package = $versionSelector->findBestCandidate($name, $packageVersion);
 
         if (!$package) {

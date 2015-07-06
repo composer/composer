@@ -22,7 +22,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\DependencyResolver\Pool;
+use Composer\Repository\RepositorySet;
 
 /**
  * Plugin manager
@@ -150,13 +150,13 @@ class PluginManager
     /**
      * Recursively generates a map of package names to packages for all deps
      *
-     * @param Pool             $pool      Package pool of installed packages
+     * @param RepositorySet    $repoSet   Repository Set of installed packages
      * @param array            $collected Current state of the map for recursion
      * @param PackageInterface $package   The package to analyze
      *
      * @return array Map of package names to packages
      */
-    protected function collectDependencies(Pool $pool, array $collected, PackageInterface $package)
+    protected function collectDependencies(RepositorySet $repoSet, array $collected, PackageInterface $package)
     {
         $requires = array_merge(
             $package->getRequires(),
@@ -164,10 +164,10 @@ class PluginManager
         );
 
         foreach ($requires as $requireLink) {
-            $requiredPackage = $this->lookupInstalledPackage($pool, $requireLink);
+            $requiredPackage = $this->lookupInstalledPackage($repoSet, $requireLink);
             if ($requiredPackage && !isset($collected[$requiredPackage->getName()])) {
                 $collected[$requiredPackage->getName()] = $requiredPackage;
-                $collected = $this->collectDependencies($pool, $collected, $requiredPackage);
+                $collected = $this->collectDependencies($repoSet, $collected, $requiredPackage);
             }
         }
 
@@ -175,18 +175,18 @@ class PluginManager
     }
 
     /**
-     * Resolves a package link to a package in the installed pool
+     * Resolves a package link to a package in the installed repo
      *
      * Since dependencies are already installed this should always find one.
      *
-     * @param Pool $pool Pool of installed packages only
+     * @param RepositorySet $repoSet Repository Set of installed packages only
      * @param Link $link Package link to look up
      *
      * @return PackageInterface|null The found package
      */
-    protected function lookupInstalledPackage(Pool $pool, Link $link)
+    protected function lookupInstalledPackage(RepositorySet $repoSet, Link $link)
     {
-        $packages = $pool->whatProvides($link->getTarget(), $link->getConstraint());
+        $packages = $repoSet->findPackages($link->getTarget(), $link->getConstraint());
 
         return (!empty($packages)) ? $packages[0] : null;
     }
@@ -219,14 +219,14 @@ class PluginManager
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
 
-        $pool = new Pool('dev');
-        $pool->addRepository($localRepo);
+        $repoSet = new RepositorySet('dev');
+        $repoSet->addRepository($localRepo);
         if ($globalRepo) {
-            $pool->addRepository($globalRepo);
+            $repoSet->addRepository($globalRepo);
         }
 
         $autoloadPackages = array($package->getName() => $package);
-        $autoloadPackages = $this->collectDependencies($pool, $autoloadPackages, $package);
+        $autoloadPackages = $this->collectDependencies($repoSet, $autoloadPackages, $package);
 
         $generator = $this->composer->getAutoloadGenerator();
         $autoloads = array();

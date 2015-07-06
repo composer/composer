@@ -13,13 +13,13 @@
 namespace Composer\EventDispatcher;
 
 use Composer\DependencyResolver\PolicyInterface;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Script;
 use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
@@ -98,7 +98,7 @@ class EventDispatcher
      * @param string              $eventName     The constant in PackageEvents
      * @param bool                $devMode       Whether or not we are in dev mode
      * @param PolicyInterface     $policy        The policy
-     * @param Pool                $pool          The pool
+     * @param RepositorySet       $repositorySet The repository set
      * @param CompositeRepository $installedRepo The installed repository
      * @param Request             $request       The request
      * @param array               $operations    The list of operations
@@ -107,9 +107,9 @@ class EventDispatcher
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
      */
-    public function dispatchPackageEvent($eventName, $devMode, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations, OperationInterface $operation)
+    public function dispatchPackageEvent($eventName, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, CompositeRepository $installedRepo, Request $request, array $operations, OperationInterface $operation)
     {
-        return $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $policy, $pool, $installedRepo, $request, $operations, $operation));
+        return $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $policy, $repositorySet, $installedRepo, $request, $operations, $operation));
     }
 
     /**
@@ -118,7 +118,7 @@ class EventDispatcher
      * @param string              $eventName     The constant in InstallerEvents
      * @param bool                $devMode       Whether or not we are in dev mode
      * @param PolicyInterface     $policy        The policy
-     * @param Pool                $pool          The pool
+     * @param RepositorySet       $repositorySet The repository set
      * @param CompositeRepository $installedRepo The installed repository
      * @param Request             $request       The request
      * @param array               $operations    The list of operations
@@ -126,9 +126,9 @@ class EventDispatcher
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
      */
-    public function dispatchInstallerEvent($eventName, $devMode, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations = array())
+    public function dispatchInstallerEvent($eventName, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, CompositeRepository $installedRepo, Request $request, array $operations = array())
     {
-        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $policy, $pool, $installedRepo, $request, $operations));
+        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $policy, $repositorySet, $installedRepo, $request, $operations));
     }
 
     /**
@@ -241,7 +241,7 @@ class EventDispatcher
         if (!$event instanceof $expected && $expected === 'Composer\Script\PackageEvent') {
             $event = new \Composer\Script\PackageEvent(
                 $event->getName(), $event->getComposer(), $event->getIO(), $event->isDevMode(),
-                $event->getPolicy(), $event->getPool(), $event->getInstalledRepo(), $event->getRequest(),
+                $event->getPolicy(), $event->getRepositorySet(), $event->getInstalledRepo(), $event->getRequest(),
                 $event->getOperations(), $event->getOperation()
             );
         }

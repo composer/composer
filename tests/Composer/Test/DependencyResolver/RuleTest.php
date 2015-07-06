@@ -19,13 +19,6 @@ use Composer\TestCase;
 
 class RuleTest extends TestCase
 {
-    protected $pool;
-
-    public function setUp()
-    {
-        $this->pool = new Pool;
-    }
-
     public function testGetHash()
     {
         $rule = new Rule(array(123), 'job1', null);
@@ -104,13 +97,13 @@ class RuleTest extends TestCase
 
     public function testPrettyString()
     {
-        $repo = new ArrayRepository;
-        $repo->addPackage($p1 = $this->getPackage('foo', '2.1'));
-        $repo->addPackage($p2 = $this->getPackage('baz', '1.1'));
-        $this->pool->addRepository($repo);
+        $p1 = $this->getPackage('foo', '2.1');
+        $p2 = $this->getPackage('baz', '1.1');
+
+        $pool = new Pool(array($p1, $p2), array(0, 0));
 
         $rule = new Rule(array($p1->getId(), -$p2->getId()), 'job1', null);
 
-        $this->assertEquals('(don\'t install baz 1.1|install foo 2.1)', $rule->getPrettyString($this->pool));
+        $this->assertEquals('(don\'t install baz 1.1|install foo 2.1)', $rule->getPrettyString($pool));
     }
 }
