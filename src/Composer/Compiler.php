@@ -152,7 +152,7 @@ class Compiler
         $util->save($pharFile, \Phar::SHA1);
     }
 
-    private function addFile($phar, $file, $strip = true)
+    protected function addFile($phar, $file, $strip = true)
     {
         $path = strtr(str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath()), '\\', '/');
 
@@ -172,7 +172,7 @@ class Compiler
         $phar->addFromString($path, $content);
     }
 
-    private function addComposerBin($phar)
+    protected function addComposerBin($phar)
     {
         $content = file_get_contents(__DIR__.'/../../bin/composer');
         $content = preg_replace('{^#!/usr/bin/env php\s*}', '', $content);
@@ -185,7 +185,7 @@ class Compiler
      * @param  string $source A PHP string
      * @return string The PHP string with the whitespace removed
      */
-    private function stripWhitespace($source)
+    protected function stripWhitespace($source)
     {
         if (!function_exists('token_get_all')) {
             return $source;
@@ -213,7 +213,7 @@ class Compiler
         return $output;
     }
 
-    private function getStub()
+    protected function getStub()
     {
         $stub = <<<'EOF'
 #!/usr/bin/env php
