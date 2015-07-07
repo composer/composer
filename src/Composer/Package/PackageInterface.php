@@ -41,7 +41,7 @@ interface PackageInterface
      * No version or release type information should be included in any of the
      * names. Provided or replaced package names need to be returned as well.
      *
-     * @return array An array of strings referring to this package
+     * @return string[] An array of strings referring to this package
      */
     public function getNames();
 
@@ -118,7 +118,7 @@ interface PackageInterface
     /**
      * Returns the repository urls of this package including mirrors, e.g. git://github.com/naderman/composer.git
      *
-     * @return array
+     * @return string[]
      */
     public function getSourceUrls();
 
@@ -153,7 +153,7 @@ interface PackageInterface
     /**
      * Returns the urls of the distribution archive of this version, including mirrors
      *
-     * @return array
+     * @return string[]
      */
     public function getDistUrls();
 

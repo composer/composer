@@ -311,7 +311,7 @@ class Package extends BasePackage
     /**
      * @param array|null $mirrors
      */
-    public function setDistMirrors($mirrors)
+    public function setDistMirrors(array $mirrors = null)
     {
         $this->distMirrors = $mirrors;
     }
