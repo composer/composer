@@ -511,6 +511,10 @@ class Installer
             return max(1, $e->getCode());
         }
 
+        if ($this->io->isVerbose()) {
+            $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies");
+        }
+
         // force dev packages to be updated if we update or install from a (potentially new) lock
         $operations = $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $installFromLock, $withDevReqs, 'force-updates', $operations);
 
