@@ -1,5 +1,5 @@
 --TEST--
-Requiring a replaced package in a version, that is not provided by the replacing package, should not be installable anyway.
+Requiring a replaced package in a version, that is not provided by the replacing package, should install correctly (although that is not a very smart idea)
 --COMPOSER--
 {
     "repositories": [
@@ -19,7 +19,23 @@ Requiring a replaced package in a version, that is not provided by the replacing
 }
 --RUN--
 install
+--EXPECT-LOCK--
+{
+    "packages": [
+        { "name": "foo/original", "version": "1.0.0", "replace": {"foo/replaced": "1.0.0"}, "type": "library" },
+        { "name": "foo/replaced", "version": "2.0.0", "type": "library" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --EXPECT-EXIT-CODE--
-2
+0
 --EXPECT--
-
+Installing foo/original (1.0.0)
+Installing foo/replaced (2.0.0)
