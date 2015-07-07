@@ -615,7 +615,7 @@ class Installer
 
         if (!$this->dryRun) {
             // force source/dist urls to be updated for all packages
-            $operations = $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
+            $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
             $localRepo->write();
         }
 
