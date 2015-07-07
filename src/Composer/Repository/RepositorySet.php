@@ -88,7 +88,7 @@ class RepositorySet
         $priority = array_search($repo, $this->repositories, true);
 
         if (false === $priority) {
-            throw new \RuntimeException("Could not determine repository priority. The repository was not registered in the pool.");
+            throw new \RuntimeException("Could not determine repository priority. The repository was not registered in the repository set.");
         }
 
         return -$priority;

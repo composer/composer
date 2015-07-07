@@ -49,7 +49,7 @@ class DefaultPolicyTest extends TestCase
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
 
-        $pool = $this->repoSet->getPool(['a']);
+        $pool = $this->repoSet->getPool(array('a'));
 
         $literals = array($packageA->getId());
         $expected = array($packageA->getId());
@@ -64,7 +64,7 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
 
-        $pool = $this->repoSet->getPool(['a']);
+        $pool = $this->repoSet->getPool(array('a'));
 
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA2->getId());
@@ -79,7 +79,7 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.1-alpha'));
 
-        $pool = $this->repoSet->getPool(['a']);
+        $pool = $this->repoSet->getPool(array('a'));
 
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA2->getId());
@@ -94,7 +94,7 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.1-alpha'));
 
-        $pool = $this->repoSet->getPool(['a']);
+        $pool = $this->repoSet->getPool(array('a'));
 
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA1->getId());
@@ -110,7 +110,7 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA1 = $this->getPackage('A', 'dev-foo'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.0'));
 
-        $pool = $this->repoSet->getPool(['a']);
+        $pool = $this->repoSet->getPool(array('a'));
 
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA2->getId());
@@ -125,7 +125,7 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '2.0'));
         $this->repoInstalled->addPackage($packageAInstalled = $this->getPackage('A', '1.0'));
 
-        $pool = $this->repoSet->getPool(['a']);
+        $pool = $this->repoSet->getPool(array('a'));
 
         $literals = array($packageA->getId(), $packageAInstalled->getId());
         $expected = array($packageA->getId());
@@ -140,7 +140,7 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repoImportant->addPackage($packageAImportant = $this->getPackage('A', '1.0'));
 
-        $pool = $this->repoSet->getPool(['a']);
+        $pool = $this->repoSet->getPool(array('a'));
 
         $literals = array($packageA->getId(), $packageAImportant->getId());
         $expected = array($packageAImportant->getId());
@@ -160,7 +160,7 @@ class DefaultPolicyTest extends TestCase
         $this->repoImportant->addPackage($packageA2AliasImportant = new AliasPackage($packageA2Important, '2.1.9999999.9999999-dev', '2.1.x-dev'));
         $packageAAliasImportant->setRootPackageAlias(true);
 
-        $pool = $this->repoSet->getPool(['a']);
+        $pool = $this->repoSet->getPool(array('a'));
 
         $packages = $pool->whatProvides('a', new VersionConstraint('=', '2.1.9999999.9999999-dev'));
         $literals = array();
@@ -183,7 +183,7 @@ class DefaultPolicyTest extends TestCase
         $packageA->setProvides(array(new Link('A', 'X', new VersionConstraint('==', '1.0'), 'provides')));
         $packageB->setProvides(array(new Link('B', 'X', new VersionConstraint('==', '1.0'), 'provides')));
 
-        $pool = $this->repoSet->getPool(['a', 'b']);
+        $pool = $this->repoSet->getPool(array('a', 'b'));
 
         $literals = array($packageA->getId(), $packageB->getId());
         $expected = $literals;
@@ -200,7 +200,7 @@ class DefaultPolicyTest extends TestCase
 
         $packageB->setReplaces(array(new Link('B', 'A', new VersionConstraint('==', '1.0'), 'replaces')));
 
-        $pool = $this->repoSet->getPool(['a', 'b']);
+        $pool = $this->repoSet->getPool(array('a', 'b'));
 
         $literals = array($packageA->getId(), $packageB->getId());
         $expected = $literals;
@@ -215,7 +215,7 @@ class DefaultPolicyTest extends TestCase
         // test with default order
         $this->repo->addPackage($packageB = $this->getPackage('vendor-b/replacer', '1.0'));
         $this->repo->addPackage($packageA = $this->getPackage('vendor-a/replacer', '1.0'));
-        $names = ['vendor-b/replacer', 'vendor-b/replacer', 'vendor-a/package'];
+        $names = array('vendor-b/replacer', 'vendor-b/replacer', 'vendor-a/package');
 
         $packageA->setReplaces(array(new Link('vendor-a/replacer', 'vendor-a/package', new VersionConstraint('==', '1.0'), 'replaces')));
         $packageB->setReplaces(array(new Link('vendor-b/replacer', 'vendor-a/package', new VersionConstraint('==', '1.0'), 'replaces')));
@@ -262,7 +262,7 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
 
-        $pool = $this->repoSet->getPool(['a']);
+        $pool = $this->repoSet->getPool(array('a'));
 
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA1->getId());
