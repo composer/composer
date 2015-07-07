@@ -16,7 +16,6 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
-use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
