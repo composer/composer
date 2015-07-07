@@ -27,7 +27,7 @@ use Composer\Json\JsonFile;
  */
 class ConfigValidator
 {
-    private $io;
+    protected $io;
 
     public function __construct(IOInterface $io)
     {
