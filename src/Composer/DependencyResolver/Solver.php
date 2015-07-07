@@ -169,7 +169,7 @@ class Solver
         }
     }
 
-    public function solve(Request $request, $ignorePlatformReqs = false)
+    public function load(Request $request)
     {
         $this->jobs = $request->getJobs();
 
@@ -186,7 +186,10 @@ class Solver
         }
 
         $this->pool = $this->repositorySet->getPool(array_keys($packageNames));
+    }
 
+    public function solve($ignorePlatformReqs = false)
+    {
         $this->setupInstalledMap();
 
         $this->ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);

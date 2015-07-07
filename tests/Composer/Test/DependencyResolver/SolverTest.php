@@ -67,7 +67,9 @@ class SolverTest extends TestCase
         $this->request->install('B', $this->getVersionConstraint('==', '1'));
 
         try {
-            $transaction = $this->getSolver()->solve($this->request);
+            $solver = $this->getSolver();
+            $solver->load($this->request);
+            $transaction = $solver->solve();
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
@@ -410,7 +412,9 @@ class SolverTest extends TestCase
 
         // must explicitly pick the provider, so error in this case
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
-        $this->getSolver()->solve($this->request);
+        $solver = $this->getSolver();
+        $solver->load($this->request);
+        $solver->solve();
     }
 
     public function testSkipReplacerOfExistingPackage()
@@ -439,7 +443,9 @@ class SolverTest extends TestCase
         $this->request->install('A');
 
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
-        $this->getSolver()->solve($this->request);
+        $solver = $this->getSolver();
+        $solver->load($this->request);
+        $solver->solve();
     }
 
     public function testSkipReplacedPackageIfReplacerIsSelected()
@@ -599,7 +605,9 @@ class SolverTest extends TestCase
 
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
 
-        $this->getSolver()->solve($this->request);
+        $solver = $this->getSolver();
+        $solver->load($this->request);
+        $solver->solve();
     }
 
     public function testConflictResultEmpty()
@@ -614,7 +622,9 @@ class SolverTest extends TestCase
         $this->request->install('B');
 
         try {
-            $transaction = $this->getSolver()->solve($this->request);
+            $solver = $this->getSolver();
+            $solver->load($this->request);
+            $transaction = $solver->solve();
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
@@ -641,7 +651,9 @@ class SolverTest extends TestCase
         $this->request->install('A');
 
         try {
-            $transaction = $this->getSolver()->solve($this->request);
+            $solver = $this->getSolver();
+            $solver->load($this->request);
+            $transaction = $solver->solve();
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
@@ -685,7 +697,9 @@ class SolverTest extends TestCase
         $this->request->install('A');
 
         try {
-            $transaction = $this->getSolver()->solve($this->request);
+            $solver = $this->getSolver();
+            $solver->load($this->request);
+            $transaction = $solver->solve();
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
@@ -787,7 +801,8 @@ class SolverTest extends TestCase
     {
         $this->solver = $this->getSolver($skipDefaultRepos);
 
-        $transaction = $this->solver->solve($this->request);
+        $this->solver->load($this->request);
+        $transaction = $this->solver->solve();
 
         $result = array();
         foreach ($transaction as $operation) {

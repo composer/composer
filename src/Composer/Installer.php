@@ -295,7 +295,8 @@ class Installer
 
                     $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $repositorySet, $installedRepo, $request);
                     $solver = new Solver($policy, $repositorySet, $installedRepo);
-                    $ops = $solver->solve($request, $this->ignorePlatformReqs);
+                    $solver->load($request);
+                    $ops = $solver->solve($this->ignorePlatformReqs);
                     $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $repositorySet, $installedRepo, $request, $ops);
                     foreach ($ops as $op) {
                         if ($op->getJobType() === 'uninstall') {
@@ -420,8 +421,6 @@ class Installer
         }
 
         if ($this->update) {
-            $this->io->writeError('<info>Updating dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
-
             $request->updateAll();
 
             if ($withDevReqs) {
@@ -462,8 +461,6 @@ class Installer
                 }
             }
         } elseif ($installFromLock) {
-            $this->io->writeError('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').' from lock file</info>');
-
             if (!$this->locker->isFresh()) {
                 $this->io->writeError('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. Run update to update them.</warning>');
             }
@@ -482,8 +479,6 @@ class Installer
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } else {
-            $this->io->writeError('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
-
             if ($withDevReqs) {
                 $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
             } else {
@@ -501,8 +496,13 @@ class Installer
         // solve dependencies
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
         $solver = new Solver($policy, $repositorySet, $installedRepo);
+        $solver->load($request);
+
+        $verb = $this->update ? 'Updating' : 'Installing';
+        $this->io->writeError("<info>$verb dependencies".($withDevReqs ? ' (including require-dev)' : '').($installFromLock ? ' from lock file' : '').'</info>');
+
         try {
-            $operations = $solver->solve($request, $this->ignorePlatformReqs);
+            $operations = $solver->solve($this->ignorePlatformReqs);
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>');
