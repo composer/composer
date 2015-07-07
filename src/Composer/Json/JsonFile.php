@@ -33,8 +33,8 @@ class JsonFile
     const JSON_PRETTY_PRINT = 128;
     const JSON_UNESCAPED_UNICODE = 256;
 
-    private $path;
-    private $rfs;
+    protected $path;
+    protected $rfs;
 
     /**
      * Initializes json file reader/parser.
