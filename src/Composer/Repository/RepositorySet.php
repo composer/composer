@@ -133,6 +133,7 @@ class RepositorySet
         }
 
         $poolPackages = array();
+        $poolPackageIndex = 0;
         $poolPackageToPriority = array();
 
         $loadedMaps = array_fill(0, count($this->repositories), array());
@@ -153,25 +154,25 @@ class RepositorySet
                     $continue = true;
                 }
 
-                for ($id = count($poolPackages); $id < count($poolPackages) + count($packages); $id++) {
-                    $poolPackageToPriority[$id] = -$priority;
+                // store matching priority for each package at its final index
+                for ($oldIndex = $poolPackageIndex; $poolPackageIndex < $oldIndex + count($packages); $poolPackageIndex++) {
+                    $poolPackageToPriority[$poolPackageIndex] = -$priority;
                 }
 
-                $poolPackages = array_merge(
-                    $poolPackages,
-                    $packages
-                );
-                $newPackageNames = array_merge(
-                    $newPackageNames,
-                    $foundNames
-                );
+                $poolPackages[] = $packages;
+                $newPackageNames[] = $foundNames;
             }
 
-            $packageNames = $newPackageNames;
+            $packageNames = call_user_func_array('array_merge', $newPackageNames);
         } while ($continue);
 
         $this->packageByExactName = array();
-        return new Pool($poolPackages, $poolPackageToPriority, $this->filterRequires);
+
+        return new Pool(
+            call_user_func_array('array_merge', $poolPackages),
+            $poolPackageToPriority,
+            $this->filterRequires
+        );
     }
 
     protected function getPackagesRecursively($repo, &$loadedMap, $packageNames)
@@ -182,7 +183,7 @@ class RepositorySet
             $workQueue->enqueue($packageName);
         }
 
-        $allPackages = array();
+        $allPackages = array(array());
         $foundNames = array();
 
         while (!$workQueue->isEmpty()) {
@@ -196,13 +197,11 @@ class RepositorySet
 
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
                 $packages = $repo->loadName($packageName, array($this, 'isPackageAcceptable'));
-                $loadedPackages = array();
+                $loadedPackages = array(array());
                 foreach ($packages as $package) {
-                    $loadedPackages = array_merge(
-                        $loadedPackages,
-                        $this->loadPackage($repo, $package)
-                    );
+                    $loadedPackages[] = $this->loadPackage($repo, $package);
                 }
+                $loadedPackages = call_user_func_array('array_merge', $loadedPackages);
             } else {
                 $loadedPackages = isset($this->packageByExactName[spl_object_hash($repo)][$packageName]) ?
                     $this->packageByExactName[spl_object_hash($repo)][$packageName] : array();
@@ -218,10 +217,10 @@ class RepositorySet
                     }
                 }
             }
-            $allPackages = array_merge($allPackages, $loadedPackages);
+            $allPackages[] = $loadedPackages;
         }
 
-        return array($allPackages, $foundNames);
+        return array(call_user_func_array('array_merge', $allPackages), $foundNames);
     }
 
     private function loadPackage(RepositoryInterface $repo, PackageInterface $package)
