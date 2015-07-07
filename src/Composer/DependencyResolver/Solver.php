@@ -186,6 +186,8 @@ class Solver
         }
 
         $this->pool = $this->repositorySet->getPool(array_keys($packageNames));
+
+        return count($this->pool);
     }
 
     public function solve($ignorePlatformReqs = false)

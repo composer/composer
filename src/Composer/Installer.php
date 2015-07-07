@@ -496,10 +496,13 @@ class Installer
         // solve dependencies
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
         $solver = new Solver($policy, $repositorySet, $installedRepo);
-        $solver->load($request);
+        $poolSize = $solver->load($request);
 
         $verb = $this->update ? 'Updating' : 'Installing';
         $this->io->writeError("<info>$verb dependencies".($withDevReqs ? ' (including require-dev)' : '').($installFromLock ? ' from lock file' : '').'</info>');
+        if ($this->io->isVerbose()) {
+            $this->io->writeError("Analyzing $poolSize packages to resolve dependencies");
+        }
 
         try {
             $operations = $solver->solve($this->ignorePlatformReqs);
