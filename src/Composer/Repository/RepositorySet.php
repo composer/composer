@@ -171,7 +171,7 @@ class RepositorySet
         } while ($continue);
 
         $this->packageByExactName = array();
-        return new Pool($poolPackages, $poolPackageToPriority);
+        return new Pool($poolPackages, $poolPackageToPriority, $this->filterRequires);
     }
 
     protected function getPackagesRecursively($repo, &$loadedMap, $packageNames)

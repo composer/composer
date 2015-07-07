@@ -46,7 +46,7 @@ class Pool
     protected $packageToPriority = array();
     protected $filterRequires;
 
-    public function __construct(array $packages, array $packageToPriority)
+    public function __construct(array $packages, array $packageToPriority, array $filterRequires = array())
     {
         $this->packages = $packages;
         $this->packageToPriority = $packageToPriority;
@@ -58,6 +58,8 @@ class Pool
                 $this->packageByName[$name][$id + 1] = $package;
             }
         }
+
+        $this->filterRequires = $filterRequires;
     }
 
     /**
