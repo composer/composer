@@ -30,7 +30,8 @@ class RuleTest extends TestCase
     {
         $rule = new Rule(array(123), 'job1', null);
 
-        $this->assertEquals(substr(md5('123'), 0, 5), $rule->getHash());
+        $hash = unpack('ihash', md5('123', true));
+        $this->assertEquals($hash['hash'], $rule->getHash());
     }
 
     public function testSetAndGetId()
