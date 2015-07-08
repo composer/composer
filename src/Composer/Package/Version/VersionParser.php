@@ -257,10 +257,11 @@ class VersionParser
         foreach ($orConstraints as $constraints) {
             $andConstraints = preg_split('{(?<!^|as|[=>< ,]) *(?<!-)[, ](?!-) *(?!,|as|$)}', $constraints);
             if (count($andConstraints) > 1) {
-                $constraintObjects = array();
+                $constraintObjects = array(array());
                 foreach ($andConstraints as $constraint) {
-                    $constraintObjects = array_merge($constraintObjects, $this->parseConstraint($constraint));
+                    $constraintObjects[] = $this->parseConstraint($constraint);
                 }
+                $constraintObjects = call_user_func_array('array_merge', $constraintObjects);
             } else {
                 $constraintObjects = $this->parseConstraint($andConstraints[0]);
             }
