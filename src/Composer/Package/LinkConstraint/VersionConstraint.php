@@ -21,6 +21,33 @@ namespace Composer\Package\LinkConstraint;
  */
 class VersionConstraint extends SpecificConstraint
 {
+    const OP_EQ = 0;
+    const OP_LT = 1;
+    const OP_LE = 2;
+    const OP_GT = 3;
+    const OP_GE = 4;
+    const OP_NE = 5;
+
+    static $transOpStr = array(
+        '='  => self::OP_EQ,
+        '==' => self::OP_EQ,
+        '<'  => self::OP_LT,
+        '<=' => self::OP_LE,
+        '>'  => self::OP_GT,
+        '>=' => self::OP_GE,
+        '<>' => self::OP_NE,
+        '!=' => self::OP_NE,
+    );
+
+    static $transOpInt = array(
+        self::OP_EQ => '==',
+        self::OP_LT => '<',
+        self::OP_LE => '<=',
+        self::OP_GT => '>',
+        self::OP_GE => '>=',
+        self::OP_NE => '!=',
+    );
+
     private $operator;
     private $version;
 
@@ -32,15 +59,7 @@ class VersionConstraint extends SpecificConstraint
      */
     public function __construct($operator, $version)
     {
-        if ('=' === $operator) {
-            $operator = '==';
-        }
-
-        if ('<>' === $operator) {
-            $operator = '!=';
-        }
-
-        $this->operator = $operator;
+        $this->operator = self::$transOpStr[$operator];
         $this->version = $version;
     }
 
@@ -67,29 +86,13 @@ class VersionConstraint extends SpecificConstraint
      */
     public function matchSpecific(VersionConstraint $provider, $compareBranches = false)
     {
-        static $cache = array();
-        if (isset($cache[$this->operator][$this->version][$provider->operator][$provider->version][$compareBranches])) {
-            return $cache[$this->operator][$this->version][$provider->operator][$provider->version][$compareBranches];
-        }
+        $noEqualOp = str_replace('=', '', self::$transOpInt[$this->operator]);
+        $providerNoEqualOp = str_replace('=', '', self::$transOpInt[$provider->operator]);
 
-        return $cache[$this->operator][$this->version][$provider->operator][$provider->version][$compareBranches] =
-            $this->doMatchSpecific($provider, $compareBranches);
-    }
-
-    /**
-     * @param  VersionConstraint $provider
-     * @param  bool              $compareBranches
-     * @return bool
-     */
-    private function doMatchSpecific(VersionConstraint $provider, $compareBranches = false)
-    {
-        $noEqualOp = str_replace('=', '', $this->operator);
-        $providerNoEqualOp = str_replace('=', '', $provider->operator);
-
-        $isEqualOp = '==' === $this->operator;
-        $isNonEqualOp = '!=' === $this->operator;
-        $isProviderEqualOp = '==' === $provider->operator;
-        $isProviderNonEqualOp = '!=' === $provider->operator;
+        $isEqualOp = self::OP_EQ === $this->operator;
+        $isNonEqualOp = self::OP_NE === $this->operator;
+        $isProviderEqualOp = self::OP_EQ === $provider->operator;
+        $isProviderNonEqualOp = self::OP_NE === $provider->operator;
 
         // '!=' operator is match when other operator is not '==' operator or version is not match
         // these kinds of comparisons always have a solution
@@ -100,14 +103,14 @@ class VersionConstraint extends SpecificConstraint
 
         // an example for the condition is <= 2.0 & < 1.0
         // these kinds of comparisons always have a solution
-        if ($this->operator != '==' && $noEqualOp == $providerNoEqualOp) {
+        if ($this->operator != self::OP_EQ && $noEqualOp == $providerNoEqualOp) {
             return true;
         }
 
-        if ($this->versionCompare($provider->version, $this->version, $this->operator, $compareBranches)) {
+        if ($this->versionCompare($provider->version, $this->version, self::$transOpInt[$this->operator], $compareBranches)) {
             // special case, e.g. require >= 1.0 and provide < 1.0
             // 1.0 >= 1.0 but 1.0 is outside of the provided interval
-            if ($provider->version == $this->version && $provider->operator == $providerNoEqualOp && $this->operator != $noEqualOp) {
+            if ($provider->version == $this->version && self::$transOpInt[$provider->operator] == $providerNoEqualOp && self::$transOpInt[$this->operator] != $noEqualOp) {
                 return false;
             }
 
@@ -119,6 +122,6 @@ class VersionConstraint extends SpecificConstraint
 
     public function __toString()
     {
-        return $this->operator.' '.$this->version;
+        return self::$transOpInt[$this->operator].' '.$this->version;
     }
 }
