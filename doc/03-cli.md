@@ -180,6 +180,7 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--update-no-dev** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies** Also update dependencies of the newly
   required packages.
+* **--sort-packages** Keep packages sorted in `composer.json`.
 
 ## remove
 
