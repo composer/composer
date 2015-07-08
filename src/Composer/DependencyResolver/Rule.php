@@ -55,12 +55,11 @@ class Rule
         $this->reasonData = $reasonData;
 
         $this->disabled = false;
-
         $this->job = $job;
-
         $this->type = -1;
 
-        $this->ruleHash = substr(md5(implode(',', $this->literals)), 0, 5);
+        $data = unpack('ihash', md5(implode(',', $this->literals), true));
+        $this->ruleHash = $data['hash'];
     }
 
     public function getHash()
