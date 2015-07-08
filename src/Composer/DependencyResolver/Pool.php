@@ -85,6 +85,14 @@ class Pool implements \Countable
     }
 
     /**
+     * Returns how many packages have been loaded into the pool
+     */
+    public function count()
+    {
+        return count($this->packages);
+    }
+
+    /**
      * Searches all packages providing the given package name and match the constraint
      *
      * @param  string                  $name          The package name to be searched for
@@ -183,11 +191,6 @@ class Pool implements \Countable
         }
 
         return $prefix.' '.$package->getPrettyString();
-    }
-
-    public function count()
-    {
-        return count($this->packages);
     }
 
     /**
