@@ -55,6 +55,11 @@ class Solver
         return $this->pool;
     }
 
+    public function getRuleSetSize()
+    {
+        return count($this->rules);
+    }
+
     // aka solver_makeruledecisions
     private function makeAssertionRuleDecisions()
     {
