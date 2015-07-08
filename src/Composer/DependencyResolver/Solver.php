@@ -50,6 +50,11 @@ class Solver
         $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
     }
 
+    public function getRuleSetSize()
+    {
+        return count($this->rules);
+    }
+
     // aka solver_makeruledecisions
     private function makeAssertionRuleDecisions()
     {

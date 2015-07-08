@@ -513,6 +513,7 @@ class Installer
 
         if ($this->io->isVerbose()) {
             $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies");
+            $this->io->writeError("Analyzed ".$solver->getRuleSetSize()." rules to resolve dependencies");
         }
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
