@@ -35,7 +35,7 @@ class Rule
      */
     public $literals;
 
-    protected $blob;
+    protected $bitfield;
     protected $reasonData;
 
     public function __construct(array $literals, $reason, $reasonData, $job = null)
@@ -50,7 +50,7 @@ class Rule
             $this->job = $job;
         }
 
-        $this->blob = (0 << 16) | ($reason << 8) | (255 << 0);
+        $this->bitfield = (0 << 16) | ($reason << 8) | (255 << 0);
     }
 
     public function getHash()
@@ -66,7 +66,7 @@ class Rule
 
     public function getReason()
     {
-        return $this->getBlob(1);
+        return $this->getBitfield(1);
     }
 
     public function getReasonData()
@@ -110,32 +110,32 @@ class Rule
 
     public function setType($type)
     {
-        return $this->setBlob(0, $type);
+        return $this->setBitfield(0, $type);
     }
 
     public function getType()
     {
-        return $this->getBlob(0);
+        return $this->getBitfield(0);
     }
 
     public function disable()
     {
-        return $this->setBlob(2, 1);
+        return $this->setBitfield(2, 1);
     }
 
     public function enable()
     {
-        return $this->setBlob(2, 0);
+        return $this->setBitfield(2, 0);
     }
 
     public function isDisabled()
     {
-        return (bool) $this->getBlob(2);
+        return (bool) $this->getBitfield(2);
     }
 
     public function isEnabled()
     {
-        return !$this->getBlob(2);
+        return !$this->getBitfield(2);
     }
 
     /**
@@ -253,16 +253,16 @@ class Rule
         return implode(', ', $prepared);
     }
 
-    private function getBlob($var)
+    private function getBitfield($var)
     {
         $offset = 8*$var;
-        return ($this->blob & (255 << $offset)) >> $offset;
+        return ($this->bitfield & (255 << $offset)) >> $offset;
     }
 
-    private function setBlob($var, $value)
+    private function setBitfield($var, $value)
     {
         $offset = 8*$var;
-        $this->blob = ($this->blob & ~(255 << $offset)) | ((255 & $value) << $offset);
+        $this->bitfield = ($this->bitfield & ~(255 << $offset)) | ((255 & $value) << $offset);
     }
 
     /**
