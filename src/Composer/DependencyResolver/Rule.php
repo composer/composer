@@ -116,7 +116,7 @@ class Rule
 
     public function setType($type)
     {
-        return $this->setBitfield(self::BITFIELD_TYPE, $type);
+        $this->setBitfield(self::BITFIELD_TYPE, $type);
     }
 
     public function getType()
@@ -126,12 +126,12 @@ class Rule
 
     public function disable()
     {
-        return $this->setBitfield(self::BITFIELD_DISABLED, 1);
+        $this->setBitfield(self::BITFIELD_DISABLED, 1);
     }
 
     public function enable()
     {
-        return $this->setBitfield(self::BITFIELD_DISABLED, 0);
+        $this->setBitfield(self::BITFIELD_DISABLED, 0);
     }
 
     public function isDisabled()
