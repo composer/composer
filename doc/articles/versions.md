@@ -90,7 +90,7 @@ Example: `^1.2.3`
 ## Stability
 
 If you are using a constraint that does not explicitly define a stability,
-Composer will default interally to `-dev` or `-stable`, depending on the
+Composer will default internally to `-dev` or `-stable`, depending on the
 operator(s) used. This happens transparently.
 
 If you wish to explicitly consider only the stable release in the comparison,
