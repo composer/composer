@@ -50,7 +50,7 @@ class Rule
             $this->job = $job;
         }
 
-        $this->blob = pack('ccc', -1, $reason, false);
+        $this->blob = (0 << 16) | ($reason << 8) | (255 << 0);
     }
 
     public function getHash()
@@ -66,7 +66,7 @@ class Rule
 
     public function getReason()
     {
-        return $this->getBlob('a2');
+        return $this->getBlob(1);
     }
 
     public function getReasonData()
@@ -110,32 +110,32 @@ class Rule
 
     public function setType($type)
     {
-        return $this->setBlob('a1', $type);
+        return $this->setBlob(0, $type);
     }
 
     public function getType()
     {
-        return $this->getBlob('a1');
+        return $this->getBlob(0);
     }
 
     public function disable()
     {
-        return $this->setBlob('a3', true);
+        return $this->setBlob(2, 1);
     }
 
     public function enable()
     {
-        return $this->setBlob('a3', false);
+        return $this->setBlob(2, 0);
     }
 
     public function isDisabled()
     {
-        return (bool) $this->getBlob('a3');
+        return (bool) $this->getBlob(2);
     }
 
     public function isEnabled()
     {
-        return !$this->getBlob('a3');
+        return !$this->getBlob(2);
     }
 
     /**
@@ -255,16 +255,14 @@ class Rule
 
     private function getBlob($var)
     {
-        $current = unpack('c3a', $this->blob);
-        return $current[$var];
+        $offset = 8*$var;
+        return ($this->blob & (255 << $offset)) >> $offset;
     }
 
     private function setBlob($var, $value)
     {
-        $current = unpack('c3a', $this->blob);
-        $current[$var] = $value;
-        array_unshift($current, 'ccc');
-        $this->blob = call_user_func_array('pack', $current);
+        $offset = 8*$var;
+        $this->blob = ($this->blob & ~(255 << $offset)) | ((255 & $value) << $offset);
     }
 
     /**
