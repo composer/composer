@@ -142,7 +142,7 @@ php composer.phar update vendor/*
   a bit of time to run so it is currently not done by default.
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
-* **--with-dependencies** Add also all dependencies of whitelisted packages to the whitelist.
+* **--with-dependencies:** Add also all dependencies of whitelisted packages to the whitelist.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
@@ -177,10 +177,10 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--update-no-dev** Run the dependency update with the --no-dev option.
-* **--update-with-dependencies** Also update dependencies of the newly
+* **--update-no-dev:** Run the dependency update with the `--no-dev` option.
+* **--update-with-dependencies:** Also update dependencies of the newly
   required packages.
-* **--sort-packages** Keep packages sorted in `composer.json`.
+* **--sort-packages:** Keep packages sorted in `composer.json`.
 
 ## remove
 
@@ -202,8 +202,8 @@ uninstalled.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--update-no-dev** Run the dependency update with the --no-dev option.
-* **--update-with-dependencies** Also update dependencies of the removed packages.
+* **--update-no-dev:** Run the dependency update with the --no-dev option.
+* **--update-with-dependencies:** Also update dependencies of the removed packages.
 
 ## global
 
