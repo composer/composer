@@ -341,7 +341,8 @@ php composer.phar validate
 ### Options
 
 * **--no-check-all:** Do not emit a warning if requirements in `composer.json` use unbound version constraints.
-* **--no-check-publish:** Do not emit an error and exit with non-zero if `composer.json` is unsuitable for publishing as a package on Packagist.
+* **--no-check-publish:** Do not emit an error if `composer.json` is unsuitable for publishing as a package on Packagist but is otherwise valid.
+
 
 ## status
 
