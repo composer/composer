@@ -35,13 +35,8 @@ class Rule
      */
     public $literals;
 
-    protected $disabled;
-    protected $type;
-    protected $id;
-    protected $reason;
+    protected $blob;
     protected $reasonData;
-
-    protected $job;
 
     public function __construct(array $literals, $reason, $reasonData, $job = null)
     {
@@ -49,13 +44,13 @@ class Rule
         sort($literals);
 
         $this->literals = $literals;
-        $this->reason = $reason;
         $this->reasonData = $reasonData;
 
-        $this->disabled = false;
-        $this->job = $job;
-        $this->type = -1;
+        if ($job) {
+            $this->job = $job;
+        }
 
+        $this->blob = pack('ccc', -1, $reason, false);
     }
 
     public function getHash()
@@ -64,24 +59,14 @@ class Rule
         return $data['hash'];
     }
 
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
-    public function getId()
-    {
-        return $this->id;
-    }
-
     public function getJob()
     {
-        return $this->job;
+        return isset($this->job) ? $this->job : null;
     }
 
     public function getReason()
     {
-        return $this->reason;
+        return $this->getBlob('a2');
     }
 
     public function getReasonData()
@@ -91,11 +76,11 @@ class Rule
 
     public function getRequiredPackage()
     {
-        if ($this->reason === self::RULE_JOB_INSTALL) {
+        if ($this->getReason() === self::RULE_JOB_INSTALL) {
             return $this->reasonData;
         }
 
-        if ($this->reason === self::RULE_PACKAGE_REQUIRES) {
+        if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
             return $this->reasonData->getTarget();
         }
     }
@@ -125,32 +110,32 @@ class Rule
 
     public function setType($type)
     {
-        $this->type = $type;
+        return $this->setBlob('a1', $type);
     }
 
     public function getType()
     {
-        return $this->type;
+        return $this->getBlob('a1');
     }
 
     public function disable()
     {
-        $this->disabled = true;
+        return $this->setBlob('a3', true);
     }
 
     public function enable()
     {
-        $this->disabled = false;
+        return $this->setBlob('a3', false);
     }
 
     public function isDisabled()
     {
-        return $this->disabled;
+        return (bool) $this->getBlob('a3');
     }
 
     public function isEnabled()
     {
-        return !$this->disabled;
+        return !$this->getBlob('a3');
     }
 
     /**
@@ -176,7 +161,7 @@ class Rule
             $ruleText .= $pool->literalToPrettyString($literal, $installedMap);
         }
 
-        switch ($this->reason) {
+        switch ($this->getReason()) {
             case self::RULE_INTERNAL_ALLOW_UPDATE:
                 return $ruleText;
 
@@ -266,6 +251,20 @@ class Rule
         }
 
         return implode(', ', $prepared);
+    }
+
+    private function getBlob($var)
+    {
+        $current = unpack('c3a', $this->blob);
+        return $current[$var];
+    }
+
+    private function setBlob($var, $value)
+    {
+        $current = unpack('c3a', $this->blob);
+        $current[$var] = $value;
+        array_unshift($current, 'ccc');
+        $this->blob = call_user_func_array('pack', $current);
     }
 
     /**

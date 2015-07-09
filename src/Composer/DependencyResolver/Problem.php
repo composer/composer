@@ -47,7 +47,7 @@ class Problem
      */
     public function addRule(Rule $rule)
     {
-        $this->addReason($rule->getId(), array(
+        $this->addReason(spl_object_hash($rule), array(
             'rule' => $rule,
             'job' => $rule->getJob(),
         ));
