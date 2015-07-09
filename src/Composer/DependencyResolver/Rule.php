@@ -29,6 +29,10 @@ class Rule
     const RULE_LEARNED = 12;
     const RULE_PACKAGE_ALIAS = 13;
 
+    const BITFIELD_TYPE = 0;
+    const BITFIELD_REASON = 8;
+    const BITFIELD_DISABLED = 16;
+
     /**
      * READ-ONLY: The literals this rule consists of.
      * @var array
@@ -50,7 +54,9 @@ class Rule
             $this->job = $job;
         }
 
-        $this->bitfield = (0 << 16) | ($reason << 8) | (255 << 0);
+        $this->bitfield = (0 << self::BITFIELD_DISABLED) |
+            ($reason << self::BITFIELD_REASON) |
+            (255 << self::BITFIELD_TYPE);
     }
 
     public function getHash()
@@ -66,7 +72,7 @@ class Rule
 
     public function getReason()
     {
-        return $this->getBitfield(1);
+        return $this->getBitfield(self::BITFIELD_REASON);
     }
 
     public function getReasonData()
@@ -110,32 +116,32 @@ class Rule
 
     public function setType($type)
     {
-        return $this->setBitfield(0, $type);
+        return $this->setBitfield(self::BITFIELD_TYPE, $type);
     }
 
     public function getType()
     {
-        return $this->getBitfield(0);
+        return $this->getBitfield(self::BITFIELD_TYPE);
     }
 
     public function disable()
     {
-        return $this->setBitfield(2, 1);
+        return $this->setBitfield(self::BITFIELD_DISABLED, 1);
     }
 
     public function enable()
     {
-        return $this->setBitfield(2, 0);
+        return $this->setBitfield(self::BITFIELD_DISABLED, 0);
     }
 
     public function isDisabled()
     {
-        return (bool) $this->getBitfield(2);
+        return (bool) $this->getBitfield(self::BITFIELD_DISABLED);
     }
 
     public function isEnabled()
     {
-        return !$this->getBitfield(2);
+        return !$this->getBitfield(self::BITFIELD_DISABLED);
     }
 
     /**
@@ -253,15 +259,13 @@ class Rule
         return implode(', ', $prepared);
     }
 
-    private function getBitfield($var)
+    private function getBitfield($offset)
     {
-        $offset = 8*$var;
         return ($this->bitfield & (255 << $offset)) >> $offset;
     }
 
-    private function setBitfield($var, $value)
+    private function setBitfield($offset, $value)
     {
-        $offset = 8*$var;
         $this->bitfield = ($this->bitfield & ~(255 << $offset)) | ((255 & $value) << $offset);
     }
 
