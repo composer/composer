@@ -273,7 +273,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->getTransportOptions();
     }
-    public function setDistMirrors($mirrors)
+    public function setDistMirrors(array $mirrors = null)
     {
         return $this->aliasOf->setDistMirrors($mirrors);
     }

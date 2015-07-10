@@ -14,6 +14,7 @@ namespace Composer\Test\Autoload;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Link;
+use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Util\Filesystem;
 use Composer\Package\AliasPackage;
 use Composer\Package\Package;
@@ -158,6 +159,19 @@ class AutoloadGeneratorTest extends TestCase
             ),
             'classmap' => array('composersrc/'),
         ));
+
+        $package->setRequires(
+            array(
+                'php' =>
+                    new Link(
+                        'composer/composer',
+                        'php',
+                        new VersionConstraint('>=', '5.3.2'),
+                        'requires',
+                        '>=5.3.2'
+                    )
+            )
+        );
 
         $this->repository->expects($this->once())
             ->method('getCanonicalPackages')
