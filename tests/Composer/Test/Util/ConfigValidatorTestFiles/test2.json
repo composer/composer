@@ -1,0 +1,11 @@
+{
+  "name": "spacepossum/gecko-IO",
+  "description" : "test",
+  "license": "MIT",
+  "require": {
+    "php": ">=5.5.9"
+  },
+  "autoload": {
+    "psr-4": { "GeckoIO\\": "GeckIO/" }
+  }
+}
