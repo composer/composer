@@ -43,8 +43,6 @@ class Rule
 
     protected $job;
 
-    protected $ruleHash;
-
     public function __construct(array $literals, $reason, $reasonData, $job = null)
     {
         // sort all packages ascending by id
@@ -55,17 +53,15 @@ class Rule
         $this->reasonData = $reasonData;
 
         $this->disabled = false;
-
         $this->job = $job;
-
         $this->type = -1;
 
-        $this->ruleHash = substr(md5(implode(',', $this->literals)), 0, 5);
     }
 
     public function getHash()
     {
-        return $this->ruleHash;
+        $data = unpack('ihash', md5(implode(',', $this->literals), true));
+        return $data['hash'];
     }
 
     public function setId($id)
@@ -114,10 +110,6 @@ class Rule
      */
     public function equals(Rule $rule)
     {
-        if ($this->ruleHash !== $rule->ruleHash) {
-            return false;
-        }
-
         if (count($this->literals) != count($rule->literals)) {
             return false;
         }
