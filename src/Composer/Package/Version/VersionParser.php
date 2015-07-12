@@ -259,7 +259,9 @@ class VersionParser
             if (count($andConstraints) > 1) {
                 $constraintObjects = array();
                 foreach ($andConstraints as $constraint) {
-                    $constraintObjects = array_merge($constraintObjects, $this->parseConstraint($constraint));
+                    foreach ($this->parseConstraint($constraint) as $parsedConstraint) {
+                        $constraintObjects[] = $parsedConstraint;
+                    }
                 }
             } else {
                 $constraintObjects = $this->parseConstraint($andConstraints[0]);
