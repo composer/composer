@@ -23,18 +23,18 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
     {
         $json = '{ }';
         $this->assertEquals(array(
-            array('property' => '', 'message' => 'the property name is required'),
-            array('property' => '', 'message' => 'the property description is required'),
+            array('property' => '', 'message' => 'The property "name" is required'),
+            array('property' => '', 'message' => 'The property "description" is required'),
         ), $this->check($json));
 
         $json = '{ "name": "vendor/package" }';
         $this->assertEquals(array(
-            array('property' => '', 'message' => 'the property description is required'),
+            array('property' => '', 'message' => 'The property "description" is required'),
         ), $this->check($json));
 
         $json = '{ "description": "generic description" }';
         $this->assertEquals(array(
-            array('property' => '', 'message' => 'the property name is required'),
+            array('property' => '', 'message' => 'The property "name" is required'),
         ), $this->check($json));
     }
 
