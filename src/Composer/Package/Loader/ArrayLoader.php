@@ -14,6 +14,7 @@ namespace Composer\Package\Loader;
 
 use Composer\Package;
 use Composer\Package\AliasPackage;
+use Composer\Package\Link;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -115,7 +116,7 @@ class ArrayLoader implements LoaderInterface
             if (isset($config[$type])) {
                 $method = 'set'.ucfirst($opts['method']);
                 $package->{$method}(
-                    $this->versionParser->parseLinks(
+                    $this->parseLinks(
                         $package->getName(),
                         $package->getPrettyVersion(),
                         $opts['description'],
@@ -214,6 +215,29 @@ class ArrayLoader implements LoaderInterface
         }
 
         return $package;
+    }
+
+    /**
+     * @param  string $source        source package name
+     * @param  string $sourceVersion source package version (pretty version ideally)
+     * @param  string $description   link description (e.g. requires, replaces, ..)
+     * @param  array  $links         array of package name => constraint mappings
+     * @return Link[]
+     */
+    public function parseLinks($source, $sourceVersion, $description, $links)
+    {
+        $res = array();
+        foreach ($links as $target => $constraint) {
+            if ('self.version' === $constraint) {
+                $parsedConstraint = $this->versionParser->parseConstraints($sourceVersion);
+            } else {
+                $parsedConstraint = $this->versionParser->parseConstraints($constraint);
+            }
+
+            $res[strtolower($target)] = new Link($source, $target, $parsedConstraint, $description, $constraint);
+        }
+
+        return $res;
     }
 
     /**
