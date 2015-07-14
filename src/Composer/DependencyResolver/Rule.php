@@ -72,7 +72,7 @@ class Rule
 
     public function getReason()
     {
-        return $this->getBitfield(self::BITFIELD_REASON);
+        return ($this->bitfield & (255 << self::BITFIELD_REASON)) >> self::BITFIELD_REASON;
     }
 
     public function getReasonData()
@@ -116,32 +116,32 @@ class Rule
 
     public function setType($type)
     {
-        $this->setBitfield(self::BITFIELD_TYPE, $type);
+        $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_TYPE)) | ((255 & $type) << self::BITFIELD_TYPE);
     }
 
     public function getType()
     {
-        return $this->getBitfield(self::BITFIELD_TYPE);
+        return ($this->bitfield & (255 << self::BITFIELD_TYPE)) >> self::BITFIELD_TYPE;
     }
 
     public function disable()
     {
-        $this->setBitfield(self::BITFIELD_DISABLED, 1);
+        $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_DISABLED)) | (1 << self::BITFIELD_DISABLED);
     }
 
     public function enable()
     {
-        $this->setBitfield(self::BITFIELD_DISABLED, 0);
+        $this->bitfield = $this->bitfield & ~(255 << self::BITFIELD_DISABLED);
     }
 
     public function isDisabled()
     {
-        return (bool) $this->getBitfield(self::BITFIELD_DISABLED);
+        return (bool) (($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
     public function isEnabled()
     {
-        return !$this->getBitfield(self::BITFIELD_DISABLED);
+        return !(($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
     /**
@@ -257,16 +257,6 @@ class Rule
         }
 
         return implode(', ', $prepared);
-    }
-
-    private function getBitfield($offset)
-    {
-        return ($this->bitfield & (255 << $offset)) >> $offset;
-    }
-
-    private function setBitfield($offset, $value)
-    {
-        $this->bitfield = ($this->bitfield & ~(255 << $offset)) | ((255 & $value) << $offset);
     }
 
     /**
