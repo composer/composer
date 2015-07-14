@@ -28,7 +28,7 @@ class VersionConstraint extends SpecificConstraint
     const OP_GE = 4;
     const OP_NE = 5;
 
-    static $transOpStr = array(
+    private static $transOpStr = array(
         '='  => self::OP_EQ,
         '==' => self::OP_EQ,
         '<'  => self::OP_LT,
@@ -39,7 +39,7 @@ class VersionConstraint extends SpecificConstraint
         '!=' => self::OP_NE,
     );
 
-    static $transOpInt = array(
+    private static $transOpInt = array(
         self::OP_EQ => '==',
         self::OP_LT => '<',
         self::OP_LE => '<=',
@@ -103,7 +103,7 @@ class VersionConstraint extends SpecificConstraint
 
         // an example for the condition is <= 2.0 & < 1.0
         // these kinds of comparisons always have a solution
-        if ($this->operator != self::OP_EQ && $noEqualOp == $providerNoEqualOp) {
+        if ($this->operator !== self::OP_EQ && $noEqualOp == $providerNoEqualOp) {
             return true;
         }
 
