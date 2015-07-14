@@ -29,19 +29,18 @@ class Rule
     const RULE_LEARNED = 12;
     const RULE_PACKAGE_ALIAS = 13;
 
+    const BITFIELD_TYPE = 0;
+    const BITFIELD_REASON = 8;
+    const BITFIELD_DISABLED = 16;
+
     /**
      * READ-ONLY: The literals this rule consists of.
      * @var array
      */
     public $literals;
 
-    protected $disabled;
-    protected $type;
-    protected $id;
-    protected $reason;
+    protected $bitfield;
     protected $reasonData;
-
-    protected $job;
 
     public function __construct(array $literals, $reason, $reasonData, $job = null)
     {
@@ -49,13 +48,15 @@ class Rule
         sort($literals);
 
         $this->literals = $literals;
-        $this->reason = $reason;
         $this->reasonData = $reasonData;
 
-        $this->disabled = false;
-        $this->job = $job;
-        $this->type = -1;
+        if ($job) {
+            $this->job = $job;
+        }
 
+        $this->bitfield = (0 << self::BITFIELD_DISABLED) |
+            ($reason << self::BITFIELD_REASON) |
+            (255 << self::BITFIELD_TYPE);
     }
 
     public function getHash()
@@ -64,24 +65,14 @@ class Rule
         return $data['hash'];
     }
 
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
-    public function getId()
-    {
-        return $this->id;
-    }
-
     public function getJob()
     {
-        return $this->job;
+        return isset($this->job) ? $this->job : null;
     }
 
     public function getReason()
     {
-        return $this->reason;
+        return ($this->bitfield & (255 << self::BITFIELD_REASON)) >> self::BITFIELD_REASON;
     }
 
     public function getReasonData()
@@ -91,11 +82,11 @@ class Rule
 
     public function getRequiredPackage()
     {
-        if ($this->reason === self::RULE_JOB_INSTALL) {
+        if ($this->getReason() === self::RULE_JOB_INSTALL) {
             return $this->reasonData;
         }
 
-        if ($this->reason === self::RULE_PACKAGE_REQUIRES) {
+        if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
             return $this->reasonData->getTarget();
         }
     }
@@ -125,32 +116,32 @@ class Rule
 
     public function setType($type)
     {
-        $this->type = $type;
+        $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_TYPE)) | ((255 & $type) << self::BITFIELD_TYPE);
     }
 
     public function getType()
     {
-        return $this->type;
+        return ($this->bitfield & (255 << self::BITFIELD_TYPE)) >> self::BITFIELD_TYPE;
     }
 
     public function disable()
     {
-        $this->disabled = true;
+        $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_DISABLED)) | (1 << self::BITFIELD_DISABLED);
     }
 
     public function enable()
     {
-        $this->disabled = false;
+        $this->bitfield = $this->bitfield & ~(255 << self::BITFIELD_DISABLED);
     }
 
     public function isDisabled()
     {
-        return $this->disabled;
+        return (bool) (($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
     public function isEnabled()
     {
-        return !$this->disabled;
+        return !(($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
     /**
@@ -176,7 +167,7 @@ class Rule
             $ruleText .= $pool->literalToPrettyString($literal, $installedMap);
         }
 
-        switch ($this->reason) {
+        switch ($this->getReason()) {
             case self::RULE_INTERNAL_ALLOW_UPDATE:
                 return $ruleText;
 
