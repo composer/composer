@@ -18,6 +18,7 @@ use Composer\Package\Loader\InvalidPackageException;
 use Composer\Json\JsonValidationException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Spdx\SpdxLicenses;
 
 /**
  * Validates a composer configuration.
@@ -82,7 +83,7 @@ class ConfigValidator
                 }
             }
 
-            $licenseValidator = new SpdxLicense();
+            $licenseValidator = new SpdxLicenses();
             if ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license'])) {
                 $warnings[] = sprintf(
                     'License %s is not a valid SPDX license identifier, see http://www.spdx.org/licenses/ if you use an open license.'

@@ -28,7 +28,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
-use Composer\Util\SpdxLicense;
+use Composer\Spdx\SpdxLicenses;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -390,12 +390,12 @@ EOT
      */
     protected function printLicenses(CompletePackageInterface $package)
     {
-        $spdxLicense = new SpdxLicense;
+        $spdxLicenses = new SpdxLicenses();
 
         $licenses = $package->getLicense();
 
         foreach ($licenses as $licenseId) {
-            $license = $spdxLicense->getLicenseByIdentifier($licenseId); // keys: 0 fullname, 1 osi, 2 url
+            $license = $spdxLicenses->getLicenseByIdentifier($licenseId); // keys: 0 fullname, 1 osi, 2 url
 
             if (!$license) {
                 $out = $licenseId;
