@@ -583,6 +583,8 @@ For example:
 COMPOSER=composer-other.json php composer.phar install
 ```
 
+The generated lock file will use the same name: `composer-other.lock` in this example.
+
 ### COMPOSER_ROOT_VERSION
 
 By setting this var you can specify the version of the root package, if it can
