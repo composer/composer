@@ -54,6 +54,9 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
 
     public function testParseErrorDetectSingleQuotes()
     {
+        if (defined('JSON_PARSER_NOTSTRICT')) {
+            $this->markTestSkipped('jsonc issue');
+        }
         $json = '{
         \'foo\': "bar"
 }';
