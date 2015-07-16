@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "6d311df5df4ca3795787f58b29b03470",
+    "hash": "ed946efe7113827ff28dec6e3679b74b",
     "packages": [
         {
             "name": "composer/spdx-licenses",
