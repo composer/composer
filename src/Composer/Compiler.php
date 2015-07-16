@@ -95,7 +95,8 @@ class Compiler
         $finder = new Finder();
         $finder->files()
             ->name('*.json')
-            ->in(__DIR__ . '/../../res')
+            ->in(__DIR__.'/../../res')
+            ->in(__DIR__.'/../../vendor/composer/spdx-licenses/res/')
             ->sort($finderSort)
         ;
 
@@ -116,6 +117,7 @@ class Compiler
             ->in(__DIR__.'/../../vendor/seld/jsonlint/')
             ->in(__DIR__.'/../../vendor/seld/cli-prompt/')
             ->in(__DIR__.'/../../vendor/justinrainbow/json-schema/')
+            ->in(__DIR__.'/../../vendor/composer/spdx-licenses/')
             ->sort($finderSort)
         ;
 
