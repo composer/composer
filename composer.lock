@@ -8,20 +8,19 @@
     "packages": [
         {
             "name": "composer/spdx-licenses",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/spdx-licenses.git",
-                "reference": "abf7dfc7da7d7dc66c147a91b6e927099512292a"
+                "reference": "2f17228c1b98283b779698cefa917f7f4fd0b0d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/spdx-licenses/zipball/abf7dfc7da7d7dc66c147a91b6e927099512292a",
-                "reference": "abf7dfc7da7d7dc66c147a91b6e927099512292a",
+                "url": "https://api.github.com/repos/composer/spdx-licenses/zipball/2f17228c1b98283b779698cefa917f7f4fd0b0d4",
+                "reference": "2f17228c1b98283b779698cefa917f7f4fd0b0d4",
                 "shasum": ""
             },
             "require": {
-                "justinrainbow/json-schema": "~1.4",
                 "php": ">=5.3.2"
             },
             "require-dev": {
@@ -65,7 +64,7 @@
                 "spdx",
                 "validator"
             ],
-            "time": "2015-07-15 17:38:14"
+            "time": "2015-07-17 06:17:03"
         },
         {
             "name": "justinrainbow/json-schema",
