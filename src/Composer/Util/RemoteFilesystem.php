@@ -191,7 +191,7 @@ class RemoteFilesystem
         }
         restore_error_handler();
         if (isset($e) && !$this->retry) {
-            if (false !== strpos($e->getMessage(), 'Operation timed out')) {
+            if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
                 $this->degradedMode = true;
                 $this->io->writeError(array(
                     '<error>'.$e->getMessage().'</error>',
@@ -244,6 +244,10 @@ class RemoteFilesystem
                         throw new TransportException('Failed to decode zlib stream');
                     }
                 } catch (\Exception $e) {
+                    if ($this->degradedMode) {
+                        throw $e;
+                    }
+
                     $this->degradedMode = true;
                     $this->io->writeError(array(
                         '<error>Failed to decode response: '.$e->getMessage().'</error>',
@@ -293,7 +297,7 @@ class RemoteFilesystem
                 $e->setHeaders($http_response_header);
             }
 
-            if (false !== strpos($e->getMessage(), 'Operation timed out')) {
+            if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
                 $this->degradedMode = true;
                 $this->io->writeError(array(
                     '<error>'.$e->getMessage().'</error>',
