@@ -168,3 +168,25 @@ To enable the swap you can use for example:
 /sbin/mkswap /var/swap.1
 /sbin/swapon /var/swap.1
 ```
+
+## Degraded Mode
+
+Due to some intermittent issues on Travis and other systems, we introduced a
+degraded network mode which helps Composer finish successfully but disables
+a few optimizations. This is enabled automatically when an issue is first
+detected.
+
+If you have been pointed to this page, you want to check a few things:
+
+- If you are using ESET antivirus, go in "Advanced Settings" and disable "HTTP-scanner"
+  under "web access protection"
+- If you are using IPv6, try disabling it. If that solves your issues, get in touch
+  with your ISP or server host, the problem is not at the Packagist level but in the
+  routing rules between you and Packagist (i.e. the internet at large). The best way to get
+  these fixed is raise awareness to the network engineers that have the power to fix it.
+
+  To disable IPv6 on Linux, try using this command which appends a
+  rule prefering IPv4 over IPv6 to your config:
+
+  `sudo sh -c "echo 'precedence ::ffff:0:0/96 100' >> /etc/gai.conf"`
+- If none of the above helped, please report the error.
