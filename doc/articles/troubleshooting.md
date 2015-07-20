@@ -61,13 +61,13 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 ## Package not found in a Jenkins-build
 
 1. Check the ["Package not found"](#package-not-found) item above.
-2. Reason for failing is similar to the problem which can occur on travis-ci.org: The 
-   git-clone / checkout within Jenkins leaves the branch in a "detached HEAD"-state. As 
-   a result, Composer is not able to identify the version of the current checked out branch 
-   and may not be able to resolve a cyclic dependency. To solve this problem, you can use 
-   the "Additional Behaviours" -> "Check out to specific local branch" in your Git-settings 
-   for your Jenkins-job, where your "local branch" shall be the same branch as you are 
-   checking out. Using this, the checkout will not be in detached state any more and cyclic 
+2. Reason for failing is similar to the problem which can occur on travis-ci.org: The
+   git-clone / checkout within Jenkins leaves the branch in a "detached HEAD"-state. As
+   a result, Composer is not able to identify the version of the current checked out branch
+   and may not be able to resolve a cyclic dependency. To solve this problem, you can use
+   the "Additional Behaviours" -> "Check out to specific local branch" in your Git-settings
+   for your Jenkins-job, where your "local branch" shall be the same branch as you are
+   checking out. Using this, the checkout will not be in detached state any more and cyclic
    dependency is recognized correctly.
 
 ## Need to override a package version
