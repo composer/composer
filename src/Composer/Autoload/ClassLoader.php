@@ -53,6 +53,7 @@ class ClassLoader
 
     private $useIncludePath = false;
     private $classMap = array();
+    private $useAutomap = false;
 
     private $classMapAuthoritative = false;
 
@@ -80,20 +81,22 @@ class ClassLoader
         return $this->fallbackDirsPsr4;
     }
 
-    public function getClassMap()
-    {
-        return $this->classMap;
-    }
-
     /**
-     * @param array $classMap Class to filename map
+     * @param string $classMapFile PHP script returning class to filename map
      */
-    public function addClassMap(array $classMap)
+    public function addClassMapFile($classMapFile)
     {
-        if ($this->classMap) {
-            $this->classMap = array_merge($this->classMap, $classMap);
+        if (extension_loaded('phk')) {
+            $this->useAutomap = true;
+            \Automap\Mgr::setMapClassPath(__DIR__.'/AutomapMap.php');
+            \Automap\Mgr::load($classMapFile);
         } else {
-            $this->classMap = $classMap;
+            $classMap = require $classMapFile;
+            if ($this->classMap) {
+                $this->classMap = array_merge($this->classMap, $classMap);
+            } else {
+                $this->classMap = $classMap;
+            }
         }
     }
 
@@ -297,6 +300,9 @@ class ClassLoader
      */
     public function loadClass($class)
     {
+        if (($this->useAutomap)&&(\Automap\Mgr::getClass($class,true))) {
+            return true;
+        }
         if ($file = $this->findFile($class)) {
             includeFile($file);
 
@@ -311,7 +317,7 @@ class ClassLoader
      *
      * @return string|false The path if found, false otherwise
      */
-    public function findFile($class)
+    private function findFile($class)
     {
         // work around for PHP 5.3.0 - 5.3.2 https://bugs.php.net/50731
         if ('\\' == $class[0]) {

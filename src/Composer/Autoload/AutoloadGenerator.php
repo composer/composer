@@ -270,6 +270,13 @@ EOF;
         fclose($targetLoader);
         unset($sourceLoader, $targetLoader);
 
+        $sourceLoader = fopen(__DIR__.'/Automap/Map.php', 'r');
+        $targetLoader = fopen($targetDir.'/AutomapMap.php', 'w+');
+        stream_copy_to_stream($sourceLoader, $targetLoader);
+        fclose($sourceLoader);
+        fclose($targetLoader);
+        unset($sourceLoader, $targetLoader);
+
         $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
             'optimize' => (bool) $scanPsr0Packages,
         ));
@@ -544,10 +551,8 @@ PSR4;
 
         if ($useClassMap) {
             $file .= <<<'CLASSMAP'
-        $classMap = require __DIR__ . '/autoload_classmap.php';
-        if ($classMap) {
-            $loader->addClassMap($classMap);
-        }
+        $classMapFile = __DIR__ . '/autoload_classmap.php';
+        $loader->addClassMapFile($classMapFile);
 
 
 CLASSMAP;
