@@ -824,7 +824,7 @@ Then "composer show -s" will give you `versions : * dev-latest-testing`.
 
 Optional.
 
-### extends
+### extends <span>([root-only](04-schema.md#root-package))</span>
 
 Defines a parent JSON configuration filepath to a JSON file that this configuration extends.
 
