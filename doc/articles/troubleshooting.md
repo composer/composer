@@ -174,7 +174,10 @@ To enable the swap you can use for example:
 Due to some intermittent issues on Travis and other systems, we introduced a
 degraded network mode which helps Composer finish successfully but disables
 a few optimizations. This is enabled automatically when an issue is first
-detected.
+detected. If you see this issue sporadically you probably don't have to worry
+(a slow or overloaded network can also cause those time outs), but if it
+appears repeatedly you might want to look at the options below to identify
+and resolve it.
 
 If you have been pointed to this page, you want to check a few things:
 
