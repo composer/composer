@@ -33,10 +33,8 @@ class ComposerAutoloaderInitIncludePath
             $loader->setPsr4($namespace, $path);
         }
 
-        $classMap = require __DIR__ . '/autoload_classmap.php';
-        if ($classMap) {
-            $loader->addClassMap($classMap);
-        }
+        $classMapFile = __DIR__ . '/autoload_classmap.php';
+        $loader->addClassMapFile($classMapFile);
 
         $loader->setUseIncludePath(true);
         spl_autoload_register(array('ComposerAutoloaderInitIncludePath', 'autoload'), true, true);
