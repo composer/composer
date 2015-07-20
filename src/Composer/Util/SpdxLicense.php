@@ -14,20 +14,11 @@ namespace Composer\Util;
 
 use Composer\Spdx\SpdxLicenses;
 
+@trigger_error('The ' . __NAMESPACE__ . '\SpdxLicense class is deprecated, use Composer\Spdx\SpdxLicenses instead.', E_USER_DEPRECATED);
+
 /**
- * Supports composer array and SPDX tag notation for disjunctive/conjunctive
- * licenses.
- *
- * @author Tom Klingenberg <tklingenberg@lastflood.net>
- *
  * @deprecated use Composer\Spdx\SpdxLicenses instead
  */
 class SpdxLicense extends SpdxLicenses
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        trigger_error(__CLASS__ . ' is deprecated, use Composer\\Spdx\\SpdxLicenses instead', E_USER_DEPRECATED);
-    }
 }
