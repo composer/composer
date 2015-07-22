@@ -36,6 +36,21 @@ use Composer\Package\Version\VersionParser;
 class Factory
 {
     /**
+     *
+     * @return boolean
+     */
+    private static function useXdg()
+    {
+        foreach (array_keys($_SERVER) as $key) {
+            if (substr($key, 0, 4) === 'XDG_') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @return string
      * @throws \RuntimeException
      */
@@ -56,27 +71,39 @@ class Factory
     protected static function getHomeDir()
     {
         $home = getenv('COMPOSER_HOME');
-        if (!$home) {
-            if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
-                if (!getenv('APPDATA')) {
-                    throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
-                }
-                $home = strtr(getenv('APPDATA'), '\\', '/') . '/Composer';
-            } else {
-                $userDir = self::getUserDir();
-
-                if (getenv('XDG_CONFIG_DIRS')) {
-                    // XDG Base Directory Specifications
-                    $xdgConfig = getenv('XDG_CONFIG_HOME');
-                    if (!$xdgConfig) {
-                        $xdgConfig = $userDir . '/.config';
-                    }
-                        $home = $xdgConfig . '/composer';
-                    } else {
-                        $home = $userDir . '/.composer';
-                }
-            }
+        if ($home) {
+            return $home;
         }
+
+        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+            if (!getenv('APPDATA')) {
+                throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
+            }
+            $home = strtr(getenv('APPDATA'), '\\', '/') . '/Composer';
+
+            return $home;
+        }
+
+        $userDir = self::getUserDir();
+
+        if (is_dir($userDir . '/.composer')) {
+            $home = $userDir . '/.composer';
+
+            return $home;
+        }
+
+        if (self::useXdg()) {
+            // XDG Base Directory Specifications
+            $xdgConfig = getenv('XDG_CONFIG_HOME');
+            if (!$xdgConfig) {
+                $xdgConfig = $userDir . '/.config';
+            }
+            $home = $xdgConfig . '/composer';
+
+            return $home;
+        }
+
+        $home = $userDir . '/.composer';
 
         return $home;
     }
@@ -89,28 +116,40 @@ class Factory
     protected static function getCacheDir($home)
     {
         $cacheDir = getenv('COMPOSER_CACHE_DIR');
-        if (!$cacheDir) {
-            if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
-                if ($cacheDir = getenv('LOCALAPPDATA')) {
-                    $cacheDir .= '/Composer';
-                } else {
-                    $cacheDir = $home . '/cache';
-                }
-                $cacheDir = strtr($cacheDir, '\\', '/');
-            } else {
-                $userDir = self::getUserDir();
-
-                if (getenv('XDG_CONFIG_DIRS')) {
-                    $xdgCache = getenv('XDG_CACHE_HOME');
-                    if (!$xdgCache) {
-                        $xdgCache = $userDir . '/.cache';
-                    }
-                    $cacheDir = $xdgCache . '/composer';
-                } else {
-                    $cacheDir = $home . '/cache';
-                }
-            }
+        if ($cacheDir) {
+            return $cacheDir;
         }
+
+        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+            if ($cacheDir = getenv('LOCALAPPDATA')) {
+                $cacheDir .= '/Composer';
+            } else {
+                $cacheDir = $home . '/cache';
+            }
+            $cacheDir = strtr($cacheDir, '\\', '/');
+
+            return $cacheDir;
+        }
+
+        $userDir = self::getUserDir();
+
+        if ($home === $userDir . '/.composer' && is_dir($home . '/cache')) {
+            $cacheDir = $home . '/cache';
+
+            return $cacheDir;
+        }
+
+        if (self::useXdg()) {
+            $xdgCache = getenv('XDG_CACHE_HOME');
+            if (!$xdgCache) {
+                $xdgCache = $userDir . '/.cache';
+            }
+            $cacheDir = $xdgCache . '/composer';
+
+            return $cacheDir;
+        }
+
+        $cacheDir = $home . '/cache';
 
         return $cacheDir;
     }
@@ -124,16 +163,30 @@ class Factory
     {
         if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
             $dataDir = strtr($home, '\\', '/');
-        } elseif (getenv('XDG_CONFIG_DIRS')) {
+
+            return $dataDir;
+        }
+
+        $userDir = self::getUserDir();
+
+        if ($home === $userDir . '/.composer') {
+            $cacheDir = $home;
+
+            return $cacheDir;
+        }
+
+        if (self::useXdg()) {
             $xdgData = getenv('XDG_DATA_HOME');
             if (!$xdgData) {
                 $userDir = self::getUserDir();
                 $xdgData = $userDir . '/.local/share';
             }
             $dataDir = $xdgData . '/composer';
-        } else {
-            $dataDir = $home;
+
+            return $dataDir;
         }
+
+        $dataDir = $home;
 
         return $dataDir;
     }
@@ -160,31 +213,6 @@ class Factory
                     @mkdir($dir, 0777, true);
                 }
                 @file_put_contents($dir . '/.htaccess', 'Deny from all');
-            }
-        }
-
-        // Move content of old composer dir to XDG
-        if (getenv('XDG_CONFIG_DIRS') !== false && getenv('COMPOSER_HOME') === false && getenv('COMPOSER_CACHE_DIR') === false) {
-            $userDir         = rtrim(getenv('HOME'), '/');
-            $oldComposerHome = $userDir . '/.composer';
-            if (file_exists($oldComposerHome)) {
-                // migrate to XDG
-                foreach (glob($oldComposerHome . '/*.json') as $file) {
-                    rename($file, $home . '/' . basename($file));
-                }
-
-                foreach (glob($oldComposerHome . '/*.phar') as $file) {
-                    rename($file, $dataDir . '/' . basename($file));
-                }
-
-                foreach (glob($oldComposerHome . '/cache/*') as $oldCacheDir) {
-                    rename($oldCacheDir, $cacheDir . '/' . basename($oldCacheDir));
-                }
-
-                unlink($oldComposerHome . '/.htaccess');
-                unlink($oldComposerHome . '/cache/.htaccess');
-                rmdir($oldComposerHome . '/cache');
-                rmdir($oldComposerHome);
             }
         }
 
