@@ -14,7 +14,6 @@ namespace Composer\Downloader;
 
 use Composer\Config;
 use Composer\Package\PackageInterface;
-use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -54,7 +53,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
 
-        $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+        $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
         $this->filesystem->emptyDirectory($path);
 
         $urls = $package->getSourceUrls();
@@ -67,9 +66,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 break;
             } catch (\Exception $e) {
                 if ($this->io->isDebug()) {
-                    $this->io->write('Failed: ['.get_class($e).'] '.$e->getMessage());
+                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
                 } elseif (count($urls)) {
-                    $this->io->write('    Failed, trying the next URL');
+                    $this->io->writeError('    Failed, trying the next URL');
                 }
                 if (!count($urls)) {
                     throw $e;
@@ -77,7 +76,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             }
         }
 
-        $this->io->write('');
+        $this->io->writeError('');
     }
 
     /**
@@ -100,11 +99,11 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             }
             $name .= ' '.$initial->getPrettyVersion();
         } else {
-            $from = VersionParser::formatVersion($initial);
-            $to = VersionParser::formatVersion($target);
+            $from = $initial->getFullPrettyVersion();
+            $to = $target->getFullPrettyVersion();
         }
 
-        $this->io->write("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
+        $this->io->writeError("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
 
         $this->cleanChanges($initial, $path, true);
         $urls = $target->getSourceUrls();
@@ -117,9 +116,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 break;
             } catch (\Exception $e) {
                 if ($this->io->isDebug()) {
-                    $this->io->write('Failed: ['.get_class($e).'] '.$e->getMessage());
+                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
                 } elseif (count($urls)) {
-                    $this->io->write('    Failed, trying the next URL');
+                    $this->io->writeError('    Failed, trying the next URL');
                 } else {
                     // in case of failed update, try to reapply the changes before aborting
                     $this->reapplyChanges($path);
@@ -146,12 +145,12 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     return '      ' . $line;
                 }, explode("\n", $logs)));
 
-                $this->io->write('    '.$message);
-                $this->io->write($logs);
+                $this->io->writeError('    '.$message);
+                $this->io->writeError($logs);
             }
         }
 
-        $this->io->write('');
+        $this->io->writeError('');
     }
 
     /**
@@ -159,7 +158,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      */
     public function remove(PackageInterface $package, $path)
     {
-        $this->io->write("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
+        $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
         $this->cleanChanges($package, $path, false);
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');

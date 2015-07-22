@@ -96,7 +96,7 @@ final class StreamContextFactory
             // add SNI opts for https URLs
             if ('https' === parse_url($url, PHP_URL_SCHEME)) {
                 $options['ssl']['SNI_enabled'] = true;
-                if (version_compare(PHP_VERSION, '5.6.0', '<')) {
+                if (PHP_VERSION_ID < 50600) {
                     $options['ssl']['SNI_server_name'] = parse_url($url, PHP_URL_HOST);
                 }
             }

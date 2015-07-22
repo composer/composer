@@ -17,7 +17,7 @@ of credentials inline with the repository specification such as:
     "repositories": [
         {
             "type": "composer",
-            "url": "http://extremely:secret@repo.example.org"
+            "url": "https://extremely:secret@repo.example.org"
         }
     ]
 }
@@ -40,7 +40,7 @@ username/password pairs, for example:
 
 ```json
 {
-    "basic-auth": {
+    "http-basic": {
         "repo.example1.org": {
             "username": "my-username1",
             "password": "my-secret-password1"
@@ -55,5 +55,5 @@ username/password pairs, for example:
 
 The main advantage of the auth.json file is that it can be gitignored so
 that every developer in your team can place their own credentials in there,
-which makes revokation of credentials much easier than if you all share the
+which makes revocation of credentials much easier than if you all share the
 same.

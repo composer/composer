@@ -69,7 +69,21 @@ class NullIO extends BaseIO
     /**
      * {@inheritDoc}
      */
+    public function writeError($messages, $newline = true)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function overwrite($messages, $newline = true, $size = 80)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function overwriteError($messages, $newline = true, $size = 80)
     {
     }
 

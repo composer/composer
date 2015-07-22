@@ -106,6 +106,7 @@ class AutoloadGeneratorTest extends TestCase
                         $ret = $ret();
                     }
                 }
+
                 return $ret;
             }));
 
@@ -163,9 +164,10 @@ class AutoloadGeneratorTest extends TestCase
             ->will($this->returnValue(array()));
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/composer');
-        $this->fs->ensureDirectoryExists($this->workingDir.'/src/Lala');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src/Lala/Test');
         $this->fs->ensureDirectoryExists($this->workingDir.'/lib');
         file_put_contents($this->workingDir.'/src/Lala/ClassMapMain.php', '<?php namespace Lala; class ClassMapMain {}');
+        file_put_contents($this->workingDir.'/src/Lala/Test/ClassMapMainTest.php', '<?php namespace Lala\Test; class ClassMapMainTest {}');
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/src-fruit');
         $this->fs->ensureDirectoryExists($this->workingDir.'/src-cake');
@@ -1199,5 +1201,23 @@ EOF;
         $a = __DIR__.'/Fixtures/autoload_'.$name.'.php';
         $b = $dir.'/autoload_'.$type.'.php';
         $this->assertFileEquals($a, $b);
+    }
+
+    public static function assertFileEquals($expected, $actual, $message = '', $canonicalize = false, $ignoreCase = false)
+    {
+        return self::assertEquals(
+            file_get_contents($expected),
+            file_get_contents($actual),
+            $message ?: $expected.' equals '.$actual,
+            0,
+            10,
+            $canonicalize,
+            $ignoreCase
+        );
+    }
+
+    public static function assertEquals($expected, $actual, $message = '', $delta = 0, $maxDepth = 10, $canonicalize = false, $ignoreCase = false)
+    {
+        return parent::assertEquals(str_replace("\r", '', $expected), str_replace("\r", '', $actual), $message, $delta, $maxDepth, $canonicalize, $ignoreCase);
     }
 }

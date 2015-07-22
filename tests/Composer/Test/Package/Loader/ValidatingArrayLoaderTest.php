@@ -12,7 +12,6 @@
 
 namespace Composer\Test\Package\Loader;
 
-use Composer\Package;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
 
@@ -47,7 +46,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'description' => 'Foo bar',
                     'version' => '1.0.0',
                     'type' => 'library',
-                    'keywords' => array('a', 'b_c', 'D E'),
+                    'keywords' => array('a', 'b_c', 'D E', 'éîüø', '微信'),
                     'homepage' => 'https://foo.com',
                     'time' => '2010-10-10T10:10:10+00:00',
                     'license' => 'MIT',
@@ -118,7 +117,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'repositories' => array(
                         array(
                             'type' => 'composer',
-                            'url' => 'http://packagist.org/',
+                            'url' => 'https://packagist.org/',
                         )
                     ),
                     'config' => array(

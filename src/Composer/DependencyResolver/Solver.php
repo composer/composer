@@ -40,6 +40,7 @@ class Solver
     protected $branches = array();
     protected $problems = array();
     protected $learnedPool = array();
+    protected $learnedWhy = array();
 
     public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
     {
@@ -47,6 +48,11 @@ class Solver
         $this->pool = $pool;
         $this->installed = $installed;
         $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
+    }
+
+    public function getRuleSetSize()
+    {
+        return count($this->rules);
     }
 
     // aka solver_makeruledecisions
@@ -313,7 +319,7 @@ class Solver
 
             $this->rules->add($newRule, RuleSet::TYPE_LEARNED);
 
-            $this->learnedWhy[$newRule->getId()] = $why;
+            $this->learnedWhy[spl_object_hash($newRule)] = $why;
 
             $ruleNode = new RuleWatchNode($newRule);
             $ruleNode->watch2OnHighest($this->decisions);
@@ -328,7 +334,7 @@ class Solver
     private function selectAndInstall($level, array $decisionQueue, $disableRules, Rule $rule)
     {
         // choose best package to install from decisionQueue
-        $literals = $this->policy->selectPreferedPackages($this->pool, $this->installedMap, $decisionQueue, $rule->getRequiredPackage());
+        $literals = $this->policy->selectPreferredPackages($this->pool, $this->installedMap, $decisionQueue, $rule->getRequiredPackage());
 
         $selectedLiteral = array_shift($literals);
 
@@ -448,7 +454,7 @@ class Solver
 
     private function analyzeUnsolvableRule($problem, $conflictRule)
     {
-        $why = $conflictRule->getId();
+        $why = spl_object_hash($conflictRule);
 
         if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
             $learnedWhy = $this->learnedWhy[$why];
@@ -566,7 +572,7 @@ class Solver
     private function enableDisableLearnedRules()
     {
         foreach ($this->rules->getIteratorFor(RuleSet::TYPE_LEARNED) as $rule) {
-            $why = $this->learnedWhy[$rule->getId()];
+            $why = $this->learnedWhy[spl_object_hash($rule)];
             $problemRules = $this->learnedPool[$why];
 
             $foundDisabled = false;

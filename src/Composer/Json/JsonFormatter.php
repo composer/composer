@@ -65,7 +65,7 @@ class JsonFormatter
                 }
 
                 if ($unescapeUnicode && function_exists('mb_convert_encoding')) {
-                    // http://stackoverflow.com/questions/2934563/how-to-decode-unicode-escape-sequences-like-u00ed-to-proper-utf-8-encoded-cha
+                    // https://stackoverflow.com/questions/2934563/how-to-decode-unicode-escape-sequences-like-u00ed-to-proper-utf-8-encoded-cha
                     $buffer = preg_replace_callback('/(\\\\+)u([0-9a-f]{4})/i', function ($match) {
                         $l = strlen($match[1]);
 

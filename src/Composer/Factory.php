@@ -113,10 +113,10 @@ class Factory
         $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir)));
 
         // load global config
-        $file = new JsonFile($home.'/config.json');
+        $file = new JsonFile($config->get('home').'/config.json');
         if ($file->exists()) {
             if ($io && $io->isDebug()) {
-                $io->write('Loading config file ' . $file->getPath());
+                $io->writeError('Loading config file ' . $file->getPath());
             }
             $config->merge($file->read());
         }
@@ -126,7 +126,7 @@ class Factory
         $file = new JsonFile($config->get('home').'/auth.json');
         if ($file->exists()) {
             if ($io && $io->isDebug()) {
-                $io->write('Loading config file ' . $file->getPath());
+                $io->writeError('Loading config file ' . $file->getPath());
             }
             $config->merge(array('config' => $file->read()));
         }
@@ -214,7 +214,7 @@ class Factory
                 } else {
                     $message = 'Composer could not find the config file: '.$localConfig;
                 }
-                $instructions = 'To initialize a project, please create a composer.json file as described in the http://getcomposer.org/ "Getting Started" section';
+                $instructions = 'To initialize a project, please create a composer.json file as described in the https://getcomposer.org/ "Getting Started" section';
                 throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
             }
 
@@ -227,12 +227,12 @@ class Factory
         $config->merge($localConfig);
         if (isset($composerFile)) {
             if ($io && $io->isDebug()) {
-                $io->write('Loading config file ' . $composerFile);
+                $io->writeError('Loading config file ' . $composerFile);
             }
             $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json');
             if ($localAuthFile->exists()) {
                 if ($io && $io->isDebug()) {
-                    $io->write('Loading config file ' . $localAuthFile->getPath());
+                    $io->writeError('Loading config file ' . $localAuthFile->getPath());
                 }
                 $config->merge(array('config' => $localAuthFile->read()));
                 $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
@@ -249,9 +249,6 @@ class Factory
         if ($fullLoad) {
             // load auth configs into the IO instance
             $io->loadConfiguration($config);
-
-            // setup process timeout
-            ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
         }
 
         // initialize event dispatcher
@@ -362,7 +359,7 @@ class Factory
             $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), false);
         } catch (\Exception $e) {
             if ($io->isDebug()) {
-                $io->write('Failed to initialize global composer: '.$e->getMessage());
+                $io->writeError('Failed to initialize global composer: '.$e->getMessage());
             }
         }
 

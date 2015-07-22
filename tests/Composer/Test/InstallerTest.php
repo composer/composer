@@ -14,7 +14,6 @@ namespace Composer\Test;
 
 use Composer\Installer;
 use Composer\Console\Application;
-use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;
@@ -149,11 +148,15 @@ class InstallerTest extends TestCase
 
         $output = null;
         $io = $this->getMock('Composer\IO\IOInterface');
+        $callback = function ($text, $newline) use (&$output) {
+            $output .= $text . ($newline ? "\n" : "");
+        };
         $io->expects($this->any())
             ->method('write')
-            ->will($this->returnCallback(function ($text, $newline) use (&$output) {
-                $output .= $text . ($newline ? "\n" : "");
-            }));
+            ->will($this->returnCallback($callback));
+        $io->expects($this->any())
+            ->method('writeError')
+            ->will($this->returnCallback($callback));
 
         $composer = FactoryMock::create($io, $composerConfig);
 
@@ -195,10 +198,7 @@ class InstallerTest extends TestCase
         $composer->setAutoloadGenerator($autoloadGenerator);
         $composer->setEventDispatcher($eventDispatcher);
 
-        $installer = Installer::create(
-            $io,
-            $composer
-        );
+        $installer = Installer::create($io, $composer);
 
         $application = new Application;
         $application->get('install')->setCode(function ($input, $output) use ($installer) {
@@ -330,8 +330,7 @@ class InstallerTest extends TestCase
         );
 
         $section = null;
-        foreach ($tokens as $i => $token)
-        {
+        foreach ($tokens as $i => $token) {
             if (null === $section && empty($token)) {
                 continue; // skip leading blank
             }

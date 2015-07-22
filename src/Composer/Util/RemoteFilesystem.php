@@ -37,6 +37,7 @@ class RemoteFilesystem
     private $retryAuthFailure;
     private $lastHeaders;
     private $storeAuth;
+    private $degradedMode = false;
 
     /**
      * Constructor.
@@ -146,7 +147,7 @@ class RemoteFilesystem
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
 
         if ($this->io->isDebug()) {
-            $this->io->write((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
+            $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
         }
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
@@ -155,10 +156,14 @@ class RemoteFilesystem
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
+        if ($this->degradedMode && substr($fileUrl, 0, 21) === 'http://packagist.org/') {
+            // access packagist using the resolved IPv4 instead of the hostname to force IPv4 protocol
+            $fileUrl = 'http://' . gethostbyname('packagist.org') . substr($fileUrl, 20);
+        }
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
-            $this->io->write("    Downloading: <comment>connection...</comment>", false);
+            $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
         }
 
         $errorMessage = '';
@@ -186,6 +191,16 @@ class RemoteFilesystem
         }
         restore_error_handler();
         if (isset($e) && !$this->retry) {
+            if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
+                $this->degradedMode = true;
+                $this->io->writeError(array(
+                    '<error>'.$e->getMessage().'</error>',
+                    '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>'
+                ));
+
+                return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+            }
+
             throw $e;
         }
 
@@ -201,34 +216,47 @@ class RemoteFilesystem
             $result = false;
         }
 
+        if ($this->progress && !$this->retry) {
+            $this->io->overwriteError("    Downloading: <comment>100%</comment>");
+        }
+
         // decode gzip
         if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
             $decode = false;
             foreach ($http_response_header as $header) {
                 if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
                     $decode = true;
-                    continue;
                 } elseif (preg_match('{^HTTP/}i', $header)) {
                     $decode = false;
                 }
             }
 
             if ($decode) {
-                if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-                    $result = zlib_decode($result);
-                } else {
-                    // work around issue with gzuncompress & co that do not work with all gzip checksums
-                    $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
-                }
+                try {
+                    if (PHP_VERSION_ID >= 50400) {
+                        $result = zlib_decode($result);
+                    } else {
+                        // work around issue with gzuncompress & co that do not work with all gzip checksums
+                        $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
+                    }
 
-                if (!$result) {
-                    throw new TransportException('Failed to decode zlib stream');
+                    if (!$result) {
+                        throw new TransportException('Failed to decode zlib stream');
+                    }
+                } catch (\Exception $e) {
+                    if ($this->degradedMode) {
+                        throw $e;
+                    }
+
+                    $this->degradedMode = true;
+                    $this->io->writeError(array(
+                        '<error>Failed to decode response: '.$e->getMessage().'</error>',
+                        '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>'
+                    ));
+
+                    return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
                 }
             }
-        }
-
-        if ($this->progress && !$this->retry) {
-            $this->io->overwrite("    Downloading: <comment>100%</comment>");
         }
 
         // handle copy command if download was successful
@@ -269,6 +297,16 @@ class RemoteFilesystem
                 $e->setHeaders($http_response_header);
             }
 
+            if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
+                $this->degradedMode = true;
+                $this->io->writeError(array(
+                    '<error>'.$e->getMessage().'</error>',
+                    '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>'
+                ));
+
+                return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+            }
+
             throw $e;
         }
 
@@ -302,14 +340,17 @@ class RemoteFilesystem
                     }
 
                     $this->promptAuthAndRetry($messageCode);
-                    break;
                 }
                 break;
 
             case STREAM_NOTIFY_AUTH_RESULT:
                 if (403 === $messageCode) {
+                    // Bail if the caller is going to handle authentication failures itself.
+                    if (!$this->retryAuthFailure) {
+                        break;
+                    }
+
                     $this->promptAuthAndRetry($messageCode, $message);
-                    break;
                 }
                 break;
 
@@ -321,15 +362,11 @@ class RemoteFilesystem
 
             case STREAM_NOTIFY_PROGRESS:
                 if ($this->bytesMax > 0 && $this->progress) {
-                    $progression = 0;
+                    $progression = round($bytesTransferred / $this->bytesMax * 100);
 
-                    if ($this->bytesMax > 0) {
-                        $progression = round($bytesTransferred / $this->bytesMax * 100);
-                    }
-
-                    if ((0 === $progression % 5) && $progression !== $this->lastProgress) {
+                    if ((0 === $progression % 5) && 100 !== $progression && $progression !== $this->lastProgress) {
                         $this->lastProgress = $progression;
-                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
+                        $this->io->overwriteError("    Downloading: <comment>$progression%</comment>", false);
                     }
                 }
                 break;
@@ -342,7 +379,7 @@ class RemoteFilesystem
     protected function promptAuthAndRetry($httpStatus, $reason = null)
     {
         if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
-            $message = "\n".'Could not fetch '.$this->fileUrl.', enter your GitHub credentials '.($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
+            $message = "\n".'Could not fetch '.$this->fileUrl.', please create a GitHub OAuth token '.($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
             $gitHubUtil = new GitHub($this->io, $this->config, null);
             if (!$gitHubUtil->authorizeOAuth($this->originUrl)
                 && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
@@ -371,7 +408,7 @@ class RemoteFilesystem
                 throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
             }
 
-            $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+            $this->io->overwriteError('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');
             $this->io->setAuthentication($this->originUrl, $username, $password);
@@ -405,6 +442,12 @@ class RemoteFilesystem
         }
 
         $options = array_replace_recursive($this->options, $additionalOptions);
+        if (!$this->degradedMode) {
+            // degraded mode disables HTTP/1.1 which causes issues with some bad
+            // proxies/software due to the use of chunked encoding
+            $options['http']['protocol_version'] = 1.1;
+            $headers[] = 'Connection: close';
+        }
 
         if ($this->io->hasAuthentication($originUrl)) {
             $auth = $this->io->getAuthentication($originUrl);

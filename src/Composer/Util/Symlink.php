@@ -44,7 +44,7 @@ class Symlink
 
         $relativeBin = $this->filesystem->findShortestPath($link, $binPath);
         chdir(dirname($link));
-        $result = symlink($relativeBin, $link);
+        $result = @symlink($relativeBin, $link);
 
         chdir($cwd);
         if ($result === false) {

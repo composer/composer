@@ -47,7 +47,7 @@ class Problem
      */
     public function addRule(Rule $rule)
     {
-        $this->addReason($rule->getId(), array(
+        $this->addReason(spl_object_hash($rule), array(
             'rule' => $rule,
             'job' => $rule->getJob(),
         ));
@@ -87,6 +87,19 @@ class Problem
             }
 
             if ($job && $job['cmd'] === 'install' && empty($packages)) {
+                // handle php/hhvm
+                if ($job['packageName'] === 'php' || $job['packageName'] === 'php-64bit' || $job['packageName'] === 'hhvm') {
+                    $msg = "\n    - This package requires ".$job['packageName'].$this->constraintToText($job['constraint']).' but ';
+
+                    if (defined('HHVM_VERSION')) {
+                        return $msg . 'your HHVM version does not satisfy that requirement.';
+                    } elseif ($job['packageName'] === 'hhvm') {
+                        return $msg . 'you are running this with PHP and not HHVM.';
+                    }
+
+                    return $msg . 'your PHP version ('.  phpversion().') does not satisfy that requirement.';
+                }
+
                 // handle php extensions
                 if (0 === stripos($job['packageName'], 'ext-')) {
                     $ext = substr($job['packageName'], 4);

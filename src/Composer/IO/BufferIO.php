@@ -23,16 +23,19 @@ use Symfony\Component\Console\Helper\HelperSet;
 class BufferIO extends ConsoleIO
 {
     /**
-     * @param string                   $input
-     * @param int                      $verbosity
+     * @param string $input
+     * @param int $verbosity
      * @param OutputFormatterInterface $formatter
      */
-    public function __construct($input = '', $verbosity = null, OutputFormatterInterface $formatter = null)
-    {
+    public function __construct(
+        $input = '',
+        $verbosity = StreamOutput::VERBOSITY_NORMAL,
+        OutputFormatterInterface $formatter = null
+    ) {
         $input = new StringInput($input);
         $input->setInteractive(false);
 
-        $output = new StreamOutput(fopen('php://memory', 'rw'), $verbosity === null ? StreamOutput::VERBOSITY_NORMAL : $verbosity, !empty($formatter), $formatter);
+        $output = new StreamOutput(fopen('php://memory', 'rw'), $verbosity, !empty($formatter), $formatter);
 
         parent::__construct($input, $output, new HelperSet(array()));
     }

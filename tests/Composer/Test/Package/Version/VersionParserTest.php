@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Package\Version;
 
+use Composer\Package\Link;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
@@ -20,52 +21,6 @@ use Composer\Package\PackageInterface;
 
 class VersionParserTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @dataProvider formattedVersions
-     */
-    public function testFormatVersionForDevPackage(PackageInterface $package, $truncate, $expected)
-    {
-        $this->assertSame($expected, VersionParser::formatVersion($package, $truncate));
-    }
-
-    public function formattedVersions()
-    {
-        $data = array(
-            array(
-                'sourceReference' => 'v2.1.0-RC2',
-                'truncate' => true,
-                'expected' => 'PrettyVersion v2.1.0-RC2'
-            ),
-            array(
-                'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
-                'truncate' => true,
-                'expected' => 'PrettyVersion bbf527a'
-            ),
-            array(
-                'sourceReference' => 'v1.0.0',
-                'truncate' => false,
-                'expected' => 'PrettyVersion v1.0.0'
-            ),
-            array(
-                'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
-                'truncate' => false,
-                'expected' => 'PrettyVersion bbf527a27356414bfa9bf520f018c5cb7af67c77'
-            ),
-        );
-
-        $self = $this;
-        $createPackage = function ($arr) use ($self) {
-            $package = $self->getMock('\Composer\Package\PackageInterface');
-            $package->expects($self->once())->method('isDev')->will($self->returnValue(true));
-            $package->expects($self->once())->method('getSourceType')->will($self->returnValue('git'));
-            $package->expects($self->once())->method('getPrettyVersion')->will($self->returnValue('PrettyVersion'));
-            $package->expects($self->any())->method('getSourceReference')->will($self->returnValue($arr['sourceReference']));
-
-            return array($package, $arr['truncate'], $arr['expected']);
-        };
-
-        return array_map($createPackage, $data);
-    }
 
     /**
      * @dataProvider numericAliasVersions
@@ -243,13 +198,13 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'greater than'      => array('>1.0.0',      new VersionConstraint('>', '1.0.0.0')),
             'lesser than'       => array('<1.2.3.4',    new VersionConstraint('<', '1.2.3.4-dev')),
             'less/eq than'      => array('<=1.2.3',     new VersionConstraint('<=', '1.2.3.0')),
-            'great/eq than'     => array('>=1.2.3',     new VersionConstraint('>=', '1.2.3.0')),
+            'great/eq than'     => array('>=1.2.3',     new VersionConstraint('>=', '1.2.3.0-dev')),
             'equals'            => array('=1.2.3',      new VersionConstraint('=', '1.2.3.0')),
             'double equals'     => array('==1.2.3',     new VersionConstraint('=', '1.2.3.0')),
             'no op means eq'    => array('1.2.3',       new VersionConstraint('=', '1.2.3.0')),
             'completes version' => array('=1.0',        new VersionConstraint('=', '1.0.0.0')),
             'shorthand beta'    => array('1.2.3b5',     new VersionConstraint('=', '1.2.3.0-beta5')),
-            'accepts spaces'    => array('>= 1.2.3',    new VersionConstraint('>=', '1.2.3.0')),
+            'accepts spaces'    => array('>= 1.2.3',    new VersionConstraint('>=', '1.2.3.0-dev')),
             'accepts spaces/2'  => array('< 1.2.3',     new VersionConstraint('<', '1.2.3.0-dev')),
             'accepts spaces/3'  => array('> 1.2.3',     new VersionConstraint('>', '1.2.3.0')),
             'accepts master'    => array('>=dev-master',    new VersionConstraint('>=', '9999999-dev')),
@@ -259,6 +214,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'regression #935'   => array('dev-CAPS',        new VersionConstraint('=', 'dev-CAPS')),
             'ignores aliases'   => array('dev-master as 1.0.0', new VersionConstraint('=', '9999999-dev')),
             'lesser than override'       => array('<1.2.3.4-stable',    new VersionConstraint('<', '1.2.3.4')),
+            'great/eq than override'     => array('>=1.2.3.4-stable',   new VersionConstraint('>=', '1.2.3.4')),
         );
     }
 
@@ -349,6 +305,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('^1.2.3',        new VersionConstraint('>=', '1.2.3.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
             array('^0.2.3',        new VersionConstraint('>=', '0.2.3.0-dev'), new VersionConstraint('<', '0.3.0.0-dev')),
             array('^0.2',          new VersionConstraint('>=', '0.2.0.0-dev'), new VersionConstraint('<', '0.3.0.0-dev')),
+            array('^0.2.0',        new VersionConstraint('>=', '0.2.0.0-dev'), new VersionConstraint('<', '0.3.0.0-dev')),
             array('^0.0.3',        new VersionConstraint('>=', '0.0.3.0-dev'), new VersionConstraint('<', '0.0.4.0-dev')),
             array('^0.0.3-alpha',  new VersionConstraint('>=', '0.0.3.0-alpha'), new VersionConstraint('<', '0.0.4.0-dev')),
             array('^0.0.3-dev',    new VersionConstraint('>=', '0.0.3.0-dev'), new VersionConstraint('<', '0.0.4.0-dev')),
@@ -373,12 +330,16 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function hyphenConstraints()
     {
         return array(
-            array('1 - 2',                  new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<',  '3.0.0.0-dev')),
-            array('1.2.3 - 2.3.4.5',        new VersionConstraint('>=', '1.2.3.0-dev'),   new VersionConstraint('<=', '2.3.4.5')),
-            array('1.2-beta - 2.3',         new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<',  '2.4.0.0-dev')),
-            array('1.2-beta - 2.3-dev',     new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<=', '2.3.0.0-dev')),
-            array('1.2-RC - 2.3.1',         new VersionConstraint('>=', '1.2.0.0-RC'),    new VersionConstraint('<=', '2.3.1.0')),
-            array('1.2.3-alpha - 2.3-RC',   new VersionConstraint('>=', '1.2.3.0-alpha'), new VersionConstraint('<=', '2.3.0.0-RC')),
+            array('1 - 2',                new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<',  '3.0.0.0-dev')),
+            array('1.2.3 - 2.3.4.5',      new VersionConstraint('>=', '1.2.3.0-dev'),   new VersionConstraint('<=', '2.3.4.5')),
+            array('1.2-beta - 2.3',       new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<',  '2.4.0.0-dev')),
+            array('1.2-beta - 2.3-dev',   new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<=', '2.3.0.0-dev')),
+            array('1.2-RC - 2.3.1',       new VersionConstraint('>=', '1.2.0.0-RC'),    new VersionConstraint('<=', '2.3.1.0')),
+            array('1.2.3-alpha - 2.3-RC', new VersionConstraint('>=', '1.2.3.0-alpha'), new VersionConstraint('<=', '2.3.0.0-RC')),
+            array('1 - 2.0',              new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<', '2.1.0.0-dev')),
+            array('1 - 2.1',              new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<', '2.2.0.0-dev')),
+            array('1.2 - 2.1.0',          new VersionConstraint('>=', '1.2.0.0-dev'),   new VersionConstraint('<=', '2.1.0.0')),
+            array('1.3 - 2.1.3',          new VersionConstraint('>=', '1.3.0.0-dev'),   new VersionConstraint('<=', '2.1.3.0')),
         );
     }
 

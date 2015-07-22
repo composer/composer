@@ -33,14 +33,24 @@ class ConfigCommand extends Command
     protected $config;
 
     /**
-     * @var Composer\Json\JsonFile
+     * @var JsonFile
      */
     protected $configFile;
 
     /**
-     * @var Composer\Config\JsonConfigSource
+     * @var JsonConfigSource
      */
     protected $configSource;
+
+    /**
+     * @var JsonFile
+     */
+    protected $authConfigFile;
+
+    /**
+     * @var JsonConfigSource
+     */
+    protected $authConfigSource;
 
     /**
      * {@inheritDoc}
@@ -65,6 +75,15 @@ class ConfigCommand extends Command
 This command allows you to edit some basic composer settings in either the
 local composer.json file or the global config.json file.
 
+To set a config setting:
+
+    <comment>%command.full_name% bin-dir bin/</comment>
+
+To read a config setting:
+
+    <comment>%command.full_name% bin-dir</comment>
+    Outputs: <info>bin</info>
+
 To edit the global config.json file:
 
     <comment>%command.full_name% --global</comment>
@@ -73,7 +92,15 @@ To add a repository:
 
     <comment>%command.full_name% repositories.foo vcs http://bar.com</comment>
 
-You can add a repository to the global config.json file by passing in the
+To remove a repository (repo is a short alias for repositories):
+
+    <comment>%command.full_name% --unset repo.foo</comment>
+
+To disable packagist:
+
+    <comment>%command.full_name% repo.packagist false</comment>
+
+You can alter repositories in the global config.json file by passing in the
 <info>--global</info> option.
 
 To edit the file in an external editor:
@@ -113,6 +140,11 @@ EOT
         $configFile = $input->getOption('global')
             ? ($this->config->get('home') . '/config.json')
             : $input->getOption('file');
+
+        // create global composer.json if this was invoked using `composer global config`
+        if ($configFile === 'composer.json' && !file_exists($configFile) && realpath(getcwd()) === realpath($this->config->get('home'))) {
+            file_put_contents($configFile, "{\n}\n");
+        }
 
         $this->configFile = new JsonFile($configFile);
         $this->configSource = new JsonConfigSource($this->configFile);
@@ -230,54 +262,12 @@ EOT
                 $value = json_encode($value);
             }
 
-            $output->writeln($value);
+            $this->getIO()->write($value);
 
             return 0;
         }
 
         $values = $input->getArgument('setting-value'); // what the user is trying to add/change
-
-        // handle repositories
-        if (preg_match('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
-            if ($input->getOption('unset')) {
-                return $this->configSource->removeRepository($matches[1]);
-            }
-
-            if (2 !== count($values)) {
-                throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
-            }
-
-            return $this->configSource->addRepository($matches[1], array(
-                'type' => $values[0],
-                'url'  => $values[1],
-            ));
-        }
-
-        // handle github-oauth
-        if (preg_match('/^(github-oauth|http-basic)\.(.+)/', $settingKey, $matches)) {
-            if ($input->getOption('unset')) {
-                $this->authConfigSource->removeConfigSetting($matches[1].'.'.$matches[2]);
-                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
-
-                return;
-            }
-
-            if ($matches[1] === 'github-oauth') {
-                if (1 !== count($values)) {
-                    throw new \RuntimeException('Too many arguments, expected only one token');
-                }
-                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
-                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], $values[0]);
-            } elseif ($matches[1] === 'http-basic') {
-                if (2 !== count($values)) {
-                    throw new \RuntimeException('Expected two arguments (username, password), got '.count($values));
-                }
-                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
-                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'password' => $values[1]));
-            }
-
-            return;
-        }
 
         $booleanValidator = function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); };
         $booleanNormalizer = function ($val) { return $val !== 'false' && (bool) $val; };
@@ -406,6 +396,64 @@ EOT
             }
         }
 
+        // handle repositories
+        if (preg_match('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                return $this->configSource->removeRepository($matches[1]);
+            }
+
+            if (2 === count($values)) {
+                return $this->configSource->addRepository($matches[1], array(
+                    'type' => $values[0],
+                    'url'  => $values[1],
+                ));
+            }
+
+            if (1 === count($values)) {
+                $bool = strtolower($values[0]);
+                if (true === $booleanValidator($bool) && false === $booleanNormalizer($bool)) {
+                    return $this->configSource->addRepository($matches[1], false);
+                }
+            }
+
+            throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
+        }
+
+        // handle platform
+        if (preg_match('/^platform\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                return $this->configSource->removeConfigSetting($settingKey);
+            }
+
+            return $this->configSource->addConfigSetting($settingKey, $values[0]);
+        }
+
+        // handle github-oauth
+        if (preg_match('/^(github-oauth|http-basic)\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                $this->authConfigSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+
+                return;
+            }
+
+            if ($matches[1] === 'github-oauth') {
+                if (1 !== count($values)) {
+                    throw new \RuntimeException('Too many arguments, expected only one token');
+                }
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], $values[0]);
+            } elseif ($matches[1] === 'http-basic') {
+                if (2 !== count($values)) {
+                    throw new \RuntimeException('Expected two arguments (username, password), got '.count($values));
+                }
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'password' => $values[1]));
+            }
+
+            return;
+        }
+
         throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
     }
 
@@ -454,9 +502,9 @@ EOT
             }
 
             if (is_string($rawVal) && $rawVal != $value) {
-                $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>');
+                $this->getIO()->write('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>');
             } else {
-                $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
+                $this->getIO()->write('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
             }
         }
     }
