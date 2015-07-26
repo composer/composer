@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\LoaderInterface;
 
 /**
  * @author Serge Smertin <serg.smertin@gmail.com>
@@ -60,14 +61,14 @@ class ArtifactRepository extends ArrayRepository
             $package = $this->getComposerInformation($file);
             if (!$package) {
                 if ($io->isVerbose()) {
-                    $io->write("File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package");
+                    $io->writeError("File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package");
                 }
                 continue;
             }
 
             if ($io->isVerbose()) {
                 $template = 'Found package <info>%s</info> (<comment>%s</comment>) in file <info>%s</info>';
-                $io->write(sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename()));
+                $io->writeError(sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename()));
             }
 
             $this->addPackage($package);

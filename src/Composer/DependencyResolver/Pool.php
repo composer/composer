@@ -31,7 +31,7 @@ use Composer\Package\PackageInterface;
  * @author Nils Adermann <naderman@naderman.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class Pool
+class Pool implements \Countable
 {
     const MATCH_NAME = -1;
     const MATCH_NONE = 0;
@@ -55,7 +55,6 @@ class Pool
 
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
     {
-        $stabilities = BasePackage::$stabilities;
         $this->versionParser = new VersionParser;
         $this->acceptableStabilities = array();
         foreach (BasePackage::$stabilities as $stability => $value) {
@@ -65,6 +64,11 @@ class Pool
         }
         $this->stabilityFlags = $stabilityFlags;
         $this->filterRequires = $filterRequires;
+        foreach ($filterRequires as $name => $constraint) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
+                unset($this->filterRequires[$name]);
+            }
+        }
     }
 
     public function setWhitelist($whitelist)
@@ -154,6 +158,14 @@ class Pool
     public function packageById($id)
     {
         return $this->packages[$id - 1];
+    }
+
+    /**
+     * Returns how many packages have been loaded into the pool
+     */
+    public function count()
+    {
+        return count($this->packages);
     }
 
     /**

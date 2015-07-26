@@ -65,5 +65,5 @@ update c/uptodate
     "platform-dev": []
 }
 --EXPECT--
-Updating a/old (0.9.0) to a/old (1.0.0)
 Updating b/unstable (1.1.0-alpha) to b/unstable (1.0.0)
+Updating a/old (0.9.0) to a/old (1.0.0)

@@ -4,5 +4,5 @@
  * trait temlpateTrait_2
  */
 <?php
-    echo $code
+    echo $code;
 ?>

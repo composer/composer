@@ -75,8 +75,12 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($input->getOption('no-custom-installers')) {
-            $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $this->getIO()->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
+        }
+
+        if ($input->getOption('dev')) {
+            $this->getIO()->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
         }
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
@@ -110,7 +114,7 @@ EOT
             $preferDist = $input->getOption('prefer-dist');
         }
 
-        $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
+        $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader') || $config->get('classmap-authoritative');
 
         $install
             ->setDryRun($input->getOption('dry-run'))

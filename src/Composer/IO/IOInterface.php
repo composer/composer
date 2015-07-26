@@ -65,6 +65,14 @@ interface IOInterface
     public function write($messages, $newline = true);
 
     /**
+     * Writes a message to the error output.
+     *
+     * @param string|array $messages The message as an array of lines or a single string
+     * @param bool         $newline  Whether to add a newline or not
+     */
+    public function writeError($messages, $newline = true);
+
+    /**
      * Overwrites a previous message to the output.
      *
      * @param string|array $messages The message as an array of lines or a single string
@@ -72,6 +80,15 @@ interface IOInterface
      * @param integer      $size     The size of line
      */
     public function overwrite($messages, $newline = true, $size = null);
+
+    /**
+     * Overwrites a previous message to the error output.
+     *
+     * @param string|array $messages The message as an array of lines or a single string
+     * @param bool         $newline  Whether to add a newline or not
+     * @param integer      $size     The size of line
+     */
+    public function overwriteError($messages, $newline = true, $size = null);
 
     /**
      * Asks a question to the user.
@@ -106,14 +123,14 @@ interface IOInterface
      *
      * @param string|array $question  The question to ask
      * @param callback     $validator A PHP callback
-     * @param bool|integer $attempts  Max number of times to ask before giving up (false by default, which means infinite)
+     * @param null|integer $attempts  Max number of times to ask before giving up (default of null means infinite)
      * @param string       $default   The default answer if none is given by the user
      *
      * @return mixed
      *
      * @throws \Exception When any of the validators return an error
      */
-    public function askAndValidate($question, $validator, $attempts = false, $default = null);
+    public function askAndValidate($question, $validator, $attempts = null, $default = null);
 
     /**
      * Asks a question to the user and hide the answer.

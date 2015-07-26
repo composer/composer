@@ -39,10 +39,14 @@ class Config
         'discard-changes' => false,
         'autoloader-suffix' => null,
         'optimize-autoloader' => false,
+        'classmap-authoritative' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
         'github-expose-hostname' => true,
         'store-auths' => 'prompt',
+        'platform' => array(),
+        'archive-format' => 'tar',
+        'archive-dir' => '.',
         // valid keys without defaults (auth config stuff):
         // github-oauth
         // http-basic
@@ -124,7 +128,7 @@ class Config
                 }
 
                 // disable a repository with an anonymous {"name": false} repo
-                if (1 === count($repository) && false === current($repository)) {
+                if (is_array($repository) && 1 === count($repository) && false === current($repository)) {
                     unset($this->repositories[key($repository)]);
                     continue;
                 }

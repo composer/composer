@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\BasePackage;
 use Composer\Test\Mock\ProcessExecutorMock;
-use Composer\Repository\RepositoryManager;
 
 class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -118,6 +117,31 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("dev-foo", $package->getVersion());
     }
 
+    public function testNoVersionIsVisibleInPrettyVersion()
+    {
+        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $self = $this;
+
+        /* Can do away with this mock object when https://github.com/sebastianbergmann/phpunit-mock-objects/issues/81 is fixed */
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $processExecutor->expects($this->any())
+            ->method('execute')
+            ->willReturn(null);
+
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $loader = new RootPackageLoader($manager, $config, null, $processExecutor);
+        $package = $loader->load(array());
+
+        $this->assertEquals("1.0.0.0", $package->getVersion());
+        $this->assertEquals("No version set (parsed as 1.0.0)", $package->getPrettyVersion());
+    }
+
     protected function loadPackage($data)
     {
         $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
@@ -154,5 +178,83 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
             'qux/quux' => BasePackage::STABILITY_RC,
             'zux/complex' => BasePackage::STABILITY_DEV,
         ), $package->getStabilityFlags());
+    }
+
+    public function testFeatureBranchPrettyVersion()
+    {
+        if (!function_exists('proc_open')) {
+            $this->markTestSkipped('proc_open() is not available');
+        }
+
+        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $self = $this;
+
+        /* Can do away with this mock object when https://github.com/sebastianbergmann/phpunit-mock-objects/issues/81 is fixed */
+        $processExecutor = new ProcessExecutorMock(function ($command, &$output = null, $cwd = null) use ($self) {
+            if (0 === strpos($command, 'git rev-list')) {
+                $output = "";
+
+                return 0;
+            }
+
+            if ('git branch --no-color --no-abbrev -v' !== $command) {
+                return 1; //0;
+            }
+
+            $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+
+            $output = "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n";
+
+            return 0;
+        });
+
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $loader = new RootPackageLoader($manager, $config, null, $processExecutor);
+        $package = $loader->load(array('require' => array('foo/bar' => 'self.version')));
+
+        $this->assertEquals("dev-master", $package->getPrettyVersion());
+    }
+
+    public function testNonFeatureBranchPrettyVersion()
+    {
+        if (!function_exists('proc_open')) {
+            $this->markTestSkipped('proc_open() is not available');
+        }
+
+        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $self = $this;
+
+        /* Can do away with this mock object when https://github.com/sebastianbergmann/phpunit-mock-objects/issues/81 is fixed */
+        $processExecutor = new ProcessExecutorMock(function ($command, &$output = null, $cwd = null) use ($self) {
+            if (0 === strpos($command, 'git rev-list')) {
+                $output = "";
+
+                return 0;
+            }
+
+            if ('git branch --no-color --no-abbrev -v' !== $command) {
+                return 1; //0;
+            }
+
+            $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+
+            $output = "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n";
+
+            return 0;
+        });
+
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $loader = new RootPackageLoader($manager, $config, null, $processExecutor);
+        $package = $loader->load(array('require' => array('foo/bar' => 'self.version'), "non-feature-branches" => array("latest-.*")));
+
+        $this->assertEquals("dev-latest-production", $package->getPrettyVersion());
     }
 }

@@ -19,8 +19,11 @@ class RepositoryManagerTest extends TestCase
     /**
      * @dataProvider creationCases
      */
-    public function testRepoCreation($type, $config)
+    public function testRepoCreation($type, $config, $exception = null)
     {
+        if ($exception) {
+            $this->setExpectedException($exception);
+        }
         $rm = new RepositoryManager(
             $this->getMock('Composer\IO\IOInterface'),
             $this->getMock('Composer\Config'),
@@ -37,8 +40,7 @@ class RepositoryManagerTest extends TestCase
         $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
 
         $rm->createRepository('composer', array('url' => 'http://example.org'));
-        $rm->createRepository('composer', array('url' => 'http://example.org'));
-        $rm->createRepository('composer', array('url' => 'http://example.org'));
+        $rm->createRepository($type, $config);
     }
 
     public function creationCases()
@@ -51,7 +53,8 @@ class RepositoryManagerTest extends TestCase
             array('svn', array('url' => 'svn://example.org/foo/bar')),
             array('pear', array('url' => 'http://pear.example.org/foo')),
             array('artifact', array('url' => '/path/to/zips')),
-            array('package', array()),
+            array('package', array('package' => array())),
+            array('invalid', array(), 'InvalidArgumentException'),
         );
     }
 }

@@ -34,12 +34,11 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
                 'require',
                 'vendor/baz',
                 'qux',
-                '{
-    "require": {
-        "vendor/baz": "qux"
-    }
-}
-'
+                "{\n".
+"    \"require\": {\n".
+"        \"vendor/baz\": \"qux\"\n".
+"    }\n".
+"}\n"
             ),
             array(
                 '{
@@ -332,6 +331,34 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 '
             ),
+            array(
+                '{
+    "require": {
+        "foo": "baz",
+        "ext-10gd": "*",
+        "ext-2mcrypt": "*",
+        "lib-foo": "*",
+        "hhvm": "*",
+        "php": ">=5.5"
+    }
+}',
+                'require',
+                'igorw/retry',
+                '*',
+                true,
+                '{
+    "require": {
+        "php": ">=5.5",
+        "hhvm": "*",
+        "ext-2mcrypt": "*",
+        "ext-10gd": "*",
+        "lib-foo": "*",
+        "foo": "baz",
+        "igorw/retry": "*"
+    }
+}
+',
+            ),
         );
     }
 
@@ -576,23 +603,129 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
             ),
             'fails on deep arrays with borked texts' => array(
                 '{
-    "repositories": [{
-        "package": { "bar": "ba[z" }
-    }]
+    "repositories": [
+        {
+            "package": { "bar": "ba[z" }
+        }
+    ]
 }',
                 'bar',
                 false
             ),
             'fails on deep arrays with borked texts2' => array(
                 '{
-    "repositories": [{
-        "package": { "bar": "ba]z" }
-    }]
+    "repositories": [
+        {
+            "package": { "bar": "ba]z" }
+        }
+    ]
 }',
                 'bar',
                 false
             ),
         );
+    }
+
+    public function testRemoveSubNodeFromRequire()
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "package": {
+                "require": {
+                    "this/should-not-end-up-in-root-require": "~2.0"
+                },
+                "require-dev": {
+                    "this/should-not-end-up-in-root-require-dev": "~2.0"
+                }
+            }
+        }
+    ],
+    "require": {
+        "package/a": "*",
+        "package/b": "*",
+        "package/c": "*"
+    },
+    "require-dev": {
+        "package/d": "*"
+    }
+}');
+
+        $this->assertTrue($manipulator->removeSubNode('require', 'package/c'));
+        $this->assertTrue($manipulator->removeSubNode('require-dev', 'package/d'));
+        $this->assertEquals('{
+    "repositories": [
+        {
+            "package": {
+                "require": {
+                    "this/should-not-end-up-in-root-require": "~2.0"
+                },
+                "require-dev": {
+                    "this/should-not-end-up-in-root-require-dev": "~2.0"
+                }
+            }
+        }
+    ],
+    "require": {
+        "package/a": "*",
+        "package/b": "*"
+    },
+    "require-dev": {
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddSubNodeInRequire()
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "package": {
+                "require": {
+                    "this/should-not-end-up-in-root-require": "~2.0"
+                },
+                "require-dev": {
+                    "this/should-not-end-up-in-root-require-dev": "~2.0"
+                }
+            }
+        }
+    ],
+    "require": {
+        "package/a": "*",
+        "package/b": "*"
+    },
+    "require-dev": {
+        "package/d": "*"
+    }
+}');
+
+        $this->assertTrue($manipulator->addSubNode('require', 'package/c', '*'));
+        $this->assertTrue($manipulator->addSubNode('require-dev', 'package/e', '*'));
+        $this->assertEquals('{
+    "repositories": [
+        {
+            "package": {
+                "require": {
+                    "this/should-not-end-up-in-root-require": "~2.0"
+                },
+                "require-dev": {
+                    "this/should-not-end-up-in-root-require-dev": "~2.0"
+                }
+            }
+        }
+    ],
+    "require": {
+        "package/a": "*",
+        "package/b": "*",
+        "package/c": "*"
+    },
+    "require-dev": {
+        "package/d": "*",
+        "package/e": "*"
+    }
+}
+', $manipulator->getContents());
     }
 
     public function testAddRepositoryCanInitializeEmptyRepositories()
@@ -692,6 +825,22 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     "config": {
         "test": "a\\\\b",
         "test2": "a\nb\fa"
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddConfigSettingWorksFromScratch()
+    {
+        $manipulator = new JsonManipulator('{
+}');
+
+        $this->assertTrue($manipulator->addConfigSetting('foo.bar', 'baz'));
+        $this->assertEquals('{
+    "config": {
+        "foo": {
+            "bar": "baz"
+        }
     }
 }
 ', $manipulator->getContents());
@@ -989,6 +1138,28 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     "require-dev": {
         "foo": "qux"
     }
+}
+', $manipulator->getContents());
+    }
+
+    public function testIndentDetection()
+    {
+        $manipulator = new JsonManipulator('{
+
+  "require": {
+    "php": "5.*"
+  }
+}');
+
+        $this->assertTrue($manipulator->addMainKey('require-dev', array('foo' => 'qux')));
+        $this->assertEquals('{
+
+  "require": {
+    "php": "5.*"
+  },
+  "require-dev": {
+    "foo": "qux"
+  }
 }
 ', $manipulator->getContents());
     }

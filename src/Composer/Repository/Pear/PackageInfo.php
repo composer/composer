@@ -77,7 +77,7 @@ class PackageInfo
     }
 
     /**
-     * @return string the package licence
+     * @return string the package license
      */
     public function getLicense()
     {

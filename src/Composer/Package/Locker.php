@@ -19,7 +19,6 @@ use Composer\Util\ProcessExecutor;
 use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Version\VersionParser;
 use Composer\Util\Git as GitUtil;
 use Composer\IO\IOInterface;
 
@@ -133,11 +132,10 @@ class Locker
     public function getPlatformRequirements($withDevReqs = false)
     {
         $lockData = $this->getLockData();
-        $versionParser = new VersionParser();
         $requirements = array();
 
         if (!empty($lockData['platform'])) {
-            $requirements = $versionParser->parseLinks(
+            $requirements = $this->loader->parseLinks(
                 '__ROOT__',
                 '1.0.0',
                 'requires',
@@ -146,7 +144,7 @@ class Locker
         }
 
         if ($withDevReqs && !empty($lockData['platform-dev'])) {
-            $devRequirements = $versionParser->parseLinks(
+            $devRequirements = $this->loader->parseLinks(
                 '__ROOT__',
                 '1.0.0',
                 'requires',
@@ -191,6 +189,13 @@ class Locker
         return isset($lockData['prefer-lowest']) ? $lockData['prefer-lowest'] : null;
     }
 
+    public function getPlatformOverrides()
+    {
+        $lockData = $this->getLockData();
+
+        return isset($lockData['platform-overrides']) ? $lockData['platform-overrides'] : array();
+    }
+
     public function getAliases()
     {
         $lockData = $this->getLockData();
@@ -214,23 +219,24 @@ class Locker
     /**
      * Locks provided data into lockfile.
      *
-     * @param array  $packages         array of packages
-     * @param mixed  $devPackages      array of dev packages or null if installed without --dev
-     * @param array  $platformReqs     array of package name => constraint for required platform packages
-     * @param mixed  $platformDevReqs  array of package name => constraint for dev-required platform packages
-     * @param array  $aliases          array of aliases
+     * @param array  $packages          array of packages
+     * @param mixed  $devPackages       array of dev packages or null if installed without --dev
+     * @param array  $platformReqs      array of package name => constraint for required platform packages
+     * @param mixed  $platformDevReqs   array of package name => constraint for dev-required platform packages
+     * @param array  $aliases           array of aliases
      * @param string $minimumStability
      * @param array  $stabilityFlags
      * @param bool   $preferStable
      * @param bool   $preferLowest
+     * @param array  $platformOverrides
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides)
     {
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
-                               'Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
+                               'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
                                'This file is @gener'.'ated automatically'),
             'hash' => $this->hash,
             'packages' => null,
@@ -258,16 +264,19 @@ class Locker
             $lock['packages-dev'] = $this->lockPackages($devPackages);
         }
 
-        if (empty($lock['packages']) && empty($lock['packages-dev'])) {
+        $lock['platform'] = $platformReqs;
+        $lock['platform-dev'] = $platformDevReqs;
+        if ($platformOverrides) {
+            $lock['platform-overrides'] = $platformOverrides;
+        }
+
+        if (empty($lock['packages']) && empty($lock['packages-dev']) && empty($lock['platform']) && empty($lock['platform-dev'])) {
             if ($this->lockFile->exists()) {
                 unlink($this->lockFile->getPath());
             }
 
             return false;
         }
-
-        $lock['platform'] = $platformReqs;
-        $lock['platform-dev'] = $platformDevReqs;
 
         if (!$this->isLocked() || $lock !== $this->getLockData()) {
             $this->lockFile->write($lock);

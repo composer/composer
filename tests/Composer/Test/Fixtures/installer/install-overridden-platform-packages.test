@@ -1,0 +1,29 @@
+--TEST--
+Install overridden platform requirements works
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "require": { "ext-dummy2": "1.*" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "*",
+        "ext-dummy": "~1.0",
+        "php": "1.0"
+    },
+    "config": {
+        "platform": {
+            "php": "1.0.0",
+            "ext-dummy": "1.2.3",
+            "ext-dummy2": "1.2.3"
+        }
+    }
+}
+--RUN--
+install
+--EXPECT--
+Installing a/a (1.0.0)

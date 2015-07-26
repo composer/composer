@@ -123,7 +123,7 @@ abstract class BaseExcludeFilter
     protected function generatePattern($rule)
     {
         $negate = false;
-        $pattern = '#';
+        $pattern = '{';
 
         if (strlen($rule) && $rule[0] === '!') {
             $negate = true;
@@ -143,6 +143,6 @@ abstract class BaseExcludeFilter
         // remove delimiters as well as caret (^) and dollar sign ($) from the regex
         $pattern .= substr(Finder\Glob::toRegex($rule), 2, -2) . '(?=$|/)';
 
-        return array($pattern . '#', $negate, false);
+        return array($pattern . '}', $negate, false);
     }
 }

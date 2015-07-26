@@ -12,7 +12,6 @@
 
 namespace Composer\Test\Package\Loader;
 
-use Composer\Package;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
 
@@ -47,7 +46,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'description' => 'Foo bar',
                     'version' => '1.0.0',
                     'type' => 'library',
-                    'keywords' => array('a', 'b_c', 'D E'),
+                    'keywords' => array('a', 'b_c', 'D E', 'éîüø', '微信'),
                     'homepage' => 'https://foo.com',
                     'time' => '2010-10-10T10:10:10+00:00',
                     'license' => 'MIT',
@@ -118,7 +117,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'repositories' => array(
                         array(
                             'type' => 'composer',
-                            'url' => 'http://packagist.org/',
+                            'url' => 'https://packagist.org/',
                         )
                     ),
                     'config' => array(
@@ -140,6 +139,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         'branch-alias' => array(
                             'dev-master' => '2.0-dev',
                             'dev-old' => '1.0.x-dev',
+                            '3.x-dev' => '3.1.x-dev'
                         ),
                     ),
                     'bin' => array(
@@ -321,6 +321,34 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'require.bar/baz : unbound version constraints (>=1.0) should be avoided',
                     'require.bar/foo : unbound version constraints (dev-master) should be avoided',
                     'require.bar/hacked : unbound version constraints (@stable) should be avoided',
+                ),
+                false
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'extra' => array(
+                        'branch-alias' => array(
+                            '5.x-dev' => '3.1.x-dev'
+                        ),
+                    )
+                ),
+                array(
+                    'extra.branch-alias.5.x-dev : the target branch (3.1.x-dev) is not a valid numeric alias for this version'
+                ),
+                false
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'extra' => array(
+                        'branch-alias' => array(
+                            '5.x-dev' => '3.1-dev'
+                        ),
+                    )
+                ),
+                array(
+                    'extra.branch-alias.5.x-dev : the target branch (3.1-dev) is not a valid numeric alias for this version'
                 ),
                 false
             ),

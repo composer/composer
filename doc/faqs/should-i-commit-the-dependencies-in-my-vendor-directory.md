@@ -27,6 +27,6 @@ If you really feel like you must do this, you have a few options:
    in ZSH or `find vendor/ -type d -name ".git" -exec rm -rf {} \;` in Bash.
    but this means you will have to delete those dependencies from disk before
    running composer update.
-4. Add a .gitignore rule (`vendor/.git`) to ignore all the vendor `.git` folders.
+4. Add a .gitignore rule (`/vendor/**/.git`) to ignore all the vendor `.git` folders.
    This approach does not require that you delete dependencies from disk prior to
    running a composer update.
