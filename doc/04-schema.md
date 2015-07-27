@@ -828,12 +828,18 @@ Optional.
 
 Defines a parent JSON configuration filepath to a JSON file that this configuration extends.
 
-All properties from the parent JSON file are loaded and any property defined in the current
-file override (replace) those properties. This is done recursively so if the parent JSON file
-defines a parent that will be loaded (with any properties of it are also replaced) and so on.
+All settings from the parent JSON file are loaded, and any settings defined in the current
+file will be merged into those settings.
+
+If the setting is defined as a JSON object, new properties will be appended to the object,
+whereas existing properties will be overwritten. In other cases (arrays and strings), the
+child value will simply overwrite the parent value.
+
+This is done recursively so if the parent JSON file defines a parent, that will be loaded
+first, merging the settings from its child, and so on.
 
 Useful for creating environment specific configurations, e.g. `testing.json`, `production.json`
-etc. which may need to override properties like `repositories`.
+etc. which may need to extend settings like `repositories`.
 
 Optional.
 
