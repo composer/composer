@@ -83,9 +83,8 @@ EOT
         $latestVersion = trim($remoteFilesystem->getContents(self::HOMEPAGE, $baseUrl. '/version', false));
         $updateVersion = $input->getArgument('version') ?: $latestVersion;
 
-        if (preg_match('{^[0-9a-f]{40}$}', $updateVersion) && $updateVersion !== $latestVersion) {
+        if (!preg_match('{^[0-9a-f]{40}$}', $updateVersion)){
             $this->getIO()->writeError('<error>You can not update to a specific SHA-1 as those phars are not available for download</error>');
-
             return 1;
         }
 
