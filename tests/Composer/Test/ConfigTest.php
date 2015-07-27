@@ -189,7 +189,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("composer/composer", $config['name']);
     }
 
-    public function testInheritanceMergesArraysWithParentValues()
+    public function testInheritanceMergesAssociativeArraysWithParentValues()
     {
         $json = '{
         "require": {"foo": "bar"},
@@ -204,7 +204,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey("php", $config['require']);
     }
 
-    public function testInheritanceOverwritesParentValuesIfChildValueIsNotArray()
+    public function testInheritanceOverwritesParentValuesIfChildValueIsString()
     {
         $json = '{
         "require": "foobar",
@@ -217,7 +217,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("foobar", $config['require']);
     }
 
-    public function testInheritanceOverwritesParentValuesIfParentValueIsNotArray()
+    public function testInheritanceOverwritesParentValuesIfParentValueIsString()
     {
         $json = '{
         "name": {"foo": "bar"},
@@ -228,6 +228,23 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $config = Factory::readConfig($jsonFile);
 
         $this->assertEquals(array('foo' => 'bar'), $config['name']);
+    }
+
+    public function testInheritanceOverwritesParentValuesIfNumericallyIndexedArray()
+    {
+        $parentJson = '{
+            "repositories": ["repoA", "repoB"]
+}';
+
+        $json = '{
+        "repositories": ["newrepo"],
+        "extends": "data://text/plain;base64,'.base64_encode($parentJson).'"
+}';
+
+        $jsonFile = new JsonFile('data://text/plain;base64,'.base64_encode($json));
+        $config = Factory::readConfig($jsonFile);
+
+        $this->assertEquals(array('newrepo'), $config['repositories']);
     }
 
     public function testInheritanceSupportsMultiLevel()

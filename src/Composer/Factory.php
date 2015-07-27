@@ -318,12 +318,17 @@ class Factory
         $config = $file->read();
 
         if (!empty($mergeConfig)) {
+            // If the first-level key is an associative array (JSON object), use
+            // array_replace to merge into it. Otherwise, the value in $mergeConfig
+            // will overwrite the parent values.
             foreach ($mergeConfig as $key => $val) {
-                if (is_array($val) && array_key_exists($key, $config) && is_array($config[$key])) {
-                    // If dealing with arrays, attempt to array_replace into all first-level keys.
+                if (is_array($val)
+                    && array_key_exists($key, $config)
+                    && is_array($config[$key])
+                    && array_values($val) !== $val
+                    ) {
                     $config[$key] = array_replace($config[$key], $val);
                 } else {
-                    // Otherwise, the values in $mergeConfig will take precedence
                     $config[$key] = $val;
                 }
             }
