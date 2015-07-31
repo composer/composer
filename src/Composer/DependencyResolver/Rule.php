@@ -199,16 +199,17 @@ class Rule
                 } else {
                     $targetName = $this->reasonData->getTarget();
 
-                    // handle php extensions
                     if ($targetName === 'php' || $targetName === 'php-64bit' || $targetName === 'hhvm') {
+                        // handle php/hhvm
                         if (defined('HHVM_VERSION')) {
                             $text .= ' -> your HHVM version does not satisfy that requirement.';
                         } elseif ($targetName === 'hhvm') {
                             $text .= ' -> you are running this with PHP and not HHVM.';
                         } else {
-                            $text .= ' -> your PHP version ('.  phpversion().') does not satisfy that requirement.';
+                            $text .= ' -> your PHP version does not satisfy that requirement.';
                         }
                     } elseif (0 === strpos($targetName, 'ext-')) {
+                        // handle php extensions
                         $ext = substr($targetName, 4);
                         $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
 

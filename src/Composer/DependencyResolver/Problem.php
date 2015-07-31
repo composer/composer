@@ -87,8 +87,12 @@ class Problem
             }
 
             if ($job && $job['cmd'] === 'install' && empty($packages)) {
+
                 // handle php/hhvm
                 if ($job['packageName'] === 'php' || $job['packageName'] === 'php-64bit' || $job['packageName'] === 'hhvm') {
+                    $available = $this->pool->whatProvides($job['packageName']);
+                    $version = count($available) ? $available[0]->getPrettyVersion() : phpversion();
+
                     $msg = "\n    - This package requires ".$job['packageName'].$this->constraintToText($job['constraint']).' but ';
 
                     if (defined('HHVM_VERSION')) {
@@ -97,7 +101,7 @@ class Problem
                         return $msg . 'you are running this with PHP and not HHVM.';
                     }
 
-                    return $msg . 'your PHP version ('.  phpversion().') does not satisfy that requirement.';
+                    return $msg . 'your PHP version ('. $version .') does not satisfy that requirement.';
                 }
 
                 // handle php extensions
