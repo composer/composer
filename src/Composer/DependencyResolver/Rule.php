@@ -206,7 +206,7 @@ class Rule
                         } elseif ($targetName === 'hhvm') {
                             $text .= ' -> you are running this with PHP and not HHVM.';
                         } else {
-                            $text .= ' -> your PHP version does not satisfy that requirement.';
+                            $text .= ' -> your PHP version ('. phpversion() .') or "config.platform.php" value does not satisfy that requirement.';
                         }
                     } elseif (0 === strpos($targetName, 'ext-')) {
                         // handle php extensions
