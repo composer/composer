@@ -66,7 +66,7 @@ class ConfigCommand extends Command
                 new InputOption('auth', 'a', InputOption::VALUE_NONE, 'Affect auth config file (only used for --editor)'),
                 new InputOption('unset', null, InputOption::VALUE_NONE, 'Unset the given setting-key'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
-                new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json', 'composer.json'),
+                new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
                 new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
@@ -138,8 +138,12 @@ EOT
         // Get the local composer.json, global config.json, or if the user
         // passed in a file to use
         $configFile = $input->getOption('global')
-            ? ($this->config->get('home') . '/config.json')
-            : (trim(getenv('COMPOSER')) ? trim(getenv('COMPOSER')) : $input->getOption('file'));
+            ? ($this->config->get('home').'/config.json')
+            : (
+            $input->getOption('file')
+                ? $input->getOption('file')
+                : (trim(getenv('COMPOSER')) ? trim(getenv('COMPOSER')) : 'composer.json')
+            );
 
         // create global composer.json if this was invoked using `composer global config`
         if ($configFile === 'composer.json' && !file_exists($configFile) && realpath(getcwd()) === realpath($this->config->get('home'))) {
