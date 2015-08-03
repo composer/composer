@@ -26,6 +26,7 @@ use Composer\Package\LinkConstraint\VersionConstraint;
  */
 class ArrayRepository implements RepositoryInterface
 {
+    /** @var PackageInterface[] */
     protected $packages;
 
     public function __construct(array $packages = array())
