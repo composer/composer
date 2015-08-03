@@ -138,12 +138,8 @@ EOT
         // Get the local composer.json, global config.json, or if the user
         // passed in a file to use
         $configFile = $input->getOption('global')
-            ? ($this->config->get('home').'/config.json')
-            : (
-            $input->getOption('file')
-                ? $input->getOption('file')
-                : (trim(getenv('COMPOSER')) ? trim(getenv('COMPOSER')) : 'composer.json')
-            );
+            ? ($this->config->get('home') . '/config.json')
+            : ($input->getOption('file') ?: (trim(getenv('COMPOSER')) ? trim(getenv('COMPOSER')) : 'composer.json'));
 
         // create global composer.json if this was invoked using `composer global config`
         if ($configFile === 'composer.json' && !file_exists($configFile) && realpath(getcwd()) === realpath($this->config->get('home'))) {
