@@ -42,12 +42,11 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
     {
         $packages = $this->getPackages();
 
-        // get at most one package of each (name, version) combination, prefering non-aliased ones
+        // get at most one package of each name, preferring non-aliased ones
         $packagesByName = array();
         foreach ($packages as $package) {
-            $index = $package->getName() . $package->getVersion();
-            if (!isset($packagesByName[$index]) || $packagesByName[$index] instanceof AliasPackage) {
-                $packagesByName[$index] = $package;
+            if (!isset($packagesByName[$package->getName()]) || $packagesByName[$package->getName()] instanceof AliasPackage) {
+                $packagesByName[$package->getName()] = $package;
             }
         }
 
