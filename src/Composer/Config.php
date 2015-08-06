@@ -13,7 +13,6 @@
 namespace Composer;
 
 use Composer\Config\ConfigSourceInterface;
-use Composer\Plugin\PluginInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -46,6 +45,8 @@ class Config
         'github-expose-hostname' => true,
         'store-auths' => 'prompt',
         'platform' => array(),
+        'archive-format' => 'tar',
+        'archive-dir' => '.',
         // valid keys without defaults (auth config stuff):
         // github-oauth
         // http-basic

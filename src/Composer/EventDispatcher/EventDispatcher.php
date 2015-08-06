@@ -21,6 +21,7 @@ use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Script;
+use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
 use Composer\Util\ProcessExecutor;
 
@@ -170,8 +171,14 @@ class EventDispatcher
                     throw $e;
                 }
             } else {
-                $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor','escape'), $event->getArguments()));
-                if (0 !== ($exitCode = $this->process->execute($callable . ($args === '' ? '' : ' '.$args)))) {
+                $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
+                $exec = $callable . ($args === '' ? '' : ' '.$args);
+                if ($this->io->isVerbose()) {
+                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
+                } else {
+                    $this->io->writeError(sprintf('> %s', $exec));
+                }
+                if (0 !== ($exitCode = $this->process->execute($exec))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 
                     throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
@@ -194,6 +201,12 @@ class EventDispatcher
     protected function executeEventPhpScript($className, $methodName, Event $event)
     {
         $event = $this->checkListenerExpectedEvent(array($className, $methodName), $event);
+
+        if ($this->io->isVerbose()) {
+            $this->io->writeError(sprintf('> %s: %s::%s', $event->getName(), $className, $methodName));
+        } else {
+            $this->io->writeError(sprintf('> %s::%s', $className, $methodName));
+        }
 
         return $className::$methodName($event);
     }

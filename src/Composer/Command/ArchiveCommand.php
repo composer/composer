@@ -14,12 +14,11 @@ namespace Composer\Command;
 
 use Composer\Factory;
 use Composer\IO\IOInterface;
-use Composer\DependencyResolver\Pool;
+use Composer\Config;
 use Composer\Repository\CompositeRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Package\Version\VersionParser;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -41,8 +40,8 @@ class ArchiveCommand extends Command
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar or zip', 'tar'),
-                new InputOption('dir', false, InputOption::VALUE_REQUIRED, 'Write the archive to this directory', '.'),
+                new InputOption('format', 'f', InputOption::VALUE_OPTIONAL, 'Format of the resulting archive: tar or zip'),
+                new InputOption('dir', false, InputOption::VALUE_OPTIONAL, 'Write the archive to this directory'),
             ))
             ->setHelp(<<<EOT
 The <info>archive</info> command creates an archive of the specified format
@@ -58,6 +57,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $config = Factory::createConfig();
         $composer = $this->getComposer(false);
         if ($composer) {
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'archive', $input, $output);
@@ -65,8 +65,16 @@ EOT
             $composer->getEventDispatcher()->dispatchScript(ScriptEvents::PRE_ARCHIVE_CMD);
         }
 
+        if (null === $input->getOption('format')) {
+            $input->setOption('format', $config->get('archive-format'));
+        }
+        if (null === $input->getOption('dir')) {
+            $input->setOption('dir', $config->get('archive-dir'));
+        }
+
         $returnCode = $this->archive(
             $this->getIO(),
+            $config,
             $input->getArgument('package'),
             $input->getArgument('version'),
             $input->getOption('format'),
@@ -80,9 +88,8 @@ EOT
         return $returnCode;
     }
 
-    protected function archive(IOInterface $io, $packageName = null, $version = null, $format = 'tar', $dest = '.')
+    protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.')
     {
-        $config = Factory::createConfig();
         $factory = new Factory;
         $downloadManager = $factory->createDownloadManager($io, $config);
         $archiveManager = $factory->createArchiveManager($config, $downloadManager);
@@ -97,7 +104,7 @@ EOT
             $package = $this->getComposer()->getPackage();
         }
 
-        $io->writeError('<info>Creating the archive.</info>');
+        $io->writeError('<info>Creating the archive into "'.$dest.'".</info>');
         $archiveManager->archive($package, $format, $dest);
 
         return 0;
@@ -109,19 +116,14 @@ EOT
 
         if ($composer = $this->getComposer(false)) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-            $repos = new CompositeRepository(array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
+            $repo = new CompositeRepository(array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
             $defaultRepos = Factory::createDefaultRepositories($this->getIO());
             $io->writeError('No composer.json found in the current directory, searching packages from ' . implode(', ', array_keys($defaultRepos)));
-            $repos = new CompositeRepository($defaultRepos);
+            $repo = new CompositeRepository($defaultRepos);
         }
 
-        $pool = new Pool();
-        $pool->addRepository($repos);
-
-        $parser = new VersionParser();
-        $constraint = ($version) ? $parser->parseConstraints($version) : null;
-        $packages = $pool->whatProvides($packageName, $constraint, true);
+        $packages = $repo->findPackages($packageName, $version);
 
         if (count($packages) > 1) {
             $package = reset($packages);

@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver\Operation;
 
 use Composer\Package\AliasPackage;
+use Composer\Package\PackageInterface;
 
 /**
  * Solver install operation.

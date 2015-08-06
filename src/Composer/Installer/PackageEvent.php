@@ -18,7 +18,6 @@ use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
-use Composer\EventDispatcher\Event;
 use Composer\Repository\CompositeRepository;
 
 /**

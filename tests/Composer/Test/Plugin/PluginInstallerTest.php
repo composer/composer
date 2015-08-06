@@ -242,28 +242,28 @@ class PluginInstallerTest extends TestCase
         $this->repository
              ->expects($this->any())
              ->method('getPackages')
-             ->will($this->returnCallback(function() use($plugApiInternalPackage, $plugins) {
+             ->will($this->returnCallback(function () use ($plugApiInternalPackage, $plugins) {
                 return array_merge(array($plugApiInternalPackage), $plugins);
              }));
 
         $this->pm->loadInstalledPlugins();
     }
 
-    public function testOldPluginVersionStyleWorksWithAPIUntil199()
+    public function testExactPluginVersionStyleAreRegisteredCorrectly()
     {
-        $pluginsWithOldStyleAPIVersions = array(
+        $pluginsWithFixedAPIVersions = array(
             $this->packages[0],
             $this->packages[1],
             $this->packages[2],
         );
 
-        $this->setPluginApiVersionWithPlugins('1.0.0', $pluginsWithOldStyleAPIVersions);
+        $this->setPluginApiVersionWithPlugins('1.0.0', $pluginsWithFixedAPIVersions);
         $this->assertCount(3, $this->pm->getPlugins());
 
-        $this->setPluginApiVersionWithPlugins('1.9.9', $pluginsWithOldStyleAPIVersions);
-        $this->assertCount(3, $this->pm->getPlugins());
+        $this->setPluginApiVersionWithPlugins('1.0.1', $pluginsWithFixedAPIVersions);
+        $this->assertCount(0, $this->pm->getPlugins());
 
-        $this->setPluginApiVersionWithPlugins('2.0.0-dev', $pluginsWithOldStyleAPIVersions);
+        $this->setPluginApiVersionWithPlugins('2.0.0-dev', $pluginsWithFixedAPIVersions);
         $this->assertCount(0, $this->pm->getPlugins());
     }
 

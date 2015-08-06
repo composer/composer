@@ -6,7 +6,7 @@ Composer helps you declare, manage and install dependencies of PHP projects, ens
 See [https://getcomposer.org/](https://getcomposer.org/) for more information and documentation.
 
 [![Build Status](https://travis-ci.org/composer/composer.svg?branch=master)](https://travis-ci.org/composer/composer)
-[![Dependency Status](https://www.versioneye.com/php/composer:composer/dev-master/badge.svg)](https://www.versioneye.com/php/composer:composer/dev-master) 
+[![Dependency Status](https://www.versioneye.com/php/composer:composer/dev-master/badge.svg)](https://www.versioneye.com/php/composer:composer/dev-master)
 [![Reference Status](https://www.versioneye.com/php/composer:composer/reference_badge.svg?style=flat)](https://www.versioneye.com/php/composer:composer/references)
 
 Installation / Usage
@@ -56,7 +56,7 @@ For support, Stack Overflow also offers a good collection of
 [Composer related questions](https://stackoverflow.com/questions/tagged/composer-php).
 
 Please note that this project is released with a
-[Contributor Code of Conduct](http://contributor-covenant.org/version/1/0/0/).
+[Contributor Code of Conduct](http://contributor-covenant.org/version/1/1/0/).
 By participating in this project and its community you agree to abide by those terms.
 
 Requirements

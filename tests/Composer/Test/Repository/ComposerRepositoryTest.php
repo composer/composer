@@ -12,7 +12,6 @@
 
 namespace Composer\Test\Repository;
 
-use Composer\Repository\ComposerRepository;
 use Composer\IO\NullIO;
 use Composer\Test\Mock\FactoryMock;
 use Composer\TestCase;

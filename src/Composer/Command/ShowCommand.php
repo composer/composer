@@ -28,7 +28,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
-use Composer\Util\SpdxLicense;
+use Composer\Spdx\SpdxLicenses;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -181,7 +181,7 @@ EOT
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
                         $nameLength = max($nameLength, strlen($package->getPrettyName()));
-                        $versionLength = max($versionLength, strlen($this->versionParser->formatVersion($package)));
+                        $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
                     } else {
                         $nameLength = max($nameLength, $package);
                     }
@@ -196,6 +196,11 @@ EOT
                     $width--;
                 }
 
+                if ($input->getOption('path') && null === $composer) {
+                    $this->getIO()->writeError('No composer.json found in the current directory, disabling "path" option');
+                    $input->setOption('path', false);
+                }
+
                 $writePath = !$input->getOption('name-only') && $input->getOption('path');
                 $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
                 $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
@@ -204,7 +209,7 @@ EOT
                         $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
 
                         if ($writeVersion) {
-                            $output->write(' ' . str_pad($this->versionParser->formatVersion($package), $versionLength, ' '), false);
+                            $output->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
                         }
 
                         if ($writeDescription) {
@@ -385,12 +390,12 @@ EOT
      */
     protected function printLicenses(CompletePackageInterface $package)
     {
-        $spdxLicense = new SpdxLicense;
+        $spdxLicenses = new SpdxLicenses();
 
         $licenses = $package->getLicense();
 
         foreach ($licenses as $licenseId) {
-            $license = $spdxLicense->getLicenseByIdentifier($licenseId); // keys: 0 fullname, 1 osi, 2 url
+            $license = $spdxLicenses->getLicenseByIdentifier($licenseId); // keys: 0 fullname, 1 osi, 2 url
 
             if (!$license) {
                 $out = $licenseId;

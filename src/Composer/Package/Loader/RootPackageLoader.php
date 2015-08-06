@@ -50,6 +50,7 @@ class RootPackageLoader extends ArrayLoader
         if (!isset($config['name'])) {
             $config['name'] = '__root__';
         }
+        $autoVersioned = false;
         if (!isset($config['version'])) {
             // override with env var if available
             if (getenv('COMPOSER_ROOT_VERSION')) {
@@ -60,15 +61,19 @@ class RootPackageLoader extends ArrayLoader
 
             if (!$version) {
                 $version = '1.0.0';
+                $autoVersioned = true;
             }
 
             $config['version'] = $version;
         }
 
         $realPackage = $package = parent::load($config, $class);
-
         if ($realPackage instanceof AliasPackage) {
             $realPackage = $package->getAliasOf();
+        }
+
+        if ($autoVersioned) {
+            $realPackage->replaceVersion($realPackage->getVersion(), 'No version set (parsed as 1.0.0)');
         }
 
         if (isset($config['minimum-stability'])) {

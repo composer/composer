@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Factory;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Util\ConfigValidator;
 use Symfony\Component\Console\Input\InputArgument;
@@ -34,14 +35,15 @@ class ValidateCommand extends Command
     {
         $this
             ->setName('validate')
-            ->setDescription('Validates a composer.json')
+            ->setDescription('Validates a composer.json and composer.lock')
             ->setDefinition(array(
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not make a complete validation'),
+                new InputOption('no-check-lock', null, InputOption::VALUE_NONE, 'Do not check if lock file is up to date'),
                 new InputOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors'),
                 new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
             ))
             ->setHelp(<<<EOT
-The validate command validates a given composer.json
+The validate command validates a given composer.json and composer.lock
 
 EOT
             );
@@ -73,6 +75,15 @@ EOT
         $checkPublish = !$input->getOption('no-check-publish');
         list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
 
+        $checkLock = !$input->getOption('no-check-lock');
+
+        $lockErrors = array();
+        $composer = Factory::create($this->getIO(), $file);
+        $locker = $composer->getLocker();
+        if ($locker->isLocked() && !$locker->isFresh()) {
+            $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json.';
+        }
+
         // output errors/warnings
         if (!$errors && !$publishErrors && !$warnings) {
             $this->getIO()->write('<info>' . $file . ' is valid</info>');
@@ -92,11 +103,18 @@ EOT
             'warning' => $warnings,
         );
 
-        // If checking publish errors, display them errors, otherwise just show them as warnings
+        // If checking publish errors, display them as errors, otherwise just show them as warnings
         if ($checkPublish) {
             $messages['error'] = array_merge($messages['error'], $publishErrors);
         } else {
             $messages['warning'] = array_merge($messages['warning'], $publishErrors);
+        }
+
+        // If checking lock errors, display them as errors, otherwise just show them as warnings
+        if ($checkLock) {
+            $messages['error'] = array_merge($messages['error'], $lockErrors);
+        } else {
+            $messages['warning'] = array_merge($messages['warning'], $lockErrors);
         }
 
         foreach ($messages as $style => $msgs) {
@@ -105,6 +123,6 @@ EOT
             }
         }
 
-        return $errors || ($publishErrors && $checkPublish) ? 1 : 0;
+        return $errors || ($publishErrors && $checkPublish) || ($lockErrors && $checkLock) ? 1 : 0;
     }
 }

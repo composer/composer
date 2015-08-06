@@ -31,7 +31,7 @@ use Composer\Package\PackageInterface;
  * @author Nils Adermann <naderman@naderman.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class Pool
+class Pool implements \Countable
 {
     const MATCH_NAME = -1;
     const MATCH_NONE = 0;
@@ -158,6 +158,14 @@ class Pool
     public function packageById($id)
     {
         return $this->packages[$id - 1];
+    }
+
+    /**
+     * Returns how many packages have been loaded into the pool
+     */
+    public function count()
+    {
+        return count($this->packages);
     }
 
     /**

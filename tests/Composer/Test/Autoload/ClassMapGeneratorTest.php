@@ -27,6 +27,10 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 
     public function getTestCreateMapTests()
     {
+        if (PHP_VERSION_ID == 50303) {
+            $this->markTestSkipped('Test segfaults on travis 5.3.3 due to ClassMap\LongString');
+        }
+
         $data = array(
             array(__DIR__.'/Fixtures/Namespaced', array(
                 'Namespaced\\Bar' => realpath(__DIR__).'/Fixtures/Namespaced/Bar.inc',
@@ -53,6 +57,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
                 'ClassMap\\SomeInterface' => realpath(__DIR__).'/Fixtures/classmap/SomeInterface.php',
                 'ClassMap\\SomeParent'    => realpath(__DIR__).'/Fixtures/classmap/SomeParent.php',
                 'ClassMap\\SomeClass'     => realpath(__DIR__).'/Fixtures/classmap/SomeClass.php',
+                'ClassMap\\LongString'    => realpath(__DIR__).'/Fixtures/classmap/LongString.php',
                 'Foo\\LargeClass'         => realpath(__DIR__).'/Fixtures/classmap/LargeClass.php',
                 'Foo\\LargeGap'           => realpath(__DIR__).'/Fixtures/classmap/LargeGap.php',
                 'Foo\\MissingSpace'       => realpath(__DIR__).'/Fixtures/classmap/MissingSpace.php',

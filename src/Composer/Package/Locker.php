@@ -19,7 +19,6 @@ use Composer\Util\ProcessExecutor;
 use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Version\VersionParser;
 use Composer\Util\Git as GitUtil;
 use Composer\IO\IOInterface;
 
@@ -133,11 +132,10 @@ class Locker
     public function getPlatformRequirements($withDevReqs = false)
     {
         $lockData = $this->getLockData();
-        $versionParser = new VersionParser();
         $requirements = array();
 
         if (!empty($lockData['platform'])) {
-            $requirements = $versionParser->parseLinks(
+            $requirements = $this->loader->parseLinks(
                 '__ROOT__',
                 '1.0.0',
                 'requires',
@@ -146,7 +144,7 @@ class Locker
         }
 
         if ($withDevReqs && !empty($lockData['platform-dev'])) {
-            $devRequirements = $versionParser->parseLinks(
+            $devRequirements = $this->loader->parseLinks(
                 '__ROOT__',
                 '1.0.0',
                 'requires',

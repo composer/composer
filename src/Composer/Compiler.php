@@ -13,6 +13,7 @@
 namespace Composer;
 
 use Composer\Json\JsonFile;
+use Composer\Spdx\SpdxLicenses;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Seld\PharUtils\Timestamps;
@@ -95,7 +96,8 @@ class Compiler
         $finder = new Finder();
         $finder->files()
             ->name('*.json')
-            ->in(__DIR__ . '/../../res')
+            ->in(__DIR__.'/../../res')
+            ->in(SpdxLicenses::getResourcesDir())
             ->sort($finderSort)
         ;
 
@@ -116,6 +118,7 @@ class Compiler
             ->in(__DIR__.'/../../vendor/seld/jsonlint/')
             ->in(__DIR__.'/../../vendor/seld/cli-prompt/')
             ->in(__DIR__.'/../../vendor/justinrainbow/json-schema/')
+            ->in(__DIR__.'/../../vendor/composer/spdx-licenses/')
             ->sort($finderSort)
         ;
 

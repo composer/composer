@@ -13,7 +13,6 @@
 namespace Composer;
 
 use Composer\Package\Version\VersionParser;
-use Composer\Package\Package;
 use Composer\Package\AliasPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Util\Filesystem;

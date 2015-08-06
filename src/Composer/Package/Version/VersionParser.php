@@ -12,12 +12,12 @@
 
 namespace Composer\Package\Version;
 
-use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\Loader\ArrayLoader;
 
 /**
  * Version parser
@@ -27,6 +27,10 @@ use Composer\Package\LinkConstraint\VersionConstraint;
 class VersionParser
 {
     private static $modifierRegex = '[._-]?(?:(stable|beta|b|RC|alpha|a|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
+
+    private static $stabilities = array(
+        'stable', 'RC', 'beta', 'alpha', 'dev',
+    );
 
     /**
      * Returns the stability of a version
@@ -69,18 +73,15 @@ class VersionParser
         return $stability === 'rc' ? 'RC' : $stability;
     }
 
+    /**
+     * @deprecated Use PackageInterface::getFullPrettyVersion instead
+     */
     public static function formatVersion(PackageInterface $package, $truncate = true)
     {
-        if (!$package->isDev() || !in_array($package->getSourceType(), array('hg', 'git'))) {
-            return $package->getPrettyVersion();
-        }
+        trigger_error(__METHOD__.' is deprecated. Use '.
+            '\Composer\Package\PackageInterface::getFullPrettyVersion() instead', E_USER_DEPRECATED);
 
-        // if source reference is a sha1 hash -- truncate
-        if ($truncate && strlen($package->getSourceReference()) === 40) {
-            return $package->getPrettyVersion() . ' ' . substr($package->getSourceReference(), 0, 7);
-        }
-
-        return $package->getPrettyVersion() . ' ' . $package->getSourceReference();
+        return $package->getFullPrettyVersion($truncate);
     }
 
     /**
@@ -141,10 +142,10 @@ class VersionParser
                 if ('stable' === $matches[$index]) {
                     return $version;
                 }
-                $version .= '-' . $this->expandStability($matches[$index]) . (!empty($matches[$index+1]) ? $matches[$index+1] : '');
+                $version .= '-' . $this->expandStability($matches[$index]) . (!empty($matches[$index + 1]) ? $matches[$index + 1] : '');
             }
 
-            if (!empty($matches[$index+2])) {
+            if (!empty($matches[$index + 2])) {
                 $version .= '-dev';
             }
 
@@ -212,6 +213,7 @@ class VersionParser
     }
 
     /**
+     * @deprecated use ArrayLoader::parseLinks() instead
      * @param  string $source        source package name
      * @param  string $sourceVersion source package version (pretty version ideally)
      * @param  string $description   link description (e.g. requires, replaces, ..)
@@ -220,33 +222,11 @@ class VersionParser
      */
     public function parseLinks($source, $sourceVersion, $description, $links)
     {
-        $res = array();
-        foreach ($links as $target => $constraint) {
-            if ('self.version' === $constraint) {
-                $parsedConstraint = $this->parseConstraints($sourceVersion);
-            } else {
-                $parsedConstraint = $this->parseConstraints($constraint);
-            }
+        trigger_error(__METHOD__.' is deprecated. Use '.
+            '\Composer\Package\Loader\ArrayLoader::parseLinks() instead', E_USER_DEPRECATED);
+        $loader = new ArrayLoader($this, false);
 
-            // if the required Plugin API version is exactly "1.0.0", convert it to "^1.0", to keep BC
-            if ('composer-plugin-api' === strtolower($target) && $this->isOldStylePluginApiVersion($constraint)) {
-                $parsedConstraint = $this->parseConstraints('^1.0');
-            }
-
-            $res[strtolower($target)] = new Link($source, $target, $parsedConstraint, $description, $constraint);
-        }
-
-        return $res;
-    }
-
-    /**
-     * @param string $requiredPluginApiVersion
-     * @return bool
-     */
-    private function isOldStylePluginApiVersion($requiredPluginApiVersion)
-    {
-        // catch "1.0", "1.0.0", "1.0.0.0" etc.
-        return (bool) preg_match('#^1(\.0)++$#', trim($requiredPluginApiVersion));
+        return $loader->parseLinks($source, $sourceVersion, $description, $links);
     }
 
     /**
@@ -259,7 +239,7 @@ class VersionParser
     {
         $prettyConstraint = $constraints;
 
-        if (preg_match('{^([^,\s]*?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraints, $match)) {
+        if (preg_match('{^([^,\s]*?)@('.implode('|', self::$stabilities).')$}i', $constraints, $match)) {
             $constraints = empty($match[1]) ? '*' : $match[1];
         }
 
@@ -274,7 +254,9 @@ class VersionParser
             if (count($andConstraints) > 1) {
                 $constraintObjects = array();
                 foreach ($andConstraints as $constraint) {
-                    $constraintObjects = array_merge($constraintObjects, $this->parseConstraint($constraint));
+                    foreach ($this->parseConstraint($constraint) as $parsedConstraint) {
+                        $constraintObjects[] = $parsedConstraint;
+                    }
                 }
             } else {
                 $constraintObjects = $this->parseConstraint($andConstraints[0]);
@@ -302,7 +284,7 @@ class VersionParser
 
     private function parseConstraint($constraint)
     {
-        if (preg_match('{^([^,\s]+?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraint, $match)) {
+        if (preg_match('{^([^,\s]+?)@('.implode('|', self::$stabilities).')$}i', $constraint, $match)) {
             $constraint = $match[1];
             if ($match[2] !== 'stable') {
                 $stabilityModifier = $match[2];
@@ -458,9 +440,11 @@ class VersionParser
 
                 if (!empty($stabilityModifier) && $this->parseStability($version) === 'stable') {
                     $version .= '-' . $stabilityModifier;
-                } elseif ('<' === $matches[1]) {
+                } elseif ('<' === $matches[1] || '>=' === $matches[1]) {
                     if (!preg_match('/-' . self::$modifierRegex . '$/', strtolower($matches[2]))) {
-                        $version .= '-dev';
+                        if (substr($matches[2], 0, 4) !== 'dev-') {
+                            $version .= '-dev';
+                        }
                     }
                 }
 
@@ -543,8 +527,8 @@ class VersionParser
 
         for ($i = 0, $count = count($pairs); $i < $count; $i++) {
             $pair = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
-            if (false === strpos($pair, ' ') && isset($pairs[$i+1]) && false === strpos($pairs[$i+1], '/')) {
-                $pair .= ' '.$pairs[$i+1];
+            if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/')) {
+                $pair .= ' '.$pairs[$i + 1];
                 $i++;
             }
 
