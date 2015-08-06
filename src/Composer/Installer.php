@@ -519,6 +519,8 @@ class Installer
         // force dev packages to be updated if we update or install from a (potentially new) lock
         $operations = $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $installFromLock, $withDevReqs, 'force-updates', $operations);
 
+        $operations = $this->processForceUpdates($localRepo, $operations);
+
         // execute operations
         if (!$operations) {
             $this->io->writeError('Nothing to install or update');
@@ -773,6 +775,31 @@ class Installer
         }
 
         return $request;
+    }
+
+    private function processForceUpdates($localRepo, array $operations = null)
+    {
+        foreach ($localRepo->getCanonicalPackages() as $package) {
+
+            if (!$package->shouldReinstall()) {
+                continue;
+            }
+
+            // don't reinstall packages that are going to install, update or remove.
+            foreach ($operations as $op) {
+                if (
+                    ('install' === $op->getJobType() || 'update' === $op->getJobType() || 'uninstall' === $op->getJobType()) &&
+                    $op->getPackage()->equals($package)
+                ) {
+                    break 2;
+                }
+            }
+
+            $operations[] = new UninstallOperation($package, clone $package);
+            $operations[] = new InstallOperation($package, clone $package);
+        }
+
+        return $operations;
     }
 
     private function processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $installFromLock, $withDevReqs, $task, array $operations = null)

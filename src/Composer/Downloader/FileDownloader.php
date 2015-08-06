@@ -248,4 +248,17 @@ class FileDownloader implements DownloaderInterface
 
         return $package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'.'.$package->getDistType();
     }
+
+    /**
+     * Some downloaders supports setting symlink instead of downloading the resources.
+     *
+     * @param  bool $preferSymlink
+     * @return DownloaderInterface
+     */
+    public function setPreferSymlink($preferSymlink)
+    {
+        return $this;
+    }
+
+
 }

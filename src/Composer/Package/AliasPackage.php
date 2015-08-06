@@ -25,6 +25,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     protected $dev;
     protected $aliasOf;
     protected $rootPackageAlias = false;
+    protected $reinstall = false;
     protected $stability;
 
     protected $requires;
@@ -357,4 +358,15 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return parent::__toString().' (alias of '.$this->aliasOf->getVersion().')';
     }
+
+    public function shouldReinstall()
+    {
+        // TODO: Implement shouldReinstall() method.
+    }
+
+    public function ensurePackageReinstalls()
+    {
+        // TODO: Implement ensurePackageReinstalls() method.
+    }
+
 }

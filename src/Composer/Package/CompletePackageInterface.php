@@ -92,4 +92,11 @@ interface CompletePackageInterface extends PackageInterface
      * @return string
      */
     public function getReplacementPackage();
+
+    /**
+     * @return boolean
+     */
+    public function shouldReinstall();
+
+    public function ensurePackageReinstalls();
 }
