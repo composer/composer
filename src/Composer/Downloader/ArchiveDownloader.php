@@ -77,7 +77,11 @@ abstract class ArchiveDownloader extends FileDownloader
 
                 // retry downloading if we have an invalid zip file
                 if ($retries && $e instanceof \UnexpectedValueException && class_exists('ZipArchive') && $e->getCode() === \ZipArchive::ER_NOZIP) {
-                    $this->io->writeError('    Invalid zip file, retrying...');
+                    if ($this->io->isDebug()) {
+                        $this->io->writeError('    Invalid zip file ('.$e->getMessage().'), retrying...');
+                    } else {
+                        $this->io->writeError('    Invalid zip file, retrying...');
+                    }
                     usleep(500000);
                     continue;
                 }
