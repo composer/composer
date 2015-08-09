@@ -81,7 +81,7 @@ class GitDownloader extends VcsDownloader
         $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
         $commandCallable = function ($url) use ($command) {
-            return sprintf($command, ProcessExecutor::escape ($url));
+            return sprintf($command, ProcessExecutor::escape($url));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
@@ -149,7 +149,7 @@ class GitDownloader extends VcsDownloader
         }
 
         while (true) {
-            switch ($this->io->ask('    <info>Discard changes [y,n,v,'.($update ? 's,' : '').'?]?</info> ', '?')) {
+            switch ($this->io->ask('    <info>Discard changes [y,n,v,d,'.($update ? 's,' : '').'?]?</info> ', '?')) {
                 case 'y':
                     $this->discardChanges($path);
                     break 2;
@@ -169,6 +169,10 @@ class GitDownloader extends VcsDownloader
                     $this->io->writeError($changes);
                     break;
 
+                case 'd':
+                    $this->viewDiff($path);
+                    break;
+
                 case '?':
                 default:
                     help:
@@ -176,6 +180,7 @@ class GitDownloader extends VcsDownloader
                         '    y - discard changes and apply the '.($update ? 'update' : 'uninstall'),
                         '    n - abort the '.($update ? 'update' : 'uninstall').' and let you manually clean things up',
                         '    v - view modified files',
+                        '    d - view local modifications (diff)',
                     ));
                     if ($update) {
                         $this->io->writeError('    s - stash changes and try to reapply them after the update');
@@ -324,6 +329,20 @@ class GitDownloader extends VcsDownloader
         }
 
         $this->hasStashedChanges = true;
+    }
+
+    /**
+     * @param $path
+     * @throws \RuntimeException
+     */
+    protected function viewDiff($path)
+    {
+        $path = $this->normalizePath($path);
+        if (0 !== $this->process->execute('git diff HEAD', $output, $path)) {
+            throw new \RuntimeException("Could not view diff\n\n:".$this->process->getErrorOutput());
+        }
+
+        $this->io->writeError($output);
     }
 
     protected function normalizePath($path)
