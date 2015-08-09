@@ -139,7 +139,7 @@ EOT
         // passed in a file to use
         $configFile = $input->getOption('global')
             ? ($this->config->get('home') . '/config.json')
-            : ($input->getOption('file') ?: (trim(getenv('COMPOSER')) ? trim(getenv('COMPOSER')) : 'composer.json'));
+            : ($input->getOption('file') ?: trim(getenv('COMPOSER')) ?: 'composer.jsonw');
 
         // create global composer.json if this was invoked using `composer global config`
         if ($configFile === 'composer.json' && !file_exists($configFile) && realpath(getcwd()) === realpath($this->config->get('home'))) {
@@ -151,7 +151,7 @@ EOT
 
         $authConfigFile = $input->getOption('global')
             ? ($this->config->get('home') . '/auth.json')
-            : dirname(realpath($input->getOption('file'))) . '/auth.json';
+            : dirname(realpath($configFile)) . '/auth.json';
 
         $this->authConfigFile = new JsonFile($authConfigFile);
         $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);
