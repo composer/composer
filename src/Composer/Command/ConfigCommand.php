@@ -129,7 +129,7 @@ EOT
     {
         parent::initialize($input, $output);
 
-        if ($input->getOption('global') && 'composer.json' !== $input->getOption('file')) {
+        if ($input->getOption('global') && null !== $input->getOption('file')) {
             throw new \RuntimeException('--file and --global can not be combined');
         }
 
