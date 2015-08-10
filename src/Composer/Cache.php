@@ -86,6 +86,9 @@ class Cache
             try {
                 return file_put_contents($this->root . $file, $contents);
             } catch (\ErrorException $e) {
+                if ($this->io->isDebug()) {
+                    $this->io->writeError('<warning>Failed to write into cache: '.$e->getMessage().'</warning>');
+                }
                 if (preg_match('{^file_put_contents\(\): Only ([0-9]+) of ([0-9]+) bytes written}', $e->getMessage(), $m)) {
                     // Remove partial file.
                     unlink($this->root . $file);
