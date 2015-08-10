@@ -68,6 +68,10 @@ EOT
             if ($downloader instanceof ChangeReportInterface) {
                 $targetDir = $im->getInstallPath($package);
 
+                if (is_link($targetDir)) {
+                    $errors[$targetDir] = $targetDir . ' is a symbolic link.';
+                }
+
                 if ($changes = $downloader->getLocalChanges($package, $targetDir)) {
                     $errors[$targetDir] = $changes;
                 }
