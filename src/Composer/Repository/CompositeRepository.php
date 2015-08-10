@@ -109,7 +109,12 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Filter packages by callback
+     *
+     * @param callback $callback
+     * @param string   $class
+     *
+     * @return bool
      */
     public function filterPackages($callback, $class = 'Composer\Package\Package')
     {
