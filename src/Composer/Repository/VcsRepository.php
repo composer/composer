@@ -55,7 +55,7 @@ class VcsRepository extends ArrayRepository
         $this->url = $repoConfig['url'];
         $this->io = $io;
         $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
-        $this->verbose = $io->isVerbose();
+        $this->verbose = $io->isVeryVerbose();
         $this->config = $config;
         $this->repoConfig = $repoConfig;
     }
