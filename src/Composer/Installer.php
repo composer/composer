@@ -344,7 +344,9 @@ class Installer
 
             $vendorDir = $this->config->get('vendor-dir');
             if (is_dir($vendorDir)) {
-                touch($vendorDir);
+                // suppress errors as this fails sometimes on OSX for no apparent reason
+                // see https://github.com/composer/composer/issues/4070#issuecomment-129792748
+                @touch($vendorDir);
             }
         }
 
