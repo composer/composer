@@ -82,6 +82,10 @@ For any given event:
 and command-line executable commands.
 - PHP classes containing defined callbacks must be autoloadable via Composer's
 autoload functionality.
+- Callbacks can only autoload classes from psr-0, psr-4 and classmap
+definitions. If a defined callback relies on functions defined outside of a
+class, the callback itself is responsible for loading the file containing these
+functions.
 
 Script definition example:
 
@@ -96,7 +100,10 @@ Script definition example:
             "MyVendor\\MyClass::warmCache",
             "phpunit -c app/"
         ],
-        "post-create-project-cmd" : [
+        "post-autoload-dump": [
+            "MyVendor\\MyClass::postAutoloadDump"
+        ],
+        "post-create-project-cmd": [
             "php -r \"copy('config/local-example.php', 'config/local.php');\""
         ]
     }
@@ -120,6 +127,14 @@ class MyClass
     {
         $composer = $event->getComposer();
         // do stuff
+    }
+
+    public static function postAutoloadDump(Event $event)
+    {
+        $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
+        require $vendorDir . '/autoload.php';
+
+        some_function_from_an_autoloaded_file();
     }
 
     public static function postPackageInstall(PackageEvent $event)
