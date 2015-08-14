@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Rule;
@@ -43,6 +44,7 @@ use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
+use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\ScriptEvents;
 
 /**
@@ -353,6 +355,14 @@ class Installer
         return 0;
     }
 
+    /**
+     * @param RepositoryInterface $localRepo
+     * @param RepositoryInterface $installedRepo
+     * @param PlatformRepository $platformRepo
+     * @param array $aliases
+     * @param bool $withDevReqs
+     * @return int
+     */
     protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $withDevReqs)
     {
         // init vars
@@ -615,7 +625,7 @@ class Installer
 
         if (!$this->dryRun) {
             // force source/dist urls to be updated for all packages
-            $operations = $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
+            $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
             $localRepo->write();
         }
 
@@ -635,7 +645,7 @@ class Installer
      * @param  OperationInterface[] $operations
      * @return OperationInterface[] reordered operation list
      */
-    private function movePluginsToFront(array $operations)
+    protected function movePluginsToFront(array $operations)
     {
         $installerOps = array();
         foreach ($operations as $idx => $op) {
@@ -673,7 +683,7 @@ class Installer
      * @param  OperationInterface[] $operations
      * @return OperationInterface[] reordered operation list
      */
-    private function moveUninstallsToFront(array $operations)
+    protected function moveUninstallsToFront(array $operations)
     {
         $uninstOps = array();
         foreach ($operations as $idx => $op) {
@@ -686,7 +696,12 @@ class Installer
         return array_merge($uninstOps, $operations);
     }
 
-    private function createPool($withDevReqs, RepositoryInterface $lockedRepository = null)
+    /**
+     * @param bool $withDevReqs
+     * @param RepositoryInterface|null $lockedRepository
+     * @return Pool
+     */
+    protected function createPool($withDevReqs, RepositoryInterface $lockedRepository = null)
     {
         if (!$this->update && $this->locker->isLocked()) { // install from lock
             $minimumStability = $this->locker->getMinimumStability();
@@ -724,7 +739,10 @@ class Installer
         return new Pool($minimumStability, $stabilityFlags, $rootConstraints);
     }
 
-    private function createPolicy()
+    /**
+     * @return DefaultPolicy
+     */
+    protected function createPolicy()
     {
         $preferStable = null;
         $preferLowest = null;
@@ -744,7 +762,12 @@ class Installer
         return new DefaultPolicy($preferStable, $preferLowest);
     }
 
-    private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
+    /**
+     * @param RootPackageInterface $rootPackage
+     * @param PlatformRepository   $platformRepo
+     * @return Request
+     */
+    protected function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
     {
         $request = new Request();
 
@@ -777,7 +800,20 @@ class Installer
         return $request;
     }
 
-    private function processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $installFromLock, $withDevReqs, $task, array $operations = null)
+    /**
+     * @param WritableRepositoryInterface $localRepo
+     * @param Pool                        $pool
+     * @param PolicyInterface             $policy
+     * @param array                       $repositories
+     * @param RepositoryInterface         $installedRepo
+     * @param RepositoryInterface         $lockedRepository
+     * @param bool                        $installFromLock
+     * @param bool                        $withDevReqs
+     * @param string                      $task
+     * @param array|null                  $operations
+     * @return array
+     */
+    protected function processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $installFromLock, $withDevReqs, $task, array $operations = null)
     {
         if ($task === 'force-updates' && null === $operations) {
             throw new \InvalidArgumentException('Missing operations argument');
@@ -909,8 +945,11 @@ class Installer
 
     /**
      * Loads the most "current" list of packages that are installed meaning from lock ideally or from installed repo as fallback
+     * @param bool                $withDevReqs
+     * @param RepositoryInterface $installedRepo
+     * @return array
      */
-    private function getCurrentPackages($withDevReqs, $installedRepo)
+    protected function getCurrentPackages($withDevReqs, $installedRepo)
     {
         if ($this->locker->isLocked()) {
             try {
@@ -924,7 +963,10 @@ class Installer
         return $installedRepo->getPackages();
     }
 
-    private function getRootAliases()
+    /**
+     * @return array
+     */
+    protected function getRootAliases()
     {
         if (!$this->update && $this->locker->isLocked()) {
             $aliases = $this->locker->getAliases();
@@ -944,7 +986,13 @@ class Installer
         return $normalizedAliases;
     }
 
-    private function processPackageUrls($pool, $policy, $localRepo, $repositories)
+    /**
+     * @param Pool                        $pool
+     * @param PolicyInterface             $policy
+     * @param WritableRepositoryInterface $localRepo
+     * @param array                       $repositories
+     */
+    protected function processPackageUrls($pool, $policy, $localRepo, $repositories)
     {
         if (!$this->update) {
             return;
@@ -984,7 +1032,11 @@ class Installer
         }
     }
 
-    private function aliasPlatformPackages(PlatformRepository $platformRepo, $aliases)
+    /**
+     * @param PlatformRepository $platformRepo
+     * @param array              $aliases
+     */
+    protected function aliasPlatformPackages(PlatformRepository $platformRepo, $aliases)
     {
         foreach ($aliases as $package => $versions) {
             foreach ($versions as $version => $alias) {
@@ -998,7 +1050,11 @@ class Installer
         }
     }
 
-    private function isUpdateable(PackageInterface $package)
+    /**
+     * @param PackageInterface $package
+     * @return bool
+     */
+    protected function isUpdateable(PackageInterface $package)
     {
         if (!$this->updateWhitelist) {
             throw new \LogicException('isUpdateable should only be called when a whitelist is present');
@@ -1020,14 +1076,18 @@ class Installer
      * @param  string $whiteListedPattern
      * @return string
      */
-    private function packageNameToRegexp($whiteListedPattern)
+    protected function packageNameToRegexp($whiteListedPattern)
     {
         $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern));
 
         return "{^" . $cleanedWhiteListedPattern . "$}i";
     }
 
-    private function extractPlatformRequirements($links)
+    /**
+     * @param array $links
+     * @return array
+     */
+    protected function extractPlatformRequirements($links)
     {
         $platformReqs = array();
         foreach ($links as $link) {
@@ -1051,7 +1111,7 @@ class Installer
      * @param array               $rootRequires    An array of links to packages in require of the root package
      * @param array               $rootDevRequires An array of links to packages in require-dev of the root package
      */
-    private function whitelistUpdateDependencies($localRepo, $devMode, array $rootRequires, array $rootDevRequires)
+    protected function whitelistUpdateDependencies($localRepo, $devMode, array $rootRequires, array $rootDevRequires)
     {
         if (!$this->updateWhitelist) {
             return;
@@ -1140,7 +1200,7 @@ class Installer
      *
      * @param RepositoryManager $rm
      */
-    private function mockLocalRepositories(RepositoryManager $rm)
+    protected function mockLocalRepositories(RepositoryManager $rm)
     {
         $packages = array();
         foreach ($rm->getLocalRepository()->getPackages() as $package) {
@@ -1179,6 +1239,10 @@ class Installer
         );
     }
 
+    /**
+     * @param RepositoryInterface $additionalInstalledRepository
+     * @return $this
+     */
     public function setAdditionalInstalledRepository(RepositoryInterface $additionalInstalledRepository)
     {
         $this->additionalInstalledRepository = $additionalInstalledRepository;

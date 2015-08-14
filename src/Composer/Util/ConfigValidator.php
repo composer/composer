@@ -28,7 +28,7 @@ use Composer\Spdx\SpdxLicenses;
  */
 class ConfigValidator
 {
-    private $io;
+    protected $io;
 
     public function __construct(IOInterface $io)
     {
