@@ -43,11 +43,12 @@ class Cache
         $this->whitelist = $whitelist;
         $this->filesystem = $filesystem ?: new Filesystem();
 
-        if (!is_dir($this->root)) {
-            if (!@mkdir($this->root, 0777, true)) {
-                $this->io->writeError('<warning>Cannot create cache directory ' . $this->root . ', proceeding without cache</warning>');
-                $this->enabled = false;
-            }
+        if (
+            (!is_dir($this->root) && !@mkdir($this->root, 0777, true))
+            || !is_writable($this->root)
+        ) {
+            $this->io->writeError('<warning>Cannot create cache directory ' . $this->root . ', or directory is not writable. Proceeding without cache</warning>');
+            $this->enabled = false;
         }
     }
 
