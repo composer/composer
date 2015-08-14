@@ -45,6 +45,7 @@ class Cache
 
         if (!is_dir($this->root)) {
             if (!@mkdir($this->root, 0777, true)) {
+                $this->io->writeError('<warning>Cannot create cache directory ' . $this->root . ', proceeding without cache</warning>');
                 $this->enabled = false;
             }
         }
