@@ -261,14 +261,8 @@ EOF;
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
         file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative));
 
-        // use stream_copy_to_stream instead of copy
-        // to work around https://bugs.php.net/bug.php?id=64634
-        $sourceLoader = fopen(__DIR__.'/ClassLoader.php', 'r');
-        $targetLoader = fopen($targetDir.'/ClassLoader.php', 'w+');
-        stream_copy_to_stream($sourceLoader, $targetLoader);
-        fclose($sourceLoader);
-        fclose($targetLoader);
-        unset($sourceLoader, $targetLoader);
+        $this->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+        $this->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
 
         $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
             'optimize' => (bool) $scanPsr0Packages,
@@ -749,5 +743,21 @@ FOOTER;
         }
 
         return $sortedPackageMap;
+    }
+
+    /**
+     * Copy file using stream_copy_to_stream to work around https://bugs.php.net/bug.php?id=6463
+     *
+     * @param string $source
+     * @param string $target
+     */
+    protected function safeCopy($source, $target)
+    {
+        $source = fopen($source, 'r');
+        $target = fopen($target, 'w+');
+
+        stream_copy_to_stream($source, $target);
+        fclose($source);
+        fclose($target);
     }
 }
