@@ -641,13 +641,6 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_functions.php', $this->vendorDir.'/autoload.php');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_functions_with_removed_extra.php', $this->vendorDir.'/composer/autoload_real.php');
         $this->assertFileNotExists($this->vendorDir.'/composer/autoload_files.php');
-
-        include $this->vendorDir . '/autoload.php';
-        $this->assertFalse(function_exists('testFilesAutoloadGeneration1'));
-        $this->assertFalse(function_exists('testFilesAutoloadGeneration2'));
-        $this->assertFalse(function_exists('testFilesAutoloadGeneration3'));
-        $this->assertFalse(function_exists('testFilesAutoloadGeneration4'));
-        $this->assertFalse(function_exists('testFilesAutoloadGenerationRoot'));
     }
 
     public function testFilesAutoloadOrderByDependencies()
