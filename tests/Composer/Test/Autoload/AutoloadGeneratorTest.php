@@ -512,35 +512,35 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
         $packages[] = $b = new Package('b/b', '1.0', '1.0');
         $packages[] = $c = new Package('c/c', '1.0', '1.0');
-        $a->setAutoload(array('classmap' => array('')));
-        $b->setAutoload(array('classmap' => array('test.php')));
-        $c->setAutoload(array('classmap' => array('./')));
+        $a->setAutoload(array('psr-4' => array('' => 'src/')));
+        $b->setAutoload(array('psr-4' => array('' => './')));
+        $c->setAutoload(array('psr-4' => array('' => 'foo/')));
 
         $this->repository->expects($this->once())
             ->method('getCanonicalPackages')
             ->will($this->returnValue($packages));
 
-        $this->configValueMap['classmap-authoritative'] = true;
-
         $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/src');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/c/c/foo');
-        file_put_contents($this->vendorDir.'/a/a/src/a.php', '<?php class ClassMapFoo {}');
-        file_put_contents($this->vendorDir.'/b/b/test.php', '<?php class ClassMapBar {}');
-        file_put_contents($this->vendorDir.'/c/c/foo/test.php', '<?php class ClassMapBaz {}');
+        file_put_contents($this->vendorDir.'/a/a/src/ClassMapFoo.php', '<?php class ClassMapFoo {}');
+        file_put_contents($this->vendorDir.'/b/b/ClassMapBar.php', '<?php class ClassMapBar {}');
+        file_put_contents($this->vendorDir.'/c/c/foo/ClassMapBaz.php', '<?php class ClassMapBaz {}');
 
+        $this->generator->setClassMapAuthoritative(true);
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_7');
+
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
         $this->assertEquals(
             array(
-                'ClassMapBar' => $this->vendorDir.'/b/b/test.php',
-                'ClassMapBaz' => $this->vendorDir.'/c/c/foo/test.php',
-                'ClassMapFoo' => $this->vendorDir.'/a/a/src/a.php',
+                'ClassMapBar' => $this->vendorDir.'/b/b/ClassMapBar.php',
+                'ClassMapBaz' => $this->vendorDir.'/c/c/foo/ClassMapBaz.php',
+                'ClassMapFoo' => $this->vendorDir.'/a/a/src/ClassMapFoo.php',
             ),
             include $this->vendorDir.'/composer/autoload_classmap.php'
         );
-        $this->assertAutoloadFiles('classmap5', $this->vendorDir.'/composer', 'classmap');
+        $this->assertAutoloadFiles('classmap8', $this->vendorDir.'/composer', 'classmap');
 
         $this->assertContains('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
     }
