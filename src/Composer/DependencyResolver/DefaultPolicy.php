@@ -59,7 +59,7 @@ class DefaultPolicy implements PolicyInterface
 
     public function getPriority(Pool $pool, PackageInterface $package)
     {
-        return $pool->getPriority($package->getRepository());
+        return $pool->getPriority($package->getId());
     }
 
     /**

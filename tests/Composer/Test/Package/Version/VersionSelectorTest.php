@@ -18,7 +18,7 @@ use Composer\Package\Version\VersionParser;
 class VersionSelectorTest extends \PHPUnit_Framework_TestCase
 {
     // A) multiple versions, get the latest one
-    // B) targetPackageVersion will pass to pool
+    // B) targetPackageVersion will pass to repository set
     // C) No results, throw exception
 
     public function testLatestVersionIsReturned()
@@ -30,13 +30,13 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
         $package3 = $this->createMockPackage('1.2.0');
         $packages = array($package1, $package2, $package3);
 
-        $pool = $this->createMockPool();
-        $pool->expects($this->once())
-            ->method('whatProvides')
-            ->with($packageName, null, true)
+        $repoSet = $this->createMockRepositorySet();
+        $repoSet->expects($this->once())
+            ->method('findPackages')
+            ->with($packageName, null)
             ->will($this->returnValue($packages));
 
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repoSet);
         $best = $versionSelector->findBestCandidate($packageName);
 
         // 1.2.2 should be returned because it's the latest of the returned versions
@@ -45,12 +45,12 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
 
     public function testFalseReturnedOnNoPackages()
     {
-        $pool = $this->createMockPool();
-        $pool->expects($this->once())
-            ->method('whatProvides')
+        $repoSet = $this->createMockRepositorySet();
+        $repoSet->expects($this->once())
+            ->method('findPackages')
             ->will($this->returnValue(array()));
 
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repoSet);
         $best = $versionSelector->findBestCandidate('foobaz');
         $this->assertFalse($best, 'No versions are available returns false');
     }
@@ -60,8 +60,8 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
      */
     public function testFindRecommendedRequireVersion($prettyVersion, $isDev, $stability, $expectedVersion, $branchAlias = null)
     {
-        $pool = $this->createMockPool();
-        $versionSelector = new VersionSelector($pool);
+        $repoSet = $this->createMockRepositorySet();
+        $versionSelector = new VersionSelector($repoSet);
         $versionParser = new VersionParser();
 
         $package = $this->getMock('\Composer\Package\PackageInterface');
@@ -134,8 +134,8 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
         return $package;
     }
 
-    private function createMockPool()
+    private function createMockRepositorySet()
     {
-        return $this->getMock('Composer\DependencyResolver\Pool', array(), array(), '', true);
+        return $this->getMock('Composer\Repository\RepositorySet', array(), array(), '', true);
     }
 }

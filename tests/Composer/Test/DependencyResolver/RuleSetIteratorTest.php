@@ -23,8 +23,6 @@ class RuleSetIteratorTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->pool = new Pool;
-
         $this->rules = array(
             RuleSet::TYPE_JOB => array(
                 new Rule(array(), 'job1', null),

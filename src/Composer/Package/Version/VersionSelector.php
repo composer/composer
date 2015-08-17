@@ -12,10 +12,10 @@
 
 namespace Composer\Package\Version;
 
-use Composer\DependencyResolver\Pool;
 use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Repository\RepositorySet;
 
 /**
  * Selects the best possible version for a package
@@ -25,13 +25,12 @@ use Composer\Package\Dumper\ArrayDumper;
  */
 class VersionSelector
 {
-    private $pool;
-
+    private $repositorySet;
     private $parser;
 
-    public function __construct(Pool $pool)
+    public function __construct(RepositorySet $repositorySet)
     {
-        $this->pool = $pool;
+        $this->repositorySet = $repositorySet;
     }
 
     /**
@@ -45,7 +44,7 @@ class VersionSelector
     public function findBestCandidate($packageName, $targetPackageVersion = null)
     {
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
-        $candidates = $this->pool->whatProvides(strtolower($packageName), $constraint, true);
+        $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint);
 
         if (!$candidates) {
             return false;

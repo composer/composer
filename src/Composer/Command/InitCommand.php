@@ -12,13 +12,13 @@
 
 namespace Composer\Command;
 
-use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Factory;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputInterface;
@@ -39,8 +39,8 @@ class InitCommand extends Command
     /** @var array */
     private $gitConfig;
 
-    /** @var Pool */
-    private $pool;
+    /** @var RepositorySet */
+    private $repoSet;
 
     /**
      * {@inheritdoc}
@@ -555,14 +555,14 @@ EOT
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 
-    private function getPool(InputInterface $input)
+    private function getRepositorySet(InputInterface $input)
     {
-        if (!$this->pool) {
-            $this->pool = new Pool($this->getMinimumStability($input));
-            $this->pool->addRepository($this->getRepos());
+        if (!$this->repoSet) {
+            $this->repoSet = new RepositorySet($this->getMinimumStability($input));
+            $this->repoSet->addRepository($this->getRepos());
         }
 
-        return $this->pool;
+        return $this->repoSet;
     }
 
     private function getMinimumStability(InputInterface $input)
@@ -593,8 +593,8 @@ EOT
      */
     private function findBestVersionForPackage(InputInterface $input, $name)
     {
-        // find the latest version allowed in this pool
-        $versionSelector = new VersionSelector($this->getPool($input));
+        // find the latest version allowed in this repo set
+        $versionSelector = new VersionSelector($this->getRepositorySet($input));
         $package = $versionSelector->findBestCandidate($name);
 
         if (!$package) {

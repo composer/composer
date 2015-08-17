@@ -26,7 +26,6 @@ class RuleSetGenerator
     protected $rules;
     protected $jobs;
     protected $installedMap;
-    protected $whitelistedMap;
     protected $addedMap;
 
     public function __construct(PolicyInterface $policy, Pool $pool)
@@ -144,41 +143,6 @@ class RuleSetGenerator
         $this->rules->add($newRule, $type);
     }
 
-    protected function whitelistFromPackage(PackageInterface $package)
-    {
-        $workQueue = new \SplQueue;
-        $workQueue->enqueue($package);
-
-        while (!$workQueue->isEmpty()) {
-            $package = $workQueue->dequeue();
-            if (isset($this->whitelistedMap[$package->id])) {
-                continue;
-            }
-
-            $this->whitelistedMap[$package->id] = true;
-
-            foreach ($package->getRequires() as $link) {
-                $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint(), true);
-
-                foreach ($possibleRequires as $require) {
-                    $workQueue->enqueue($require);
-                }
-            }
-
-            $obsoleteProviders = $this->pool->whatProvides($package->getName(), null, true);
-
-            foreach ($obsoleteProviders as $provider) {
-                if ($provider === $package) {
-                    continue;
-                }
-
-                if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
-                    $workQueue->enqueue($provider);
-                }
-            }
-        }
-    }
-
     protected function addRulesForPackage(PackageInterface $package, $ignorePlatformReqs)
     {
         $workQueue = new \SplQueue;
@@ -263,20 +227,6 @@ class RuleSetGenerator
         return $impossible;
     }
 
-    protected function whitelistFromJobs()
-    {
-        foreach ($this->jobs as $job) {
-            switch ($job['cmd']) {
-                case 'install':
-                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint'], true);
-                    foreach ($packages as $package) {
-                        $this->whitelistFromPackage($package);
-                    }
-                    break;
-            }
-        }
-    }
-
     protected function addRulesForJobs($ignorePlatformReqs)
     {
         foreach ($this->jobs as $job) {
@@ -316,14 +266,6 @@ class RuleSetGenerator
         $this->jobs = $jobs;
         $this->rules = new RuleSet;
         $this->installedMap = $installedMap;
-
-        $this->whitelistedMap = array();
-        foreach ($this->installedMap as $package) {
-            $this->whitelistFromPackage($package);
-        }
-        $this->whitelistFromJobs();
-
-        $this->pool->setWhitelist($this->whitelistedMap);
 
         $this->addedMap = array();
         foreach ($this->installedMap as $package) {

@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -42,12 +43,16 @@ class Solver
     protected $learnedPool = array();
     protected $learnedWhy = array();
 
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
+    public function __construct(PolicyInterface $policy, RepositorySet $repositorySet, RepositoryInterface $installed)
     {
         $this->policy = $policy;
-        $this->pool = $pool;
+        $this->repositorySet = $repositorySet;
         $this->installed = $installed;
-        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
+    }
+
+    public function getPool()
+    {
+        return $this->pool;
     }
 
     public function getRuleSetSize()
@@ -169,11 +174,32 @@ class Solver
         }
     }
 
-    public function solve(Request $request, $ignorePlatformReqs = false)
+    public function load(Request $request)
     {
         $this->jobs = $request->getJobs();
 
+        $packageNames = array();
+        foreach ($this->jobs as $job) {
+            switch ($job['cmd']) {
+                case 'install':
+                    $packageNames[$job['packageName']] = true;
+                    break;
+            }
+        }
+        foreach ($this->installed->getPackages() as $package) {
+            $packageNames[$package->getName()] = true;
+        }
+
+        $this->pool = $this->repositorySet->getPool(array_keys($packageNames));
+
+        return count($this->pool);
+    }
+
+    public function solve($ignorePlatformReqs = false)
+    {
         $this->setupInstalledMap();
+
+        $this->ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
