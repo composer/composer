@@ -53,6 +53,10 @@ class AutoloadGenerator
 
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
+        if ($config->get('classmap-authoritative')) {
+            $scanPsr0Packages = true;
+        }
+
         $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode, array(), array(
             'optimize' => (bool) $scanPsr0Packages,
         ));
