@@ -185,6 +185,11 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--update-with-dependencies:** Also update dependencies of the newly
   required packages.
 * **--sort-packages:** Keep packages sorted in `composer.json`.
+* **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
+  get a faster autoloader. This is recommended especially for production, but
+  can take a bit of time to run so it is currently not done by default.
+* **--classmap-authoritative (-a):** Autoload classes from the classmap only.
+  Implicitly enables `--optimize-autoloader`.
 
 ## remove
 
@@ -208,6 +213,11 @@ uninstalled.
   terminals or scripts which don't handle backspace characters.
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies:** Also update dependencies of the removed packages.
+* **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
+  get a faster autoloader. This is recommended especially for production, but
+  can take a bit of time to run so it is currently not done by default.
+* **--classmap-authoritative (-a):** Autoload classes from the classmap only.
+  Implicitly enables `--optimize-autoloader`.
 
 ## global
 

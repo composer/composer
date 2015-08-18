@@ -48,6 +48,8 @@ class RequireCommand extends InitCommand
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
                 new InputOption('sort-packages', null, InputOption::VALUE_NONE, 'Sorts packages when adding/updating a new dependency'),
+                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
+                new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
             ))
             ->setHelp(<<<EOT
 The require command adds required packages to your composer.json and installs them.
@@ -132,6 +134,8 @@ EOT
             return 0;
         }
         $updateDevMode = !$input->getOption('update-no-dev');
+        $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
+        $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
 
         // Update packages
         $this->resetComposer();
@@ -149,6 +153,8 @@ EOT
             ->setPreferSource($input->getOption('prefer-source'))
             ->setPreferDist($input->getOption('prefer-dist'))
             ->setDevMode($updateDevMode)
+            ->setOptimizeAutoloader($optimize)
+            ->setClassMapAuthoritative($authoritative)
             ->setUpdate(true)
             ->setUpdateWhitelist(array_keys($requirements))
             ->setWhitelistDependencies($input->getOption('update-with-dependencies'))
