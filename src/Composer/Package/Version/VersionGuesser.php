@@ -22,13 +22,20 @@ class VersionGuesser
     private $versionParser;
 
     /**
+     * @var null|string
+     */
+    private $cwd;
+
+    /**
      * @param ProcessExecutor $process
      * @param VersionParser   $versionParser
+     * @param string          $cwd
      */
-    public function __construct(ProcessExecutor $process, VersionParser $versionParser)
+    public function __construct(ProcessExecutor $process, VersionParser $versionParser, $cwd = null)
     {
         $this->process = $process;
         $this->versionParser = $versionParser;
+        $this->cwd = $cwd ?: getcwd();
     }
 
     public function guessVersion(Config $config, array $packageConfig)
@@ -53,7 +60,7 @@ class VersionGuesser
         GitUtil::cleanEnv();
 
         // try to fetch current version from git tags
-        if (0 === $this->process->execute('git describe --exact-match --tags', $output)) {
+        if (0 === $this->process->execute('git describe --exact-match --tags', $output, $this->cwd)) {
             try {
                 return $this->versionParser->normalize(trim($output));
             } catch (\Exception $e) {
@@ -61,7 +68,7 @@ class VersionGuesser
         }
 
         // try to fetch current version from git branch
-        if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
+        if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->cwd)) {
             $branches = array();
             $isFeatureBranch = false;
             $version = null;
@@ -102,7 +109,7 @@ class VersionGuesser
     private function guessHgVersion(Config $config, array $packageConfig)
     {
         // try to fetch current version from hg branch
-        if (0 === $this->process->execute('hg branch', $output)) {
+        if (0 === $this->process->execute('hg branch', $output, $this->cwd)) {
             $branch = trim($output);
             $version = $this->versionParser->normalizeBranch($branch);
             $isFeatureBranch = 0 === strpos($version, 'dev-');
@@ -116,7 +123,7 @@ class VersionGuesser
             }
 
             // re-use the HgDriver to fetch branches (this properly includes bookmarks)
-            $packageConfig = array('url' => getcwd());
+            $packageConfig = array('url' => $this->cwd);
             $driver = new HgDriver($packageConfig, new NullIO(), $config, $this->process);
             $branches = array_keys($driver->getBranches());
 
@@ -154,7 +161,7 @@ class VersionGuesser
                 }
 
                 $cmdLine = str_replace(array('%candidate%', '%branch%'), array($candidate, $branch), $scmCmdline);
-                if (0 !== $this->process->execute($cmdLine, $output)) {
+                if (0 !== $this->process->execute($cmdLine, $output, $this->cwd)) {
                     continue;
                 }
 
@@ -176,7 +183,7 @@ class VersionGuesser
         SvnUtil::cleanEnv();
 
         // try to fetch current version from svn
-        if (0 === $this->process->execute('svn info --xml', $output)) {
+        if (0 === $this->process->execute('svn info --xml', $output, $this->cwd)) {
             $trunkPath = isset($config['trunk-path']) ? preg_quote($config['trunk-path'], '#') : 'trunk';
             $branchesPath = isset($config['branches-path']) ? preg_quote($config['branches-path'], '#') : 'branches';
             $tagsPath = isset($config['tags-path']) ? preg_quote($config['tags-path'], '#') : 'tags';

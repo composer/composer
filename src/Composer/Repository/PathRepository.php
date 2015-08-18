@@ -12,8 +12,13 @@
 
 namespace Composer\Repository;
 
+use Composer\Config;
+use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Version\VersionGuesser;
+use Composer\Package\Version\VersionParser;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -43,6 +48,11 @@ use Symfony\Component\Filesystem\Filesystem;
 class PathRepository extends ArrayRepository
 {
     /**
+     * @var Config
+     */
+    private $config;
+
+    /**
      * @var Filesystem
      */
     private $fileSystem;
@@ -53,6 +63,16 @@ class PathRepository extends ArrayRepository
     private $loader;
 
     /**
+     * @var VersionGuesser
+     */
+    private $versionGuesser;
+
+    /**
+     * @var array
+     */
+    private $packageConfig;
+
+    /**
      * @var string
      */
     private $path;
@@ -60,17 +80,22 @@ class PathRepository extends ArrayRepository
     /**
      * Initializes path repository.
      *
-     * @param array $config package definition
+     * @param array $packageConfig
+     * @param IOInterface $io
+     * @param Config $config
      */
-    public function __construct(array $config)
+    public function __construct(array $packageConfig, IOInterface $io, Config $config)
     {
-        if (!isset($config['url'])) {
+        if (!isset($packageConfig['url'])) {
             throw new \RuntimeException('You must specify the `url` configuration for the path repository');
         }
 
         $this->fileSystem = new Filesystem();
         $this->loader = new ArrayLoader();
-        $this->path = realpath(rtrim($config['url'], '/')) . '/';
+        $this->config = $config;
+        $this->packageConfig = $packageConfig;
+        $this->path = realpath(rtrim($packageConfig['url'], '/')) . '/';
+        $this->versionGuesser = new VersionGuesser(new ProcessExecutor($io), new VersionParser(), $this->path);
     }
 
     /**
@@ -91,12 +116,12 @@ class PathRepository extends ArrayRepository
         $json = file_get_contents($composerFilePath);
         $package = JsonFile::parseJson($json, $composerFilePath);
         $package['dist'] = array(
-            'type' => 'folder',
+            'type' => 'path',
             'url' => $this->path,
         );
 
         if (!isset($package['version'])) {
-            $package['version'] = 'dev-master';
+            $package['version'] = $this->versionGuesser->guessVersion($this->config, $this->packageConfig) ?: 'dev-master';
         }
 
         $package = $this->loader->load($package);
