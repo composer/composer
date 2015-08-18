@@ -16,6 +16,7 @@ use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
+use Composer\Package\Version\VersionGuesser;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\ProcessExecutor;
@@ -264,7 +265,8 @@ class Factory
 
         // load package
         $parser = new VersionParser;
-        $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
+        $guesser = new VersionGuesser(new ProcessExecutor($io), $parser);
+        $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser);
         $package = $loader->load($localConfig);
         $composer->setPackage($package);
 
