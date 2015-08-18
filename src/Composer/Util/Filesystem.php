@@ -508,7 +508,14 @@ class Filesystem
         return unlink($path);
     }
 
-    private function isSymlinkedDirectory($directory)
+    /**
+     * return true if that directory is a symlink.
+     *
+     * @param string $directory
+     *
+     * @return bool
+     */
+    public function isSymlinkedDirectory($directory)
     {
         if (!is_dir($directory)) {
             return false;
