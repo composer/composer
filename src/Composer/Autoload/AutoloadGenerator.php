@@ -258,7 +258,7 @@ EOF;
         $includeFilesFilePath = $targetDir.'/autoload_files.php';
         if ($includeFilesFile = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
             file_put_contents($includeFilesFilePath, $includeFilesFile);
-        } else if (file_exists($includeFilesFilePath) === true) {
+        } else if (file_exists($includeFilesFilePath)) {
             unlink($includeFilesFilePath);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
