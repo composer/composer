@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Package\Version;
 
 use Composer\Config;
@@ -9,6 +19,12 @@ use Composer\Util\Git as GitUtil;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
 
+/**
+ * Try to guess the current version number based on different VCS configuration.
+ *
+ * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Samuel Roze <samuel.roze@gmail.com>
+ */
 class VersionGuesser
 {
     /**
