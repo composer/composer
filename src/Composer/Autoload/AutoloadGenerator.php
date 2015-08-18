@@ -255,12 +255,12 @@ EOF;
         if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
             file_put_contents($targetDir.'/include_paths.php', $includePathFile);
         }
-	$includeFilesFilePath = $targetDir.'/autoload_files.php';
+        $includeFilesFilePath = $targetDir.'/autoload_files.php';
         if ($includeFilesFile = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
             file_put_contents($includeFilesFilePath, $includeFilesFile);
         } else if (file_exists($includeFilesFilePath) === true) {
-	    unlink($includeFilesFilePath);
-	}
+            unlink($includeFilesFilePath);
+        }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
         file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative));
 
