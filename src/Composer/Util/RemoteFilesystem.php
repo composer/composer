@@ -227,6 +227,8 @@ class RemoteFilesystem
                 if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
                     $decode = true;
                 } elseif (preg_match('{^HTTP/}i', $header)) {
+                    // In case of redirects, http_response_headers contains the headers of all responses
+                    // so we reset the flag when a new response is being parsed as we are only interested in the last response
                     $decode = false;
                 }
             }
