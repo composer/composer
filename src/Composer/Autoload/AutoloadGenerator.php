@@ -252,14 +252,20 @@ EOF;
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
         file_put_contents($targetDir.'/autoload_psr4.php', $psr4File);
         file_put_contents($targetDir.'/autoload_classmap.php', $classmapFile);
-        if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
-            file_put_contents($targetDir.'/include_paths.php', $includePathFile);
+        $includePathFilePath = $targetDir.'/include_paths.php';
+        if ($includePathFileContents = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
+            file_put_contents($includePathFilePath, $includePathFileContents);
+        } else if (file_exists($includePathFilePath)){
+            unlink($includePathFilePath);
         }
-        if ($includeFilesFile = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
-            file_put_contents($targetDir.'/autoload_files.php', $includeFilesFile);
+        $includeFilesFilePath = $targetDir.'/autoload_files.php';
+        if ($includeFilesFileContents = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
+            file_put_contents($includeFilesFilePath, $includeFilesFileContents);
+        } else if (file_exists($includeFilesFilePath)) {
+            unlink($includeFilesFilePath);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative));
+        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative));
 
         $this->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
         $this->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');

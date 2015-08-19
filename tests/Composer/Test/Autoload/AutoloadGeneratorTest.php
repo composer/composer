@@ -585,6 +585,71 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertTrue(function_exists('testFilesAutoloadGenerationRoot'));
     }
 
+    public function testFilesAutoloadGenerationRemoveExtraEntitiesFromAutoloadFiles()
+    {
+        $autoloadPackage = new Package('a', '1.0', '1.0');
+        $autoloadPackage->setAutoload(array('files' => array('root.php')));
+        $autoloadPackage->setIncludePaths(array('/lib', '/src'));
+
+        $notAutoloadPackage = new Package('a', '1.0', '1.0');
+
+        $autoloadPackages = array();
+        $autoloadPackages[] = $a = new Package('a/a', '1.0', '1.0');
+        $autoloadPackages[] = $b = new Package('b/b', '1.0', '1.0');
+        $autoloadPackages[] = $c = new Package('c/c', '1.0', '1.0');
+        $a->setAutoload(array('files' => array('test.php')));
+        $a->setIncludePaths(array('lib1', 'src1'));
+        $b->setAutoload(array('files' => array('test2.php')));
+        $b->setIncludePaths(array('lib2'));
+        $c->setAutoload(array('files' => array('test3.php', 'foo/bar/test4.php')));
+        $c->setIncludePaths(array('lib3'));
+        $c->setTargetDir('foo/bar');
+
+        $notAutoloadPackages = array();
+        $notAutoloadPackages[] = $a = new Package('a/a', '1.0', '1.0');
+        $notAutoloadPackages[] = $b = new Package('b/b', '1.0', '1.0');
+        $notAutoloadPackages[] = $c = new Package('c/c', '1.0', '1.0');
+
+        $this->repository->expects($this->at(0))
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($autoloadPackages));
+
+        $this->repository->expects($this->at(1))
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($notAutoloadPackages));
+
+        $this->repository->expects($this->at(2))
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($notAutoloadPackages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/c/c/foo/bar');
+        file_put_contents($this->vendorDir.'/a/a/test.php', '<?php function testFilesAutoloadGeneration1() {}');
+        file_put_contents($this->vendorDir.'/b/b/test2.php', '<?php function testFilesAutoloadGeneration2() {}');
+        file_put_contents($this->vendorDir.'/c/c/foo/bar/test3.php', '<?php function testFilesAutoloadGeneration3() {}');
+        file_put_contents($this->vendorDir.'/c/c/foo/bar/test4.php', '<?php function testFilesAutoloadGeneration4() {}');
+        file_put_contents($this->workingDir.'/root.php', '<?php function testFilesAutoloadGenerationRoot() {}');
+
+        $this->generator->dump($this->config, $this->repository, $autoloadPackage, $this->im, 'composer', false, 'FilesAutoload');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_functions.php', $this->vendorDir.'/autoload.php');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_functions_with_include_paths.php', $this->vendorDir.'/composer/autoload_real.php');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_files_functions.php', $this->vendorDir.'/composer/autoload_files.php');
+        $this->assertFileEquals(__DIR__.'/Fixtures/include_paths_functions.php', $this->vendorDir.'/composer/include_paths.php');
+
+        $this->generator->dump($this->config, $this->repository, $autoloadPackage, $this->im, 'composer', false, 'FilesAutoload');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_functions.php', $this->vendorDir.'/autoload.php');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_functions_with_include_paths.php', $this->vendorDir.'/composer/autoload_real.php');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_files_functions_with_removed_extra.php', $this->vendorDir.'/composer/autoload_files.php');
+        $this->assertFileEquals(__DIR__.'/Fixtures/include_paths_functions_with_removed_extra.php', $this->vendorDir.'/composer/include_paths.php');
+
+        $this->generator->dump($this->config, $this->repository, $notAutoloadPackage, $this->im, 'composer', false, 'FilesAutoload');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_functions.php', $this->vendorDir.'/autoload.php');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_functions_with_removed_include_paths_and_autolad_files.php', $this->vendorDir.'/composer/autoload_real.php');
+        $this->assertFileNotExists($this->vendorDir.'/composer/autoload_files.php');
+        $this->assertFileNotExists($this->vendorDir.'/composer/include_paths.php');
+    }
+
     public function testFilesAutoloadOrderByDependencies()
     {
         $package = new Package('a', '1.0', '1.0');
