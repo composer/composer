@@ -225,7 +225,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
 
         $locker = new Locker(new NullIO, $json, $repo, $inst, $this->getJsonContent());
 
-        $differentHash = md5($this->getJsonContent(['name' => 'test2']));
+        $differentHash = md5($this->getJsonContent(array('name' => 'test2')));
 
         $json
             ->expects($this->once())
