@@ -89,7 +89,7 @@ class Locker
 
         if (!empty($lock['content-hash'])) {
             // There is a content hash key, use that instead of the file hash
-            return $this->contentHash == $lock['content-hash'];
+            return $this->contentHash === $lock['content-hash'];
         }
 
         return $this->hash === $lock['hash'];
