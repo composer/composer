@@ -45,19 +45,18 @@ class Locker
      * Initializes packages locker.
      *
      * @param IOInterface         $io
-     * @param JsonFile            $lockFile            lockfile loader
-     * @param RepositoryManager   $repositoryManager   repository manager instance
-     * @param InstallationManager $installationManager installation manager instance
-     * @param string              $hash                unique hash of the current composer configuration
-     * @param string              $contentHash         unique hash of the content of the current composer configuration
+     * @param JsonFile            $lockFile             lockfile loader
+     * @param RepositoryManager   $repositoryManager    repository manager instance
+     * @param InstallationManager $installationManager  installation manager instance
+     * @param string              $composerFileContents The contents of the composer file
      */
-    public function __construct(IOInterface $io, JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $hash, $contentHash)
+    public function __construct(IOInterface $io, JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $composerFileContents)
     {
         $this->lockFile = $lockFile;
         $this->repositoryManager = $repositoryManager;
         $this->installationManager = $installationManager;
-        $this->hash = $hash;
-        $this->contentHash = $contentHash;
+        $this->hash = md5($composerFileContents);
+        $this->contentHash = $this->getContentHash($composerFileContents);
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
         $this->process = new ProcessExecutor($io);
@@ -386,5 +385,40 @@ class Locker
         }
 
         return $datetime ? $datetime->format('Y-m-d H:i:s') : null;
+    }
+
+    /**
+     * Returns the md5 hash of the sorted content of the composer file.
+     *
+     * @param string $composerFileContents The contents of the composer file.
+     *
+     * @return string
+     */
+    private function getContentHash($composerFileContents)
+    {
+        $content = json_decode($composerFileContents, true);
+
+        $relevantKeys = array(
+            'require',
+            'require-dev',
+            'conflict',
+            'replace',
+            'provide',
+            'minimum-stability',
+            'prefer-stable',
+            'repositories',
+            'extra',
+            'version',
+            'name',
+        );
+
+        $relevantContent = array();
+
+        foreach (array_intersect($relevantKeys, array_keys($content)) as $key) {
+            $relevantContent[$key] = $content[$key];
+        }
+
+        ksort($relevantContent);
+        return md5(json_encode($relevantContent));
     }
 }

@@ -191,8 +191,8 @@ class InstallerTest extends TestCase
                 }));
         }
 
-        $hash   = md5(json_encode($composerConfig));
-        $locker = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), $hash, $hash);
+        $contents = json_encode($composerConfig);
+        $locker   = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), $contents);
         $composer->setLocker($locker);
 
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
