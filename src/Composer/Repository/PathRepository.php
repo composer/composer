@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\LoaderInterface;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
@@ -83,19 +84,22 @@ class PathRepository extends ArrayRepository
      * @param array $packageConfig
      * @param IOInterface $io
      * @param Config $config
+     * @param LoaderInterface $loader
+     * @param Filesystem $filesystem
+     * @param VersionGuesser $versionGuesser
      */
-    public function __construct(array $packageConfig, IOInterface $io, Config $config)
+    public function __construct(array $packageConfig, IOInterface $io, Config $config, LoaderInterface $loader = null, Filesystem $filesystem = null, VersionGuesser $versionGuesser = null)
     {
         if (!isset($packageConfig['url'])) {
             throw new \RuntimeException('You must specify the `url` configuration for the path repository');
         }
 
-        $this->fileSystem = new Filesystem();
-        $this->loader = new ArrayLoader();
+        $this->fileSystem = $filesystem ?: new Filesystem();
+        $this->loader = $loader ?: new ArrayLoader();
         $this->config = $config;
         $this->packageConfig = $packageConfig;
         $this->path = realpath(rtrim($packageConfig['url'], '/')) . '/';
-        $this->versionGuesser = new VersionGuesser(new ProcessExecutor($io), new VersionParser(), $this->path);
+        $this->versionGuesser = $versionGuesser ?: new VersionGuesser(new ProcessExecutor($io), new VersionParser(), $this->path);
     }
 
     /**
