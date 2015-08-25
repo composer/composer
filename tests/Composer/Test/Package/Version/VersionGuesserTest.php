@@ -13,24 +13,21 @@
 namespace Composer\Test\Package\Version;
 
 use Composer\Config;
-use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 
 class VersionGuesserTest extends \PHPUnit_Framework_TestCase
 {
-    public function testDetachedHeadBecomesDevHash()
+    public function setUp()
     {
         if (!function_exists('proc_open')) {
             $this->markTestSkipped('proc_open() is not available');
         }
+    }
 
+    public function testDetachedHeadBecomesDevHash()
+    {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
-
-        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
 
         $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
             ->setMethods(array('execute'))
@@ -69,15 +66,6 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
 
     public function testTagBecomesVersion()
     {
-        if (!function_exists('proc_open')) {
-            $this->markTestSkipped('proc_open() is not available');
-        }
-
-        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-
         $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
             ->setMethods(array('execute'))
             ->disableArgumentCloning()
@@ -108,15 +96,6 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
 
     public function testInvalidTagBecomesVersion()
     {
-        if (!function_exists('proc_open')) {
-            $this->markTestSkipped('proc_open() is not available');
-        }
-
-        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-
         $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
             ->setMethods(array('execute'))
             ->disableArgumentCloning()
