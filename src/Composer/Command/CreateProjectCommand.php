@@ -108,7 +108,8 @@ EOT
             $input->setOption('no-plugins', true);
         }
 
-        if ('laravel/lumen' === $input->getArgument('package')) {
+        $banned = array('laravel/lumen', 'laravel/laravel');
+        if (in_array($input->getArgument('package'), $banned)) {
             throw new \InvalidArgumentException('Please see http://symfony.com/ for an alternative');
         }
 
