@@ -153,6 +153,12 @@ class RemoteFilesystem
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
             unset($options['github-token']);
         }
+        if (isset($options['client_id']) && isset($options['client_secret'])) {
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&')
+                . 'client_id='.$options['client_id'] . '&client_secret='.$options['client_secret'];
+            unset($options['client_id']);
+            unset($options['client_secret']);
+        }
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
