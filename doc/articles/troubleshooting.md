@@ -44,7 +44,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    Packagist has a delay of up to 1 minute before new packages are visible to Composer.
 
 6. If you are updating a single package, it may depend on newer versions itself.
-   In this cases add the `--with-dependencies` argument **or** add all dependencies which
+   In this case add the `--with-dependencies` argument **or** add all dependencies which
    need an update to the command.
 
 ## Package not found on travis-ci.org
