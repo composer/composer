@@ -397,6 +397,8 @@ class Locker
         $content = json_decode($composerFileContents, true);
 
         $relevantKeys = array(
+            'name',
+            'version',
             'require',
             'require-dev',
             'conflict',
@@ -406,14 +408,15 @@ class Locker
             'prefer-stable',
             'repositories',
             'extra',
-            'version',
-            'name',
         );
 
         $relevantContent = array();
 
         foreach (array_intersect($relevantKeys, array_keys($content)) as $key) {
             $relevantContent[$key] = $content[$key];
+        }
+        if (isset($content['config']['platform'])) {
+            $relevantContent['config']['platform'] = $content['config']['platform'];
         }
 
         ksort($relevantContent);

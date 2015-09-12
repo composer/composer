@@ -5,6 +5,7 @@
         "This file is @generated automatically"
     ],
     "hash": "3024e89a7e808b8dece156112459a7ea",
+    "content-hash": "01608741fe66bb9528d7c77c0a422965",
     "packages": [
         {
             "name": "composer/spdx-licenses",
