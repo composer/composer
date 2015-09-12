@@ -20,7 +20,6 @@ use Composer\Package\Loader\LoaderInterface;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
-use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * This repository allows installing local packages that are not necessarily under their own VCS.
@@ -49,16 +48,6 @@ use Symfony\Component\Filesystem\Filesystem;
 class PathRepository extends ArrayRepository
 {
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var Filesystem
-     */
-    private $fileSystem;
-
-    /**
      * @var ArrayLoader
      */
     private $loader;
@@ -69,51 +58,47 @@ class PathRepository extends ArrayRepository
     private $versionGuesser;
 
     /**
-     * @var array
-     */
-    private $packageConfig;
-
-    /**
      * @var string
      */
     private $path;
 
     /**
+     * @var ProcessExecutor
+     */
+    private $process;
+
+    /**
      * Initializes path repository.
      *
-     * @param array $packageConfig
+     * @param array $repoConfig
      * @param IOInterface $io
      * @param Config $config
-     * @param LoaderInterface $loader
-     * @param Filesystem $filesystem
-     * @param VersionGuesser $versionGuesser
      */
-    public function __construct(array $packageConfig, IOInterface $io, Config $config, LoaderInterface $loader = null, Filesystem $filesystem = null, VersionGuesser $versionGuesser = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
-        if (!isset($packageConfig['url'])) {
+        if (!isset($repoConfig['url'])) {
             throw new \RuntimeException('You must specify the `url` configuration for the path repository');
         }
 
-        $this->fileSystem = $filesystem ?: new Filesystem();
-        $this->loader = $loader ?: new ArrayLoader();
-        $this->config = $config;
-        $this->packageConfig = $packageConfig;
-        $this->path = realpath(rtrim($packageConfig['url'], '/')) . '/';
-        $this->versionGuesser = $versionGuesser ?: new VersionGuesser(new ProcessExecutor($io), new VersionParser(), $this->path);
+        $this->loader = new ArrayLoader();
+        $this->path = realpath(rtrim($repoConfig['url'], '/')) . '/';
+        $this->process = new ProcessExecutor($io);
+        $this->versionGuesser = new VersionGuesser($config, $this->process, new VersionParser());
+
+        parent::__construct();
     }
 
     /**
      * Initializes path repository.
      *
      * This method will basically read the folder and add the found package.
-     *
      */
     protected function initialize()
     {
         parent::initialize();
 
         $composerFilePath = $this->path.'composer.json';
-        if (!$this->fileSystem->exists($composerFilePath)) {
+        if (!file_exists($composerFilePath)) {
             throw new \RuntimeException(sprintf('No `composer.json` file found in path repository "%s"', $this->path));
         }
 
@@ -122,10 +107,14 @@ class PathRepository extends ArrayRepository
         $package['dist'] = array(
             'type' => 'path',
             'url' => $this->path,
+            'reference' => '',
         );
 
         if (!isset($package['version'])) {
-            $package['version'] = $this->versionGuesser->guessVersion($this->config, $this->packageConfig) ?: 'dev-master';
+            $package['version'] = $this->versionGuesser->guessVersion($package, $this->path) ?: 'dev-master';
+        }
+        if (is_dir($this->path.'/.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $this->path)) {
+            $package['dist']['reference'] = trim($output);
         }
 
         $package = $this->loader->load($package);

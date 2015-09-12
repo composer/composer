@@ -76,7 +76,7 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
-        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($executor, new VersionParser()));
+        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $executor, new VersionParser()));
         $package = $loader->load(array());
 
         $this->assertEquals("1.0.0.0", $package->getVersion());
@@ -139,7 +139,7 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
-        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($executor, new VersionParser()));
+        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $executor, new VersionParser()));
         $package = $loader->load(array('require' => array('foo/bar' => 'self.version')));
 
         $this->assertEquals("dev-master", $package->getPrettyVersion());
@@ -188,7 +188,7 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
-        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($executor, new VersionParser()));
+        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $executor, new VersionParser()));
         $package = $loader->load(array('require' => array('foo/bar' => 'self.version'), "non-feature-branches" => array("latest-.*")));
 
         $this->assertEquals("dev-latest-production", $package->getPrettyVersion());

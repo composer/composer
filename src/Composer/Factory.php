@@ -265,7 +265,7 @@ class Factory
 
         // load package
         $parser = new VersionParser;
-        $guesser = new VersionGuesser(new ProcessExecutor($io), $parser);
+        $guesser = new VersionGuesser($config, new ProcessExecutor($io), $parser);
         $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser);
         $package = $loader->load($localConfig);
         $composer->setPackage($package);

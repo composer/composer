@@ -58,8 +58,8 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
-        $guesser = new VersionGuesser($executor, new VersionParser());
-        $version = $guesser->guessVersion($config, array());
+        $guesser = new VersionGuesser($config, $executor, new VersionParser());
+        $version = $guesser->guessVersion(array(), 'dummy/path');
 
         $this->assertEquals("dev-$commitHash", $version);
     }
@@ -88,8 +88,8 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
-        $guesser = new VersionGuesser($executor, new VersionParser());
-        $version = $guesser->guessVersion($config, array());
+        $guesser = new VersionGuesser($config, $executor, new VersionParser());
+        $version = $guesser->guessVersion(array(), 'dummy/path');
 
         $this->assertEquals("2.0.5.0-alpha2", $version);
     }
@@ -129,8 +129,8 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
-        $guesser = new VersionGuesser($executor, new VersionParser());
-        $version = $guesser->guessVersion($config, array());
+        $guesser = new VersionGuesser($config, $executor, new VersionParser());
+        $version = $guesser->guessVersion(array(), 'dummy/path');
 
         $this->assertEquals("dev-foo", $version);
     }

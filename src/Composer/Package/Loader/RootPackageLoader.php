@@ -51,7 +51,7 @@ class RootPackageLoader extends ArrayLoader
 
         $this->manager = $manager;
         $this->config = $config;
-        $this->versionGuesser = $versionGuesser ?: new VersionGuesser(new ProcessExecutor(), $this->versionParser);
+        $this->versionGuesser = $versionGuesser ?: new VersionGuesser($config, new ProcessExecutor(), $this->versionParser);
     }
 
     public function load(array $config, $class = 'Composer\Package\RootPackage')
@@ -65,7 +65,7 @@ class RootPackageLoader extends ArrayLoader
             if (getenv('COMPOSER_ROOT_VERSION')) {
                 $version = getenv('COMPOSER_ROOT_VERSION');
             } else {
-                $version = $this->versionGuesser->guessVersion($this->config, $config);
+                $version = $this->versionGuesser->guessVersion($config, getcwd());
             }
 
             if (!$version) {

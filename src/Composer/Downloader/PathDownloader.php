@@ -30,21 +30,19 @@ class PathDownloader extends FileDownloader
     public function download(PackageInterface $package, $path)
     {
         $fileSystem = new Filesystem();
-        if ($fileSystem->exists($path)) {
-            $fileSystem->remove($path);
-        }
+        $this->filesystem->removeDirectory($path);
+
+        $this->io->writeError(sprintf(
+            '  - Installing <info>%s</info> (<comment>%s</comment>) from %s',
+            $package->getName(),
+            $package->getFullPrettyVersion(),
+            $package->getDistUrl()
+        ));
 
         try {
             $fileSystem->symlink($package->getDistUrl(), $path);
         } catch (IOException $e) {
             $fileSystem->mirror($package->getDistUrl(), $path);
         }
-
-        $this->io->writeError(sprintf(
-            '    Downloaded <info>%s</info> (<comment>%s</comment>) from %s',
-            $package->getName(),
-            $package->getFullPrettyVersion(),
-            $package->getDistUrl()
-        ));
     }
 }
