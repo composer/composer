@@ -16,6 +16,7 @@ use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
+use Composer\Package\Version\VersionGuesser;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\ProcessExecutor;
@@ -264,7 +265,8 @@ class Factory
 
         // load package
         $parser = new VersionParser;
-        $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
+        $guesser = new VersionGuesser(new ProcessExecutor($io), $parser);
+        $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser);
         $package = $loader->load($localConfig);
         $composer->setPackage($package);
 
@@ -331,6 +333,7 @@ class Factory
         $rm->setRepositoryClass('perforce', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('hg', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
+        $rm->setRepositoryClass('path', 'Composer\Repository\PathRepository');
 
         return $rm;
     }
@@ -403,6 +406,7 @@ class Factory
         $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $eventDispatcher, $cache));
 
         return $dm;
     }
