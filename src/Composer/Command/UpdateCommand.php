@@ -39,6 +39,7 @@ class UpdateCommand extends Command
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('lock', null, InputOption::VALUE_NONE, 'Only updates the lock file hash to suppress warning about the lock file being out of date.'),
+                new InputOption('no-install', null, InputOption::VALUE_NONE, 'Update the lock file, but do not install packages.'),
                 new InputOption('no-plugins', null, InputOption::VALUE_NONE, 'Disables all plugins.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
@@ -126,6 +127,7 @@ EOT
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($optimize)
             ->setUpdate(true)
+            ->setInstall(!$input->getOption('no-install'))
             ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $input->getArgument('packages'))
             ->setWhitelistDependencies($input->getOption('with-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))

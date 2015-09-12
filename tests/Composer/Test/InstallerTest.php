@@ -220,6 +220,7 @@ class InstallerTest extends TestCase
                 ->setWhitelistDependencies($input->getOption('with-dependencies'))
                 ->setPreferStable($input->getOption('prefer-stable'))
                 ->setPreferLowest($input->getOption('prefer-lowest'))
+                ->setInstall(!$input->getOption('no-install'))
                 ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
 
             return $installer->run();
