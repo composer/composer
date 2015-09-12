@@ -569,7 +569,8 @@ class Installer
                 if ('update' === $operation->getJobType()
                     && $operation->getTargetPackage()->isDev()
                     && $operation->getTargetPackage()->getVersion() === $operation->getInitialPackage()->getVersion()
-                    && $operation->getTargetPackage()->getSourceReference() === $operation->getInitialPackage()->getSourceReference()
+                    && (!$operation->getTargetPackage()->getSourceReference() || $operation->getTargetPackage()->getSourceReference() === $operation->getInitialPackage()->getSourceReference())
+                    && (!$operation->getTargetPackage()->getDistReference() || $operation->getTargetPackage()->getDistReference() === $operation->getInitialPackage()->getDistReference())
                 ) {
                     if ($this->io->isDebug()) {
                         $this->io->writeError('  - Skipping update of '. $operation->getTargetPackage()->getPrettyName().' to the same reference-locked version');
