@@ -327,6 +327,9 @@ class ComposerRepository extends ArrayRepository
                     if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                         continue;
                     }
+                    if (!$pool->doesPackageMatchRequires(strtolower($version['name']), $version['version'])) {
+                        continue;
+                    }
 
                     // load acceptable packages in the providers
                     $package = $this->createPackage($version, 'Composer\Package\Package');

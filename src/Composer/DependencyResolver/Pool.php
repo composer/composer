@@ -296,6 +296,16 @@ class Pool implements \Countable
         return $prefix.' '.$package->getPrettyString();
     }
 
+    public function doesPackageMatchRequires($name, $version)
+    {
+        if (isset($this->filterRequires[$name])) {
+            $constraint = new VersionConstraint('=', $this->versionParser->normalize($version));
+            return $this->filterRequires[$name]->matches($constraint);
+        }
+
+        return true;
+    }
+
     public function isPackageAcceptable($name, $stability)
     {
         foreach ((array) $name as $n) {
