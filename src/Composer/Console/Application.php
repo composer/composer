@@ -89,9 +89,10 @@ class Application extends BaseApplication
     {
         $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
         ErrorHandler::register($this->io);
+        $io = $this->getIO();
 
         if (PHP_VERSION_ID < 50302) {
-            $this->getIO()->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
+            $io->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
         }
 
         if (defined('COMPOSER_DEV_WARNING_TIME')) {
@@ -104,7 +105,7 @@ class Application extends BaseApplication
             }
             if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                 if (time() > COMPOSER_DEV_WARNING_TIME) {
-                    $this->getIO()->writeError(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
+                    $io->writeError(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
                 }
             }
         }
@@ -117,8 +118,8 @@ class Application extends BaseApplication
         if ($newWorkDir = $this->getNewWorkingDir($input)) {
             $oldWorkingDir = getcwd();
             chdir($newWorkDir);
-            if ($this->getIO()->isDebug() >= 4) {
-                $this->getIO()->writeError('Changed CWD to ' . getcwd());
+            if ($io->isDebug() >= 4) {
+                $io->writeError('Changed CWD to ' . getcwd());
             }
         }
 
@@ -129,7 +130,7 @@ class Application extends BaseApplication
                 foreach ($composer['scripts'] as $script => $dummy) {
                     if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                         if ($this->has($script)) {
-                            $this->getIO()->writeError('<warning>A script named '.$script.' would override a native Composer function and has been skipped</warning>');
+                            $io->writeError('<warning>A script named '.$script.' would override a native Composer function and has been skipped</warning>');
                         } else {
                             $this->add(new Command\ScriptAliasCommand($script));
                         }
@@ -150,7 +151,7 @@ class Application extends BaseApplication
         }
 
         if (isset($startTime)) {
-            $this->getIO()->writeError('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MB), time: '.round(microtime(true) - $startTime, 2).'s');
+            $io->writeError('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MB), time: '.round(microtime(true) - $startTime, 2).'s');
         }
 
         return $result;
@@ -176,6 +177,8 @@ class Application extends BaseApplication
      */
     public function renderException($exception, $output)
     {
+        $io = $this->getIO();
+
         try {
             $composer = $this->getComposer(false, true);
             if ($composer) {
@@ -186,20 +189,20 @@ class Application extends BaseApplication
                     || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
                     || (($df = @disk_free_space($dir = sys_get_temp_dir())) !== false && $df < $minSpaceFree)
                 ) {
-                    $this->getIO()->writeError('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>');
+                    $io->writeError('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>');
                 }
             }
         } catch (\Exception $e) {
         }
 
         if (defined('PHP_WINDOWS_VERSION_BUILD') && false !== strpos($exception->getMessage(), 'The system cannot find the path specified')) {
-            $this->getIO()->writeError('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>');
-            $this->getIO()->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#-the-system-cannot-find-the-path-specified-windows- for details</error>');
+            $io->writeError('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>');
+            $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#-the-system-cannot-find-the-path-specified-windows- for details</error>');
         }
 
         if (false !== strpos($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
-            $this->getIO()->writeError('<error>The following exception is caused by a lack of memory and not having swap configured</error>');
-            $this->getIO()->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>');
+            $io->writeError('<error>The following exception is caused by a lack of memory and not having swap configured</error>');
+            $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>');
         }
 
         if ($output instanceof ConsoleOutputInterface) {

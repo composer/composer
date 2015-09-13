@@ -464,6 +464,7 @@ EOT
     protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, $k = null)
     {
         $origK = $k;
+        $io = $this->getIO();
         foreach ($contents as $key => $value) {
             if ($k === null && !in_array($key, array('config', 'repositories'))) {
                 continue;
@@ -498,9 +499,9 @@ EOT
             }
 
             if (is_string($rawVal) && $rawVal != $value) {
-                $this->getIO()->write('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>');
+                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>');
             } else {
-                $this->getIO()->write('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
+                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
             }
         }
     }

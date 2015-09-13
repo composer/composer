@@ -64,20 +64,21 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $file = Factory::getComposerFile();
+        $io = $this->getIO();
 
         $newlyCreated = !file_exists($file);
         if (!file_exists($file) && !file_put_contents($file, "{\n}\n")) {
-            $this->getIO()->writeError('<error>'.$file.' could not be created.</error>');
+            $io->writeError('<error>'.$file.' could not be created.</error>');
 
             return 1;
         }
         if (!is_readable($file)) {
-            $this->getIO()->writeError('<error>'.$file.' is not readable.</error>');
+            $io->writeError('<error>'.$file.' is not readable.</error>');
 
             return 1;
         }
         if (!is_writable($file)) {
-            $this->getIO()->writeError('<error>'.$file.' is not writable.</error>');
+            $io->writeError('<error>'.$file.' is not writable.</error>');
 
             return 1;
         }
@@ -126,7 +127,7 @@ EOT
             $json->write($composerDefinition);
         }
 
-        $this->getIO()->writeError('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
+        $io->writeError('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
 
         if ($input->getOption('no-update')) {
             return 0;
@@ -137,7 +138,6 @@ EOT
         $this->resetComposer();
         $composer = $this->getComposer();
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
-        $io = $this->getIO();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -158,10 +158,10 @@ EOT
         $status = $install->run();
         if ($status !== 0) {
             if ($newlyCreated) {
-                $this->getIO()->writeError("\n".'<error>Installation failed, deleting '.$file.'.</error>');
+                $io->writeError("\n".'<error>Installation failed, deleting '.$file.'.</error>');
                 unlink($json->getPath());
             } else {
-                $this->getIO()->writeError("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
+                $io->writeError("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
                 file_put_contents($json->getPath(), $composerBackup);
             }
         }

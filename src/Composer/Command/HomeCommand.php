@@ -57,6 +57,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $repos = $this->initializeRepos();
+        $io = $this->getIO();
         $return = 0;
 
         foreach ($input->getArgument('packages') as $packageName) {
@@ -74,12 +75,12 @@ EOT
 
             if (!$packageExists) {
                 $return = 1;
-                $this->getIO()->writeError('<warning>Package '.$packageName.' not found</warning>');
+                $io->writeError('<warning>Package '.$packageName.' not found</warning>');
             }
 
             if (!$handled) {
                 $return = 1;
-                $this->getIO()->writeError('<warning>'.($input->getOption('homepage') ? 'Invalid or missing homepage' : 'Invalid or missing repository URL').' for '.$packageName.'</warning>');
+                $io->writeError('<warning>'.($input->getOption('homepage') ? 'Invalid or missing homepage' : 'Invalid or missing repository URL').' for '.$packageName.'</warning>');
             }
         }
 
