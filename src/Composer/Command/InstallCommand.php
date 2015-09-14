@@ -64,24 +64,24 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $io = $this->getIO();
         if ($args = $input->getArgument('packages')) {
-            $this->getIO()->writeError('<error>Invalid argument '.implode(' ', $args).'. Use "composer require '.implode(' ', $args).'" instead to add packages to your composer.json.</error>');
+            $io->writeError('<error>Invalid argument '.implode(' ', $args).'. Use "composer require '.implode(' ', $args).'" instead to add packages to your composer.json.</error>');
 
             return 1;
         }
 
         if ($input->getOption('no-custom-installers')) {
-            $this->getIO()->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $io->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
         }
 
         if ($input->getOption('dev')) {
-            $this->getIO()->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
+            $io->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
         }
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
-        $io = $this->getIO();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'install', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);

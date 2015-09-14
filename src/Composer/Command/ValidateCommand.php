@@ -58,19 +58,20 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $file = $input->getArgument('file');
+        $io = $this->getIO();
 
         if (!file_exists($file)) {
-            $this->getIO()->writeError('<error>' . $file . ' not found.</error>');
+            $io->writeError('<error>' . $file . ' not found.</error>');
 
             return 1;
         }
         if (!is_readable($file)) {
-            $this->getIO()->writeError('<error>' . $file . ' is not readable.</error>');
+            $io->writeError('<error>' . $file . ' is not readable.</error>');
 
             return 1;
         }
 
-        $validator = new ConfigValidator($this->getIO());
+        $validator = new ConfigValidator($io);
         $checkAll = $input->getOption('no-check-all') ? 0 : ValidatingArrayLoader::CHECK_ALL;
         $checkPublish = !$input->getOption('no-check-publish');
         list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
@@ -78,7 +79,7 @@ EOT
         $checkLock = !$input->getOption('no-check-lock');
 
         $lockErrors = array();
-        $composer = Factory::create($this->getIO(), $file);
+        $composer = Factory::create($io, $file);
         $locker = $composer->getLocker();
         if ($locker->isLocked() && !$locker->isFresh()) {
             $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json.';
@@ -86,16 +87,16 @@ EOT
 
         // output errors/warnings
         if (!$errors && !$publishErrors && !$warnings) {
-            $this->getIO()->write('<info>' . $file . ' is valid</info>');
+            $io->write('<info>' . $file . ' is valid</info>');
         } elseif (!$errors && !$publishErrors) {
-            $this->getIO()->writeError('<info>' . $file . ' is valid, but with a few warnings</info>');
-            $this->getIO()->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            $io->writeError('<info>' . $file . ' is valid, but with a few warnings</info>');
+            $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         } elseif (!$errors) {
-            $this->getIO()->writeError('<info>' . $file . ' is valid for simple usage with composer but has</info>');
-            $this->getIO()->writeError('<info>strict errors that make it unable to be published as a package:</info>');
-            $this->getIO()->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            $io->writeError('<info>' . $file . ' is valid for simple usage with composer but has</info>');
+            $io->writeError('<info>strict errors that make it unable to be published as a package:</info>');
+            $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         } else {
-            $this->getIO()->writeError('<error>' . $file . ' is invalid, the following errors/warnings were found:</error>');
+            $io->writeError('<error>' . $file . ' is invalid, the following errors/warnings were found:</error>');
         }
 
         $messages = array(
@@ -119,7 +120,7 @@ EOT
 
         foreach ($messages as $style => $msgs) {
             foreach ($msgs as $msg) {
-                $this->getIO()->writeError('<' . $style . '>' . $msg . '</' . $style . '>');
+                $io->writeError('<' . $style . '>' . $msg . '</' . $style . '>');
             }
         }
 

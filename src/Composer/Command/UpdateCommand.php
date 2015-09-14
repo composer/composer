@@ -74,18 +74,18 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $io = $this->getIO();
         if ($input->getOption('no-custom-installers')) {
-            $this->getIO()->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $io->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
         }
 
         if ($input->getOption('dev')) {
-            $this->getIO()->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
+            $io->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
         }
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
-        $io = $this->getIO();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);

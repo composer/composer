@@ -100,16 +100,17 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $config = Factory::createConfig();
+        $io = $this->getIO();
 
         $this->updatePreferredOptions($config, $input, $preferSource, $preferDist, true);
 
         if ($input->getOption('no-custom-installers')) {
-            $this->getIO()->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $io->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
         }
 
         return $this->installProject(
-            $this->getIO(),
+            $io,
             $config,
             $input->getArgument('package'),
             $input->getArgument('directory'),

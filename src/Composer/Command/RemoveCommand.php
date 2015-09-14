@@ -68,19 +68,20 @@ EOT
 
         $type = $input->getOption('dev') ? 'require-dev' : 'require';
         $altType = !$input->getOption('dev') ? 'require-dev' : 'require';
+        $io = $this->getIO();
 
         foreach ($packages as $package) {
             if (isset($composer[$type][$package])) {
                 $json->removeLink($type, $package);
             } elseif (isset($composer[$altType][$package])) {
-                $this->getIO()->writeError('<warning>'.$package.' could not be found in '.$type.' but it is present in '.$altType.'</warning>');
-                if ($this->getIO()->isInteractive()) {
-                    if ($this->getIO()->askConfirmation('Do you want to remove it from '.$altType.' [<comment>yes</comment>]? ', true)) {
+                $io->writeError('<warning>'.$package.' could not be found in '.$type.' but it is present in '.$altType.'</warning>');
+                if ($io->isInteractive()) {
+                    if ($io->askConfirmation('Do you want to remove it from '.$altType.' [<comment>yes</comment>]? ', true)) {
                         $json->removeLink($altType, $package);
                     }
                 }
             } else {
-                $this->getIO()->writeError('<warning>'.$package.' is not required in your composer.json and has not been removed</warning>');
+                $io->writeError('<warning>'.$package.' is not required in your composer.json and has not been removed</warning>');
             }
         }
 
@@ -91,7 +92,6 @@ EOT
         // Update packages
         $composer = $this->getComposer();
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
-        $io = $this->getIO();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'remove', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -110,7 +110,7 @@ EOT
 
         $status = $install->run();
         if ($status !== 0) {
-            $this->getIO()->writeError("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
+            $io->writeError("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
             file_put_contents($jsonFile->getPath(), $composerBackup);
         }
 
