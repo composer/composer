@@ -60,7 +60,7 @@ class PathRepository extends ArrayRepository
     /**
      * @var string
      */
-    private $path;
+    private $url;
 
     /**
      * @var ProcessExecutor
@@ -81,7 +81,7 @@ class PathRepository extends ArrayRepository
         }
 
         $this->loader = new ArrayLoader();
-        $this->path = realpath(rtrim($repoConfig['url'], '/')) . '/';
+        $this->url = $repoConfig['url'];
         $this->process = new ProcessExecutor($io);
         $this->versionGuesser = new VersionGuesser($config, $this->process, new VersionParser());
 
@@ -97,27 +97,36 @@ class PathRepository extends ArrayRepository
     {
         parent::initialize();
 
-        $composerFilePath = $this->path.'composer.json';
+        $path = $this->getPath();
+        $composerFilePath = $path.'composer.json';
         if (!file_exists($composerFilePath)) {
-            throw new \RuntimeException(sprintf('No `composer.json` file found in path repository "%s"', $this->path));
+            throw new \RuntimeException(sprintf('No `composer.json` file found in path repository "%s"', $path));
         }
 
         $json = file_get_contents($composerFilePath);
         $package = JsonFile::parseJson($json, $composerFilePath);
         $package['dist'] = array(
             'type' => 'path',
-            'url' => $this->path,
+            'url' => $this->url,
             'reference' => '',
         );
 
         if (!isset($package['version'])) {
-            $package['version'] = $this->versionGuesser->guessVersion($package, $this->path) ?: 'dev-master';
+            $package['version'] = $this->versionGuesser->guessVersion($package, $path) ?: 'dev-master';
         }
-        if (is_dir($this->path.'/.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $this->path)) {
+        if (is_dir($path.'/.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
             $package['dist']['reference'] = trim($output);
         }
 
         $package = $this->loader->load($package);
         $this->addPackage($package);
+    }
+
+    /**
+     * @return string
+     */
+    private function getPath()
+    {
+        return realpath(rtrim($this->url, '/')) . '/';
     }
 }
