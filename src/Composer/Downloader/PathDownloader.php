@@ -39,18 +39,19 @@ class PathDownloader extends FileDownloader
         ));
 
         $url = $package->getDistUrl();
-        if (!file_exists($url) || !is_dir($url)) {
+        $realUrl = realpath($url);
+        if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
             throw new \RuntimeException(sprintf(
                 'Path "%s" is not found',
-                $path
+                $url
             ));
         }
 
         try {
-            $fileSystem->symlink($url, $path);
+            $fileSystem->symlink($realUrl, $path);
             $this->io->writeError(sprintf('    Symlinked from %s', $url));
         } catch (IOException $e) {
-            $fileSystem->mirror($url, $path);
+            $fileSystem->mirror($realUrl, $path);
             $this->io->writeError(sprintf('    Mirrored from %s', $url));
         }
 
