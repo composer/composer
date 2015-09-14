@@ -324,10 +324,11 @@ class ComposerRepository extends ArrayRepository
                         }
                     }
                 } else {
-                    if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
+                    $loweredName = strtolower($version['name']);
+                    if (!$pool->isPackageAcceptable($loweredName, VersionParser::parseStability($version['version']))) {
                         continue;
                     }
-                    if (!$pool->doesPackageMatchRequires(strtolower($version['name']), $version['version'])) {
+                    if (!$pool->doesPackageMatchRequires($loweredName, $version['version'])) {
                         continue;
                     }
 
