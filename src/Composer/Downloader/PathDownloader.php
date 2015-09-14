@@ -39,6 +39,13 @@ class PathDownloader extends FileDownloader
             $package->getDistUrl()
         ));
 
+        if (!file_exists($path) || !is_dir($path)) {
+            throw new \RuntimeException(sprintf(
+                'Path "%s" is not found',
+                $path
+            ));
+        }
+
         try {
             $fileSystem->symlink($package->getDistUrl(), $path);
         } catch (IOException $e) {
