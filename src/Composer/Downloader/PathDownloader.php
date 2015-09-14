@@ -33,13 +33,13 @@ class PathDownloader extends FileDownloader
         $this->filesystem->removeDirectory($path);
 
         $this->io->writeError(sprintf(
-            '  - Installing <info>%s</info> (<comment>%s</comment>) from %s',
+            '  - Installing <info>%s</info> (<comment>%s</comment>)',
             $package->getName(),
-            $package->getFullPrettyVersion(),
-            $package->getDistUrl()
+            $package->getFullPrettyVersion()
         ));
 
-        if (!file_exists($path) || !is_dir($path)) {
+        $url = $package->getDistUrl();
+        if (!file_exists($url) || !is_dir($url)) {
             throw new \RuntimeException(sprintf(
                 'Path "%s" is not found',
                 $path
@@ -47,9 +47,13 @@ class PathDownloader extends FileDownloader
         }
 
         try {
-            $fileSystem->symlink($package->getDistUrl(), $path);
+            $fileSystem->symlink($url, $path);
+            $this->io->writeError(sprintf('    Symlinked from %s', $url));
         } catch (IOException $e) {
-            $fileSystem->mirror($package->getDistUrl(), $path);
+            $fileSystem->mirror($url, $path);
+            $this->io->writeError(sprintf('    Mirrored from %s', $url));
         }
+
+        $this->io->writeError('');
     }
 }
