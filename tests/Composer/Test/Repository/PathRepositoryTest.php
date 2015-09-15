@@ -35,7 +35,7 @@ class PathRepositoryTest extends TestCase
         $repository->getPackages();
 
         $this->assertEquals(1, $repository->count());
-        $this->assertTrue($repository->hasPackage($this->getPackage('test/path', '0.0.2')));
+        $this->assertTrue($repository->hasPackage($this->getPackage('test/path-versioned', '0.0.2')));
     }
 
     public function testLoadPackageFromFileSystemWithoutVersion()
@@ -54,9 +54,31 @@ class PathRepositoryTest extends TestCase
         $this->assertEquals(1, $repository->count());
 
         $package = $packages[0];
-        $this->assertEquals('test/path', $package->getName());
+        $this->assertEquals('test/path-unversioned', $package->getName());
 
         $packageVersion = $package->getVersion();
         $this->assertTrue(!empty($packageVersion));
+    }
+
+    public function testLoadPackageFromFileSystemWithWildcard()
+    {
+        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
+            ->getMock();
+
+        $config = new \Composer\Config();
+        $loader = new ArrayLoader(new VersionParser());
+        $versionGuesser = null;
+
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
+        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config, $loader);
+        $packages = $repository->getPackages();
+
+        $this->assertEquals(2, $repository->count());
+
+        $package = $packages[0];
+        $this->assertEquals('test/path-versioned', $package->getName());
+
+        $package = $packages[1];
+        $this->assertEquals('test/path-unversioned', $package->getName());
     }
 }

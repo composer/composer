@@ -97,36 +97,39 @@ class PathRepository extends ArrayRepository
     {
         parent::initialize();
 
-        $path = $this->getPath();
-        $composerFilePath = $path.'composer.json';
-        if (!file_exists($composerFilePath)) {
-            throw new \RuntimeException(sprintf('No `composer.json` file found in path repository "%s"', $path));
-        }
+        foreach ($this->getPaths() as $path) {
+            $composerFilePath = $path.'composer.json';
+            if (!file_exists($composerFilePath)) {
+                continue;
+            }
 
-        $json = file_get_contents($composerFilePath);
-        $package = JsonFile::parseJson($json, $composerFilePath);
-        $package['dist'] = array(
-            'type' => 'path',
-            'url' => $this->url,
-            'reference' => '',
-        );
+            $json = file_get_contents($composerFilePath);
+            $package = JsonFile::parseJson($json, $composerFilePath);
+            $package['dist'] = array(
+                'type' => 'path',
+                'url' => $this->url,
+                'reference' => '',
+            );
 
-        if (!isset($package['version'])) {
-            $package['version'] = $this->versionGuesser->guessVersion($package, $path) ?: 'dev-master';
-        }
-        if (is_dir($path.'/.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
-            $package['dist']['reference'] = trim($output);
-        }
+            if (!isset($package['version'])) {
+                $package['version'] = $this->versionGuesser->guessVersion($package, $path) ?: 'dev-master';
+            }
+            if (is_dir($path.'/.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
+                $package['dist']['reference'] = trim($output);
+            }
 
-        $package = $this->loader->load($package);
-        $this->addPackage($package);
+            $package = $this->loader->load($package);
+            $this->addPackage($package);
+        }
     }
 
     /**
-     * @return string
+     * Get a list of all absolute path names matching the supplied urls
+     *
+     * @return string[]
      */
-    private function getPath()
+    private function getPaths()
     {
-        return realpath(rtrim($this->url, '/')) . '/';
+        return glob($this->url, GLOB_MARK|GLOB_ONLYDIR);
     }
 }
