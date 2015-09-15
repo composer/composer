@@ -38,6 +38,10 @@ use Composer\Util\ProcessExecutor;
  *     {
  *         "type": "path",
  *         "url": "/absolute/path/to/package/"
+ *     },
+ *     {
+ *         "type": "path",
+ *         "url": "/absolute/path/to/several/packages/*"
  *     }
  * ]
  * @endcode
