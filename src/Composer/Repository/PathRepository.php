@@ -107,7 +107,7 @@ class PathRepository extends ArrayRepository
             $package = JsonFile::parseJson($json, $composerFilePath);
             $package['dist'] = array(
                 'type' => 'path',
-                'url' => $this->url,
+                'url' => $path,
                 'reference' => '',
             );
 
