@@ -608,8 +608,8 @@ update to the latest version.
 
 ### Path
 
-In addition to the artifact repository, you can use the path one, which allow
-you to depends on a relative directory. This can be especially useful when dealing
+In addition to the artifact repository, you can use the path one, which allows
+you to depend on a relative directory. This can be especially useful when dealing
 with monolith repositories.
 
 For instance, if you have the following directory structure in your repository:
