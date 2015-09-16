@@ -63,6 +63,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'CI parsing'         => array('1.0.0-rC15-dev',      '1.0.0.0-RC15-dev'),
             'delimiters'         => array('1.0.0.RC.15-dev',     '1.0.0.0-RC15-dev'),
             'RC uppercase'       => array('1.0.0-rc1',           '1.0.0.0-RC1'),
+            'php extra version'  => array('5.4.4-13',            '5.4.4.0-13'),
             'patch replace'      => array('1.0.0.pl3-dev',       '1.0.0.0-patch3-dev'),
             'forces w.x.y.z'     => array('1.0-dev',             '1.0.0.0-dev'),
             'forces w.x.y.z/2'   => array('0',                   '0.0.0.0'),
