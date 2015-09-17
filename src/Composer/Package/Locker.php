@@ -21,6 +21,7 @@ use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Util\Git as GitUtil;
 use Composer\IO\IOInterface;
+use Seld\JsonLint\ParsingException;
 
 /**
  * Reads/writes project lockfile (composer.lock).
@@ -286,7 +287,12 @@ class Locker
             return false;
         }
 
-        if (!$this->isLocked() || $lock !== $this->getLockData()) {
+        try {
+            $isLocked = $this->isLocked();
+        } catch (ParsingException $e) {
+            $isLocked = false;
+        }
+        if (!$isLocked || $lock !== $this->getLockData()) {
             $this->lockFile->write($lock);
             $this->lockDataCache = null;
 
