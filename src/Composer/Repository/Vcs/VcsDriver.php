@@ -28,6 +28,7 @@ abstract class VcsDriver implements VcsDriverInterface
 {
     protected $url;
     protected $originUrl;
+    protected $apiParam;
     protected $repoConfig;
     protected $io;
     protected $config;
@@ -51,6 +52,7 @@ abstract class VcsDriver implements VcsDriverInterface
 
         $this->url = $repoConfig['url'];
         $this->originUrl = $repoConfig['url'];
+        $this->apiParam = isset($repoConfig['apiParam']) ? $repoConfig['apiParam'] : [];
         $this->repoConfig = $repoConfig;
         $this->io = $io;
         $this->config = $config;
@@ -96,7 +98,7 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     protected function getContents($url)
     {
-        return $this->remoteFilesystem->getContents($this->originUrl, $url, false);
+        return $this->remoteFilesystem->getContents($this->originUrl, $url, false, $this->apiParam);
     }
 
     /**
