@@ -1023,9 +1023,15 @@ class Installer
                 $newPackage = $pool->literalToPackage($matches[0]);
 
                 // update the dist and source URLs
-                $package->setSourceType($newPackage->getSourceType());
-                $package->setSourceUrl($newPackage->getSourceUrl());
-                $package->setSourceReference($newPackage->getSourceReference());
+                $sourceUrl = $package->getSourceUrl();
+                $newSourceUrl = $newPackage->getSourceUrl();
+
+                if ($sourceUrl !== $newSourceUrl) {
+                    $package->setSourceType($newPackage->getSourceType());
+                    $package->setSourceUrl($newSourceUrl);
+                    $package->setSourceReference($newPackage->getSourceReference());
+                }
+
                 // only update dist url for github/bitbucket dists as they use a combination of dist url + dist reference to install
                 // but for other urls this is ambiguous and could result in bad outcomes
                 if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}', $newPackage->getDistUrl())) {
