@@ -639,8 +639,8 @@ file, you can use the following configuration:
 }
 ```
 
-Repository paths can also contain wildcards like ``*`` and ``?``.
-For details, see the [PHP glob function](http://php.net/glob).
+> **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
+> For details, see the [PHP glob function](http://php.net/glob).
 
 ## Disabling Packagist
 
