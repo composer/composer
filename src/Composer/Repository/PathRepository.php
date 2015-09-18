@@ -135,7 +135,7 @@ class PathRepository extends ArrayRepository
     }
 
     /**
-     * Get a list of all absolute path names matching the supplied urls
+     * Get a list of all absolute path names matching given url (supports globbing).
      *
      * @return string[]
      */
