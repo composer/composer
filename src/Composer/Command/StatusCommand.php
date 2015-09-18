@@ -32,7 +32,7 @@ class StatusCommand extends Command
             ->setName('status')
             ->setDescription('Show a list of locally modified packages')
             ->setDefinition(array(
-                new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.'),
+                new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes'),
             ))
             ->setHelp(<<<EOT
 The status command displays a list of dependencies that have

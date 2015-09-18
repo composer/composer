@@ -46,13 +46,13 @@ class RunScriptCommand extends Command
     {
         $this
             ->setName('run-script')
-            ->setDescription('Run the scripts defined in composer.json.')
+            ->setDescription('Run the scripts defined in composer.json')
             ->setDefinition(array(
-                new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run.'),
+                new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run'),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
-                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),
-                new InputOption('list', 'l', InputOption::VALUE_NONE, 'List scripts.'),
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode'),
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode'),
+                new InputOption('list', 'l', InputOption::VALUE_NONE, 'List scripts'),
             ))
             ->setHelp(<<<EOT
 The <info>run-script</info> command runs scripts defined in composer.json:

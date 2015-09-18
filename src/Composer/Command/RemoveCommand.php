@@ -35,13 +35,13 @@ class RemoveCommand extends Command
             ->setName('remove')
             ->setDescription('Removes a package from the require or require-dev')
             ->setDefinition(array(
-                new InputArgument('packages', InputArgument::IS_ARRAY, 'Packages that should be removed.'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section.'),
-                new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
-                new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
-                new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
-                new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
-                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputArgument('packages', InputArgument::IS_ARRAY, 'Packages that should be removed'),
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section'),
+                new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress'),
+                new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies'),
+                new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option'),
+                new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies'),
+                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages)'),
             ))
             ->setHelp(<<<EOT
 The <info>remove</info> command removes a package from the current
