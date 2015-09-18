@@ -51,5 +51,5 @@ class ComposerAutoloaderInitFilesAutoloadOrder
 
 function composerRequireFilesAutoloadOrder($file)
 {
-    require $file;
+    require_once $file;
 }
