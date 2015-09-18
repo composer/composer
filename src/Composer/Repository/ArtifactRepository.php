@@ -49,7 +49,7 @@ class ArtifactRepository extends ArrayRepository
     {
         $io = $this->io;
 
-        $directory = new \RecursiveDirectoryIterator($path);
+        $directory = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::FOLLOW_SYMLINKS);
         $iterator = new \RecursiveIteratorIterator($directory);
         $regex = new \RegexIterator($iterator, '/^.+\.(zip|phar)$/i');
         foreach ($regex as $file) {
