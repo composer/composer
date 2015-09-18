@@ -101,8 +101,6 @@ class PathRepository extends ArrayRepository
     {
         parent::initialize();
 
-        $foundPackage = false;
-
         foreach ($this->getPaths() as $path) {
             $path = realpath($path) . '/';
 
@@ -111,7 +109,6 @@ class PathRepository extends ArrayRepository
                 continue;
             }
 
-            $foundPackage = true;
             $json = file_get_contents($composerFilePath);
             $package = JsonFile::parseJson($json, $composerFilePath);
             $package['dist'] = array(
@@ -131,7 +128,7 @@ class PathRepository extends ArrayRepository
             $this->addPackage($package);
         }
 
-        if (!$foundPackage) {
+        if (count($this) == 0) {
             throw new \RuntimeException(sprintf('No `composer.json` file found in any path repository in "%s"', $this->url));
         }
     }
