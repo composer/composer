@@ -128,7 +128,7 @@ class PathRepository extends ArrayRepository
             $this->addPackage($package);
         }
 
-        if (count($this) == 0) {
+        if (count($this->getPackages()) == 0) {
             throw new \RuntimeException(sprintf('No `composer.json` file found in any path repository in "%s"', $this->url));
         }
     }
