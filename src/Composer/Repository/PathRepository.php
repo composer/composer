@@ -104,8 +104,8 @@ class PathRepository extends ArrayRepository
         $foundPackage = false;
 
         foreach ($this->getPaths() as $path) {
-            $path = realpath($path);
-            
+            $path = realpath($path) . '/';
+
             $composerFilePath = $path.'composer.json';
             if (!file_exists($composerFilePath)) {
                 continue;
