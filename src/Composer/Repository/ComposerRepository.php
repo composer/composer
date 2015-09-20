@@ -584,6 +584,11 @@ class ComposerRepository extends ArrayRepository
             $filename = $this->baseUrl.'/'.$filename;
         }
 
+        // url-encode $ signs in URLs as bad proxies choke on them
+        if ($pos = strpos($filename, '$')) {
+            $filename = substr($filename, 0, $pos) . '%24' . substr($filename, $pos+1);
+        }
+
         $retries = 3;
         while ($retries--) {
             try {
