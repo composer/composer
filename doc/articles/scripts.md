@@ -23,26 +23,26 @@ Composer fires the following named events during its execution process:
 ### Command Events
 
 - **pre-install-cmd**: occurs before the `install` command is executed.
-- **post-install-cmd**: occurs after the `install` command is executed.
+- **post-install-cmd**: occurs after the `install` command has been executed.
 - **pre-update-cmd**: occurs before the `update` command is executed.
-- **post-update-cmd**: occurs after the `update` command is executed.
+- **post-update-cmd**: occurs after the `update` command has been executed.
 - **pre-status-cmd**: occurs before the `status` command is executed.
-- **post-status-cmd**: occurs after the `status` command is executed.
+- **post-status-cmd**: occurs after the `status` command has been executed.
 - **pre-archive-cmd**: occurs before the `archive` command is executed.
-- **post-archive-cmd**: occurs after the `archive` command is executed.
+- **post-archive-cmd**: occurs after the `archive` command has been executed.
 - **pre-autoload-dump**: occurs before the autoloader is dumped, either
   during `install`/`update`, or via the `dump-autoload` command.
-- **post-autoload-dump**: occurs after the autoloader is dumped, either
+- **post-autoload-dump**: occurs after the autoloader has been dumped, either
   during `install`/`update`, or via the `dump-autoload` command.
 - **post-root-package-install**: occurs after the root package has been
   installed, during the `create-project` command.
-- **post-create-project-cmd**: occurs after the `create-project` command is
-  executed.
+- **post-create-project-cmd**: occurs after the `create-project` command has
+  been executed.
 
 ### Installer Events
 
 - **pre-dependencies-solving**: occurs before the dependencies are resolved.
-- **post-dependencies-solving**: occurs after the dependencies are resolved.
+- **post-dependencies-solving**: occurs after the dependencies have been resolved.
 
 ### Package Events
 
