@@ -639,6 +639,9 @@ file, you can use the following configuration:
 }
 ```
 
+> **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
+> For details, see the [PHP glob function](http://php.net/glob).
+
 ## Disabling Packagist
 
 You can disable the default Packagist repository by adding this to your
