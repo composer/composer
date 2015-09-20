@@ -124,6 +124,14 @@ class ConfigValidator
             }
         }
 
+        // check for empty psr-0/psr-4 namespace prefixes
+        if (isset($manifest['autoload']['psr-0'][''])) {
+            $warnings[] = "Defining autoload.psr-0 with an empty namespace prefix is a bad idea for performance";
+        }
+        if (isset($manifest['autoload']['psr-4'][''])) {
+            $warnings[] = "Defining autoload.psr-4 with an empty namespace prefix is a bad idea for performance";
+        }
+
         try {
             $loader = new ValidatingArrayLoader(new ArrayLoader(), true, null, $arrayLoaderValidationFlags);
             if (!isset($manifest['version'])) {
