@@ -101,8 +101,8 @@ EOT
         $install = Installer::create($io, $composer);
 
         $updateDevMode = !$input->getOption('update-no-dev');
-        $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
-        $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
+        $optimize = $input->getOption('optimize-autoloader') || $composer->getConfig()->get('optimize-autoloader');
+        $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
 
         $install
             ->setVerbose($input->getOption('verbose'))
