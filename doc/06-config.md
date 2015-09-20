@@ -119,9 +119,8 @@ Defaults to `false`. If `true`, always optimize when dumping the autoloader.
 
 ## classmap-authoritative
 
-Defaults to `false`. If `true`, the Composer autoloader will not scan the
-filesystem for classes that are not found in the class map. Implies
-'optimize-autoloader'.
+Defaults to `false`. If `true`, the Composer autoloader will only load classes
+from the classmap. Implies `optimize-autoloader`.
 
 ## github-domains
 

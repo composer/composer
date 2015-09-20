@@ -42,6 +42,8 @@ class RemoveCommand extends Command
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
+                new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
             ))
             ->setHelp(<<<EOT
 The <info>remove</info> command removes a package from the current
@@ -99,9 +101,14 @@ EOT
         $install = Installer::create($io, $composer);
 
         $updateDevMode = !$input->getOption('update-no-dev');
+        $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
+        $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
+
         $install
             ->setVerbose($input->getOption('verbose'))
             ->setDevMode($updateDevMode)
+            ->setOptimizeAutoloader($optimize)
+            ->setClassMapAuthoritative($authoritative)
             ->setUpdate(true)
             ->setUpdateWhitelist($packages)
             ->setWhitelistDependencies($input->getOption('update-with-dependencies'))

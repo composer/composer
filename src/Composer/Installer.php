@@ -103,6 +103,7 @@ class Installer
     protected $preferSource = false;
     protected $preferDist = false;
     protected $optimizeAutoloader = false;
+    protected $classMapAuthoritative = false;
     protected $devMode = false;
     protected $dryRun = false;
     protected $verbose = false;
@@ -335,6 +336,7 @@ class Installer
                 }
 
                 $this->autoloadGenerator->setDevMode($this->devMode);
+                $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
                 $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
             }
 
@@ -1317,6 +1319,29 @@ class Installer
     public function setOptimizeAutoloader($optimizeAutoloader = false)
     {
         $this->optimizeAutoloader = (boolean) $optimizeAutoloader;
+        if (!$this->optimizeAutoloader) {
+            // Force classMapAuthoritative off when not optimizing the
+            // autoloader
+            $this->setClassMapAuthoritative(false);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Whether or not generated autoloader considers the class map
+     * authoritative.
+     *
+     * @param  bool      $classMapAuthoritative
+     * @return Installer
+     */
+    public function setClassMapAuthoritative($classMapAuthoritative = false)
+    {
+        $this->classMapAuthoritative = (boolean) $classMapAuthoritative;
+        if ($this->classMapAuthoritative) {
+            // Force optimizeAutoloader when classmap is authoritative
+            $this->setOptimizeAutoloader(true);
+        }
 
         return $this;
     }
