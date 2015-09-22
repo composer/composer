@@ -105,7 +105,8 @@ EOT
         }
 
         $io->writeError('<info>Creating the archive into "'.$dest.'".</info>');
-        $archiveManager->archive($package, $format, $dest);
+        $packagePath = $archiveManager->archive($package, $format, $dest);
+        $io->writeError('Created archive file path: "'.$packagePath.'"');
 
         return 0;
     }
