@@ -266,6 +266,11 @@ class LibraryInstaller implements InstallerInterface
                 $this->filesystem->unlink($link.'.bat');
             }
         }
+
+        // attempt removing the bin dir in case it is left empty
+        if ($this->filesystem->isDirEmpty($this->binDir)) {
+            @rmdir($this->binDir);
+        }
     }
 
     protected function initializeVendorDir()
