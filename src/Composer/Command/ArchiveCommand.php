@@ -19,6 +19,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Util\Filesystem;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -106,7 +107,11 @@ EOT
 
         $io->writeError('<info>Creating the archive into "'.$dest.'".</info>');
         $packagePath = $archiveManager->archive($package, $format, $dest);
-        $io->writeError('Created archive file path: "'.$packagePath.'"');
+        $fs = new Filesystem;
+        $shortPath = $fs->findShortestPath(getcwd(), $packagePath, true);
+
+        $io->writeError('Created: ', false);
+        $io->write(strlen($shortPath) < strlen($packagePath) ? $shortPath : $packagePath);
 
         return 0;
     }
