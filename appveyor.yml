@@ -3,11 +3,6 @@ shallow_clone: true
 platform: x86
 clone_folder: c:\projects\composer
 
-environment:
-    matrix:
-        - PHP_EXT: 1
-        - PHP_EXT: 0
-
 cache:
     - c:\tools\php -> appveyor.yml
 
