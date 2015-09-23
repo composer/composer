@@ -268,7 +268,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         // attempt removing the bin dir in case it is left empty
-        if ($this->filesystem->isDirEmpty($this->binDir)) {
+        if ((is_dir($this->binDir)) && ($this->filesystem->isDirEmpty($this->binDir))) {
             @rmdir($this->binDir);
         }
     }
