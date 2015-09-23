@@ -101,10 +101,10 @@ class PathRepository extends ArrayRepository
     {
         parent::initialize();
 
-        foreach ($this->getPaths() as $path) {
-            $path = realpath($path) . '/';
-
+        foreach ($this->getUrlMatches() as $url) {
+            $path = realpath($url) . '/';
             $composerFilePath = $path.'composer.json';
+            
             if (!file_exists($composerFilePath)) {
                 continue;
             }
@@ -113,7 +113,7 @@ class PathRepository extends ArrayRepository
             $package = JsonFile::parseJson($json, $composerFilePath);
             $package['dist'] = array(
                 'type' => 'path',
-                'url' => $path,
+                'url' => $url,
                 'reference' => '',
             );
 
@@ -134,11 +134,11 @@ class PathRepository extends ArrayRepository
     }
 
     /**
-     * Get a list of all path names matching given url (supports globbing).
+     * Get a list of all (possibly relative) path names matching given url (supports globbing).
      *
      * @return string[]
      */
-    private function getPaths()
+    private function getUrlMatches()
     {
         return glob($this->url, GLOB_MARK|GLOB_ONLYDIR);
     }

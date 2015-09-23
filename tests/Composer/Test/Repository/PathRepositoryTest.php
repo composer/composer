@@ -81,4 +81,29 @@ class PathRepositoryTest extends TestCase
         $package = $packages[1];
         $this->assertEquals('test/path-unversioned', $package->getName());
     }
+
+    /**
+     * Verify relative repository URLs remain relative, see #4439
+     */
+    public function testUrlRemainsRelative()
+    {
+        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
+            ->getMock();
+
+        $config = new \Composer\Config();
+        $loader = new ArrayLoader(new VersionParser());
+        $versionGuesser = null;
+
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'with-version'));
+        $relativeUrl = ltrim(substr($repositoryUrl, strlen(getcwd())), DIRECTORY_SEPARATOR);
+
+        $repository = new PathRepository(array('url' => $relativeUrl), $ioInterface, $config, $loader);
+        $packages = $repository->getPackages();
+
+        $this->assertEquals(1, $repository->count());
+
+        $package = $packages[0];
+        $this->assertEquals('test/path-versioned', $package->getName());
+        $this->assertEquals(rtrim($relativeUrl, DIRECTORY_SEPARATOR), rtrim($package->getDistUrl(), DIRECTORY_SEPARATOR));
+    }
 }
