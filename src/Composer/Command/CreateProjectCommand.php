@@ -36,7 +36,7 @@ use Composer\Json\JsonFile;
 use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 
 /**
  * Install a package as new project into new directory.
