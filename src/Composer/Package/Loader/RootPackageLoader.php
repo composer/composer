@@ -17,7 +17,7 @@ use Composer\Package\AliasPackage;
 use Composer\Config;
 use Composer\Factory;
 use Composer\Package\Version\VersionGuesser;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 

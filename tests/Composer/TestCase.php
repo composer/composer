@@ -12,9 +12,9 @@
 
 namespace Composer;
 
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Package\AliasPackage;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Util\Filesystem;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
@@ -32,7 +32,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
     protected function getVersionConstraint($operator, $version)
     {
-        $constraint = new VersionConstraint(
+        $constraint = new Constraint(
             $operator,
             self::getVersionParser()->normalize($version)
         );

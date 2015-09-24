@@ -12,7 +12,7 @@
 
 namespace Composer\Package;
 
-use Composer\Package\LinkConstraint\LinkConstraintInterface;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * Represents a link between two packages, represented by their names
@@ -32,7 +32,7 @@ class Link
     protected $target;
 
     /**
-     * @var LinkConstraintInterface|null
+     * @var ConstraintInterface|null
      */
     protected $constraint;
 
@@ -49,13 +49,13 @@ class Link
     /**
      * Creates a new package link.
      *
-     * @param string                       $source
-     * @param string                       $target
-     * @param LinkConstraintInterface|null $constraint       Constraint applying to the target of this link
-     * @param string                       $description      Used to create a descriptive string representation
-     * @param string|null                  $prettyConstraint
+     * @param string                   $source
+     * @param string                   $target
+     * @param ConstraintInterface|null $constraint       Constraint applying to the target of this link
+     * @param string                   $description      Used to create a descriptive string representation
+     * @param string|null              $prettyConstraint
      */
-    public function __construct($source, $target, LinkConstraintInterface $constraint = null, $description = 'relates to', $prettyConstraint = null)
+    public function __construct($source, $target, ConstraintInterface $constraint = null, $description = 'relates to', $prettyConstraint = null)
     {
         $this->source = strtolower($source);
         $this->target = strtolower($target);
@@ -81,7 +81,7 @@ class Link
     }
 
     /**
-     * @return LinkConstraintInterface|null
+     * @return ConstraintInterface|null
      */
     public function getConstraint()
     {

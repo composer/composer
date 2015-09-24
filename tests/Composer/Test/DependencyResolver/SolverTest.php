@@ -19,7 +19,7 @@ use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
 use Composer\TestCase;
-use Composer\Package\LinkConstraint\MultiConstraint;
+use Composer\Semver\Constraint\MultiConstraint;
 
 class SolverTest extends TestCase
 {

@@ -14,7 +14,7 @@ namespace Composer\Test\Package\Version;
 
 use Composer\Config;
 use Composer\Package\Version\VersionGuesser;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 
 class VersionGuesserTest extends \PHPUnit_Framework_TestCase
 {

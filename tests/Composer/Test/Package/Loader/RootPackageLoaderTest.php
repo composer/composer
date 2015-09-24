@@ -16,7 +16,7 @@ use Composer\Config;
 use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionGuesser;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 
 class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
 {

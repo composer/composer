@@ -16,6 +16,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Semver\VersionParser;
 
 /**
  * Selects the best possible version for a package

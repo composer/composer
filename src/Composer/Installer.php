@@ -34,7 +34,7 @@ use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
@@ -428,7 +428,7 @@ class Installer
                     && $this->installationManager->isPackageInstalled($localRepo, $package)
                 ) {
                     $removedUnstablePackages[$package->getName()] = true;
-                    $request->remove($package->getName(), new VersionConstraint('=', $package->getVersion()));
+                    $request->remove($package->getName(), new Constraint('=', $package->getVersion()));
                 }
             }
         }
@@ -467,7 +467,7 @@ class Installer
                     foreach ($currentPackages as $curPackage) {
                         if ($curPackage->getName() === $candidate) {
                             if (!$this->isUpdateable($curPackage) && !isset($removedUnstablePackages[$curPackage->getName()])) {
-                                $constraint = new VersionConstraint('=', $curPackage->getVersion());
+                                $constraint = new Constraint('=', $curPackage->getVersion());
                                 $request->install($curPackage->getName(), $constraint);
                             }
                             break;
@@ -487,7 +487,7 @@ class Installer
                 if (isset($aliases[$package->getName()][$version])) {
                     $version = $aliases[$package->getName()][$version]['alias_normalized'];
                 }
-                $constraint = new VersionConstraint('=', $version);
+                $constraint = new Constraint('=', $version);
                 $constraint->setPrettyString($package->getPrettyVersion());
                 $request->install($package->getName(), $constraint);
             }
@@ -712,7 +712,7 @@ class Installer
 
             $requires = array();
             foreach ($lockedRepository->getPackages() as $package) {
-                $constraint = new VersionConstraint('=', $package->getVersion());
+                $constraint = new Constraint('=', $package->getVersion());
                 $constraint->setPrettyString($package->getPrettyVersion());
                 $requires[$package->getName()] = $constraint;
             }
@@ -774,7 +774,7 @@ class Installer
     {
         $request = new Request();
 
-        $constraint = new VersionConstraint('=', $rootPackage->getVersion());
+        $constraint = new Constraint('=', $rootPackage->getVersion());
         $constraint->setPrettyString($rootPackage->getPrettyVersion());
         $request->install($rootPackage->getName(), $constraint);
 
@@ -788,7 +788,7 @@ class Installer
         // to prevent the solver trying to remove or update those
         $provided = $rootPackage->getProvides();
         foreach ($fixedPackages as $package) {
-            $constraint = new VersionConstraint('=', $package->getVersion());
+            $constraint = new Constraint('=', $package->getVersion());
             $constraint->setPrettyString($package->getPrettyVersion());
 
             // skip platform packages that are provided by the root package
@@ -893,7 +893,7 @@ class Installer
                     }
 
                     // find similar packages (name/version) in all repositories
-                    $matches = $pool->whatProvides($package->getName(), new VersionConstraint('=', $package->getVersion()));
+                    $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()));
                     foreach ($matches as $index => $match) {
                         // skip local packages
                         if (!in_array($match->getRepository(), $repositories, true)) {
@@ -1003,7 +1003,7 @@ class Installer
 
         foreach ($localRepo->getCanonicalPackages() as $package) {
             // find similar packages (name/version) in all repositories
-            $matches = $pool->whatProvides($package->getName(), new VersionConstraint('=', $package->getVersion()));
+            $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()));
             foreach ($matches as $index => $match) {
                 // skip local packages
                 if (!in_array($match->getRepository(), $repositories, true)) {

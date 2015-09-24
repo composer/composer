@@ -24,7 +24,7 @@ use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 
 /**
  * Creates a configured instance of composer.

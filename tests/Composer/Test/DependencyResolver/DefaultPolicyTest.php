@@ -18,7 +18,7 @@ use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\Package\Link;
 use Composer\Package\AliasPackage;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\Constraint;
 use Composer\TestCase;
 
 class DefaultPolicyTest extends TestCase
@@ -158,7 +158,7 @@ class DefaultPolicyTest extends TestCase
         $this->pool->addRepository($this->repoImportant);
         $this->pool->addRepository($this->repo);
 
-        $packages = $this->pool->whatProvides('a', new VersionConstraint('=', '2.1.9999999.9999999-dev'));
+        $packages = $this->pool->whatProvides('a', new Constraint('=', '2.1.9999999.9999999-dev'));
         $literals = array();
         foreach ($packages as $package) {
             $literals[] = $package->getId();
@@ -176,8 +176,8 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
 
-        $packageA->setProvides(array(new Link('A', 'X', new VersionConstraint('==', '1.0'), 'provides')));
-        $packageB->setProvides(array(new Link('B', 'X', new VersionConstraint('==', '1.0'), 'provides')));
+        $packageA->setProvides(array(new Link('A', 'X', new Constraint('==', '1.0'), 'provides')));
+        $packageB->setProvides(array(new Link('B', 'X', new Constraint('==', '1.0'), 'provides')));
 
         $this->pool->addRepository($this->repo);
 
@@ -194,7 +194,7 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
 
-        $packageB->setReplaces(array(new Link('B', 'A', new VersionConstraint('==', '1.0'), 'replaces')));
+        $packageB->setReplaces(array(new Link('B', 'A', new Constraint('==', '1.0'), 'replaces')));
 
         $this->pool->addRepository($this->repo);
 
@@ -212,8 +212,8 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageB = $this->getPackage('vendor-b/replacer', '1.0'));
         $this->repo->addPackage($packageA = $this->getPackage('vendor-a/replacer', '1.0'));
 
-        $packageA->setReplaces(array(new Link('vendor-a/replacer', 'vendor-a/package', new VersionConstraint('==', '1.0'), 'replaces')));
-        $packageB->setReplaces(array(new Link('vendor-b/replacer', 'vendor-a/package', new VersionConstraint('==', '1.0'), 'replaces')));
+        $packageA->setReplaces(array(new Link('vendor-a/replacer', 'vendor-a/package', new Constraint('==', '1.0'), 'replaces')));
+        $packageB->setReplaces(array(new Link('vendor-b/replacer', 'vendor-a/package', new Constraint('==', '1.0'), 'replaces')));
 
         $this->pool->addRepository($this->repo);
 

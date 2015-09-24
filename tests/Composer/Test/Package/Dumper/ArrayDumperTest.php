@@ -14,7 +14,7 @@ namespace Composer\Test\Package\Dumper;
 
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Link;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\Constraint;
 
 class ArrayDumperTest extends \PHPUnit_Framework_TestCase
 {
@@ -161,13 +161,13 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 'require',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'requires',
                 array('foo/bar' => '1.0.0'),
             ),
             array(
                 'require-dev',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires (for development)', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires (for development)', '1.0.0')),
                 'devRequires',
                 array('foo/bar' => '1.0.0'),
             ),
@@ -182,13 +182,13 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 'require',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'requires',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
             ),
             array(
                 'require-dev',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'devRequires',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
             ),
@@ -200,19 +200,19 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 'provide',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'provides',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
             ),
             array(
                 'replace',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'replaces',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
             ),
             array(
                 'conflict',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'conflicts',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
             ),

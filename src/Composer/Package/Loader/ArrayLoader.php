@@ -17,7 +17,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\Link;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\RootPackageInterface;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>

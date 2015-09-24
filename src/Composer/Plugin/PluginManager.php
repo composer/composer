@@ -16,12 +16,12 @@ use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\Package;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\Constraint;
 use Composer\DependencyResolver\Pool;
 
 /**
@@ -131,7 +131,7 @@ class PluginManager
                 }
 
                 $currentPluginApiVersion = $this->getPluginApiVersion();
-                $currentPluginApiConstraint = new VersionConstraint('==', $this->versionParser->normalize($currentPluginApiVersion));
+                $currentPluginApiConstraint = new Constraint('==', $this->versionParser->normalize($currentPluginApiVersion));
 
                 if (!$requiresComposer->matches($currentPluginApiConstraint)) {
                     $this->io->writeError('<warning>The "' . $package->getName() . '" plugin was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');

@@ -13,7 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\TestCase;
 use Composer\IO\NullIO;
 use Composer\Config;

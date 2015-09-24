@@ -18,7 +18,7 @@ use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\LoaderInterface;
 use Composer\Package\Version\VersionGuesser;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Util\ProcessExecutor;
 
 /**

@@ -15,6 +15,7 @@ namespace Composer\Package\Version;
 use Composer\Config;
 use Composer\Repository\Vcs\HgDriver;
 use Composer\IO\NullIO;
+use Composer\Semver\VersionParser;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;

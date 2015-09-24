@@ -16,7 +16,7 @@ use Composer\IO\NullIO;
 use Composer\Test\Mock\FactoryMock;
 use Composer\TestCase;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 
 class ComposerRepositoryTest extends TestCase
 {
