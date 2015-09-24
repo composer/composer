@@ -119,6 +119,7 @@ class Compiler
             ->in(__DIR__.'/../../vendor/seld/cli-prompt/')
             ->in(__DIR__.'/../../vendor/justinrainbow/json-schema/')
             ->in(__DIR__.'/../../vendor/composer/spdx-licenses/')
+            ->in(__DIR__.'/../../vendor/composer/semver/')
             ->sort($finderSort)
         ;
 
