@@ -12,14 +12,19 @@
 
 namespace Composer\Package\Version;
 
-use Composer\Semver\VersionParser as BaseVersionParser;
+use Composer\Semver\VersionParser as SemverVersionParser;
 
-class VersionParser extends BaseVersionParser
+class VersionParser extends SemverVersionParser
 {
     /**
-     * @param array $pairs
+     * Parses an array of strings representing package/version pairs.
      *
-     * @return array[]
+     * The parsing results in an array of arrays, each of which
+     * contain a 'name' key with value and optionally a 'version' key with value.
+     *
+     * @param array $pairs a set of package/version pairs separated by ":", "=" or " "
+     *
+     * @return array[] array of arrays containing a name and (if provided) a version
      */
     public function parseNameVersionPairs(array $pairs)
     {
