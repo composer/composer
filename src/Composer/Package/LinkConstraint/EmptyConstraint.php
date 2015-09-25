@@ -12,13 +12,13 @@
 
 namespace Composer\Package\LinkConstraint;
 
-use Composer\Semver\Constraint\EmptyConstraint as BaseEmptyConstraint;
+use Composer\Semver\Constraint\EmptyConstraint as SemverEmptyConstraint;
 
 @trigger_error('The ' . __NAMESPACE__ . '\EmptyConstraint class is deprecated, use Composer\Semver\Constraint\EmptyConstraint instead.', E_USER_DEPRECATED);
 
 /**
  * @deprecated use Composer\Semver\Constraint\EmptyConstraint instead
  */
-class EmptyConstraint extends BaseEmptyConstraint
+class EmptyConstraint extends SemverEmptyConstraint implements LinkConstraintInterface
 {
 }

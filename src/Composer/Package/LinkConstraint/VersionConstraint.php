@@ -19,6 +19,6 @@ use Composer\Semver\Constraint\Constraint;
 /**
  * @deprecated use Composer\Semver\Constraint\Constraint instead
  */
-class VersionConstraint extends Constraint
+class VersionConstraint extends Constraint implements LinkConstraintInterface
 {
 }

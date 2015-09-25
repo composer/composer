@@ -19,6 +19,6 @@ use Composer\Semver\Constraint\AbstractConstraint;
 /**
  * @deprecated use Composer\Semver\Constraint\AbstractConstraint instead
  */
-abstract class SpecificConstraint extends AbstractConstraint
+abstract class SpecificConstraint extends AbstractConstraint implements LinkConstraintInterface
 {
 }
