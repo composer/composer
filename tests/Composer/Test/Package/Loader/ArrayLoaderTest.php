@@ -17,7 +17,6 @@ use Composer\Package\Dumper\ArrayDumper;
 
 class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
 {
-
     /**
      * @var ArrayLoader
      */
@@ -124,7 +123,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
                 'exclude' => array('/foo/bar', 'baz', '!/foo/bar/baz'),
             ),
             'transport-options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem')),
-            'abandoned' => 'foo/bar'
+            'abandoned' => 'foo/bar',
         );
 
         $package = $this->loader->load($config);
@@ -195,7 +194,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
         $config = array(
             'name' => 'A',
             'version' => '1.2.3.4',
-            'abandoned' => 'foo/bar'
+            'abandoned' => 'foo/bar',
         );
 
         $package = $this->loader->load($config);
@@ -207,7 +206,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $config = array(
             'name' => 'A',
-            'version' => '1.2.3.4'
+            'version' => '1.2.3.4',
         );
 
         $package = $this->loader->load($config);

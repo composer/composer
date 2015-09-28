@@ -161,7 +161,7 @@ abstract class BasePackage implements PackageInterface
     /**
      * checks if this package is a platform package
      *
-     * @return boolean
+     * @return bool
      */
     public function isPlatform()
     {

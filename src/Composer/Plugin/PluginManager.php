@@ -45,9 +45,9 @@ class PluginManager
     /**
      * Initializes plugin manager
      *
-     * @param IOInterface         $io
-     * @param Composer            $composer
-     * @param Composer            $globalComposer
+     * @param IOInterface $io
+     * @param Composer    $composer
+     * @param Composer    $globalComposer
      */
     public function __construct(IOInterface $io, Composer $composer, Composer $globalComposer = null)
     {

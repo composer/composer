@@ -27,7 +27,7 @@ class HtmlOutputFormatter extends OutputFormatter
         34 => 'blue',
         35 => 'magenta',
         36 => 'cyan',
-        37 => 'white'
+        37 => 'white',
     );
     private static $availableBackgroundColors = array(
         40 => 'black',
@@ -37,7 +37,7 @@ class HtmlOutputFormatter extends OutputFormatter
         44 => 'blue',
         45 => 'magenta',
         46 => 'cyan',
-        47 => 'white'
+        47 => 'white',
     );
     private static $availableOptions = array(
         1 => 'bold',

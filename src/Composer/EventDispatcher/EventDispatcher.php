@@ -136,10 +136,10 @@ class EventDispatcher
      *
      * @param  Event             $event          The event object to pass to the event handlers/listeners.
      * @param  string            $additionalArgs
-     * @return int               return code of the executed script if any, for php scripts a false return
-     *                                          value is changed to 1, anything else to 0
      * @throws \RuntimeException
      * @throws \Exception
+     * @return int               return code of the executed script if any, for php scripts a false return
+     *                                          value is changed to 1, anything else to 0
      */
     protected function doDispatch(Event $event)
     {
@@ -212,8 +212,8 @@ class EventDispatcher
     }
 
     /**
-     * @param mixed $target
-     * @param Event $event
+     * @param  mixed              $target
+     * @param  Event              $event
      * @return Event|CommandEvent
      */
     protected function checkListenerExpectedEvent($target, Event $event)
@@ -260,7 +260,7 @@ class EventDispatcher
      *
      * @param string   $eventName The event name - typically a constant
      * @param Callable $listener  A callable expecting an event argument
-     * @param integer  $priority  A higher value represents a higher priority
+     * @param int      $priority  A higher value represents a higher priority
      */
     protected function addListener($eventName, $listener, $priority = 0)
     {
@@ -313,8 +313,8 @@ class EventDispatcher
     /**
      * Checks if an event has listeners registered
      *
-     * @param  Event   $event
-     * @return boolean
+     * @param  Event $event
+     * @return bool
      */
     public function hasEventListeners(Event $event)
     {
@@ -355,8 +355,8 @@ class EventDispatcher
     /**
      * Checks if string given references a class path and method
      *
-     * @param  string  $callable
-     * @return boolean
+     * @param  string $callable
+     * @return bool
      */
     protected function isPhpScript($callable)
     {

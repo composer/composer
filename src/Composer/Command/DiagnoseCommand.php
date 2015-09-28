@@ -264,7 +264,7 @@ EOT
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/user/repos' : 'https://'.$domain.'/api/v3/user/repos';
 
             return $this->rfs->getContents($domain, $url, false, array(
-                'retry-auth-failure' => false
+                'retry-auth-failure' => false,
             )) ? true : 'Unexpected error';
         } catch (\Exception $e) {
             if ($e instanceof TransportException && $e->getCode() === 401) {
@@ -276,10 +276,10 @@ EOT
     }
 
     /**
-     * @param string $domain
-     * @param string $token
-     * @return array
+     * @param  string             $domain
+     * @param  string             $token
      * @throws TransportException
+     * @return array
      */
     private function getGithubRateLimit($domain, $token = null)
     {

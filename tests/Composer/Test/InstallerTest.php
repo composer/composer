@@ -107,7 +107,7 @@ class InstallerTest extends TestCase
             $a,
             new ArrayRepository(array($b)),
             array(
-                'install' => array($b)
+                'install' => array($b),
             ),
         );
 
@@ -127,7 +127,7 @@ class InstallerTest extends TestCase
             $a,
             new ArrayRepository(array($a, $b)),
             array(
-                'install' => array($b)
+                'install' => array($b),
             ),
         );
 

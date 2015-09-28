@@ -54,22 +54,22 @@ class BasePackageTest extends \PHPUnit_Framework_TestCase
             array(
                 'sourceReference' => 'v2.1.0-RC2',
                 'truncate' => true,
-                'expected' => 'PrettyVersion v2.1.0-RC2'
+                'expected' => 'PrettyVersion v2.1.0-RC2',
             ),
             array(
                 'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
                 'truncate' => true,
-                'expected' => 'PrettyVersion bbf527a'
+                'expected' => 'PrettyVersion bbf527a',
             ),
             array(
                 'sourceReference' => 'v1.0.0',
                 'truncate' => false,
-                'expected' => 'PrettyVersion v1.0.0'
+                'expected' => 'PrettyVersion v1.0.0',
             ),
             array(
                 'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
                 'truncate' => false,
-                'expected' => 'PrettyVersion bbf527a27356414bfa9bf520f018c5cb7af67c77'
+                'expected' => 'PrettyVersion bbf527a27356414bfa9bf520f018c5cb7af67c77',
             ),
         );
 

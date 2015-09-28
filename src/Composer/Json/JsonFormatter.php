@@ -23,7 +23,6 @@ namespace Composer\Json;
 class JsonFormatter
 {
     /**
-     *
      * This code is based on the function found at:
      *  http://recursive-design.com/blog/2008/03/11/format-json-with-php/
      *

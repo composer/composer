@@ -46,7 +46,7 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
                 'to' => 'PEAR/Frontend/Gtk/xpm/black_close_icon.xpm',
                 'role' => 'php',
                 'tasks' => array(),
-            )
+            ),
         );
         $this->assertSame($expectedFileActions, $fileActions);
     }
@@ -69,7 +69,7 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
                 'to' => 'Net/URL.php',
                 'role' => 'php',
                 'tasks' => array(),
-            )
+            ),
         );
         $this->assertSame($expectedFileActions, $fileActions);
     }
@@ -99,16 +99,16 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
                 'role' => 'php',
                 'tasks' => array(),
             ),
-            'php/Test.php' => array (
+            'php/Test.php' => array(
                 'from' => 'Zend_Authentication-2.0.0beta4/php/Test.php',
                 'to' => '/php/Test.php',
                 'role' => 'script',
-                'tasks' => array (
-                    array (
+                'tasks' => array(
+                    array(
                         'from' => '@version@',
                         'to' => 'version',
-                    )
-                )
+                    ),
+                ),
             ),
             'renamedFile.php' => array(
                 'from' => 'Zend_Authentication-2.0.0beta4/renamedFile.php',

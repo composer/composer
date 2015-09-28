@@ -200,7 +200,7 @@ class AutoloadGeneratorTest extends TestCase
         $package->setDevAutoload(array(
             'files' => array('devfiles/foo.php'),
             'psr-0' => array(
-                'Main' => 'tests/'
+                'Main' => 'tests/',
             ),
         ));
 
@@ -381,7 +381,7 @@ class AutoloadGeneratorTest extends TestCase
 
         $package->setAutoload(array(
             'psr-0' => array('Prefix' => 'foo/bar/non/existing/'),
-            'psr-4' => array('Prefix\\' => 'foo/bar/non/existing2/')
+            'psr-4' => array('Prefix\\' => 'foo/bar/non/existing2/'),
         ));
 
         $this->repository->expects($this->once())
@@ -720,7 +720,7 @@ class AutoloadGeneratorTest extends TestCase
         $mainPackage = new Package('z', '1.0', '1.0');
         $mainPackage->setAutoload(array(
             'psr-0' => array('A\\B' => $this->workingDir.'/lib'),
-            'classmap' => array($this->workingDir.'/src')
+            'classmap' => array($this->workingDir.'/src'),
         ));
         $mainPackage->setRequires(array(new Link('z', 'a/a')));
 

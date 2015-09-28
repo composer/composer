@@ -62,6 +62,7 @@ class Rule
     public function getHash()
     {
         $data = unpack('ihash', md5(implode(',', $this->literals), true));
+
         return $data['hash'];
     }
 

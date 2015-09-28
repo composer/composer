@@ -245,7 +245,7 @@ class Locker
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
                                'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
-                               'This file is @gener'.'ated automatically'),
+                               'This file is @gener'.'ated automatically', ),
             'hash' => $this->hash,
             'content-hash' => $this->contentHash,
             'packages' => null,
@@ -426,6 +426,7 @@ class Locker
         }
 
         ksort($relevantContent);
+
         return md5(json_encode($relevantContent));
     }
 }

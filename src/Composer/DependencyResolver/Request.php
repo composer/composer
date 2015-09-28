@@ -59,7 +59,7 @@ class Request
             'cmd' => $cmd,
             'packageName' => $packageName,
             'constraint' => $constraint,
-            'fixed' => $fixed
+            'fixed' => $fixed,
         );
     }
 

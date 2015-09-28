@@ -37,8 +37,8 @@ use Composer\Semver\VersionParser;
 class Factory
 {
     /**
-     * @return string
      * @throws \RuntimeException
+     * @return string
      */
     protected static function getHomeDir()
     {

@@ -277,13 +277,13 @@ EOF;
         $includePathFilePath = $targetDir.'/include_paths.php';
         if ($includePathFileContents = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
             file_put_contents($includePathFilePath, $includePathFileContents);
-        } else if (file_exists($includePathFilePath)){
+        } elseif (file_exists($includePathFilePath)) {
             unlink($includePathFilePath);
         }
         $includeFilesFilePath = $targetDir.'/autoload_files.php';
         if ($includeFilesFileContents = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
             file_put_contents($includeFilesFilePath, $includeFilesFileContents);
-        } else if (file_exists($includeFilesFilePath)) {
+        } elseif (file_exists($includeFilesFilePath)) {
             unlink($includeFilesFilePath);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));

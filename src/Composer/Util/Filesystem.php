@@ -88,10 +88,9 @@ class Filesystem
      * Uses the process component if proc_open is enabled on the PHP
      * installation.
      *
-     * @param  string $directory
-     * @return bool
-     *
+     * @param  string            $directory
      * @throws \RuntimeException
+     * @return bool
      */
     public function removeDirectory($directory)
     {
@@ -174,10 +173,9 @@ class Filesystem
     /**
      * Attempts to unlink a file and in case of failure retries after 350ms on windows
      *
-     * @param  string $path
-     * @return bool
-     *
+     * @param  string            $path
      * @throws \RuntimeException
+     * @return bool
      */
     public function unlink($path)
     {
@@ -200,10 +198,9 @@ class Filesystem
     /**
      * Attempts to rmdir a file and in case of failure retries after 350ms on windows
      *
-     * @param  string $path
-     * @return bool
-     *
+     * @param  string            $path
      * @throws \RuntimeException
+     * @return bool
      */
     public function rmdir($path)
     {

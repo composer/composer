@@ -42,7 +42,7 @@ class ValidateCommand extends Command
                 new InputOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors'),
                 new InputOption('with-dependencies', 'A', InputOption::VALUE_NONE, 'Also validate the composer.json of all installed dependencies'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code for warnings as well as errors'),
-                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
+                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json'),
             ))
             ->setHelp(<<<EOT
 The validate command validates a given composer.json and composer.lock

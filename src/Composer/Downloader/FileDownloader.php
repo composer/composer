@@ -137,7 +137,7 @@ class FileDownloader implements DownloaderInterface
                         break;
                     } catch (TransportException $e) {
                         // if we got an http response with a proper code, then requesting again will probably not help, abort
-                        if ((0 !== $e->getCode() && !in_array($e->getCode(),array(500, 502, 503, 504))) || !$retries) {
+                        if ((0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
                             throw $e;
                         }
                         if ($this->io->isVerbose()) {
@@ -225,11 +225,10 @@ class FileDownloader implements DownloaderInterface
     /**
      * Process the download url
      *
-     * @param  PackageInterface $package package the url is coming from
-     * @param  string           $url     download url
-     * @return string           url
-     *
+     * @param  PackageInterface  $package package the url is coming from
+     * @param  string            $url     download url
      * @throws \RuntimeException If any problem with the url
+     * @return string            url
      */
     protected function processUrl(PackageInterface $package, $url)
     {

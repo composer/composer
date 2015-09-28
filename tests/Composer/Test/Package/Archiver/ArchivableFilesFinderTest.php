@@ -14,7 +14,6 @@ namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\ArchivableFilesFinder;
 use Composer\Util\Filesystem;
-
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ExecutableFinder;
 
@@ -287,7 +286,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
      *
      * @param string $process The name of the binary to test.
      *
-     * @return boolean True if the process is available, false otherwise.
+     * @return bool True if the process is available, false otherwise.
      */
     protected function isProcessAvailable($process)
     {

@@ -114,7 +114,7 @@ class NoProxyPattern
      * @param string $cidr IPv4 block in CIDR notation
      * @param string $ip   IPv4 address
      *
-     * @return boolean
+     * @return bool
      */
     private static function inCIDRBlock($cidr, $ip)
     {

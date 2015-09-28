@@ -106,18 +106,18 @@ class ChannelReaderTest extends TestCase
                                             'ext',
                                             'xml'
                                         ),
-                                    )
+                                    ),
                                 )
                             )
-                        )
+                        ),
                     )
-                )
+                ),
             )
         );
 
         $packages = $ref->invoke($reader, $channelInfo, new VersionParser());
 
-        $expectedPackage = new CompletePackage('pear-test.loc/sample', '1.0.0.1' , '1.0.0.1');
+        $expectedPackage = new CompletePackage('pear-test.loc/sample', '1.0.0.1', '1.0.0.1');
         $expectedPackage->setType('pear-library');
         $expectedPackage->setDistType('file');
         $expectedPackage->setDescription('description');

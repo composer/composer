@@ -160,9 +160,8 @@ class Installer
     /**
      * Run installation (or update)
      *
-     * @return int 0 on success or a positive error code on failure
-     *
      * @throws \Exception
+     * @return int        0 on success or a positive error code on failure
      */
     public function run()
     {
@@ -358,11 +357,11 @@ class Installer
     }
 
     /**
-     * @param RepositoryInterface $localRepo
-     * @param RepositoryInterface $installedRepo
-     * @param PlatformRepository $platformRepo
-     * @param array $aliases
-     * @param bool $withDevReqs
+     * @param  RepositoryInterface $localRepo
+     * @param  RepositoryInterface $installedRepo
+     * @param  PlatformRepository  $platformRepo
+     * @param  array               $aliases
+     * @param  bool                $withDevReqs
      * @return int
      */
     protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $withDevReqs)
@@ -700,8 +699,8 @@ class Installer
     }
 
     /**
-     * @param bool $withDevReqs
-     * @param RepositoryInterface|null $lockedRepository
+     * @param  bool                     $withDevReqs
+     * @param  RepositoryInterface|null $lockedRepository
      * @return Pool
      */
     private function createPool($withDevReqs, RepositoryInterface $lockedRepository = null)
@@ -766,8 +765,8 @@ class Installer
     }
 
     /**
-     * @param RootPackageInterface $rootPackage
-     * @param PlatformRepository   $platformRepo
+     * @param  RootPackageInterface $rootPackage
+     * @param  PlatformRepository   $platformRepo
      * @return Request
      */
     private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
@@ -804,16 +803,16 @@ class Installer
     }
 
     /**
-     * @param WritableRepositoryInterface $localRepo
-     * @param Pool                        $pool
-     * @param PolicyInterface             $policy
-     * @param array                       $repositories
-     * @param RepositoryInterface         $installedRepo
-     * @param RepositoryInterface         $lockedRepository
-     * @param bool                        $installFromLock
-     * @param bool                        $withDevReqs
-     * @param string                      $task
-     * @param array|null                  $operations
+     * @param  WritableRepositoryInterface $localRepo
+     * @param  Pool                        $pool
+     * @param  PolicyInterface             $policy
+     * @param  array                       $repositories
+     * @param  RepositoryInterface         $installedRepo
+     * @param  RepositoryInterface         $lockedRepository
+     * @param  bool                        $installFromLock
+     * @param  bool                        $withDevReqs
+     * @param  string                      $task
+     * @param  array|null                  $operations
      * @return array
      */
     private function processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $installFromLock, $withDevReqs, $task, array $operations = null)
@@ -948,8 +947,8 @@ class Installer
 
     /**
      * Loads the most "current" list of packages that are installed meaning from lock ideally or from installed repo as fallback
-     * @param bool                $withDevReqs
-     * @param RepositoryInterface $installedRepo
+     * @param  bool                $withDevReqs
+     * @param  RepositoryInterface $installedRepo
      * @return array
      */
     private function getCurrentPackages($withDevReqs, $installedRepo)
@@ -982,7 +981,7 @@ class Installer
         foreach ($aliases as $alias) {
             $normalizedAliases[$alias['package']][$alias['version']] = array(
                 'alias' => $alias['alias'],
-                'alias_normalized' => $alias['alias_normalized']
+                'alias_normalized' => $alias['alias_normalized'],
             );
         }
 
@@ -1062,7 +1061,7 @@ class Installer
     }
 
     /**
-     * @param PackageInterface $package
+     * @param  PackageInterface $package
      * @return bool
      */
     private function isUpdateable(PackageInterface $package)
@@ -1095,7 +1094,7 @@ class Installer
     }
 
     /**
-     * @param array $links
+     * @param  array $links
      * @return array
      */
     private function extractPlatformRequirements($links)
@@ -1118,7 +1117,7 @@ class Installer
      * update whitelist themselves.
      *
      * @param RepositoryInterface $localRepo
-     * @param boolean             $devMode
+     * @param bool                $devMode
      * @param array               $rootRequires    An array of links to packages in require of the root package
      * @param array               $rootDevRequires An array of links to packages in require-dev of the root package
      */
@@ -1251,7 +1250,7 @@ class Installer
     }
 
     /**
-     * @param RepositoryInterface $additionalInstalledRepository
+     * @param  RepositoryInterface $additionalInstalledRepository
      * @return $this
      */
     public function setAdditionalInstalledRepository(RepositoryInterface $additionalInstalledRepository)
@@ -1264,7 +1263,7 @@ class Installer
     /**
      * Whether to run in drymode or not
      *
-     * @param  boolean   $dryRun
+     * @param  bool      $dryRun
      * @return Installer
      */
     public function setDryRun($dryRun = true)
@@ -1287,7 +1286,7 @@ class Installer
     /**
      * prefer source installation
      *
-     * @param  boolean   $preferSource
+     * @param  bool      $preferSource
      * @return Installer
      */
     public function setPreferSource($preferSource = true)
@@ -1300,7 +1299,7 @@ class Installer
     /**
      * prefer dist installation
      *
-     * @param  boolean   $preferDist
+     * @param  bool      $preferDist
      * @return Installer
      */
     public function setPreferDist($preferDist = true)
@@ -1349,7 +1348,7 @@ class Installer
     /**
      * update packages
      *
-     * @param  boolean   $update
+     * @param  bool      $update
      * @return Installer
      */
     public function setUpdate($update = true)
@@ -1362,7 +1361,7 @@ class Installer
     /**
      * enables dev packages
      *
-     * @param  boolean   $devMode
+     * @param  bool      $devMode
      * @return Installer
      */
     public function setDevMode($devMode = true)
@@ -1375,7 +1374,7 @@ class Installer
     /**
      * set whether to run autoloader or not
      *
-     * @param boolean $dumpAutoloader
+     * @param  bool      $dumpAutoloader
      * @return Installer
      */
     public function setDumpAutoloader($dumpAutoloader = true)
@@ -1388,7 +1387,7 @@ class Installer
     /**
      * set whether to run scripts or not
      *
-     * @param  boolean   $runScripts
+     * @param  bool      $runScripts
      * @return Installer
      */
     public function setRunScripts($runScripts = true)
@@ -1414,7 +1413,7 @@ class Installer
     /**
      * run in verbose mode
      *
-     * @param  boolean   $verbose
+     * @param  bool      $verbose
      * @return Installer
      */
     public function setVerbose($verbose = true)
@@ -1437,7 +1436,7 @@ class Installer
     /**
      * set ignore Platform Package requirements
      *
-     * @param  boolean   $ignorePlatformReqs
+     * @param  bool      $ignorePlatformReqs
      * @return Installer
      */
     public function setIgnorePlatformRequirements($ignorePlatformReqs = false)
@@ -1464,7 +1463,7 @@ class Installer
     /**
      * Should dependencies of whitelisted packages be updated recursively?
      *
-     * @param  boolean   $updateDependencies
+     * @param  bool      $updateDependencies
      * @return Installer
      */
     public function setWhitelistDependencies($updateDependencies = true)
@@ -1477,7 +1476,7 @@ class Installer
     /**
      * Should packages be preferred in a stable version when updating?
      *
-     * @param  boolean   $preferStable
+     * @param  bool      $preferStable
      * @return Installer
      */
     public function setPreferStable($preferStable = true)
@@ -1490,7 +1489,7 @@ class Installer
     /**
      * Should packages be preferred in a lowest version when updating?
      *
-     * @param  boolean   $preferLowest
+     * @param  bool      $preferLowest
      * @return Installer
      */
     public function setPreferLowest($preferLowest = true)

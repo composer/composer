@@ -162,7 +162,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     }
 
     /**
-     * @param array $links
+     * @param array  $links
      * @param string $linkType
      * @internal param string $prettyVersion
      * @return array

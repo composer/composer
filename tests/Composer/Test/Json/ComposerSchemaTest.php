@@ -44,7 +44,7 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array(
             array(
                 'property' => 'minimum-stability',
-                'message' => 'Does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$'
+                'message' => 'Does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$',
             ),
         ), $this->check($json), 'empty string');
 
@@ -52,7 +52,7 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array(
             array(
                 'property' => 'minimum-stability',
-                'message' => 'Does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$'
+                'message' => 'Does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$',
             ),
         ), $this->check($json), 'dummy');
 

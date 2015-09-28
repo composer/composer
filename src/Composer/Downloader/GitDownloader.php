@@ -209,13 +209,12 @@ class GitDownloader extends VcsDownloader
     /**
      * Updates the given path to the given commit ref
      *
-     * @param  string      $path
-     * @param  string      $reference
-     * @param  string      $branch
-     * @param  \DateTime   $date
-     * @return null|string if a string is returned, it is the commit reference that was checked out if the original could not be found
-     *
+     * @param  string            $path
+     * @param  string            $reference
+     * @param  string            $branch
+     * @param  \DateTime         $date
      * @throws \RuntimeException
+     * @return null|string       if a string is returned, it is the commit reference that was checked out if the original could not be found
      */
     protected function updateToCommit($path, $reference, $branch, $date)
     {

@@ -245,8 +245,8 @@ EOT
      * @param  RepositoryInterface       $repos
      * @param  string                    $name
      * @param  string                    $version
-     * @return array                     array(CompletePackageInterface, array of versions)
      * @throws \InvalidArgumentException
+     * @return array                     array(CompletePackageInterface, array of versions)
      */
     protected function getPackage(RepositoryInterface $installedRepo, RepositoryInterface $repos, $name, $version = null)
     {

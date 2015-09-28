@@ -38,8 +38,8 @@ class ConfigValidator
     /**
      * Validates the config, and returns the result.
      *
-     * @param string  $file                       The path to the file
-     * @param integer $arrayLoaderValidationFlags Flags for ArrayLoader validation
+     * @param string $file                       The path to the file
+     * @param int    $arrayLoaderValidationFlags Flags for ArrayLoader validation
      *
      * @return array a triple containing the errors, publishable errors, and warnings
      */

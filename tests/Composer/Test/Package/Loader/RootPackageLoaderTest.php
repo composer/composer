@@ -41,7 +41,7 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
                 'foo/bar' => '~2.1.0-beta2',
                 'bar/baz' => '1.0.x-dev as 1.2.0',
                 'qux/quux' => '1.0.*@rc',
-                'zux/complex' => '~1.0,>=1.0.2@dev'
+                'zux/complex' => '~1.0,>=1.0.2@dev',
             ),
             'minimum-stability' => 'alpha',
         ));
@@ -82,8 +82,6 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("1.0.0.0", $package->getVersion());
         $this->assertEquals("No version set (parsed as 1.0.0)", $package->getPrettyVersion());
     }
-
-
 
     public function testFeatureBranchPrettyVersion()
     {

@@ -197,7 +197,7 @@ interface PackageInterface
      *
      * @see getPrettyVersion
      *
-     * @param bool $truncate If the source reference is a sha1 hash, truncate it
+     * @param  bool   $truncate If the source reference is a sha1 hash, truncate it
      * @return string version
      */
     public function getFullPrettyVersion($truncate = true);

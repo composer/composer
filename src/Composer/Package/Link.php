@@ -110,7 +110,7 @@ class Link
     }
 
     /**
-     * @param PackageInterface $sourcePackage
+     * @param  PackageInterface $sourcePackage
      * @return string
      */
     public function getPrettyString(PackageInterface $sourcePackage)

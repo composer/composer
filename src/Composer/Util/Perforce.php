@@ -297,7 +297,7 @@ class Perforce
                 }
                 throw new \Exception('p4 command not found in path: ' . $errorOutput);
             }
-            throw new \Exception('Invalid user name: ' . $this->getUser() );
+            throw new \Exception('Invalid user name: ' . $this->getUser());
         }
 
         return true;
@@ -305,7 +305,7 @@ class Perforce
 
     public function connectClient()
     {
-        $p4CreateClientCommand = $this->generateP4Command('client -i < ' . str_replace( " ", "\\ ", $this->getP4ClientSpec() ));
+        $p4CreateClientCommand = $this->generateP4Command('client -i < ' . str_replace(" ", "\\ ", $this->getP4ClientSpec()));
         $this->executeCommand($p4CreateClientCommand);
     }
 

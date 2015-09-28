@@ -216,7 +216,7 @@ class PluginInstallerTest extends TestCase
     }
 
     /**
-     * @param string $newPluginApiVersion
+     * @param string            $newPluginApiVersion
      * @param CompletePackage[] $plugins
      */
     private function setPluginApiVersionWithPlugins($newPluginApiVersion, array $plugins = array())

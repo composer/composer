@@ -503,7 +503,7 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageX = $this->getPackage('X', '1.0'));
         $packageX->setRequires(array(
             'a' => new Link('X', 'A', $this->getVersionConstraint('>=', '2.0.0.0'), 'requires'),
-            'b' => new Link('X', 'B', $this->getVersionConstraint('>=', '2.0.0.0'), 'requires')
+            'b' => new Link('X', 'B', $this->getVersionConstraint('>=', '2.0.0.0'), 'requires'),
         ));
 
         $this->repo->addPackage($packageA = $this->getPackage('A', '2.0.0'));
@@ -522,7 +522,7 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageS = $this->getPackage('S', '2.0.0'));
         $packageS->setReplaces(array(
             'a' => new Link('S', 'A', $this->getVersionConstraint('>=', '2.0.0.0'), 'replaces'),
-            'b' => new Link('S', 'B', $this->getVersionConstraint('>=', '2.0.0.0'), 'replaces')
+            'b' => new Link('S', 'B', $this->getVersionConstraint('>=', '2.0.0.0'), 'replaces'),
         ));
 
         $this->reposComplete();
@@ -850,13 +850,13 @@ class SolverTest extends TestCase
                 $result[] = array(
                     'job'  => 'update',
                     'from' => $operation->getInitialPackage(),
-                    'to'   => $operation->getTargetPackage()
+                    'to'   => $operation->getTargetPackage(),
                 );
             } else {
                 $job = ('uninstall' === $operation->getJobType() ? 'remove' : 'install');
                 $result[] = array(
                     'job'     => $job,
-                    'package' => $operation->getPackage()
+                    'package' => $operation->getPackage(),
                 );
             }
         }

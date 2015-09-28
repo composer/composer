@@ -148,7 +148,7 @@ EOT
         $io->writeError(array(
             '',
             $formatter->formatBlock('Welcome to the Composer config generator', 'bg=blue;fg=white', true),
-            ''
+            '',
         ));
 
         // namespace
@@ -284,7 +284,7 @@ EOT
 
     /**
      * @private
-     * @param string $author
+     * @param  string $author
      * @return array
      */
     public function parseAuthorString($author)
@@ -293,7 +293,7 @@ EOT
             if ($this->isValidEmail($match['email'])) {
                 return array(
                     'name'  => trim($match['name']),
-                    'email' => $match['email']
+                    'email' => $match['email'],
                 );
             }
         }
@@ -368,7 +368,7 @@ EOT
                     $io->writeError(array(
                         '',
                         sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
-                        ''
+                        '',
                     ));
 
                     $io->writeError($choices);
@@ -591,8 +591,8 @@ EOT
      *
      * @param  InputInterface            $input
      * @param  string                    $name
-     * @return string
      * @throws \InvalidArgumentException
+     * @return string
      */
     private function findBestVersionForPackage(InputInterface $input, $name)
     {

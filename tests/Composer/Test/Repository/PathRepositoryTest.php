@@ -15,9 +15,6 @@ namespace Composer\Repository;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Semver\VersionParser;
 use Composer\TestCase;
-use Composer\IO\NullIO;
-use Composer\Config;
-use Composer\Package\BasePackage;
 
 class PathRepositoryTest extends TestCase
 {

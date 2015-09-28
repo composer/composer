@@ -57,7 +57,7 @@ class Config
             'type' => 'composer',
             'url' => 'https?://packagist.org',
             'allow_ssl_downgrade' => true,
-        )
+        ),
     );
 
     private $config;
@@ -68,7 +68,7 @@ class Config
     private $useEnvironment;
 
     /**
-     * @param boolean $useEnvironment Use COMPOSER_ environment variables to replace config settings
+     * @param bool $useEnvironment Use COMPOSER_ environment variables to replace config settings
      */
     public function __construct($useEnvironment = true, $baseDir = null)
     {
@@ -331,8 +331,8 @@ class Config
      * This should be used to read COMPOSER_ environment variables
      * that overload config values.
      *
-     * @param  string         $var
-     * @return string|boolean
+     * @param  string      $var
+     * @return string|bool
      */
     private function getComposerEnv($var)
     {

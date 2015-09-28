@@ -71,8 +71,8 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(array(
                 'packages' => array(
                     array('name' => 'pkg1', 'version' => '1.0.0-beta'),
-                    array('name' => 'pkg2', 'version' => '0.1.10')
-                )
+                    array('name' => 'pkg2', 'version' => '0.1.10'),
+                ),
             )));
 
         $repo = $locker->getLockedRepository();
@@ -127,12 +127,12 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->with(array(
                 '_readme' => array('This file locks the dependencies of your project to a known state',
                                    'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
-                                   'This file is @gener'.'ated automatically'),
+                                   'This file is @gener'.'ated automatically', ),
                 'hash' => $hash,
                 'content-hash' => $contentHash,
                 'packages' => array(
                     array('name' => 'pkg1', 'version' => '1.0.0-beta'),
-                    array('name' => 'pkg2', 'version' => '0.1.10')
+                    array('name' => 'pkg2', 'version' => '0.1.10'),
                 ),
                 'packages-dev' => array(),
                 'aliases' => array(),

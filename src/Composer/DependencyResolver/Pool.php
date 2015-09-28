@@ -150,11 +150,11 @@ class Pool implements \Countable
     }
 
     /**
-    * Retrieves the package object for a given package id.
-    *
-    * @param int $id
-    * @return PackageInterface
-    */
+     * Retrieves the package object for a given package id.
+     *
+     * @param  int              $id
+     * @return PackageInterface
+     */
     public function packageById($id)
     {
         return $this->packages[$id - 1];

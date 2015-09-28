@@ -217,7 +217,7 @@ class Solver
      * Evaluates each term affected by the decision (linked through watches)
      * If we find unit rules we make new decisions based on them
      *
-     * @param  integer   $level
+     * @param  int       $level
      * @return Rule|null A rule on conflict, otherwise null.
      */
     protected function propagate($level)

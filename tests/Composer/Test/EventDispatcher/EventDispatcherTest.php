@@ -28,7 +28,7 @@ class EventDispatcherTest extends TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            'Composer\Test\EventDispatcher\EventDispatcherTest::call'
+            'Composer\Test\EventDispatcher\EventDispatcherTest::call',
         ), $io);
 
         $io->expects($this->at(0))
@@ -50,7 +50,7 @@ class EventDispatcherTest extends TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsCommandEvent'
+            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsCommandEvent',
         ), $io);
 
         $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
@@ -60,7 +60,7 @@ class EventDispatcherTest extends TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsVariableEvent'
+            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsVariableEvent',
         ), $io);
 
         $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));

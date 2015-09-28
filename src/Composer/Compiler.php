@@ -33,8 +33,8 @@ class Compiler
     /**
      * Compiles composer into a single phar file
      *
-     * @throws \RuntimeException
      * @param  string            $pharFile The full path to the file to create
+     * @throws \RuntimeException
      */
     public function compile($pharFile = 'composer.phar')
     {

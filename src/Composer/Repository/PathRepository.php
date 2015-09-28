@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Loader\LoaderInterface;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
 use Composer\Util\ProcessExecutor;
@@ -74,9 +73,9 @@ class PathRepository extends ArrayRepository
     /**
      * Initializes path repository.
      *
-     * @param array $repoConfig
+     * @param array       $repoConfig
      * @param IOInterface $io
-     * @param Config $config
+     * @param Config      $config
      */
     public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
@@ -104,7 +103,7 @@ class PathRepository extends ArrayRepository
         foreach ($this->getUrlMatches() as $url) {
             $path = realpath($url) . '/';
             $composerFilePath = $path.'composer.json';
-            
+
             if (!file_exists($composerFilePath)) {
                 continue;
             }
@@ -140,6 +139,6 @@ class PathRepository extends ArrayRepository
      */
     private function getUrlMatches()
     {
-        return glob($this->url, GLOB_MARK|GLOB_ONLYDIR);
+        return glob($this->url, GLOB_MARK | GLOB_ONLYDIR);
     }
 }

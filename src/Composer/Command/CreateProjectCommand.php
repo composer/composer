@@ -347,8 +347,8 @@ EOT
      * Updated preferSource or preferDist based on the preferredInstall config option
      * @param Config         $config
      * @param InputInterface $input
-     * @param boolean        $preferSource
-     * @param boolean        $preferDist
+     * @param bool           $preferSource
+     * @param bool           $preferDist
      */
     protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist, $keepVcsRequiresPreferSource = false)
     {

@@ -56,11 +56,11 @@ class RemoteFilesystem
     /**
      * Copy the remote file in local.
      *
-     * @param string  $originUrl The origin URL
-     * @param string  $fileUrl   The file URL
-     * @param string  $fileName  the local filename
-     * @param boolean $progress  Display the progression
-     * @param array   $options   Additional context options
+     * @param string $originUrl The origin URL
+     * @param string $fileUrl   The file URL
+     * @param string $fileName  the local filename
+     * @param bool   $progress  Display the progression
+     * @param array  $options   Additional context options
      *
      * @return bool true
      */
@@ -72,10 +72,10 @@ class RemoteFilesystem
     /**
      * Get the content.
      *
-     * @param string  $originUrl The origin URL
-     * @param string  $fileUrl   The file URL
-     * @param boolean $progress  Display the progression
-     * @param array   $options   Additional context options
+     * @param string $originUrl The origin URL
+     * @param string $fileUrl   The file URL
+     * @param bool   $progress  Display the progression
+     * @param array  $options   Additional context options
      *
      * @return bool|string The content
      */
@@ -107,11 +107,11 @@ class RemoteFilesystem
     /**
      * Get file content or copy action.
      *
-     * @param string  $originUrl         The origin URL
-     * @param string  $fileUrl           The file URL
-     * @param array   $additionalOptions context options
-     * @param string  $fileName          the local filename
-     * @param boolean $progress          Display the progression
+     * @param string $originUrl         The origin URL
+     * @param string $fileUrl           The file URL
+     * @param array  $additionalOptions context options
+     * @param string $fileName          the local filename
+     * @param bool   $progress          Display the progression
      *
      * @throws TransportException|\Exception
      * @throws TransportException            When the file could not be downloaded
@@ -195,7 +195,7 @@ class RemoteFilesystem
                 $this->degradedMode = true;
                 $this->io->writeError(array(
                     '<error>'.$e->getMessage().'</error>',
-                    '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>'
+                    '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
                 ));
 
                 return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
@@ -253,7 +253,7 @@ class RemoteFilesystem
                     $this->degradedMode = true;
                     $this->io->writeError(array(
                         '<error>Failed to decode response: '.$e->getMessage().'</error>',
-                        '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>'
+                        '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
                     ));
 
                     return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
@@ -303,7 +303,7 @@ class RemoteFilesystem
                 $this->degradedMode = true;
                 $this->io->writeError(array(
                     '<error>'.$e->getMessage().'</error>',
-                    '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>'
+                    '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
                 ));
 
                 return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
@@ -322,12 +322,12 @@ class RemoteFilesystem
     /**
      * Get notification action.
      *
-     * @param  integer            $notificationCode The notification code
-     * @param  integer            $severity         The severity level
+     * @param  int                $notificationCode The notification code
+     * @param  int                $severity         The severity level
      * @param  string             $message          The message
-     * @param  integer            $messageCode      The message code
-     * @param  integer            $bytesTransferred The loaded size
-     * @param  integer            $bytesMax         The total size
+     * @param  int                $messageCode      The message code
+     * @param  int                $bytesTransferred The loaded size
+     * @param  int                $bytesMax         The total size
      * @throws TransportException
      */
     protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
@@ -436,7 +436,7 @@ class RemoteFilesystem
                 php_uname('s'),
                 php_uname('r'),
                 $phpVersion
-            )
+            ),
         );
 
         if (extension_loaded('zlib')) {

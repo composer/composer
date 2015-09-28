@@ -586,7 +586,7 @@ class ComposerRepository extends ArrayRepository
 
         // url-encode $ signs in URLs as bad proxies choke on them
         if (($pos = strpos($filename, '$')) && preg_match('{^https?://.*}i', $filename)) {
-            $filename = substr($filename, 0, $pos) . '%24' . substr($filename, $pos+1);
+            $filename = substr($filename, 0, $pos) . '%24' . substr($filename, $pos + 1);
         }
 
         $retries = 3;

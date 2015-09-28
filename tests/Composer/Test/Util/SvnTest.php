@@ -60,9 +60,9 @@ class SvnTest extends \PHPUnit_Framework_TestCase
         $config->merge(array(
             'config' => array(
                 'http-basic' => array(
-                    'svn.apache.org' => array('username' => 'foo', 'password' => 'bar')
-                )
-            )
+                    'svn.apache.org' => array('username' => 'foo', 'password' => 'bar'),
+                ),
+            ),
         ));
 
         $svn = new Svn($url, new NullIO, $config);
@@ -81,9 +81,9 @@ class SvnTest extends \PHPUnit_Framework_TestCase
             array(
                 'config' => array(
                     'http-basic' => array(
-                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar')
-                    )
-                )
+                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar'),
+                    ),
+                ),
             )
         );
 
@@ -104,9 +104,9 @@ class SvnTest extends \PHPUnit_Framework_TestCase
             array(
                 'config' => array(
                     'http-basic' => array(
-                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar')
-                    )
-                )
+                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar'),
+                    ),
+                ),
             )
         );
 

@@ -77,14 +77,13 @@ interface VcsDriverInterface
      * Return true if the repository has a composer file for a given identifier,
      * false otherwise.
      *
-     * @param  string  $identifier Any identifier to a specific branch/tag/commit
-     * @return boolean Whether the repository has a composer file for a given identifier.
+     * @param  string $identifier Any identifier to a specific branch/tag/commit
+     * @return bool   Whether the repository has a composer file for a given identifier.
      */
     public function hasComposerFile($identifier);
 
     /**
      * Performs any cleanup necessary as the driver is not longer needed
-     *
      */
     public function cleanup();
 

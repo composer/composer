@@ -57,7 +57,7 @@ class VersionGuesser
 
     /**
      * @param array  $packageConfig
-     * @param string $path Path to guess into
+     * @param string $path          Path to guess into
      */
     public function guessVersion(array $packageConfig, $path)
     {
