@@ -162,7 +162,7 @@ Example:
 ```json
 {
     "config": {
-        "bin-dir": "bin"
+        "archive-dir": "/home/user/.composer/repo"
     }
 }
 ```
