@@ -293,6 +293,8 @@ EOT
             'notify-on-install' => array($booleanValidator, $booleanNormalizer),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
             'bin-dir' => array('is_string', function ($val) { return $val; }),
+            'archive-dir' => array('is_string', function ($val) { return $val; }),
+            'archive-format' => array('is_string', function ($val) { return $val; }),
             'cache-dir' => array('is_string', function ($val) { return $val; }),
             'cache-files-dir' => array('is_string', function ($val) { return $val; }),
             'cache-repo-dir' => array('is_string', function ($val) { return $val; }),
