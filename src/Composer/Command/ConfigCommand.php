@@ -475,13 +475,7 @@ EOT
             if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
                 $k .= preg_replace('{^config\.}', '', $key . '.');
                 $this->listConfiguration($value, $rawVal, $output, $k);
-
-                if (substr_count($k, '.') > 1) {
-                    $k = str_split($k, strrpos($k, '.', -2));
-                    $k = $k[0] . '.';
-                } else {
-                    $k = $origK;
-                }
+                $k = $origK;
 
                 continue;
             }
