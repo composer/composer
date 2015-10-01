@@ -238,17 +238,19 @@ EOT
             } elseif (strpos($settingKey, '.')) {
                 $bits = explode('.', $settingKey);
                 $data = $data['config'];
+                $match = false;
                 foreach ($bits as $bit) {
-                    if (isset($data[$bit])) {
-                        $data = $data[$bit];
-                    } elseif (isset($data[implode('.', $bits)])) {
-                        // last bit can contain domain names and such so try to join whatever is left if it exists
-                        $data = $data[implode('.', $bits)];
-                        break;
-                    } else {
-                        throw new \RuntimeException($settingKey.' is not defined');
+                    $key = isset($key) ? $key.'.'.$bit : $bit;
+                    $match = false;
+                    if (isset($data[$key])) {
+                        $match = true;
+                        $data = $data[$key];
+                        unset($key);
                     }
-                    array_shift($bits);
+                }
+
+                if (!$match) {
+                    throw new \RuntimeException($settingKey.' is not defined.');
                 }
 
                 $value = $data;
