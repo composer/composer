@@ -51,14 +51,14 @@ interface RepositoryInterface extends \Countable
      * @param string                                                 $name       package name
      * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
      *
-     * @return array
+     * @return PackageInterface[]
      */
     public function findPackages($name, $constraint = null);
 
     /**
      * Returns list of registered packages.
      *
-     * @return array
+     * @return PackageInterface[]
      */
     public function getPackages();
 
