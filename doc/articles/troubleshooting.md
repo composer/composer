@@ -193,7 +193,7 @@ If you have been pointed to this page, you want to check a few things:
   these fixed is raise awareness to the network engineers that have the power to fix it.
 
   To disable IPv6 on Linux, try using this command which appends a
-  rule prefering IPv4 over IPv6 to your config:
+  rule preferring IPv4 over IPv6 to your config:
 
   `sudo sh -c "echo 'precedence ::ffff:0:0/96 100' >> /etc/gai.conf"`
 - If none of the above helped, please report the error.
