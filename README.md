@@ -63,6 +63,11 @@ Requirements
 
 PHP 5.3.2 or above (at least 5.3.4 recommended to avoid potential bugs)
 
+Compatibility
+------------
+
+Compatible with Linux distributions and Mac OSX but it has some issues with Windows 8 presently.
+
 Authors
 -------
 
