@@ -13,10 +13,9 @@
 namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Cache;
@@ -26,8 +25,8 @@ use Composer\Util\RemoteFilesystem;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\Package\LinkConstraint\LinkConstraintInterface;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -108,7 +107,7 @@ class ComposerRepository extends ArrayRepository
         }
 
         $name = strtolower($name);
-        if (!$constraint instanceof LinkConstraintInterface) {
+        if (!$constraint instanceof ConstraintInterface) {
             $versionParser = new VersionParser();
             $constraint = $versionParser->parseConstraints($constraint);
         }
@@ -118,7 +117,7 @@ class ComposerRepository extends ArrayRepository
                 $packages = $this->whatProvides(new Pool('dev'), $providerName);
                 foreach ($packages as $package) {
                     if ($name === $package->getName()) {
-                        $pkgConstraint = new VersionConstraint('==', $package->getVersion());
+                        $pkgConstraint = new Constraint('==', $package->getVersion());
                         if ($constraint->matches($pkgConstraint)) {
                             return $package;
                         }
@@ -139,7 +138,7 @@ class ComposerRepository extends ArrayRepository
         // normalize name
         $name = strtolower($name);
 
-        if (null !== $constraint && !$constraint instanceof LinkConstraintInterface) {
+        if (null !== $constraint && !$constraint instanceof ConstraintInterface) {
             $versionParser = new VersionParser();
             $constraint = $versionParser->parseConstraints($constraint);
         }
@@ -151,7 +150,7 @@ class ComposerRepository extends ArrayRepository
                 $candidates = $this->whatProvides(new Pool('dev'), $providerName);
                 foreach ($candidates as $package) {
                     if ($name === $package->getName()) {
-                        $pkgConstraint = new VersionConstraint('==', $package->getVersion());
+                        $pkgConstraint = new Constraint('==', $package->getVersion());
                         if (null === $constraint || $constraint->matches($pkgConstraint)) {
                             $packages[] = $package;
                         }
@@ -583,6 +582,11 @@ class ComposerRepository extends ArrayRepository
         if (null === $cacheKey) {
             $cacheKey = $filename;
             $filename = $this->baseUrl.'/'.$filename;
+        }
+
+        // url-encode $ signs in URLs as bad proxies choke on them
+        if (($pos = strpos($filename, '$')) && preg_match('{^https?://.*}i', $filename)) {
+            $filename = substr($filename, 0, $pos) . '%24' . substr($filename, $pos + 1);
         }
 
         $retries = 3;

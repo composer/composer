@@ -23,11 +23,14 @@
     },
     "require": {
         "php": ">=5.3.2",
-        "justinrainbow/json-schema": "~1.4",
+        "justinrainbow/json-schema": "^1.4.4",
+        "composer/spdx-licenses": "^1.0",
+        "composer/semver": "^1.0",
         "seld/jsonlint": "~1.0",
         "symfony/console": "~2.5",
         "symfony/finder": "~2.2",
         "symfony/process": "~2.1",
+        "symfony/filesystem": "~2.5",
         "seld/phar-utils": "~1.0",
         "seld/cli-prompt": "~1.0"
     },
@@ -35,7 +38,7 @@
         "phpunit/phpunit": "~4.5",
         "phpunit/phpunit-mock-objects": "2.3.0"
     },
-    "_": "phpunit/phpunit-mock-objects required in 2.3.0 due to https://github.com/sebastianbergmann/phpunit-mock-objects/issues/223",
+    "_": "phpunit/phpunit-mock-objects required in 2.3.0 due to https://github.com/sebastianbergmann/phpunit-mock-objects/issues/223 - needs hhvm 3.8+ on travis",
     "config": {
         "platform": {
             "php": "5.3.3"

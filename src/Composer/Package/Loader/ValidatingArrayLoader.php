@@ -14,8 +14,8 @@ namespace Composer\Package\Loader;
 
 use Composer\Package;
 use Composer\Package\BasePackage;
-use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\VersionParser;
 use Composer\Repository\PlatformRepository;
 
 /**
@@ -149,7 +149,7 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        $unboundConstraint = new VersionConstraint('=', $this->versionParser->normalize('dev-master'));
+        $unboundConstraint = new Constraint('=', $this->versionParser->normalize('dev-master'));
 
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
             if ($this->validateArray($linkType) && isset($this->config[$linkType])) {

@@ -105,9 +105,7 @@ class Git
                         return;
                     }
                 }
-            } elseif ( // private non-github repo that failed to authenticate
-                $this->isAuthenticationFailure($url, $match)
-            ) {
+            } elseif ($this->isAuthenticationFailure($url, $match)) { // private non-github repo that failed to authenticate
                 if (strpos($match[2], '@')) {
                     list($authParts, $match[2]) = explode('@', $match[2], 2);
                 }
@@ -119,7 +117,7 @@ class Git
                     $defaultUsername = null;
                     if (isset($authParts) && $authParts) {
                         if (false !== strpos($authParts, ':')) {
-                            list($defaultUsername,) = explode(':', $authParts, 2);
+                            list($defaultUsername, ) = explode(':', $authParts, 2);
                         } else {
                             $defaultUsername = $authParts;
                         }

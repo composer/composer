@@ -38,7 +38,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 "    \"require\": {\n".
 "        \"vendor/baz\": \"qux\"\n".
 "    }\n".
-"}\n"
+"}\n",
             ),
             array(
                 '{
@@ -53,7 +53,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "vendor/baz": "qux"
     }
 }
-'
+',
             ),
             array(
                 '{
@@ -68,7 +68,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "vendor/baz": "qux"
     }
 }
-'
+',
             ),
             array(
                 '{
@@ -87,7 +87,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "vendor/baz": "qux"
     }
 }
-'
+',
             ),
             array(
                 '{
@@ -107,7 +107,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "vendor/baz": "qux"
     }
 }
-'
+',
             ),
             array(
                 '{
@@ -127,7 +127,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "vendor/baz": "qux"
     }
 }
-'
+',
             ),
             array(
                 '{
@@ -159,7 +159,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         }
     }]
 }
-'
+',
             ),
             array(
                 '{
@@ -188,7 +188,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "foo": "qux"
     }
 }
-'
+',
             ),
             array(
                 '{
@@ -207,7 +207,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "foo": "qux"
     }
 }
-'
+',
             ),
             array(
                 '{
@@ -229,7 +229,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "foo": "qux"
     }
 }
-'
+',
             ),
             array(
                 '{
@@ -277,7 +277,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "foo": "qux"
     }
 }
-'
+',
             ),
         );
     }
@@ -311,7 +311,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "vendor/baz": "qux"
     }
 }
-'
+',
             ),
             array(
                 '{
@@ -329,7 +329,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "foo": "bar"
     }
 }
-'
+',
             ),
             array(
                 '{
@@ -401,7 +401,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         }
     }
 }
-'
+',
             ),
             'works on simple ones last' => array(
                 '{
@@ -426,7 +426,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         }
     }
 }
-'
+',
             ),
             'works on simple ones unique' => array(
                 '{
@@ -443,7 +443,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     "repositories": {
     }
 }
-'
+',
             ),
             'works on simple ones middle' => array(
                 '{
@@ -476,7 +476,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         }
     }
 }
-'
+',
             ),
             'works on undefined ones' => array(
                 '{
@@ -497,7 +497,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         }
     }
 }
-'
+',
             ),
             'works on child having unmatched name' => array(
                 '{
@@ -518,7 +518,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         }
     }
 }
-'
+',
             ),
             'works on child having duplicate name' => array(
                 '{
@@ -541,7 +541,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         }
     }
 }
-'
+',
             ),
             'works on empty repos' => array(
                 '{
@@ -549,19 +549,19 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     }
 }',
                 'bar',
-                true
+                true,
             ),
             'works on empty repos2' => array(
                 '{
     "repositories": {}
 }',
                 'bar',
-                true
+                true,
             ),
             'works on missing repos' => array(
                 "{\n}",
                 'bar',
-                true
+                true,
             ),
             'works on deep repos' => array(
                 '{
@@ -577,7 +577,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     "repositories": {
     }
 }
-'
+',
             ),
             'fails on deep repos with borked texts' => array(
                 '{
@@ -588,7 +588,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     }
 }',
                 'bar',
-                false
+                false,
             ),
             'fails on deep repos with borked texts2' => array(
                 '{
@@ -599,7 +599,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     }
 }',
                 'bar',
-                false
+                false,
             ),
             'fails on deep arrays with borked texts' => array(
                 '{
@@ -610,7 +610,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     ]
 }',
                 'bar',
-                false
+                false,
             ),
             'fails on deep arrays with borked texts2' => array(
                 '{
@@ -621,7 +621,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     ]
 }',
                 'bar',
-                false
+                false,
             ),
         );
     }

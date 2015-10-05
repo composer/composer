@@ -38,8 +38,8 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches for the first match of a package by name and version.
      *
-     * @param string                                                          $name       package name
-     * @param string|\Composer\Package\LinkConstraint\LinkConstraintInterface $constraint package version or version constraint to match against
+     * @param string                                                 $name       package name
+     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface|null
      */
@@ -48,17 +48,17 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches for all packages matching a name and optionally a version.
      *
-     * @param string                                                          $name       package name
-     * @param string|\Composer\Package\LinkConstraint\LinkConstraintInterface $constraint package version or version constraint to match against
+     * @param string                                                 $name       package name
+     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
      *
-     * @return array
+     * @return PackageInterface[]
      */
     public function findPackages($name, $constraint = null);
 
     /**
      * Returns list of registered packages.
      *
-     * @return array
+     * @return PackageInterface[]
      */
     public function getPackages();
 

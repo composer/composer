@@ -53,7 +53,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             'depot'                       => self::TEST_DEPOT,
             'branch'                      => self::TEST_BRANCH,
             'p4user'                      => self::TEST_P4USER,
-            'unique_perforce_client_name' => self::TEST_CLIENT_NAME
+            'unique_perforce_client_name' => self::TEST_CLIENT_NAME,
         );
     }
 
@@ -222,9 +222,9 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             'depot'      => 'depot',
             'branch'     => 'branch',
             'p4user'     => 'user',
-            'p4password' => 'TEST_PASSWORD'
+            'p4password' => 'TEST_PASSWORD',
         );
-        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, false,  $this->getMockIOInterface(), 'TEST');
+        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, false, $this->getMockIOInterface(), 'TEST');
         $password = $this->perforce->queryP4Password();
         $this->assertEquals('TEST_PASSWORD', $password);
     }
@@ -476,7 +476,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             'name'              => 'test/perforce',
             'description'       => 'Basic project for testing',
             'minimum-stability' => 'dev',
-            'autoload'          => array('psr-0' => array())
+            'autoload'          => array('psr-0' => array()),
         );
         $this->assertEquals($expected, $result);
     }
@@ -517,7 +517,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             'name'              => 'test/perforce',
             'description'       => 'Basic project for testing',
             'minimum-stability' => 'dev',
-            'autoload'          => array('psr-0' => array())
+            'autoload'          => array('psr-0' => array()),
         );
         $this->assertEquals($expected, $result);
     }
@@ -546,7 +546,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             'name'              => 'test/perforce',
             'description'       => 'Basic project for testing',
             'minimum-stability' => 'dev',
-            'autoload'          => array('psr-0' => array())
+            'autoload'          => array('psr-0' => array()),
         );
         $this->assertEquals($expected, $result);
     }
@@ -588,7 +588,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             'name'              => 'test/perforce',
             'description'       => 'Basic project for testing',
             'minimum-stability' => 'dev',
-            'autoload'          => array('psr-0' => array())
+            'autoload'          => array('psr-0' => array()),
         );
         $this->assertEquals($expected, $result);
     }
@@ -662,7 +662,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             '"psr-0" : {',
             '}',
             '}',
-            '}'
+            '}',
         );
 
         return implode($composer_json);
@@ -688,7 +688,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             'SubmitOptions:  revertunchanged',
             PHP_EOL,
             'LineEnd:  local',
-            PHP_EOL
+            PHP_EOL,
         );
         if ($withStream) {
             $expectedArray[] = 'Stream:';

@@ -100,16 +100,17 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $config = Factory::createConfig();
+        $io = $this->getIO();
 
         $this->updatePreferredOptions($config, $input, $preferSource, $preferDist, true);
 
         if ($input->getOption('no-custom-installers')) {
-            $this->getIO()->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $io->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
         }
 
         return $this->installProject(
-            $this->getIO(),
+            $io,
             $config,
             $input->getArgument('package'),
             $input->getArgument('directory'),
@@ -290,15 +291,15 @@ EOT
 
         // handler Ctrl+C for unix-like systems
         if (function_exists('pcntl_signal')) {
-            declare(ticks = 100);
-            pcntl_signal(SIGINT, function() use ($directory) {
+            declare (ticks = 100);
+            pcntl_signal(SIGINT, function () use ($directory) {
                 $fs = new Filesystem();
                 $fs->removeDirectory($directory);
                 exit(130);
             });
         }
 
-        $io->writeError('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>');
+        $io->writeError('<info>Installing ' . $package->getName() . ' (' . $package->getFullPrettyVersion(false) . ')</info>');
 
         if ($disablePlugins) {
             $io->writeError('<info>Plugins have been disabled.</info>');
@@ -346,8 +347,8 @@ EOT
      * Updated preferSource or preferDist based on the preferredInstall config option
      * @param Config         $config
      * @param InputInterface $input
-     * @param boolean        $preferSource
-     * @param boolean        $preferDist
+     * @param bool           $preferSource
+     * @param bool           $preferDist
      */
     protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist, $keepVcsRequiresPreferSource = false)
     {

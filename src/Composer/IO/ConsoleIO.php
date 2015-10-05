@@ -18,7 +18,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
-use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * The Input/Output helper.
@@ -112,8 +111,8 @@ class ConsoleIO extends BaseIO
 
     /**
      * @param array $messages
-     * @param boolean $newline
-     * @param boolean $stderr
+     * @param bool  $newline
+     * @param bool  $stderr
      */
     private function doWrite($messages, $newline, $stderr)
     {
@@ -154,9 +153,9 @@ class ConsoleIO extends BaseIO
 
     /**
      * @param array $messages
-     * @param boolean $newline
-     * @param integer $size
-     * @param boolean $stderr
+     * @param bool  $newline
+     * @param int   $size
+     * @param bool  $stderr
      */
     private function doOverwrite($messages, $newline, $size, $stderr)
     {

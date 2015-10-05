@@ -23,18 +23,18 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
     {
         $json = '{ }';
         $this->assertEquals(array(
-            array('property' => '', 'message' => 'the property name is required'),
-            array('property' => '', 'message' => 'the property description is required'),
+            array('property' => 'name', 'message' => 'The property name is required'),
+            array('property' => 'description', 'message' => 'The property description is required'),
         ), $this->check($json));
 
         $json = '{ "name": "vendor/package" }';
         $this->assertEquals(array(
-            array('property' => '', 'message' => 'the property description is required'),
+            array('property' => 'description', 'message' => 'The property description is required'),
         ), $this->check($json));
 
         $json = '{ "description": "generic description" }';
         $this->assertEquals(array(
-            array('property' => '', 'message' => 'the property name is required'),
+            array('property' => 'name', 'message' => 'The property name is required'),
         ), $this->check($json));
     }
 
@@ -44,7 +44,7 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array(
             array(
                 'property' => 'minimum-stability',
-                'message' => 'does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$'
+                'message' => 'Does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$',
             ),
         ), $this->check($json), 'empty string');
 
@@ -52,7 +52,7 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array(
             array(
                 'property' => 'minimum-stability',
-                'message' => 'does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$'
+                'message' => 'Does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$',
             ),
         ), $this->check($json), 'dummy');
 

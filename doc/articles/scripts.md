@@ -23,34 +23,34 @@ Composer fires the following named events during its execution process:
 ### Command Events
 
 - **pre-install-cmd**: occurs before the `install` command is executed.
-- **post-install-cmd**: occurs after the `install` command is executed.
+- **post-install-cmd**: occurs after the `install` command has been executed.
 - **pre-update-cmd**: occurs before the `update` command is executed.
-- **post-update-cmd**: occurs after the `update` command is executed.
+- **post-update-cmd**: occurs after the `update` command has been executed.
 - **pre-status-cmd**: occurs before the `status` command is executed.
-- **post-status-cmd**: occurs after the `status` command is executed.
+- **post-status-cmd**: occurs after the `status` command has been executed.
 - **pre-archive-cmd**: occurs before the `archive` command is executed.
-- **post-archive-cmd**: occurs after the `archive` command is executed.
+- **post-archive-cmd**: occurs after the `archive` command has been executed.
 - **pre-autoload-dump**: occurs before the autoloader is dumped, either
   during `install`/`update`, or via the `dump-autoload` command.
-- **post-autoload-dump**: occurs after the autoloader is dumped, either
+- **post-autoload-dump**: occurs after the autoloader has been dumped, either
   during `install`/`update`, or via the `dump-autoload` command.
 - **post-root-package-install**: occurs after the root package has been
   installed, during the `create-project` command.
-- **post-create-project-cmd**: occurs after the `create-project` command is
-  executed.
+- **post-create-project-cmd**: occurs after the `create-project` command has
+  been executed.
 
 ### Installer Events
 
 - **pre-dependencies-solving**: occurs before the dependencies are resolved.
-- **post-dependencies-solving**: occurs after the dependencies are resolved.
+- **post-dependencies-solving**: occurs after the dependencies have been resolved.
 
 ### Package Events
 
 - **pre-package-install**: occurs before a package is installed.
-- **post-package-install**: occurs after a package is installed.
+- **post-package-install**: occurs after a package has been installed.
 - **pre-package-update**: occurs before a package is updated.
-- **post-package-update**: occurs after a package is updated.
-- **pre-package-uninstall**: occurs before a package has been uninstalled.
+- **post-package-update**: occurs after a package has been updated.
+- **pre-package-uninstall**: occurs before a package is uninstalled.
 - **post-package-uninstall**: occurs after a package has been uninstalled.
 
 ### Plugin Events
@@ -82,6 +82,10 @@ For any given event:
 and command-line executable commands.
 - PHP classes containing defined callbacks must be autoloadable via Composer's
 autoload functionality.
+- Callbacks can only autoload classes from psr-0, psr-4 and classmap
+definitions. If a defined callback relies on functions defined outside of a
+class, the callback itself is responsible for loading the file containing these
+functions.
 
 Script definition example:
 
@@ -96,7 +100,10 @@ Script definition example:
             "MyVendor\\MyClass::warmCache",
             "phpunit -c app/"
         ],
-        "post-create-project-cmd" : [
+        "post-autoload-dump": [
+            "MyVendor\\MyClass::postAutoloadDump"
+        ],
+        "post-create-project-cmd": [
             "php -r \"copy('config/local-example.php', 'config/local.php');\""
         ]
     }
@@ -120,6 +127,14 @@ class MyClass
     {
         $composer = $event->getComposer();
         // do stuff
+    }
+
+    public static function postAutoloadDump(Event $event)
+    {
+        $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
+        require $vendorDir . '/autoload.php';
+
+        some_function_from_an_autoloaded_file();
     }
 
     public static function postPackageInstall(PackageEvent $event)

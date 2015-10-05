@@ -13,7 +13,7 @@
 namespace Composer\Test\Package\Version;
 
 use Composer\Package\Version\VersionSelector;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 
 class VersionSelectorTest extends \PHPUnit_Framework_TestCase
 {

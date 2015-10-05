@@ -14,7 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\VcsDriverInterface;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
@@ -55,7 +55,7 @@ class VcsRepository extends ArrayRepository
         $this->url = $repoConfig['url'];
         $this->io = $io;
         $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
-        $this->verbose = $io->isVerbose();
+        $this->verbose = $io->isVeryVerbose();
         $this->config = $config;
         $this->repoConfig = $repoConfig;
     }

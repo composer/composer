@@ -15,7 +15,6 @@ namespace Composer\Util;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Downloader\TransportException;
-use Composer\Json\JsonFile;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -95,6 +94,7 @@ class GitHub
         if (!$token) {
             $this->io->writeError('<warning>No token given, aborting.</warning>');
             $this->io->writeError('You can also add it manually later by using "composer config github-oauth.github.com <token>"');
+
             return false;
         }
 

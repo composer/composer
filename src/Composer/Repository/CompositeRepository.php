@@ -109,20 +109,6 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function filterPackages($callback, $class = 'Composer\Package\Package')
-    {
-        foreach ($this->repositories as $repository) {
-            if (false === $repository->filterPackages($callback, $class)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function getPackages()

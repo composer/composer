@@ -7,8 +7,9 @@ cache:
     - $HOME/.composer/cache
 
 addons:
-  apt_packages:
-    - parallel
+  apt:
+    packages:
+      - parallel
 
 php:
   - 5.3.3

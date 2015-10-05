@@ -60,6 +60,7 @@ EOT
         $composer->getEventDispatcher()->dispatchScript(ScriptEvents::PRE_STATUS_CMD, true);
 
         $errors = array();
+        $io = $this->getIO();
 
         // list packages
         foreach ($installedRepo->getPackages() as $package) {
@@ -67,6 +68,10 @@ EOT
 
             if ($downloader instanceof ChangeReportInterface) {
                 $targetDir = $im->getInstallPath($package);
+
+                if (is_link($targetDir)) {
+                    $errors[$targetDir] = $targetDir . ' is a symbolic link.';
+                }
 
                 if ($changes = $downloader->getLocalChanges($package, $targetDir)) {
                     $errors[$targetDir] = $changes;
@@ -76,9 +81,9 @@ EOT
 
         // output errors/warnings
         if (!$errors) {
-            $this->getIO()->writeError('<info>No local changes</info>');
+            $io->writeError('<info>No local changes</info>');
         } else {
-            $this->getIO()->writeError('<error>You have changes in the following dependencies:</error>');
+            $io->writeError('<error>You have changes in the following dependencies:</error>');
         }
 
         foreach ($errors as $path => $changes) {
@@ -86,15 +91,15 @@ EOT
                 $indentedChanges = implode("\n", array_map(function ($line) {
                     return '    ' . ltrim($line);
                 }, explode("\n", $changes)));
-                $this->getIO()->write('<info>'.$path.'</info>:');
-                $this->getIO()->write($indentedChanges);
+                $io->write('<info>'.$path.'</info>:');
+                $io->write($indentedChanges);
             } else {
-                $this->getIO()->write($path);
+                $io->write($path);
             }
         }
 
         if ($errors && !$input->getOption('verbose')) {
-            $this->getIO()->writeError('Use --verbose (-v) to see modified files');
+            $io->writeError('Use --verbose (-v) to see modified files');
         }
 
         // Dispatch post-status-command

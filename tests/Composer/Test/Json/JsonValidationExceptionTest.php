@@ -36,7 +36,7 @@ class JsonValidationExceptionTest extends \PHPUnit_Framework_TestCase
     {
         return array(
             array('test message', array()),
-            array(null, null)
+            array(null, null),
         );
     }
 }

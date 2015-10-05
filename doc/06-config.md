@@ -46,6 +46,11 @@ A list of domain names and username/passwords to authenticate against them. For
 example using `{"example.org": {"username": "alice", "password": "foo"}` as the
 value of this option will let Composer authenticate against example.org.
 
+> **Note:** Authentication-related config options like `http-basic` and
+> `github-oauth` can also be specified inside a `auth.json` file that goes
+> besides your `composer.json`. That way you can gitignore it and every
+> developer can place their own credentials in there.
+
 ## platform
 
 Lets you fake platform packages (PHP and extensions) so that you can emulate a
@@ -100,7 +105,7 @@ first until the cache fits.
 
 ## prepend-autoloader
 
-Defaults to `true`. If false, the Composer autoloader will not be prepended to
+Defaults to `true`. If `false`, the Composer autoloader will not be prepended to
 existing autoloaders. This is sometimes required to fix interoperability issues
 with other autoloaders.
 
@@ -111,13 +116,12 @@ autoloader. When null a random one will be generated.
 
 ## optimize-autoloader
 
-Defaults to `false`. Always optimize when dumping the autoloader.
+Defaults to `false`. If `true`, always optimize when dumping the autoloader.
 
 ## classmap-authoritative
 
-Defaults to `false`. If `true`, the Composer autoloader will not scan the
-filesystem for classes that are not found in the class map. Implies
-'optimize-autoloader'.
+Defaults to `false`. If `true`, the Composer autoloader will only load classes
+from the classmap. Implies `optimize-autoloader`.
 
 ## github-domains
 
@@ -126,7 +130,7 @@ used for GitHub Enterprise setups.
 
 ## github-expose-hostname
 
-Defaults to `true`. If set to `false`, the OAuth tokens created to access the
+Defaults to `true`. If `false`, the OAuth tokens created to access the
 github API will have a date instead of the machine hostname.
 
 ## notify-on-install
@@ -163,10 +167,5 @@ Example:
     }
 }
 ```
-
-> **Note:** Authentication-related config options like `http-basic` and
-> `github-oauth` can also be specified inside a `auth.json` file that goes
-> besides your `composer.json`. That way you can gitignore it and every
-> developer can place their own credentials in there.
 
 &larr; [Repositories](05-repositories.md)  |  [Community](07-community.md) &rarr;

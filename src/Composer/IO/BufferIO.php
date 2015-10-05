@@ -23,8 +23,8 @@ use Symfony\Component\Console\Helper\HelperSet;
 class BufferIO extends ConsoleIO
 {
     /**
-     * @param string $input
-     * @param int $verbosity
+     * @param string                   $input
+     * @param int                      $verbosity
      * @param OutputFormatterInterface $formatter
      */
     public function __construct(

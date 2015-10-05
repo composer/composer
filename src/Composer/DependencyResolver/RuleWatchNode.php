@@ -83,7 +83,7 @@ class RuleWatchNode
     /**
      * Given one watched literal, this method returns the other watched literal
      *
-     * @param int The watched literal that should not be returned
+     * @param  int $literal The watched literal that should not be returned
      * @return int A literal
      */
     public function getOtherWatch($literal)

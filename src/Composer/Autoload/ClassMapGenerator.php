@@ -49,9 +49,8 @@ class ClassMapGenerator
      * @param IOInterface      $io        IO object
      * @param string           $namespace Optional namespace prefix to filter by
      *
-     * @return array A class map array
-     *
      * @throws \RuntimeException When the path is neither an existing file nor directory
+     * @return array             A class map array
      */
     public static function createMap($path, $whitelist = null, IOInterface $io = null, $namespace = null)
     {
@@ -91,7 +90,7 @@ class ClassMapGenerator
 
                 if (!isset($map[$class])) {
                     $map[$class] = $filePath;
-                } elseif ($io && $map[$class] !== $filePath && !preg_match('{/(test|fixture|example)s?/}i', strtr($map[$class].' '.$filePath, '\\', '/'))) {
+                } elseif ($io && $map[$class] !== $filePath && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($map[$class].' '.$filePath, '\\', '/'))) {
                     $io->writeError(
                         '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
                         ' was found in both "'.$map[$class].'" and "'.$filePath.'", the first will be used.</warning>'

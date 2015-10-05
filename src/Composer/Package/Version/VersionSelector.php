@@ -16,6 +16,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Semver\VersionParser as SemverVersionParser;
 
 /**
  * Selects the best possible version for a package
@@ -130,7 +131,7 @@ class VersionSelector
     private function getParser()
     {
         if ($this->parser === null) {
-            $this->parser = new VersionParser();
+            $this->parser = new SemverVersionParser();
         }
 
         return $this->parser;

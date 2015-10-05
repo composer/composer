@@ -77,7 +77,11 @@ abstract class ArchiveDownloader extends FileDownloader
 
                 // retry downloading if we have an invalid zip file
                 if ($retries && $e instanceof \UnexpectedValueException && class_exists('ZipArchive') && $e->getCode() === \ZipArchive::ER_NOZIP) {
-                    $this->io->writeError('    Invalid zip file, retrying...');
+                    if ($this->io->isDebug()) {
+                        $this->io->writeError('    Invalid zip file ('.$e->getMessage().'), retrying...');
+                    } else {
+                        $this->io->writeError('    Invalid zip file, retrying...');
+                    }
                     usleep(500000);
                     continue;
                 }
@@ -115,7 +119,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 // update api archives to the proper reference
                 $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
             }
-        } else if ($package->getDistReference() && strpos($url, 'bitbucket.org')) {
+        } elseif ($package->getDistReference() && strpos($url, 'bitbucket.org')) {
             if (preg_match('{^https?://(?:www\.)?bitbucket\.org/([^/]+)/([^/]+)/get/(.+)\.(zip|tar\.gz|tar\.bz2)$}i', $url, $match)) {
                 // update Bitbucket archives to the proper reference
                 $url = 'https://bitbucket.org/' . $match[1] . '/'. $match[2] . '/get/' . $package->getDistReference() . '.' . $match[4];

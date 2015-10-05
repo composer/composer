@@ -18,8 +18,8 @@ use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 
 /**
-* @author Rob Bast <rob.bast@gmail.com>
-*/
+ * @author Rob Bast <rob.bast@gmail.com>
+ */
 class GitHubTest extends \PHPUnit_Framework_TestCase
 {
     private $username = 'username';

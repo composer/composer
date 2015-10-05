@@ -38,7 +38,15 @@ class AutoloadGenerator
      */
     private $io;
 
+    /**
+     * @var bool
+     */
     private $devMode = false;
+
+    /**
+     * @var bool
+     */
+    private $classMapAuthoritative = false;
 
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
@@ -51,8 +59,23 @@ class AutoloadGenerator
         $this->devMode = (boolean) $devMode;
     }
 
+    /**
+     * Whether or not generated autoloader considers the class map
+     * authoritative.
+     *
+     * @param bool $classMapAuthoritative
+     */
+    public function setClassMapAuthoritative($classMapAuthoritative)
+    {
+        $this->classMapAuthoritative = (boolean) $classMapAuthoritative;
+    }
+
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
+        if ($this->classMapAuthoritative) {
+            // Force scanPsr0Packages when classmap is authoritative
+            $scanPsr0Packages = true;
+        }
         $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode, array(), array(
             'optimize' => (bool) $scanPsr0Packages,
         ));
@@ -63,7 +86,6 @@ class AutoloadGenerator
         $vendorPath = $filesystem->normalizePath(realpath($config->get('vendor-dir')));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
-        $classMapAuthoritative = $config->get('classmap-authoritative');
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
@@ -174,10 +196,21 @@ EOF;
         // flatten array
         $classMap = array();
         if ($scanPsr0Packages) {
+            $namespacesToScan = array();
+
             // Scan the PSR-0/4 directories for class files, and add them to the class map
             foreach (array('psr-0', 'psr-4') as $psrType) {
                 foreach ($autoloads[$psrType] as $namespace => $paths) {
-                    foreach ($paths as $dir) {
+                    $namespacesToScan[$namespace][] = array('paths' => $paths, 'type' => $psrType);
+                }
+            }
+
+            krsort($namespacesToScan);
+
+            foreach ($namespacesToScan as $namespace => $groups) {
+                foreach ($groups as $group) {
+                    $psrType = $group['type'];
+                    foreach ($group['paths'] as $dir) {
                         $dir = $filesystem->normalizePath($filesystem->isAbsolutePath($dir) ? $dir : $basePath.'/'.$dir);
                         if (!is_dir($dir)) {
                             continue;
@@ -190,9 +223,14 @@ EOF;
 
                         $namespaceFilter = $namespace === '' ? null : $namespace;
                         foreach (ClassMapGenerator::createMap($dir, $whitelist, $this->io, $namespaceFilter) as $class => $path) {
+                            $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
                             if (!isset($classMap[$class])) {
-                                $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
-                                $classMap[$class] = $path.",\n";
+                                $classMap[$class] = $pathCode;
+                            } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
+                                $this->io->writeError(
+                                    '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
+                                    ' was found in both "'.str_replace(array('$vendorDir . \'', "',\n"), array($vendorPath, ''), $classMap[$class]).'" and "'.$path.'", the first will be used.</warning>'
+                                );
                             }
                         }
                     }
@@ -202,8 +240,15 @@ EOF;
 
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir, null, $this->io) as $class => $path) {
-                $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
-                $classMap[$class] = $path.",\n";
+                $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
+                if (!isset($classMap[$class])) {
+                    $classMap[$class] = $pathCode;
+                } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
+                    $this->io->writeError(
+                        '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
+                        ' was found in both "'.str_replace(array('$vendorDir . \'', "',\n"), array($vendorPath, ''), $classMap[$class]).'" and "'.$path.'", the first will be used.</warning>'
+                    );
+                }
             }
         }
 
@@ -229,23 +274,23 @@ EOF;
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
         file_put_contents($targetDir.'/autoload_psr4.php', $psr4File);
         file_put_contents($targetDir.'/autoload_classmap.php', $classmapFile);
-        if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
-            file_put_contents($targetDir.'/include_paths.php', $includePathFile);
+        $includePathFilePath = $targetDir.'/include_paths.php';
+        if ($includePathFileContents = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
+            file_put_contents($includePathFilePath, $includePathFileContents);
+        } elseif (file_exists($includePathFilePath)) {
+            unlink($includePathFilePath);
         }
-        if ($includeFilesFile = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
-            file_put_contents($targetDir.'/autoload_files.php', $includeFilesFile);
+        $includeFilesFilePath = $targetDir.'/autoload_files.php';
+        if ($includeFilesFileContents = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
+            file_put_contents($includeFilesFilePath, $includeFilesFileContents);
+        } elseif (file_exists($includeFilesFilePath)) {
+            unlink($includeFilesFilePath);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative));
+        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader));
 
-        // use stream_copy_to_stream instead of copy
-        // to work around https://bugs.php.net/bug.php?id=64634
-        $sourceLoader = fopen(__DIR__.'/ClassLoader.php', 'r');
-        $targetLoader = fopen($targetDir.'/ClassLoader.php', 'w+');
-        stream_copy_to_stream($sourceLoader, $targetLoader);
-        fclose($sourceLoader);
-        fclose($targetLoader);
-        unset($sourceLoader, $targetLoader);
+        $this->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+        $this->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
 
         $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
             'optimize' => (bool) $scanPsr0Packages,
@@ -310,7 +355,7 @@ EOF;
 
         $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $mainPackage);
         $psr4 = $this->parseAutoloadsType($packageMap, 'psr-4', $mainPackage);
-        $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap', $mainPackage);
+        $classmap = $this->parseAutoloadsType(array_reverse($sortedPackageMap), 'classmap', $mainPackage);
         $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage);
 
         krsort($psr0);
@@ -453,7 +498,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative)
+    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader)
     {
         // TODO the class ComposerAutoloaderInit should be revert to a closure
         // when APC has been fixed:
@@ -530,7 +575,7 @@ PSR4;
 CLASSMAP;
         }
 
-        if ($classMapAuthoritative) {
+        if ($this->classMapAuthoritative) {
             $file .= <<<'CLASSMAPAUTHORITATIVE'
         $loader->setClassMapAuthoritative(true);
 
@@ -726,5 +771,21 @@ FOOTER;
         }
 
         return $sortedPackageMap;
+    }
+
+    /**
+     * Copy file using stream_copy_to_stream to work around https://bugs.php.net/bug.php?id=6463
+     *
+     * @param string $source
+     * @param string $target
+     */
+    protected function safeCopy($source, $target)
+    {
+        $source = fopen($source, 'r');
+        $target = fopen($target, 'w+');
+
+        stream_copy_to_stream($source, $target);
+        fclose($source);
+        fclose($target);
     }
 }

@@ -104,9 +104,10 @@ EOT
             return 0;
         }
 
-        $this->getIO()->writeError('<info>scripts:</info>');
+        $io = $this->getIO();
+        $io->writeError('<info>scripts:</info>');
         foreach ($scripts as $name => $script) {
-            $this->getIO()->write('  ' . $name);
+            $io->write('  ' . $name);
         }
 
         return 0;

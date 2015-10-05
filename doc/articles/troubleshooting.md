@@ -43,6 +43,10 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 5. If you are updating to a recently published version of a package, be aware that
    Packagist has a delay of up to 1 minute before new packages are visible to Composer.
 
+6. If you are updating a single package, it may depend on newer versions itself.
+   In this case add the `--with-dependencies` argument **or** add all dependencies which
+   need an update to the command.
+
 ## Package not found on travis-ci.org
 
 1. Check the ["Package not found"](#package-not-found) item above.
@@ -61,13 +65,13 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 ## Package not found in a Jenkins-build
 
 1. Check the ["Package not found"](#package-not-found) item above.
-2. Reason for failing is similar to the problem which can occur on travis-ci.org: The 
-   git-clone / checkout within Jenkins leaves the branch in a "detached HEAD"-state. As 
-   a result, Composer is not able to identify the version of the current checked out branch 
-   and may not be able to resolve a cyclic dependency. To solve this problem, you can use 
-   the "Additional Behaviours" -> "Check out to specific local branch" in your Git-settings 
-   for your Jenkins-job, where your "local branch" shall be the same branch as you are 
-   checking out. Using this, the checkout will not be in detached state any more and cyclic 
+2. Reason for failing is similar to the problem which can occur on travis-ci.org: The
+   git-clone / checkout within Jenkins leaves the branch in a "detached HEAD"-state. As
+   a result, Composer is not able to identify the version of the current checked out branch
+   and may not be able to resolve a cyclic dependency. To solve this problem, you can use
+   the "Additional Behaviours" -> "Check out to specific local branch" in your Git-settings
+   for your Jenkins-job, where your "local branch" shall be the same branch as you are
+   checking out. Using this, the checkout will not be in detached state any more and cyclic
    dependency is recognized correctly.
 
 ## Need to override a package version
@@ -168,3 +172,28 @@ To enable the swap you can use for example:
 /sbin/mkswap /var/swap.1
 /sbin/swapon /var/swap.1
 ```
+
+## Degraded Mode
+
+Due to some intermittent issues on Travis and other systems, we introduced a
+degraded network mode which helps Composer finish successfully but disables
+a few optimizations. This is enabled automatically when an issue is first
+detected. If you see this issue sporadically you probably don't have to worry
+(a slow or overloaded network can also cause those time outs), but if it
+appears repeatedly you might want to look at the options below to identify
+and resolve it.
+
+If you have been pointed to this page, you want to check a few things:
+
+- If you are using ESET antivirus, go in "Advanced Settings" and disable "HTTP-scanner"
+  under "web access protection"
+- If you are using IPv6, try disabling it. If that solves your issues, get in touch
+  with your ISP or server host, the problem is not at the Packagist level but in the
+  routing rules between you and Packagist (i.e. the internet at large). The best way to get
+  these fixed is raise awareness to the network engineers that have the power to fix it.
+
+  To disable IPv6 on Linux, try using this command which appends a
+  rule preferring IPv4 over IPv6 to your config:
+
+  `sudo sh -c "echo 'precedence ::ffff:0:0/96 100' >> /etc/gai.conf"`
+- If none of the above helped, please report the error.

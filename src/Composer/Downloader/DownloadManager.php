@@ -103,10 +103,9 @@ class DownloadManager
     /**
      * Returns downloader for a specific installation type.
      *
-     * @param  string              $type installation type
-     * @return DownloaderInterface
-     *
+     * @param  string                    $type installation type
      * @throws \InvalidArgumentException if downloader for provided type is not registered
+     * @return DownloaderInterface
      */
     public function getDownloader($type)
     {
@@ -121,12 +120,11 @@ class DownloadManager
     /**
      * Returns downloader for already installed package.
      *
-     * @param  PackageInterface         $package package instance
-     * @return DownloaderInterface|null
-     *
+     * @param  PackageInterface          $package package instance
      * @throws \InvalidArgumentException if package has no installation source specified
      * @throws \LogicException           if specific downloader used to load package with
-     *                                   wrong type
+     *                                           wrong type
+     * @return DownloaderInterface|null
      */
     public function getDownloaderForInstalledPackage(PackageInterface $package)
     {

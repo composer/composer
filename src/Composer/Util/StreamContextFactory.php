@@ -26,8 +26,8 @@ final class StreamContextFactory
      * @param  string            $url            URL the context is to be used for
      * @param  array             $defaultOptions Options to merge with the default
      * @param  array             $defaultParams  Parameters to specify on the context
-     * @return resource          Default context
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
+     * @return resource          Default context
      */
     public static function getContext($url, array $defaultOptions = array(), array $defaultParams = array())
     {

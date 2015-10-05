@@ -87,7 +87,7 @@ resolution.
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
-* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader 
+* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader
   generation skips the `autoload-dev` rules.
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
@@ -97,6 +97,8 @@ resolution.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
+* **--classmap-authoritative (-a):** Autoload classes from the classmap only.
+  Implicitly enables `--optimize-autoloader`.
 
 ## update
 
@@ -140,9 +142,11 @@ php composer.phar update vendor/*
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
+* **--classmap-authoritative (-a):** Autoload classes from the classmap only.
+  Implicitly enables `--optimize-autoloader`.
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
-* **--with-dependencies** Add also all dependencies of whitelisted packages to the whitelist.
+* **--with-dependencies:** Add also all dependencies of whitelisted packages to the whitelist.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
@@ -177,9 +181,15 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--update-no-dev** Run the dependency update with the --no-dev option.
-* **--update-with-dependencies** Also update dependencies of the newly
+* **--update-no-dev:** Run the dependency update with the `--no-dev` option.
+* **--update-with-dependencies:** Also update dependencies of the newly
   required packages.
+* **--sort-packages:** Keep packages sorted in `composer.json`.
+* **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
+  get a faster autoloader. This is recommended especially for production, but
+  can take a bit of time to run so it is currently not done by default.
+* **--classmap-authoritative (-a):** Autoload classes from the classmap only.
+  Implicitly enables `--optimize-autoloader`.
 
 ## remove
 
@@ -201,8 +211,13 @@ uninstalled.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--update-no-dev** Run the dependency update with the --no-dev option.
-* **--update-with-dependencies** Also update dependencies of the removed packages.
+* **--update-no-dev:** Run the dependency update with the --no-dev option.
+* **--update-with-dependencies:** Also update dependencies of the removed packages.
+* **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
+  get a faster autoloader. This is recommended especially for production, but
+  can take a bit of time to run so it is currently not done by default.
+* **--classmap-authoritative (-a):** Autoload classes from the classmap only.
+  Implicitly enables `--optimize-autoloader`.
 
 ## global
 
@@ -294,6 +309,18 @@ in your browser.
 
 * **--homepage (-H):** Open the homepage instead of the repository URL.
 
+## suggests
+
+Lists all packages suggested by currently installed set of packages. You can
+optionally pass one or multiple package names in the format of `vendor/package`
+to limit output to suggestions made by those packages only.
+
+### Options
+
+* **--no-dev:** Excludes suggestions from `require-dev` packages.
+* **--verbose (-v):** Increased verbosity adds suggesting package name and
+  reason for suggestion.
+
 ## depends
 
 The `depends` command tells you which other packages depend on a certain
@@ -327,7 +354,9 @@ php composer.phar validate
 
 ### Options
 
-* **--no-check-all:** Whether or not Composer does a complete validation.
+* **--no-check-all:** Do not emit a warning if requirements in `composer.json` use unbound version constraints.
+* **--no-check-lock:** Do not emit an error if `composer.lock` exists and is not up to date.
+* **--no-check-publish:** Do not emit an error if `composer.json` is unsuitable for publishing as a package on Packagist but is otherwise valid.
 
 ## status
 
@@ -375,7 +404,7 @@ sudo composer self-update
 ### Options
 
 * **--rollback (-r):** Rollback to the last version you had installed.
-* **--clean-backups:** Delete old backups during an update. This makes the 
+* **--clean-backups:** Delete old backups during an update. This makes the
   current version of Composer the only backup available after the update.
 
 ## config
@@ -490,6 +519,8 @@ performance.
 * **--optimize (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
+* **--classmap-authoritative (-a):** Autoload classes from the classmap only.
+  Implicitly enables `--optimize`.
 * **--no-dev:** Disables autoload-dev rules.
 
 ## clear-cache
@@ -567,6 +598,8 @@ For example:
 ```sh
 COMPOSER=composer-other.json php composer.phar install
 ```
+
+The generated lock file will use the same name: `composer-other.lock` in this example.
 
 ### COMPOSER_ROOT_VERSION
 

@@ -89,9 +89,8 @@ class InstallationManager
      *
      * @param string $type package type
      *
-     * @return InstallerInterface
-     *
      * @throws \InvalidArgumentException if installer for provided type is not registered
+     * @return InstallerInterface
      */
     public function getInstaller($type)
     {
@@ -249,7 +248,7 @@ class InstallationManager
                             'header'  => array('Content-type: application/x-www-form-urlencoded'),
                             'content' => http_build_query($params, '', '&'),
                             'timeout' => 3,
-                        )
+                        ),
                     );
 
                     $context = StreamContextFactory::getContext($url, $opts);
@@ -273,7 +272,7 @@ class InstallationManager
                     'header'  => array('Content-Type: application/json'),
                     'content' => json_encode($postData),
                     'timeout' => 6,
-                )
+                ),
             );
 
             $context = StreamContextFactory::getContext($repoUrl, $opts);

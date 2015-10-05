@@ -73,7 +73,7 @@ constraint if you want really specific versions.
 ```
 
 Once you've done this, you just run `php bin/satis build <configuration file> <build dir>`.
-For example `php bin/satis build config.json web/` would read the `config.json`
+For example `php bin/satis build satis.json web/` would read the `satis.json`
 file and build a static repository inside the `web/` directory.
 
 When you ironed out that process, what you would typically do is run this

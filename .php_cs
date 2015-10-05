@@ -10,9 +10,32 @@ $finder = Symfony\CS\Finder\DefaultFinder::create()
 
 return Symfony\CS\Config\Config::create()
     ->setUsingCache(true)
-    ->level(Symfony\CS\FixerInterface::NONE_LEVEL)
-    ->fixers(array(
-        'psr0', 'encoding', 'short_tag', 'braces', 'elseif', 'eof_ending', 'function_declaration', 'indentation', 'line_after_namespace', 'linefeed', 'lowercase_constants', 'lowercase_keywords', 'multiple_use', 'php_closing_tag', 'trailing_spaces', 'visibility', 'duplicate_semicolon', 'extra_empty_lines', 'include', 'namespace_no_leading_whitespace', 'object_operator', 'operators_spaces', 'phpdoc_params', 'return', 'single_array_no_trailing_comma', 'spaces_cast', 'standardize_not_equal', 'ternary_spaces', 'unused_use', 'whitespacy_lines', 'multiline_array_tailing_comma',
+    ->setRiskyAllowed(true)
+    ->setRules(array(
+        '@PSR2' => true,
+        'duplicate_semicolon' => true,
+        'extra_empty_lines' => true,
+        'include' => true,
+        'multiline_array_trailing_comma' => true,
+        'namespace_no_leading_whitespace' => true,
+        'object_operator' => true,
+        'operators_spaces' => true,
+        'phpdoc_align' => true,
+        'phpdoc_indent' => true,
+        'phpdoc_no_access' => true,
+        'phpdoc_no_package' => true,
+        'phpdoc_order' => true,
+        'phpdoc_scalar' => true,
+        'phpdoc_trim' => true,
+        'phpdoc_type_to_var' => true,
+        'psr0' => true,
+        'return' => true,
+        'single_array_no_trailing_comma' => true,
+        'spaces_cast' => true,
+        'standardize_not_equal' => true,
+        'ternary_spaces' => true,
+        'unused_use' => true,
+        'whitespacy_lines' => true,
     ))
     ->finder($finder)
 ;

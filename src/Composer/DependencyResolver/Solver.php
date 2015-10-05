@@ -50,6 +50,11 @@ class Solver
         $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
     }
 
+    public function getRuleSetSize()
+    {
+        return count($this->rules);
+    }
+
     // aka solver_makeruledecisions
     private function makeAssertionRuleDecisions()
     {
@@ -212,7 +217,7 @@ class Solver
      * Evaluates each term affected by the decision (linked through watches)
      * If we find unit rules we make new decisions based on them
      *
-     * @param  integer   $level
+     * @param  int       $level
      * @return Rule|null A rule on conflict, otherwise null.
      */
     protected function propagate($level)
@@ -314,7 +319,7 @@ class Solver
 
             $this->rules->add($newRule, RuleSet::TYPE_LEARNED);
 
-            $this->learnedWhy[$newRule->getId()] = $why;
+            $this->learnedWhy[spl_object_hash($newRule)] = $why;
 
             $ruleNode = new RuleWatchNode($newRule);
             $ruleNode->watch2OnHighest($this->decisions);
@@ -449,7 +454,7 @@ class Solver
 
     private function analyzeUnsolvableRule($problem, $conflictRule)
     {
-        $why = $conflictRule->getId();
+        $why = spl_object_hash($conflictRule);
 
         if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
             $learnedWhy = $this->learnedWhy[$why];
@@ -567,7 +572,7 @@ class Solver
     private function enableDisableLearnedRules()
     {
         foreach ($this->rules->getIteratorFor(RuleSet::TYPE_LEARNED) as $rule) {
-            $why = $this->learnedWhy[$rule->getId()];
+            $why = $this->learnedWhy[spl_object_hash($rule)];
             $problemRules = $this->learnedPool[$why];
 
             $foundDisabled = false;

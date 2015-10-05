@@ -12,8 +12,8 @@
 
 namespace Composer\Package;
 
-use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\VersionParser;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -162,7 +162,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     }
 
     /**
-     * @param array $links
+     * @param array  $links
      * @param string $linkType
      * @internal param string $prettyVersion
      * @return array
@@ -174,14 +174,14 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
             foreach ($links as $link) {
                 // link is self.version, but must be replacing also the replaced version
                 if ('self.version' === $link->getPrettyConstraint()) {
-                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $linkType, $this->prettyVersion);
+                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), new Constraint('=', $this->version), $linkType, $this->prettyVersion);
                 }
             }
             $links = array_merge($links, $newLinks);
         } else {
             foreach ($links as $index => $link) {
                 if ('self.version' === $link->getPrettyConstraint()) {
-                    $links[$index] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $linkType, $this->prettyVersion);
+                    $links[$index] = new Link($link->getSource(), $link->getTarget(), new Constraint('=', $this->version), $linkType, $this->prettyVersion);
                 }
             }
         }
