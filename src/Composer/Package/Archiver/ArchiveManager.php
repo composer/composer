@@ -108,6 +108,9 @@ class ArchiveManager
         if (empty($format)) {
             throw new \InvalidArgumentException('Format must be specified');
         }
+        if(!is_null($fileName) && !is_string($fileName)) {
+            throw new \InvalidArgumentException('fileName must be a string');
+        }
 
         // Search for the most appropriate archiver
         $usableArchiver = null;
@@ -124,7 +127,11 @@ class ArchiveManager
         }
 
         $filesystem = new Filesystem();
-        $packageName = $this->getPackageFilename($package);
+        if(null === $fileName) {
+            $packageName = $fileName;
+        } else {
+            $packageName = $this->getPackageFilename($package);
+        }
 
         // Archive filename
         $filesystem->ensureDirectoryExists($targetDir);
