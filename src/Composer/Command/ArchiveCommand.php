@@ -42,7 +42,8 @@ class ArchiveCommand extends Command
                 new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),
                 new InputOption('format', 'f', InputOption::VALUE_OPTIONAL, 'Format of the resulting archive: tar or zip'),
                 new InputOption('dir', false, InputOption::VALUE_OPTIONAL, 'Write the archive to this directory'),
-                new InputOption('file', false, InputOption::VALUE_OPTIONAL, 'Write the archive with the given file name.'),
+                new InputOption('file', false, InputOption::VALUE_OPTIONAL, 'Write the archive with the given file name.'
+                    .' Note that the format will be appended.'),
             ))
             ->setHelp(<<<EOT
 The <info>archive</info> command creates an archive of the specified format

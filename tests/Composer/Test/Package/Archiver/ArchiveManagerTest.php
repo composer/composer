@@ -70,7 +70,7 @@ class ArchiveManagerTest extends ArchiverTest
 
         $this->manager->archive($package, 'tar', $this->targetDir, $fileName);
 
-        $target = $this->getTargetName($package, 'tar', $fileName);
+        $target =  $this->targetDir . "/" . $fileName . ".tar";
 
         $this->assertFileExists($target);
 
@@ -90,11 +90,12 @@ class ArchiveManagerTest extends ArchiverTest
 
     protected function getTargetName(PackageInterface $package, $format, $fileName = null)
     {
-        if(!is_null($fileName)) {
-            $packageName = $fileName;
-        } else {
+        if(null === $fileName) {
             $packageName = $this->manager->getPackageFilename($package);
+        } else {
+            $packageName = $fileName;
         }
+
         $target = $this->targetDir.'/'.$packageName.'.'.$format;
 
         return $target;
