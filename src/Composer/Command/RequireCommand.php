@@ -142,8 +142,9 @@ EOT
         $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
 
         // Update packages
+        $plugins = $this->getComposer()->getPluginManager()->getPlugins();
         $this->resetComposer();
-        $composer = $this->getComposer();
+        $composer = $this->getComposer(true, false, $plugins);
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);

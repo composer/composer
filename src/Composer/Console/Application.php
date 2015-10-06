@@ -215,14 +215,15 @@ class Application extends BaseApplication
     /**
      * @param  bool                    $required
      * @param  bool                    $disablePlugins
+     * @param  array                   $plugins        Plugin instances to be set before loading
      * @throws JsonValidationException
      * @return \Composer\Composer
      */
-    public function getComposer($required = true, $disablePlugins = false)
+    public function getComposer($required = true, $disablePlugins = false, array $plugins = array())
     {
         if (null === $this->composer) {
             try {
-                $this->composer = Factory::create($this->io, null, $disablePlugins);
+                $this->composer = Factory::create($this->io, null, $disablePlugins, $plugins);
             } catch (\InvalidArgumentException $e) {
                 if ($required) {
                     $this->io->writeError($e->getMessage());
