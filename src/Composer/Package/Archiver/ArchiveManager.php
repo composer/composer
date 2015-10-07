@@ -127,7 +127,7 @@ class ArchiveManager
         }
 
         $filesystem = new Filesystem();
-        if (null !== $fileName) {
+        if (null === $fileName) {
             $packageName = $this->getPackageFilename($package);
         } else {
             $packageName = $fileName;
