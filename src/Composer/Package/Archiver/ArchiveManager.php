@@ -98,7 +98,7 @@ class ArchiveManager
      * @param  string                    $format    The format of the archive (zip, tar, ...)
      * @param  string                    $targetDir The directory where to build the archive
      * @param  string|null               $fileName  The relative file name to use for the archive, or null to generate
-     *                                   the package name. Note that the format will be appended to this name
+     *                                              the package name. Note that the format will be appended to this name
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      * @return string                    The path of the created archive
