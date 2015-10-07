@@ -40,9 +40,9 @@ class ArchiveCommand extends Command
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),
-                new InputOption('format', 'f', InputOption::VALUE_OPTIONAL, 'Format of the resulting archive: tar or zip'),
-                new InputOption('dir', false, InputOption::VALUE_OPTIONAL, 'Write the archive to this directory'),
-                new InputOption('file', false, InputOption::VALUE_OPTIONAL, 'Write the archive with the given file name.'
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar or zip'),
+                new InputOption('dir', false, InputOption::VALUE_REQUIRED, 'Write the archive to this directory'),
+                new InputOption('file', false, InputOption::VALUE_REQUIRED, 'Write the archive with the given file name.'
                     .' Note that the format will be appended.'),
             ))
             ->setHelp(<<<EOT
@@ -81,7 +81,7 @@ EOT
             $input->getArgument('version'),
             $input->getOption('format'),
             $input->getOption('dir'),
-            $input->getOption("file")
+            $input->getOption('file')
         );
 
         if (0 === $returnCode && $composer) {

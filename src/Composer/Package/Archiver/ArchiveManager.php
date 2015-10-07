@@ -108,7 +108,7 @@ class ArchiveManager
         if (empty($format)) {
             throw new \InvalidArgumentException('Format must be specified');
         }
-        if(!is_null($fileName) && !is_string($fileName)) {
+        if (null !== $fileName && !is_string($fileName)) {
             throw new \InvalidArgumentException('fileName must be a string');
         }
 
@@ -127,7 +127,7 @@ class ArchiveManager
         }
 
         $filesystem = new Filesystem();
-        if(null === $fileName) {
+        if (null !== $fileName) {
             $packageName = $this->getPackageFilename($package);
         } else {
             $packageName = $fileName;
