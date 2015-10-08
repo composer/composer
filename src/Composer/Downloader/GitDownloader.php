@@ -206,6 +206,82 @@ class GitDownloader extends VcsDownloader
         }
     }
 
+    private function verifyCommit($path, $gitReference) {
+        //TODO get the possible fingerprints from the repo as specified in composer.json
+        //TODO use $this->process
+        $fingerprints = array(
+            trim(file_get_contents('/home/jan/projects/composer/composer/verify-fingerprint.txt')) => true,
+        );
+        foreach ($fingerprints as $fp => $unused) {
+            if (strlen($fp) !== 50) {
+                $this->io->writeError("Not a valid fingerprint: $fp");
+                return false;
+            }
+        }
+
+        $outputParse = array();
+        $resultParse = 1000;
+        // find out if ref is a tag
+        exec( 'git --git-dir=' . escapeshellarg($path.'/.git') . ' rev-parse --symbolic-full-name ' . escapeshellarg($gitReference) . ' -- 2>&1', $outputParse, $resultParse );
+        if ($this->io->isDebug()) {
+            $this->io->writeError('Output follows for: git rev-parse --symbolic-full-name ' . escapeshellarg($gitReference));
+            $this->io->writeError($outputParse);
+            $this->io->writeError("Returned with $resultParse");
+        }
+        $type = 'commit';
+        if (0 === $resultParse && count($outputParse) === 2 && $outputParse[0] === 'refs/tags/' . $gitReference && $outputParse[1] === '--') {
+            $type = 'tag';
+        }
+
+        $output = array();
+        $result = 1000;
+        exec( 'git --git-dir=' . escapeshellarg($path.'/.git') . ' verify-' . $type . ' ' . escapeshellarg($gitReference) . ' 2>&1', $output, $result );
+        if ($result !== 0) {
+            $this->io->writeError("git verify-$type of $gitReference returned error $result. Output follows:");
+            $this->io->writeError($output);
+            return false;
+        }
+
+        $lineCount = count($output);
+        $output = implode("\n", $output);
+        $matches = null;
+        $pattern = '/(?m)(?:^gpg: (?:Signature made .*$|\s+using \S+ key 0x.*$|Good signature from .*$|\s+aka .*$)|^(?:Primary key|     Subkey) fingerprint: (?P<fingerprint>19C9 7A29 E94B 47EB 8AB0  597F E70A BDAE A89D 5A07)$)/';
+        $result = preg_match_all($pattern, $output, $matches);
+        if ($lineCount < 4 || $result !== $lineCount) {
+            $this->io->writeError("The output of git verify-$type of $gitReference didn't match a successful verification. Output follows:");
+            $this->io->writeError($output);
+            return false;
+        }
+
+        $verified = false;
+        $unmatchedFingerprints = array();
+        $matchedFingerprint = '';
+        foreach ($matches['fingerprint'] as $fingerprint) {
+            if ('' === $fingerprint) {
+                continue;
+            }
+            if (isset($fingerprints[$fingerprint])) {
+                $verified = true;
+                $matchedFingerprint = $fingerprint;
+                break;
+            }
+            $unmatchedFingerprints[] = $fingerprint;
+        }
+        if (!$verified) {
+           $this->io->writeError("None of the following fingerprints are trusted:");
+           $this->io->writeError($unmatchedFingerprints);
+           $this->io->writeError("Trusted fingerprints:");
+           $this->io->writeError(array_keys($fingerprints));
+           return false;
+        }
+
+        if ($this->io->isDebug()) {
+            $this->io->writeError("git verify-$type of $gitReference for $matchedFingerprint was successful. Output follows:");
+            $this->io->writeError($output);
+        }
+        return true;
+    }
+
     /**
      * Updates the given path to the given commit ref
      *
@@ -237,9 +313,11 @@ class GitDownloader extends VcsDownloader
             && $branches
             && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $branches)
         ) {
-            $command = sprintf('git checkout -B %s %s -- && git reset --hard %2$s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
-            if (0 === $this->process->execute($command, $output, $path)) {
-                return;
+            if ($this->verifyCommit($path, $branch)) {
+                $command = sprintf('git checkout -B %s %s -- && git reset --hard %2$s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
+                if (0 === $this->process->execute($command, $output, $path)) {
+                    return;
+                }
             }
         }
 
@@ -250,18 +328,31 @@ class GitDownloader extends VcsDownloader
                 $branch = 'v' . $branch;
             }
 
-            $command = sprintf('git checkout %s --', ProcessExecutor::escape($branch));
-            $fallbackCommand = sprintf('git checkout -B %s %s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$branch));
-            if (0 === $this->process->execute($command, $output, $path)
-                || 0 === $this->process->execute($fallbackCommand, $output, $path)
-            ) {
-                $command = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
+            if ($this->verifyCommit($path, $branch)) {
+                $command = sprintf('git checkout %s --', ProcessExecutor::escape($branch));
                 if (0 === $this->process->execute($command, $output, $path)) {
-                    return;
+                    $command = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
+                    if (0 === $this->process->execute($command, $output, $path)) {
+                        return;
+                    }
+                }
+            }
+
+            $prefixedBranch = 'composer/'.$branch;
+            if ($this->verifyCommit($path, $prefixedBranch)) {
+                $fallbackCommand = sprintf('git checkout -B %s %s --', ProcessExecutor::escape($branch), ProcessExecutor::escape($prefixedBranch));
+                if (0 === $this->process->execute($fallbackCommand, $output, $path)) {
+                    $command = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
+                    if (0 === $this->process->execute($command, $output, $path)) {
+                        return;
+                    }
                 }
             }
         }
 
+        if (!$this->verifyCommit($path, $prefixedBranch)) {
+            throw new \RuntimeException('Failed to verify signature.');
+        }
         $command = sprintf($template, ProcessExecutor::escape($gitRef));
         if (0 === $this->process->execute($command, $output, $path)) {
             return;

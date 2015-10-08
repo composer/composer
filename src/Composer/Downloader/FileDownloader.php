@@ -104,6 +104,17 @@ class FileDownloader implements DownloaderInterface
         $this->io->writeError('');
     }
 
+    private function verifyFile($fileName) {
+        /*TODO problem the github downloads currently used by composer are not deterministic and  change every time they are requested
+          There are downloads like https://github.com/wmde/Diff/archive/2.0.0.zip that seems to be repeatable.
+          So why does compser use the api to get non-repeatable downloads?
+          Is it possible that those do not exist for abitrary commits? only for branches and tags?
+        */
+        throw new \UnexpectedValueException('Downloading archive files not supported with signature verification.');
+        return false;
+        //exec( 'gpg2 --batch --with-colons --fixed-list-mode --verify ' . escapeshellarg($signature) . ' ' . escapeshellarg($fileName). ' 2>&1', $output, $result );
+    }
+
     protected function doDownload(PackageInterface $package, $path, $url)
     {
         $this->filesystem->emptyDirectory($path);
@@ -141,6 +152,9 @@ class FileDownloader implements DownloaderInterface
                             throw $e;
                         }
                         if ($this->io->isVerbose()) {
+                            if (!$this->verifyFile($fileName)) {
+                                throw new \UnexpectedValueException("The GPG signature verification of the file failed (downloaded from $url)");
+                            }
                             $this->io->writeError('    Download failed, retrying...');
                         }
                         usleep(500000);
@@ -157,6 +171,10 @@ class FileDownloader implements DownloaderInterface
             if (!file_exists($fileName)) {
                 throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
                     .' directory is writable and you have internet connectivity');
+            }
+
+            if (!$this->verifyFile($fileName)) {
+                throw new \UnexpectedValueException("The GPG signature verification of the file failed (downloaded from $url)");
             }
 
             if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
