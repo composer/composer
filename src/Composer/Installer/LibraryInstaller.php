@@ -68,7 +68,7 @@ class LibraryInstaller implements InstallerInterface
      */
     public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        return $repo->hasPackage($package) && is_readable($this->getInstallPath($package));
+        return $repo->hasPackage($package) && is_readable($this->getInstallPath($package)) && $this->isInstalledBinaries($package);
     }
 
     /**
@@ -271,6 +271,23 @@ class LibraryInstaller implements InstallerInterface
         if ((is_dir($this->binDir)) && ($this->filesystem->isDirEmpty($this->binDir))) {
             @rmdir($this->binDir);
         }
+    }
+
+    protected function isInstalledBinaries(PackageInterface $package)
+    {
+        $binaries = $this->getBinaries($package);
+        if (!$binaries) {
+            return true;
+        }
+
+        foreach ($binaries as $bin) {
+            $link = $this->binDir.'/'.basename($bin);
+            if (!file_exists($link)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected function initializeVendorDir()
