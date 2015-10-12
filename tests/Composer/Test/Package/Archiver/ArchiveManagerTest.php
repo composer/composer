@@ -79,16 +79,7 @@ class ArchiveManagerTest extends ArchiverTest
 
         unlink($target);
     }
-
-    public function testNonStringFileName()
-    {
-        $this->setExpectedException('InvalidArgumentException');
-
-        $package = $this->setupPackage();
-
-        $this->manager->archive($package, 'tar', $this->targetDir, array());
-    }
-
+    
     protected function getTargetName(PackageInterface $package, $format, $fileName = null)
     {
         if(null === $fileName) {

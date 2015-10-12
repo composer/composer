@@ -108,7 +108,7 @@ class ArchiveManager
         if (empty($format)) {
             throw new \InvalidArgumentException('Format must be specified');
         }
-        
+
         // Search for the most appropriate archiver
         $usableArchiver = null;
         foreach ($this->archivers as $archiver) {
