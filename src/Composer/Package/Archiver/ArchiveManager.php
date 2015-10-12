@@ -108,10 +108,7 @@ class ArchiveManager
         if (empty($format)) {
             throw new \InvalidArgumentException('Format must be specified');
         }
-        if (null !== $fileName && !is_string($fileName)) {
-            throw new \InvalidArgumentException('fileName must be a string');
-        }
-
+        
         // Search for the most appropriate archiver
         $usableArchiver = null;
         foreach ($this->archivers as $archiver) {
