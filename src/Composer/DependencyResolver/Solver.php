@@ -56,6 +56,7 @@ class Solver
     }
 
     // aka solver_makeruledecisions
+
     private function makeAssertionRuleDecisions()
     {
         $decisionStart = count($this->decisions) - 1;
@@ -283,6 +284,7 @@ class Solver
      * returns the new solver level or 0 if unsolvable
      *
      */
+
     private function setPropagateLearn($level, $literal, $disableRules, Rule $rule)
     {
         $level++;
@@ -569,6 +571,7 @@ class Solver
     * of our learnt rules except the ones that were learnt from rules that
     * are now disabled.
     */
+
     private function enableDisableLearnedRules()
     {
         foreach ($this->rules->getIteratorFor(RuleSet::TYPE_LEARNED) as $rule) {

@@ -197,162 +197,202 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->getType();
     }
+
     public function getTargetDir()
     {
         return $this->aliasOf->getTargetDir();
     }
+
     public function getExtra()
     {
         return $this->aliasOf->getExtra();
     }
+
     public function setInstallationSource($type)
     {
         $this->aliasOf->setInstallationSource($type);
     }
+
     public function getInstallationSource()
     {
         return $this->aliasOf->getInstallationSource();
     }
+
     public function getSourceType()
     {
         return $this->aliasOf->getSourceType();
     }
+
     public function getSourceUrl()
     {
         return $this->aliasOf->getSourceUrl();
     }
+
     public function getSourceUrls()
     {
         return $this->aliasOf->getSourceUrls();
     }
+
     public function getSourceReference()
     {
         return $this->aliasOf->getSourceReference();
     }
+
     public function setSourceReference($reference)
     {
         return $this->aliasOf->setSourceReference($reference);
     }
+
     public function setSourceMirrors($mirrors)
     {
         return $this->aliasOf->setSourceMirrors($mirrors);
     }
+
     public function getSourceMirrors()
     {
         return $this->aliasOf->getSourceMirrors();
     }
+
     public function getDistType()
     {
         return $this->aliasOf->getDistType();
     }
+
     public function getDistUrl()
     {
         return $this->aliasOf->getDistUrl();
     }
+
     public function getDistUrls()
     {
         return $this->aliasOf->getDistUrls();
     }
+
     public function getDistReference()
     {
         return $this->aliasOf->getDistReference();
     }
+
     public function setDistReference($reference)
     {
         return $this->aliasOf->setDistReference($reference);
     }
+
     public function getDistSha1Checksum()
     {
         return $this->aliasOf->getDistSha1Checksum();
     }
+
     public function setTransportOptions(array $options)
     {
         return $this->aliasOf->setTransportOptions($options);
     }
+
     public function getTransportOptions()
     {
         return $this->aliasOf->getTransportOptions();
     }
+
     public function setDistMirrors($mirrors)
     {
         return $this->aliasOf->setDistMirrors($mirrors);
     }
+
     public function getDistMirrors()
     {
         return $this->aliasOf->getDistMirrors();
     }
+
     public function getScripts()
     {
         return $this->aliasOf->getScripts();
     }
+
     public function getLicense()
     {
         return $this->aliasOf->getLicense();
     }
+
     public function getAutoload()
     {
         return $this->aliasOf->getAutoload();
     }
+
     public function getDevAutoload()
     {
         return $this->aliasOf->getDevAutoload();
     }
+
     public function getIncludePaths()
     {
         return $this->aliasOf->getIncludePaths();
     }
+
     public function getRepositories()
     {
         return $this->aliasOf->getRepositories();
     }
+
     public function getReleaseDate()
     {
         return $this->aliasOf->getReleaseDate();
     }
+
     public function getBinaries()
     {
         return $this->aliasOf->getBinaries();
     }
+
     public function getKeywords()
     {
         return $this->aliasOf->getKeywords();
     }
+
     public function getDescription()
     {
         return $this->aliasOf->getDescription();
     }
+
     public function getHomepage()
     {
         return $this->aliasOf->getHomepage();
     }
+
     public function getSuggests()
     {
         return $this->aliasOf->getSuggests();
     }
+
     public function getAuthors()
     {
         return $this->aliasOf->getAuthors();
     }
+
     public function getSupport()
     {
         return $this->aliasOf->getSupport();
     }
+
     public function getNotificationUrl()
     {
         return $this->aliasOf->getNotificationUrl();
     }
+
     public function getArchiveExcludes()
     {
         return $this->aliasOf->getArchiveExcludes();
     }
+
     public function isAbandoned()
     {
         return $this->aliasOf->isAbandoned();
     }
+
     public function getReplacementPackage()
     {
         return $this->aliasOf->getReplacementPackage();
     }
+
     public function __toString()
     {
         return parent::__toString().' (alias of '.$this->aliasOf->getVersion().')';
