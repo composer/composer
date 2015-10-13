@@ -40,8 +40,10 @@ class ArchiveCommand extends Command
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),
-                new InputOption('format', 'f', InputOption::VALUE_OPTIONAL, 'Format of the resulting archive: tar or zip'),
-                new InputOption('dir', false, InputOption::VALUE_OPTIONAL, 'Write the archive to this directory'),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar or zip'),
+                new InputOption('dir', false, InputOption::VALUE_REQUIRED, 'Write the archive to this directory'),
+                new InputOption('file', false, InputOption::VALUE_REQUIRED, 'Write the archive with the given file name.'
+                    .' Note that the format will be appended.'),
             ))
             ->setHelp(<<<EOT
 The <info>archive</info> command creates an archive of the specified format
@@ -78,7 +80,8 @@ EOT
             $input->getArgument('package'),
             $input->getArgument('version'),
             $input->getOption('format'),
-            $input->getOption('dir')
+            $input->getOption('dir'),
+            $input->getOption('file')
         );
 
         if (0 === $returnCode && $composer) {
@@ -88,7 +91,7 @@ EOT
         return $returnCode;
     }
 
-    protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.')
+    protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.', $fileName = null)
     {
         $factory = new Factory;
         $downloadManager = $factory->createDownloadManager($io, $config);
@@ -105,7 +108,7 @@ EOT
         }
 
         $io->writeError('<info>Creating the archive into "'.$dest.'".</info>');
-        $packagePath = $archiveManager->archive($package, $format, $dest);
+        $packagePath = $archiveManager->archive($package, $format, $dest, $fileName);
         $fs = new Filesystem;
         $shortPath = $fs->findShortestPath(getcwd(), $packagePath, true);
 
