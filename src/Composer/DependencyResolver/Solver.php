@@ -23,25 +23,44 @@ class Solver
     const BRANCH_LITERALS = 0;
     const BRANCH_LEVEL = 1;
 
+    /** @var PolicyInterface */
     protected $policy;
+    /** @var Pool */
     protected $pool;
+    /** @var RepositoryInterface */
     protected $installed;
+    /** @var Ruleset */
     protected $rules;
+    /** @var RuleSetGenerator */
     protected $ruleSetGenerator;
-    protected $updateAll;
+    /** @var array */
+    protected $jobs;
 
-    protected $addedMap = array();
+    /** @var int[] */
     protected $updateMap = array();
+    /** @var RuleWatchGraph */
     protected $watchGraph;
+    /** @var Decisions */
     protected $decisions;
+    /** @var int[] */
     protected $installedMap;
 
+    /** @var int */
     protected $propagateIndex;
+    /** @var array[] */
     protected $branches = array();
+    /** @var Problem[] */
     protected $problems = array();
+    /** @var array */
     protected $learnedPool = array();
+    /** @var array */
     protected $learnedWhy = array();
 
+    /**
+     * @param PolicyInterface     $policy
+     * @param Pool                $pool
+     * @param RepositoryInterface $installed
+     */
     public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
     {
         $this->policy = $policy;
@@ -50,6 +69,9 @@ class Solver
         $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
     }
 
+    /**
+     * @return int
+     */
     public function getRuleSetSize()
     {
         return count($this->rules);
@@ -136,6 +158,9 @@ class Solver
         }
     }
 
+    /**
+     * @param bool $ignorePlatformReqs
+     */
     protected function checkForRootRequireProblems($ignorePlatformReqs)
     {
         foreach ($this->jobs as $job) {
@@ -170,6 +195,11 @@ class Solver
         }
     }
 
+    /**
+     * @param  Request $request
+     * @param  bool    $ignorePlatformReqs
+     * @return array
+     */
     public function solve(Request $request, $ignorePlatformReqs = false)
     {
         $this->jobs = $request->getJobs();
@@ -244,6 +274,8 @@ class Solver
 
     /**
      * Reverts a decision at the given level.
+     *
+     * @param int $level
      */
     private function revert($level)
     {
@@ -269,8 +301,7 @@ class Solver
         }
     }
 
-    /**-------------------------------------------------------------------
-     *
+    /**
      * setpropagatelearn
      *
      * add free decision (a positive literal) to decision queue
@@ -283,8 +314,12 @@ class Solver
      *
      * returns the new solver level or 0 if unsolvable
      *
+     * @param  int        $level
+     * @param  string|int $literal
+     * @param  bool       $disableRules
+     * @param  Rule       $rule
+     * @return int
      */
-
     private function setPropagateLearn($level, $literal, $disableRules, Rule $rule)
     {
         $level++;
@@ -333,6 +368,13 @@ class Solver
         return $level;
     }
 
+    /**
+     * @param  int   $level
+     * @param  array $decisionQueue
+     * @param  bool  $disableRules
+     * @param  Rule  $rule
+     * @return int
+     */
     private function selectAndInstall($level, array $decisionQueue, $disableRules, Rule $rule)
     {
         // choose best package to install from decisionQueue
@@ -348,7 +390,12 @@ class Solver
         return $this->setPropagateLearn($level, $selectedLiteral, $disableRules, $rule);
     }
 
-    protected function analyze($level, $rule)
+    /**
+     * @param  int   $level
+     * @param  Rule  $rule
+     * @return array
+     */
+    protected function analyze($level, Rule $rule)
     {
         $analyzedRule = $rule;
         $ruleLevel = 1;
@@ -454,7 +501,11 @@ class Solver
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
 
-    private function analyzeUnsolvableRule($problem, $conflictRule)
+    /**
+     * @param Problem $problem
+     * @param Rule    $conflictRule
+     */
+    private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule)
     {
         $why = spl_object_hash($conflictRule);
 
@@ -478,7 +529,12 @@ class Solver
         $problem->addRule($conflictRule);
     }
 
-    private function analyzeUnsolvable($conflictRule, $disableRules)
+    /**
+     * @param  Rule $conflictRule
+     * @param  bool $disableRules
+     * @return int
+     */
+    private function analyzeUnsolvable(Rule $conflictRule, $disableRules)
     {
         $problem = new Problem($this->pool);
         $problem->addRule($conflictRule);
@@ -535,7 +591,10 @@ class Solver
         return 0;
     }
 
-    private function disableProblem($why)
+    /**
+     * @param Rule $why
+     */
+    private function disableProblem(Rule $why)
     {
         $job = $why->getJob();
 
@@ -547,6 +606,7 @@ class Solver
 
         // disable all rules of this job
         foreach ($this->rules as $rule) {
+            /** @var Rule $rule */
             if ($job === $rule->getJob()) {
                 $rule->disable();
             }
@@ -564,14 +624,13 @@ class Solver
         $this->makeAssertionRuleDecisions();
     }
 
-    /*-------------------------------------------------------------------
-    * enable/disable learnt rules
-    *
-    * we have enabled or disabled some of our rules. We now re-enable all
-    * of our learnt rules except the ones that were learnt from rules that
-    * are now disabled.
-    */
-
+    /**
+     * enable/disable learnt rules
+     *
+     * we have enabled or disabled some of our rules. We now re-enable all
+     * of our learnt rules except the ones that were learnt from rules that
+     * are now disabled.
+     */
     private function enableDisableLearnedRules()
     {
         foreach ($this->rules->getIteratorFor(RuleSet::TYPE_LEARNED) as $rule) {
@@ -594,22 +653,28 @@ class Solver
         }
     }
 
+    /**
+     * @param bool $disableRules
+     */
     private function runSat($disableRules = true)
     {
         $this->propagateIndex = 0;
 
-        //   /*
-        //    * here's the main loop:
-        //    * 1) propagate new decisions (only needed once)
-        //    * 2) fulfill jobs
-        //    * 3) fulfill all unresolved rules
-        //    * 4) minimalize solution if we had choices
-        //    * if we encounter a problem, we rewind to a safe level and restart
-        //    * with step 1
-        //    */
+        /*
+         * here's the main loop:
+         * 1) propagate new decisions (only needed once)
+         * 2) fulfill jobs
+         * 3) fulfill all unresolved rules
+         * 4) minimalize solution if we had choices
+         * if we encounter a problem, we rewind to a safe level and restart
+         * with step 1
+         */
 
         $decisionQueue = array();
         $decisionSupplementQueue = array();
+        /**
+         * @todo this makes $disableRules always false; determine the rationale and possibly remove dead code?
+         */
         $disableRules = array();
 
         $level = 1;
