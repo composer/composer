@@ -20,6 +20,8 @@ use Composer\Package\PackageInterface;
 interface PolicyInterface
 {
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator);
+
     public function findUpdatePackages(Pool $pool, array $installedMap, PackageInterface $package);
+
     public function selectPreferredPackages(Pool $pool, array $installedMap, array $literals);
 }

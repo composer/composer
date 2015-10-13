@@ -1,14 +1,19 @@
 <?php
 
 /*
- * This file is copied from the Symfony package.
+ * This file is part of Composer.
  *
- * (c) Fabien Potencier <fabien@symfony.com>
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
+ */
+
+/*
+ * This file is copied from the Symfony package.
  *
- * @license MIT
+ * (c) Fabien Potencier <fabien@symfony.com>
  */
 
 namespace Composer\Autoload;
