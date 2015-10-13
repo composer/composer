@@ -235,13 +235,6 @@ class Solver
         return $transaction->getOperations();
     }
 
-    protected function literalFromId($id)
-    {
-        $package = $this->pool->packageById(abs($id));
-
-        return new Literal($package, $id > 0);
-    }
-
     /**
      * Makes a decision and propagates it to all rules.
      *

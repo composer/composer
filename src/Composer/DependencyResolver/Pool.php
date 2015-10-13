@@ -278,11 +278,6 @@ class Pool implements \Countable
         return $this->packageById($packageId);
     }
 
-    public function literalToString($literal)
-    {
-        return ($literal > 0 ? '+' : '-') . $this->literalToPackage($literal);
-    }
-
     public function literalToPrettyString($literal, $installedMap)
     {
         $package = $this->literalToPackage($literal);
