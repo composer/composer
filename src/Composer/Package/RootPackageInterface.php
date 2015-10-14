@@ -61,14 +61,14 @@ interface RootPackageInterface extends CompletePackageInterface
     /**
      * Set the required packages
      *
-     * @param array $requires A set of package links
+     * @param Link[] $requires A set of package links
      */
     public function setRequires(array $requires);
 
     /**
      * Set the recommended packages
      *
-     * @param array $devRequires A set of package links
+     * @param Link[] $devRequires A set of package links
      */
     public function setDevRequires(array $devRequires);
 }
