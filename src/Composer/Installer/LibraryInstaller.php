@@ -188,6 +188,15 @@ class LibraryInstaller implements InstallerInterface
         return $package->getBinaries();
     }
 
+    protected function isWindowsUnixyEnvironment()
+    {
+        // redirect stderr to stdout to supress warnings in windows command line
+        $lastLine = exec("uname -s 2>&1");
+        return stripos($lastLine, "mingw") === 0
+            || stripos($lastLine, "cygwin") === 0
+            || stripos($lastLine, "interix") === 0;
+    }
+
     protected function installBinaries(PackageInterface $package)
     {
         $binaries = $this->getBinaries($package);
@@ -220,16 +229,31 @@ class LibraryInstaller implements InstallerInterface
                 continue;
             }
             if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-                // add unixy support for cygwin and similar environments
                 if ('.bat' !== substr($binPath, -4)) {
-                    file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
-                    @chmod($link, 0777 & ~umask());
-                    $link .= '.bat';
-                    if (file_exists($link)) {
-                        $this->io->writeError('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+                    if ($this->isWindowsUnixyEnvironment()) {
+                        // add unixy support for cygwin and similar environments
+                        file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
+                        @chmod($link, 0777 & ~umask());
+                    } else {
+                        $savedLink = $link;
+                        $link = $savedLink.'.bat';
+                        if (file_exists($link)) {
+                            $this->io->write('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+                        } else {
+                            file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+                        }
+                        if ('.exe' === substr($savedLink, -4)
+                            || '.php' === substr($savedLink, -4)
+                        ) {
+                            $link = substr($savedLink, 0, -4).'.bat';
+                            if (file_exists($link)) {
+                                $this->io->write('    Skipped installation of bin '.substr($bin, 0, -4).'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+                            } else {
+                                file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+                            }
+                        }
                     }
-                }
-                if (!file_exists($link)) {
+                } else {
                     file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
                 }
             } else {
@@ -265,6 +289,14 @@ class LibraryInstaller implements InstallerInterface
             if (file_exists($link.'.bat')) {
                 $this->filesystem->unlink($link.'.bat');
             }
+            if ('.exe' === substr($link, -4)
+                || '.php' === substr($link, -4)
+            ) {
+                $link = substr($link, 0, -4).".bat";
+                if (file_exists($link)) {
+                    $this->filesystem->unlink($link);
+                }
+            }
         }
 
         // attempt removing the bin dir in case it is left empty
@@ -288,7 +320,9 @@ class LibraryInstaller implements InstallerInterface
     protected function generateWindowsProxyCode($bin, $link)
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
-        if ('.bat' === substr($bin, -4) || '.exe' === substr($bin, -4)) {
+        if ('.exe' === substr($bin, -4)) {
+            $caller = '';
+        } elseif ('.bat' === substr($bin, -4)) {
             $caller = 'call';
         } else {
             $handle = fopen($bin, 'r');
@@ -302,7 +336,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         return "@ECHO OFF\r\n".
-            "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape($binPath), '"')."\r\n".
+            "SET \"BIN_TARGET=%~dp0".str_replace("/", "\\", $binPath)."\"\r\n".
             "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 
@@ -313,7 +347,7 @@ class LibraryInstaller implements InstallerInterface
         return "#!/usr/bin/env sh\n".
             'SRC_DIR="`pwd`"'."\n".
             'cd "`dirname "$0"`"'."\n".
-            'cd '.ProcessExecutor::escape(dirname($binPath))."\n".
+            'cd '.escapeshellarg(dirname($binPath))."\n".
             'BIN_TARGET="`pwd`/'.basename($binPath)."\"\n".
             'cd "$SRC_DIR"'."\n".
             '"$BIN_TARGET" "$@"'."\n";
