@@ -253,6 +253,14 @@ class Application extends BaseApplication
     {
         return $this->io;
     }
+    
+    /**
+     * @return null
+     */
+    public function setIO(IOInterface $io)
+    {
+        $this->io = $io;
+    }
 
     public function getHelp()
     {
