@@ -102,7 +102,7 @@ EOT
         }
 
         // Print package table if there is more than a header
-        if ($outputLines > 1) {
+        if (count($outputLines) > 1) {
             $this->getIO()->write($outputLines);
         }
 
