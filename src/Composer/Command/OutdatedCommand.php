@@ -77,8 +77,16 @@ EOT
 
         // Process packages
         foreach ($requiredPackages as $packageName => $package) {
-            $installedVersion = $installedPackages[$packageName]->getPrettyVersion();
-            $latestVersion = $latestVersions[$packageName];
+            $installedVersion = '';
+            $latestVersion = '';
+
+            if (isset($installedPackages[$packageName])) {
+                $installedVersion = $installedPackages[$packageName]->getPrettyVersion();
+            }
+
+            if (isset($latestVersions[$packageName])) {
+                $latestVersion = $latestVersions[$packageName];
+            }
 
             if (Comparator::greaterThanOrEqualTo($installedVersion, $latestVersion)) {
                 continue;
