@@ -17,6 +17,13 @@ Installation / Usage
     ``` sh
     $ curl -sS https://getcomposer.org/installer | php
     ```
+    
+    > **Note:** If the above fails for some reason, you can download the installer
+    > with `php` instead:
+
+    ```sh
+    php -r "readfile('https://getcomposer.org/installer');" | php
+    ```
 
 2. Create a composer.json defining your dependencies. Note that this example is
 a short version for applications that are not meant to be published as packages
