@@ -49,10 +49,10 @@
         "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages"
     },
     "autoload": {
-        "psr-0": { "Composer": "src/" }
+        "psr-4": { "Composer": "src/" }
     },
     "autoload-dev": {
-        "psr-0": { "Composer\\Test": "tests/" }
+        "psr-4": { "Composer\\Test": "tests/" }
     },
     "bin": ["bin/composer"],
     "extra": {
