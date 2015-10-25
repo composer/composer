@@ -318,7 +318,7 @@ EOT
         $im = $this->createInstallationManager();
         $im->addInstaller($projectInstaller);
         $im->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
-        $im->notifyInstalls();
+        $im->notifyInstalls($io);
 
         $installedFromVcs = 'source' === $package->getInstallationSource();
 

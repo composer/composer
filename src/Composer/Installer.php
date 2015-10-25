@@ -234,11 +234,11 @@ class Installer
                 return $res;
             }
         } catch (\Exception $e) {
-            $this->installationManager->notifyInstalls();
+            $this->installationManager->notifyInstalls($this->io);
 
             throw $e;
         }
-        $this->installationManager->notifyInstalls();
+        $this->installationManager->notifyInstalls($this->io);
 
         // output suggestions if we're in dev mode
         if ($this->devMode) {

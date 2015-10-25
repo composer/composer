@@ -12,6 +12,7 @@
 
 namespace Composer\Installer;
 
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Repository\RepositoryInterface;
@@ -230,9 +231,17 @@ class InstallationManager
         return $installer->getInstallPath($package);
     }
 
-    public function notifyInstalls()
+    public function notifyInstalls(IOInterface $io)
     {
         foreach ($this->notifiablePackages as $repoUrl => $packages) {
+            $repositoryName = parse_url ($repoUrl, PHP_URL_HOST);
+            if ($io->hasAuthentication ($repositoryName))
+            {
+                $auth = $io->getAuthentication ($repositoryName);
+                $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
+                $authHeader = 'Authorization: Basic '.$authStr;
+            }
+
             // non-batch API, deprecated
             if (strpos($repoUrl, '%package%')) {
                 foreach ($packages as $package) {
@@ -250,6 +259,9 @@ class InstallationManager
                             'timeout' => 3,
                         ),
                     );
+                    if (isset($authHeader)) {
+                        $opts['http']['header'][] = $authHeader;
+                    }
 
                     $context = StreamContextFactory::getContext($url, $opts);
                     @file_get_contents($url, false, $context);
@@ -274,6 +286,9 @@ class InstallationManager
                     'timeout' => 6,
                 ),
             );
+            if (isset($authHeader)) {
+                $opts['http']['header'][] = $authHeader;
+            }
 
             $context = StreamContextFactory::getContext($repoUrl, $opts);
             @file_get_contents($repoUrl, false, $context);
