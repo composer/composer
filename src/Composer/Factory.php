@@ -61,7 +61,7 @@ class Factory
     }
 
     /**
-     * @param string $home
+     * @param  string $home
      * @return string
      */
     protected static function getCacheDir($home)
@@ -411,8 +411,8 @@ class Factory
     }
 
     /**
-     * @param Config                     $config The configuration
-     * @param Downloader\DownloadManager $dm     Manager use to download sources
+     * @param  Config                     $config The configuration
+     * @param  Downloader\DownloadManager $dm     Manager use to download sources
      * @return Archiver\ArchiveManager
      */
     public function createArchiveManager(Config $config, Downloader\DownloadManager $dm = null)

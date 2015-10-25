@@ -234,10 +234,9 @@ class InstallationManager
     public function notifyInstalls(IOInterface $io)
     {
         foreach ($this->notifiablePackages as $repoUrl => $packages) {
-            $repositoryName = parse_url ($repoUrl, PHP_URL_HOST);
-            if ($io->hasAuthentication ($repositoryName))
-            {
-                $auth = $io->getAuthentication ($repositoryName);
+            $repositoryName = parse_url($repoUrl, PHP_URL_HOST);
+            if ($io->hasAuthentication($repositoryName)) {
+                $auth = $io->getAuthentication($repositoryName);
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $authHeader = 'Authorization: Basic '.$authStr;
             }

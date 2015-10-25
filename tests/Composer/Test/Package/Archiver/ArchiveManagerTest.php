@@ -79,10 +79,10 @@ class ArchiveManagerTest extends ArchiverTest
 
         unlink($target);
     }
-    
+
     protected function getTargetName(PackageInterface $package, $format, $fileName = null)
     {
-        if(null === $fileName) {
+        if (null === $fileName) {
             $packageName = $this->manager->getPackageFilename($package);
         } else {
             $packageName = $fileName;
