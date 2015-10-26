@@ -35,7 +35,7 @@
         "seld/cli-prompt": "~1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.5|^5.0.8",
+        "phpunit/phpunit": "~4.5|^5.0.5",
         "phpunit/phpunit-mock-objects": "2.3.0|~3.0.3"
     },
     "_": "phpunit/phpunit-mock-objects required in 2.3.0 due to https://github.com/sebastianbergmann/phpunit-mock-objects/issues/223 - needs hhvm 3.8+ on travis",
