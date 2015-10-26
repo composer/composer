@@ -19,12 +19,9 @@ php:
   - 5.6
   - 7.0
   - hhvm
-  - hhvm-nightly
 
 matrix:
   fast_finish: true
-  allow_failures:
-    - php: hhvm-nightly
 
 before_script:
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
@@ -34,7 +31,6 @@ before_script:
     - git config --global user.email travis@example.com
 
 script:
-    - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && $(exit 1));'
-
+    - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --col1
 git:
   depth: 5
