@@ -219,34 +219,34 @@ class LibraryInstaller implements InstallerInterface
                 $this->io->writeError('    Skipped installation of bin '.$bin.' for package '.$package->getName().': name conflicts with an existing file');
                 continue;
             }
-            if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-                // add unixy support for cygwin and similar environments
-                if ('.bat' !== substr($binPath, -4)) {
-                    file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
-                    @chmod($link, 0777 & ~umask());
-                    $link .= '.bat';
-                    if (file_exists($link)) {
-                        $this->io->writeError('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+            $cwd = getcwd();
+            try {
+                // symlinks are not always supported, for example on legacy
+                // windows-specific filesystems such as smb or fat
+                $relativeBin = $this->filesystem->findShortestPath($link, $binPath);
+                chdir(dirname($link));
+                if (false === @symlink($relativeBin, $link)) {
+                    throw new \ErrorException();
+                }
+            } catch (\ErrorException $e) {
+                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                    // add unixy support for cygwin and similar environments
+                    if ('.bat' !== substr($binPath, -4)) {
+                        file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
+                        @chmod($link, 0777 & ~umask());
+                        $link .= '.bat';
+                        if (file_exists($link)) {
+                            $this->io->writeError('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+                        }
                     }
-                }
-                if (!file_exists($link)) {
-                    file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
-                }
-            } else {
-                $cwd = getcwd();
-                try {
-                    // under linux symlinks are not always supported for example
-                    // when using it in smbfs mounted folder
-                    $relativeBin = $this->filesystem->findShortestPath($link, $binPath);
-                    chdir(dirname($link));
-                    if (false === @symlink($relativeBin, $link)) {
-                        throw new \ErrorException();
+                    if (!file_exists($link)) {
+                        file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
                     }
-                } catch (\ErrorException $e) {
+                } else {
                     file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
                 }
-                chdir($cwd);
             }
+            chdir($cwd);
             @chmod($link, 0777 & ~umask());
         }
     }
