@@ -22,7 +22,7 @@
         "issues": "https://github.com/composer/composer/issues"
     },
     "require": {
-        "php": ">=5.3.2",
+        "php": ">=5.3.3",
         "justinrainbow/json-schema": "^1.4.4",
         "composer/spdx-licenses": "^1.0",
         "composer/semver": "^1.0",
