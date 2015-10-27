@@ -102,6 +102,15 @@ downloads. When the garbage collection is periodically ran, this is the maximum
 size the cache will be able to use. Older (less used) files will be removed
 first until the cache fits.
 
+## bin-compat
+
+Defaults to `auto`. Determines the compatibility of the binaries to be installed.
+If it is `auto` then Composer tries to automatically guess which compatibility mode
+to use. If it is `nosymlink` then the binaries will be compatible with Unix-based
+operating systems (useful for cases when symlinks are not available).
+If its value is `full` then both .bat files for Windows and scripts for Unix-based
+operating systems will be installed for each binary.
+
 ## prepend-autoloader
 
 Defaults to `true`. If `false`, the Composer autoloader will not be prepended to

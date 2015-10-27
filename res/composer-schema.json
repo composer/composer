@@ -186,6 +186,10 @@
                     "type": ["string", "integer"],
                     "description": "The cache max size for the files cache, defaults to \"300MiB\"."
                 },
+                "bin-compat": {
+                    "enum": ["auto", "nosymlink", "full"],
+                    "description": "The compatibility of the binaries, defaults to \"auto\" (automatically guessed) and can be \"nosymlink\" (compatible with Unix-based systems) or \"full\" (compatible with both Windows and Unix-based systems)."
+                },
                 "discard-changes": {
                     "type": ["string", "boolean"],
                     "description": "The default style of handling dirty updates, defaults to false and can be any of true, false or \"stash\"."

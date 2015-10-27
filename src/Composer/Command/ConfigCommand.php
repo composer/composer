@@ -307,6 +307,10 @@ EOT
                 function ($val) { return preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val) > 0; },
                 function ($val) { return $val; },
             ),
+            'bin-compat' => array(
+                function ($val) { return in_array($val, array('auto', 'nosymlink', 'full')); },
+                function ($val) { return $val; }
+            ),
             'discard-changes' => array(
                 function ($val) { return in_array($val, array('stash', 'true', 'false', '1', '0'), true); },
                 function ($val) {

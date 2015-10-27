@@ -36,6 +36,7 @@ class Config
         'cache-ttl' => 15552000, // 6 months
         'cache-files-ttl' => null, // fallback to cache-ttl
         'cache-files-maxsize' => '300MiB',
+        'bin-compat' => 'auto',
         'discard-changes' => false,
         'autoloader-suffix' => null,
         'optimize-autoloader' => false,
@@ -217,6 +218,17 @@ class Config
 
             case 'home':
                 return rtrim($this->process($this->config[$key], $flags), '/\\');
+
+            case 'bin-compat':
+                $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
+
+                if (!in_array($value, array('auto', 'nosymlink', 'full'))) {
+                    throw new \RuntimeException(
+                        "Invalid value for 'bin-compat': {$value}. Expected auto, nosymlink, full"
+                    );
+                }
+
+                return $value;
 
             case 'discard-changes':
                 if ($env = $this->getComposerEnv('COMPOSER_DISCARD_CHANGES')) {
