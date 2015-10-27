@@ -27,22 +27,11 @@ class ConfigValidatorTest extends TestCase
     public function testConfigValidatorCommitRefWarning()
     {
         $configValidator = new ConfigValidator(new NullIO());
-        $reflection      = new \ReflectionClass(get_class($configValidator));
-        $method          = $reflection->getMethod('checkForCommitReferences');
-        $warnings        = $reflection->getProperty('warnings');
+        list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_commit-ref.json');
 
-        $method->setAccessible(true);
-        $warnings->setAccessible(true);
-
-        $this->assertEquals(0, count($warnings->getValue($configValidator)));
-
-        $method->invokeArgs($configValidator, array(
-            array(
-                'some-package'    => 'dev-master#62c4da6',
-                'another-package' => '^1.0.0'
-            )
+        $this->assertEquals(true, in_array(
+            'The package "some/package" is pointing to a commit-ref, this is bad practice and can cause unforeseen issues.',
+            $warnings
         ));
-
-        $this->assertEquals(1, count($warnings->getValue($configValidator)));
     }
 }
