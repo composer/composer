@@ -13,6 +13,8 @@
 namespace Composer\Test\Package\Version;
 
 use Composer\Package\Version\VersionSelector;
+use Composer\Package\Package;
+use Composer\Package\Link;
 use Composer\Semver\VersionParser;
 
 class VersionSelectorTest extends \PHPUnit_Framework_TestCase
@@ -25,9 +27,9 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
     {
         $packageName = 'foobar';
 
-        $package1 = $this->createMockPackage('1.2.1');
-        $package2 = $this->createMockPackage('1.2.2');
-        $package3 = $this->createMockPackage('1.2.0');
+        $package1 = $this->createPackage('1.2.1');
+        $package2 = $this->createPackage('1.2.2');
+        $package3 = $this->createPackage('1.2.0');
         $packages = array($package1, $package2, $package3);
 
         $pool = $this->createMockPool();
@@ -40,7 +42,70 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
         $best = $versionSelector->findBestCandidate($packageName);
 
         // 1.2.2 should be returned because it's the latest of the returned versions
-        $this->assertEquals($package2, $best, 'Latest version should be 1.2.2');
+        $this->assertSame($package2, $best, 'Latest version should be 1.2.2');
+    }
+
+    public function testLatestVersionIsReturnedThatMatchesPhpRequirement()
+    {
+        $packageName = 'foobar';
+
+        $parser = new VersionParser;
+        $package1 = $this->createPackage('1.0.0');
+        $package2 = $this->createPackage('2.0.0');
+        $package1->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.4'), 'requires', '>=5.4')));
+        $package2->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), 'requires', '>=5.6')));
+        $packages = array($package1, $package2);
+
+        $pool = $this->createMockPool();
+        $pool->expects($this->once())
+            ->method('whatProvides')
+            ->with($packageName, null, true)
+            ->will($this->returnValue($packages));
+
+        $versionSelector = new VersionSelector($pool);
+        $best = $versionSelector->findBestCandidate($packageName, null, '5.5.0');
+
+        $this->assertSame($package1, $best, 'Latest version supporting php 5.5 should be returned (1.0.0)');
+    }
+
+    public function testMostStableVersionIsReturned()
+    {
+        $packageName = 'foobar';
+
+        $package1 = $this->createPackage('1.0.0');
+        $package2 = $this->createPackage('1.1.0-beta');
+        $packages = array($package1, $package2);
+
+        $pool = $this->createMockPool();
+        $pool->expects($this->once())
+            ->method('whatProvides')
+            ->with($packageName, null, true)
+            ->will($this->returnValue($packages));
+
+        $versionSelector = new VersionSelector($pool);
+        $best = $versionSelector->findBestCandidate($packageName);
+
+        $this->assertSame($package1, $best, 'Latest most stable version should be returned (1.0.0)');
+    }
+
+    public function testHighestVersionIsReturned()
+    {
+        $packageName = 'foobar';
+
+        $package1 = $this->createPackage('1.0.0');
+        $package2 = $this->createPackage('1.1.0-beta');
+        $packages = array($package1, $package2);
+
+        $pool = $this->createMockPool();
+        $pool->expects($this->once())
+            ->method('whatProvides')
+            ->with($packageName, null, true)
+            ->will($this->returnValue($packages));
+
+        $versionSelector = new VersionSelector($pool);
+        $best = $versionSelector->findBestCandidate($packageName, null, null, false);
+
+        $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }
 
     public function testFalseReturnedOnNoPackages()
@@ -86,7 +151,7 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
         $recommended = $versionSelector->findRecommendedRequireVersion($package);
 
         // assert that the recommended version is what we expect
-        $this->assertEquals($expectedVersion, $recommended);
+        $this->assertSame($expectedVersion, $recommended);
     }
 
     public function getRecommendedRequireVersionPackages()
@@ -124,14 +189,10 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    private function createMockPackage($version)
+    private function createPackage($version)
     {
-        $package = $this->getMock('\Composer\Package\PackageInterface');
-        $package->expects($this->any())
-            ->method('getVersion')
-            ->will($this->returnValue($version));
-
-        return $package;
+        $parser = new VersionParser();
+        return new Package('foo', $parser->normalize($version), $version);
     }
 
     private function createMockPool()

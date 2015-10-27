@@ -321,7 +321,7 @@ EOT
         return $this->repos;
     }
 
-    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array())
+    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null)
     {
         if ($requires) {
             $requires = $this->normalizeRequirements($requires);
@@ -331,7 +331,7 @@ EOT
             foreach ($requires as $requirement) {
                 if (!isset($requirement['version'])) {
                     // determine the best version automatically
-                    $version = $this->findBestVersionForPackage($input, $requirement['name']);
+                    $version = $this->findBestVersionForPackage($input, $requirement['name'], $phpVersion);
                     $requirement['version'] = $version;
 
                     $io->writeError(sprintf(
@@ -426,7 +426,7 @@ EOT
                     );
 
                     if (false === $constraint) {
-                        $constraint = $this->findBestVersionForPackage($input, $package);
+                        $constraint = $this->findBestVersionForPackage($input, $package, $phpVersion);
 
                         $io->writeError(sprintf(
                             'Using version <info>%s</info> for <info>%s</info>',
@@ -591,14 +591,15 @@ EOT
      *
      * @param  InputInterface            $input
      * @param  string                    $name
+     * @param  string                    $phpVersion
      * @throws \InvalidArgumentException
      * @return string
      */
-    private function findBestVersionForPackage(InputInterface $input, $name)
+    private function findBestVersionForPackage(InputInterface $input, $name, $phpVersion)
     {
         // find the latest version allowed in this pool
         $versionSelector = new VersionSelector($this->getPool($input));
-        $package = $versionSelector->findBestCandidate($name);
+        $package = $versionSelector->findBestCandidate($name, null, $phpVersion);
 
         if (!$package) {
             throw new \InvalidArgumentException(sprintf(

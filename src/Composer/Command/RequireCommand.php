@@ -96,12 +96,18 @@ EOT
         $composer = $this->getComposer();
         $repos = $composer->getRepositoryManager()->getRepositories();
 
+        $platformOverrides = $composer->getConfig()->get('platform') ?: array();
+        // initialize $this->repos as it is used by the parent InitCommand
         $this->repos = new CompositeRepository(array_merge(
-            array(new PlatformRepository),
+            array(new PlatformRepository(array(), $platformOverrides)),
             $repos
         ));
 
-        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'));
+        $phpPackages = $this->repos->findPackages('php');
+        $phpPackage = reset($phpPackages);
+        $phpVersion = $phpPackage->getVersion();
+        unset($phpPackage, $phpPackages);
+        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion);
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
