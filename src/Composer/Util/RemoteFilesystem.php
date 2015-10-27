@@ -209,8 +209,7 @@ class RemoteFilesystem
 
         // Use COMPOSER_AUTH environment variable if set
         if (getenv('COMPOSER_AUTH')) {
-            $credentials = [];
-            preg_match('/(.+):(.+)/', getenv('COMPOSER_AUTH'), $credentials);
+            $credentials = explode(':', getenv('COMPOSER_AUTH'), 2);
 
             if (count($credentials) === 2) {
                 $this->io->setAuthentication($originUrl, $credentials[0], $credentials[1]);
