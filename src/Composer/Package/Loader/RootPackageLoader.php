@@ -144,16 +144,33 @@ class RootPackageLoader extends ArrayLoader
         $stabilities = BasePackage::$stabilities;
         $minimumStability = $stabilities[$minimumStability];
         foreach ($requires as $reqName => $reqVersion) {
-            // parse explicit stability flags to the most unstable
-            if (preg_match('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $reqVersion, $match)) {
-                $name = strtolower($reqName);
-                $stability = $stabilities[VersionParser::normalizeStability($match[1])];
+            $constraints = array();
 
-                if (isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) {
-                    continue;
+            // extract all sub-constraints in case it is an OR/AND multi-constraint
+            $orSplit = preg_split('{\s*\|\|?\s*}', trim($reqVersion));
+            foreach ($orSplit as $constraint) {
+                $andSplit = preg_split('{(?<!^|as|[=>< ,]) *(?<!-)[, ](?!-) *(?!,|as|$)}', $constraint);
+                foreach ($andSplit as $constraint) {
+                    $constraints[] = $constraint;
                 }
-                $stabilityFlags[$name] = $stability;
+            }
 
+            // parse explicit stability flags to the most unstable
+            $match = false;
+            foreach ($constraints as $constraint) {
+                if (preg_match('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $constraint, $match)) {
+                    $name = strtolower($reqName);
+                    $stability = $stabilities[VersionParser::normalizeStability($match[1])];
+
+                    if (isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) {
+                        continue;
+                    }
+                    $stabilityFlags[$name] = $stability;
+                    $match = true;
+                }
+            }
+
+            if ($match) {
                 continue;
             }
 

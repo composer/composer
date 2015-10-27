@@ -42,6 +42,8 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
                 'bar/baz' => '1.0.x-dev as 1.2.0',
                 'qux/quux' => '1.0.*@rc',
                 'zux/complex' => '~1.0,>=1.0.2@dev',
+                'or/op' => '^2.0@dev || ^2.0@dev',
+                'multi/lowest-wins' => '^2.0@rc || >=3.0@dev , ~3.5@alpha',
             ),
             'minimum-stability' => 'alpha',
         ));
@@ -51,6 +53,8 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
             'bar/baz' => BasePackage::STABILITY_DEV,
             'qux/quux' => BasePackage::STABILITY_RC,
             'zux/complex' => BasePackage::STABILITY_DEV,
+            'or/op' => BasePackage::STABILITY_DEV,
+            'multi/lowest-wins' => BasePackage::STABILITY_DEV,
         ), $package->getStabilityFlags());
     }
 
