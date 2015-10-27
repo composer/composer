@@ -222,34 +222,14 @@ EOF;
                         );
 
                         $namespaceFilter = $namespace === '' ? null : $namespace;
-                        foreach (ClassMapGenerator::createMap($dir, $whitelist, $this->io, $namespaceFilter) as $class => $path) {
-                            $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
-                            if (!isset($classMap[$class])) {
-                                $classMap[$class] = $pathCode;
-                            } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
-                                $this->io->writeError(
-                                    '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
-                                    ' was found in both "'.str_replace(array('$vendorDir . \'', "',\n"), array($vendorPath, ''), $classMap[$class]).'" and "'.$path.'", the first will be used.</warning>'
-                                );
-                            }
-                        }
+                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $whitelist, $namespaceFilter, $classMap);
                     }
                 }
             }
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            foreach (ClassMapGenerator::createMap($dir, null, $this->io) as $class => $path) {
-                $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
-                if (!isset($classMap[$class])) {
-                    $classMap[$class] = $pathCode;
-                } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
-                    $this->io->writeError(
-                        '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
-                        ' was found in both "'.str_replace(array('$vendorDir . \'', "',\n"), array($vendorPath, ''), $classMap[$class]).'" and "'.$path.'", the first will be used.</warning>'
-                    );
-                }
-            }
+            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, null, null, $classMap);
         }
 
         ksort($classMap);
@@ -295,6 +275,28 @@ EOF;
         $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
             'optimize' => (bool) $scanPsr0Packages,
         ));
+    }
+
+    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $whitelist = null, $namespaceFilter = null, array $classMap = array())
+    {
+        foreach ($this->generateClassMap($dir, $whitelist, $this->io, $namespaceFilter) as $class => $path) {
+            $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
+            if (!isset($classMap[$class])) {
+                $classMap[$class] = $pathCode;
+            } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
+                $this->io->writeError(
+                    '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
+                    ' was found in both "'.str_replace(array('$vendorDir . \'', "',\n"), array($vendorPath, ''), $classMap[$class]).'" and "'.$path.'", the first will be used.</warning>'
+                );
+            }
+        }
+
+        return $classMap;
+    }
+
+    private function generateClassMap($dir, $whitelist = null, $namespaceFilter = null)
+    {
+        return ClassMapGenerator::createMap($dir, $whitelist, $this->io, $namespaceFilter);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
@@ -383,6 +385,12 @@ EOF;
         if (isset($autoloads['psr-4'])) {
             foreach ($autoloads['psr-4'] as $namespace => $path) {
                 $loader->addPsr4($namespace, $path);
+            }
+        }
+
+        if (isset($autoloads['classmap'])) {
+            foreach ($autoloads['classmap'] as $dir) {
+                $loader->addClassMap($this->generateClassMap($dir));
             }
         }
 
