@@ -32,8 +32,6 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     protected $conflicts;
     protected $provides;
     protected $replaces;
-    protected $recommends;
-    protected $suggests;
 
     /**
      * All descendants' constructors should call this parent constructor
