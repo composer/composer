@@ -19,12 +19,12 @@ php:
   - 5.6
   - 7.0
   - hhvm
-  - hhvm-nightly
+  - nightly
 
 matrix:
   fast_finish: true
   allow_failures:
-    - php: hhvm-nightly
+    - php: nightly
 
 before_script:
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
