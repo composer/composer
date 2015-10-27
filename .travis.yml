@@ -31,6 +31,7 @@ before_script:
     - git config --global user.email travis@example.com
 
 script:
-    - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --col1
+    - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && $(exit 1));'
+
 git:
   depth: 5
