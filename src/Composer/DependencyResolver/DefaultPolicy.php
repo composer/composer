@@ -67,6 +67,8 @@ class DefaultPolicy implements PolicyInterface
      */
     public function selectPreferedPackages(Pool $pool, array $installedMap, array $literals, $requiredPackage = null)
     {
+        trigger_error('Method selectPreferedPackages is deprecated and replaced by selectPreferredPackages, please update your usage', E_USER_DEPRECATED);
+
         return $this->selectPreferredPackages($pool, $installedMap, $literals, $requiredPackage);
     }
 
