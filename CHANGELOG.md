@@ -1,3 +1,26 @@
+### [1.0.0-alpha11] - 2015-10-xx
+
+  * Added `path` repository type to install/symlink packages from local paths
+  * Added `content-hash` inside the composer.lock to restrict the warnings about outdated lock file to some specific changes in the composer.json file
+  * Added config.platform to let you specify what your target environment looks like and make sure you do not inadvertently install dependencies that would break it
+  * Added `suggests` command to show what packages are suggested, use -v to see more details
+  * Added `archive-format` and `archive-dir` config options to specify default values for the archive command
+  * Added --classmap-authoritative to `install`, `update`, `require`, `remove` and `dump-autoload` commands, forcing the optimized classmap to be authoritative
+  * Added -A / --with-dependencies to the `validate` command to allow validating all your dependencies recursively
+  * Added --strict to the `validate` command to treat any warning as an error that then returns a non-zero exit code
+  * Added a dependency on composer/semver, which is the externalized lib for all the version constraints parsing and handling
+  * Added `bin-compat` config option that if set to `full` will create .bat proxy for binaries even if Compoesr runs in a linux VM
+  * Added SPDX 2.0 support, and externalized that in a composer/spdx-licenses lib
+  * Added warnings when the classmap autoloader finds duplicate classes
+  * Added --file to the `archive` command to choose the filename
+  * Added Ctrl+C handling in create-project to cancel the operation cleanly
+  * Fixed version guessing to use ^ always, default to stable versions, and avoid versions that require a higher php version than you have
+  * Fixed the lock file switching back and forth between old and new URL when a package URL is changed and many people run updates
+  * Fixed partial updates updating things they shouldn't when the current vendor dir was out of date with the lock file
+  * Fixed PHAR file creation to be more reproducible and always generate the exact same phar file from a given source
+  * Fixed issue when checking out git branches or tags that are also the name of a file in the repo
+  * Many minor fixes and documentation additions and UX improvements
+
 ### [1.0.0-alpha10] - 2015-04-14
 
   * Break: The following event classes are deprecated and you should update your script handlers to use the new ones in type hints:
@@ -246,6 +269,7 @@
 
   * Initial release
 
+[1.0.0-alpha11]: https://github.com/composer/composer/compare/1.0.0-alpha10...1.0.0-alpha11
 [1.0.0-alpha10]: https://github.com/composer/composer/compare/1.0.0-alpha9...1.0.0-alpha10
 [1.0.0-alpha9]: https://github.com/composer/composer/compare/1.0.0-alpha8...1.0.0-alpha9
 [1.0.0-alpha8]: https://github.com/composer/composer/compare/1.0.0-alpha7...1.0.0-alpha8
