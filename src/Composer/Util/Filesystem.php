@@ -506,6 +506,26 @@ class Filesystem
     }
 
     /**
+     * Creates a relative symlink from $link to $target
+     *
+     * @param string $target The path of the binary file to be symlinked
+     * @param string $link The path where the symlink should be created
+     * @return bool
+     */
+    public function relativeSymlink($target, $link)
+    {
+        $cwd = getcwd();
+
+        $relativePath = $this->filesystem->findShortestPath($link, $target);
+        chdir(dirname($link));
+        $result = @symlink($relativePath, $link);
+
+        chdir($cwd);
+
+        return (bool) $result;
+    }
+
+    /**
      * return true if that directory is a symlink.
      *
      * @param string $directory

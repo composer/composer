@@ -308,7 +308,7 @@ EOT
                 function ($val) { return $val; },
             ),
             'bin-compat' => array(
-                function ($val) { return in_array($val, array('auto', 'nosymlink', 'full')); },
+                function ($val) { return in_array($val, array('auto', 'full')); },
                 function ($val) { return $val; }
             ),
             'discard-changes' => array(

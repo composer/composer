@@ -1,6 +1,6 @@
 # Config
 
-This chapter will describe the `config` section of the `composer.json` 
+This chapter will describe the `config` section of the `composer.json`
 [schema](04-schema.md).
 
 ## process-timeout
@@ -105,11 +105,11 @@ first until the cache fits.
 ## bin-compat
 
 Defaults to `auto`. Determines the compatibility of the binaries to be installed.
-If it is `auto` then Composer tries to automatically guess which compatibility mode
-to use. If it is `nosymlink` then the binaries will be compatible with Unix-based
-operating systems (useful for cases when symlinks are not available).
-If its value is `full` then both .bat files for Windows and scripts for Unix-based
-operating systems will be installed for each binary.
+If it is `auto` then Composer only installs .bat proxy files when on Windows. If
+set to `full` then both .bat files for Windows and scripts for Unix-based
+operating systems will be installed for each binary. This is mainly useful if you
+run Composer inside a linux VM but still want the .bat proxies available for use
+in the Windows host OS.
 
 ## prepend-autoloader
 

@@ -229,8 +229,6 @@ class LibraryInstaller implements InstallerInterface
                 } else {
                     $this->installSymlinkBinaries($binPath, $link);
                 }
-            } elseif ($this->binCompat === "nosymlink") {
-                $this->installUnixyProxyBinaries($binPath, $link);
             } elseif ($this->binCompat === "full") {
                 $this->installFullBinaries($binPath, $link, $bin, $package);
             }
@@ -256,10 +254,7 @@ class LibraryInstaller implements InstallerInterface
 
     protected function installSymlinkBinaries($binPath, $link)
     {
-        try {
-            $symlink = new Symlink($this->filesystem);
-            $symlink->symlinkBin($binPath, $link);
-        } catch (\ErrorException $e) {
+        if (!$this->filesystem->relativeSymlink($binPath, $link)) {
             $this->installUnixyProxyBinaries($binPath, $link);
         }
     }

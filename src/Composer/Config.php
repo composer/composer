@@ -222,9 +222,9 @@ class Config
             case 'bin-compat':
                 $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
 
-                if (!in_array($value, array('auto', 'nosymlink', 'full'))) {
+                if (!in_array($value, array('auto', 'full'))) {
                     throw new \RuntimeException(
-                        "Invalid value for 'bin-compat': {$value}. Expected auto, nosymlink, full"
+                        "Invalid value for 'bin-compat': {$value}. Expected auto, full"
                     );
                 }
 
