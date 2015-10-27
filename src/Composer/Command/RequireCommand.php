@@ -103,10 +103,7 @@ EOT
             $repos
         ));
 
-        $phpPackages = $this->repos->findPackages('php');
-        $phpPackage = reset($phpPackages);
-        $phpVersion = $phpPackage->getVersion();
-        unset($phpPackage, $phpPackages);
+        $phpVersion = $this->repos->findPackage('php', '*')->getVersion();
         $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion);
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
