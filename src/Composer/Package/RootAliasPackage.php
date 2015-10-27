@@ -109,6 +109,54 @@ class RootAliasPackage extends AliasPackage implements RootPackageInterface
         $this->aliasOf->setReplaces($replaces);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function setRepositories($repositories)
+    {
+        $this->aliasOf->setRepositories($repositories);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setAutoload(array $autoload)
+    {
+        $this->aliasOf->setAutoload($autoload);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setDevAutoload(array $devAutoload)
+    {
+        $this->aliasOf->setDevAutoload($devAutoload);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setStabilityFlags(array $stabilityFlags)
+    {
+        $this->aliasOf->setStabilityFlags($stabilityFlags);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setSuggests(array $suggests)
+    {
+        $this->aliasOf->setSuggests($suggests);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setExtra(array $extra)
+    {
+        $this->aliasOf->setExtra($extra);
+    }
+
     public function __clone()
     {
         parent::__clone();
