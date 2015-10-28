@@ -516,7 +516,7 @@ class Filesystem
     {
         $cwd = getcwd();
 
-        $relativePath = $this->filesystem->findShortestPath($link, $target);
+        $relativePath = $this->findShortestPath($link, $target);
         chdir(dirname($link));
         $result = @symlink($relativePath, $link);
 
