@@ -41,7 +41,7 @@
     "_": "phpunit/phpunit-mock-objects required in 2.3.0 due to https://github.com/sebastianbergmann/phpunit-mock-objects/issues/223 - needs hhvm 3.8+ on travis",
     "config": {
         "platform": {
-            "php": "5.3.3"
+            "php": "5.3.9"
         }
     },
     "suggest": {
