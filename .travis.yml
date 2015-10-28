@@ -28,8 +28,10 @@ matrix:
 
 before_script:
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
-    - composer install
-    - bin/composer install
+    - flags=""
+    - if [ `phpenv version-name` == "5.3.3" ]; then flags="--ignore-platform-reqs"; fi
+    - composer install $flags
+    - bin/composer install $flags
     - git config --global user.name travis-ci
     - git config --global user.email travis@example.com
 
