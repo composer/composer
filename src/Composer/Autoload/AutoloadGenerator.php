@@ -279,7 +279,7 @@ EOF;
 
     private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $whitelist = null, $namespaceFilter = null, array $classMap = array())
     {
-        foreach ($this->generateClassMap($dir, $whitelist, $this->io, $namespaceFilter) as $class => $path) {
+        foreach ($this->generateClassMap($dir, $whitelist, $namespaceFilter) as $class => $path) {
             $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
             if (!isset($classMap[$class])) {
                 $classMap[$class] = $pathCode;
