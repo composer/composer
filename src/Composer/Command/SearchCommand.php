@@ -41,6 +41,7 @@ class SearchCommand extends Command
             ->setDescription('Search for packages')
             ->setDefinition(array(
                 new InputOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in name'),
+                new InputOption('repo', 'R', InputOption::VALUE_OPTIONAL, 'Search just this repo'),
                 new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
             ))
             ->setHelp(<<<EOT
@@ -61,6 +62,18 @@ EOT
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
+            if ($input->getOption('repo')) {
+                $search_repo = $input->getOption('repo');
+                $config_repos = $composer->getConfig()->getRepositories();
+                if (isset($config_repos[$search_repo])) {
+                    $my_repo = $config_repos[$search_repo];
+                    $repos = $composer->getRepositoryManager()->createRepository($my_repo['type'], $my_repo);
+                    $output->writeln('Search repo "' . $search_repo . '".');
+                } else {
+                    $output->writeln('Repo "' . $search_repo . '" not found; using composer.json values.');
+                    /** throw exception instead? **/
+                }
+            }
         } else {
             $defaultRepos = Factory::createDefaultRepositories($io);
             $io->writeError('No composer.json found in the current directory, showing packages from ' . implode(', ', array_keys($defaultRepos)));
