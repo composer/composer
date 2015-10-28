@@ -1,6 +1,8 @@
 build: false
 shallow_clone: true
-platform: x86, x64
+platform:
+  - x86
+  - x64
 clone_folder: c:\projects\composer
 
 cache:
