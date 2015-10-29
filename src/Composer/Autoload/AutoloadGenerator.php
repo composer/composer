@@ -48,6 +48,12 @@ class AutoloadGenerator
      */
     private $classMapAuthoritative = false;
 
+    /**
+     * Tests folder exclusion pattern
+     */
+    const EXCLUDE_TEST_PATTERN = '\\Tests\\';
+
+
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
@@ -234,6 +240,9 @@ EOF;
 
         ksort($classMap);
         foreach ($classMap as $class => $code) {
+            if (!$this->devMode && strstr($class, self::EXCLUDE_TEST_PATTERN)) {
+                continue;
+            }
             $classmapFile .= '    '.var_export($class, true).' => '.$code;
         }
         $classmapFile .= ");\n";
