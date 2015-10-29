@@ -276,9 +276,12 @@ EOT
         $pool = new Pool($stability);
         $pool->addRepository($sourceRepo);
 
+        // using those 3 constants to build a version without the 'extra' bit that can contain garbage
+        $phpVersion = PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION;
+
         // find the latest version if there are multiple
         $versionSelector = new VersionSelector($pool);
-        $package = $versionSelector->findBestCandidate($name, $packageVersion);
+        $package = $versionSelector->findBestCandidate($name, $packageVersion, $phpVersion);
 
         if (!$package) {
             throw new \InvalidArgumentException("Could not find package $name" . ($packageVersion ? " with version $packageVersion." : " with stability $stability."));
