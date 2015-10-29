@@ -100,7 +100,10 @@ If composer shows memory errors on some commands:
 
 `PHP Fatal error:  Allowed memory size of XXXXXX bytes exhausted <...>`
 
-Check first that XDebug is not loaded in your `php.ini` by running `composer diagnose`. If XDebug is loaded, you should disable it by commenting the line `zend_extension=path/to/xdebug` in your `php.ini`. Don't forget to enable XDebug again after using Composer, if you need it.
+Check first that XDebug is not loaded in your `php.ini` by runnin
+`composer diagnose`. If XDebug is loaded, you should disable it by
+commenting the line `zend_extension=path/to/xdebug` in your `php.ini`.
+Don't forget to enable XDebug again after using Composer, if you need it.
 
 If composer still raises the error, the PHP `memory_limit` should be increased.
 
