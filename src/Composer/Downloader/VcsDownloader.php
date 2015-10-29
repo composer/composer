@@ -145,6 +145,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     return '      ' . $line;
                 }, explode("\n", $logs)));
 
+                // escape angle brackets for proper output in the console
+                $logs = str_replace('<', '\<', $logs);
+
                 $this->io->writeError('    '.$message);
                 $this->io->writeError($logs);
             }
