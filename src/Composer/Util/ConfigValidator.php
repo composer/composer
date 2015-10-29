@@ -124,6 +124,19 @@ class ConfigValidator
             }
         }
 
+        // check for commit references
+        $require = isset($manifest['require']) ? $manifest['require'] : array();
+        $requireDev = isset($manifest['require-dev']) ? $manifest['require-dev'] : array();
+        $packages = array_merge($require, $requireDev);
+        foreach ($packages as $package => $version) {
+            if (preg_match('/#/', $version) === 1) {
+                $warnings[] = sprintf(
+                    'The package "%s" is pointing to a commit-ref, this is bad practice and can cause unforeseen issues.',
+                    $package
+                );
+            }
+        }
+
         // check for empty psr-0/psr-4 namespace prefixes
         if (isset($manifest['autoload']['psr-0'][''])) {
             $warnings[] = "Defining autoload.psr-0 with an empty namespace prefix is a bad idea for performance";
