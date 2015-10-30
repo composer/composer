@@ -558,7 +558,9 @@ If you want to exclude some files or folders from the classmap you can use the '
 This might be useful to exclude test classes in your live environment, for example, as those will be skipped
 from the classmap even when building an optimized autoloader.
 
-The classmap generator will ignore all files in the paths configured here.
+The classmap generator will ignore all files in the paths configured here. The paths are absolute from the package
+root directory (i.e. composer.json location), and support `*` to match anything but a slash, and `**` to
+match anything. `**` is implicitly added to the end of the paths.
 
 Example:
 
