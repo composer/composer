@@ -28,8 +28,6 @@ use Composer\Script\ScriptEvents;
  */
 class AutoloadGenerator
 {
-    const EXCLUDE_PATTERN = '.*%s';
-
     /**
      * @var EventDispatcher
      */
@@ -677,7 +675,7 @@ FOOTER;
 
             foreach ($autoload[$type] as $namespace => $paths) {
                 foreach ((array) $paths as $path) {
-                    if (($type === 'files' || $type === 'classmap') && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                    if (($type === 'files' || $type === 'classmap' || $type === 'exclude-from-classmap') && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
                         // remove target-dir from file paths of the root package
                         if ($package === $mainPackage) {
                             $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
@@ -690,17 +688,9 @@ FOOTER;
 
                     if ($type === 'exclude-from-classmap') {
                         // first escape user input
-                        $path = sprintf(self::EXCLUDE_PATTERN, preg_quote($path));
+                        $path = preg_quote(trim(strtr($path, '\\', '/'), '/'));
 
-                        if ($package === $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
-                            // remove target-dir from classmap entries of the root package
-                            $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
-                            $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
-                        } elseif ($package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
-                            // add target-dir to exclude entries that don't have it
-                            $path = preg_quote($package->getTargetDir()) . '/' . $path;
-                        }
-                        $autoloads[] = empty($installPath) ? $path : preg_quote($installPath) . '/' . $path;
+                        $autoloads[] = empty($installPath) ? preg_quote(strtr(getcwd(), '\\', '/')) . '/' . $path : preg_quote($installPath) . '/' . $path;
                         continue;
                     }
 
