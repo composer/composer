@@ -555,7 +555,8 @@ Example:
 #### Exclude files from classmaps
 
 If you want to exclude some files or folders from the classmap you can use the 'exclude-from-classmap' property.
-This might be useful to exclude test classes in your live environment, for example.
+This might be useful to exclude test classes in your live environment, for example, as those will be skipped
+from the classmap even when building an optimized autoloader.
 
 The classmap generator will ignore all files in the paths configured here.
 
@@ -567,6 +568,7 @@ Example:
         "exclude-from-classmap": ["/Tests/", "/test/", "/tests/"]
     }
 }
+```
 
 ### autoload-dev <span>([root-only](04-schema.md#root-package))</span>
 
