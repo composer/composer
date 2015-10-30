@@ -552,6 +552,22 @@ Example:
 }
 ```
 
+#### Exclude files from classmaps
+
+If you want to exclude some files or folders from the classmap you can use the 'exclude-from-classmap' property.
+This might be useful to exclude test classes in your live environment, for example.
+
+The classmap generator will ignore all files in the paths configured here.
+
+Example:
+
+```json
+{
+    "autoload": {
+        "exclude-from-classmap": ["/Tests/", "/test/", "/tests/"]
+    }
+}
+
 ### autoload-dev <span>([root-only](04-schema.md#root-package))</span>
 
 This section allows to define autoload rules for development purposes.
@@ -730,7 +746,7 @@ override packages from it.
 
 ### config <span>([root-only](04-schema.md#root-package))</span>
 
-A set of configuration options. It is only used for projects. See 
+A set of configuration options. It is only used for projects. See
 [Config](06-config.md) for a description of each individual option.
 
 ### scripts <span>([root-only](04-schema.md#root-package))</span>
@@ -791,7 +807,7 @@ Optional.
 
 ### non-feature-branches
 
-A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something), 
+A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something),
 that will NOT be handled as feature branches. This is an array of strings.
 
 If you have non-numeric branch names, for example like "latest", "current", "latest-stable"

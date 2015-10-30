@@ -257,6 +257,10 @@
                 "files": {
                     "type": "array",
                     "description": "This is an array of files that are always required on every request."
+                },
+                "exclude-from-classmap": {
+                    "type": "array",
+                    "description": "This is an array of patterns to exclude from autoload classmap generation. (e.g. \"exclude-from-classmap\": [\"/test/\", \"/tests/\", \"/Tests/\"]"
                 }
             }
         },

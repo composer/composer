@@ -28,6 +28,8 @@ use Composer\Script\ScriptEvents;
  */
 class AutoloadGenerator
 {
+    const EXCLUDE_PATTERN = '.*%s';
+
     /**
      * @var EventDispatcher
      */
@@ -193,6 +195,11 @@ EOF;
 EOF;
         }
 
+        $blacklist = null;
+        if (!empty($autoloads['exclude-from-classmap'])) {
+            $blacklist = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
+        }
+
         // flatten array
         $classMap = array();
         if ($scanPsr0Packages) {
@@ -215,21 +222,21 @@ EOF;
                         if (!is_dir($dir)) {
                             continue;
                         }
-                        $whitelist = sprintf(
-                            '{%s/%s.+$}',
-                            preg_quote($dir),
-                            ($psrType === 'psr-0' && strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
-                        );
+//                        $whitelist = sprintf(
+//                            '{%s/%s.+$}',
+//                            preg_quote($dir),
+//                            ($psrType === 'psr-0' && strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
+//                        );
 
                         $namespaceFilter = $namespace === '' ? null : $namespace;
-                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $whitelist, $namespaceFilter, $classMap);
+                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespaceFilter, $classMap);
                     }
                 }
             }
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, null, null, $classMap);
+            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, null, $classMap);
         }
 
         ksort($classMap);
@@ -277,9 +284,9 @@ EOF;
         ));
     }
 
-    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $whitelist = null, $namespaceFilter = null, array $classMap = array())
+    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, array $classMap = array())
     {
-        foreach ($this->generateClassMap($dir, $whitelist, $namespaceFilter) as $class => $path) {
+        foreach ($this->generateClassMap($dir, $blacklist, $namespaceFilter) as $class => $path) {
             $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
             if (!isset($classMap[$class])) {
                 $classMap[$class] = $pathCode;
@@ -294,9 +301,9 @@ EOF;
         return $classMap;
     }
 
-    private function generateClassMap($dir, $whitelist = null, $namespaceFilter = null)
+    private function generateClassMap($dir, $blacklist = null, $namespaceFilter = null)
     {
-        return ClassMapGenerator::createMap($dir, $whitelist, $this->io, $namespaceFilter);
+        return ClassMapGenerator::createMap($dir, $blacklist, $this->io, $namespaceFilter);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
@@ -359,11 +366,18 @@ EOF;
         $psr4 = $this->parseAutoloadsType($packageMap, 'psr-4', $mainPackage);
         $classmap = $this->parseAutoloadsType(array_reverse($sortedPackageMap), 'classmap', $mainPackage);
         $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage);
+        $exclude = $this->parseAutoloadsType($sortedPackageMap, 'exclude-from-classmap', $mainPackage);
 
         krsort($psr0);
         krsort($psr4);
 
-        return array('psr-0' => $psr0, 'psr-4' => $psr4, 'classmap' => $classmap, 'files' => $files);
+        return array(
+            'psr-0' => $psr0,
+            'psr-4' => $psr4,
+            'classmap' => $classmap,
+            'files' => $files,
+            'exclude-from-classmap' => $exclude
+        );
     }
 
     /**
@@ -672,6 +686,22 @@ FOOTER;
                             // add target-dir from file paths that don't have it
                             $path = $package->getTargetDir() . '/' . $path;
                         }
+                    }
+
+                    if ($type === 'exclude-from-classmap') {
+                        // first escape user input
+                        $path = sprintf(self::EXCLUDE_PATTERN, preg_quote($path));
+
+                        if ($package === $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                            // remove target-dir from classmap entries of the root package
+                            $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
+                            $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                        } elseif ($package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                            // add target-dir to exclude entries that don't have it
+                            $path = preg_quote($package->getTargetDir()) . '/' . $path;
+                        }
+                        $autoloads[] = empty($installPath) ? $path : preg_quote($installPath) . '/' . $path;
+                        continue;
                     }
 
                     $relativePath = empty($installPath) ? (empty($path) ? '.' : $path) : $installPath.'/'.$path;
