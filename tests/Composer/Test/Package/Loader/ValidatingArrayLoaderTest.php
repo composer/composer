@@ -262,7 +262,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     ),
                 ),
                 array(
-                    'autoload : invalid value (psr0), must be one of psr-0, psr-4, classmap, files',
+                    'autoload : invalid value (psr0), must be one of psr-0, psr-4, classmap, files, exclude-from-classmap',
                 ),
             ),
             array(
