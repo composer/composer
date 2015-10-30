@@ -690,6 +690,10 @@ FOOTER;
                         // first escape user input
                         $path = preg_quote(trim(strtr($path, '\\', '/'), '/'));
 
+                        // add support for wildcards * and **
+                        $path = str_replace('\\*\\*', '.*?', $path);
+                        $path = str_replace('\\*', '[^/]*?', $path);
+
                         $autoloads[] = empty($installPath) ? preg_quote(strtr(getcwd(), '\\', '/')) . '/' . $path : preg_quote($installPath) . '/' . $path;
                         continue;
                     }

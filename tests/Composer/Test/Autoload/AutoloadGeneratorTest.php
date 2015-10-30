@@ -1274,7 +1274,12 @@ EOF;
                 'Acme\Cake\\' => array('src-cake/', 'lib-cake/'),
             ),
             'classmap' => array('composersrc/'),
-            'exclude-from-classmap' => array('/composersrc/excludedTests/', '/composersrc/ClassToExclude.php'),
+            'exclude-from-classmap' => array(
+                '/composersrc/excludedTests/',
+                '/composersrc/ClassToExclude.php',
+                '/composersrc/*/excluded/excsubpath',
+                '**/excsubpath',
+            ),
         ));
 
         $this->repository->expects($this->once())
@@ -1300,6 +1305,9 @@ EOF;
         $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/excludedTests');
         file_put_contents($this->workingDir.'/composersrc/excludedTests/bar.php', '<?php class ClassExcludeMapFoo {}');
         file_put_contents($this->workingDir.'/composersrc/ClassToExclude.php', '<?php class ClassClassToExclude {}');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/long/excluded/excsubpath');
+        file_put_contents($this->workingDir.'/composersrc/long/excluded/excsubpath/foo.php', '<?php class ClassExcludeMapFoo2 {}');
+        file_put_contents($this->workingDir.'/composersrc/long/excluded/excsubpath/bar.php', '<?php class ClassExcludeMapBar {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
 
