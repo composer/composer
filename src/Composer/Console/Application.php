@@ -166,7 +166,7 @@ class Application extends BaseApplication
     {
         $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
         if (false !== $workingDir && !is_dir($workingDir)) {
-            throw new \RuntimeException('Invalid working directory specified.');
+            throw new \RuntimeException('Invalid working directory specified, '.$workingDir.' does not exist.');
         }
 
         return $workingDir;
