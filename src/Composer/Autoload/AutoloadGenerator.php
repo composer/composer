@@ -402,7 +402,11 @@ EOF;
 
         if (isset($autoloads['classmap'])) {
             foreach ($autoloads['classmap'] as $dir) {
-                $loader->addClassMap($this->generateClassMap($dir));
+                try {
+                    $loader->addClassMap($this->generateClassMap($dir));
+                } catch (\RuntimeException $e) {
+                    $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
+                }
             }
         }
 
