@@ -34,8 +34,9 @@ class InstallCommand extends Command
             ->setName('install')
             ->setDescription('Installs the project dependencies from the composer.lock file if present, or falls back on the composer.json.')
             ->setDefinition(array(
-                new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
-                new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
+                new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Prefer installation from package sources when possible, including VCS information.'),
+                new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Prefer installation from package dist even for dev versions.'),
+                new InputOption('force-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist, and avoid to use sources installation'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
@@ -91,6 +92,7 @@ EOT
 
         $preferSource = false;
         $preferDist = false;
+        $forceDist = false;
 
         $config = $composer->getConfig();
 
@@ -110,6 +112,9 @@ EOT
             $preferSource = $input->getOption('prefer-source');
             $preferDist = $input->getOption('prefer-dist');
         }
+        if ($input->getOption('force-dist')) {
+            $forceDist = $input->getOption('force-dist');
+        }
 
         $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
@@ -119,6 +124,7 @@ EOT
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
+            ->setForceDist($forceDist)
             ->setDevMode(!$input->getOption('no-dev'))
             ->setDumpAutoloader(!$input->getOption('no-autoloader'))
             ->setRunScripts(!$input->getOption('no-scripts'))

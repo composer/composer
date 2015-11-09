@@ -539,6 +539,63 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $manager->download($package, 'target_dir');
     }
 
+    public function testSourceOnlyPackageDownloadWithDistForced()
+    {
+        $package = $this->createPackageMock();
+        $package
+            ->expects($this->once())
+            ->method('getSourceType')
+            ->will($this->returnValue('git'));
+        $package
+            ->expects($this->once())
+            ->method('getDistType')
+            ->will($this->returnValue(null));
+
+        $manager = new DownloadManager($this->io, false, $this->filesystem);
+        $manager->setForceDist(true);
+        try {
+            $manager->download($package, 'vendor/pkg');
+            $this->fail('Trying to install package who only have source type with --force-dist option should raise an exception');
+        } catch (\InvalidArgumentException $e) {}
+    }
+
+    public function testDistOnlyPackageDownloadWithDistForced()
+    {
+        $package = $this->createPackageMock();
+        $package
+            ->expects($this->once())
+            ->method('getSourceType')
+            ->will($this->returnValue(null));
+        $package
+            ->expects($this->once())
+            ->method('getDistType')
+            ->will($this->returnValue('svn'));
+
+        $package
+            ->expects($this->once())
+            ->method('setInstallationSource')
+            ->with('dist');
+
+        $downloader = $this->createDownloaderMock();
+        $downloader
+            ->expects($this->once())
+            ->method('download')
+            ->with($package, 'target_dir');
+
+        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
+            ->setMethods(array('getDownloaderForInstalledPackage'))
+            ->getMock();
+        $manager
+            ->expects($this->once())
+            ->method('getDownloaderForInstalledPackage')
+            ->with($package)
+            ->will($this->returnValue($downloader));
+
+        $manager->setForceDist(true);
+        $manager->download($package, 'target_dir');
+    }
+
     public function testUpdateDistWithEqualTypes()
     {
         $initial = $this->createPackageMock();
@@ -696,6 +753,94 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->method('download')
             ->with($target, 'vendor/pkg', true);
 
+        $manager->update($initial, $target, 'vendor/pkg');
+    }
+
+    public function testUpdateSourceWithDistForced()
+    {
+        $initial = $this->createPackageMock();
+        $initial
+            ->expects($this->once())
+            ->method('getInstallationSource')
+            ->will($this->returnValue('source'));
+        $initial
+            ->expects($this->once())
+            ->method('getSourceType')
+            ->will($this->returnValue('git'));
+
+        $target = $this->createPackageMock();
+        $target
+            ->expects($this->once())
+            ->method('getSourceType')
+            ->will($this->returnValue('git'));
+        $target
+            ->expects($this->once())
+            ->method('getDistType')
+            ->will($this->returnValue('git'));
+
+        $downloader = $this->createDownloaderMock();
+        $downloader
+            ->expects($this->once())
+            ->method('remove')
+            ->with($initial, 'vendor/pkg');
+
+        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
+            ->setMethods(array('getDownloaderForInstalledPackage', 'download'))
+            ->getMock();
+        $manager
+            ->expects($this->once())
+            ->method('getDownloaderForInstalledPackage')
+            ->with($initial)
+            ->will($this->returnValue($downloader));
+        $manager
+            ->expects($this->once())
+            ->method('download')
+            ->with($target, 'vendor/pkg', false);
+
+        $manager->setForceDist(true);
+        $manager->update($initial, $target, 'vendor/pkg');
+    }
+
+    public function testUpdateDistWithDistForced()
+    {
+        $initial = $this->createPackageMock();
+        $initial
+            ->expects($this->once())
+            ->method('getInstallationSource')
+            ->will($this->returnValue('dist'));
+        $initial
+            ->expects($this->once())
+            ->method('getDistType')
+            ->will($this->returnValue('git'));
+
+        $target = $this->createPackageMock();
+        $target
+            ->expects($this->exactly(2))
+            ->method('getDistType')
+            ->will($this->returnValue('git'));
+        $target
+            ->expects($this->once())
+            ->method('setInstallationSource')
+            ->with('dist');
+
+        $downloader = $this->createDownloaderMock();
+        $downloader
+            ->expects($this->once())
+            ->method('update')
+            ->with($initial, $target, 'vendor/pkg');
+
+        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
+            ->setMethods(array('getDownloaderForInstalledPackage', 'download'))
+            ->getMock();
+        $manager
+            ->expects($this->once())
+            ->method('getDownloaderForInstalledPackage')
+            ->with($initial)
+            ->will($this->returnValue($downloader));
+
+        $manager->setForceDist(true);
         $manager->update($initial, $target, 'vendor/pkg');
     }
 
