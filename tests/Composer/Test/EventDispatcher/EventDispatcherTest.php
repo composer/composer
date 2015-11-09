@@ -201,6 +201,38 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatch('root', new CommandEvent('root', $composer, $io));
     }
 
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testDispatcherDetectInfiniteRecursion()
+    {
+        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+        ->setConstructorArgs(array(
+            $composer = $this->getMock('Composer\Composer'),
+            $io = $this->getMock('Composer\IO\IOInterface'),
+            $process,
+        ))
+        ->setMethods(array(
+            'getListeners',
+        ))
+        ->getMock();
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnCallback(function (Event $event) {
+                if ($event->getName() === 'root') {
+                    return array('@recurse');
+                } elseif ($event->getName() === 'recurse') {
+                    return array('@root');
+                }
+
+                return array();
+            }));
+
+        $dispatcher->dispatch('root', new CommandEvent('root', $composer, $io));
+    }
+
     private function getDispatcherStubForListenersTest($listeners, $io)
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')

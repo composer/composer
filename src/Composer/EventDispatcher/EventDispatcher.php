@@ -45,6 +45,7 @@ class EventDispatcher
     protected $loader;
     protected $process;
     protected $listeners;
+    private $eventStack;
 
     /**
      * Constructor.
@@ -58,6 +59,7 @@ class EventDispatcher
         $this->composer = $composer;
         $this->io = $io;
         $this->process = $process ?: new ProcessExecutor($io);
+        $this->eventStack = array();
     }
 
     /**
@@ -145,6 +147,8 @@ class EventDispatcher
     {
         $listeners = $this->getListeners($event);
 
+        $this->pushEvent($event);
+
         $return = 0;
         foreach ($listeners as $callable) {
             if (!is_string($callable) && is_callable($callable)) {
@@ -197,6 +201,8 @@ class EventDispatcher
                 break;
             }
         }
+
+        $this->popEvent();
 
         return $return;
     }
@@ -380,5 +386,32 @@ class EventDispatcher
     protected function isComposerScript($callable)
     {
         return '@' === substr($callable, 0, 1);
+    }
+
+    /**
+     * Push an event to the stack of active event
+     *
+     * @param  Event             $event
+     * @throws \RuntimeException
+     * @return number
+     */
+    protected function pushEvent(Event $event)
+    {
+        $eventName = $event->getName();
+        if (in_array($eventName, $this->eventStack)) {
+            throw new \RuntimeException(sprintf("Recursive call to '%s' detected", $eventName));
+        }
+
+        return array_push($this->eventStack, $eventName);
+    }
+
+    /**
+     * Pops the active event from the stack
+     *
+     * @return mixed
+     */
+    protected function popEvent()
+    {
+        return array_pop($this->eventStack);
     }
 }
