@@ -102,6 +102,7 @@ class Installer
 
     protected $preferSource = false;
     protected $preferDist = false;
+    protected $forceDist = false;
     protected $optimizeAutoloader = false;
     protected $classMapAuthoritative = false;
     protected $devMode = false;
@@ -198,6 +199,7 @@ class Installer
 
         $this->downloadManager->setPreferSource($this->preferSource);
         $this->downloadManager->setPreferDist($this->preferDist);
+        $this->downloadManager->setForceDist($this->forceDist);
 
         // clone root package to have one in the installed repo that does not require anything
         // we don't want it to be uninstallable, but its requirements should not conflict
@@ -1309,6 +1311,19 @@ class Installer
     public function setPreferDist($preferDist = true)
     {
         $this->preferDist = (boolean) $preferDist;
+
+        return $this;
+    }
+
+    /**
+     * force dist installation
+     *
+     * @param bool       $forceDist
+     * @return Installer
+     */
+    public function setForceDist($forceDist = true)
+    {
+        $this->forceDist = (boolean) $forceDist;
 
         return $this;
     }

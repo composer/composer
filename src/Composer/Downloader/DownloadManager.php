@@ -24,6 +24,7 @@ use Composer\Util\Filesystem;
 class DownloadManager
 {
     private $io;
+    private $forceDist = false;
     private $preferDist = false;
     private $preferSource = false;
     private $filesystem;
@@ -65,6 +66,19 @@ class DownloadManager
     public function setPreferDist($preferDist)
     {
         $this->preferDist = $preferDist;
+
+        return $this;
+    }
+
+    /**
+     * Makes downloader force dist installation
+     *
+     * @param bool             $forceDist force downloading from source
+     * @return DownloadManager
+     */
+    public function setForceDist($forceDist)
+    {
+        $this->forceDist = $forceDist;
 
         return $this;
     }
@@ -136,7 +150,7 @@ class DownloadManager
 
         if ('dist' === $installationSource) {
             $downloader = $this->getDownloader($package->getDistType());
-        } elseif ('source' === $installationSource) {
+        } elseif ('source' === $installationSource && !$this->forceDist) {
             $downloader = $this->getDownloader($package->getSourceType());
         } else {
             throw new \InvalidArgumentException(
@@ -171,15 +185,19 @@ class DownloadManager
         $distType     = $package->getDistType();
 
         $sources = array();
-        if ($sourceType) {
+        if ($sourceType && !$this->forceDist) {
             $sources[] = 'source';
         }
         if ($distType) {
             $sources[] = 'dist';
         }
 
-        if (empty($sources)) {
+        if (!$sourceType && !$distType) {
             throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
+        }
+
+        if (empty($sources)) {
+            throw new \InvalidArgumentException('No sources available for package '.$package.' for your request');
         }
 
         if ((!$package->isDev() || $this->preferDist) && !$preferSource) {
@@ -240,15 +258,19 @@ class DownloadManager
             $targetType  = $target->getSourceType();
         }
 
+        if ($this->forceDist) {
+            $targetType = $target->getDistType();
+        }
+
         // upgrading from a dist stable package to a dev package, force source reinstall
         if ($target->isDev() && 'dist' === $installationSource) {
             $downloader->remove($initial, $targetDir);
             $this->download($target, $targetDir);
-
-            return;
-        }
-
-        if ($initialType === $targetType) {
+        // Replace package installed from source by dist one because dist is forced
+        } elseif ($this->forceDist && 'source' === $installationSource) {
+            $downloader->remove($initial, $targetDir);
+            $this->download($target, $targetDir, false);
+        } elseif ($initialType === $targetType) {
             $target->setInstallationSource($installationSource);
             $downloader->update($initial, $target, $targetDir);
         } else {
