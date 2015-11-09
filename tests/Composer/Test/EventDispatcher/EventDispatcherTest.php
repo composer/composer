@@ -142,6 +142,65 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }
 
+    public function testDispatcherCanExecuteComposerScriptGroups()
+    {
+        $process = $this->getMock('Composer\Util\ProcessExecutor');
+            $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs(array(
+                $composer = $this->getMock('Composer\Composer'),
+                $io = $this->getMock('Composer\IO\IOInterface'),
+                $process,
+            ))
+            ->setMethods(array(
+                'getListeners',
+            ))
+            ->getMock();
+
+        $process->expects($this->exactly(3))
+            ->method('execute')
+            ->will($this->returnValue(0));
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnCallback(function (Event $event) {
+                if ($event->getName() === 'root') {
+                    return array('@group');
+                } elseif ($event->getName() === 'group') {
+                    return array('echo -n foo', '@subgroup', 'echo -n bar');
+                } elseif ($event->getName() === 'subgroup') {
+                    return array('echo -n baz');
+                }
+
+                return array();
+            }));
+
+        $io->expects($this->any())
+            ->method('isVerbose')
+            ->willReturn(1);
+
+        $io->expects($this->at(1))
+            ->method('writeError')
+            ->with($this->equalTo('> root: @group'));
+
+        $io->expects($this->at(3))
+            ->method('writeError')
+            ->with($this->equalTo('> group: echo -n foo'));
+
+        $io->expects($this->at(5))
+            ->method('writeError')
+            ->with($this->equalTo('> group: @subgroup'));
+
+        $io->expects($this->at(7))
+            ->method('writeError')
+            ->with($this->equalTo('> subgroup: echo -n baz'));
+
+        $io->expects($this->at(9))
+            ->method('writeError')
+            ->with($this->equalTo('> group: echo -n bar'));
+
+        $dispatcher->dispatch('root', new CommandEvent('root', $composer, $io));
+    }
+
     private function getDispatcherStubForListenersTest($listeners, $io)
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')

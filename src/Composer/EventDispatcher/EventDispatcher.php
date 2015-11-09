@@ -150,6 +150,14 @@ class EventDispatcher
             if (!is_string($callable) && is_callable($callable)) {
                 $event = $this->checkListenerExpectedEvent($callable, $event);
                 $return = false === call_user_func($callable, $event) ? 1 : 0;
+            } elseif ($this->isComposerScript($callable)) {
+                if ($this->io->isVerbose()) {
+                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable));
+                } else {
+                    $this->io->writeError(sprintf('> %s', $callable));
+                }
+                $scriptName = substr($callable, 1);
+                $return = $this->dispatch($scriptName, new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode()));
             } elseif ($this->isPhpScript($callable)) {
                 $className = substr($callable, 0, strpos($callable, '::'));
                 $methodName = substr($callable, strpos($callable, '::') + 2);
@@ -361,5 +369,16 @@ class EventDispatcher
     protected function isPhpScript($callable)
     {
         return false === strpos($callable, ' ') && false !== strpos($callable, '::');
+    }
+
+    /**
+     * Checks if string given references a composer run-script
+     *
+     * @param  string $callable
+     * @return bool
+     */
+    protected function isComposerScript($callable)
+    {
+        return '@' === substr($callable, 0, 1);
     }
 }

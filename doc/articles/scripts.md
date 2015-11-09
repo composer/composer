@@ -200,3 +200,18 @@ simply running `composer test`:
 
 > **Note:** Composer's bin-dir is pushed on top of the PATH so that binaries
 > of dependencies are easily accessible as CLI commands when writing scripts.
+
+Composer script can also called from other scripts, by prefixing the command name
+by `@`. For example the following syntax is valid:
+
+```json
+{
+    "scripts": {
+        "test": [
+            "@clearCache",
+            "phpunit"
+        ],
+        "clearCache": "rm -rf cache/*"
+    }
+}
+```
