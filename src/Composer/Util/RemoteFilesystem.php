@@ -334,6 +334,12 @@ class RemoteFilesystem
     {
         switch ($notificationCode) {
             case STREAM_NOTIFY_FAILURE:
+                if (400 === $messageCode) {
+                    // This might happen if your host is secured by ssl client certificate authentication
+                    // but you do not send an appropriate certificate
+                    throw new TransportException("The '" . $this->fileUrl . "' URL could not be accessed: " . $message, $messageCode);
+                }
+
             case STREAM_NOTIFY_AUTH_REQUIRED:
                 if (401 === $messageCode) {
                     // Bail if the caller is going to handle authentication failures itself.
