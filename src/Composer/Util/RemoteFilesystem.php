@@ -339,6 +339,8 @@ class RemoteFilesystem
                     // but you do not send an appropriate certificate
                     throw new TransportException("The '" . $this->fileUrl . "' URL could not be accessed: " . $message, $messageCode);
                 }
+                // intentional fallthrough to the next case as the notificationCode
+                // isn't always consistent and we should inspect the messageCode for 401s
 
             case STREAM_NOTIFY_AUTH_REQUIRED:
                 if (401 === $messageCode) {
