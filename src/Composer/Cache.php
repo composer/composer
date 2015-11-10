@@ -124,8 +124,10 @@ class Cache
             $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
             $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
 
-            if ($this->io->isDebug()) {
-                $this->io->writeError('Writing '.$this->root . $file.' into cache');
+            if (!file_exists($source)) {
+                $this->io->writeError('<error>'.$source.' does not exist, can not write into cache</error>');
+            } elseif ($this->io->isDebug()) {
+                $this->io->writeError('Writing '.$this->root . $file.' into cache from '.$source);
             }
 
             return copy($source, $this->root . $file);
