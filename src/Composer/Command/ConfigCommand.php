@@ -326,11 +326,6 @@ EOT
             'classmap-authoritative' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
-            'prefer-stable' =>  array($booleanValidator, $booleanNormalizer),
-            'minimum-stability' => array(
-                function ($val) { return in_array($val, array('dev', 'alpha', 'beta', 'RC', 'stable'), true); },
-                function ($val) { return $val; },
-            ),
         );
         $multiConfigValues = array(
             'github-protocols' => array(
