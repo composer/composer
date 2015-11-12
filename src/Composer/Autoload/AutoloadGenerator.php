@@ -697,8 +697,25 @@ FOOTER;
                         // add support for wildcards * and **
                         $path = str_replace('\\*\\*', '.+?', $path);
                         $path = str_replace('\\*', '[^/]+?', $path);
+                        // add support for up-level relative paths
+                        $path = preg_replace_callback(
+                            '{^((\\\.{1,2})+)/}',
+                            function ($matches) use (&$updir) {
+                                if (isset($matches[1])) {
+                                    // undo preg_quote for the matched string
+                                    $updir = str_replace('\\.', '.', $matches[1]);
+                                }
 
-                        $autoloads[] = empty($installPath) ? preg_quote(strtr(getcwd(), '\\', '/')) . '/' . $path : preg_quote($installPath) . '/' . $path;
+                                return '';
+                            },
+                            $path
+                        );
+                        if (empty($installPath)) {
+                            $installPath = strtr(getcwd(), '\\', '/');
+                        }
+
+                        $resolvedPath = realpath($installPath . '/' . $updir);
+                        $autoloads[] = preg_quote(strtr($resolvedPath, '\\', '/')) . '/' . $path;
                         continue;
                     }
 
