@@ -1,14 +1,16 @@
 ### [1.0.0-alpha11] - 2015-10-xx
 
-  * Added `path` repository type to install/symlink packages from local paths
-  * Added `content-hash` inside the composer.lock to restrict the warnings about outdated lock file to some specific changes in the composer.json file
   * Added config.platform to let you specify what your target environment looks like and make sure you do not inadvertently install dependencies that would break it
+  * Added `exclude-from-classmap` in the autoload config that lets you ignore sub-paths of classmapped directories, or psr-0/4 directories when building optimized autoloaders
+  * Added `path` repository type to install/symlink packages from local paths
   * Added `suggests` command to show what packages are suggested, use -v to see more details
+  * Added `content-hash` inside the composer.lock to restrict the warnings about outdated lock file to some specific changes in the composer.json file
   * Added `archive-format` and `archive-dir` config options to specify default values for the archive command
   * Added --classmap-authoritative to `install`, `update`, `require`, `remove` and `dump-autoload` commands, forcing the optimized classmap to be authoritative
   * Added -A / --with-dependencies to the `validate` command to allow validating all your dependencies recursively
   * Added --strict to the `validate` command to treat any warning as an error that then returns a non-zero exit code
   * Added a dependency on composer/semver, which is the externalized lib for all the version constraints parsing and handling
+  * Added support for classmap autoloading to load plugin classes and script handlers
   * Added `bin-compat` config option that if set to `full` will create .bat proxy for binaries even if Compoesr runs in a linux VM
   * Added SPDX 2.0 support, and externalized that in a composer/spdx-licenses lib
   * Added warnings when the classmap autoloader finds duplicate classes
