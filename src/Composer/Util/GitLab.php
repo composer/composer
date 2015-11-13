@@ -51,7 +51,7 @@ class GitLab
      */
     public function authorizeOAuth($originUrl)
     {
-        if (!in_array($originUrl, $this->config->get('gitlab-domains'))) {
+        if (!in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
             return false;
         }
 
@@ -122,37 +122,25 @@ class GitLab
 
     private function createToken($originUrl)
     {
-        if (!$this->io->hasAuthentication($originUrl)) {
-            $username = $this->io->ask('Username: ');
-            $password = $this->io->askAndHideAnswer('Password: ');
-
-            $this->io->setAuthentication($originUrl, $username, $password);
-        }
-
+        $username = $this->io->ask('Username: ');
+        $password = $this->io->askAndHideAnswer('Password: ');
 
         $headers = array('Content-Type: application/x-www-form-urlencoded');
 
-        $note = 'Composer';
-        if ($this->config->get('GitLab-expose-hostname') === true && 0 === $this->process->execute('hostname', $output)) {
-            $note .= ' on ' . trim($output);
-        }
-        $note .= ' [' . date('YmdHis') . ']';
-
         $apiUrl = $originUrl ;
-        $data = http_build_query(
-            array(
-                'username'  => $username,
-                'password'  => $password,
-                'grant_type' => 'password',
-                )
-            );
+        $data = http_build_query(array(
+            'username'  => $username,
+            'password'  => $password,
+            'grant_type' => 'password',
+        ));
         $options = array(
             'retry-auth-failure' => false,
             'http' => array(
                 'method' => 'POST',
                 'header' => $headers,
                 'content' => $data
-            ));
+            ),
+        );
 
         $json = $this->remoteFilesystem->getContents($originUrl, 'http://'. $apiUrl . '/oauth/token', false, $options);
 

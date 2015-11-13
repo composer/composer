@@ -286,7 +286,7 @@ class GitLabDriver extends VcsDriver
             $this->remoteFilesystem
         );
         $this->gitDriver->initialize();
-    }    
+    }
 
     /**
      * {@inheritDoc}
