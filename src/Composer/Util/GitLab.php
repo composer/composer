@@ -82,7 +82,7 @@ class GitLab
 
 
         $this->io->writeError(sprintf('A token will be created and stored in "%s", your password will never be stored', $this->config->getAuthConfigSource()->getName()));
-        $this->io->writeError('To revoke access to this token you can visit ' . $this->config->get('gitlab-domains')[0] . '/profile/applications');
+        $this->io->writeError('To revoke access to this token you can visit ' . $originUrl . '/profile/applications');
 
         $attemptCounter = 0;
 
@@ -90,7 +90,7 @@ class GitLab
             try {
                 $response = $this->createToken($originUrl);
             } catch (TransportException $e) {
-                // 401 is bad credentials, 
+                // 401 is bad credentials,
                 // 403 is max login attempts exceeded
                 if (in_array($e->getCode(), array(403, 401))) {
 
@@ -100,8 +100,8 @@ class GitLab
                         $this->io->writeError('Maximum number of login attempts exceeded. Please try again later.');
                     }
 
-                    $this->io->writeError('You can also manually create a personal token at ' . $this->config->get('gitlab-domains')[0] . '/profile/applications');
-                    $this->io->writeError('Add it using "composer config gitlab-oauth.' . $this->config->get('gitlab-domains')[0] . ' <token>"');
+                    $this->io->writeError('You can also manually create a personal token at ' . $originUrl . '/profile/applications');
+                    $this->io->writeError('Add it using "composer config gitlab-oauth.' . $originUrl . ' <token>"');
 
                     continue;
                 }
@@ -143,7 +143,7 @@ class GitLab
             array(
                 'username'  => $username,
                 'password'  => $password,
-                'grant_type' => 'password',            
+                'grant_type' => 'password',
                 )
             );
         $options = array(

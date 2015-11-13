@@ -333,7 +333,7 @@ class GitLabDriver extends VcsDriver
                     throw $e;
             }
         }
-    }    
+    }
 
     /**
      * Uses the config `gitlab-domains` to see if the driver supports the url for the

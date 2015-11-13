@@ -168,7 +168,7 @@ class RemoteFilesystem
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
- 
+
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
@@ -362,8 +362,8 @@ class RemoteFilesystem
             ) {
                 throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
-        } else if ($this->config && in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
-            $message = "\n".'Could not fetch '.$this->fileUrl.', enter your ' . $this->config->get('gitlab-domains')[0] . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
+        } elseif ($this->config && in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
+            $message = "\n".'Could not fetch '.$this->fileUrl.', enter your ' . $this->originUrl . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
             if (!$gitLabUtil->authorizeOAuth($this->originUrl)
                 && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively($this->originUrl, $message))
@@ -432,9 +432,9 @@ class RemoteFilesystem
             $auth = $this->io->getAuthentication($originUrl);
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
                 $options['github-token'] = $auth['username'];
-            } elseif ($originUrl === $this->config->get('gitlab-domains')[0]) {
+            } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
                 if($auth['password'] === 'oauth2') {
-                    $headers[] = 'Authorization: Bearer '.$auth['username'];    
+                    $headers[] = 'Authorization: Bearer '.$auth['username'];
                 }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
@@ -449,9 +449,6 @@ class RemoteFilesystem
             $options['http']['header'][] = $header;
         }
 
-        if($this->config && $this->config->get('gitlab-domains') && $originUrl == $this->config->get('gitlab-domains')[0]) {
-            $options['retry-auth-failure'] = false;
-        }
         return $options;
     }
 }
