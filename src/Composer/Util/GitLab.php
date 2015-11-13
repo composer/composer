@@ -39,15 +39,16 @@ class GitLab
     {
         $this->io = $io;
         $this->config = $config;
-        $this->process = $process ?: new ProcessExecutor;
+        $this->process = $process ?: new ProcessExecutor();
         $this->remoteFilesystem = $remoteFilesystem ?: new RemoteFilesystem($io, $config);
     }
 
     /**
-     * Attempts to authorize a GitLab domain via OAuth
+     * Attempts to authorize a GitLab domain via OAuth.
      *
-     * @param  string $originUrl The host this GitLab instance is located at
-     * @return bool   true on success
+     * @param string $originUrl The host this GitLab instance is located at
+     *
+     * @return bool true on success
      */
     public function authorizeOAuth($originUrl)
     {
@@ -66,13 +67,15 @@ class GitLab
     }
 
     /**
-     * Authorizes a GitLab domain interactively via OAuth
+     * Authorizes a GitLab domain interactively via OAuth.
      *
-     * @param  string                        $originUrl The host this GitLab instance is located at
-     * @param  string                        $message   The reason this authorization is required
+     * @param string $originUrl The host this GitLab instance is located at
+     * @param string $message   The reason this authorization is required
+     *
      * @throws \RuntimeException
      * @throws TransportException|\Exception
-     * @return bool                          true on success
+     *
+     * @return bool true on success
      */
     public function authorizeOAuthInteractively($originUrl, $message = null)
     {
@@ -80,9 +83,8 @@ class GitLab
             $this->io->writeError($message);
         }
 
-
         $this->io->writeError(sprintf('A token will be created and stored in "%s", your password will never be stored', $this->config->getAuthConfigSource()->getName()));
-        $this->io->writeError('To revoke access to this token you can visit ' . $originUrl . '/profile/applications');
+        $this->io->writeError('To revoke access to this token you can visit '.$originUrl.'/profile/applications');
 
         $attemptCounter = 0;
 
@@ -93,15 +95,14 @@ class GitLab
                 // 401 is bad credentials,
                 // 403 is max login attempts exceeded
                 if (in_array($e->getCode(), array(403, 401))) {
-
                     if (401 === $e->getCode()) {
                         $this->io->writeError('Bad credentials.');
                     } else {
                         $this->io->writeError('Maximum number of login attempts exceeded. Please try again later.');
                     }
 
-                    $this->io->writeError('You can also manually create a personal token at ' . $originUrl . '/profile/applications');
-                    $this->io->writeError('Add it using "composer config gitlab-oauth.' . $originUrl . ' <token>"');
+                    $this->io->writeError('You can also manually create a personal token at '.$originUrl.'/profile/applications');
+                    $this->io->writeError('Add it using "composer config gitlab-oauth.'.$originUrl.' <token>"');
 
                     continue;
                 }
@@ -110,14 +111,14 @@ class GitLab
             }
 
             $this->io->setAuthentication($originUrl, $response['access_token'], 'oauth2');
-            $this->config->getConfigSource()->removeConfigSetting('gitlab-oauth.'.$originUrl);
-            // store value in user config
+
+            // store value in user config in auth file
             $this->config->getAuthConfigSource()->addConfigSetting('gitlab-oauth.'.$originUrl, $response['access_token']);
 
             return true;
         }
 
-        throw new \RuntimeException("Invalid GitLab credentials 5 times in a row, aborting.");
+        throw new \RuntimeException('Invalid GitLab credentials 5 times in a row, aborting.');
     }
 
     private function createToken($originUrl)
@@ -127,10 +128,10 @@ class GitLab
 
         $headers = array('Content-Type: application/x-www-form-urlencoded');
 
-        $apiUrl = $originUrl ;
+        $apiUrl = $originUrl;
         $data = http_build_query(array(
-            'username'  => $username,
-            'password'  => $password,
+            'username' => $username,
+            'password' => $password,
             'grant_type' => 'password',
         ));
         $options = array(
@@ -138,11 +139,11 @@ class GitLab
             'http' => array(
                 'method' => 'POST',
                 'header' => $headers,
-                'content' => $data
+                'content' => $data,
             ),
         );
 
-        $json = $this->remoteFilesystem->getContents($originUrl, 'http://'. $apiUrl . '/oauth/token', false, $options);
+        $json = $this->remoteFilesystem->getContents($originUrl, 'http://'.$apiUrl.'/oauth/token', false, $options);
 
         $this->io->writeError('Token successfully created');
 
