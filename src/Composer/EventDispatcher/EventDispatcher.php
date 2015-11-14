@@ -159,7 +159,9 @@ class EventDispatcher
                     $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable));
                 }
                 $scriptName = substr($callable, 1);
-                $return = $this->dispatch($scriptName, new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode()));
+                $args = $event->getArguments();
+                $flags = $event->getFlags();
+                $return = $this->dispatch($scriptName, new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode(), $args, $flags));
             } elseif ($this->isPhpScript($callable)) {
                 $className = substr($callable, 0, strpos($callable, '::'));
                 $methodName = substr($callable, strpos($callable, '::') + 2);
