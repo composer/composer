@@ -697,9 +697,11 @@ FOOTER;
                         // add support for wildcards * and **
                         $path = str_replace('\\*\\*', '.+?', $path);
                         $path = str_replace('\\*', '[^/]+?', $path);
+
                         // add support for up-level relative paths
+                        $updir = null;
                         $path = preg_replace_callback(
-                            '{^((\\\.{1,2})+)/}',
+                            '{^((?:(?:\\\\\\.){1,2}+/)+)}',
                             function ($matches) use (&$updir) {
                                 if (isset($matches[1])) {
                                     // undo preg_quote for the matched string
