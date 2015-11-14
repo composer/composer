@@ -13,13 +13,11 @@
 namespace Composer\Command;
 
 use Composer\Json\JsonFile;
-use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -57,8 +55,6 @@ EOT
         $root = $composer->getPackage();
         $repo = $composer->getRepositoryManager()->getLocalRepository();
 
-        $versionParser = new VersionParser;
-
         if ($input->getOption('no-dev')) {
             $packages = $this->filterRequiredPackages($repo, $root);
         } else {
@@ -66,14 +62,15 @@ EOT
         }
 
         ksort($packages);
+        $io = $this->getIO();
 
         switch ($format = $input->getOption('format')) {
             case 'text':
-                $this->getIO()->write('Name: <comment>'.$root->getPrettyName().'</comment>');
-                $this->getIO()->write('Version: <comment>'.$versionParser->formatVersion($root).'</comment>');
-                $this->getIO()->write('Licenses: <comment>'.(implode(', ', $root->getLicense()) ?: 'none').'</comment>');
-                $this->getIO()->write('Dependencies:');
-                $this->getIO()->write('');
+                $io->write('Name: <comment>'.$root->getPrettyName().'</comment>');
+                $io->write('Version: <comment>'.$root->getFullPrettyVersion().'</comment>');
+                $io->write('Licenses: <comment>'.(implode(', ', $root->getLicense()) ?: 'none').'</comment>');
+                $io->write('Dependencies:');
+                $io->write('');
 
                 $table = new Table($output);
                 $table->setStyle('compact');
@@ -83,7 +80,7 @@ EOT
                 foreach ($packages as $package) {
                     $table->addRow(array(
                         $package->getPrettyName(),
-                        $versionParser->formatVersion($package),
+                        $package->getFullPrettyVersion(),
                         implode(', ', $package->getLicense()) ?: 'none',
                     ));
                 }
@@ -93,14 +90,14 @@ EOT
             case 'json':
                 foreach ($packages as $package) {
                     $dependencies[$package->getPrettyName()] = array(
-                        'version' => $versionParser->formatVersion($package),
+                        'version' => $package->getFullPrettyVersion(),
                         'license' => $package->getLicense(),
                     );
                 }
 
-                $this->getIO()->write(JsonFile::encode(array(
+                $io->write(JsonFile::encode(array(
                     'name'         => $root->getPrettyName(),
-                    'version'      => $versionParser->formatVersion($root),
+                    'version'      => $root->getFullPrettyVersion(),
                     'license'      => $root->getLicense(),
                     'dependencies' => $dependencies,
                 )));

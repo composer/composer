@@ -1,4 +1,15 @@
 <?php
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Test\Util;
 
 use Composer\Config;
@@ -60,9 +71,9 @@ class SvnTest extends \PHPUnit_Framework_TestCase
         $config->merge(array(
             'config' => array(
                 'http-basic' => array(
-                    'svn.apache.org' => array('username' => 'foo', 'password' => 'bar')
-                )
-            )
+                    'svn.apache.org' => array('username' => 'foo', 'password' => 'bar'),
+                ),
+            ),
         ));
 
         $svn = new Svn($url, new NullIO, $config);
@@ -81,9 +92,9 @@ class SvnTest extends \PHPUnit_Framework_TestCase
             array(
                 'config' => array(
                     'http-basic' => array(
-                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar')
-                    )
-                )
+                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar'),
+                    ),
+                ),
             )
         );
 
@@ -104,9 +115,9 @@ class SvnTest extends \PHPUnit_Framework_TestCase
             array(
                 'config' => array(
                     'http-basic' => array(
-                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar')
-                    )
-                )
+                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar'),
+                    ),
+                ),
             )
         );
 

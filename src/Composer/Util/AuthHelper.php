@@ -45,7 +45,7 @@ class AuthHelper
                     }
                     throw new \RuntimeException('Please answer (y)es or (n)o');
                 },
-                false,
+                null,
                 'y'
             );
 

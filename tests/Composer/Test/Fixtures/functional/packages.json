@@ -24,7 +24,7 @@
         ],
         "source": {
             "type": "git",
-            "url": "http://github.com/Seldaek/jsonlint",
+            "url": "https://github.com/Seldaek/jsonlint",
             "reference": "4451f2066efdc53f3fa954c44a47ead73f6838d2"
         },
         "type": "library",

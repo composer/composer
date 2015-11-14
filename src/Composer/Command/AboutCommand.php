@@ -37,7 +37,7 @@ EOT
         $this->getIO()->write(<<<EOT
 <info>Composer - Package Management for PHP</info>
 <comment>Composer is a dependency manager tracking local dependencies of your projects and libraries.
-See http://getcomposer.org/ for more information.</comment>
+See https://getcomposer.org/ for more information.</comment>
 EOT
         );
     }

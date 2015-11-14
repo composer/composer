@@ -47,7 +47,7 @@ class Problem
      */
     public function addRule(Rule $rule)
     {
-        $this->addReason($rule->getId(), array(
+        $this->addReason(spl_object_hash($rule), array(
             'rule' => $rule,
             'job' => $rule->getJob(),
         ));
@@ -87,8 +87,12 @@ class Problem
             }
 
             if ($job && $job['cmd'] === 'install' && empty($packages)) {
+
                 // handle php/hhvm
                 if ($job['packageName'] === 'php' || $job['packageName'] === 'php-64bit' || $job['packageName'] === 'hhvm') {
+                    $available = $this->pool->whatProvides($job['packageName']);
+                    $version = count($available) ? $available[0]->getPrettyVersion() : phpversion();
+
                     $msg = "\n    - This package requires ".$job['packageName'].$this->constraintToText($job['constraint']).' but ';
 
                     if (defined('HHVM_VERSION')) {
@@ -97,7 +101,7 @@ class Problem
                         return $msg . 'you are running this with PHP and not HHVM.';
                     }
 
-                    return $msg . 'your PHP version does not satisfy that requirement.';
+                    return $msg . 'your PHP version ('. $version .') does not satisfy that requirement.';
                 }
 
                 // handle php extensions
@@ -218,7 +222,7 @@ class Problem
     /**
      * Turns a constraint into text usable in a sentence describing a job
      *
-     * @param  \Composer\Package\LinkConstraint\LinkConstraintInterface $constraint
+     * @param  \Composer\Semver\Constraint\ConstraintInterface $constraint
      * @return string
      */
     protected function constraintToText($constraint)

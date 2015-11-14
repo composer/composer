@@ -1,4 +1,53 @@
-### 1.0.0-alpha9 (2014-12-07)
+### [1.0.0-alpha11] - 2015-10-xx
+
+  * Added config.platform to let you specify what your target environment looks like and make sure you do not inadvertently install dependencies that would break it
+  * Added `exclude-from-classmap` in the autoload config that lets you ignore sub-paths of classmapped directories, or psr-0/4 directories when building optimized autoloaders
+  * Added `path` repository type to install/symlink packages from local paths
+  * Added `suggests` command to show what packages are suggested, use -v to see more details
+  * Added `content-hash` inside the composer.lock to restrict the warnings about outdated lock file to some specific changes in the composer.json file
+  * Added `archive-format` and `archive-dir` config options to specify default values for the archive command
+  * Added --classmap-authoritative to `install`, `update`, `require`, `remove` and `dump-autoload` commands, forcing the optimized classmap to be authoritative
+  * Added -A / --with-dependencies to the `validate` command to allow validating all your dependencies recursively
+  * Added --strict to the `validate` command to treat any warning as an error that then returns a non-zero exit code
+  * Added a dependency on composer/semver, which is the externalized lib for all the version constraints parsing and handling
+  * Added support for classmap autoloading to load plugin classes and script handlers
+  * Added `bin-compat` config option that if set to `full` will create .bat proxy for binaries even if Compoesr runs in a linux VM
+  * Added SPDX 2.0 support, and externalized that in a composer/spdx-licenses lib
+  * Added warnings when the classmap autoloader finds duplicate classes
+  * Added --file to the `archive` command to choose the filename
+  * Added Ctrl+C handling in create-project to cancel the operation cleanly
+  * Fixed version guessing to use ^ always, default to stable versions, and avoid versions that require a higher php version than you have
+  * Fixed the lock file switching back and forth between old and new URL when a package URL is changed and many people run updates
+  * Fixed partial updates updating things they shouldn't when the current vendor dir was out of date with the lock file
+  * Fixed PHAR file creation to be more reproducible and always generate the exact same phar file from a given source
+  * Fixed issue when checking out git branches or tags that are also the name of a file in the repo
+  * Many minor fixes and documentation additions and UX improvements
+
+### [1.0.0-alpha10] - 2015-04-14
+
+  * Break: The following event classes are deprecated and you should update your script handlers to use the new ones in type hints:
+    - `Composer\Script\CommandEvent` is deprecated, use `Composer\Script\Event`
+    - `Composer\Script\PackageEvent` is deprecated, use `Composer\Installer\PackageEvent`
+  * Break: Output is now split between stdout and stderr. Any irrelevant output to each command is on stderr as per unix best practices.
+  * Added support for npm-style semver operators (`^` and `-` ranges, ` ` = AND, `||` = OR)
+  * Added --prefer-lowest to `update` command to allow testing a package with the lowest declared dependencies
+  * Added support for parsing semver build metadata `+anything` at the end of versions
+  * Added --sort-packages option to `require` command for sorting dependencies
+  * Added --no-autoloader to `install` and `update` commands to skip autoload generation
+  * Added --list to `run-script` command to see available scripts
+  * Added --absolute to `config` command to get back absolute paths
+  * Added `classmap-authoritative` config option, if enabled only the classmap info will be used by the composer autoloader
+  * Added support for branch-alias on numeric branches
+  * Added support for the `https_proxy`/`HTTPS_PROXY` env vars used only for https URLs
+  * Added support for using real composer repos as local paths in `create-project` command
+  * Added --no-dev to `licenses` command
+  * Added support for PHP 7.0 nightly builds
+  * Fixed detection of stability when parsing multiple constraints
+  * Fixed installs from lock file containing updated composer.json requirement
+  * Fixed the autoloader suffix in vendor/autoload.php changing in every build
+  * Many minor fixes, documentation additions and UX improvements
+
+### [1.0.0-alpha9] - 2014-12-07
 
   * Added `remove` command to do the reverse of `require`
   * Added --ignore-platform-reqs to `install`/`update` commands to install even if you are missing a php extension or have an invalid php version
@@ -28,7 +77,7 @@
   * Improved SVN and Perforce support
   * A boatload of minor fixes, documentation additions and UX improvements
 
-### 1.0.0-alpha8 (2014-01-06)
+### [1.0.0-alpha8] - 2014-01-06
 
   * Break: The `install` command now has --dev enabled by default. --no-dev can be used to install without dev requirements
   * Added `composer-plugin` package type to allow extensibility, and deprecated `composer-installer`
@@ -59,7 +108,7 @@
   * Improved memory usage and performance of solving dependencies
   * Tons of minor bug fixes and improvements
 
-### 1.0.0-alpha7 (2013-05-04)
+### [1.0.0-alpha7] - 2013-05-04
 
   * Break: For forward compatibility, you should change your deployment scripts to run `composer install --no-dev`. The install command will install dev dependencies by default starting in the next release
   * Break: The `update` command now has --dev enabled by default. --no-dev can be used to update without dev requirements, but it will create an incomplete lock file and is discouraged
@@ -110,10 +159,10 @@
   * Improved the coverage of the `validate` command
   * Tons of minor bug fixes and improvements
 
-### 1.0.0-alpha6 (2012-10-23)
+### [1.0.0-alpha6] - 2012-10-23
 
   * Schema: Added ability to pass additional options to repositories (i.e. ssh keys/client certificates to secure private repos)
-  * Schema: Added a new `~` operator that should be prefered over `>=`, see http://getcomposer.org/doc/01-basic-usage.md#package-versions
+  * Schema: Added a new `~` operator that should be preferred over `>=`, see http://getcomposer.org/doc/01-basic-usage.md#package-versions
   * Schema: Version constraints `<x.y` are assumed to be `<x.y-dev` unless specified as `<x.y-stable` to reduce confusion
   * Added `config` command to edit/list config values, including --global switch for system config
   * Added OAuth token support for the GitHub API
@@ -121,7 +170,7 @@
   * Added --prefer-dist flag to force installs of dev packages from zip archives instead of clones
   * Added --working-dir (-d) flag to change the working directory
   * Added --profile flag to all commands to display execution time and memory usage
-  * Added `github-protocols` config key to define the order of prefered protocols for github.com clones
+  * Added `github-protocols` config key to define the order of preferred protocols for github.com clones
   * Added ability to interactively reset changes to vendor dirs while updating
   * Added support for hg bookmarks in the hg driver
   * Added support for svn repositories not following the standard trunk/branch/tags scheme
@@ -135,7 +184,7 @@
   * Improved performance of a few essential code paths
   * Many bug small fixes and docs improvements
 
-### 1.0.0-alpha5 (2012-08-18)
+### [1.0.0-alpha5] - 2012-08-18
 
   * Added `dump-autoload` command to only regenerate the autoloader
   * Added --optimize to `dump-autoload` to generate a more performant classmap-based autoloader for production
@@ -153,7 +202,7 @@
   * Improved error reporting on network failures and some other edge cases
   * Various minor bug fixes and docs improvements
 
-### 1.0.0-alpha4 (2012-07-04)
+### [1.0.0-alpha4] - 2012-07-04
 
   * Break: The default `minimum-stability` is now `stable`, [read more](https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion)
   * Break: Custom installers now receive the IO instance and a Composer instance in their constructor
@@ -181,7 +230,7 @@
   * Cleaned up / refactored the dependency solver code as well as the output for unsolvable requirements
   * Various bug fixes and docs improvements
 
-### 1.0.0-alpha3 (2012-05-13)
+### [1.0.0-alpha3] - 2012-05-13
 
   * Schema: Added `require-dev` for development-time requirements (tests, etc), install with --dev
   * Schema: Added author.role to list the author's role in the project
@@ -203,7 +252,7 @@
   * Fixed various bugs relating to package aliasing, proxy configuration, binaries
   * Various bug fixes and docs improvements
 
-### 1.0.0-alpha2 (2012-04-03)
+### [1.0.0-alpha2] - 2012-04-03
 
   * Added `create-project` command to install a project from scratch with composer
   * Added automated `classmap` autoloading support for non-PSR-0 compliant projects
@@ -218,6 +267,17 @@
   * Removed dependency on filter_var
   * Various robustness & error handling improvements, docs fixes and more bug fixes
 
-### 1.0.0-alpha1 (2012-03-01)
+### 1.0.0-alpha1 - 2012-03-01
 
   * Initial release
+
+[1.0.0-alpha11]: https://github.com/composer/composer/compare/1.0.0-alpha10...1.0.0-alpha11
+[1.0.0-alpha10]: https://github.com/composer/composer/compare/1.0.0-alpha9...1.0.0-alpha10
+[1.0.0-alpha9]: https://github.com/composer/composer/compare/1.0.0-alpha8...1.0.0-alpha9
+[1.0.0-alpha8]: https://github.com/composer/composer/compare/1.0.0-alpha7...1.0.0-alpha8
+[1.0.0-alpha7]: https://github.com/composer/composer/compare/1.0.0-alpha6...1.0.0-alpha7
+[1.0.0-alpha6]: https://github.com/composer/composer/compare/1.0.0-alpha5...1.0.0-alpha6
+[1.0.0-alpha5]: https://github.com/composer/composer/compare/1.0.0-alpha4...1.0.0-alpha5
+[1.0.0-alpha4]: https://github.com/composer/composer/compare/1.0.0-alpha3...1.0.0-alpha4
+[1.0.0-alpha3]: https://github.com/composer/composer/compare/1.0.0-alpha2...1.0.0-alpha3
+[1.0.0-alpha2]: https://github.com/composer/composer/compare/1.0.0-alpha1...1.0.0-alpha2

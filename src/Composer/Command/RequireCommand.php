@@ -20,7 +20,7 @@ use Composer\Factory;
 use Composer\Installer;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
@@ -48,6 +48,8 @@ class RequireCommand extends InitCommand
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
                 new InputOption('sort-packages', null, InputOption::VALUE_NONE, 'Sorts packages when adding/updating a new dependency'),
+                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
+                new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
             ))
             ->setHelp(<<<EOT
 The require command adds required packages to your composer.json and installs them.
@@ -64,22 +66,27 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $file = Factory::getComposerFile();
+        $io = $this->getIO();
 
         $newlyCreated = !file_exists($file);
         if (!file_exists($file) && !file_put_contents($file, "{\n}\n")) {
-            $this->getIO()->writeError('<error>'.$file.' could not be created.</error>');
+            $io->writeError('<error>'.$file.' could not be created.</error>');
 
             return 1;
         }
         if (!is_readable($file)) {
-            $this->getIO()->writeError('<error>'.$file.' is not readable.</error>');
+            $io->writeError('<error>'.$file.' is not readable.</error>');
 
             return 1;
         }
         if (!is_writable($file)) {
-            $this->getIO()->writeError('<error>'.$file.' is not writable.</error>');
+            $io->writeError('<error>'.$file.' is not writable.</error>');
 
             return 1;
+        }
+
+        if (filesize($file) === 0) {
+            file_put_contents($file, "{\n}\n");
         }
 
         $json = new JsonFile($file);
@@ -89,12 +96,15 @@ EOT
         $composer = $this->getComposer();
         $repos = $composer->getRepositoryManager()->getRepositories();
 
+        $platformOverrides = $composer->getConfig()->get('platform') ?: array();
+        // initialize $this->repos as it is used by the parent InitCommand
         $this->repos = new CompositeRepository(array_merge(
-            array(new PlatformRepository),
+            array(new PlatformRepository(array(), $platformOverrides)),
             $repos
         ));
 
-        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'));
+        $phpVersion = $this->repos->findPackage('php', '*')->getVersion();
+        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion);
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
@@ -122,18 +132,19 @@ EOT
             $json->write($composerDefinition);
         }
 
-        $this->getIO()->writeError('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
+        $io->writeError('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
 
         if ($input->getOption('no-update')) {
             return 0;
         }
         $updateDevMode = !$input->getOption('update-no-dev');
+        $optimize = $input->getOption('optimize-autoloader') || $composer->getConfig()->get('optimize-autoloader');
+        $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
 
         // Update packages
         $this->resetComposer();
         $composer = $this->getComposer();
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
-        $io = $this->getIO();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -145,6 +156,8 @@ EOT
             ->setPreferSource($input->getOption('prefer-source'))
             ->setPreferDist($input->getOption('prefer-dist'))
             ->setDevMode($updateDevMode)
+            ->setOptimizeAutoloader($optimize)
+            ->setClassMapAuthoritative($authoritative)
             ->setUpdate(true)
             ->setUpdateWhitelist(array_keys($requirements))
             ->setWhitelistDependencies($input->getOption('update-with-dependencies'))
@@ -154,10 +167,10 @@ EOT
         $status = $install->run();
         if ($status !== 0) {
             if ($newlyCreated) {
-                $this->getIO()->writeError("\n".'<error>Installation failed, deleting '.$file.'.</error>');
+                $io->writeError("\n".'<error>Installation failed, deleting '.$file.'.</error>');
                 unlink($json->getPath());
             } else {
-                $this->getIO()->writeError("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
+                $io->writeError("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
                 file_put_contents($json->getPath(), $composerBackup);
             }
         }

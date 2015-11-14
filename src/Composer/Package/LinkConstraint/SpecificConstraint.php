@@ -12,42 +12,13 @@
 
 namespace Composer\Package\LinkConstraint;
 
+use Composer\Semver\Constraint\AbstractConstraint;
+
+trigger_error('The ' . __NAMESPACE__ . '\SpecificConstraint abstract class is deprecated, there is no replacement for it.', E_USER_DEPRECATED);
+
 /**
- * Provides a common basis for specific package link constraints
- *
- * @author Nils Adermann <naderman@naderman.de>
+ * @deprecated use Composer\Semver\Constraint\AbstractConstraint instead
  */
-abstract class SpecificConstraint implements LinkConstraintInterface
+abstract class SpecificConstraint extends AbstractConstraint implements LinkConstraintInterface
 {
-    protected $prettyString;
-
-    public function matches(LinkConstraintInterface $provider)
-    {
-        if ($provider instanceof MultiConstraint) {
-            // turn matching around to find a match
-            return $provider->matches($this);
-        } elseif ($provider instanceof $this) {
-            return $this->matchSpecific($provider);
-        }
-
-        return true;
-    }
-
-    public function setPrettyString($prettyString)
-    {
-        $this->prettyString = $prettyString;
-    }
-
-    public function getPrettyString()
-    {
-        if ($this->prettyString) {
-            return $this->prettyString;
-        }
-
-        return $this->__toString();
-    }
-
-    // implementations must implement a method of this format:
-    // not declared abstract here because type hinting violates parameter coherence (TODO right word?)
-    // public function matchSpecific(<SpecificConstraintType> $provider);
 }

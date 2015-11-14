@@ -15,7 +15,6 @@ namespace Composer\Util;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Downloader\TransportException;
-use Composer\Json\JsonFile;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -80,124 +79,50 @@ class GitHub
             $this->io->writeError($message);
         }
 
-        $this->io->writeError(sprintf('A token will be created and stored in "%s", your password will never be stored', $this->config->getAuthConfigSource()->getName()));
-        $this->io->writeError('To revoke access to this token you can visit https://github.com/settings/applications');
-
-        $otp = null;
-        $attemptCounter = 0;
-
-        while ($attemptCounter++ < 5) {
-            try {
-                $response = $this->createToken($originUrl, $otp);
-            } catch (TransportException $e) {
-                // https://developer.github.com/v3/#authentication && https://developer.github.com/v3/auth/#working-with-two-factor-authentication
-                // 401 is bad credentials, or missing otp code
-                // 403 is max login attempts exceeded
-                if (in_array($e->getCode(), array(403, 401))) {
-                    // in case of a 401, and authentication was previously provided
-                    if (401 === $e->getCode() && $this->io->hasAuthentication($originUrl)) {
-                        // check for the presence of otp headers and get otp code from user
-                        $otp = $this->checkTwoFactorAuthentication($e->getHeaders());
-                        // if given, retry creating a token using the user provided code
-                        if (null !== $otp) {
-                            continue;
-                        }
-                    }
-
-                    if (401 === $e->getCode()) {
-                        $this->io->writeError('Bad credentials.');
-                    } else {
-                        $this->io->writeError('Maximum number of login attempts exceeded. Please try again later.');
-                    }
-
-                    $this->io->writeError('You can also manually create a personal token at https://github.com/settings/applications');
-                    $this->io->writeError('Add it using "composer config github-oauth.github.com <token>"');
-
-                    continue;
-                }
-
-                throw $e;
-            }
-
-            $this->io->setAuthentication($originUrl, $response['token'], 'x-oauth-basic');
-            $this->config->getConfigSource()->removeConfigSetting('github-oauth.'.$originUrl);
-            // store value in user config
-            $this->config->getAuthConfigSource()->addConfigSetting('github-oauth.'.$originUrl, $response['token']);
-
-            return true;
-        }
-
-        throw new \RuntimeException("Invalid GitHub credentials 5 times in a row, aborting.");
-    }
-
-    private function createToken($originUrl, $otp = null)
-    {
-        if (null === $otp || !$this->io->hasAuthentication($originUrl)) {
-            $username = $this->io->ask('Username: ');
-            $password = $this->io->askAndHideAnswer('Password: ');
-
-            $this->io->setAuthentication($originUrl, $username, $password);
-        }
-
-        $headers = array('Content-Type: application/json');
-        if ($otp) {
-            $headers[] = 'X-GitHub-OTP: ' . $otp;
-        }
-
         $note = 'Composer';
         if ($this->config->get('github-expose-hostname') === true && 0 === $this->process->execute('hostname', $output)) {
             $note .= ' on ' . trim($output);
         }
-        $note .= ' [' . date('YmdHis') . ']';
+        $note .= ' ' . date('Y-m-d Hi');
 
-        $apiUrl = ('github.com' === $originUrl) ? 'api.github.com' : $originUrl . '/api/v3';
+        $url = 'https://'.$originUrl.'/settings/tokens/new?scopes=repo&description=' . str_replace('%20', '+', rawurlencode($note));
+        $this->io->writeError(sprintf('Head to %s', $url));
+        $this->io->writeError(sprintf('to retrieve a token. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
 
-        $json = $this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl . '/authorizations', false, array(
-            'retry-auth-failure' => false,
-            'http' => array(
-                'method' => 'POST',
-                'follow_location' => false,
-                'header' => $headers,
-                'content' => json_encode(array(
-                    'scopes' => array('repo'),
-                    'note' => $note,
-                    'note_url' => 'https://getcomposer.org/',
-                )),
-            )
-        ));
+        $token = trim($this->io->askAndHideAnswer('Token (hidden): '));
 
-        $this->io->writeError('Token successfully created');
+        if (!$token) {
+            $this->io->writeError('<warning>No token given, aborting.</warning>');
+            $this->io->writeError('You can also add it manually later by using "composer config github-oauth.github.com <token>"');
 
-        return JsonFile::parseJson($json);
-    }
-
-    private function checkTwoFactorAuthentication(array $headers)
-    {
-        $headerNames = array_map(
-            function ($header) {
-                return strtolower(strstr($header, ':', true));
-            },
-            $headers
-        );
-
-        if (false !== ($key = array_search('x-github-otp', $headerNames))) {
-            list($required, $method) = array_map('trim', explode(';', substr(strstr($headers[$key], ':'), 1)));
-
-            if ('required' === $required) {
-                $this->io->writeError('Two-factor Authentication');
-
-                if ('app' === $method) {
-                    $this->io->writeError('Open the two-factor authentication app on your device to view your authentication code and verify your identity.');
-                }
-
-                if ('sms' === $method) {
-                    $this->io->writeError('You have been sent an SMS message with an authentication code to verify your identity.');
-                }
-
-                return $this->io->ask('Authentication Code: ');
-            }
+            return false;
         }
 
-        return null;
+        $this->io->setAuthentication($originUrl, $token, 'x-oauth-basic');
+
+        try {
+            $apiUrl = ('github.com' === $originUrl) ? 'api.github.com' : $originUrl . '/api/v3';
+
+            $this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl . '/rate_limit', false, array(
+                'retry-auth-failure' => false,
+            ));
+        } catch (TransportException $e) {
+            if (in_array($e->getCode(), array(403, 401))) {
+                $this->io->writeError('<error>Invalid token provided.</error>');
+                $this->io->writeError('You can also add it manually later by using "composer config github-oauth.github.com <token>"');
+
+                return false;
+            }
+
+            throw $e;
+        }
+
+        // store value in user config
+        $this->config->getConfigSource()->removeConfigSetting('github-oauth.'.$originUrl);
+        $this->config->getAuthConfigSource()->addConfigSetting('github-oauth.'.$originUrl, $token);
+
+        $this->io->writeError('<info>Token stored successfully.</info>');
+
+        return true;
     }
 }

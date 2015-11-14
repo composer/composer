@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Factory;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Util\ConfigValidator;
 use Symfony\Component\Console\Input\InputArgument;
@@ -34,14 +35,22 @@ class ValidateCommand extends Command
     {
         $this
             ->setName('validate')
-            ->setDescription('Validates a composer.json')
+            ->setDescription('Validates a composer.json and composer.lock')
             ->setDefinition(array(
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not make a complete validation'),
+                new InputOption('no-check-lock', null, InputOption::VALUE_NONE, 'Do not check if lock file is up to date'),
                 new InputOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors'),
-                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
+                new InputOption('with-dependencies', 'A', InputOption::VALUE_NONE, 'Also validate the composer.json of all installed dependencies'),
+                new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code for warnings as well as errors'),
+                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json'),
             ))
             ->setHelp(<<<EOT
-The validate command validates a given composer.json
+The validate command validates a given composer.json and composer.lock
+
+Exit codes in case of errors are:
+1 validation warning(s), only when --strict is given
+2 validation error(s)
+3 file unreadable or missing
 
 EOT
             );
@@ -56,35 +65,86 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $file = $input->getArgument('file');
+        $io = $this->getIO();
 
         if (!file_exists($file)) {
-            $this->getIO()->writeError('<error>' . $file . ' not found.</error>');
+            $io->writeError('<error>' . $file . ' not found.</error>');
 
-            return 1;
+            return 3;
         }
         if (!is_readable($file)) {
-            $this->getIO()->writeError('<error>' . $file . ' is not readable.</error>');
+            $io->writeError('<error>' . $file . ' is not readable.</error>');
 
-            return 1;
+            return 3;
         }
 
-        $validator = new ConfigValidator($this->getIO());
+        $validator = new ConfigValidator($io);
         $checkAll = $input->getOption('no-check-all') ? 0 : ValidatingArrayLoader::CHECK_ALL;
         $checkPublish = !$input->getOption('no-check-publish');
+        $checkLock = !$input->getOption('no-check-lock');
+        $isStrict = $input->getOption('strict');
         list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
 
-        // output errors/warnings
+        $lockErrors = array();
+        $composer = Factory::create($io, $file);
+        $locker = $composer->getLocker();
+        if ($locker->isLocked() && !$locker->isFresh()) {
+            $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json.';
+        }
+
+        $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true);
+
+        $exitCode = $errors || ($publishErrors && $checkPublish) || ($lockErrors && $checkLock) ? 2 : ($isStrict && $warnings ? 1 : 0);
+
+        if ($input->getOption('with-dependencies')) {
+            $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+            foreach ($localRepo->getPackages() as $package) {
+                $path = $composer->getInstallationManager()->getInstallPath($package);
+                $file = $path . '/composer.json';
+                if (is_dir($path) && file_exists($file)) {
+                    list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
+                    $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors);
+
+                    $depCode = $errors || ($publishErrors && $checkPublish) ? 2 : ($isStrict && $warnings ? 1 : 0);
+                    $exitCode = max($depCode, $exitCode);
+                }
+            }
+        }
+
+        return $exitCode;
+    }
+
+    private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false)
+    {
         if (!$errors && !$publishErrors && !$warnings) {
-            $this->getIO()->write('<info>' . $file . ' is valid</info>');
+            $io->write('<info>' . $name . ' is valid</info>');
         } elseif (!$errors && !$publishErrors) {
-            $this->getIO()->writeError('<info>' . $file . ' is valid, but with a few warnings</info>');
-            $this->getIO()->writeError('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            $io->writeError('<info>' . $name . ' is valid, but with a few warnings</info>');
+            if ($printSchemaUrl) {
+                $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            }
         } elseif (!$errors) {
-            $this->getIO()->writeError('<info>' . $file . ' is valid for simple usage with composer but has</info>');
-            $this->getIO()->writeError('<info>strict errors that make it unable to be published as a package:</info>');
-            $this->getIO()->writeError('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            $io->writeError('<info>' . $name . ' is valid for simple usage with composer but has</info>');
+            $io->writeError('<info>strict errors that make it unable to be published as a package:</info>');
+            if ($printSchemaUrl) {
+                $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+            }
         } else {
-            $this->getIO()->writeError('<error>' . $file . ' is invalid, the following errors/warnings were found:</error>');
+            $io->writeError('<error>' . $name . ' is invalid, the following errors/warnings were found:</error>');
+        }
+
+        // If checking publish errors, display them as errors, otherwise just show them as warnings
+        if ($checkPublish) {
+            $errors = array_merge($errors, $publishErrors);
+        } else {
+            $warnings = array_merge($warnings, $publishErrors);
+        }
+
+        // If checking lock errors, display them as errors, otherwise just show them as warnings
+        if ($checkLock) {
+            $errors = array_merge($errors, $lockErrors);
+        } else {
+            $warnings = array_merge($warnings, $lockErrors);
         }
 
         $messages = array(
@@ -92,19 +152,10 @@ EOT
             'warning' => $warnings,
         );
 
-        // If checking publish errors, display them errors, otherwise just show them as warnings
-        if ($checkPublish) {
-            $messages['error'] = array_merge($messages['error'], $publishErrors);
-        } else {
-            $messages['warning'] = array_merge($messages['warning'], $publishErrors);
-        }
-
         foreach ($messages as $style => $msgs) {
             foreach ($msgs as $msg) {
-                $this->getIO()->writeError('<' . $style . '>' . $msg . '</' . $style . '>');
+                $io->writeError('<' . $style . '>' . $msg . '</' . $style . '>');
             }
         }
-
-        return $errors || ($publishErrors && $checkPublish) ? 1 : 0;
     }
 }

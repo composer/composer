@@ -16,12 +16,12 @@ use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\Package;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\Constraint;
 use Composer\DependencyResolver\Pool;
 
 /**
@@ -45,9 +45,9 @@ class PluginManager
     /**
      * Initializes plugin manager
      *
-     * @param IOInterface         $io
-     * @param Composer            $composer
-     * @param Composer            $globalComposer
+     * @param IOInterface $io
+     * @param Composer    $composer
+     * @param Composer    $globalComposer
      */
     public function __construct(IOInterface $io, Composer $composer, Composer $globalComposer = null)
     {
@@ -113,15 +113,16 @@ class PluginManager
      */
     public function loadRepository(RepositoryInterface $repo)
     {
-        foreach ($repo->getPackages() as $package) {
+        foreach ($repo->getPackages() as $package) { /** @var PackageInterface $package */
             if ($package instanceof AliasPackage) {
                 continue;
             }
             if ('composer-plugin' === $package->getType()) {
                 $requiresComposer = null;
-                foreach ($package->getRequires() as $link) {
-                    if ($link->getTarget() == 'composer-plugin-api') {
+                foreach ($package->getRequires() as $link) { /** @var Link $link */
+                    if ('composer-plugin-api' === $link->getTarget()) {
                         $requiresComposer = $link->getConstraint();
+                        break;
                     }
                 }
 
@@ -129,14 +130,18 @@ class PluginManager
                     throw new \RuntimeException("Plugin ".$package->getName()." is missing a require statement for a version of the composer-plugin-api package.");
                 }
 
-                if (!$requiresComposer->matches(new VersionConstraint('==', $this->versionParser->normalize(PluginInterface::PLUGIN_API_VERSION)))) {
-                    $this->io->writeError("<warning>The plugin ".$package->getName()." requires a version of composer-plugin-api that does not match your composer installation. You may need to run composer update with the '--no-plugins' option.</warning>");
+                $currentPluginApiVersion = $this->getPluginApiVersion();
+                $currentPluginApiConstraint = new Constraint('==', $this->versionParser->normalize($currentPluginApiVersion));
+
+                if (!$requiresComposer->matches($currentPluginApiConstraint)) {
+                    $this->io->writeError('<warning>The "' . $package->getName() . '" plugin was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
+                    continue;
                 }
 
                 $this->registerPackage($package);
-            }
+
             // Backward compatibility
-            if ('composer-installer' === $package->getType()) {
+            } elseif ('composer-installer' === $package->getType()) {
                 $this->registerPackage($package);
             }
         }
@@ -271,5 +276,15 @@ class PluginManager
         }
 
         return $this->globalComposer->getInstallationManager()->getInstallPath($package);
+    }
+
+    /**
+     * Returns the version of the internal composer-plugin-api package.
+     *
+     * @return string
+     */
+    protected function getPluginApiVersion()
+    {
+        return PluginInterface::PLUGIN_API_VERSION;
     }
 }

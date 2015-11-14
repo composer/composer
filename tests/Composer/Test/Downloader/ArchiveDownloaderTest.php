@@ -115,4 +115,38 @@ class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
             array('https://github.com/composer/composer/archive/master.tar.gz'),
         );
     }
+
+    /**
+     * @dataProvider provideBitbucketUrls
+     */
+    public function testProcessUrlRewriteBitbucketDist($url, $extension)
+    {
+        if (!extension_loaded('openssl')) {
+            $this->markTestSkipped('Requires openssl');
+        }
+
+        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMock('Composer\IO\IOInterface'), $this->getMock('Composer\Config')));
+        $method = new \ReflectionMethod($downloader, 'processUrl');
+        $method->setAccessible(true);
+
+        $url = $url . '.' . $extension;
+        $expected = 'https://bitbucket.org/davereid/drush-virtualhost/get/ref.' . $extension;
+
+        $package = $this->getMock('Composer\Package\PackageInterface');
+        $package->expects($this->any())
+            ->method('getDistReference')
+            ->will($this->returnValue('ref'));
+        $url = $method->invoke($downloader, $package, $url);
+
+        $this->assertEquals($expected, $url);
+    }
+
+    public function provideBitbucketUrls()
+    {
+        return array(
+            array('https://bitbucket.org/davereid/drush-virtualhost/get/77ca490c26ac818e024d1138aa8bd3677d1ef21f', 'zip'),
+            array('https://bitbucket.org/davereid/drush-virtualhost/get/master', 'tar.gz'),
+            array('https://bitbucket.org/davereid/drush-virtualhost/get/v1.0', 'tar.bz2'),
+        );
+    }
 }

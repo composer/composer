@@ -1,23 +1,42 @@
 language: php
 
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+addons:
+  apt:
+    packages:
+      - parallel
+
 php:
   - 5.3.3
   - 5.3
   - 5.4
   - 5.5
   - 5.6
+  - 7.0
   - hhvm
+  - nightly
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: nightly
 
 before_script:
-    - sudo apt-get install parallel
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
-    - composer install --prefer-source
-    - bin/composer install --prefer-source
+    - flags=""
+    - if [ `phpenv version-name` == "5.3.3" ]; then flags="--ignore-platform-reqs"; fi
+    - composer install $flags
+    - bin/composer install $flags
     - git config --global user.name travis-ci
     - git config --global user.email travis@example.com
 
 script:
-    - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml {};'
+    - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && $(exit 1));'
 
 git:
   depth: 5

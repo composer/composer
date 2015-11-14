@@ -14,7 +14,6 @@ namespace Composer\Test;
 
 use Composer\Installer;
 use Composer\Console\Application;
-use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;
@@ -108,7 +107,7 @@ class InstallerTest extends TestCase
             $a,
             new ArrayRepository(array($b)),
             array(
-                'install' => array($b)
+                'install' => array($b),
             ),
         );
 
@@ -128,7 +127,7 @@ class InstallerTest extends TestCase
             $a,
             new ArrayRepository(array($a, $b)),
             array(
-                'install' => array($b)
+                'install' => array($b),
             ),
         );
 
@@ -191,7 +190,8 @@ class InstallerTest extends TestCase
                 }));
         }
 
-        $locker = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), md5(json_encode($composerConfig)));
+        $contents = json_encode($composerConfig);
+        $locker   = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), $contents);
         $composer->setLocker($locker);
 
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
@@ -237,6 +237,7 @@ class InstallerTest extends TestCase
 
         if ($expectLock) {
             unset($actualLock['hash']);
+            unset($actualLock['content-hash']);
             unset($actualLock['_readme']);
             $this->assertEquals($expectLock, $actualLock);
         }

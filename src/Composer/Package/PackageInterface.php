@@ -193,6 +193,16 @@ interface PackageInterface
     public function getPrettyVersion();
 
     /**
+     * Returns the pretty version string plus a git or hg commit hash of this package
+     *
+     * @see getPrettyVersion
+     *
+     * @param  bool   $truncate If the source reference is a sha1 hash, truncate it
+     * @return string version
+     */
+    public function getFullPrettyVersion($truncate = true);
+
+    /**
      * Returns the release date of the package
      *
      * @return \DateTime

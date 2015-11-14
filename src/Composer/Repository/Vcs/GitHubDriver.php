@@ -50,6 +50,9 @@ class GitHubDriver extends VcsDriver
         $this->owner = $match[3];
         $this->repository = $match[4];
         $this->originUrl = !empty($match[1]) ? $match[1] : $match[2];
+        if ($this->originUrl === 'www.github.com') {
+            $this->originUrl = 'github.com';
+        }
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
         if (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api']) {
@@ -260,7 +263,7 @@ class GitHubDriver extends VcsDriver
         }
 
         $originUrl = !empty($matches[2]) ? $matches[2] : $matches[3];
-        if (!in_array($originUrl, $config->get('github-domains'))) {
+        if (!in_array(preg_replace('{^www\.}i', '', $originUrl), $config->get('github-domains'))) {
             return false;
         }
 

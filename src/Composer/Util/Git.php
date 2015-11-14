@@ -125,10 +125,7 @@ class Git
                         return;
                     }
                 }
-            } elseif ( // private non-github repo that failed to authenticate
-                preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
-                strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
-            ) {
+            } elseif ($this->isAuthenticationFailure($url, $match)) { // private non-github repo that failed to authenticate
                 if (strpos($match[2], '@')) {
                     list($authParts, $match[2]) = explode('@', $match[2], 2);
                 }
@@ -140,7 +137,7 @@ class Git
                     $defaultUsername = null;
                     if (isset($authParts) && $authParts) {
                         if (false !== strpos($authParts, ':')) {
-                            list($defaultUsername,) = explode(':', $authParts, 2);
+                            list($defaultUsername, ) = explode(':', $authParts, 2);
                         } else {
                             $defaultUsername = $authParts;
                         }
@@ -175,6 +172,22 @@ class Git
         }
     }
 
+    private function isAuthenticationFailure($url, &$match)
+    {
+        if (!preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match)) {
+            return false;
+        }
+
+        $authFailures = array('fatal: Authentication failed', 'remote error: Invalid username or password.');
+        foreach ($authFailures as $authFailure) {
+            if (strpos($this->process->getErrorOutput(), $authFailure) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static function cleanEnv()
     {
         if (ini_get('safe_mode') && false === strpos(ini_get('safe_mode_allowed_env_vars'), 'GIT_ASKPASS')) {
@@ -184,18 +197,27 @@ class Git
         // added in git 1.7.1, prevents prompting the user for username/password
         if (getenv('GIT_ASKPASS') !== 'echo') {
             putenv('GIT_ASKPASS=echo');
+            unset($_SERVER['GIT_ASKPASS']);
         }
 
         // clean up rogue git env vars in case this is running in a git hook
         if (getenv('GIT_DIR')) {
             putenv('GIT_DIR');
+            unset($_SERVER['GIT_DIR']);
         }
         if (getenv('GIT_WORK_TREE')) {
             putenv('GIT_WORK_TREE');
+            unset($_SERVER['GIT_WORK_TREE']);
+        }
+
+        // Run processes with predictable LANGUAGE
+        if (getenv('LANGUAGE') !== 'C') {
+            putenv('LANGUAGE=C');
         }
 
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
         putenv("DYLD_LIBRARY_PATH");
+        unset($_SERVER['DYLD_LIBRARY_PATH']);
     }
 
     public static function getGitHubDomainsRegex(Config $config)
@@ -215,6 +237,9 @@ class Git
 
     private function throwException($message, $url)
     {
+        // git might delete a directory when it fails and php will not know
+        clearstatcache();
+
         if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
             throw new \RuntimeException('Failed to clone '.self::sanitizeUrl($url).', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
         }

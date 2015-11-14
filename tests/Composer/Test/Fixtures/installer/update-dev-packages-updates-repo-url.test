@@ -1,0 +1,96 @@
+--TEST--
+Updating dev packages where no reference change happened triggers a repo url change
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+                    "source": { "reference": "newmaster", "type": "git", "url": "newurl" }
+                },
+                {
+                    "name": "b/b", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+                    "source": { "reference": "master", "type": "git", "url": "newurl" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "~2.1",
+        "b/b": "~2.1"
+    },
+    "minimum-stability": "dev"
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-master", "version_normalized": "9999999-dev",
+        "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+        "source": { "reference": "oldmaster", "type": "git", "url": "oldurl" },
+        "type": "library"
+    },
+    {
+        "name": "b/b", "version": "dev-master", "version_normalized": "9999999-dev",
+        "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+        "source": { "reference": "master", "type": "git", "url": "oldurl" },
+        "type": "library"
+    }
+]
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+            "source": { "reference": "newmaster", "type": "git", "url": "oldurl" },
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+            "source": { "reference": "master", "type": "git", "url": "oldurl" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+            "source": { "reference": "newmaster", "type": "git", "url": "newurl" },
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+            "source": { "reference": "master", "type": "git", "url": "newurl" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Updating a/a (dev-master oldmaster) to a/a (dev-master newmaster)

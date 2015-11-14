@@ -40,7 +40,7 @@ class PearRepositoryTest extends TestCase
         );
 
         $repoConfig = array(
-            'url' => $url
+            'url' => $url,
         );
 
         $this->createRepository($repoConfig);
@@ -64,7 +64,7 @@ class PearRepositoryTest extends TestCase
     public function testRepositoryRead($url, array $expectedPackages)
     {
         $repoConfig = array(
-            'url' => $url
+            'url' => $url,
         );
 
         if (!@file_get_contents('http://'.$url)) {
@@ -88,37 +88,37 @@ class PearRepositoryTest extends TestCase
                 'pear.php.net',
                 array(
                     array('name' => 'pear-pear.php.net/PEAR', 'version' => '1.9.4'),
-                )
+                ),
             ),
             array(
                 'pear.pdepend.org',
                 array(
                     array('name' => 'pear-pear.pdepend.org/PHP_Depend', 'version' => '1.0.5'),
-                )
+                ),
             ),
             array(
                 'pear.phpmd.org',
                 array(
                     array('name' => 'pear-pear.phpmd.org/PHP_PMD', 'version' => '1.3.3'),
-                )
+                ),
             ),
             array(
                 'pear.doctrine-project.org',
                 array(
                     array('name' => 'pear-pear.doctrine-project.org/DoctrineORM', 'version' => '2.2.2'),
-                )
+                ),
             ),
             array(
                 'pear.symfony-project.com',
                 array(
                     array('name' => 'pear-pear.symfony-project.com/YAML', 'version' => '1.0.6'),
-                )
+                ),
             ),
             array(
                 'pear.pirum-project.org',
                 array(
                     array('name' => 'pear-pear.pirum-project.org/Pirum', 'version' => '1.1.4'),
-                )
+                ),
             ),
         );
     }

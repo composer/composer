@@ -56,13 +56,14 @@ EOT
     {
         // init repos
         $platformRepo = new PlatformRepository;
+        $io = $this->getIO();
         if ($composer = $this->getComposer(false)) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
-            $defaultRepos = Factory::createDefaultRepositories($this->getIO());
-            $this->getIO()->writeError('No composer.json found in the current directory, showing packages from ' . implode(', ', array_keys($defaultRepos)));
+            $defaultRepos = Factory::createDefaultRepositories($io);
+            $io->writeError('No composer.json found in the current directory, showing packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
@@ -78,7 +79,7 @@ EOT
         $results = $repos->search(implode(' ', $input->getArgument('tokens')), $flags);
 
         foreach ($results as $result) {
-            $this->getIO()->write($result['name'] . (isset($result['description']) ? ' '. $result['description'] : ''));
+            $io->write($result['name'] . (isset($result['description']) ? ' '. $result['description'] : ''));
         }
     }
 }

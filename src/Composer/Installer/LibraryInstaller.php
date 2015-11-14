@@ -18,6 +18,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Symlink;
 
 /**
  * Package installation manager.
@@ -34,6 +35,7 @@ class LibraryInstaller implements InstallerInterface
     protected $io;
     protected $type;
     protected $filesystem;
+    protected $binCompat;
 
     /**
      * Initializes library installer.
@@ -53,6 +55,7 @@ class LibraryInstaller implements InstallerInterface
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
         $this->binDir = rtrim($composer->getConfig()->get('bin-dir'), '/');
+        $this->binCompat = $composer->getConfig()->get('bin-compat');
     }
 
     /**
@@ -219,36 +222,46 @@ class LibraryInstaller implements InstallerInterface
                 $this->io->writeError('    Skipped installation of bin '.$bin.' for package '.$package->getName().': name conflicts with an existing file');
                 continue;
             }
-            if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-                // add unixy support for cygwin and similar environments
-                if ('.bat' !== substr($binPath, -4)) {
-                    file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
-                    @chmod($link, 0777 & ~umask());
-                    $link .= '.bat';
-                    if (file_exists($link)) {
-                        $this->io->writeError('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
-                    }
+
+            if ($this->binCompat === "auto") {
+                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                    $this->installFullBinaries($binPath, $link, $bin, $package);
+                } else {
+                    $this->installSymlinkBinaries($binPath, $link);
                 }
-                if (!file_exists($link)) {
-                    file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
-                }
-            } else {
-                $cwd = getcwd();
-                try {
-                    // under linux symlinks are not always supported for example
-                    // when using it in smbfs mounted folder
-                    $relativeBin = $this->filesystem->findShortestPath($link, $binPath);
-                    chdir(dirname($link));
-                    if (false === symlink($relativeBin, $link)) {
-                        throw new \ErrorException();
-                    }
-                } catch (\ErrorException $e) {
-                    file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
-                }
-                chdir($cwd);
+            } elseif ($this->binCompat === "full") {
+                $this->installFullBinaries($binPath, $link, $bin, $package);
             }
             @chmod($link, 0777 & ~umask());
         }
+    }
+
+    protected function installFullBinaries($binPath, $link, $bin, PackageInterface $package)
+    {
+        // add unixy support for cygwin and similar environments
+        if ('.bat' !== substr($binPath, -4)) {
+            $this->installUnixyProxyBinaries($binPath, $link);
+            @chmod($link, 0777 & ~umask());
+            $link .= '.bat';
+            if (file_exists($link)) {
+                $this->io->writeError('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+            }
+        }
+        if (!file_exists($link)) {
+            file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+        }
+    }
+
+    protected function installSymlinkBinaries($binPath, $link)
+    {
+        if (!$this->filesystem->relativeSymlink($binPath, $link)) {
+            $this->installUnixyProxyBinaries($binPath, $link);
+        }
+    }
+
+    protected function installUnixyProxyBinaries($binPath, $link)
+    {
+        file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
     }
 
     protected function removeBinaries(PackageInterface $package)
@@ -265,6 +278,11 @@ class LibraryInstaller implements InstallerInterface
             if (file_exists($link.'.bat')) {
                 $this->filesystem->unlink($link.'.bat');
             }
+        }
+
+        // attempt removing the bin dir in case it is left empty
+        if ((is_dir($this->binDir)) && ($this->filesystem->isDirEmpty($this->binDir))) {
+            @rmdir($this->binDir);
         }
     }
 
@@ -305,12 +323,30 @@ class LibraryInstaller implements InstallerInterface
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
 
-        return "#!/usr/bin/env sh\n".
-            'SRC_DIR="`pwd`"'."\n".
-            'cd "`dirname "$0"`"'."\n".
-            'cd '.ProcessExecutor::escape(dirname($binPath))."\n".
-            'BIN_TARGET="`pwd`/'.basename($binPath)."\"\n".
-            'cd "$SRC_DIR"'."\n".
-            '"$BIN_TARGET" "$@"'."\n";
+        $binDir = ProcessExecutor::escape(dirname($binPath));
+        $binFile = basename($binPath);
+
+        $proxyCode = <<<PROXY
+#!/usr/bin/env sh
+
+dir=$(d=\${0%[/\\\\]*}; cd "\$d"; cd $binDir && pwd)
+
+# See if we are running in Cygwin by checking for cygpath program
+if command -v 'cygpath' >/dev/null 2>&1; then
+	# Cygwin paths start with /cygdrive/ which will break windows PHP,
+	# so we need to translate the dir path to windows format. However
+	# we could be using cygwin PHP which does not require this, so we
+	# test if the path to PHP starts with /cygdrive/ rather than /usr/bin
+	if [[ $(which php) == /cygdrive/* ]]; then
+		dir=$(cygpath -m \$dir);
+	fi
+fi
+
+dir=$(echo \$dir | sed 's/ /\ /g')
+"\${dir}/$binFile" "$@"
+
+PROXY;
+
+        return $proxyCode;
     }
 }

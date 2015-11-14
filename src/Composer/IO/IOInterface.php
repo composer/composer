@@ -77,7 +77,7 @@ interface IOInterface
      *
      * @param string|array $messages The message as an array of lines or a single string
      * @param bool         $newline  Whether to add a newline or not
-     * @param integer      $size     The size of line
+     * @param int          $size     The size of line
      */
     public function overwrite($messages, $newline = true, $size = null);
 
@@ -86,7 +86,7 @@ interface IOInterface
      *
      * @param string|array $messages The message as an array of lines or a single string
      * @param bool         $newline  Whether to add a newline or not
-     * @param integer      $size     The size of line
+     * @param int          $size     The size of line
      */
     public function overwriteError($messages, $newline = true, $size = null);
 
@@ -96,9 +96,8 @@ interface IOInterface
      * @param string|array $question The question to ask
      * @param string       $default  The default answer if none is given by the user
      *
-     * @return string The user answer
-     *
      * @throws \RuntimeException If there is no data to read in the input stream
+     * @return string            The user answer
      */
     public function ask($question, $default = null);
 
@@ -123,14 +122,13 @@ interface IOInterface
      *
      * @param string|array $question  The question to ask
      * @param callback     $validator A PHP callback
-     * @param bool|integer $attempts  Max number of times to ask before giving up (false by default, which means infinite)
+     * @param null|int     $attempts  Max number of times to ask before giving up (default of null means infinite)
      * @param string       $default   The default answer if none is given by the user
      *
-     * @return mixed
-     *
      * @throws \Exception When any of the validators return an error
+     * @return mixed
      */
-    public function askAndValidate($question, $validator, $attempts = false, $default = null);
+    public function askAndValidate($question, $validator, $attempts = null, $default = null);
 
     /**
      * Asks a question to the user and hide the answer.
@@ -153,7 +151,7 @@ interface IOInterface
      *
      * @param string $repositoryName The unique name of repository
      *
-     * @return boolean
+     * @return bool
      */
     public function hasAuthentication($repositoryName);
 

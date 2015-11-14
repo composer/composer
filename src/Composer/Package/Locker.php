@@ -19,9 +19,9 @@ use Composer\Util\ProcessExecutor;
 use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Version\VersionParser;
 use Composer\Util\Git as GitUtil;
 use Composer\IO\IOInterface;
+use Seld\JsonLint\ParsingException;
 
 /**
  * Reads/writes project lockfile (composer.lock).
@@ -35,6 +35,7 @@ class Locker
     private $repositoryManager;
     private $installationManager;
     private $hash;
+    private $contentHash;
     private $loader;
     private $dumper;
     private $process;
@@ -44,17 +45,18 @@ class Locker
      * Initializes packages locker.
      *
      * @param IOInterface         $io
-     * @param JsonFile            $lockFile            lockfile loader
-     * @param RepositoryManager   $repositoryManager   repository manager instance
-     * @param InstallationManager $installationManager installation manager instance
-     * @param string              $hash                unique hash of the current composer configuration
+     * @param JsonFile            $lockFile             lockfile loader
+     * @param RepositoryManager   $repositoryManager    repository manager instance
+     * @param InstallationManager $installationManager  installation manager instance
+     * @param string              $composerFileContents The contents of the composer file
      */
-    public function __construct(IOInterface $io, JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $hash)
+    public function __construct(IOInterface $io, JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $composerFileContents)
     {
         $this->lockFile = $lockFile;
         $this->repositoryManager = $repositoryManager;
         $this->installationManager = $installationManager;
-        $this->hash = $hash;
+        $this->hash = md5($composerFileContents);
+        $this->contentHash = $this->getContentHash($composerFileContents);
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
         $this->process = new ProcessExecutor($io);
@@ -84,6 +86,11 @@ class Locker
     public function isFresh()
     {
         $lock = $this->lockFile->read();
+
+        if (!empty($lock['content-hash'])) {
+            // There is a content hash key, use that instead of the file hash
+            return $this->contentHash === $lock['content-hash'];
+        }
 
         return $this->hash === $lock['hash'];
     }
@@ -133,11 +140,10 @@ class Locker
     public function getPlatformRequirements($withDevReqs = false)
     {
         $lockData = $this->getLockData();
-        $versionParser = new VersionParser();
         $requirements = array();
 
         if (!empty($lockData['platform'])) {
-            $requirements = $versionParser->parseLinks(
+            $requirements = $this->loader->parseLinks(
                 '__ROOT__',
                 '1.0.0',
                 'requires',
@@ -146,7 +152,7 @@ class Locker
         }
 
         if ($withDevReqs && !empty($lockData['platform-dev'])) {
-            $devRequirements = $versionParser->parseLinks(
+            $devRequirements = $this->loader->parseLinks(
                 '__ROOT__',
                 '1.0.0',
                 'requires',
@@ -191,6 +197,13 @@ class Locker
         return isset($lockData['prefer-lowest']) ? $lockData['prefer-lowest'] : null;
     }
 
+    public function getPlatformOverrides()
+    {
+        $lockData = $this->getLockData();
+
+        return isset($lockData['platform-overrides']) ? $lockData['platform-overrides'] : array();
+    }
+
     public function getAliases()
     {
         $lockData = $this->getLockData();
@@ -214,25 +227,27 @@ class Locker
     /**
      * Locks provided data into lockfile.
      *
-     * @param array  $packages         array of packages
-     * @param mixed  $devPackages      array of dev packages or null if installed without --dev
-     * @param array  $platformReqs     array of package name => constraint for required platform packages
-     * @param mixed  $platformDevReqs  array of package name => constraint for dev-required platform packages
-     * @param array  $aliases          array of aliases
+     * @param array  $packages          array of packages
+     * @param mixed  $devPackages       array of dev packages or null if installed without --dev
+     * @param array  $platformReqs      array of package name => constraint for required platform packages
+     * @param mixed  $platformDevReqs   array of package name => constraint for dev-required platform packages
+     * @param array  $aliases           array of aliases
      * @param string $minimumStability
      * @param array  $stabilityFlags
      * @param bool   $preferStable
      * @param bool   $preferLowest
+     * @param array  $platformOverrides
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides)
     {
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
-                               'Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
-                               'This file is @gener'.'ated automatically'),
+                               'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
+                               'This file is @gener'.'ated automatically', ),
             'hash' => $this->hash,
+            'content-hash' => $this->contentHash,
             'packages' => null,
             'packages-dev' => null,
             'aliases' => array(),
@@ -260,6 +275,9 @@ class Locker
 
         $lock['platform'] = $platformReqs;
         $lock['platform-dev'] = $platformDevReqs;
+        if ($platformOverrides) {
+            $lock['platform-overrides'] = $platformOverrides;
+        }
 
         if (empty($lock['packages']) && empty($lock['packages-dev']) && empty($lock['platform']) && empty($lock['platform-dev'])) {
             if ($this->lockFile->exists()) {
@@ -269,7 +287,12 @@ class Locker
             return false;
         }
 
-        if (!$this->isLocked() || $lock !== $this->getLockData()) {
+        try {
+            $isLocked = $this->isLocked();
+        } catch (ParsingException $e) {
+            $isLocked = false;
+        }
+        if (!$isLocked || $lock !== $this->getLockData()) {
             $this->lockFile->write($lock);
             $this->lockDataCache = null;
 
@@ -366,5 +389,44 @@ class Locker
         }
 
         return $datetime ? $datetime->format('Y-m-d H:i:s') : null;
+    }
+
+    /**
+     * Returns the md5 hash of the sorted content of the composer file.
+     *
+     * @param string $composerFileContents The contents of the composer file.
+     *
+     * @return string
+     */
+    private function getContentHash($composerFileContents)
+    {
+        $content = json_decode($composerFileContents, true);
+
+        $relevantKeys = array(
+            'name',
+            'version',
+            'require',
+            'require-dev',
+            'conflict',
+            'replace',
+            'provide',
+            'minimum-stability',
+            'prefer-stable',
+            'repositories',
+            'extra',
+        );
+
+        $relevantContent = array();
+
+        foreach (array_intersect($relevantKeys, array_keys($content)) as $key) {
+            $relevantContent[$key] = $content[$key];
+        }
+        if (isset($content['config']['platform'])) {
+            $relevantContent['config']['platform'] = $content['config']['platform'];
+        }
+
+        ksort($relevantContent);
+
+        return md5(json_encode($relevantContent));
     }
 }

@@ -43,12 +43,16 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 5. If you are updating to a recently published version of a package, be aware that
    Packagist has a delay of up to 1 minute before new packages are visible to Composer.
 
+6. If you are updating a single package, it may depend on newer versions itself.
+   In this case add the `--with-dependencies` argument **or** add all dependencies which
+   need an update to the command.
+
 ## Package not found on travis-ci.org
 
 1. Check the ["Package not found"](#package-not-found) item above.
 
 2. If the package tested is a dependency of one of its dependencies (cyclic
-   dependency), the problem might be that composer is not able to detect the version
+   dependency), the problem might be that Composer is not able to detect the version
    of the package properly. If it is a git clone it is generally alright and Composer
    will detect the version of the current branch, but travis does shallow clones so
    that process can fail when testing pull requests and feature branches in general.
@@ -58,11 +62,22 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    Use: `before_script: COMPOSER_ROOT_VERSION=dev-master composer install` to export
    the variable for the call to composer.
 
+## Package not found in a Jenkins-build
+
+1. Check the ["Package not found"](#package-not-found) item above.
+2. Reason for failing is similar to the problem which can occur on travis-ci.org: The
+   git-clone / checkout within Jenkins leaves the branch in a "detached HEAD"-state. As
+   a result, Composer is not able to identify the version of the current checked out branch
+   and may not be able to resolve a cyclic dependency. To solve this problem, you can use
+   the "Additional Behaviours" -> "Check out to specific local branch" in your Git-settings
+   for your Jenkins-job, where your "local branch" shall be the same branch as you are
+   checking out. Using this, the checkout will not be in detached state any more and cyclic
+   dependency is recognized correctly.
+
 ## Need to override a package version
 
-Let say your project depends on package A which in turn depends on a specific
-version of package B (say 0.1) and you need a different version of that
-package - version 0.11.
+Let's say your project depends on package A, which in turn depends on a specific
+version of package B (say 0.1). But you need a different version of said package B (say 0.11).
 
 You can fix this by aliasing version 0.11 to 0.1:
 
@@ -87,7 +102,7 @@ If composer shows memory errors on some commands:
 
 The PHP `memory_limit` should be increased.
 
-> **Note:** Composer internally increases the `memory_limit` to `512M`.
+> **Note:** Composer internally increases the `memory_limit` to `1G`.
 > If you have memory issues when using composer, please consider [creating
 > an issue ticket](https://github.com/composer/composer/issues) so we can look into it.
 
@@ -101,7 +116,7 @@ Try increasing the limit in your `php.ini` file (ex. `/etc/php5/cli/php.ini` for
 Debian-like systems):
 
 ```ini
-; Use -1 for unlimited or define an explicit value like 512M
+; Use -1 for unlimited or define an explicit value like 2G
 memory_limit = -1
 ```
 
@@ -157,3 +172,28 @@ To enable the swap you can use for example:
 /sbin/mkswap /var/swap.1
 /sbin/swapon /var/swap.1
 ```
+
+## Degraded Mode
+
+Due to some intermittent issues on Travis and other systems, we introduced a
+degraded network mode which helps Composer finish successfully but disables
+a few optimizations. This is enabled automatically when an issue is first
+detected. If you see this issue sporadically you probably don't have to worry
+(a slow or overloaded network can also cause those time outs), but if it
+appears repeatedly you might want to look at the options below to identify
+and resolve it.
+
+If you have been pointed to this page, you want to check a few things:
+
+- If you are using ESET antivirus, go in "Advanced Settings" and disable "HTTP-scanner"
+  under "web access protection"
+- If you are using IPv6, try disabling it. If that solves your issues, get in touch
+  with your ISP or server host, the problem is not at the Packagist level but in the
+  routing rules between you and Packagist (i.e. the internet at large). The best way to get
+  these fixed is raise awareness to the network engineers that have the power to fix it.
+
+  To disable IPv6 on Linux, try using this command which appends a
+  rule preferring IPv4 over IPv6 to your config:
+
+  `sudo sh -c "echo 'precedence ::ffff:0:0/96 100' >> /etc/gai.conf"`
+- If none of the above helped, please report the error.

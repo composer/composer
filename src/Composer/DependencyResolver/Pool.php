@@ -14,10 +14,10 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
-use Composer\Package\Version\VersionParser;
-use Composer\Package\LinkConstraint\LinkConstraintInterface;
-use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Package\LinkConstraint\EmptyConstraint;
+use Composer\Semver\VersionParser;
+use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\ComposerRepository;
@@ -31,7 +31,7 @@ use Composer\Package\PackageInterface;
  * @author Nils Adermann <naderman@naderman.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class Pool
+class Pool implements \Countable
 {
     const MATCH_NAME = -1;
     const MATCH_NONE = 0;
@@ -55,7 +55,6 @@ class Pool
 
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
     {
-        $stabilities = BasePackage::$stabilities;
         $this->versionParser = new VersionParser;
         $this->acceptableStabilities = array();
         foreach (BasePackage::$stabilities as $stability => $value) {
@@ -151,27 +150,35 @@ class Pool
     }
 
     /**
-    * Retrieves the package object for a given package id.
-    *
-    * @param int $id
-    * @return PackageInterface
-    */
+     * Retrieves the package object for a given package id.
+     *
+     * @param  int              $id
+     * @return PackageInterface
+     */
     public function packageById($id)
     {
         return $this->packages[$id - 1];
     }
 
     /**
+     * Returns how many packages have been loaded into the pool
+     */
+    public function count()
+    {
+        return count($this->packages);
+    }
+
+    /**
      * Searches all packages providing the given package name and match the constraint
      *
-     * @param  string                  $name          The package name to be searched for
-     * @param  LinkConstraintInterface $constraint    A constraint that all returned
-     *                                                packages must match or null to return all
-     * @param  bool                    $mustMatchName Whether the name of returned packages
-     *                                                must match the given name
-     * @return PackageInterface[]      A set of packages
+     * @param  string              $name          The package name to be searched for
+     * @param  ConstraintInterface $constraint    A constraint that all returned
+     *                                            packages must match or null to return all
+     * @param  bool                $mustMatchName Whether the name of returned packages
+     *                                            must match the given name
+     * @return PackageInterface[]  A set of packages
      */
-    public function whatProvides($name, LinkConstraintInterface $constraint = null, $mustMatchName = false)
+    public function whatProvides($name, ConstraintInterface $constraint = null, $mustMatchName = false)
     {
         $key = ((int) $mustMatchName).$constraint;
         if (isset($this->providerCache[$name][$key])) {
@@ -271,11 +278,6 @@ class Pool
         return $this->packageById($packageId);
     }
 
-    public function literalToString($literal)
-    {
-        return ($literal > 0 ? '+' : '-') . $this->literalToPackage($literal);
-    }
-
     public function literalToPrettyString($literal, $installedMap)
     {
         $package = $this->literalToPackage($literal);
@@ -310,12 +312,12 @@ class Pool
      * Checks if the package matches the given constraint directly or through
      * provided or replaced packages
      *
-     * @param  array|PackageInterface  $candidate
-     * @param  string                  $name       Name of the package to be matched
-     * @param  LinkConstraintInterface $constraint The constraint to verify
-     * @return int                     One of the MATCH* constants of this class or 0 if there is no match
+     * @param  array|PackageInterface $candidate
+     * @param  string                 $name       Name of the package to be matched
+     * @param  ConstraintInterface    $constraint The constraint to verify
+     * @return int                    One of the MATCH* constants of this class or 0 if there is no match
      */
-    private function match($candidate, $name, LinkConstraintInterface $constraint = null)
+    private function match($candidate, $name, ConstraintInterface $constraint = null)
     {
         $candidateName = $candidate->getName();
         $candidateVersion = $candidate->getVersion();
@@ -329,7 +331,7 @@ class Pool
         }
 
         if ($candidateName === $name) {
-            $pkgConstraint = new VersionConstraint('==', $candidateVersion);
+            $pkgConstraint = new Constraint('==', $candidateVersion);
 
             if ($constraint === null || $constraint->matches($pkgConstraint)) {
                 return $requireFilter->matches($pkgConstraint) ? self::MATCH : self::MATCH_FILTERED;

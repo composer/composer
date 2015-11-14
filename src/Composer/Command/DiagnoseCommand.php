@@ -51,15 +51,19 @@ EOT
         ;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer(false);
+        $io = $this->getIO();
 
         if ($composer) {
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
-            $this->getIO()->write('Checking composer.json: ', false);
+            $io->write('Checking composer.json: ', false);
             $this->outputResult($this->checkComposerSchema());
         }
 
@@ -69,57 +73,66 @@ EOT
             $config = Factory::createConfig();
         }
 
-        $this->rfs = new RemoteFilesystem($this->getIO(), $config);
-        $this->process = new ProcessExecutor($this->getIO());
+        $this->rfs = new RemoteFilesystem($io, $config);
+        $this->process = new ProcessExecutor($io);
 
-        $this->getIO()->write('Checking platform settings: ', false);
+        $io->write('Checking platform settings: ', false);
         $this->outputResult($this->checkPlatform());
 
-        $this->getIO()->write('Checking git settings: ', false);
+        $io->write('Checking git settings: ', false);
         $this->outputResult($this->checkGit());
 
-        $this->getIO()->write('Checking http connectivity: ', false);
-        $this->outputResult($this->checkHttp());
+        $io->write('Checking http connectivity to packagist: ', false);
+        $this->outputResult($this->checkHttp('http'));
+
+        $io->write('Checking https connectivity to packagist: ', false);
+        $this->outputResult($this->checkHttp('https'));
 
         $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
         if (!empty($opts['http']['proxy'])) {
-            $this->getIO()->write('Checking HTTP proxy: ', false);
+            $io->write('Checking HTTP proxy: ', false);
             $this->outputResult($this->checkHttpProxy());
-            $this->getIO()->write('Checking HTTP proxy support for request_fulluri: ', false);
+            $io->write('Checking HTTP proxy support for request_fulluri: ', false);
             $this->outputResult($this->checkHttpProxyFullUriRequestParam());
-            $this->getIO()->write('Checking HTTPS proxy support for request_fulluri: ', false);
+            $io->write('Checking HTTPS proxy support for request_fulluri: ', false);
             $this->outputResult($this->checkHttpsProxyFullUriRequestParam());
         }
 
         if ($oauth = $config->get('github-oauth')) {
             foreach ($oauth as $domain => $token) {
-                $this->getIO()->write('Checking '.$domain.' oauth access: ', false);
+                $io->write('Checking '.$domain.' oauth access: ', false);
                 $this->outputResult($this->checkGithubOauth($domain, $token));
             }
         } else {
-            $this->getIO()->write('Checking github.com rate limit: ', false);
-            $rate = $this->getGithubRateLimit('github.com');
-
-            if (10 > $rate['remaining']) {
-                $this->getIO()->write('<warning>WARNING</warning>');
-                $this->getIO()->write(sprintf(
-                    '<comment>Github has a rate limit on their API. '
-                    . 'You currently have <options=bold>%u</options=bold> '
-                    . 'out of <options=bold>%u</options=bold> requests left.' . PHP_EOL
-                    . 'See https://developer.github.com/v3/#rate-limiting and also' . PHP_EOL
-                    . '    https://getcomposer.org/doc/articles/troubleshooting.md#api-rate-limit-and-oauth-tokens</comment>',
-                    $rate['remaining'],
-                    $rate['limit']
-                ));
-            } else {
-                $this->getIO()->write('<info>OK</info>');
+            $io->write('Checking github.com rate limit: ', false);
+            try {
+                $rate = $this->getGithubRateLimit('github.com');
+                $this->outputResult(true);
+                if (10 > $rate['remaining']) {
+                    $io->write('<warning>WARNING</warning>');
+                    $io->write(sprintf(
+                        '<comment>Github has a rate limit on their API. '
+                        . 'You currently have <options=bold>%u</options=bold> '
+                        . 'out of <options=bold>%u</options=bold> requests left.' . PHP_EOL
+                        . 'See https://developer.github.com/v3/#rate-limiting and also' . PHP_EOL
+                        . '    https://getcomposer.org/doc/articles/troubleshooting.md#api-rate-limit-and-oauth-tokens</comment>',
+                        $rate['remaining'],
+                        $rate['limit']
+                    ));
+                }
+            } catch (\Exception $e) {
+                if ($e instanceof TransportException && $e->getCode() === 401) {
+                    $this->outputResult('<comment>The oauth token for github.com seems invalid, run "composer config --global --unset github-oauth.github.com" to remove it</comment>');
+                } else {
+                    $this->outputResult($e);
+                }
             }
         }
 
-        $this->getIO()->write('Checking disk free space: ', false);
+        $io->write('Checking disk free space: ', false);
         $this->outputResult($this->checkDiskSpace($config));
 
-        $this->getIO()->write('Checking composer version: ', false);
+        $io->write('Checking composer version: ', false);
         $this->outputResult($this->checkVersion());
 
         return $this->failures;
@@ -159,11 +172,10 @@ EOT
         return true;
     }
 
-    private function checkHttp()
+    private function checkHttp($proto)
     {
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false);
+            $this->rfs->getContents('packagist.org', $proto . '://packagist.org/packages.json', false);
         } catch (\Exception $e) {
             return $e;
         }
@@ -252,7 +264,7 @@ EOT
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/user/repos' : 'https://'.$domain.'/api/v3/user/repos';
 
             return $this->rfs->getContents($domain, $url, false, array(
-                'retry-auth-failure' => false
+                'retry-auth-failure' => false,
             )) ? true : 'Unexpected error';
         } catch (\Exception $e) {
             if ($e instanceof TransportException && $e->getCode() === 401) {
@@ -263,30 +275,28 @@ EOT
         }
     }
 
+    /**
+     * @param  string             $domain
+     * @param  string             $token
+     * @throws TransportException
+     * @return array
+     */
     private function getGithubRateLimit($domain, $token = null)
     {
         if ($token) {
             $this->getIO()->setAuthentication($domain, $token, 'x-oauth-basic');
         }
 
-        try {
-            $url = $domain === 'github.com' ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
-            $json = $this->rfs->getContents($domain, $url, false, array('retry-auth-failure' => false));
-            $data = json_decode($json, true);
+        $url = $domain === 'github.com' ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
+        $json = $this->rfs->getContents($domain, $url, false, array('retry-auth-failure' => false));
+        $data = json_decode($json, true);
 
-            return $data['resources']['core'];
-        } catch (\Exception $e) {
-            if ($e instanceof TransportException && $e->getCode() === 401) {
-                return '<comment>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</comment>';
-            }
-
-            return $e;
-        }
+        return $data['resources']['core'];
     }
 
     private function checkDiskSpace($config)
     {
-        $minSpaceFree = 1024*1024;
+        $minSpaceFree = 1024 * 1024;
         if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
             || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
         ) {
@@ -308,17 +318,21 @@ EOT
         return true;
     }
 
+    /**
+     * @param bool|string|\Exception $result
+     */
     private function outputResult($result)
     {
+        $io = $this->getIO();
         if (true === $result) {
-            $this->getIO()->write('<info>OK</info>');
+            $io->write('<info>OK</info>');
         } else {
             $this->failures++;
-            $this->getIO()->write('<error>FAIL</error>');
+            $io->write('<error>FAIL</error>');
             if ($result instanceof \Exception) {
-                $this->getIO()->write('['.get_class($result).'] '.$result->getMessage());
+                $io->write('['.get_class($result).'] '.$result->getMessage());
             } elseif ($result) {
-                $this->getIO()->write(trim($result));
+                $io->write(trim($result));
             }
         }
     }
@@ -359,10 +373,6 @@ EOT
             $errors['hash'] = true;
         }
 
-        if (!extension_loaded('ctype')) {
-            $errors['ctype'] = true;
-        }
-
         if (!ini_get('allow_url_fopen')) {
             $errors['allow_url_fopen'] = true;
         }
@@ -371,11 +381,11 @@ EOT
             $errors['ioncube'] = ioncube_loader_version();
         }
 
-        if (version_compare(PHP_VERSION, '5.3.2', '<')) {
+        if (PHP_VERSION_ID < 50302) {
             $errors['php'] = PHP_VERSION;
         }
 
-        if (!isset($errors['php']) && version_compare(PHP_VERSION, '5.3.4', '<')) {
+        if (!isset($errors['php']) && PHP_VERSION_ID < 50304) {
             $warnings['php'] = PHP_VERSION;
         }
 
@@ -429,11 +439,6 @@ EOT
                     case 'hash':
                         $text = PHP_EOL."The hash extension is missing.".PHP_EOL;
                         $text .= "Install it or recompile php without --disable-hash";
-                        break;
-
-                    case 'ctype':
-                        $text = PHP_EOL."The ctype extension is missing.".PHP_EOL;
-                        $text .= "Install it or recompile php without --disable-ctype";
                         break;
 
                     case 'unicode':

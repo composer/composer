@@ -12,6 +12,8 @@
 
 namespace Composer\Json;
 
+use Composer\Repository\PlatformRepository;
+
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -92,14 +94,51 @@ class JsonManipulator
 
         if (true === $sortPackages) {
             $requirements = json_decode($links, true);
-
-            ksort($requirements);
+            $this->sortPackages($requirements);
             $links = $this->format($requirements);
         }
 
         $this->contents = $matches[1] . $matches[2] . $links . $matches[4];
 
         return true;
+    }
+
+    /**
+     * Sorts packages by importance (platform packages first, then PHP dependencies) and alphabetically.
+     *
+     * @link https://getcomposer.org/doc/02-libraries.md#platform-packages
+     *
+     * @param array $packages
+     */
+    private function sortPackages(array &$packages = array())
+    {
+        $prefix = function ($requirement) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $requirement)) {
+                return preg_replace(
+                    array(
+                        '/^php/',
+                        '/^hhvm/',
+                        '/^ext/',
+                        '/^lib/',
+                        '/^\D/',
+                    ),
+                    array(
+                        '0-$0',
+                        '1-$0',
+                        '2-$0',
+                        '3-$0',
+                        '4-$0',
+                    ),
+                    $requirement
+                );
+            }
+
+            return '5-'.$requirement;
+        };
+
+        uksort($packages, function ($a, $b) use ($prefix) {
+            return strnatcmp($prefix($a), $prefix($b));
+        });
     }
 
     public function addRepository($name, $config)
@@ -126,16 +165,20 @@ class JsonManipulator
     {
         $decoded = JsonFile::parseJson($this->contents);
 
-        // no main node yet
-        if (!isset($decoded[$mainNode])) {
-            $this->addMainKey($mainNode, array($name => $value));
-
-            return true;
-        }
-
         $subName = null;
         if (in_array($mainNode, array('config', 'repositories')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
+        }
+
+        // no main node yet
+        if (!isset($decoded[$mainNode])) {
+            if ($subName !== null) {
+                $this->addMainKey($mainNode, array($name => array($subName => $value)));
+            } else {
+                $this->addMainKey($mainNode, array($name => $value));
+            }
+
+            return true;
         }
 
         // main node content not match-able
@@ -354,7 +397,7 @@ class JsonManipulator
 
     protected function detectIndenting()
     {
-        if ($this->pregMatch('{^(\s+)"}m', $this->contents, $match)) {
+        if ($this->pregMatch('{^([ \t]+)"}m', $this->contents, $match)) {
             $this->indent = $match[1];
         } else {
             $this->indent = '    ';

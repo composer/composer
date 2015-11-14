@@ -12,7 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\LinkConstraint\LinkConstraintInterface;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -20,25 +20,23 @@ use Composer\Package\LinkConstraint\LinkConstraintInterface;
 class Request
 {
     protected $jobs;
-    protected $pool;
 
-    public function __construct(Pool $pool)
+    public function __construct()
     {
-        $this->pool = $pool;
         $this->jobs = array();
     }
 
-    public function install($packageName, LinkConstraintInterface $constraint = null)
+    public function install($packageName, ConstraintInterface $constraint = null)
     {
         $this->addJob($packageName, 'install', $constraint);
     }
 
-    public function update($packageName, LinkConstraintInterface $constraint = null)
+    public function update($packageName, ConstraintInterface $constraint = null)
     {
         $this->addJob($packageName, 'update', $constraint);
     }
 
-    public function remove($packageName, LinkConstraintInterface $constraint = null)
+    public function remove($packageName, ConstraintInterface $constraint = null)
     {
         $this->addJob($packageName, 'remove', $constraint);
     }
@@ -48,12 +46,12 @@ class Request
      *
      * These jobs will not be tempered with by the solver
      */
-    public function fix($packageName, LinkConstraintInterface $constraint = null)
+    public function fix($packageName, ConstraintInterface $constraint = null)
     {
         $this->addJob($packageName, 'install', $constraint, true);
     }
 
-    protected function addJob($packageName, $cmd, LinkConstraintInterface $constraint = null, $fixed = false)
+    protected function addJob($packageName, $cmd, ConstraintInterface $constraint = null, $fixed = false)
     {
         $packageName = strtolower($packageName);
 
@@ -61,7 +59,7 @@ class Request
             'cmd' => $cmd,
             'packageName' => $packageName,
             'constraint' => $constraint,
-            'fixed' => $fixed
+            'fixed' => $fixed,
         );
     }
 

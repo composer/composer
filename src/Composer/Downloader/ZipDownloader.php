@@ -73,7 +73,7 @@ class ZipDownloader extends ArchiveDownloader
         $zipArchive = new ZipArchive();
 
         if (true !== ($retval = $zipArchive->open($file))) {
-            throw new \UnexpectedValueException($this->getErrorMessage($retval, $file), $retval);
+            throw new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n".$processError), $retval);
         }
 
         if (true !== $zipArchive->extractTo($path)) {

@@ -14,7 +14,6 @@ namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\ArchivableFilesFinder;
 use Composer\Util\Filesystem;
-
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ExecutableFinder;
 
@@ -75,7 +74,8 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             'parameters.yml',
             'parameters.yml.dist',
             '!important!.txt',
-            '!important_too!.txt'
+            '!important_too!.txt',
+            '#weirdfile',
         );
 
         foreach ($fileTree as $relativePath) {
@@ -98,7 +98,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             '!/prefixB.foo',
             '/prefixA.foo',
             'prefixC.*',
-            '!*/*/*/prefixC.foo'
+            '!*/*/*/prefixC.foo',
         );
 
         $this->finder = new ArchivableFilesFinder($this->sources, $excludes);
@@ -106,6 +106,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
         $this->assertArchivableFiles(array(
             '/!important!.txt',
             '/!important_too!.txt',
+            '/#weirdfile',
             '/A/prefixA.foo',
             '/A/prefixD.foo',
             '/A/prefixE.foo',
@@ -170,7 +171,8 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             'H/**',
             'J/',
             'parameters.yml',
-            '\!important!.txt'
+            '\!important!.txt',
+            '\#*',
         )));
 
         // git does not currently support negative git attributes
@@ -181,7 +183,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             //'!/prefixB.foo export-ignore',
             '/prefixA.foo export-ignore',
             'prefixC.* export-ignore',
-            //'!/*/*/prefixC.foo export-ignore'
+            //'!/*/*/prefixC.foo export-ignore',
         )));
 
         $this->finder = new ArchivableFilesFinder($this->sources, array());
@@ -284,7 +286,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
      *
      * @param string $process The name of the binary to test.
      *
-     * @return boolean True if the process is available, false otherwise.
+     * @return bool True if the process is available, false otherwise.
      */
     protected function isProcessAvailable($process)
     {

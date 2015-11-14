@@ -42,7 +42,7 @@ class SvnDownloader extends VcsDownloader
         $ref = $target->getSourceReference();
 
         if (!is_dir($path.'/.svn')) {
-            throw new \RuntimeException('The .svn directory is missing from '.$path.', see http://getcomposer.org/commit-deps for more information');
+            throw new \RuntimeException('The .svn directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
         $flags = "";
@@ -151,7 +151,7 @@ class SvnDownloader extends VcsDownloader
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
-        if (preg_match('{.*@(\d+)$}', $fromReference) && preg_match('{.*@(\d+)$}', $toReference) ) {
+        if (preg_match('{.*@(\d+)$}', $fromReference) && preg_match('{.*@(\d+)$}', $toReference)) {
             // strip paths from references and only keep the actual revision
             $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
             $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);

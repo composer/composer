@@ -16,6 +16,7 @@ use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
+use Composer\Package\Version\VersionGuesser;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\ProcessExecutor;
@@ -23,7 +24,7 @@ use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 
 /**
  * Creates a configured instance of composer.
@@ -36,8 +37,8 @@ use Composer\Package\Version\VersionParser;
 class Factory
 {
     /**
-     * @return string
      * @throws \RuntimeException
+     * @return string
      */
     protected static function getHomeDir()
     {
@@ -60,8 +61,7 @@ class Factory
     }
 
     /**
-     * @param string $home
-     *
+     * @param  string $home
      * @return string
      */
     protected static function getCacheDir($home)
@@ -113,7 +113,7 @@ class Factory
         $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir)));
 
         // load global config
-        $file = new JsonFile($home.'/config.json');
+        $file = new JsonFile($config->get('home').'/config.json');
         if ($file->exists()) {
             if ($io && $io->isDebug()) {
                 $io->writeError('Loading config file ' . $file->getPath());
@@ -214,7 +214,7 @@ class Factory
                 } else {
                     $message = 'Composer could not find the config file: '.$localConfig;
                 }
-                $instructions = 'To initialize a project, please create a composer.json file as described in the http://getcomposer.org/ "Getting Started" section';
+                $instructions = 'To initialize a project, please create a composer.json file as described in the https://getcomposer.org/ "Getting Started" section';
                 throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
             }
 
@@ -249,9 +249,6 @@ class Factory
         if ($fullLoad) {
             // load auth configs into the IO instance
             $io->loadConfiguration($config);
-
-            // setup process timeout
-            ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
         }
 
         // initialize event dispatcher
@@ -267,7 +264,8 @@ class Factory
 
         // load package
         $parser = new VersionParser;
-        $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
+        $guesser = new VersionGuesser($config, new ProcessExecutor($io), $parser);
+        $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser);
         $package = $loader->load($localConfig);
         $composer->setPackage($package);
 
@@ -309,7 +307,7 @@ class Factory
             $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
-            $locker = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io, $config)), $rm, $im, md5_file($composerFile));
+            $locker = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io, $config)), $rm, $im, file_get_contents($composerFile));
             $composer->setLocker($locker);
         }
 
@@ -335,6 +333,7 @@ class Factory
         $rm->setRepositoryClass('perforce', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('hg', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
+        $rm->setRepositoryClass('path', 'Composer\Repository\PathRepository');
 
         return $rm;
     }
@@ -407,14 +406,14 @@ class Factory
         $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $eventDispatcher, $cache));
 
         return $dm;
     }
 
     /**
-     * @param Config                     $config The configuration
-     * @param Downloader\DownloadManager $dm     Manager use to download sources
-     *
+     * @param  Config                     $config The configuration
+     * @param  Downloader\DownloadManager $dm     Manager use to download sources
      * @return Archiver\ArchiveManager
      */
     public function createArchiveManager(Config $config, Downloader\DownloadManager $dm = null)

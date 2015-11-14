@@ -26,7 +26,7 @@ class HgExcludeFilter extends BaseExcludeFilter
 
     /**
      * Either HG_IGNORE_REGEX or HG_IGNORE_GLOB
-     * @var integer
+     * @var int
      */
     protected $patternMode;
 

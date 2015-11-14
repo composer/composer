@@ -16,7 +16,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
-use Symfony\Component\Process\ExecutableFinder;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 
 /**
  * The Input/Output helper.
@@ -81,7 +82,7 @@ class ConsoleIO extends BaseIO
      */
     public function isVeryVerbose()
     {
-        return $this->output->getVerbosity() >= 3; // OutputInterface::VERSOBITY_VERY_VERBOSE
+        return $this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE;
     }
 
     /**
@@ -89,7 +90,7 @@ class ConsoleIO extends BaseIO
      */
     public function isDebug()
     {
-        return $this->output->getVerbosity() >= 4; // OutputInterface::VERBOSITY_DEBUG
+        return $this->output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG;
     }
 
     /**
@@ -110,8 +111,8 @@ class ConsoleIO extends BaseIO
 
     /**
      * @param array $messages
-     * @param boolean $newline
-     * @param boolean $stderr
+     * @param bool  $newline
+     * @param bool  $stderr
      */
     private function doWrite($messages, $newline, $stderr)
     {
@@ -126,6 +127,7 @@ class ConsoleIO extends BaseIO
         if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
             $this->output->getErrorOutput()->write($messages, $newline);
             $this->lastMessageErr = join($newline ? "\n" : '', (array) $messages);
+
             return;
         }
 
@@ -151,27 +153,12 @@ class ConsoleIO extends BaseIO
 
     /**
      * @param array $messages
-     * @param boolean $newline
-     * @param integer $size
-     * @param boolean $stderr
+     * @param bool  $newline
+     * @param int   $size
+     * @param bool  $stderr
      */
     private function doOverwrite($messages, $newline, $size, $stderr)
     {
-        if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
-            $output = $this->output->getErrorOutput();
-        } else {
-            $output = $this->output;
-        }
-
-        if (!$output->isDecorated()) {
-            if (!$messages) {
-                return;
-            }
-
-            $this->doWrite($messages, count($messages) === 1 || $newline, $stderr);
-            return;
-        }
-
         // messages can be an array, let's convert it to string anyway
         $messages = join($newline ? "\n" : '', (array) $messages);
 
@@ -197,7 +184,12 @@ class ConsoleIO extends BaseIO
         if ($newline) {
             $this->doWrite('', true, $stderr);
         }
-        $this->lastMessage = $messages;
+
+        if ($stderr) {
+            $this->lastMessageErr = $messages;
+        } else {
+            $this->lastMessage = $messages;
+        }
     }
 
     /**
@@ -211,10 +203,11 @@ class ConsoleIO extends BaseIO
             $output = $output->getErrorOutput();
         }
 
-        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
-        $dialog = $this->helperSet->get('dialog');
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        $question = new Question($question, $default);
 
-        return $dialog->ask($output, $question, $default);
+        return $helper->ask($this->input, $output, $question);
     }
 
     /**
@@ -228,16 +221,17 @@ class ConsoleIO extends BaseIO
             $output = $output->getErrorOutput();
         }
 
-        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
-        $dialog = $this->helperSet->get('dialog');
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        $question = new ConfirmationQuestion($question, $default);
 
-        return $dialog->askConfirmation($output, $question, $default);
+        return $helper->ask($this->input, $output, $question);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function askAndValidate($question, $validator, $attempts = false, $default = null)
+    public function askAndValidate($question, $validator, $attempts = null, $default = null)
     {
         $output = $this->output;
 
@@ -245,10 +239,13 @@ class ConsoleIO extends BaseIO
             $output = $output->getErrorOutput();
         }
 
-        /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
-        $dialog = $this->helperSet->get('dialog');
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        $question = new Question($question, $default);
+        $question->setValidator($validator);
+        $question->setMaxAttempts($attempts);
 
-        return $dialog->askAndValidate($output, $question, $validator, $attempts, $default);
+        return $helper->ask($this->input, $output, $question);
     }
 
     /**
@@ -256,71 +253,8 @@ class ConsoleIO extends BaseIO
      */
     public function askAndHideAnswer($question)
     {
-        // handle windows
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $finder = new ExecutableFinder();
+        $this->writeError($question, false);
 
-            // use bash if it's present
-            if ($finder->find('bash') && $finder->find('stty')) {
-                $this->writeError($question, false);
-                $value = rtrim(shell_exec('bash -c "stty -echo; read -n0 discard; read -r mypassword; stty echo; echo $mypassword"'));
-                $this->writeError('');
-
-                return $value;
-            }
-
-            // fallback to hiddeninput executable
-            $exe = __DIR__.'\\hiddeninput.exe';
-
-            // handle code running from a phar
-            if ('phar:' === substr(__FILE__, 0, 5)) {
-                $tmpExe = sys_get_temp_dir().'/hiddeninput.exe';
-
-                // use stream_copy_to_stream instead of copy
-                // to work around https://bugs.php.net/bug.php?id=64634
-                $source = fopen(__DIR__.'\\hiddeninput.exe', 'r');
-                $target = fopen($tmpExe, 'w+');
-                stream_copy_to_stream($source, $target);
-                fclose($source);
-                fclose($target);
-                unset($source, $target);
-
-                $exe = $tmpExe;
-            }
-
-            $this->writeError($question, false);
-            $value = rtrim(shell_exec($exe));
-            $this->writeError('');
-
-            // clean up
-            if (isset($tmpExe)) {
-                unlink($tmpExe);
-            }
-
-            return $value;
-        }
-
-        if (file_exists('/usr/bin/env')) {
-            // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
-            $test = "/usr/bin/env %s -c 'echo OK' 2> /dev/null";
-            foreach (array('bash', 'zsh', 'ksh', 'csh') as $sh) {
-                if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
-                    $shell = $sh;
-                    break;
-                }
-            }
-            if (isset($shell)) {
-                $this->writeError($question, false);
-                $readCmd = ($shell === 'csh') ? 'set mypassword = $<' : 'read -r mypassword';
-                $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
-                $value = rtrim(shell_exec($command));
-                $this->writeError('');
-
-                return $value;
-            }
-        }
-
-        // not able to hide the answer, proceed with normal question handling
-        return $this->ask($question);
+        return \Seld\CliPrompt\CliPrompt::hiddenPrompt(true);
     }
 }

@@ -18,6 +18,7 @@ use Composer\Package\Loader\InvalidPackageException;
 use Composer\Json\JsonValidationException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Spdx\SpdxLicenses;
 
 /**
  * Validates a composer configuration.
@@ -37,8 +38,8 @@ class ConfigValidator
     /**
      * Validates the config, and returns the result.
      *
-     * @param string  $file                       The path to the file
-     * @param integer $arrayLoaderValidationFlags Flags for ArrayLoader validation
+     * @param string $file                       The path to the file
+     * @param int    $arrayLoaderValidationFlags Flags for ArrayLoader validation
      *
      * @return array a triple containing the errors, publishable errors, and warnings
      */
@@ -82,7 +83,7 @@ class ConfigValidator
                 }
             }
 
-            $licenseValidator = new SpdxLicenseIdentifier();
+            $licenseValidator = new SpdxLicenses();
             if ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license'])) {
                 $warnings[] = sprintf(
                     'License %s is not a valid SPDX license identifier, see http://www.spdx.org/licenses/ if you use an open license.'
@@ -102,7 +103,7 @@ class ConfigValidator
             $suggestName = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $manifest['name']);
             $suggestName = strtolower($suggestName);
 
-            $warnings[] = sprintf(
+            $publishErrors[] = sprintf(
                 'Name "%s" does not match the best practice (e.g. lower-cased/with-dashes). We suggest using "%s" instead. As such you will not be able to submit it to Packagist.',
                 $manifest['name'],
                 $suggestName
@@ -121,6 +122,27 @@ class ConfigValidator
                 $plural = (count($requireOverrides) > 1) ? 'are' : 'is';
                 $warnings[] = implode(', ', array_keys($requireOverrides)). " {$plural} required both in require and require-dev, this can lead to unexpected behavior";
             }
+        }
+
+        // check for commit references
+        $require = isset($manifest['require']) ? $manifest['require'] : array();
+        $requireDev = isset($manifest['require-dev']) ? $manifest['require-dev'] : array();
+        $packages = array_merge($require, $requireDev);
+        foreach ($packages as $package => $version) {
+            if (preg_match('/#/', $version) === 1) {
+                $warnings[] = sprintf(
+                    'The package "%s" is pointing to a commit-ref, this is bad practice and can cause unforeseen issues.',
+                    $package
+                );
+            }
+        }
+
+        // check for empty psr-0/psr-4 namespace prefixes
+        if (isset($manifest['autoload']['psr-0'][''])) {
+            $warnings[] = "Defining autoload.psr-0 with an empty namespace prefix is a bad idea for performance";
+        }
+        if (isset($manifest['autoload']['psr-4'][''])) {
+            $warnings[] = "Defining autoload.psr-4 with an empty namespace prefix is a bad idea for performance";
         }
 
         try {

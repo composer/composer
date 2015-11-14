@@ -100,18 +100,17 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $config = Factory::createConfig();
+        $io = $this->getIO();
 
-        $preferSource = false;
-        $preferDist = false;
-        $this->updatePreferredOptions($config, $input, $preferSource, $preferDist);
+        $this->updatePreferredOptions($config, $input, $preferSource, $preferDist, true);
 
         if ($input->getOption('no-custom-installers')) {
-            $this->getIO()->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $io->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
         }
 
         return $this->installProject(
-            $this->getIO(),
+            $io,
             $config,
             $input->getArgument('package'),
             $input->getArgument('directory'),
@@ -145,6 +144,8 @@ EOT
         }
 
         $composer = Factory::create($io, null, $disablePlugins);
+        $composer->getDownloadManager()->setOutputProgress(!$noProgress);
+
         $fs = new Filesystem();
 
         if ($noScripts === false) {
@@ -275,9 +276,12 @@ EOT
         $pool = new Pool($stability);
         $pool->addRepository($sourceRepo);
 
+        // using those 3 constants to build a version without the 'extra' bit that can contain garbage
+        $phpVersion = PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION;
+
         // find the latest version if there are multiple
         $versionSelector = new VersionSelector($pool);
-        $package = $versionSelector->findBestCandidate($name, $packageVersion);
+        $package = $versionSelector->findBestCandidate($name, $packageVersion, $phpVersion);
 
         if (!$package) {
             throw new \InvalidArgumentException("Could not find package $name" . ($packageVersion ? " with version $packageVersion." : " with stability $stability."));
@@ -288,7 +292,17 @@ EOT
             $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
-        $io->writeError('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>');
+        // handler Ctrl+C for unix-like systems
+        if (function_exists('pcntl_signal')) {
+            declare (ticks = 100);
+            pcntl_signal(SIGINT, function () use ($directory) {
+                $fs = new Filesystem();
+                $fs->removeDirectory($directory);
+                exit(130);
+            });
+        }
+
+        $io->writeError('<info>Installing ' . $package->getName() . ' (' . $package->getFullPrettyVersion(false) . ')</info>');
 
         if ($disablePlugins) {
             $io->writeError('<info>Plugins have been disabled.</info>');
@@ -307,14 +321,15 @@ EOT
         $im = $this->createInstallationManager();
         $im->addInstaller($projectInstaller);
         $im->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
-        $im->notifyInstalls();
+        $im->notifyInstalls($io);
 
         $installedFromVcs = 'source' === $package->getInstallationSource();
 
         $io->writeError('<info>Created project in ' . $directory . '</info>');
         chdir($directory);
 
-        putenv('COMPOSER_ROOT_VERSION='.$package->getPrettyVersion());
+        $_SERVER['COMPOSER_ROOT_VERSION'] = $package->getPrettyVersion();
+        putenv('COMPOSER_ROOT_VERSION='.$_SERVER['COMPOSER_ROOT_VERSION']);
 
         return $installedFromVcs;
     }
@@ -335,18 +350,19 @@ EOT
      * Updated preferSource or preferDist based on the preferredInstall config option
      * @param Config         $config
      * @param InputInterface $input
-     * @param boolean        $preferSource
-     * @param boolean        $preferDist
+     * @param bool           $preferSource
+     * @param bool           $preferDist
      */
-    protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist)
+    protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist, $keepVcsRequiresPreferSource = false)
     {
+        $preferSource = false;
+        $preferDist = false;
+
         switch ($config->get('preferred-install')) {
             case 'source':
                 $preferSource = true;
-                $preferDist = false;
                 break;
             case 'dist':
-                $preferSource = false;
                 $preferDist = true;
                 break;
             case 'auto':
@@ -355,8 +371,8 @@ EOT
                 break;
         }
 
-        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist')) {
-            $preferSource = $input->getOption('prefer-source');
+        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist') || ($keepVcsRequiresPreferSource && $input->getOption('keep-vcs'))) {
+            $preferSource = $input->getOption('prefer-source') || ($keepVcsRequiresPreferSource && $input->getOption('keep-vcs'));
             $preferDist = $input->getOption('prefer-dist');
         }
     }

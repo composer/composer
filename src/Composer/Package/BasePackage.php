@@ -161,7 +161,7 @@ abstract class BasePackage implements PackageInterface
     /**
      * checks if this package is a platform package
      *
-     * @return boolean
+     * @return bool
      */
     public function isPlatform()
     {
@@ -204,6 +204,28 @@ abstract class BasePackage implements PackageInterface
     public function getPrettyString()
     {
         return $this->getPrettyName().' '.$this->getPrettyVersion();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getFullPrettyVersion($truncate = true)
+    {
+        if (!$this->isDev() || !in_array($this->getSourceType(), array('hg', 'git'))) {
+            return $this->getPrettyVersion();
+        }
+
+        // if source reference is a sha1 hash -- truncate
+        if ($truncate && strlen($this->getSourceReference()) === 40) {
+            return $this->getPrettyVersion() . ' ' . substr($this->getSourceReference(), 0, 7);
+        }
+
+        return $this->getPrettyVersion() . ' ' . $this->getSourceReference();
+    }
+
+    public function getStabilityPriority()
+    {
+        return self::$stabilities[$this->getStability()];
     }
 
     public function __clone()

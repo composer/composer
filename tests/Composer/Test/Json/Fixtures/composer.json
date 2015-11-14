@@ -1,0 +1,59 @@
+{
+    "name": "composer/schema-test",
+    "description": "Dummy file to test the schema verification",
+    "keywords": ["package", "dependency", "autoload"],
+    "homepage": "https://getcomposer.org/",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nils Adermann",
+            "email": "naderman@naderman.de",
+            "homepage": "http://www.naderman.de"
+        },
+        {
+            "name": "Jordi Boggiano",
+            "email": "j.boggiano@seld.be",
+            "homepage": "http://seld.be"
+        }
+    ],
+    "support": {
+        "irc": "irc://irc.freenode.org/composer",
+        "issues": "https://github.com/composer/composer/issues"
+    },
+    "require": {
+        "php": ">=5.3.2",
+        "justinrainbow/json-schema": "~1.4",
+        "seld/jsonlint": "~1.0",
+        "symfony/console": "~2.5",
+        "symfony/finder": "~2.2",
+        "symfony/process": "~2.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.5"
+    },
+    "config": {
+        "platform": {
+            "php": "5.3.3"
+        }
+    },
+    "suggest": {
+        "ext-zip": "Enabling the zip extension allows you to unzip archives, and allows gzip compression of all internet traffic",
+        "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages"
+    },
+    "autoload": {
+        "psr-0": { "Composer": "src/" }
+    },
+    "autoload-dev": {
+        "psr-0": { "Composer\\Test": "tests/" }
+    },
+    "bin": ["bin/composer"],
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}

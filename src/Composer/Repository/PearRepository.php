@@ -13,13 +13,13 @@
 namespace Composer\Repository;
 
 use Composer\IO\IOInterface;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Repository\Pear\ChannelReader;
 use Composer\Package\CompletePackage;
 use Composer\Repository\Pear\ChannelInfo;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\Link;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Util\RemoteFilesystem;
 use Composer\Config;
 
@@ -120,7 +120,7 @@ class PearRepository extends ArrayRepository
                 // cause we've know only repository channel alias
                 if ($channelInfo->getName() == $packageDefinition->getChannelName()) {
                     $composerPackageAlias = $this->buildComposerPackageName($channelInfo->getAlias(), $packageDefinition->getPackageName());
-                    $aliasConstraint = new VersionConstraint('==', $normalizedVersion);
+                    $aliasConstraint = new Constraint('==', $normalizedVersion);
                     $replaces[] = new Link($composerPackageName, $composerPackageAlias, $aliasConstraint, 'replaces', (string) $aliasConstraint);
                 }
 
@@ -129,7 +129,7 @@ class PearRepository extends ArrayRepository
                     && ($this->vendorAlias != 'pear-'.$channelInfo->getAlias() || $channelInfo->getName() != $packageDefinition->getChannelName())
                 ) {
                     $composerPackageAlias = "{$this->vendorAlias}/{$packageDefinition->getPackageName()}";
-                    $aliasConstraint = new VersionConstraint('==', $normalizedVersion);
+                    $aliasConstraint = new Constraint('==', $normalizedVersion);
                     $replaces[] = new Link($composerPackageName, $composerPackageAlias, $aliasConstraint, 'replaces', (string) $aliasConstraint);
                 }
 

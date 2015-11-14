@@ -21,6 +21,7 @@ use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Script;
+use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
 use Composer\Util\ProcessExecutor;
 
@@ -135,10 +136,10 @@ class EventDispatcher
      *
      * @param  Event             $event          The event object to pass to the event handlers/listeners.
      * @param  string            $additionalArgs
-     * @return int               return code of the executed script if any, for php scripts a false return
-     *                                          value is changed to 1, anything else to 0
      * @throws \RuntimeException
      * @throws \Exception
+     * @return int               return code of the executed script if any, for php scripts a false return
+     *                                          value is changed to 1, anything else to 0
      */
     protected function doDispatch(Event $event)
     {
@@ -170,8 +171,14 @@ class EventDispatcher
                     throw $e;
                 }
             } else {
-                $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor','escape'), $event->getArguments()));
-                if (0 !== ($exitCode = $this->process->execute($callable . ($args === '' ? '' : ' '.$args)))) {
+                $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
+                $exec = $callable . ($args === '' ? '' : ' '.$args);
+                if ($this->io->isVerbose()) {
+                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
+                } else {
+                    $this->io->writeError(sprintf('> %s', $exec));
+                }
+                if (0 !== ($exitCode = $this->process->execute($exec))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 
                     throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
@@ -195,12 +202,18 @@ class EventDispatcher
     {
         $event = $this->checkListenerExpectedEvent(array($className, $methodName), $event);
 
+        if ($this->io->isVerbose()) {
+            $this->io->writeError(sprintf('> %s: %s::%s', $event->getName(), $className, $methodName));
+        } else {
+            $this->io->writeError(sprintf('> %s::%s', $className, $methodName));
+        }
+
         return $className::$methodName($event);
     }
 
     /**
-     * @param mixed $target
-     * @param Event $event
+     * @param  mixed              $target
+     * @param  Event              $event
      * @return Event|CommandEvent
      */
     protected function checkListenerExpectedEvent($target, Event $event)
@@ -247,7 +260,7 @@ class EventDispatcher
      *
      * @param string   $eventName The event name - typically a constant
      * @param Callable $listener  A callable expecting an event argument
-     * @param integer  $priority  A higher value represents a higher priority
+     * @param int      $priority  A higher value represents a higher priority
      */
     protected function addListener($eventName, $listener, $priority = 0)
     {
@@ -300,8 +313,8 @@ class EventDispatcher
     /**
      * Checks if an event has listeners registered
      *
-     * @param  Event   $event
-     * @return boolean
+     * @param  Event $event
+     * @return bool
      */
     public function hasEventListeners(Event $event)
     {
@@ -342,8 +355,8 @@ class EventDispatcher
     /**
      * Checks if string given references a class path and method
      *
-     * @param  string  $callable
-     * @return boolean
+     * @param  string $callable
+     * @return bool
      */
     protected function isPhpScript($callable)
     {

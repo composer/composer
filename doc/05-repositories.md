@@ -6,7 +6,7 @@ of repositories are available, and how they work.
 ## Concepts
 
 Before we look at the different types of repositories that exist, we need to
-understand some of the basic concepts that composer is built on.
+understand some of the basic concepts that Composer is built on.
 
 ### Package
 
@@ -16,8 +16,8 @@ code, but in theory it could be anything. And it contains a package
 description which has a name and a version. The name and the version are used
 to identify the package.
 
-In fact, internally composer sees every version as a separate package. While
-this distinction does not matter when you are using composer, it's quite
+In fact, internally Composer sees every version as a separate package. While
+this distinction does not matter when you are using Composer, it's quite
 important when you want to change it.
 
 In addition to the name and the version, there is useful metadata. The information
@@ -103,7 +103,7 @@ It may include any of the other fields specified in the [schema](04-schema.md).
 
 #### notify-batch
 
-The `notify-batch` field allows you to specify an URL that will be called
+The `notify-batch` field allows you to specify a URL that will be called
 every time a user installs a package. The URL can be either an absolute path
 (that will use the same domain as the repository) or a fully qualified URL.
 
@@ -216,7 +216,7 @@ repository.
 
 The `packages.json` file is loaded using a PHP stream. You can set extra options
 on that stream using the `options` parameter. You can set any valid PHP stream
-context option. See [Context options and parameters](http://php.net/manual/en/context.php)
+context option. See [Context options and parameters](https://php.net/manual/en/context.php)
 for more information.
 
 ### VCS
@@ -263,6 +263,10 @@ custom repository has priority over packagist. If you want to rename the
 package, you should do so in the default (often master) branch and not in a
 feature branch, since the package name is taken from the default branch.
 
+Also note that the override will not work if you change the `name` property
+in your forked repository's composer.json file as this needs to match the
+original for the override to work.
+
 If other dependencies rely on the package you forked, it is possible to
 inline-alias it so that it matches a constraint that it otherwise would not.
 For more information [see the aliases article](articles/aliases.md).
@@ -293,8 +297,8 @@ The only requirement is the installation of SSH keys for a git client.
 Git is not the only version control system supported by the VCS repository.
 The following are supported:
 
-* **Git:** [git-scm.com](http://git-scm.com)
-* **Subversion:** [subversion.apache.org](http://subversion.apache.org)
+* **Git:** [git-scm.com](https://git-scm.com)
+* **Subversion:** [subversion.apache.org](https://subversion.apache.org)
 * **Mercurial:** [mercurial.selenic.com](http://mercurial.selenic.com)
 
 To get packages from these systems you need to have their respective clients
@@ -312,7 +316,7 @@ should you need to specify one for whatever reason, you can use `git`, `svn` or
 
 If you set the `no-api` key to `true` on a github repository it will clone the
 repository as it would with any other git repository instead of using the
-GitHub API. But unlike using the `git` driver directly, composer will still
+GitHub API. But unlike using the `git` driver directly, Composer will still
 attempt to use github's zip files.
 
 #### Subversion Options
@@ -341,7 +345,7 @@ If you have no branches or tags directory you can disable them entirely by
 setting the `branches-path` or `tags-path` to `false`.
 
 If the package is in a sub-directory, e.g. `/trunk/foo/bar/composer.json` and
-`/tags/1.0/foo/bar/composer.json`, then you can make composer access it by
+`/tags/1.0/foo/bar/composer.json`, then you can make Composer access it by
 setting the `"package-path"` option to the sub-directory, in this example it
 would be `"package-path": "foo/bar/"`.
 
@@ -389,7 +393,7 @@ Example using `pear2.php.net`:
     "repositories": [
         {
             "type": "pear",
-            "url": "http://pear2.php.net"
+            "url": "https://pear2.php.net"
         }
     ],
     "require": {
@@ -462,7 +466,7 @@ and `IntermediatePackage` from a Github repository:
 
 ### Package
 
-If you want to use a project that does not support composer through any of the
+If you want to use a project that does not support Composer through any of the
 means above, you still can define the package yourself by using a `package`
 repository.
 
@@ -517,7 +521,7 @@ Typically you would leave the source part off, as you don't really need it.
 While you will probably want to put your packages on packagist most of the time,
 there are some use cases for hosting your own repository.
 
-* **Private company packages:** If you are part of a company that uses composer
+* **Private company packages:** If you are part of a company that uses Composer
   for their packages internally, you might want to keep those packages private.
 
 * **Separate ecosystem:** If you have a project which has its own ecosystem,
@@ -538,15 +542,16 @@ supported use case and changes will happen without caring for third parties
 using the code.
 
 Packagist is a Symfony2 application, and it is [available on
-GitHub](https://github.com/composer/packagist). It uses composer internally and
-acts as a proxy between VCS repositories and the composer users. It holds a list
-of all VCS packages, periodically re-crawls them, and exposes them as a composer
+GitHub](https://github.com/composer/packagist). It uses Composer internally and
+acts as a proxy between VCS repositories and the Composer users. It holds a list
+of all VCS packages, periodically re-crawls them, and exposes them as a Composer
 repository.
 
 ### Toran Proxy
 
 [Toran Proxy](https://toranproxy.com/) is a web app much like Packagist but
-providing private package hosting as well as mirroring/proxying of GitHub and packagist.org. Check its homepage and the [Satis/Toran Proxy article](articles/handling-private-packages-with-satis.md)
+providing private package hosting as well as mirroring/proxying of GitHub and 
+packagist.org. Check its homepage and the [Satis/Toran Proxy article](articles/handling-private-packages-with-satis.md)
 for more information.
 
 ### Satis
@@ -601,6 +606,42 @@ imported. When an archive with a newer version is added in the artifact folder
 and you run `update`, that version will be imported as well and Composer will
 update to the latest version.
 
+### Path
+
+In addition to the artifact repository, you can use the path one, which allows
+you to depend on a relative directory. This can be especially useful when dealing
+with monolith repositories.
+
+For instance, if you have the following directory structure in your repository:
+```
+- apps
+\_ my-app
+  \_ composer.json
+- packages
+\_ my-package
+  \_ composer.json
+```
+
+Then, to add the package `my/package` as a dependency, in your `apps/my-app/composer.json`
+file, you can use the following configuration:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/my-package"
+        }
+    ],
+    "require": {
+        "my/package": "*@dev"
+    }
+}
+```
+
+> **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
+> For details, see the [PHP glob function](http://php.net/glob).
+
 ## Disabling Packagist
 
 You can disable the default Packagist repository by adding this to your
@@ -616,4 +657,4 @@ You can disable the default Packagist repository by adding this to your
 }
 ```
 
-&larr; [Schema](04-schema.md)  |  [Community](06-community.md) &rarr;
+&larr; [Schema](04-schema.md)  |  [Config](06-config.md) &rarr;

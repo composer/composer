@@ -43,10 +43,12 @@ class Cache
         $this->whitelist = $whitelist;
         $this->filesystem = $filesystem ?: new Filesystem();
 
-        if (!is_dir($this->root)) {
-            if (!@mkdir($this->root, 0777, true)) {
-                $this->enabled = false;
-            }
+        if (
+            (!is_dir($this->root) && !@mkdir($this->root, 0777, true))
+            || !is_writable($this->root)
+        ) {
+            $this->io->writeError('<warning>Cannot create cache directory ' . $this->root . ', or directory is not writable. Proceeding without cache</warning>');
+            $this->enabled = false;
         }
     }
 
@@ -86,6 +88,9 @@ class Cache
             try {
                 return file_put_contents($this->root . $file, $contents);
             } catch (\ErrorException $e) {
+                if ($this->io->isDebug()) {
+                    $this->io->writeError('<warning>Failed to write into cache: '.$e->getMessage().'</warning>');
+                }
                 if (preg_match('{^file_put_contents\(\): Only ([0-9]+) of ([0-9]+) bytes written}', $e->getMessage(), $m)) {
                     // Remove partial file.
                     unlink($this->root . $file);
@@ -119,8 +124,10 @@ class Cache
             $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
             $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
 
-            if ($this->io->isDebug()) {
-                $this->io->writeError('Writing '.$this->root . $file.' into cache');
+            if (!file_exists($source)) {
+                $this->io->writeError('<error>'.$source.' does not exist, can not write into cache</error>');
+            } elseif ($this->io->isDebug()) {
+                $this->io->writeError('Writing '.$this->root . $file.' into cache from '.$source);
             }
 
             return copy($source, $this->root . $file);
@@ -136,7 +143,13 @@ class Cache
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
-            touch($this->root . $file);
+            try {
+                touch($this->root . $file, filemtime($this->root . $file), time());
+            } catch (\ErrorException $e) {
+                // fallback in case the above failed due to incorrect ownership
+                // see https://github.com/composer/composer/issues/4070
+                touch($this->root . $file);
+            }
 
             if ($this->io->isDebug()) {
                 $this->io->writeError('Reading '.$this->root . $file.' from cache');

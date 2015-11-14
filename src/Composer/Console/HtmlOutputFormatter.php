@@ -27,7 +27,7 @@ class HtmlOutputFormatter extends OutputFormatter
         34 => 'blue',
         35 => 'magenta',
         36 => 'cyan',
-        37 => 'white'
+        37 => 'white',
     );
     private static $availableBackgroundColors = array(
         40 => 'black',
@@ -37,7 +37,7 @@ class HtmlOutputFormatter extends OutputFormatter
         44 => 'blue',
         45 => 'magenta',
         46 => 'cyan',
-        47 => 'white'
+        47 => 'white',
     );
     private static $availableOptions = array(
         1 => 'bold',
@@ -59,7 +59,9 @@ class HtmlOutputFormatter extends OutputFormatter
     {
         $formatted = parent::format($message);
 
-        return preg_replace_callback("{\033\[([0-9;]+)m(.*?)\033\[0m}s", array($this, 'formatHtml'), $formatted);
+        $clearEscapeCodes = '(?:39|49|0|22|24|25|27|28)';
+
+        return preg_replace_callback("{\033\[([0-9;]+)m(.*?)\033\[(?:".$clearEscapeCodes.";)*?".$clearEscapeCodes."m}s", array($this, 'formatHtml'), $formatted);
     }
 
     private function formatHtml($matches)

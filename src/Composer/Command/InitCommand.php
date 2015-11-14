@@ -16,10 +16,10 @@ use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Factory;
 use Composer\Package\BasePackage;
+use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -33,28 +33,18 @@ use Symfony\Component\Process\ExecutableFinder;
  */
 class InitCommand extends Command
 {
+    /** @var CompositeRepository */
     protected $repos;
 
+    /** @var array */
     private $gitConfig;
+
+    /** @var Pool */
     private $pool;
 
-    public function parseAuthorString($author)
-    {
-        if (preg_match('/^(?P<name>[- \.,\p{L}\'’]+) <(?P<email>.+?)>$/u', $author, $match)) {
-            if ($this->isValidEmail($match['email'])) {
-                return array(
-                    'name'  => trim($match['name']),
-                    'email' => $match['email']
-                );
-            }
-        }
-
-        throw new \InvalidArgumentException(
-            'Invalid author string.  Must be in the format: '.
-            'John Smith <john@example.com>'
-        );
-    }
-
+    /**
+     * {@inheritdoc}
+     */
     protected function configure()
     {
         $this
@@ -65,6 +55,7 @@ class InitCommand extends Command
                 new InputOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package'),
                 new InputOption('author', null, InputOption::VALUE_REQUIRED, 'Author name of package'),
                 // new InputOption('version', null, InputOption::VALUE_NONE, 'Version of package'),
+                new InputOption('type', null, InputOption::VALUE_OPTIONAL, 'Type of package'),
                 new InputOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
@@ -82,11 +73,12 @@ EOT
         ;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $dialog = $this->getHelperSet()->get('dialog');
-
-        $whitelist = array('name', 'description', 'author', 'homepage', 'require', 'require-dev', 'stability', 'license');
+        $whitelist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license');
 
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
 
@@ -113,17 +105,13 @@ EOT
         }
 
         $file = new JsonFile('composer.json');
-
         $json = $file->encode($options);
+        $io = $this->getIO();
 
         if ($input->isInteractive()) {
-            $this->getIO()->writeError(array(
-                '',
-                $json,
-                ''
-            ));
-            if (!$dialog->askConfirmation($output, $dialog->getQuestion('Do you confirm generation', 'yes', '?'), true)) {
-                $this->getIO()->writeError('<error>Command aborted</error>');
+            $io->writeError(array('', $json, ''));
+            if (!$io->askConfirmation('Do you confirm generation [<comment>yes</comment>]? ', true)) {
+                $io->writeError('<error>Command aborted</error>');
 
                 return 1;
             }
@@ -139,29 +127,32 @@ EOT
             }
 
             if (!$this->hasVendorIgnore($ignoreFile)) {
-                $question = 'Would you like the <info>vendor</info> directory added to your <info>.gitignore</info> [<comment>yes</comment>]?';
+                $question = 'Would you like the <info>vendor</info> directory added to your <info>.gitignore</info> [<comment>yes</comment>]? ';
 
-                if ($dialog->askConfirmation($output, $question, true)) {
+                if ($io->askConfirmation($question, true)) {
                     $this->addVendorIgnore($ignoreFile);
                 }
             }
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         $git = $this->getGitConfig();
-
-        $dialog = $this->getHelperSet()->get('dialog');
+        $io = $this->getIO();
         $formatter = $this->getHelperSet()->get('formatter');
-        $this->getIO()->writeError(array(
+
+        $io->writeError(array(
             '',
             $formatter->formatBlock('Welcome to the Composer config generator', 'bg=blue;fg=white', true),
-            ''
+            '',
         ));
 
         // namespace
-        $this->getIO()->writeError(array(
+        $io->writeError(array(
             '',
             'This command will guide you through creating your composer.json config.',
             '',
@@ -191,9 +182,8 @@ EOT
             }
         }
 
-        $name = $dialog->askAndValidate(
-            $output,
-            $dialog->getQuestion('Package name (<vendor>/<name>)', $name),
+        $name = $io->askAndValidate(
+            'Package name (<vendor>/<name>) [<comment>'.$name.'</comment>]: ',
             function ($value) use ($name) {
                 if (null === $value) {
                     return $name;
@@ -206,14 +196,15 @@ EOT
                 }
 
                 return $value;
-            }
+            },
+            null,
+            $name
         );
         $input->setOption('name', $name);
 
         $description = $input->getOption('description') ?: false;
-        $description = $dialog->ask(
-            $output,
-            $dialog->getQuestion('Description', $description),
+        $description = $io->ask(
+            'Description [<comment>'.$description.'</comment>]: ',
             $description
         );
         $input->setOption('description', $description);
@@ -225,22 +216,22 @@ EOT
         }
 
         $self = $this;
-        $author = $dialog->askAndValidate(
-            $output,
-            $dialog->getQuestion('Author', $author),
+        $author = $io->askAndValidate(
+            'Author [<comment>'.$author.'</comment>]: ',
             function ($value) use ($self, $author) {
                 $value = $value ?: $author;
                 $author = $self->parseAuthorString($value);
 
                 return sprintf('%s <%s>', $author['name'], $author['email']);
-            }
+            },
+            null,
+            $author
         );
         $input->setOption('author', $author);
 
-        $minimumStability = $input->getOption('stability') ?: '';
-        $minimumStability = $dialog->askAndValidate(
-            $output,
-            $dialog->getQuestion('Minimum Stability', $minimumStability),
+        $minimumStability = $input->getOption('stability') ?: null;
+        $minimumStability = $io->askAndValidate(
+            'Minimum Stability [<comment>'.$minimumStability.'</comment>]: ',
             function ($value) use ($self, $minimumStability) {
                 if (null === $value) {
                     return $minimumStability;
@@ -254,34 +245,63 @@ EOT
                 }
 
                 return $value;
-            }
+            },
+            null,
+            $minimumStability
         );
         $input->setOption('stability', $minimumStability);
 
+        $type = $input->getOption('type') ?: false;
+        $type = $io->ask(
+            'Package Type [<comment>'.$type.'</comment>]: ',
+            $type
+        );
+        $input->setOption('type', $type);
+
         $license = $input->getOption('license') ?: false;
-        $license = $dialog->ask(
-            $output,
-            $dialog->getQuestion('License', $license),
+        $license = $io->ask(
+            'License [<comment>'.$license.'</comment>]: ',
             $license
         );
         $input->setOption('license', $license);
 
-        $this->getIO()->writeError(array(
-            '',
-            'Define your dependencies.',
-            ''
-        ));
+        $io->writeError(array('', 'Define your dependencies.', ''));
 
+        $question = 'Would you like to define your dependencies (require) interactively [<comment>yes</comment>]? ';
         $requirements = array();
-        if ($dialog->askConfirmation($output, $dialog->getQuestion('Would you like to define your dependencies (require) interactively', 'yes', '?'), true)) {
+        if ($io->askConfirmation($question, true)) {
             $requirements = $this->determineRequirements($input, $output, $input->getOption('require'));
         }
         $input->setOption('require', $requirements);
+
+        $question = 'Would you like to define your dev dependencies (require-dev) interactively [<comment>yes</comment>]? ';
         $devRequirements = array();
-        if ($dialog->askConfirmation($output, $dialog->getQuestion('Would you like to define your dev dependencies (require-dev) interactively', 'yes', '?'), true)) {
+        if ($io->askConfirmation($question, true)) {
             $devRequirements = $this->determineRequirements($input, $output, $input->getOption('require-dev'));
         }
         $input->setOption('require-dev', $devRequirements);
+    }
+
+    /**
+     * @private
+     * @param  string $author
+     * @return array
+     */
+    public function parseAuthorString($author)
+    {
+        if (preg_match('/^(?P<name>[- \.,\p{L}\p{N}\'’]+) <(?P<email>.+?)>$/u', $author, $match)) {
+            if ($this->isValidEmail($match['email'])) {
+                return array(
+                    'name'  => trim($match['name']),
+                    'email' => $match['email'],
+                );
+            }
+        }
+
+        throw new \InvalidArgumentException(
+            'Invalid author string.  Must be in the format: '.
+            'John Smith <john@example.com>'
+        );
     }
 
     protected function findPackages($name)
@@ -301,22 +321,20 @@ EOT
         return $this->repos;
     }
 
-    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array())
+    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null)
     {
-        $dialog = $this->getHelperSet()->get('dialog');
-        $prompt = $dialog->getQuestion('Search for a package', false, ':');
-
         if ($requires) {
             $requires = $this->normalizeRequirements($requires);
             $result = array();
+            $io = $this->getIO();
 
             foreach ($requires as $requirement) {
                 if (!isset($requirement['version'])) {
                     // determine the best version automatically
-                    $version = $this->findBestVersionForPackage($input, $requirement['name']);
+                    $version = $this->findBestVersionForPackage($input, $requirement['name'], $phpVersion);
                     $requirement['version'] = $version;
 
-                    $this->getIO()->writeError(sprintf(
+                    $io->writeError(sprintf(
                         'Using version <info>%s</info> for <info>%s</info>',
                         $requirement['version'],
                         $requirement['name']
@@ -329,7 +347,9 @@ EOT
             return $result;
         }
 
-        while (null !== $package = $dialog->ask($output, $prompt)) {
+        $versionParser = new VersionParser();
+        $io = $this->getIO();
+        while (null !== $package = $io->ask('Search for a package: ')) {
             $matches = $this->findPackages($package);
 
             if (count($matches)) {
@@ -345,34 +365,49 @@ EOT
 
                 // no match, prompt which to pick
                 if (!$exactMatch) {
-                    $this->getIO()->writeError(array(
+                    $io->writeError(array(
                         '',
                         sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
-                        ''
+                        '',
                     ));
 
-                    $this->getIO()->writeError($choices);
-                    $this->getIO()->writeError('');
+                    $io->writeError($choices);
+                    $io->writeError('');
 
-                    $validator = function ($selection) use ($matches) {
+                    $validator = function ($selection) use ($matches, $versionParser) {
                         if ('' === $selection) {
                             return false;
                         }
 
-                        if (!is_numeric($selection) && preg_match('{^\s*(\S+)\s+(\S.*)\s*$}', $selection, $matches)) {
-                            return $matches[1].' '.$matches[2];
+                        if (is_numeric($selection) && isset($matches[(int) $selection])) {
+                            $package = $matches[(int) $selection];
+
+                            return $package['name'];
                         }
 
-                        if (!isset($matches[(int) $selection])) {
-                            throw new \Exception('Not a valid selection');
+                        if (preg_match('{^\s*(?P<name>[\S/]+)(?:\s+(?P<version>\S+))?\s*$}', $selection, $packageMatches)) {
+                            if (isset($packageMatches['version'])) {
+                                // parsing `acme/example ~2.3`
+
+                                // validate version constraint
+                                $versionParser->parseConstraints($packageMatches['version']);
+
+                                return $packageMatches['name'].' '.$packageMatches['version'];
+                            }
+
+                            // parsing `acme/example`
+                            return $packageMatches['name'];
                         }
 
-                        $package = $matches[(int) $selection];
-
-                        return $package['name'];
+                        throw new \Exception('Not a valid selection');
                     };
 
-                    $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or the complete package name if it is not listed', false, ':'), $validator, 3);
+                    $package = $io->askAndValidate(
+                        'Enter package # to add, or the complete package name if it is not listed: ',
+                        $validator,
+                        3,
+                        false
+                    );
                 }
 
                 // no constraint yet, determine the best version automatically
@@ -383,16 +418,17 @@ EOT
                         return $input ?: false;
                     };
 
-                    $constraint = $dialog->askAndValidate(
-                        $output,
-                        $dialog->getQuestion('Enter the version constraint to require (or leave blank to use the latest version)', false, ':'),
+                    $constraint = $io->askAndValidate(
+                        'Enter the version constraint to require (or leave blank to use the latest version): ',
                         $validator,
-                        3)
-                    ;
-                    if (false === $constraint) {
-                        $constraint = $this->findBestVersionForPackage($input, $package);
+                        3,
+                        false
+                    );
 
-                        $this->getIO()->writeError(sprintf(
+                    if (false === $constraint) {
+                        $constraint = $this->findBestVersionForPackage($input, $package, $phpVersion);
+
+                        $io->writeError(sprintf(
                             'Using version <info>%s</info> for <info>%s</info>',
                             $constraint,
                             $package
@@ -515,7 +551,7 @@ EOT
         }
 
         // php <5.3.3 has a very broken email validator, so bypass checks
-        if (version_compare(PHP_VERSION, '5.3.3', '<')) {
+        if (PHP_VERSION_ID < 50303) {
             return true;
         }
 
@@ -555,14 +591,15 @@ EOT
      *
      * @param  InputInterface            $input
      * @param  string                    $name
-     * @return string
+     * @param  string                    $phpVersion
      * @throws \InvalidArgumentException
+     * @return string
      */
-    private function findBestVersionForPackage(InputInterface $input, $name)
+    private function findBestVersionForPackage(InputInterface $input, $name, $phpVersion)
     {
         // find the latest version allowed in this pool
         $versionSelector = new VersionSelector($this->getPool($input));
-        $package = $versionSelector->findBestCandidate($name);
+        $package = $versionSelector->findBestCandidate($name, null, $phpVersion);
 
         if (!$package) {
             throw new \InvalidArgumentException(sprintf(

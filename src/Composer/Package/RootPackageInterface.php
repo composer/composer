@@ -71,4 +71,65 @@ interface RootPackageInterface extends CompletePackageInterface
      * @param array $devRequires A set of package links
      */
     public function setDevRequires(array $devRequires);
+
+    /**
+     * Set the conflicting packages
+     *
+     * @param array $conflicts A set of package links
+     */
+    public function setConflicts(array $conflicts);
+
+    /**
+     * Set the provided virtual packages
+     *
+     * @param array $provides A set of package links
+     */
+    public function setProvides(array $provides);
+
+    /**
+     * Set the packages this one replaces
+     *
+     * @param array $replaces A set of package links
+     */
+    public function setReplaces(array $replaces);
+
+    /**
+     * Set the repositories
+     *
+     * @param array $repositories
+     */
+    public function setRepositories($repositories);
+
+    /**
+     * Set the autoload mapping
+     *
+     * @param array $autoload Mapping of autoloading rules
+     */
+    public function setAutoload(array $autoload);
+
+    /**
+     * Set the dev autoload mapping
+     *
+     * @param array $devAutoload Mapping of dev autoloading rules
+     */
+    public function setDevAutoload(array $devAutoload);
+
+    /**
+     * Set the stabilityFlags
+     *
+     * @param array $stabilityFlags
+     */
+    public function setStabilityFlags(array $stabilityFlags);
+
+    /**
+     * Set the suggested packages
+     *
+     * @param array $suggests A set of package names/comments
+     */
+    public function setSuggests(array $suggests);
+
+    /**
+     * @param array $extra
+     */
+    public function setExtra(array $extra);
 }

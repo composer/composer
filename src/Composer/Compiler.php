@@ -13,8 +13,10 @@
 namespace Composer;
 
 use Composer\Json\JsonFile;
+use Composer\Spdx\SpdxLicenses;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
+use Seld\PharUtils\Timestamps;
 
 /**
  * The Compiler class compiles composer into a phar
@@ -31,8 +33,8 @@ class Compiler
     /**
      * Compiles composer into a single phar file
      *
-     * @throws \RuntimeException
      * @param  string            $pharFile The full path to the file to create
+     * @throws \RuntimeException
      */
     public function compile($pharFile = 'composer.phar')
     {
@@ -51,9 +53,8 @@ class Compiler
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
 
-        $date = new \DateTime(trim($process->getOutput()));
-        $date->setTimezone(new \DateTimeZone('UTC'));
-        $this->versionDate = $date->format('Y-m-d H:i:s');
+        $this->versionDate = new \DateTime(trim($process->getOutput()));
+        $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
         $process = new Process('git describe --tags --exact-match HEAD');
         if ($process->run() == 0) {
@@ -73,6 +74,10 @@ class Compiler
 
         $phar->startBuffering();
 
+        $finderSort = function ($a, $b) {
+            return strcmp(strtr($a->getRealPath(), '\\', '/'), strtr($b->getRealPath(), '\\', '/'));
+        };
+
         $finder = new Finder();
         $finder->files()
             ->ignoreVCS(true)
@@ -80,6 +85,7 @@ class Compiler
             ->notName('Compiler.php')
             ->notName('ClassLoader.php')
             ->in(__DIR__.'/..')
+            ->sort($finderSort)
         ;
 
         foreach ($finder as $file) {
@@ -90,13 +96,15 @@ class Compiler
         $finder = new Finder();
         $finder->files()
             ->name('*.json')
-            ->in(__DIR__ . '/../../res')
+            ->in(__DIR__.'/../../res')
+            ->in(SpdxLicenses::getResourcesDir())
+            ->sort($finderSort)
         ;
 
         foreach ($finder as $file) {
             $this->addFile($phar, $file, false);
         }
-        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/../../src/Composer/IO/hiddeninput.exe'), false);
+        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/../../vendor/seld/cli-prompt/res/hiddeninput.exe'), false);
 
         $finder = new Finder();
         $finder->files()
@@ -108,7 +116,11 @@ class Compiler
             ->exclude('docs')
             ->in(__DIR__.'/../../vendor/symfony/')
             ->in(__DIR__.'/../../vendor/seld/jsonlint/')
+            ->in(__DIR__.'/../../vendor/seld/cli-prompt/')
             ->in(__DIR__.'/../../vendor/justinrainbow/json-schema/')
+            ->in(__DIR__.'/../../vendor/composer/spdx-licenses/')
+            ->in(__DIR__.'/../../vendor/composer/semver/')
+            ->sort($finderSort)
         ;
 
         foreach ($finder as $file) {
@@ -137,6 +149,11 @@ class Compiler
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../LICENSE'), false);
 
         unset($phar);
+
+        // re-sign the phar with reproducible timestamp / signature
+        $util = new Timestamps($pharFile);
+        $util->updateTimestamps($this->versionDate);
+        $util->save($pharFile, \Phar::SHA1);
     }
 
     private function addFile($phar, $file, $strip = true)
@@ -153,7 +170,7 @@ class Compiler
         if ($path === 'src/Composer/Composer.php') {
             $content = str_replace('@package_version@', $this->version, $content);
             $content = str_replace('@package_branch_alias_version@', $this->branchAliasVersion, $content);
-            $content = str_replace('@release_date@', $this->versionDate, $content);
+            $content = str_replace('@release_date@', $this->versionDate->format('Y-m-d H:i:s'), $content);
         }
 
         $phar->addFromString($path, $content);
@@ -229,9 +246,9 @@ Phar::mapPhar('composer.phar');
 
 EOF;
 
-        // add warning once the phar is older than 30 days
+        // add warning once the phar is older than 60 days
         if (preg_match('{^[a-f0-9]+$}', $this->version)) {
-            $warningTime = time() + 30*86400;
+            $warningTime = $this->versionDate->format('U') + 60 * 86400;
             $stub .= "define('COMPOSER_DEV_WARNING_TIME', $warningTime);\n";
         }
 

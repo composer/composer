@@ -52,11 +52,11 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         return array(
             array(
                 $a = array('http' => array('follow_location' => 1, 'max_redirects' => 20)), array(),
-                array('options' => $a), array()
+                array('options' => $a), array(),
             ),
             array(
                 $a = array('http' => array('method' => 'GET', 'max_redirects' => 20, 'follow_location' => 1)), array('http' => array('method' => 'GET')),
-                array('options' => $a, 'notification' => $f = function () {}), array('notification' => $f)
+                array('options' => $a, 'notification' => $f = function () {}), array('notification' => $f),
             ),
         );
     }
@@ -143,10 +143,10 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
                 'follow_location' => 1,
             ), 'ssl' => array(
                 'SNI_enabled' => true,
-                'SNI_server_name' => 'example.org'
-            )
+                'SNI_server_name' => 'example.org',
+            ),
         );
-        if (version_compare(PHP_VERSION, '5.6.0', '>=')) {
+        if (PHP_VERSION_ID >= 50600) {
             unset($expected['ssl']['SNI_server_name']);
         }
         $this->assertEquals($expected, $options);
@@ -173,10 +173,10 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
                 'follow_location' => 1,
             ), 'ssl' => array(
                 'SNI_enabled' => true,
-                'SNI_server_name' => 'example.org'
-            )
+                'SNI_server_name' => 'example.org',
+            ),
         );
-        if (version_compare(PHP_VERSION, '5.6.0', '>=')) {
+        if (PHP_VERSION_ID >= 50600) {
             unset($expected['ssl']['SNI_server_name']);
         }
         $this->assertEquals($expected, $options);
@@ -221,17 +221,17 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $options = array(
             'http' => array(
-                'header' => "X-Foo: bar\r\nContent-Type: application/json\r\nAuthorization: Basic aW52YWxpZA=="
-            )
+                'header' => "X-Foo: bar\r\nContent-Type: application/json\r\nAuthorization: Basic aW52YWxpZA==",
+            ),
         );
         $expectedOptions = array(
             'http' => array(
                 'header' => array(
                     "X-Foo: bar",
                     "Authorization: Basic aW52YWxpZA==",
-                    "Content-Type: application/json"
-                )
-            )
+                    "Content-Type: application/json",
+                ),
+            ),
         );
         $context = StreamContextFactory::getContext('http://example.org', $options);
         $ctxoptions = stream_context_get_options($context);

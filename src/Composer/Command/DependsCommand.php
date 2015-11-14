@@ -81,6 +81,7 @@ EOT
 
         $messages = array();
         $outputPackages = array();
+        $io = $this->getIO();
         foreach ($repo->getPackages() as $package) {
             foreach ($types as $type) {
                 foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
@@ -96,9 +97,9 @@ EOT
 
         if ($messages) {
             sort($messages);
-            $this->getIO()->write($messages);
+            $io->write($messages);
         } else {
-            $this->getIO()->writeError('<info>There is no installed package depending on "'.$needle.'".</info>');
+            $io->writeError('<info>There is no installed package depending on "'.$needle.'".</info>');
         }
     }
 }

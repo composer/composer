@@ -35,7 +35,7 @@
         },
         "version": {
             "type": "string",
-            "description": "Package version, see http://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
+            "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
         },
         "time": {
             "type": "string",
@@ -145,6 +145,11 @@
                     "type": ["string", "boolean"],
                     "description": "What to do after prompting for authentication, one of: true (store), false (do not store) or \"prompt\" (ask every time), defaults to prompt."
                 },
+                "platform": {
+                    "type": "object",
+                    "description": "This is a hash of package name (keys) and version (values) that will be used to mock the platform packages on this machine.",
+                    "additionalProperties": true
+                },
                 "vendor-dir": {
                     "type": "string",
                     "description": "The location where all packages are installed, defaults to \"vendor\"."
@@ -181,6 +186,10 @@
                     "type": ["string", "integer"],
                     "description": "The cache max size for the files cache, defaults to \"300MiB\"."
                 },
+                "bin-compat": {
+                    "enum": ["auto", "full"],
+                    "description": "The compatibility of the binaries, defaults to \"auto\" (automatically guessed) and can be \"full\" (compatible with both Windows and Unix-based systems)."
+                },
                 "discard-changes": {
                     "type": ["string", "boolean"],
                     "description": "The default style of handling dirty updates, defaults to false and can be any of true, false or \"stash\"."
@@ -211,6 +220,14 @@
                 "github-expose-hostname": {
                     "type": "boolean",
                     "description": "Defaults to true. If set to false, the OAuth tokens created to access the github API will have a date instead of the machine hostname."
+                },
+                "archive-format": {
+                    "type": "string",
+                    "description": "The default archiving format when not provided on cli, defaults to \"tar\"."
+                },
+                "archive-dir": {
+                    "type": "string",
+                    "description": "The default archive path when not provided on cli, defaults to \".\"."
                 }
             }
         },
@@ -240,6 +257,10 @@
                 "files": {
                     "type": "array",
                     "description": "This is an array of files that are always required on every request."
+                },
+                "exclude-from-classmap": {
+                    "type": "array",
+                    "description": "This is an array of patterns to exclude from autoload classmap generation. (e.g. \"exclude-from-classmap\": [\"/test/\", \"/tests/\", \"/Tests/\"]"
                 }
             }
         },
@@ -289,7 +310,7 @@
         },
         "prefer-stable": {
             "type": ["boolean"],
-            "description": "If set to true, stable packages will be prefered to dev packages when possible, even if the minimum-stability allows unstable packages."
+            "description": "If set to true, stable packages will be preferred to dev packages when possible, even if the minimum-stability allows unstable packages."
         },
         "bin": {
             "type": ["array"],
@@ -385,17 +406,17 @@
                 },
                 "issues": {
                     "type": "string",
-                    "description": "URL to the Issue Tracker.",
+                    "description": "URL to the issue tracker.",
                     "format": "uri"
                 },
                 "forum": {
                     "type": "string",
-                    "description": "URL to the Forum.",
+                    "description": "URL to the forum.",
                     "format": "uri"
                 },
                 "wiki": {
                     "type": "string",
-                    "description": "URL to the Wiki.",
+                    "description": "URL to the wiki.",
                     "format": "uri"
                 },
                 "irc": {
@@ -407,12 +428,17 @@
                     "type": "string",
                     "description": "URL to browse or download the sources.",
                     "format": "uri"
+                },
+                "docs": {
+                    "type": "string",
+                    "description": "URL to the documentation.",
+                    "format": "uri"
                 }
             }
         },
         "non-feature-branches": {
             "type": ["array"],
-            "description": "A set of string or regex patterns for non-numeric branch names that will not be handles as feature branches.",
+            "description": "A set of string or regex patterns for non-numeric branch names that will not be handled as feature branches.",
             "items": {
                 "type": "string"
             }
