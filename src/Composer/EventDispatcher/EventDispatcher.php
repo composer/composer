@@ -157,8 +157,6 @@ class EventDispatcher
             } elseif ($this->isComposerScript($callable)) {
                 if ($this->io->isVerbose()) {
                     $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable));
-                } else {
-                    $this->io->writeError(sprintf('> %s', $callable));
                 }
                 $scriptName = substr($callable, 1);
                 $return = $this->dispatch($scriptName, new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode()));
@@ -399,7 +397,7 @@ class EventDispatcher
     {
         $eventName = $event->getName();
         if (in_array($eventName, $this->eventStack)) {
-            throw new \RuntimeException(sprintf("Recursive call to '%s' detected", $eventName));
+            throw new \RuntimeException(sprintf("Circular call to script handler '%s' detected", $eventName));
         }
 
         return array_push($this->eventStack, $eventName);
