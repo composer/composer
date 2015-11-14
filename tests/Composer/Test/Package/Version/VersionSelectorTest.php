@@ -103,7 +103,28 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($packages));
 
         $versionSelector = new VersionSelector($pool);
-        $best = $versionSelector->findBestCandidate($packageName, null, null, false);
+        $best = $versionSelector->findBestCandidate($packageName, null, null, 'dev');
+
+        $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
+    }
+
+    public function testHighestVersionMatchingStabilityIsReturned()
+    {
+        $packageName = 'foobar';
+
+        $package1 = $this->createPackage('1.0.0');
+        $package2 = $this->createPackage('1.1.0-beta');
+        $package3 = $this->createPackage('1.2.0-alpha');
+        $packages = array($package1, $package2, $package3);
+
+        $pool = $this->createMockPool();
+        $pool->expects($this->once())
+            ->method('whatProvides')
+            ->with($packageName, null, true)
+            ->will($this->returnValue($packages));
+
+        $versionSelector = new VersionSelector($pool);
+        $best = $versionSelector->findBestCandidate($packageName, null, null, 'beta');
 
         $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }

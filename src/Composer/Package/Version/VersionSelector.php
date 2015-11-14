@@ -13,6 +13,7 @@
 namespace Composer\Package\Version;
 
 use Composer\DependencyResolver\Pool;
+use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
@@ -44,9 +45,10 @@ class VersionSelector
      * @param  string                $packageName
      * @param  string                $targetPackageVersion
      * @param  string                $targetPhpVersion
+     * @param  string                $preferredStability
      * @return PackageInterface|bool
      */
-    public function findBestCandidate($packageName, $targetPackageVersion = null, $targetPhpVersion = null, $preferStable = true)
+    public function findBestCandidate($packageName, $targetPackageVersion = null, $targetPhpVersion = null, $preferredStability = 'stable')
     {
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
         $candidates = $this->pool->whatProvides(strtolower($packageName), $constraint, true);
@@ -65,10 +67,22 @@ class VersionSelector
 
         // select highest version if we have many
         $package = reset($candidates);
+        $minPriority = BasePackage::$stabilities[$preferredStability];
         foreach ($candidates as $candidate) {
-            if ($preferStable && $package->getStabilityPriority() < $candidate->getStabilityPriority()) {
+            $candidatePriority = $candidate->getStabilityPriority();
+            $currentPriority = $package->getStabilityPriority();
+
+            // candidate is less stable than our preferred stability, and we have a package that is more stable than it, so we skip it
+            if ($minPriority < $candidatePriority && $currentPriority < $candidatePriority) {
                 continue;
             }
+            // candidate is more stable than our preferred stability, and current package is less stable than preferred stability, then we select the candidate always
+            if ($minPriority >= $candidatePriority && $minPriority < $currentPriority) {
+                $package = $candidate;
+                continue;
+            }
+
+            // select highest version of the two
             if (version_compare($package->getVersion(), $candidate->getVersion(), '<')) {
                 $package = $candidate;
             }
