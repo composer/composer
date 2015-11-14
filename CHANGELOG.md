@@ -1,8 +1,9 @@
-### [1.0.0-alpha11] - 2015-10-xx
+### [1.0.0-alpha11] - 2015-11-14
 
   * Added config.platform to let you specify what your target environment looks like and make sure you do not inadvertently install dependencies that would break it
   * Added `exclude-from-classmap` in the autoload config that lets you ignore sub-paths of classmapped directories, or psr-0/4 directories when building optimized autoloaders
   * Added `path` repository type to install/symlink packages from local paths
+  * Added possibility to reference script handlers from within other handlers using @script-name to reduce duplication
   * Added `suggests` command to show what packages are suggested, use -v to see more details
   * Added `content-hash` inside the composer.lock to restrict the warnings about outdated lock file to some specific changes in the composer.json file
   * Added `archive-format` and `archive-dir` config options to specify default values for the archive command
