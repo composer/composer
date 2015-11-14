@@ -56,10 +56,49 @@ class Locker
         $this->repositoryManager = $repositoryManager;
         $this->installationManager = $installationManager;
         $this->hash = md5($composerFileContents);
-        $this->contentHash = $this->getContentHash($composerFileContents);
+        $this->contentHash = self::getContentHash($composerFileContents);
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
         $this->process = new ProcessExecutor($io);
+    }
+
+    /**
+     * Returns the md5 hash of the sorted content of the composer file.
+     *
+     * @param string $composerFileContents The contents of the composer file.
+     *
+     * @return string
+     */
+    public static function getContentHash($composerFileContents)
+    {
+        $content = json_decode($composerFileContents, true);
+
+        $relevantKeys = array(
+            'name',
+            'version',
+            'require',
+            'require-dev',
+            'conflict',
+            'replace',
+            'provide',
+            'minimum-stability',
+            'prefer-stable',
+            'repositories',
+            'extra',
+        );
+
+        $relevantContent = array();
+
+        foreach (array_intersect($relevantKeys, array_keys($content)) as $key) {
+            $relevantContent[$key] = $content[$key];
+        }
+        if (isset($content['config']['platform'])) {
+            $relevantContent['config']['platform'] = $content['config']['platform'];
+        }
+
+        ksort($relevantContent);
+
+        return md5(json_encode($relevantContent));
     }
 
     /**
@@ -389,44 +428,5 @@ class Locker
         }
 
         return $datetime ? $datetime->format('Y-m-d H:i:s') : null;
-    }
-
-    /**
-     * Returns the md5 hash of the sorted content of the composer file.
-     *
-     * @param string $composerFileContents The contents of the composer file.
-     *
-     * @return string
-     */
-    private function getContentHash($composerFileContents)
-    {
-        $content = json_decode($composerFileContents, true);
-
-        $relevantKeys = array(
-            'name',
-            'version',
-            'require',
-            'require-dev',
-            'conflict',
-            'replace',
-            'provide',
-            'minimum-stability',
-            'prefer-stable',
-            'repositories',
-            'extra',
-        );
-
-        $relevantContent = array();
-
-        foreach (array_intersect($relevantKeys, array_keys($content)) as $key) {
-            $relevantContent[$key] = $content[$key];
-        }
-        if (isset($content['config']['platform'])) {
-            $relevantContent['config']['platform'] = $content['config']['platform'];
-        }
-
-        ksort($relevantContent);
-
-        return md5(json_encode($relevantContent));
     }
 }

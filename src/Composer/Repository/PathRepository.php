@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Locker;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
 use Composer\Util\ProcessExecutor;
@@ -122,7 +123,7 @@ class PathRepository extends ArrayRepository
             if (is_dir($path.'/.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
                 $package['dist']['reference'] = trim($output);
             } else {
-                $package['dist']['reference'] = sha1($json);
+                $package['dist']['reference'] = Locker::getContentHash($json);
             }
 
             $package = $this->loader->load($package);
