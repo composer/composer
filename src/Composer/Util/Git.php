@@ -80,16 +80,15 @@ class Git
             $this->throwException('Failed to clone ' . self::sanitizeUrl($url) .' via '.implode(', ', $protocols).' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
         }
 
-        // if we have a private github/gitlab url and the ssh protocol is disabled then we skip it and directly fallback to https
+        // if we have a private github url and the ssh protocol is disabled then we skip it and directly fallback to https
         $bypassSshForGitHub = preg_match('{^git@'.self::getGitHubDomainsRegex($this->config).':(.+?)\.git$}i', $url) && !in_array('ssh', $protocols, true);
-        $bypassSshForGitLab = preg_match('{^git@'.self::getGitLabDomainsRegex($this->config).':(.+?)\.git$}i', $url) && !in_array('ssh', $protocols, true);
 
         $command = call_user_func($commandCallable, $url);
 
-        if ($bypassSshForGitHub || $bypassSshForGitLab || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
-            // private github/gitlab repository without git access, try https with auth
+        if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
+            // private github repository without git access, try https with auth
             if (preg_match('{^git@'.self::getGitHubDomainsRegex($this->config).':(.+?)\.git$}i', $url, $match)) {
-   
+
                 if (!$this->io->hasAuthentication($match[1])) {
                     $gitHubUtil = new GitHub($this->io, $this->config, $this->process);
                     $message = 'Cloning failed using an ssh key for authentication, enter your GitHub credentials to access private repos';
@@ -102,24 +101,6 @@ class Git
                 if ($this->io->hasAuthentication($match[1])) {
                     $auth = $this->io->getAuthentication($match[1]);
                     $url = 'https://'.rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@'.$match[1].'/'.$match[2].'.git';
-                    $command = call_user_func($commandCallable, $url);
-                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
-                        return;
-                    }
-                }
-            } elseif (preg_match('{^git@'.self::getGitLabDomainsRegex($this->config).':(.+?)\.git$}i', $url, $match)) {
-                if (!$this->io->hasAuthentication($match[1])) {
-                    $gitLabUtil = new GitLab($this->io, $this->config, $this->process);
-                    $message = 'Cloning failed using an ssh key for authentication, enter your GitHub credentials to access private repos';
-
-                    if (!$gitLabUtil->authorizeOAuth($match[1]) && $this->io->isInteractive()) {
-                        $gitLabUtil->authorizeOAuthInteractively($match[1], $message);
-                    }
-                }
-
-                if ($this->io->hasAuthentication($match[1])) {
-                    $auth = $this->io->getAuthentication($match[1]);
-                    $url = 'http://oauth2:' . rawurlencode($auth['username']) . '@'.$match[1].'/'.$match[2].'.git';
                     $command = call_user_func($commandCallable, $url);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
@@ -223,11 +204,6 @@ class Git
     public static function getGitHubDomainsRegex(Config $config)
     {
         return '('.implode('|', array_map('preg_quote', $config->get('github-domains'))).')';
-    }
-
-    public static function getGitLabDomainsRegex(Config $config)
-    {
-        return '('.implode('|', array_map('preg_quote', $config->get('gitlab-domains'))).')';
     }
 
     public static function sanitizeUrl($message)

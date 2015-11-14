@@ -36,11 +36,20 @@ class GitLabDriverTest extends \PHPUnit_Framework_TestCase
         $this->remoteFilesystem = $this->prophesize('Composer\Util\RemoteFilesystem');
     }
 
-    public function testInitialize()
+    public function getInitializeUrls()
     {
-        $url = 'https://gitlab.com/mygroup/myproject';
-        $apiUrl = 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject';
+        return array(
+            array('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject'),
+            array('http://gitlab.com/mygroup/myproject', 'http://gitlab.com/api/v3/projects/mygroup%2Fmyproject'),
+            array('git@gitlab.com:mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject'),
+        );
+    }
 
+    /**
+     * @dataProvider getInitializeUrls
+     */
+    public function testInitialize($url, $apiUrl)
+    {
         // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
         $projectData = <<<JSON
 {
@@ -74,11 +83,10 @@ JSON;
         return $driver;
     }
 
-    /**
-     * @depends testInitialize
-     */
-    public function testGetDist(GitLabDriver $driver)
+    public function testGetDist()
     {
+        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject');
+
         $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
         $expected = array(
             'type' => 'zip',
@@ -90,11 +98,10 @@ JSON;
         $this->assertEquals($expected, $driver->getDist($reference));
     }
 
-    /**
-     * @depends testInitialize
-     */
-    public function testGetSource(GitLabDriver $driver)
+    public function testGetSource()
     {
+        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject');
+
         $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
         $expected = array(
             'type' => 'git',
@@ -105,11 +112,10 @@ JSON;
         $this->assertEquals($expected, $driver->getSource($reference));
     }
 
-    /**
-     * @depends testInitialize
-     */
-    public function testGetTags(GitLabDriver $driver)
+    public function testGetTags()
     {
+        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject');
+
         $apiUrl = 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject/repository/tags';
 
         // @link http://doc.gitlab.com/ce/api/repositories.html#list-project-repository-tags
@@ -148,11 +154,10 @@ JSON;
         $this->assertEquals($expected, $driver->getTags(), 'Tags are cached');
     }
 
-    /**
-     * @depends testInitialize
-     */
-    public function testGetBranches(GitLabDriver $driver)
+    public function testGetBranches()
     {
+        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject');
+
         $apiUrl = 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject/repository/branches';
 
         // @link http://doc.gitlab.com/ce/api/repositories.html#list-project-repository-branches
@@ -207,7 +212,8 @@ JSON;
             array('http://gitlab.com/foo/bar.git', true),
             array('http://gitlab.com/foo/bar.baz.git', true),
             array('https://gitlab.com/foo/bar', extension_loaded('openssl')), // Platform requirement
-            array('git@gitlab.com:foo/bar.git', false),
+            array('git@gitlab.com:foo/bar.git', extension_loaded('openssl')),
+            array('git@example.com:foo/bar.git', false),
             array('http://example.com/foo/bar', false),
         );
     }

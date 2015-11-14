@@ -70,7 +70,7 @@ class GitLabTest extends \PHPUnit_Framework_TestCase
 
         $gitLab = new GitLab($io, $config, null, $rfs);
 
-        $this->assertTrue($gitLab->authorizeOAuthInteractively($this->origin, $this->message));
+        $this->assertTrue($gitLab->authorizeOAuthInteractively('http', $this->origin, $this->message));
     }
 
     /**
@@ -109,7 +109,7 @@ class GitLabTest extends \PHPUnit_Framework_TestCase
 
         $gitLab = new GitLab($io, $config, null, $rfs);
 
-        $gitLab->authorizeOAuthInteractively($this->origin);
+        $gitLab->authorizeOAuthInteractively('https', $this->origin);
     }
 
     private function getIOMock()

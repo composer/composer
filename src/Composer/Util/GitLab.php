@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Roshan Gautam <roshan.gautam@hotmail.com>
- *     
+ *
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -77,7 +77,7 @@ class GitLab
      *
      * @return bool true on success
      */
-    public function authorizeOAuthInteractively($originUrl, $message = null)
+    public function authorizeOAuthInteractively($scheme, $originUrl, $message = null)
     {
         if ($message) {
             $this->io->writeError($message);
@@ -90,7 +90,7 @@ class GitLab
 
         while ($attemptCounter++ < 5) {
             try {
-                $response = $this->createToken($originUrl);
+                $response = $this->createToken($scheme, $originUrl);
             } catch (TransportException $e) {
                 // 401 is bad credentials,
                 // 403 is max login attempts exceeded
@@ -101,7 +101,7 @@ class GitLab
                         $this->io->writeError('Maximum number of login attempts exceeded. Please try again later.');
                     }
 
-                    $this->io->writeError('You can also manually create a personal token at '.$originUrl.'/profile/applications');
+                    $this->io->writeError('You can also manually create a personal token at '.$scheme.'://'.$originUrl.'/profile/applications');
                     $this->io->writeError('Add it using "composer config gitlab-oauth.'.$originUrl.' <token>"');
 
                     continue;
@@ -121,7 +121,7 @@ class GitLab
         throw new \RuntimeException('Invalid GitLab credentials 5 times in a row, aborting.');
     }
 
-    private function createToken($originUrl)
+    private function createToken($scheme, $originUrl)
     {
         $username = $this->io->ask('Username: ');
         $password = $this->io->askAndHideAnswer('Password: ');
@@ -143,7 +143,7 @@ class GitLab
             ),
         );
 
-        $json = $this->remoteFilesystem->getContents($originUrl, 'http://'.$apiUrl.'/oauth/token', false, $options);
+        $json = $this->remoteFilesystem->getContents($originUrl, $scheme.'://'.$apiUrl.'/oauth/token', false, $options);
 
         $this->io->writeError('Token successfully created');
 

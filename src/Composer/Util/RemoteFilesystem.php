@@ -124,6 +124,7 @@ class RemoteFilesystem
             $originUrl = 'github.com';
         }
 
+        $this->scheme = parse_url($fileUrl, PHP_URL_SCHEME);
         $this->bytesMax = 0;
         $this->originUrl = $originUrl;
         $this->fileUrl = $fileUrl;
@@ -415,7 +416,7 @@ class RemoteFilesystem
             $message = "\n".'Could not fetch '.$this->fileUrl.', enter your ' . $this->originUrl . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
             if (!$gitLabUtil->authorizeOAuth($this->originUrl)
-                && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively($this->originUrl, $message))
+                && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, $message))
             ) {
                 throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }

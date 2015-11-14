@@ -63,20 +63,20 @@ class GitLabDriver extends VcsDriver
 
     /**
      * Extracts information from the repository url.
-     * SSH urls are not supported in order to know the HTTP sheme to use.
+     * SSH urls uses https by default.
      *
      * {@inheritDoc}
      */
     public function initialize()
     {
-        if (!preg_match('#^(https?)://([^/]+)/([^/]+)/([^/]+)(?:\.git|/)?$#', $this->url, $match)) {
+        if (!preg_match('#^((https?)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $this->url, $match)) {
             throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
         }
 
-        $this->scheme = $match[1];
-        $this->originUrl = $match[2];
-        $this->owner = $match[3];
-        $this->repository = preg_replace('#(\.git)$#', '', $match[4]);
+        $this->scheme = !empty($match[2]) ? $match[2] : 'https';
+        $this->originUrl = !empty($match[3]) ? $match[3] : $match[4];
+        $this->owner = $match[5];
+        $this->repository = preg_replace('#(\.git)$#', '', $match[6]);
 
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
@@ -343,12 +343,12 @@ class GitLabDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match('#^(https?)://([^/]+)/([^/]+)/([^/]+)(?:\.git|/)?$#', $url, $match)) {
+        if (!preg_match('#^((https?)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $url, $match)) {
             return false;
         }
 
-        $scheme = $match[1];
-        $originUrl = $match[2];
+        $scheme = !empty($match[2]) ? $match[2] : 'https';
+        $originUrl = !empty($match[3]) ? $match[3] : $match[4];
 
         if (!in_array($originUrl, (array) $config->get('gitlab-domains'))) {
             return false;
