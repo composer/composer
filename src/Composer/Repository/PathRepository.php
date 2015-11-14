@@ -121,6 +121,8 @@ class PathRepository extends ArrayRepository
             }
             if (is_dir($path.'/.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
                 $package['dist']['reference'] = trim($output);
+            } else {
+                $package['dist']['reference'] = sha1($json);
             }
 
             $package = $this->loader->load($package);
