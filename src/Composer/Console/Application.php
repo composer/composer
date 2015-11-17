@@ -56,6 +56,8 @@ class Application extends BaseApplication
 
     public function __construct()
     {
+        static $shutdownRegistered = false;
+        
         if (function_exists('ini_set') && extension_loaded('xdebug')) {
             ini_set('xdebug.show_exception_trace', false);
             ini_set('xdebug.scream', false);
@@ -63,6 +65,20 @@ class Application extends BaseApplication
 
         if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
             date_default_timezone_set(@date_default_timezone_get());
+        }
+        
+        if (!$shutdownRegistered) {
+            $shutdownRegistered = true;
+            
+            register_shutdown_function(function() {
+                $lastError = error_get_last();
+               
+                if ($lastError && $lastError['message'] &&
+                   (strpos($lastError['message'], 'Allowed memory') !== false /*Zend PHP out of memory error*/ ||
+                    strpos($lastError['message'], 'exceeded memory') !== false /*HHVM out of memory errors*/)) {
+                    echo "\n". 'Check https://getcomposer.org/doc/articles/troubleshooting.md#memory-limit-errors for more info on how to handle out of memory errors.';
+                }
+            });
         }
 
         parent::__construct('Composer', Composer::VERSION);
