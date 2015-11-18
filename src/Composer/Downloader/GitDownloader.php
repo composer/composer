@@ -25,6 +25,7 @@ use Composer\Config;
 class GitDownloader extends VcsDownloader
 {
     private $hasStashedChanges = false;
+    private $hasDiscardedChanges = false;
     private $gitUtil;
 
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
@@ -204,6 +205,8 @@ class GitDownloader extends VcsDownloader
                 throw new \RuntimeException("Failed to apply stashed changes:\n\n".$this->process->getErrorOutput());
             }
         }
+
+        $this->hasDiscardedChanges = false;
     }
 
     /**
@@ -218,8 +221,7 @@ class GitDownloader extends VcsDownloader
      */
     protected function updateToCommit($path, $reference, $branch, $date)
     {
-        $discardChanges = $this->config->get('discard-changes');
-        $force = true === $discardChanges || 'stash' === $discardChanges ? '-f ' : '';
+        $force = $this->hasDiscardedChanges || $this->hasStashedChanges ? '-f ' : '';
 
         // This uses the "--" sequence to separate branch from file parameters.
         //
@@ -317,6 +319,8 @@ class GitDownloader extends VcsDownloader
         if (0 !== $this->process->execute('git reset --hard', $output, $path)) {
             throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
         }
+
+        $this->hasDiscardedChanges = true;
     }
 
     /**
