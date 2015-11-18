@@ -312,7 +312,7 @@ EOT
         $latest = trim($this->rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/version', false));
 
         if (Composer::VERSION !== $latest && Composer::VERSION !== '@package_version@') {
-            return '<comment>You are not running the latest version</comment>';
+            return '<comment>You are not running the latest version, run `composer self-update` to update</comment>';
         }
 
         return true;
