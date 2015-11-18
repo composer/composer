@@ -639,9 +639,12 @@ file, you can use the following configuration:
 }
 ```
 
-The local package will be symlinked if possible, in which case the output in the console will read `Symlinked from ../../packages/my-package`. If symlinking is _not_ possible the package will be copied. In that case, the console will output `Mirrored from ../../packages/my-package`.
+The local package will be symlinked if possible, in which case the output in 
+the console will read `Symlinked from ../../packages/my-package`. If symlinking 
+is _not_ possible the package will be copied. In that case, the console will 
+output `Mirrored from ../../packages/my-package`.
 
-Instead of using a relative path, and absolute paths can also be used.
+Instead of using a relative path, an absolute path can also be used.
 
 > **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
 > For details, see the [PHP glob function](http://php.net/glob).
