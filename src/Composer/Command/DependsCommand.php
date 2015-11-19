@@ -13,6 +13,8 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Pool;
+use Composer\Repository\ArrayRepository;
+use Composer\Repository\CompositeRepository;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
@@ -57,7 +59,10 @@ EOT
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'depends', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
-        $repo = $composer->getRepositoryManager()->getLocalRepository();
+        $repo = new CompositeRepository(array(
+            new ArrayRepository(array($composer->getPackage())),
+            $composer->getRepositoryManager()->getLocalRepository(),
+        ));
         $needle = $input->getArgument('package');
 
         $pool = new Pool();
