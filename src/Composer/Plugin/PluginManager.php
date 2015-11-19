@@ -76,17 +76,20 @@ class PluginManager
      * Adds a plugin, activates it and registers it with the event dispatcher
      *
      * @param PluginInterface $plugin plugin instance
+     * @param bool            $activate
      */
-    public function addPlugin(PluginInterface $plugin)
+    public function addPlugin(PluginInterface $plugin, $activate = true)
     {
         if ($this->io->isDebug()) {
             $this->io->writeError('Loading plugin '.get_class($plugin));
         }
         $this->plugins[] =  $plugin;
-        $plugin->activate($this->composer, $this->io);
+        if (true === $activate) {
+            $plugin->activate($this->composer, $this->io);
 
-        if ($plugin instanceof EventSubscriberInterface) {
-            $this->composer->getEventDispatcher()->addSubscriber($plugin);
+            if ($plugin instanceof EventSubscriberInterface) {
+                $this->composer->getEventDispatcher()->addSubscriber($plugin);
+            }
         }
     }
 
@@ -98,6 +101,24 @@ class PluginManager
     public function getPlugins()
     {
         return $this->plugins;
+    }
+
+    /**
+     * Detects if has a plugin instance of the given class
+     *
+     * @param string $class
+     *
+     * @return bool
+     */
+    public function hasPlugin($class)
+    {
+        foreach ($this->plugins as $plugin) {
+            if ($class === get_class($plugin)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -240,7 +261,8 @@ class PluginManager
         $classLoader->register();
 
         foreach ($classes as $class) {
-            if (class_exists($class, false)) {
+            // Class MUST exists and MUST NOT already be loaded
+            if (class_exists($class, false) && !$this->hasPlugin($class)) {
                 $code = file_get_contents($classLoader->findFile($class));
                 $code = preg_replace('{^(\s*)class\s+(\S+)}mi', '$1class $2_composer_tmp'.self::$classCounter, $code);
                 eval('?>'.$code);

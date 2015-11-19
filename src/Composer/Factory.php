@@ -191,11 +191,12 @@ class Factory
      *                                                   read from the default filename
      * @param  bool                      $disablePlugins Whether plugins should not be loaded
      * @param  bool                      $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
+     * @param  array                     $plugins        Plugin instances to be set before loading
      * @throws \InvalidArgumentException
      * @throws \UnexpectedValueException
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true)
+    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true, array $plugins = array())
     {
         $cwd = $cwd ?: getcwd();
 
@@ -292,6 +293,9 @@ class Factory
             $composer->setPluginManager($pm);
 
             if (!$disablePlugins) {
+                foreach ($plugins as $plugin) {
+                    $pm->addPlugin($plugin, false);
+                }
                 $pm->loadInstalledPlugins();
             }
 
@@ -479,12 +483,13 @@ class Factory
      * @param  mixed       $config         either a configuration array or a filename to read from, if null it will read from
      *                                     the default filename
      * @param  bool        $disablePlugins Whether plugins should not be loaded
+     * @param  array       $plugins        Plugin instances to be set before loading
      * @return Composer
      */
-    public static function create(IOInterface $io, $config = null, $disablePlugins = false)
+    public static function create(IOInterface $io, $config = null, $disablePlugins = false, array $plugins = array())
     {
         $factory = new static();
 
-        return $factory->createComposer($io, $config, $disablePlugins);
+        return $factory->createComposer($io, $config, $disablePlugins, null, true, $plugins);
     }
 }
