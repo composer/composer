@@ -57,7 +57,7 @@ class Application extends BaseApplication
     public function __construct()
     {
         static $shutdownRegistered = false;
-        
+
         if (function_exists('ini_set') && extension_loaded('xdebug')) {
             ini_set('xdebug.show_exception_trace', false);
             ini_set('xdebug.scream', false);
@@ -66,13 +66,13 @@ class Application extends BaseApplication
         if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
             date_default_timezone_set(@date_default_timezone_get());
         }
-        
+
         if (!$shutdownRegistered) {
             $shutdownRegistered = true;
-            
+
             register_shutdown_function(function() {
                 $lastError = error_get_last();
-               
+
                 if ($lastError && $lastError['message'] &&
                    (strpos($lastError['message'], 'Allowed memory') !== false /*Zend PHP out of memory error*/ ||
                     strpos($lastError['message'], 'exceeded memory') !== false /*HHVM out of memory errors*/)) {
@@ -110,10 +110,10 @@ class Application extends BaseApplication
         if (PHP_VERSION_ID < 50302) {
             $io->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
         }
-        
+
         if (extension_loaded('xdebug')) {
-            $io->write('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>');
-        }        
+            $io->writeError('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>');
+        }
 
         if (defined('COMPOSER_DEV_WARNING_TIME')) {
             $commandName = '';
