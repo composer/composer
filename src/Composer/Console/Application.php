@@ -110,6 +110,10 @@ class Application extends BaseApplication
         if (PHP_VERSION_ID < 50302) {
             $io->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
         }
+        
+        if (extension_loaded('xdebug')) {
+            $io->write('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>');
+        }        
 
         if (defined('COMPOSER_DEV_WARNING_TIME')) {
             $commandName = '';

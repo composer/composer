@@ -131,6 +131,23 @@ Or, you can increase the limit with a command-line argument:
 php -d memory_limit=-1 composer.phar <...>
 ```
 
+## Xdebug impact on Composer
+
+Running Composer console commands while the php extension "xdebug" is loaded reduces speed considerably.
+This is even the case when all "xdebug" related features are disabled per php.ini flags,
+but the php extension itself is loaded into the PHP engine.
+Compared to a cli command run with "xdebug" enabled a speed improvement by a factor of up to 3 is not uncommon.
+
+> **Note:** This is a general issue when running PHP with "xdebug" enabled. You shouldn't
+> load the extension in production like environments per se.
+
+Disable "xdebug" in your `php.ini` (ex. `/etc/php5/cli/php.ini` for Debian-like systems) by
+locating the related `zend_extension` directive and prepending it with `;` (semicolon):
+
+```sh
+;zend_extension = "/path/to/my/xdebug.so"
+```
+
 ## "The system cannot find the path specified" (Windows)
 
 1. Open regedit.
