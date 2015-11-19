@@ -288,12 +288,10 @@ class Factory
 
         if ($fullLoad) {
             $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
-            $pm = $this->createPluginManager($io, $composer, $globalComposer);
+            $pm = $this->createPluginManager($io, $composer, $globalComposer, $disablePlugins);
             $composer->setPluginManager($pm);
 
-            if (!$disablePlugins) {
-                $pm->loadInstalledPlugins();
-            }
+            $pm->loadInstalledPlugins();
 
             // once we have plugins and custom installers we can
             // purge packages from local repos if they have been deleted on the filesystem
@@ -433,11 +431,12 @@ class Factory
      * @param  IOInterface          $io
      * @param  Composer             $composer
      * @param  Composer             $globalComposer
+     * @param  bool                 $disablePlugins
      * @return Plugin\PluginManager
      */
-    protected function createPluginManager(IOInterface $io, Composer $composer, Composer $globalComposer = null)
+    protected function createPluginManager(IOInterface $io, Composer $composer, Composer $globalComposer = null, $disablePlugins = false)
     {
-        return new Plugin\PluginManager($io, $composer, $globalComposer);
+        return new Plugin\PluginManager($io, $composer, $globalComposer, $disablePlugins);
     }
 
     /**
