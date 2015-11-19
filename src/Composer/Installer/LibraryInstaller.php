@@ -134,6 +134,21 @@ class LibraryInstaller implements InstallerInterface
                 @rmdir($packageVendorDir);
             }
         }
+
+        $downloadPath = $this->getInstallPath($package);
+        while (true) {
+            if (is_dir($downloadPath)) {
+                if (!glob($downloadPath.'/*')) {
+                    if (false===@rmdir($downloadPath)) {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                $downloadPath = dirname($downloadPath);
+            }
+        }
     }
 
     /**
@@ -199,7 +214,7 @@ class LibraryInstaller implements InstallerInterface
 
     protected function removeCode(PackageInterface $package)
     {
-        $downloadPath = $this->getPackageBasePath($package);
+        $downloadPath = $this->getInstallPath($package);
         $this->downloadManager->remove($package, $downloadPath);
     }
 
