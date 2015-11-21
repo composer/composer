@@ -65,7 +65,15 @@ class ComposerAutoloaderInitIncludePath
     }
 }
 
-function composerRequireIncludePath($file)
+function composerRequireIncludePath($fileIdentifier, $file)
 {
-    require $file;
+    if (empty($GLOBALS['composerRequiredFiles'])) {
+        $GLOBALS['composerRequiredFiles'] = array();
+    }
+
+    if (empty($GLOBALS['composerRequiredFiles'][$fileIdentifier])) {
+        require $file;
+
+        $GLOBALS['composerRequiredFiles'][$fileIdentifier] = true;
+    }
 }
