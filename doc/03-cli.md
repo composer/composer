@@ -693,4 +693,8 @@ This env var controls the [`discard-changes`](06-config.md#discard-changes) conf
 If set to 1, this env var will make Composer behave as if you passed the
 `--no-interaction` flag to every command. This can be set on build boxes/CI.
 
+### COMPOSER_DISABLE_XDEBUG_WARN
+
+If set to 1, this env disables the warning about having xdebug enabled.
+
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

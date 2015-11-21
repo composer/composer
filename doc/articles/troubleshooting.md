@@ -146,6 +146,9 @@ locating the related `zend_extension` directive and prepending it with `;` (semi
 ;zend_extension = "/path/to/my/xdebug.so"
 ```
 
+If you do not want to disable it and want to get rid of the warning you can also define the
+[COMPOSER_DISABLE_XDEBUG_WARN](../03-cli.md#composer-disable-xdebug-warn) environment variable.
+
 ## "The system cannot find the path specified" (Windows)
 
 1. Open regedit.
