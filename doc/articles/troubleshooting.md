@@ -108,8 +108,6 @@ Don't forget to enable XDebug again after using Composer, if you need it.
 If composer still raises the error, the PHP `memory_limit` should be increased.
 
 > **Note:** Composer internally increases the `memory_limit` to `1G`.
-> If you have memory issues when using composer, please consider [creating
-> an issue ticket](https://github.com/composer/composer/issues) so we can look into it.
 
 To get the current `memory_limit` value, run:
 
