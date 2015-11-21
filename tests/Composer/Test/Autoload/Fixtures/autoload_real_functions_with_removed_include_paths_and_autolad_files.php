@@ -43,8 +43,3 @@ class ComposerAutoloaderInitFilesAutoload
         return $loader;
     }
 }
-
-function composerRequireFilesAutoload($file)
-{
-    require $file;
-}

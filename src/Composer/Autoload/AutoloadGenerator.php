@@ -237,11 +237,6 @@ EOF;
                         if (!is_dir($dir)) {
                             continue;
                         }
-//                        $whitelist = sprintf(
-//                            '{%s/%s.+$}',
-//                            preg_quote($dir),
-//                            ($psrType === 'psr-0' && strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
-//                        );
 
                         $namespaceFilter = $namespace === '' ? null : $namespace;
                         $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespaceFilter, $classMap);
@@ -544,13 +539,6 @@ AUTOLOAD;
 
     protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader)
     {
-        // TODO the class ComposerAutoloaderInit should be revert to a closure
-        // when APC has been fixed:
-        // - https://github.com/composer/composer/issues/959
-        // - https://bugs.php.net/bug.php?id=52144
-        // - https://bugs.php.net/bug.php?id=61576
-        // - https://bugs.php.net/bug.php?id=59298
-
         $file = <<<HEADER
 <?php
 
@@ -634,11 +622,11 @@ INCLUDEPATH;
         }
 
         if ($targetDirLoader) {
-            $file .= <<<REGISTER_AUTOLOAD
+            $file .= <<<REGISTER_TARGET_DIR_AUTOLOAD
         spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'autoload'), true, true);
 
 
-REGISTER_AUTOLOAD;
+REGISTER_TARGET_DIR_AUTOLOAD;
         }
 
         $file .= <<<REGISTER_LOADER
@@ -666,7 +654,8 @@ METHOD_FOOTER;
 
         $file .= $targetDirLoader;
 
-        return $file . <<<FOOTER
+        if ($useIncludeFiles) {
+            return $file . <<<FOOTER
 }
 
 function composerRequire$suffix(\$fileIdentifier, \$file)
@@ -676,6 +665,13 @@ function composerRequire$suffix(\$fileIdentifier, \$file)
 
         \$GLOBALS['__composer_autoload_files'][\$fileIdentifier] = true;
     }
+}
+
+FOOTER;
+
+        }
+
+        return $file . <<<FOOTER
 }
 
 FOOTER;
