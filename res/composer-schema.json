@@ -442,6 +442,10 @@
             "items": {
                 "type": "string"
             }
+        },
+        "abandoned": {
+            "type": ["boolean"],
+            "description": "Indicates whether this package has been abandoned. Defaults to false."
         }
     }
 }

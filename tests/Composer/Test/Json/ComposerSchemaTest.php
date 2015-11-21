@@ -38,6 +38,12 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
         ), $this->check($json));
     }
 
+    public function testOptionalAbandonedProperty()
+    {
+        $json = '{"name": "name", "description": "description", "abandoned": true}';
+        $this->assertTrue($this->check($json));
+    }
+
     public function testMinimumStabilityValues()
     {
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "" }';
