@@ -147,12 +147,6 @@ class RemoteFilesystem
 
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
 
-        if (isset($options['retry-auth-failure'])) {
-            $this->retryAuthFailure = (bool) $options['retry-auth-failure'];
-
-            unset($options['retry-auth-failure']);
-        }
-
         if ($this->io->isDebug()) {
             $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
         }
