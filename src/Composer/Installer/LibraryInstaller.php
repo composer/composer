@@ -18,7 +18,6 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Symlink;
 
 /**
  * Package installation manager.

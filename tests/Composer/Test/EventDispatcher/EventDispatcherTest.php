@@ -145,7 +145,7 @@ class EventDispatcherTest extends TestCase
     public function testDispatcherCanExecuteComposerScriptGroups()
     {
         $process = $this->getMock('Composer\Util\ProcessExecutor');
-            $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $composer = $this->getMock('Composer\Composer'),
                 $io = $this->getMock('Composer\IO\IOInterface'),

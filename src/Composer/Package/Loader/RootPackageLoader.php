@@ -56,9 +56,9 @@ class RootPackageLoader extends ArrayLoader
     }
 
     /**
-     * @param array $config package data
-     * @param string $class FQCN to be instantiated
-     * @param string $cwd cwd of the root package to be used to guess the version if it is not provided
+     * @param  array            $config package data
+     * @param  string           $class  FQCN to be instantiated
+     * @param  string           $cwd    cwd of the root package to be used to guess the version if it is not provided
      * @return PackageInterface
      */
     public function load(array $config, $class = 'Composer\Package\RootPackage', $cwd = null)

@@ -70,7 +70,7 @@ class Application extends BaseApplication
         if (!$shutdownRegistered) {
             $shutdownRegistered = true;
 
-            register_shutdown_function(function() {
+            register_shutdown_function(function () {
                 $lastError = error_get_last();
 
                 if ($lastError && $lastError['message'] &&

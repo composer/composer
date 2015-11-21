@@ -309,7 +309,7 @@ EOT
             ),
             'bin-compat' => array(
                 function ($val) { return in_array($val, array('auto', 'full')); },
-                function ($val) { return $val; }
+                function ($val) { return $val; },
             ),
             'discard-changes' => array(
                 function ($val) { return in_array($val, array('stash', 'true', 'false', '1', '0'), true); },

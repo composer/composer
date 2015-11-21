@@ -32,12 +32,12 @@ class XzDownloader extends ArchiveDownloader
     public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null)
     {
         $this->process = $process ?: new ProcessExecutor($io);
+
         parent::__construct($io, $config, $eventDispatcher, $cache);
     }
 
     protected function extract($file, $path)
     {
-
         $command = 'tar -xJf ' . ProcessExecutor::escape($file) . ' -C ' . ProcessExecutor::escape($path);
 
         if (0 === $this->process->execute($command, $ignoredOutput)) {
@@ -45,8 +45,8 @@ class XzDownloader extends ArchiveDownloader
         }
 
         $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
-        throw new \RuntimeException($processError);
 
+        throw new \RuntimeException($processError);
     }
 
     /**

@@ -57,6 +57,7 @@ class VersionSelector
             $phpConstraint = new Constraint('==', $this->getParser()->normalize($targetPhpVersion));
             $candidates = array_filter($candidates, function ($pkg) use ($phpConstraint) {
                 $reqs = $pkg->getRequires();
+
                 return !isset($reqs['php']) || $reqs['php']->getConstraint()->matches($phpConstraint);
             });
         }

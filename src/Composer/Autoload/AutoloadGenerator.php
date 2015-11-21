@@ -388,7 +388,7 @@ EOF;
             'psr-4' => $psr4,
             'classmap' => $classmap,
             'files' => $files,
-            'exclude-from-classmap' => $exclude
+            'exclude-from-classmap' => $exclude,
         );
     }
 
@@ -668,7 +668,6 @@ function composerRequire$suffix(\$fileIdentifier, \$file)
 }
 
 FOOTER;
-
         }
 
         return $file . <<<FOOTER

@@ -213,6 +213,7 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
     private function createPackage($version)
     {
         $parser = new VersionParser();
+
         return new Package('foo', $parser->normalize($version), $version);
     }
 

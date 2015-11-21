@@ -508,8 +508,8 @@ class Filesystem
     /**
      * Creates a relative symlink from $link to $target
      *
-     * @param string $target The path of the binary file to be symlinked
-     * @param string $link The path where the symlink should be created
+     * @param  string $target The path of the binary file to be symlinked
+     * @param  string $link   The path where the symlink should be created
      * @return bool
      */
     public function relativeSymlink($target, $link)
