@@ -48,6 +48,11 @@ class AutoloadGenerator
      */
     private $classMapAuthoritative = false;
 
+    /**
+     * @var bool
+     */
+    private $runScripts = false;
+
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
@@ -70,15 +75,27 @@ class AutoloadGenerator
         $this->classMapAuthoritative = (boolean) $classMapAuthoritative;
     }
 
+    /**
+     * Set whether to run scripts or not
+     *
+     * @param bool $runScripts
+     */
+    public function setRunScripts($runScripts = true)
+    {
+        $this->runScripts = (boolean) $runScripts;
+    }
+
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
         if ($this->classMapAuthoritative) {
             // Force scanPsr0Packages when classmap is authoritative
             $scanPsr0Packages = true;
         }
-        $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode, array(), array(
-            'optimize' => (bool) $scanPsr0Packages,
-        ));
+        if ($this->runScripts) {
+            $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode, array(), array(
+                'optimize' => (bool) $scanPsr0Packages,
+            ));
+        }
 
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
@@ -277,9 +294,11 @@ EOF;
         $this->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
         $this->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
 
-        $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
-            'optimize' => (bool) $scanPsr0Packages,
-        ));
+        if ($this->runScripts) {
+            $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
+                'optimize' => (bool) $scanPsr0Packages,
+            ));
+        }
     }
 
     private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, array $classMap = array())
