@@ -25,6 +25,7 @@ use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Semver\VersionParser;
+use Seld\JsonLint\JsonParser;
 
 /**
  * Creates a configured instance of composer.
@@ -219,6 +220,14 @@ class Factory
             }
 
             $file->validateSchema(JsonFile::LAX_SCHEMA);
+            $jsonParser = new JsonParser;
+            try {
+                $jsonParser->parse(file_get_contents($localConfig), JsonParser::DETECT_KEY_CONFLICTS);
+            } catch (\Seld\JsonLint\DuplicateKeyException $e) {
+                $details = $e->getDetails();
+                $io->writeError('<warning>Key '.$details['key'].' is a duplicate in '.$localConfig.' at line '.$details['line'].'</warning>');
+            }
+
             $localConfig = $file->read();
         }
 
