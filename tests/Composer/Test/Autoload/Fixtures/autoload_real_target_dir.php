@@ -71,13 +71,9 @@ class ComposerAutoloaderInitTargetDir
 
 function composerRequireTargetDir($fileIdentifier, $file)
 {
-    if (empty($GLOBALS['composerRequiredFiles'])) {
-        $GLOBALS['composerRequiredFiles'] = array();
-    }
-
-    if (empty($GLOBALS['composerRequiredFiles'][$fileIdentifier])) {
+    if (empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
         require $file;
 
-        $GLOBALS['composerRequiredFiles'][$fileIdentifier] = true;
+        $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;
     }
 }

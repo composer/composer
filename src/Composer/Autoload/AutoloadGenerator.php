@@ -476,7 +476,7 @@ EOF;
     {
         $filesCode = '';
         foreach ($files as $fileIdentifier => $functionFile) {
-            $filesCode .= '    ' . $fileIdentifier . ' => '
+            $filesCode .= '    ' . var_export($fileIdentifier, true) . ' => '
                 . $this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile) . ",\n";
         }
 
@@ -671,14 +671,10 @@ METHOD_FOOTER;
 
 function composerRequire$suffix(\$fileIdentifier, \$file)
 {
-    if (empty(\$GLOBALS['composerRequiredFiles'])) {
-        \$GLOBALS['composerRequiredFiles'] = array();
-    }
-
-    if (empty(\$GLOBALS['composerRequiredFiles'][\$fileIdentifier])) {
+    if (empty(\$GLOBALS['__composer_autoload_files'][\$fileIdentifier])) {
         require \$file;
 
-        \$GLOBALS['composerRequiredFiles'][\$fileIdentifier] = true;
+        \$GLOBALS['__composer_autoload_files'][\$fileIdentifier] = true;
     }
 }
 
@@ -752,8 +748,7 @@ FOOTER;
                     $relativePath = empty($installPath) ? (empty($path) ? '.' : $path) : $installPath.'/'.$path;
 
                     if ($type === 'files') {
-                        $autoloads[var_export($this->getFileIdentifier($relativePath), true)]
-                            = $relativePath;
+                        $autoloads[$this->getFileIdentifier($package, $relativePath)] = $relativePath;
                         continue;
                     } elseif ($type === 'classmap') {
                         $autoloads[] = $relativePath;
@@ -768,9 +763,9 @@ FOOTER;
         return $autoloads;
     }
 
-    protected function getFileIdentifier($path)
+    protected function getFileIdentifier(PackageInterface $package, $path)
     {
-        return md5_file($path);
+        return md5($package->getName() . ':' . str_replace("\r\n", "\n", file_get_contents($path)));
     }
 
     /**
