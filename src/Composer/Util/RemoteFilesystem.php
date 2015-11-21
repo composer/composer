@@ -124,6 +124,7 @@ class RemoteFilesystem
             $originUrl = 'github.com';
         }
 
+        $this->scheme = parse_url($fileUrl, PHP_URL_SCHEME);
         $this->bytesMax = 0;
         $this->originUrl = $originUrl;
         $this->fileUrl = $fileUrl;
@@ -146,20 +147,35 @@ class RemoteFilesystem
 
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
 
+        if (isset($options['retry-auth-failure'])) {
+            $this->retryAuthFailure = (bool) $options['retry-auth-failure'];
+
+            unset($options['retry-auth-failure']);
+        }
+
         if ($this->io->isDebug()) {
             $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
         }
+
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
             unset($options['github-token']);
         }
+
+        if (isset($options['gitlab-token'])) {
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['gitlab-token'];
+            unset($options['gitlab-token']);
+        }
+
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
+
         if ($this->degradedMode && substr($fileUrl, 0, 21) === 'http://packagist.org/') {
             // access packagist using the resolved IPv4 instead of the hostname to force IPv4 protocol
             $fileUrl = 'http://' . gethostbyname('packagist.org') . substr($fileUrl, 20);
         }
+
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
@@ -396,6 +412,14 @@ class RemoteFilesystem
             ) {
                 throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
+        } elseif ($this->config && in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
+            $message = "\n".'Could not fetch '.$this->fileUrl.', enter your ' . $this->originUrl . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
+            $gitLabUtil = new GitLab($this->io, $this->config, null);
+            if (!$gitLabUtil->authorizeOAuth($this->originUrl)
+                && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, $message))
+            ) {
+                throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
+            }
         } else {
             // 404s are only handled for github
             if ($httpStatus === 404) {
@@ -463,6 +487,10 @@ class RemoteFilesystem
             $auth = $this->io->getAuthentication($originUrl);
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
                 $options['github-token'] = $auth['username'];
+            } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
+                if($auth['password'] === 'oauth2') {
+                    $headers[] = 'Authorization: Bearer '.$auth['username'];
+                }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;

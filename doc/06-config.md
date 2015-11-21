@@ -141,6 +141,11 @@ used for GitHub Enterprise setups.
 Defaults to `true`. If `false`, the OAuth tokens created to access the
 github API will have a date instead of the machine hostname.
 
+## gitlab-domains
+
+Defaults to `["gitlab.com"]`. A list of domains of GitLab servers.
+This is used if you use the `gitlab` repository type.
+
 ## notify-on-install
 
 Defaults to `true`. Composer allows repositories to define a notification URL,

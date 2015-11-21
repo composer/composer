@@ -44,6 +44,7 @@ class Config
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
         'github-expose-hostname' => true,
+        'gitlab-domains' => array('gitlab.com'),
         'store-auths' => 'prompt',
         'platform' => array(),
         'archive-format' => 'tar',
