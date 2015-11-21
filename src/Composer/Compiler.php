@@ -92,6 +92,7 @@ class Compiler
             $this->addFile($phar, $file);
         }
         $this->addFile($phar, new \SplFileInfo(__DIR__ . '/Autoload/ClassLoader.php'), false);
+        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/Autoload/Automap/Map.php'), false);
 
         $finder = new Finder();
         $finder->files()
@@ -136,6 +137,7 @@ class Compiler
             $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/include_paths.php'));
         }
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/ClassLoader.php'));
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/AutomapMap.php'));
         $this->addComposerBin($phar);
 
         // Stubs
