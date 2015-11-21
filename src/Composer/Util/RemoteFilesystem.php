@@ -488,7 +488,7 @@ class RemoteFilesystem
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
                 $options['github-token'] = $auth['username'];
             } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
-                if($auth['password'] === 'oauth2') {
+                if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
                 }
             } else {

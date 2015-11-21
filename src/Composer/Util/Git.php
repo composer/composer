@@ -88,7 +88,6 @@ class Git
         if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
             // private github repository without git access, try https with auth
             if (preg_match('{^git@'.self::getGitHubDomainsRegex($this->config).':(.+?)\.git$}i', $url, $match)) {
-
                 if (!$this->io->hasAuthentication($match[1])) {
                     $gitHubUtil = new GitHub($this->io, $this->config, $this->process);
                     $message = 'Cloning failed using an ssh key for authentication, enter your GitHub credentials to access private repos';

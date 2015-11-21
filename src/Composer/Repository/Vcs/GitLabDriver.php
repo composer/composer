@@ -19,6 +19,7 @@ use Composer\Json\JsonFile;
 use Composer\Downloader\TransportException;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\GitLab;
+
 /**
  * Driver for GitLab API, use the Git driver for local checkouts.
  *
@@ -260,7 +261,6 @@ class GitLabDriver extends VcsDriver
 
     protected function attemptCloneFallback()
     {
-
         try {
             // If this repository may be private and we
             // cannot ask for authentication credentials (because we
