@@ -651,7 +651,7 @@ METHOD_FOOTER;
 
 function composerRequire$suffix(\$file)
 {
-    require \$file;
+    require_once \$file;
 }
 
 FOOTER;

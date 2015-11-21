@@ -46,5 +46,5 @@ class ComposerAutoloaderInitFilesAutoload
 
 function composerRequireFilesAutoload($file)
 {
-    require $file;
+    require_once $file;
 }
