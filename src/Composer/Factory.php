@@ -271,6 +271,12 @@ class Factory
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
 
+        // force-set the version of the global package if not defined as
+        // guessing it adds no value and only takes time
+        if (!$fullLoad && !isset($localConfig['version'])) {
+            $localConfig['version'] = '1.0.0';
+        }
+
         // load package
         $parser = new VersionParser;
         $guesser = new VersionGuesser($config, new ProcessExecutor($io), $parser);
