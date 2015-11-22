@@ -330,9 +330,9 @@ aliases article](articles/aliases.md).
 `require` and `require-dev` also support references to specific PHP versions
 and PHP extensions your project needs to run successfully.
 
-```json
 Example:
 
+```json
 {
     "require" : {
         "php" : ">=5.3.10",
