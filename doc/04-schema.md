@@ -335,7 +335,7 @@ Example:
 ```json
 {
     "require" : {
-        "php" : ">=5.3.10",
+        "php" : "^5.5 || ^7.0",
         "ext-mbstring": "*"
     }
 }
