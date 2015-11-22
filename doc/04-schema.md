@@ -327,6 +327,20 @@ It is also possible to inline-alias a package constraint so that it matches
 a constraint that it otherwise would not. For more information [see the
 aliases article](articles/aliases.md).
 
+`require` and `require-dev` also support references to specific PHP versions
+and PHP extensions your project needs to run successfully.
+
+```json
+Example:
+
+{
+    "require" : {
+        "php" : ">=5.3.10",
+        "ext-mbstring": "*"
+    }
+}
+```
+
 #### require
 
 Lists packages required by this package. The package will not be installed
