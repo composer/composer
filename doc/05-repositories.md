@@ -550,7 +550,7 @@ repository.
 ### Toran Proxy
 
 [Toran Proxy](https://toranproxy.com/) is a web app much like Packagist but
-providing private package hosting as well as mirroring/proxying of GitHub and 
+providing private package hosting as well as mirroring/proxying of GitHub and
 packagist.org. Check its homepage and the [Satis/Toran Proxy article](articles/handling-private-packages-with-satis.md)
 for more information.
 
@@ -634,14 +634,14 @@ file, you can use the following configuration:
         }
     ],
     "require": {
-        "my/package": "*@dev"
+        "my/package": "*"
     }
 }
 ```
 
-The local package will be symlinked if possible, in which case the output in 
-the console will read `Symlinked from ../../packages/my-package`. If symlinking 
-is _not_ possible the package will be copied. In that case, the console will 
+The local package will be symlinked if possible, in which case the output in
+the console will read `Symlinked from ../../packages/my-package`. If symlinking
+is _not_ possible the package will be copied. In that case, the console will
 output `Mirrored from ../../packages/my-package`.
 
 Instead of using a relative path, an absolute path can also be used.
