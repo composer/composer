@@ -32,12 +32,13 @@ use Composer\Config;
  * @author Benjamin Eberlei <kontakt@beberlei.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class PearRepository extends ArrayRepository
+class PearRepository extends ArrayRepository implements ConfigurableRepositoryInterface
 {
     private $url;
     private $io;
     private $rfs;
     private $versionParser;
+    private $repoConfig;
 
     /** @var string vendor makes additional alias for each channel as {prefix}/{packagename}. It allows smoother
      * package transition to composer-like repositories.
@@ -60,6 +61,12 @@ class PearRepository extends ArrayRepository
         $this->rfs = $rfs ?: new RemoteFilesystem($this->io, $config);
         $this->vendorAlias = isset($repoConfig['vendor-alias']) ? $repoConfig['vendor-alias'] : null;
         $this->versionParser = new VersionParser();
+        $this->repoConfig = $repoConfig;
+    }
+
+    public function getRepoConfig()
+    {
+        return $this->repoConfig;
     }
 
     protected function initialize()

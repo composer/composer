@@ -20,12 +20,13 @@ use Composer\Package\Loader\LoaderInterface;
 /**
  * @author Serge Smertin <serg.smertin@gmail.com>
  */
-class ArtifactRepository extends ArrayRepository
+class ArtifactRepository extends ArrayRepository implements ConfigurableRepositoryInterface
 {
     /** @var LoaderInterface */
     protected $loader;
 
     protected $lookup;
+    protected $repoConfig;
 
     public function __construct(array $repoConfig, IOInterface $io)
     {
@@ -36,6 +37,12 @@ class ArtifactRepository extends ArrayRepository
         $this->loader = new ArrayLoader();
         $this->lookup = $repoConfig['url'];
         $this->io = $io;
+        $this->repoConfig = $repoConfig;
+    }
+
+    public function getRepoConfig()
+    {
+        return $this->repoConfig;
     }
 
     protected function initialize()
