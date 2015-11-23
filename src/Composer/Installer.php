@@ -340,6 +340,7 @@ class Installer
 
                 $this->autoloadGenerator->setDevMode($this->devMode);
                 $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
+                $this->autoloadGenerator->setRunScripts($this->runScripts);
                 $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
             }
 
