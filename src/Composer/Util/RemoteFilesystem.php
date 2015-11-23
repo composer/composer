@@ -449,21 +449,7 @@ class RemoteFilesystem
 
     protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
-        if (defined('HHVM_VERSION')) {
-            $phpVersion = 'HHVM ' . HHVM_VERSION;
-        } else {
-            $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
-        }
-
-        $headers = array(
-            sprintf(
-                'User-Agent: Composer/%s (%s; %s; %s)',
-                Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
-                php_uname('s'),
-                php_uname('r'),
-                $phpVersion
-            ),
-        );
+        $headers = array();
 
         if (extension_loaded('zlib')) {
             $headers[] = 'Accept-Encoding: gzip';

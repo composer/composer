@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use Composer\Composer;
+
 /**
  * Allows the creation of a basic context supporting http proxy
  *
@@ -125,6 +127,22 @@ final class StreamContextFactory
 
         if (isset($options['http']['header'])) {
             $options['http']['header'] = self::fixHttpHeaderField($options['http']['header']);
+        }
+
+        if (defined('HHVM_VERSION')) {
+            $phpVersion = 'HHVM ' . HHVM_VERSION;
+        } else {
+            $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
+        }
+
+        if (!isset($options['http']['header']) || false === strpos(strtolower(implode('', $options['http']['header'])), 'user-agent')) {
+            $options['http']['header'][] = sprintf(
+                'User-Agent: Composer/%s (%s; %s; %s)',
+                Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
+                php_uname('s'),
+                php_uname('r'),
+                $phpVersion
+            );
         }
 
         return stream_context_create($options, $defaultParams);
