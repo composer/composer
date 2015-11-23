@@ -70,7 +70,7 @@ class GitLabDriver extends VcsDriver
      */
     public function initialize()
     {
-        if (!preg_match('#^((https?)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $this->url, $match)) {
+        if (!preg_match('#^((https?)://([0-9a-zA-Z\./]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $this->url, $match)) {
             throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
         }
 

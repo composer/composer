@@ -217,4 +217,14 @@ JSON;
             array('http://example.com/foo/bar', false),
         );
     }
+
+    public function testGitlabSubDirectory()
+    {
+        $url = 'https://mycompany.com/gitlab/mygroup/myproject';
+        $apiUrl = 'https://mycompany.com/gitlab/api/v3/projects/mygroup%2Fmyproject';
+
+        $driver  = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver->initialize();
+        $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
+    }
 }
