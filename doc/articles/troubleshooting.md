@@ -146,6 +146,27 @@ locating the related `zend_extension` directive and prepending it with `;` (semi
 ;zend_extension = "/path/to/my/xdebug.so"
 ```
 
+If you disable this extension and still want it to be added on `php` cli command, you can deal with aliases on *nix systems:
+
+```sh
+# Load xdebug Zend extension with php command
+alias php='php -dzend_extension=xdebug.so'
+# PHPUnit needs xdebug for coverage. In this case, just make an alias with php command prefix.
+alias phpunit='php $(which phpunit)'
+```
+
+With that, all php binaries called directly **will not** have xdebug enabled
+but you will still have it by prefixing them with php command.
+
+Example:
+
+```sh
+# Will NOT have xdebug enabled
+composer update
+# Will have xdebug enabled by alias
+php /usr/local/bin/composer update
+```
+
 If you do not want to disable it and want to get rid of the warning you can also define the
 [COMPOSER_DISABLE_XDEBUG_WARN](../03-cli.md#composer-disable-xdebug-warn) environment variable.
 
