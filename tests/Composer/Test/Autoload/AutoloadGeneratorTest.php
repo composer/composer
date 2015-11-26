@@ -653,7 +653,7 @@ class AutoloadGeneratorTest extends TestCase
     public function testFilesAutoloadOrderByDependencies()
     {
         $package = new Package('a', '1.0', '1.0');
-        $package->setAutoload(array('files' => array('root.php')));
+        $package->setAutoload(array('files' => array('root2.php')));
         $package->setRequires(array(new Link('a', 'z/foo')));
         $package->setRequires(array(new Link('a', 'd/d')));
         $package->setRequires(array(new Link('a', 'e/e')));
@@ -693,7 +693,7 @@ class AutoloadGeneratorTest extends TestCase
         file_put_contents($this->vendorDir . '/c/lorem/testC.php', '<?php function testFilesAutoloadOrderByDependency3() {}');
         file_put_contents($this->vendorDir . '/d/d/testD.php', '<?php function testFilesAutoloadOrderByDependency4() {}');
         file_put_contents($this->vendorDir . '/e/e/testE.php', '<?php function testFilesAutoloadOrderByDependency5() {}');
-        file_put_contents($this->workingDir . '/root.php', '<?php function testFilesAutoloadOrderByDependencyRoot() {}');
+        file_put_contents($this->workingDir . '/root2.php', '<?php function testFilesAutoloadOrderByDependencyRoot() {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'FilesAutoloadOrder');
         $this->assertFileEquals(__DIR__ . '/Fixtures/autoload_functions_by_dependency.php', $this->vendorDir . '/autoload.php');

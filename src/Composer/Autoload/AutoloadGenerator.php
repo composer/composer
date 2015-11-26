@@ -743,7 +743,7 @@ FOOTER;
                     $relativePath = empty($installPath) ? (empty($path) ? '.' : $path) : $installPath.'/'.$path;
 
                     if ($type === 'files') {
-                        $autoloads[$this->getFileIdentifier($package, $relativePath)] = $relativePath;
+                        $autoloads[$this->getFileIdentifier($package, $path)] = $relativePath;
                         continue;
                     } elseif ($type === 'classmap') {
                         $autoloads[] = $relativePath;
@@ -760,7 +760,7 @@ FOOTER;
 
     protected function getFileIdentifier(PackageInterface $package, $path)
     {
-        return md5($package->getName() . ':' . str_replace("\r\n", "\n", file_get_contents($path)));
+        return md5($package->getName() . ':' . $path);
     }
 
     /**

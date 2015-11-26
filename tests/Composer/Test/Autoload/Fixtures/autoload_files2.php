@@ -6,5 +6,5 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'ca64fb7d3f21566080b945f028f30a2e' => $baseDir . '/devfiles/foo.php',
+    'e5e597abc575cc420a44914c612bb1b3' => $baseDir . '/devfiles/foo.php',
 );
