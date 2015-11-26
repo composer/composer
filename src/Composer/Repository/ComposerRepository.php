@@ -31,9 +31,10 @@ use Composer\Semver\Constraint\Constraint;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ComposerRepository extends ArrayRepository
+class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface
 {
     protected $config;
+    protected $repoConfig;
     protected $options;
     protected $url;
     protected $baseUrl;
@@ -90,6 +91,12 @@ class ComposerRepository extends ArrayRepository
         $this->loader = new ArrayLoader();
         $this->rfs = new RemoteFilesystem($this->io, $this->config, $this->options);
         $this->eventDispatcher = $eventDispatcher;
+        $this->repoConfig = $repoConfig;
+    }
+
+    public function getRepoConfig()
+    {
+        return $this->repoConfig;
     }
 
     public function setRootAliases(array $rootAliases)

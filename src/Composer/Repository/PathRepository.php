@@ -49,7 +49,7 @@ use Composer\Util\ProcessExecutor;
  * @author Samuel Roze <samuel.roze@gmail.com>
  * @author Johann Reinke <johann.reinke@gmail.com>
  */
-class PathRepository extends ArrayRepository
+class PathRepository extends ArrayRepository implements ConfigurableRepositoryInterface
 {
     /**
      * @var ArrayLoader
@@ -65,6 +65,11 @@ class PathRepository extends ArrayRepository
      * @var string
      */
     private $url;
+
+    /**
+     * @var array
+     */
+    private $repoConfig;
 
     /**
      * @var ProcessExecutor
@@ -88,8 +93,14 @@ class PathRepository extends ArrayRepository
         $this->url = $repoConfig['url'];
         $this->process = new ProcessExecutor($io);
         $this->versionGuesser = new VersionGuesser($config, $this->process, new VersionParser());
+        $this->repoConfig = $repoConfig;
 
         parent::__construct();
+    }
+
+    public function getRepoConfig()
+    {
+        return $this->repoConfig;
     }
 
     /**
