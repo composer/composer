@@ -224,7 +224,7 @@ following to your `satis.json`:
  * `format`: optional, `zip` (default) or `tar`
  * `prefix-url`: optional, location of the downloads, homepage (from `satis.json`) followed by `directory` by default
  * `skip-dev`: optional, `false` by default, when enabled (`true`) satis will not create downloads for branches
- * `absolute-directory`: optional, a _local_ directory where the dist files are dumped instead of `outpur-dir`/`directory`
+ * `absolute-directory`: optional, a _local_ directory where the dist files are dumped instead of `output-dir`/`directory`
  * `whitelist`: optional, if set as a list of package names, satis will only dump the dist files of these packages
  * `blacklist`: optional, if set as a list of package names, satis will not dump the dist files of these packages
  * `checksum`: optional, `true` by default, when disabled (`false`) satis will not provide the sha1 checksum for the dist files
