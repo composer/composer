@@ -19,6 +19,7 @@ use Composer\Package\CompletePackageInterface;
 use Composer\Semver\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -33,10 +34,12 @@ use Composer\Spdx\SpdxLicenses;
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Jérémy Romey <jeremyFreeAgent>
  */
 class ShowCommand extends Command
 {
     protected $versionParser;
+    protected $colors;
 
     protected function configure()
     {
@@ -53,6 +56,7 @@ class ShowCommand extends Command
                 new InputOption('self', 's', InputOption::VALUE_NONE, 'Show the root package information'),
                 new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
                 new InputOption('path', 'P', InputOption::VALUE_NONE, 'Show package paths'),
+                new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -66,6 +70,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->versionParser = new VersionParser;
+        $this->initStyles($output);
 
         // init repos
         $platformRepo = new PlatformRepository;
@@ -99,6 +104,10 @@ EOT
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
 
+        if ($input->getOption('tree')) {
+            $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
+        }
+
         if ($composer) {
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'show', $input, $output);
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -117,14 +126,21 @@ EOT
                 $versions = array($package->getPrettyVersion() => $package->getVersion());
             }
 
-            $this->printMeta($package, $versions, $installedRepo);
-            $this->printLinks($package, 'requires');
-            $this->printLinks($package, 'devRequires', 'requires (dev)');
-            if ($package->getSuggests()) {
-                $io->write("\n<info>suggests</info>");
-                foreach ($package->getSuggests() as $suggested => $reason) {
-                    $io->write($suggested . ' <comment>' . $reason . '</comment>');
+            if ($input->getOption('tree')) {
+                $this->displayPackageTree($package, $installedRepo, $repos, $output);
+            } else {
+                $this->printMeta($package, $versions, $installedRepo, $repos);
+                $this->printLinks($package, 'requires');
+                $this->printLinks($package, 'devRequires', 'requires (dev)');
+                if ($package->getSuggests()) {
+                    $io->write("\n<info>suggests</info>");
+                    foreach ($package->getSuggests() as $suggested => $reason) {
+                        $io->write($suggested . ' <comment>' . $reason . '</comment>');
+                    }
                 }
+                $this->printLinks($package, 'provides');
+                $this->printLinks($package, 'conflicts');
+                $this->printLinks($package, 'replaces');
             }
             $this->printLinks($package, 'provides');
             $this->printLinks($package, 'conflicts');
@@ -136,6 +152,7 @@ EOT
         // list packages
         $packages = array();
 
+        $allRepos = $repos;
         if ($repos instanceof CompositeRepository) {
             $repos = $repos->getRepositories();
         } elseif (!is_array($repos)) {
@@ -170,7 +187,7 @@ EOT
         }
 
         $tree = !$input->getOption('platform') && !$input->getOption('installed') && !$input->getOption('available');
-        $indent = $tree ? '  ' : '';
+        $indent = $tree && $input->getOption('installed') ? '  ' : '';
         foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
                 if ($tree) {
@@ -206,28 +223,32 @@ EOT
                 $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
                 $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
                 foreach ($packages[$type] as $package) {
-                    if (is_object($package)) {
-                        $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
+                    if ($input->getOption('tree') && $input->getOption('installed')) {
+                        $this->displayPackageTree($package, $installedRepo, $allRepos, $output);
+                    } else {
+                        if (is_object($package)) {
+                            $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
 
-                        if ($writeVersion) {
-                            $output->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
-                        }
-
-                        if ($writeDescription) {
-                            $description = strtok($package->getDescription(), "\r\n");
-                            $remaining = $width - $nameLength - $versionLength - 4;
-                            if (strlen($description) > $remaining) {
-                                $description = substr($description, 0, $remaining - 3) . '...';
+                            if ($writeVersion) {
+                                $output->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
                             }
-                            $output->write(' ' . $description);
+
+                            if ($writeDescription) {
+                                $description = strtok($package->getDescription(), "\r\n");
+                                $remaining = $width - $nameLength - $versionLength - 4;
+                                if (strlen($description) > $remaining) {
+                                    $description = substr($description, 0, $remaining - 3) . '...';
+                                }
+                                $output->write(' ' . $description);
+                            }
+                        } else {
+                            $output->write($indent . $package);
                         }
 
                         if ($writePath) {
                             $path = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
                             $output->write(' ' . $path);
                         }
-                    } else {
-                        $output->write($indent . $package);
                     }
                     $io->write('');
                 }
@@ -413,6 +434,116 @@ EOT
             }
 
             $io->write('<info>license</info>  : ' . $out);
+        }
+    }
+
+    /**
+     * Init styles for tree
+     *
+     * @param  OutputInterface $output
+     */
+    protected function initStyles(OutputInterface $output)
+    {
+        $this->colors = array(
+            'green',
+            'yellow',
+            'blue',
+            'magenta',
+            'cyan',
+        );
+
+        foreach ($this->colors as $color) {
+            $style = new OutputFormatterStyle($color);
+            $output->getFormatter()->setStyle($color, $style);
+        }
+    }
+
+    /**
+     * Display the tree
+     *
+     * @param  PackageInterface|string $package
+     * @param  RepositoryInterface     $installedRepo
+     * @param  RepositoryInterface     $distantRepos
+     * @param  OutputInterface         $output
+     */
+    protected function displayPackageTree($package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, OutputInterface $output)
+    {
+        $packagesInTree = array();
+        $packagesInTree[] = $package;
+
+        if (is_object($package)) {
+            $output->write(sprintf('<info>%s</info>', $package->getPrettyName()));
+            $output->write(' ' . $package->getPrettyVersion());
+            $output->write(' ' . strtok($package->getDescription(), "\r\n"));
+        } else {
+            $output->write(sprintf('<info>%s</info>', $package));
+        }
+        $output->writeln('');
+
+        if (is_object($package)) {
+            $requires = $package->getRequires();
+            $treeBar = '├';
+            $j = 0;
+            $total = count($requires);
+            foreach ($requires as $requireName => $require) {
+                $j++;
+                if ($j == 0) {
+                    $output->writeln($treeBar);
+                }
+                if ($j == $total) {
+                    $treeBar = '└';
+                }
+                $level = 1;
+                $color = $this->colors[$level];
+                $info = sprintf('%s──<%s>%s</%s> %s', $treeBar, $color, $requireName, $color, $require->getPrettyConstraint());
+                $output->writeln($info);
+
+                $treeBar = str_replace('└', ' ', $treeBar);
+
+                $packagesInTree[] = $requireName;
+
+                $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $output, $treeBar, $level + 1);
+            }
+        }
+    }
+
+    /**
+     * Display a package tree
+     *
+     * @param  string                  $name
+     * @param  PackageInterface|string $package
+     * @param  RepositoryInterface     $installedRepo
+     * @param  RepositoryInterface     $distantRepos
+     * @param  array                   $packagesInTree
+     * @param  OutputInterface         $output
+     * @param  string                  $previousTreeBar
+     * @param  integer                 $level
+     */
+    protected function displayTree($name, $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, array $packagesInTree, OutputInterface $output, $previousTreeBar = '├', $level = 1)
+    {
+        $previousTreeBar = str_replace('├', '│', $previousTreeBar);
+        list($package, $versions) = $this->getPackage($installedRepo, $distantRepos, $name, $package->getPrettyConstraint() == 'self.version' ? $package->getConstraint() : $package->getPrettyConstraint());
+        if (is_object($package)) {
+            $requires = $package->getRequires();
+            $treeBar = $previousTreeBar . '  ├';
+            $i = 0;
+            $total = count($requires);
+            foreach ($requires as $requireName => $require) {
+                $i++;
+                if ($i == $total) {
+                    $treeBar = $previousTreeBar . '  └';
+                }
+                $colorIdent = $level % count($this->colors);
+                $color = $this->colors[$colorIdent];
+                $info = sprintf('%s──<%s>%s</%s> %s', $treeBar, $color, $requireName, $color, $require->getPrettyConstraint());
+                $output->writeln($info);
+
+                $treeBar = str_replace('└', ' ', $treeBar);
+                if (!in_array($requireName, $packagesInTree)) {
+                    $packagesInTree[] = $requireName;
+                    $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $output, $treeBar, $level + 1);
+                }
+            }
         }
     }
 }
