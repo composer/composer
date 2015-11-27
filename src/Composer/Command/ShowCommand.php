@@ -489,7 +489,7 @@ EOT
             foreach ($requires as $requireName => $require) {
                 $j++;
                 if ($j == 0) {
-                    $output->writeln($treeBar);
+                    $this->writeTreeLine($treeBar);
                 }
                 if ($j == $total) {
                     $treeBar = '└';
@@ -497,7 +497,7 @@ EOT
                 $level = 1;
                 $color = $this->colors[$level];
                 $info = sprintf('%s──<%s>%s</%s> %s', $treeBar, $color, $requireName, $color, $require->getPrettyConstraint());
-                $output->writeln($info);
+                $this->writeTreeLine($info);
 
                 $treeBar = str_replace('└', ' ', $treeBar);
 
@@ -537,7 +537,7 @@ EOT
                 $colorIdent = $level % count($this->colors);
                 $color = $this->colors[$colorIdent];
                 $info = sprintf('%s──<%s>%s</%s> %s', $treeBar, $color, $requireName, $color, $require->getPrettyConstraint());
-                $output->writeln($info);
+                $this->writeTreeLine($info);
 
                 $treeBar = str_replace('└', ' ', $treeBar);
                 if (!in_array($requireName, $packagesInTree)) {
@@ -546,5 +546,15 @@ EOT
                 }
             }
         }
+    }
+
+    private function writeTreeLine($line)
+    {
+        $io = $this->getIO();
+        if (!$io->isDecorated()) {
+            $line = str_replace(array('└', '├', '──', '│'), array('`-', '|-', '-', '|'), $line);
+        }
+
+        $io->write($line);
     }
 }
