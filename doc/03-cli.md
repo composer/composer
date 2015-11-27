@@ -299,7 +299,7 @@ php composer.phar show monolog/monolog 1.0.2
 * **--installed (-i):** List the packages that are installed.
 * **--platform (-p):** List only platform packages (php & extensions).
 * **--self (-s):** List the root package info.
-* **--tree (-t):** List the dependencies as a tree.
+* **--tree (-t):** List the dependencies as a tree. Only usable when giving a single package name or combined with `-i`.
 
 ## browse / home
 
