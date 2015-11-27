@@ -39,6 +39,11 @@ class PackageRepository extends ArrayRepository
         }
     }
 
+    public function getRepoConfig()
+    {
+        return $this->config;
+    }
+    
     /**
      * Initializes repository (reads file, or remote address).
      */
