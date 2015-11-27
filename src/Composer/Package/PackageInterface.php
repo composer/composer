@@ -220,7 +220,7 @@ interface PackageInterface
      * Returns a set of links to packages which need to be installed before
      * this package can be installed
      *
-     * @return array An array of package links defining required packages
+     * @return Link[] An array of package links defining required packages
      */
     public function getRequires();
 
@@ -228,7 +228,7 @@ interface PackageInterface
      * Returns a set of links to packages which must not be installed at the
      * same time as this package
      *
-     * @return array An array of package links defining conflicting packages
+     * @return Link[] An array of package links defining conflicting packages
      */
     public function getConflicts();
 
@@ -236,7 +236,7 @@ interface PackageInterface
      * Returns a set of links to virtual packages that are provided through
      * this package
      *
-     * @return array An array of package links defining provided packages
+     * @return Link[] An array of package links defining provided packages
      */
     public function getProvides();
 
@@ -244,7 +244,7 @@ interface PackageInterface
      * Returns a set of links to packages which can alternatively be
      * satisfied by installing this package
      *
-     * @return array An array of package links defining replaced packages
+     * @return Link[] An array of package links defining replaced packages
      */
     public function getReplaces();
 
@@ -252,7 +252,7 @@ interface PackageInterface
      * Returns a set of links to packages which are required to develop
      * this package. These are installed if in dev mode.
      *
-     * @return array An array of package links defining packages required for development
+     * @return Link[] An array of package links defining packages required for development
      */
     public function getDevRequires();
 
