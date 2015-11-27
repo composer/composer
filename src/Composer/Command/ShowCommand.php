@@ -152,8 +152,16 @@ EOT
                 return 1;
             }
 
+            $rootPackage = $this->getComposer()->getPackage();
+            $rootRequires = array_map(
+                'strtolower',
+                array_keys(array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()))
+            );
+
             foreach ($installedRepo->getPackages() as $package) {
-                $this->displayPackageTree($package, $installedRepo, $repos, $output);
+                if (in_array($package->getName(), $rootRequires, true)) {
+                    $this->displayPackageTree($package, $installedRepo, $repos, $output);
+                }
             }
 
             return 0;
