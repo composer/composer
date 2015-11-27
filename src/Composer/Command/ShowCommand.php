@@ -148,7 +148,7 @@ EOT
         // show tree view if requested
         if ($input->getOption('tree')) {
             if (!$input->getOption('installed')) {
-                $io->writeError('The --tree (-t) option is only usable in combination with --installed (-t) or by passing a single package name to show');
+                $io->writeError('The --tree (-t) option is only usable in combination with --installed (-i) or by passing a single package name to show');
                 return 1;
             }
 
