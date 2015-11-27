@@ -279,3 +279,10 @@ When searching for packages, satis will attempt to resolve all the required pack
 Therefore, if you are requiring a package from Packagist, you will need to define it in your `satis.json`.
 
 Dev dependencies are packaged only if the `require-dev-dependencies` parameter is set to true.
+
+### Other options
+
+ * `output-dir`: optional, defines where to output the repository files
+   if not provided as an argument when calling the `build` command.
+ * `config`: optional, lets you define all config options from composer, except `archive-format` and `archive-dir` as the configuration is done through [archive](#downloads) instead. See
+   (http://getcomposer.org/doc/04-schema.md#config)
