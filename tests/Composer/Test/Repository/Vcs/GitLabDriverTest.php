@@ -26,6 +26,7 @@ class GitLabDriverTest extends \PHPUnit_Framework_TestCase
         $this->config->merge(array(
             'config' => array(
                 'home' => sys_get_temp_dir().'/composer-test',
+                'gitlab-domains' => array('mycompany.com/gitlab', 'gitlab.com')
             ),
         ));
 
@@ -215,6 +216,7 @@ JSON;
             array('git@gitlab.com:foo/bar.git', extension_loaded('openssl')),
             array('git@example.com:foo/bar.git', false),
             array('http://example.com/foo/bar', false),
+            array('https://mycompany.com/gitlab/mygroup/myproject', true),
         );
     }
 
