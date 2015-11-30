@@ -216,7 +216,8 @@ JSON;
             array('git@gitlab.com:foo/bar.git', extension_loaded('openssl')),
             array('git@example.com:foo/bar.git', false),
             array('http://example.com/foo/bar', false),
-            array('https://mycompany.com/gitlab/mygroup/myproject', true),
+            array('http://mycompany.com/gitlab/mygroup/myproject', true),
+            array('https://mycompany.com/gitlab/mygroup/myproject', extension_loaded('openssl')),
         );
     }
 
