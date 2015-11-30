@@ -62,6 +62,9 @@ class GitLabDriver extends VcsDriver
      */
     protected $gitDriver;
 
+    const URL_REGEX = '#^((https?)://(.*)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#';
+
+
     /**
      * Extracts information from the repository url.
      * SSH urls uses https by default.
@@ -70,7 +73,7 @@ class GitLabDriver extends VcsDriver
      */
     public function initialize()
     {
-        if (!preg_match('#^((https?)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $this->url, $match)) {
+        if (!preg_match(static::URL_REGEX, $this->url, $match)) {
             throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
         }
 
@@ -343,7 +346,7 @@ class GitLabDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match('#^((https?)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $url, $match)) {
+        if (!preg_match(static::URL_REGEX, $url, $match)) {
             return false;
         }
 
