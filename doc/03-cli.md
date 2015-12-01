@@ -342,6 +342,8 @@ symfony/symfony
 
 * **--link-type:** The link types to match on, can be specified multiple
   times.
+* **--with-replaces:** Search for replaced packages too. Works great
+for packages like [`symfony/symfony`](https://packagist.org/packages/symfony/symfony).
 
 ## validate
 

@@ -43,6 +43,7 @@ class DependsCommand extends Command
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::REQUIRED, 'Package to inspect'),
                 new InputOption('link-type', '', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Link types to show (require, require-dev)', array_keys($this->linkTypes)),
+                new InputOption('with-replaces', '', InputOption::VALUE_NONE, 'Search for replaced packages too'),
             ))
             ->setHelp(<<<EOT
 Displays detailed information about where a package is referenced.
@@ -86,6 +87,15 @@ EOT
             return $type;
         }, $input->getOption('link-type'));
 
+        $needles = array($needle);
+        if (true === $input->getOption('with-replaces')) {
+            foreach ($packages as $package) {
+                $needles = array_merge($needles, array_map(function (Link $link) {
+                    return $link->getTarget();
+                }, $package->getReplaces()));
+            }
+        }
+
         $messages = array();
         $outputPackages = array();
         $io = $this->getIO();
@@ -94,10 +104,12 @@ EOT
             foreach ($types as $type) {
                 /** @var Link $link */
                 foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
-                    if ($link->getTarget() === $needle) {
-                        if (!isset($outputPackages[$package->getName()])) {
-                            $messages[] = '<info>'.$package->getPrettyName() . '</info> ' . $linkTypes[$type][1] . ' ' . $needle .' (<info>' . $link->getPrettyConstraint() . '</info>)';
-                            $outputPackages[$package->getName()] = true;
+                    foreach ($needles as $needle) {
+                        if ($link->getTarget() === $needle) {
+                            if (!isset($outputPackages[$package->getName()][$needle])) {
+                                $messages[] = '<info>'.$package->getPrettyName() . '</info> ' . $linkTypes[$type][1] . ' ' . $needle .' (<info>' . $link->getPrettyConstraint() . '</info>)';
+                                $outputPackages[$package->getName()][$needle] = true;
+                            }
                         }
                     }
                 }
