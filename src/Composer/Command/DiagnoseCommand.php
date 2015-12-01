@@ -141,11 +141,11 @@ EOT
     private function checkComposerSchema()
     {
         $validator = new ConfigValidator($this->getIO());
-        list($errors, $publishErrors, $warnings) = $validator->validate(Factory::getComposerFile());
+        list($errors, , $warnings) = $validator->validate(Factory::getComposerFile());
 
-        if ($errors || $publishErrors || $warnings) {
+        if ($errors || $warnings) {
             $messages = array(
-                'error' => array_merge($errors, $publishErrors),
+                'error' => $errors,
                 'warning' => $warnings,
             );
 
