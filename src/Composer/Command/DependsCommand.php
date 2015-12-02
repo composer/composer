@@ -13,6 +13,8 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Pool;
+use Composer\Package\Link;
+use Composer\Package\PackageInterface;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Plugin\CommandEvent;
@@ -87,8 +89,10 @@ EOT
         $messages = array();
         $outputPackages = array();
         $io = $this->getIO();
+        /** @var PackageInterface $package */
         foreach ($repo->getPackages() as $package) {
             foreach ($types as $type) {
+                /** @var Link $link */
                 foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
                     if ($link->getTarget() === $needle) {
                         if (!isset($outputPackages[$package->getName()])) {
