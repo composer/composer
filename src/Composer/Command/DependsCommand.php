@@ -17,6 +17,7 @@ use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Semver\VersionParser;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -41,6 +42,8 @@ class DependsCommand extends Command
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::REQUIRED, 'Package to inspect'),
                 new InputOption('link-type', '', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Link types to show (require, require-dev)', array_keys($this->linkTypes)),
+                new InputOption('match-constraint', '', InputOption::VALUE_REQUIRED, 'Constraint to match', '*'),
+                new InputOption('match-constraint-invert', '', InputOption::VALUE_NONE, 'If constraint match should be inverted'),
             ))
             ->setHelp(<<<EOT
 Displays detailed information about where a package is referenced.
@@ -84,13 +87,17 @@ EOT
             return $type;
         }, $input->getOption('link-type'));
 
+        $versionParser = new VersionParser();
+        $constraint = $versionParser->parseConstraints($input->getOption('match-constraint'));
+        $matchInvert = $input->getOption('match-constraint-invert');
+
         $messages = array();
         $outputPackages = array();
         $io = $this->getIO();
         foreach ($repo->getPackages() as $package) {
             foreach ($types as $type) {
                 foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
-                    if ($link->getTarget() === $needle) {
+                    if ($link->getTarget() === $needle && ($link->getConstraint()->matches($constraint) ? !$matchInvert : $matchInvert)) {
                         if (!isset($outputPackages[$package->getName()])) {
                             $messages[] = '<info>'.$package->getPrettyName() . '</info> ' . $linkTypes[$type][1] . ' ' . $needle .' (<info>' . $link->getPrettyConstraint() . '</info>)';
                             $outputPackages[$package->getName()] = true;
