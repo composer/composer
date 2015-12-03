@@ -90,6 +90,29 @@ Set up a virtual-host that points to that `web/` directory, let's say it is
 `packages.example.org`. Alternatively, with PHP >= 5.4.0, you can use the built-in
 CLI server `php -S localhost:port -t satis-output-dir/` for a temporary solution.
 
+### Partial Updates
+
+You can tell Satis to selectively update only particular packages or process only 
+a repository with a given URL. This cuts down the time it takes to rebuild the 
+`package.json` file and is helpful if you use (custom) webhooks to trigger rebuilds 
+whenever code is pushed into one of your repositories.
+
+To rebuild only particular packages, pass the package names on the command line like
+so:
+```
+php bin/satis build satis.json web/ this/package that/other-package
+```
+
+Note that
+this will still need to pull and scan all of your VCS repositories because any VCS 
+repository might contain (on any branch) one of the selected packages.
+
+If you want to scan only a single repository and update all packages found in it, 
+pass the VCS repository URL as an optional argument: 
+```
+php bin/satis build --repository-url https://only.my/repo.git satis.json web/
+```
+
 ## Usage
 
 In your projects all you need to add now is your own composer repository using
