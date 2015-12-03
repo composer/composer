@@ -308,6 +308,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if ($cacheKey && $this->cache->sha256($cacheKey) === $hash) {
             $packages = json_decode($this->cache->read($cacheKey), true);
         } else {
+            // TODO check if we can do if-modified-since or etag header here and skip the listings
             $packages = $this->fetchFile($url, $cacheKey, $hash);
         }
 
