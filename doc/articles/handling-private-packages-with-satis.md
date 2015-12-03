@@ -309,3 +309,4 @@ Dev dependencies are packaged only if the `require-dev-dependencies` parameter i
    if not provided as an argument when calling the `build` command.
  * `config`: optional, lets you define all config options from composer, except `archive-format` and `archive-dir` as the configuration is done through [archive](#downloads) instead. See
    (http://getcomposer.org/doc/04-schema.md#config)
+ * `notify-batch`: optional, specify a URL that will be called every time a user installs a package. See (https://getcomposer.org/doc/05-repositories.md#notify-batch)
