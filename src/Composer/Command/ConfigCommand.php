@@ -164,7 +164,7 @@ EOT
         }
         if ($input->getOption('global') && !$this->authConfigFile->exists()) {
             touch($this->authConfigFile->getPath());
-            $this->authConfigFile->write(array('http-basic' => new \ArrayObject, 'github-oauth' => new \ArrayObject));
+            $this->authConfigFile->write(array('http-basic' => new \ArrayObject, 'github-oauth' => new \ArrayObject, 'gitlab-oauth' => new \ArrayObject));
             @chmod($this->authConfigFile->getPath(), 0600);
         }
 
@@ -358,6 +358,18 @@ EOT
                     return $vals;
                 },
             ),
+            'gitlab-domains' => array(
+                function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
+
+                    return true;
+                },
+                function ($vals) {
+                    return $vals;
+                },
+            ),
         );
 
         foreach ($uniqueConfigValues as $name => $callbacks) {
@@ -433,7 +445,7 @@ EOT
         }
 
         // handle github-oauth
-        if (preg_match('/^(github-oauth|http-basic)\.(.+)/', $settingKey, $matches)) {
+        if (preg_match('/^(github-oauth|gitlab-oauth|http-basic)\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->authConfigSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
@@ -441,7 +453,7 @@ EOT
                 return;
             }
 
-            if ($matches[1] === 'github-oauth') {
+            if ($matches[1] === 'github-oauth' || $matches[1] === 'gitlab-oauth') {
                 if (1 !== count($values)) {
                     throw new \RuntimeException('Too many arguments, expected only one token');
                 }
