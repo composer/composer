@@ -344,7 +344,7 @@ class ClassLoader
     private function findFileWithExtension($class, $ext)
     {
         // PSR-4 lookup
-        $logicalPathPsr4 = str_replace('\\', DIRECTORY_SEPARATOR, $class) . $ext;
+        $logicalPathPsr4 = ('\\' !== DIRECTORY_SEPARATOR ? str_replace('\\', DIRECTORY_SEPARATOR, $class) : $class) . $ext;
 
         $first = $class[0];
         if (isset($this->prefixLengthsPsr4[$first])) {
