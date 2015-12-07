@@ -331,11 +331,11 @@ should be included in the listing. By default both are used.
 ```sh
 php composer.phar depends --link-type=require monolog/monolog
 
-nrk/monolog-fluent
-poc/poc
-propel/propel
-symfony/monolog-bridge
-symfony/symfony
+nrk/monolog-fluent requires monolog/monolog (~1.8)
+poc/poc requires monolog/monolog (^1.6)
+propel/propel requires monolog/monolog (1.*)
+symfony/monolog-bridge requires monolog/monolog (>=1.2)
+symfony/symfony requires monolog/monolog (~1)
 ```
 
 ### Options
