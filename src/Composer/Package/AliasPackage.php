@@ -27,10 +27,15 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     protected $rootPackageAlias = false;
     protected $stability;
 
+    /** @var Link[] */
     protected $requires;
+    /** @var Link[] */
     protected $devRequires;
+    /** @var Link[] */
     protected $conflicts;
+    /** @var Link[] */
     protected $provides;
+    /** @var Link[] */
     protected $replaces;
 
     /**
@@ -160,10 +165,10 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     }
 
     /**
-     * @param array  $links
+     * @param Link[]  $links
      * @param string $linkType
-     * @internal param string $prettyVersion
-     * @return array
+     *
+     * @return Link[]
      */
     protected function replaceSelfVersionDependencies(array $links, $linkType)
     {

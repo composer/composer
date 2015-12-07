@@ -61,35 +61,35 @@ interface RootPackageInterface extends CompletePackageInterface
     /**
      * Set the required packages
      *
-     * @param array $requires A set of package links
+     * @param Link[] $requires A set of package links
      */
     public function setRequires(array $requires);
 
     /**
      * Set the recommended packages
      *
-     * @param array $devRequires A set of package links
+     * @param Link[] $devRequires A set of package links
      */
     public function setDevRequires(array $devRequires);
 
     /**
      * Set the conflicting packages
      *
-     * @param array $conflicts A set of package links
+     * @param Link[] $conflicts A set of package links
      */
     public function setConflicts(array $conflicts);
 
     /**
      * Set the provided virtual packages
      *
-     * @param array $provides A set of package links
+     * @param Link[] $provides A set of package links
      */
     public function setProvides(array $provides);
 
     /**
      * Set the packages this one replaces
      *
-     * @param array $replaces A set of package links
+     * @param Link[] $replaces A set of package links
      */
     public function setReplaces(array $replaces);
 
