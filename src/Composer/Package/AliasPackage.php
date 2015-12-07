@@ -27,7 +27,14 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     protected $rootPackageAlias = false;
     protected $stability;
 
+    /**
+     * @var Link[]
+     */
     protected $requires;
+
+    /**
+     * @var Link[]
+     */
     protected $devRequires;
     protected $conflicts;
     protected $provides;
