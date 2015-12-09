@@ -59,6 +59,7 @@ class Config
         'platform' => array(),
         'archive-format' => 'tar',
         'archive-dir' => '.',
+        'home' => '$HOME'
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth
