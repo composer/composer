@@ -43,7 +43,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
         $cachePath = $this->config->get('cache-vcs-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $url).'/';
-        $cacheOptions = file_exists($cachePath) ? $cacheOptions = '--reference '.$cachePath.' ' : '';
+        $cacheOptions = file_exists($cachePath) ? '--reference '.ProcessExecutor::escape($cachePath).' ' : '';
 
         $ref = $package->getSourceReference();
         $flag = Platform::isWindows() ? '/D ' : '';
