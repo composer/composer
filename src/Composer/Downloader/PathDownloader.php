@@ -48,8 +48,7 @@ class PathDownloader extends FileDownloader
         }
 
         try {
-            $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
-            $fileSystem->symlink($shortestPath, $path);
+            $fileSystem->symlink($realUrl, $path);
             $this->io->writeError(sprintf('    Symlinked from %s', $url));
         } catch (IOException $e) {
             $fileSystem->mirror($realUrl, $path);
