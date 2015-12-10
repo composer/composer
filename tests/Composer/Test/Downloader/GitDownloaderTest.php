@@ -26,6 +26,10 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         if (!$config) {
             $config = new Config();
         }
+        if (!$config->has('home')) {
+            $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
+            $config->merge(array('config' => array('home' => $tmpDir)));
+        }
 
         return new GitDownloader($io, $config, $executor, $filesystem);
     }
