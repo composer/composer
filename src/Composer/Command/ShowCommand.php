@@ -31,7 +31,6 @@ use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Spdx\SpdxLicenses;
-use Composer\Package\Link;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -149,28 +148,8 @@ EOT
 
         // show constraints if requested
         if ($input->getOption('constraints')) {
-            $minPackageLink = [];
-            $nameLength = 0;
-            $versionLength = 0;
-            foreach ($installedRepo->getPackages() as $package) {
-                if ($package instanceof CompletePackageInterface) {
-                    $packageRequires = $package->getRequires();
-                    if (is_array($packageRequires)) {
-                        foreach ($packageRequires as $packageLink) {
-                            if ($packageLink instanceof Link) {
-                                if (!isset($minPackageLink[$packageLink->getTarget()]) || version_compare($packageLink->getConstraint()->getPrettyString(), $minPackageLink[$packageLink->getTarget()]->getConstraint()->getPrettyString()) > -1) {
-                                    $minPackageLink[$packageLink->getTarget()] = $packageLink;
-                                    $nameLength = max($nameLength, strlen($packageLink->getTarget()));
-                                    $versionLength = max($versionLength, strlen($packageLink->getPrettyConstraint()));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            foreach($minPackageLink as $onePackageLink) {
-                $io->write(sprintf('<info>%s</info> %s <comment>%s</comment>', str_pad($onePackageLink->getTarget(), $nameLength), str_pad($onePackageLink->getPrettyConstraint(), $versionLength), $onePackageLink->getSource()));
-            }
+            $constraints = new \Composer\Command\Show\Constraints($installedRepo, $this->getIO());
+            $constraints->writeToOutput();
             return;
         }
 
