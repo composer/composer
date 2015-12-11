@@ -31,6 +31,7 @@ use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Spdx\SpdxLicenses;
+use Composer\Package\Link;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -58,6 +59,7 @@ class ShowCommand extends Command
                 new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
                 new InputOption('path', 'P', InputOption::VALUE_NONE, 'Show package paths'),
                 new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
+                new InputOption('constraints', 'c', InputOption::VALUE_NONE, 'List the package constraints'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -142,6 +144,34 @@ EOT
                 $this->printLinks($package, 'replaces');
             }
 
+            return;
+        }
+
+        // show constraints if requested
+        if ($input->getOption('constraints')) {
+            $minPackageLink = [];
+            foreach ($installedRepo->getPackages() as $package) {
+                if ($package instanceof CompletePackageInterface) {
+                    $packageRequires = $package->getRequires();
+                    if (is_array($packageRequires)) {
+                        foreach ($packageRequires as $packageLink) {
+                            if ($packageLink instanceof Link) {
+                                if (!isset($minPackageLink[$packageLink->getTarget()]) || version_compare($packageLink->getConstraint()->getPrettyString(), $minPackageLink[$packageLink->getTarget()]->getConstraint()->getPrettyString()) > -1) {
+                                    $minPackageLink[$packageLink->getTarget()] = $packageLink;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            $nameLength = $versionLength = 0;
+            foreach ($minPackageLink as $onePackageLink) {
+                $nameLength = max($nameLength, strlen($onePackageLink->getTarget()));
+                $versionLength = max($versionLength, strlen($onePackageLink->getPrettyConstraint()));
+            }
+            foreach($minPackageLink as $onePackageLink) {
+                $io->write(sprintf('<info>%s</info> %s <comment>%s</comment>', str_pad($onePackageLink->getTarget(), $nameLength), str_pad($onePackageLink->getPrettyConstraint(), $versionLength), $onePackageLink->getSource()));
+            }
             return;
         }
 
