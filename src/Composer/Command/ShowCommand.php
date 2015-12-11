@@ -150,6 +150,8 @@ EOT
         // show constraints if requested
         if ($input->getOption('constraints')) {
             $minPackageLink = [];
+            $nameLength = 0;
+            $versionLength = 0;
             foreach ($installedRepo->getPackages() as $package) {
                 if ($package instanceof CompletePackageInterface) {
                     $packageRequires = $package->getRequires();
@@ -158,16 +160,13 @@ EOT
                             if ($packageLink instanceof Link) {
                                 if (!isset($minPackageLink[$packageLink->getTarget()]) || version_compare($packageLink->getConstraint()->getPrettyString(), $minPackageLink[$packageLink->getTarget()]->getConstraint()->getPrettyString()) > -1) {
                                     $minPackageLink[$packageLink->getTarget()] = $packageLink;
+                                    $nameLength = max($nameLength, strlen($packageLink->getTarget()));
+                                    $versionLength = max($versionLength, strlen($packageLink->getPrettyConstraint()));
                                 }
                             }
                         }
                     }
                 }
-            }
-            $nameLength = $versionLength = 0;
-            foreach ($minPackageLink as $onePackageLink) {
-                $nameLength = max($nameLength, strlen($onePackageLink->getTarget()));
-                $versionLength = max($versionLength, strlen($onePackageLink->getPrettyConstraint()));
             }
             foreach($minPackageLink as $onePackageLink) {
                 $io->write(sprintf('<info>%s</info> %s <comment>%s</comment>', str_pad($onePackageLink->getTarget(), $nameLength), str_pad($onePackageLink->getPrettyConstraint(), $versionLength), $onePackageLink->getSource()));
