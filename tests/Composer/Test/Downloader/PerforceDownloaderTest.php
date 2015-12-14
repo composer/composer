@@ -16,6 +16,7 @@ use Composer\Downloader\PerforceDownloader;
 use Composer\Config;
 use Composer\Repository\VcsRepository;
 use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
@@ -30,10 +31,13 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
     protected $repoConfig;
     protected $repository;
     protected $testPath;
+    protected $fs;
 
     protected function setUp()
     {
+        $this->fs = new Filesystem;
         $this->testPath        = sys_get_temp_dir() . '/composer-test';
+        $this->fs->ensureDirectoryExists($this->testPath);
         $this->repoConfig      = $this->getRepoConfig();
         $this->config          = $this->getConfig();
         $this->io              = $this->getMockIoInterface();
@@ -51,7 +55,9 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $this->io         = null;
         $this->config     = null;
         $this->repoConfig = null;
-        $this->testPath   = null;
+        if (is_dir($this->testPath)) {
+            $this->fs->removeDirectory($this->testPath);
+        }
     }
 
     protected function getMockProcessExecutor()

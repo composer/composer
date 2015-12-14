@@ -12,15 +12,20 @@
 
 namespace Composer\Test;
 
-use Composer\Cache;
 use Composer\TestCase;
+use Composer\Util\Filesystem;
 
 class CacheTest extends TestCase
 {
     private $files, $root, $finder, $cache;
+    /**
+     * @var Filesystem
+     */
+    private $fs;
 
     public function setUp()
     {
+        $this->fs = new Filesystem;
         if (getenv('TRAVIS')) {
             $this->markTestSkipped('Test causes intermittent failures on Travis');
         }
@@ -46,6 +51,13 @@ class CacheTest extends TestCase
             ->expects($this->any())
             ->method('getFinder')
             ->will($this->returnValue($this->finder));
+    }
+
+    protected function tearDown()
+    {
+        if (is_dir($this->root)) {
+            $this->fs->removeDirectory($this->root);
+        }
     }
 
     public function testRemoveOutdatedFiles()

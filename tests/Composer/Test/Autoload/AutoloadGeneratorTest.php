@@ -43,6 +43,11 @@ class AutoloadGeneratorTest extends TestCase
     private $workingDir;
 
     /**
+     * @var string
+     */
+    private $origDir;
+
+    /**
      * @var InstallationManager|MockObject
      */
     private $im;
