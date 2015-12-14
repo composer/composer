@@ -18,14 +18,9 @@ use Composer\Util\Filesystem;
 class CacheTest extends TestCase
 {
     private $files, $root, $finder, $cache;
-    /**
-     * @var Filesystem
-     */
-    private $fs;
 
     public function setUp()
     {
-        $this->fs = new Filesystem;
         if (getenv('TRAVIS')) {
             $this->markTestSkipped('Test causes intermittent failures on Travis');
         }
@@ -56,7 +51,8 @@ class CacheTest extends TestCase
     protected function tearDown()
     {
         if (is_dir($this->root)) {
-            $this->fs->removeDirectory($this->root);
+            $fs = new Filesystem;
+            $fs->removeDirectory($this->root);
         }
     }
 
