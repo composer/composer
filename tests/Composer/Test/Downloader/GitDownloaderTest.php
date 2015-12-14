@@ -27,7 +27,6 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     {
         $this->fs = new Filesystem;
         $this->workingDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
-        $this->fs->ensureDirectoryExists($this->workingDir);
     }
 
     protected function tearDown()

@@ -17,22 +17,19 @@ use Composer\Util\Filesystem;
 
 class HgDownloaderTest extends \PHPUnit_Framework_TestCase
 {
-    /** @var Filesystem */
-    private $fs;
     /** @var string */
     private $workingDir;
 
     protected function setUp()
     {
-        $this->fs = new Filesystem;
         $this->workingDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
-        $this->fs->ensureDirectoryExists($this->workingDir);
     }
 
     protected function tearDown()
     {
         if (is_dir($this->workingDir)) {
-            $this->fs->removeDirectory($this->workingDir);
+            $fs = new Filesystem;
+            $fs->removeDirectory($this->workingDir);
         }
     }
 

@@ -32,12 +32,12 @@ class XzDownloaderTest extends \PHPUnit_Framework_TestCase
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             $this->markTestSkipped('Skip test on Windows');
         }
-        $this->fs = new Filesystem;
         $this->testName = sys_get_temp_dir().'/composer-xz-test-vendor';
     }
 
     public function tearDown()
     {
+        $this->fs = new Filesystem;
         $this->fs->removeDirectory($this->testName);
     }
 

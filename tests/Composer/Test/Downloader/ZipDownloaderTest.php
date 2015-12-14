@@ -17,28 +17,24 @@ use Composer\Util\Filesystem;
 
 class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var Filesystem
-     */
-    private $fs;
 
     /**
      * @var string
      */
-    private $testName;
+    private $testDir;
 
     public function setUp()
     {
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('zip extension missing');
         }
-        $this->fs = new Filesystem;
-        $this->testName = sys_get_temp_dir().'/composer-zip-test-vendor';        
+        $this->testDir = sys_get_temp_dir().'/composer-zip-test-vendor';
     }
 
     public function tearDown()
     {
-        $this->fs->removeDirectory($this->testName);
+        $fs = new Filesystem;
+        $fs->removeDirectory($this->testDir);
     }
 
     public function testErrorMessages()
@@ -62,7 +58,7 @@ class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
         $config->expects($this->any())
             ->method('get')
             ->with('vendor-dir')
-            ->will($this->returnValue($this->testName));
+            ->will($this->returnValue($this->testDir));
         $downloader = new ZipDownloader($io, $config);
 
         try {
