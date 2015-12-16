@@ -23,9 +23,13 @@ use Composer\Util\Filesystem;
  */
 abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterface
 {
+    /** @var IOInterface */
     protected $io;
+    /** @var Config */
     protected $config;
+    /** @var ProcessExecutor */
     protected $process;
+    /** @var Filesystem */
     protected $filesystem;
 
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)

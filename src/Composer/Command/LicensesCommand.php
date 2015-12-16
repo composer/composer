@@ -88,6 +88,7 @@ EOT
                 break;
 
             case 'json':
+                $dependencies = array();
                 foreach ($packages as $package) {
                     $dependencies[$package->getPrettyName()] = array(
                         'version' => $package->getFullPrettyVersion(),

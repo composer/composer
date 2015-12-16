@@ -20,9 +20,13 @@ use Composer\IO\IOInterface;
  */
 class Git
 {
+    /** @var IOInterface */
     protected $io;
+    /** @var Config */
     protected $config;
+    /** @var ProcessExecutor */
     protected $process;
+    /** @var Filesystem */
     protected $filesystem;
 
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process, Filesystem $fs)
