@@ -322,6 +322,7 @@ EOT
                 },
             ),
             'autoloader-suffix' => array('is_string', function ($val) { return $val === 'null' ? null : $val; }),
+            'sort-packages' => array($booleanValidator, $booleanNormalizer),
             'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
             'classmap-authoritative' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
