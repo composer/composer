@@ -128,7 +128,8 @@ Defaults to `false`. If `true`, always optimize when dumping the autoloader.
 
 ## sort-packages
 
-Defaults to `false`. If `true`, Keep packages sorted in `composer.json`.
+Defaults to `false`. If `true`, the `require` command keeps packages sorted
+by name in `composer.json` when adding a new package.
 
 ## classmap-authoritative
 
