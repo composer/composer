@@ -39,6 +39,7 @@ class Config
         'bin-compat' => 'auto',
         'discard-changes' => false,
         'autoloader-suffix' => null,
+        'sort-packages' => false,
         'optimize-autoloader' => false,
         'classmap-authoritative' => false,
         'prepend-autoloader' => true,

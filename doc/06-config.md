@@ -126,6 +126,10 @@ autoloader. When null a random one will be generated.
 
 Defaults to `false`. If `true`, always optimize when dumping the autoloader.
 
+## sort-packages
+
+Defaults to `false`. If `true`, Keep packages sorted in `composer.json`.
+
 ## classmap-authoritative
 
 Defaults to `false`. If `true`, the Composer autoloader will only load classes

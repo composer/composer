@@ -117,7 +117,7 @@ EOT
             $versionParser->parseConstraints($constraint);
         }
 
-        $sortPackages = $input->getOption('sort-packages');
+        $sortPackages = $input->getOption('sort-packages') || $composer->getConfig()->get('sort-packages');
 
         if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey, $removeKey, $sortPackages)) {
             foreach ($requirements as $package => $version) {
