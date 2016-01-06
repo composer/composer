@@ -278,6 +278,16 @@ class GitLabDriver extends VcsDriver
         }
     }
 
+    /**
+     * Generate an SSH URL
+     *
+     * @return string
+     */
+    protected function generateSshUrl()
+    {
+        return 'git@' . $this->originUrl . ':'.$this->owner.'/'.$this->repository.'.git';
+    }
+
     protected function setupGitDriver($url)
     {
         $this->gitDriver = new GitDriver(
