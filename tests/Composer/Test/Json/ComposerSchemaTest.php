@@ -19,23 +19,44 @@ use JsonSchema\Validator;
  */
 class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
 {
+    private function extractNeeded($in)
+    {
+        if (!is_array($in)) {
+            return $in;
+        }
+        // Cleanup JsonSchema output
+        // Keep only used / checked properties
+        // So drop new properties introduced in 1.6
+        $out = array();
+        foreach ($in as $i => $err) {
+            $out[$i] = array();
+            if (isset($err['property'])) {
+                $out[$i]['property'] = $err['property'];
+            }
+            if (isset($err['message'])) {
+                $out[$i]['message'] = $err['message'];
+            }
+        }
+        return $out;
+    }
+
     public function testRequiredProperties()
     {
         $json = '{ }';
         $this->assertEquals(array(
             array('property' => 'name', 'message' => 'The property name is required'),
             array('property' => 'description', 'message' => 'The property description is required'),
-        ), $this->check($json));
+        ), $this->extractNeeded($this->check($json)));
 
         $json = '{ "name": "vendor/package" }';
         $this->assertEquals(array(
             array('property' => 'description', 'message' => 'The property description is required'),
-        ), $this->check($json));
+        ), $this->extractNeeded($this->check($json)));
 
         $json = '{ "description": "generic description" }';
         $this->assertEquals(array(
             array('property' => 'name', 'message' => 'The property name is required'),
-        ), $this->check($json));
+        ), $this->extractNeeded($this->check($json)));
     }
 
     public function testOptionalAbandonedProperty()
@@ -52,7 +73,7 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
                 'property' => 'minimum-stability',
                 'message' => 'Does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$',
             ),
-        ), $this->check($json), 'empty string');
+        ), $this->extractNeeded($this->check($json)), 'empty string');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "dummy" }';
         $this->assertEquals(array(
@@ -60,7 +81,7 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
                 'property' => 'minimum-stability',
                 'message' => 'Does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$',
             ),
-        ), $this->check($json), 'dummy');
+        ), $this->extractNeeded($this->check($json)), 'dummy');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "dev" }';
         $this->assertTrue($this->check($json), 'dev');
