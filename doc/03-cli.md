@@ -345,6 +345,7 @@ symfony/symfony requires monolog/monolog (~1)
 * **--match-constraint (-m):** Filters the dependencies shown using this constraint.
 * **--invert-match-constraint (-i):** Turns --match-constraint around into a blacklist
   insteead of a whitelist.
+* **--with-replaces:** Search for replaced packages as well.
 
 ## validate
 
