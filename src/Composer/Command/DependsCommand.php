@@ -17,6 +17,7 @@ use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\PlatformRepository;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
@@ -61,9 +62,11 @@ EOT
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'depends', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
+        $platformOverrides = $composer->getConfig()->get('platform') ?: array();
         $repo = new CompositeRepository(array(
             new ArrayRepository(array($composer->getPackage())),
             $composer->getRepositoryManager()->getLocalRepository(),
+            new PlatformRepository(array(), $platformOverrides),
         ));
         $needle = $input->getArgument('package');
 
