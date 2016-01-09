@@ -45,8 +45,8 @@ class DependsCommand extends Command
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::REQUIRED, 'Package to inspect'),
                 new InputOption('link-type', '', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Link types to show (require, require-dev)', array_keys($this->linkTypes)),
-                new InputOption('match-constraint', '', InputOption::VALUE_REQUIRED, 'Constraint to match', '*'),
-                new InputOption('match-constraint-invert', '', InputOption::VALUE_NONE, 'If constraint match should be inverted'),
+                new InputOption('match-constraint', 'm', InputOption::VALUE_REQUIRED, 'Filters the dependencies shown using this constraint', '*'),
+                new InputOption('invert-match-constraint', 'i', InputOption::VALUE_NONE, 'Turns --match-constraint around into a blacklist insteead of whitelist'),
             ))
             ->setHelp(<<<EOT
 Displays detailed information about where a package is referenced.
@@ -94,7 +94,7 @@ EOT
 
         $versionParser = new VersionParser();
         $constraint = $versionParser->parseConstraints($input->getOption('match-constraint'));
-        $matchInvert = $input->getOption('match-constraint-invert');
+        $matchInvert = $input->getOption('invert-match-constraint');
 
         $messages = array();
         $outputPackages = array();

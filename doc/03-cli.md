@@ -342,6 +342,9 @@ symfony/symfony requires monolog/monolog (~1)
 
 * **--link-type:** The link types to match on, can be specified multiple
   times.
+* **--match-constraint (-m):** Filters the dependencies shown using this constraint.
+* **--invert-match-constraint (-i):** Turns --match-constraint around into a blacklist
+  insteead of a whitelist.
 
 ## validate
 
