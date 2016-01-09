@@ -225,6 +225,9 @@ The global command allows you to run other commands like `install`, `require`
 or `update` as if you were running them from the [COMPOSER_HOME](#composer-home)
 directory.
 
+This is merely a helper to manage a project stored in a central location that
+can hold CLI tools or Composer plugins that you want to have available everywhere.
+
 This can be used to install CLI utilities globally and if you add
 `$COMPOSER_HOME/vendor/bin` to your `$PATH` environment variable. Here is an
 example:

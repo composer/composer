@@ -9,8 +9,9 @@ for you.
 Composer is **not** a package manager in the same sense as Yum or Apt are. Yes,
 it deals with "packages" or libraries, but it manages them on a per-project
 basis, installing them in a directory (e.g. `vendor`) inside your project. By
-default it will never install anything globally. Thus, it is a dependency
-manager.
+default it does not install anything globally. Thus, it is a dependency
+manager. It does however support a "global" project for convenience via the
+[global](03-cli.md#global) command.
 
 This idea is not new and Composer is strongly inspired by node's
 [npm](https://npmjs.org/) and ruby's [bundler](http://bundler.io/).
@@ -102,7 +103,7 @@ curl -sS https://getcomposer.org/installer | php
 mv composer.phar /usr/local/bin/composer
 ```
 
-> **Note:** If the above fails due to permissions, run the `mv` line again 
+> **Note:** If the above fails due to permissions, run the `mv` line again
 > with sudo.
 
 A quick copy-paste version including sudo:
