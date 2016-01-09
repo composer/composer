@@ -58,7 +58,7 @@ class PlatformRepository extends ArrayRepository
 
             $version = $versionParser->normalize($override['version']);
             $package = new CompletePackage($override['name'], $version, $override['version']);
-            $package->setDescription('Overridden virtual platform package '.$override['name']);
+            $package->setDescription('Package overridden via config.platform');
             parent::addPackage($package);
         }
 
@@ -82,7 +82,7 @@ class PlatformRepository extends ArrayRepository
 
         if (PHP_INT_SIZE === 8) {
             $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
-            $php64->setDescription('The PHP interpreter (64bit)');
+            $php64->setDescription('The PHP interpreter, 64bit');
             $this->addPackage($php64);
         }
 
@@ -201,6 +201,8 @@ class PlatformRepository extends ArrayRepository
     {
         // Skip if overridden
         if (isset($this->overrides[strtolower($package->getName())])) {
+            $overrider = $this->findPackage($package->getName(), '*');
+            $overrider->setDescription($overrider->getDescription().' (actual: '.$package->getPrettyVersion().')');
             return;
         }
         parent::addPackage($package);

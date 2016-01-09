@@ -84,7 +84,11 @@ EOT
         }
 
         // init repos
-        $platformRepo = new PlatformRepository;
+        $platformOverrides = array();
+        if ($composer) {
+            $platformOverrides = $composer->getConfig()->get('platform') ?: array();
+        }
+        $platformRepo = new PlatformRepository(array(), $platformOverrides);
 
         if ($input->getOption('self')) {
             $package = $this->getComposer()->getPackage();
