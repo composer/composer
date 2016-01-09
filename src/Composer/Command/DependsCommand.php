@@ -130,7 +130,11 @@ EOT
             sort($messages);
             $io->write($messages);
         } else {
-            $io->writeError('<info>There is no installed package depending on "'.$needle.'".</info>');
+            $matchText = '';
+            if ($input->getOption('match-constraint') !== '*') {
+                $matchText = ' in versions '.($matchInvert ? 'not ':'').'matching ' . $input->getOption('match-constraint');
+            }
+            $io->writeError('<info>There is no installed package depending on "'.$needle.'"'.$matchText.'.</info>');
         }
     }
 }
