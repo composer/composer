@@ -568,33 +568,35 @@ class ComposerAutoloaderInit$suffix
 
 HEADER;
 
-        if ($useIncludePath) {
-            $file .= <<<'INCLUDE_PATH'
-        $includePaths = require __DIR__ . '/include_paths.php';
-        array_push($includePaths, get_include_path());
-        set_include_path(join(PATH_SEPARATOR, $includePaths));
+        if (!$this->classMapAuthoritative) {
+            if ($useIncludePath) {
+                $file .= <<<'INCLUDE_PATH'
+            $includePaths = require __DIR__ . '/include_paths.php';
+            array_push($includePaths, get_include_path());
+            set_include_path(join(PATH_SEPARATOR, $includePaths));
 
 
 INCLUDE_PATH;
-        }
+            }
 
-        $file .= <<<'PSR0'
-        $map = require __DIR__ . '/autoload_namespaces.php';
-        foreach ($map as $namespace => $path) {
-            $loader->set($namespace, $path);
-        }
+            $file .= <<<'PSR0'
+            $map = require __DIR__ . '/autoload_namespaces.php';
+            foreach ($map as $namespace => $path) {
+                $loader->set($namespace, $path);
+            }
 
 
 PSR0;
 
-        $file .= <<<'PSR4'
-        $map = require __DIR__ . '/autoload_psr4.php';
-        foreach ($map as $namespace => $path) {
-            $loader->setPsr4($namespace, $path);
-        }
+            $file .= <<<'PSR4'
+            $map = require __DIR__ . '/autoload_psr4.php';
+            foreach ($map as $namespace => $path) {
+                $loader->setPsr4($namespace, $path);
+            }
 
 
 PSR4;
+        }
 
         if ($useClassMap) {
             $file .= <<<'CLASSMAP'
