@@ -13,6 +13,7 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\Pool;
+use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\ArrayRepository;
 use Composer\Package\BasePackage;
 use Composer\TestCase;
@@ -128,5 +129,21 @@ class PoolTest extends TestCase
         $pool = new Pool;
 
         $this->assertEquals(array(), $pool->whatProvides('foo'));
+    }
+
+    public function testDoesPackageMatchRequires()
+    {
+        $pool = new Pool('stable', array(), array(
+            'bar' => new VersionConstraint('=', '1.0.0.0'),
+            'foo' => new VersionConstraint('>', '1.0.0.0'),
+        ));
+
+        $this->assertEquals(true, $pool->doesPackageMatchRequires('bar', '1'));
+        $this->assertEquals(false, $pool->doesPackageMatchRequires('bar', '1-beta'));
+        $this->assertEquals(false, $pool->doesPackageMatchRequires('bar', '2'));
+        $this->assertEquals(false, $pool->doesPackageMatchRequires('foo', '1'));
+        $this->assertEquals(false, $pool->doesPackageMatchRequires('foo', '1rc'));
+        $this->assertEquals(true, $pool->doesPackageMatchRequires('foo', '2'));
+        $this->assertEquals(true, $pool->doesPackageMatchRequires('foobar', '2'));
     }
 }

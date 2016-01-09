@@ -148,6 +148,10 @@ class ComposerRepositoryTest extends TestCase
             ->method('isPackageAcceptable')
             ->will($this->returnValue(true));
 
+        $pool->expects($this->any())
+            ->method('doesPackageMatchRequires')
+            ->will($this->returnValue(true));
+
         $versionParser = new VersionParser();
         $repo->setRootAliases(array(
             'a' => array(
