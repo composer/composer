@@ -58,6 +58,7 @@ class ShowCommand extends Command
                 new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
                 new InputOption('path', 'P', InputOption::VALUE_NONE, 'Show package paths'),
                 new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
+                new InputOption('constraints', 'c', InputOption::VALUE_NONE, 'List the package constraints'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -152,6 +153,13 @@ EOT
                 $this->printLinks($package, 'replaces');
             }
 
+            return;
+        }
+
+        // show constraints if requested
+        if ($input->getOption('constraints')) {
+            $constraints = new \Composer\Command\Show\Constraints($installedRepo, $this->getIO());
+            $constraints->writeToOutput();
             return;
         }
 
