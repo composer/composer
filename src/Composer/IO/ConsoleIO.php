@@ -110,9 +110,9 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * @param array $messages
-     * @param bool  $newline
-     * @param bool  $stderr
+     * @param array|string $messages
+     * @param bool         $newline
+     * @param bool         $stderr
      */
     private function doWrite($messages, $newline, $stderr)
     {
@@ -152,10 +152,10 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * @param array $messages
-     * @param bool  $newline
-     * @param int   $size
-     * @param bool  $stderr
+     * @param array|string $messages
+     * @param bool         $newline
+     * @param int|null     $size
+     * @param bool         $stderr
      */
     private function doOverwrite($messages, $newline, $size, $stderr)
     {

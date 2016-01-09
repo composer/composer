@@ -172,6 +172,11 @@ EOT
         return 0;
     }
 
+    /**
+     * @param string $localFilename
+     * @param string $newFilename
+     * @param string $backupTarget
+     */
     protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
     {
         try {
