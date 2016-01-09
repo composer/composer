@@ -23,18 +23,18 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
     {
         $json = '{ }';
         $this->assertEquals(array(
-            array('property' => 'name', 'message' => 'The property name is required'),
-            array('property' => 'description', 'message' => 'The property description is required'),
+            array('property' => 'name', 'message' => 'The property name is required', 'constraint' => 'required'),
+            array('property' => 'description', 'message' => 'The property description is required', 'constraint' => 'required'),
         ), $this->check($json));
 
         $json = '{ "name": "vendor/package" }';
         $this->assertEquals(array(
-            array('property' => 'description', 'message' => 'The property description is required'),
+            array('property' => 'description', 'message' => 'The property description is required', 'constraint' => 'required'),
         ), $this->check($json));
 
         $json = '{ "description": "generic description" }';
         $this->assertEquals(array(
-            array('property' => 'name', 'message' => 'The property name is required'),
+            array('property' => 'name', 'message' => 'The property name is required', 'constraint' => 'required'),
         ), $this->check($json));
     }
 
@@ -51,6 +51,8 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
             array(
                 'property' => 'minimum-stability',
                 'message' => 'Does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$',
+                'constraint' => 'pattern',
+                'pattern' => '^dev|alpha|beta|rc|RC|stable$',
             ),
         ), $this->check($json), 'empty string');
 
@@ -59,6 +61,8 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
             array(
                 'property' => 'minimum-stability',
                 'message' => 'Does not match the regex pattern ^dev|alpha|beta|rc|RC|stable$',
+                'constraint' => 'pattern',
+                'pattern' => '^dev|alpha|beta|rc|RC|stable$',
             ),
         ), $this->check($json), 'dummy');
 
