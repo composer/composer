@@ -21,6 +21,8 @@ use Composer\Util\Svn as SvnUtil;
  */
 class SvnDownloader extends VcsDownloader
 {
+    protected $cacheCredentials = true;
+
     /**
      * {@inheritDoc}
      */
@@ -28,6 +30,11 @@ class SvnDownloader extends VcsDownloader
     {
         SvnUtil::cleanEnv();
         $ref = $package->getSourceReference();
+
+        $repoConfig = $package->getRepository()->getRepoConfig();
+        if (array_key_exists('svn-cache-credentials', $repoConfig)) {
+            $this->cacheCredentials = (bool) $repoConfig['svn-cache-credentials'];
+        }
 
         $this->io->writeError("    Checking out ".$package->getSourceReference());
         $this->execute($url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
@@ -85,6 +92,7 @@ class SvnDownloader extends VcsDownloader
     protected function execute($baseUrl, $command, $url, $cwd = null, $path = null)
     {
         $util = new SvnUtil($baseUrl, $this->io, $this->config);
+        $util->setCacheCredentials($this->cacheCredentials);
         try {
             return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
         } catch (\RuntimeException $e) {
