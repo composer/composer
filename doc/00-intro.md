@@ -9,8 +9,8 @@ for you.
 Composer is **not** a package manager in the same sense as Yum or Apt are. Yes,
 it deals with "packages" or libraries, but it manages them on a per-project
 basis, installing them in a directory (e.g. `vendor`) inside your project. By
-default it will never install anything globally. Thus, it is a dependency
-manager.
+default it doesn't install anything globally, it could install something
+globally **only** if explicitly requested. Thus, it is a dependency manager.
 
 This idea is not new and Composer is strongly inspired by node's
 [npm](https://npmjs.org/) and ruby's [bundler](http://bundler.io/).
