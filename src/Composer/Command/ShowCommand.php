@@ -75,11 +75,17 @@ EOT
             $this->initStyles($output);
         }
 
+        $composer = $this->getComposer(false);
+        $io = $this->getIO();
+
+        if ($input->getOption('tree') && !$input->getOption('installed')) {
+            $io->writeError('The --tree (-t) option is only usable in combination with --installed (-i) or by passing a single package name to show, assuming -i');
+            $input->setOption('installed', true);
+        }
+
         // init repos
         $platformRepo = new PlatformRepository;
 
-        $composer = $this->getComposer(false);
-        $io = $this->getIO();
         if ($input->getOption('self')) {
             $package = $this->getComposer()->getPackage();
             $repos = $installedRepo = new ArrayRepository(array($package));
@@ -147,11 +153,6 @@ EOT
 
         // show tree view if requested
         if ($input->getOption('tree')) {
-            if (!$input->getOption('installed')) {
-                $io->writeError('The --tree (-t) option is only usable in combination with --installed (-i) or by passing a single package name to show');
-                return 1;
-            }
-
             $rootPackage = $this->getComposer()->getPackage();
             $rootRequires = array_map(
                 'strtolower',
