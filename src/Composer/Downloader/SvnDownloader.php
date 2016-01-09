@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Composer\Util\Svn as SvnUtil;
+use Composer\Repository\VcsRepository;
 
 /**
  * @author Ben Bieker <mail@ben-bieker.de>
@@ -31,9 +32,12 @@ class SvnDownloader extends VcsDownloader
         SvnUtil::cleanEnv();
         $ref = $package->getSourceReference();
 
-        $repoConfig = $package->getRepository()->getRepoConfig();
-        if (array_key_exists('svn-cache-credentials', $repoConfig)) {
-            $this->cacheCredentials = (bool) $repoConfig['svn-cache-credentials'];
+        $repo = $package->getRepository();
+        if ($repo instanceof VcsRepository) {
+            $repoConfig = $repo->getRepoConfig();
+            if (array_key_exists('svn-cache-credentials', $repoConfig)) {
+                $this->cacheCredentials = (bool) $repoConfig['svn-cache-credentials'];
+            }
         }
 
         $this->io->writeError("    Checking out ".$package->getSourceReference());
