@@ -13,14 +13,32 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\XzDownloader;
+use Composer\Util\Filesystem;
 
 class XzDownloaderTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var Filesystem
+     */
+    private $fs;
+
+    /**
+     * @var string
+     */
+    private $testName;
+
     public function setUp()
     {
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             $this->markTestSkipped('Skip test on Windows');
         }
+        $this->testName = sys_get_temp_dir().'/composer-xz-test-vendor';
+    }
+
+    public function tearDown()
+    {
+        $this->fs = new Filesystem;
+        $this->fs->removeDirectory($this->testName);
     }
 
     public function testErrorMessages()
@@ -44,7 +62,7 @@ class XzDownloaderTest extends \PHPUnit_Framework_TestCase
         $config->expects($this->any())
             ->method('get')
             ->with('vendor-dir')
-            ->will($this->returnValue(sys_get_temp_dir().'/composer-xz-test-vendor'));
+            ->will($this->returnValue($this->testName));
         $downloader = new XzDownloader($io, $config);
 
         try {
