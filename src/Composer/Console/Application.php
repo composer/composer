@@ -107,26 +107,26 @@ class Application extends BaseApplication
         ErrorHandler::register($this->io);
         $io = $this->getIO();
 
-        if (PHP_VERSION_ID < 50302) {
-            $io->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
-        }
-
-        if (extension_loaded('xdebug') && !getenv('COMPOSER_DISABLE_XDEBUG_WARN')) {
-            $io->writeError('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>');
-        }
-
-        if (defined('COMPOSER_DEV_WARNING_TIME')) {
-            $commandName = '';
-            if ($name = $this->getCommandName($input)) {
-                try {
-                    $commandName = $this->find($name)->getName();
-                } catch (\InvalidArgumentException $e) {
-                }
+        // determine command name to be executed
+        $commandName = '';
+        if ($name = $this->getCommandName($input)) {
+            try {
+                $commandName = $this->find($name)->getName();
+            } catch (\InvalidArgumentException $e) {
             }
-            if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
-                if (time() > COMPOSER_DEV_WARNING_TIME) {
-                    $io->writeError(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
-                }
+        }
+
+        if ($commandName !== 'global') {
+            if (PHP_VERSION_ID < 50302) {
+                $io->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
+            }
+
+            if (extension_loaded('xdebug') && !getenv('COMPOSER_DISABLE_XDEBUG_WARN')) {
+                $io->writeError('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>');
+            }
+
+            if (defined('COMPOSER_DEV_WARNING_TIME') && $commandName !== 'self-update' && $commandName !== 'selfupdate' && time() > COMPOSER_DEV_WARNING_TIME) {
+                $io->writeError(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
             }
         }
 
