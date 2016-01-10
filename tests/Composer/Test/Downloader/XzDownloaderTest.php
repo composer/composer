@@ -63,6 +63,10 @@ class XzDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));
+        $config->expects($this->any())
+            ->method('get')
+            ->with('disable-tls')
+            ->will($this->returnValue(false));
         $downloader = new XzDownloader($io, $config);
 
         try {
