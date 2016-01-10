@@ -44,23 +44,25 @@ class RemoteFilesystem
     /**
      * Constructor.
      *
-     * @param IOInterface $io      The IO instance
-     * @param Config      $config  The config
-     * @param array       $options The options
+     * @param IOInterface $io         The IO instance
+     * @param Config      $config     The config
+     * @param array       $options    The options
+     * @param bool        $disableTls
      */
-    public function __construct(IOInterface $io, Config $config = null, $options = array(), $disableTls = false)
+    public function __construct(IOInterface $io, Config $config = null, array $options = array(), $disableTls = false)
     {
         $this->io = $io;
 
-        /**
-         * Setup TLS options
-         * The cafile option can be set via config.json
-         */
+        // Setup TLS options
+        // The cafile option can be set via config.json
         if ($disableTls === false) {
             $this->options = $this->getTlsDefaults();
             if (isset($options['ssl']['cafile'])
-            && (!is_readable($options['ssl']['cafile'])
-            || !\openssl_x509_parse(file_get_contents($options['ssl']['cafile'])))) {
+                && (
+                    !is_readable($options['ssl']['cafile'])
+                    || !self::validateCaFile(file_get_contents($options['ssl']['cafile']))
+                )
+            ) {
                 throw new TransportException('The configured cafile was not valid or could not be read.');
             }
         } else {
@@ -316,15 +318,17 @@ class RemoteFilesystem
         }
 
         // Check if the failure was due to a Common Name mismatch with remote SSL cert and retry once (excl normal retry)
-        if (false === $result) {
-            if ($this->retryTls === true
-            && preg_match("|did not match expected CN|i", $errorMessage)
-            && preg_match("|Peer certificate CN=`(.*)' did not match|i", $errorMessage, $matches)) {
-                $this->retryTls = false;
-                $expectedCommonName = $matches[1];
-                $this->io->write("    <warning>Retrying download from ".$originUrl." with SSL Cert Common Name (CN): ".$expectedCommonName."</warning>");
-                return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress, $expectedCommonName);
-            }
+        if (
+            false === $result
+            && $this->retryTls === true
+            && preg_match('{did not match expected CN}i', $errorMessage)
+            && preg_match("{Peer certificate CN=`(.*)' did not match}i", $errorMessage, $matches)
+        ) {
+            $this->retryTls = false;
+            $expectedCommonName = $matches[1];
+            $this->io->write("    <warning>Retrying download from ".$originUrl." with SSL Cert Common Name (CN): ".$expectedCommonName."</warning>");
+
+            return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress, $expectedCommonName);
         }
 
         if ($this->retry) {
@@ -485,33 +489,30 @@ class RemoteFilesystem
 
     protected function getOptionsForUrl($originUrl, $additionalOptions, $validCommonName = '')
     {
+        $tlsOptions = array();
+
         // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
         if ($this->disableTls === false) {
-            if (!preg_match("|^https?://|", $this->fileUrl)) {
+            if (!preg_match('{^https?://}', $this->fileUrl)) {
                 $host = $originUrl;
             } else {
                 $host = parse_url($this->fileUrl, PHP_URL_HOST);
             }
-            /**
-             * This is sheer painful, but hopefully it'll be a footnote once SAN support
-             * reaches PHP 5.4 and 5.5...
-             * Side-effect: We're betting on the CN being either a wildcard or www, e.g. *.github.com or www.example.com.
-             * TODO: Consider something more explicitly user based.
-             */
+
+            // This is sheer painful, but hopefully it'll be a footnote once SAN support
+            // reaches PHP 5.4 and 5.5...
+            // Side-effect: We're betting on the CN being either a wildcard or www, e.g. *.github.com or www.example.com.
             if (strlen($validCommonName) > 0) {
-                if (!preg_match("|".$host."$|i", $validCommonName)
-                || (count(explode('.', $validCommonName)) - count(explode('.', $host))) > 1) {
+                if (
+                    !preg_match('{'.$host.'$}i', $validCommonName)
+                    || (count(explode('.', $validCommonName)) - count(explode('.', $host))) > 1
+                ) {
                     throw new TransportException('Unable to read or match the Common Name (CN) from the remote SSL certificate.');
                 }
                 $host = $validCommonName;
             }
-            $this->options['ssl']['CN_match'] = $host;
-            $this->options['ssl']['SNI_server_name'] = $host;
-        }
-        if (defined('HHVM_VERSION')) {
-            $phpVersion = 'HHVM ' . HHVM_VERSION;
-        } else {
-            $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
+            $tlsOptions['ssl']['CN_match'] = $host;
+            $tlsOptions['ssl']['SNI_server_name'] = $host;
         }
 
         $headers = array();
@@ -520,7 +521,7 @@ class RemoteFilesystem
             $headers[] = 'Accept-Encoding: gzip';
         }
 
-        $options = array_replace_recursive($this->options, $additionalOptions);
+        $options = array_replace_recursive($this->options, $tlsOptions, $additionalOptions);
         if (!$this->degradedMode) {
             // degraded mode disables HTTP/1.1 which causes issues with some bad
             // proxies/software due to the use of chunked encoding
@@ -613,19 +614,27 @@ class RemoteFilesystem
          * The user may go download one if this occurs.
          */
         if (!isset($this->options['ssl']['cafile'])) {
-            $result = $this->getSystemCaRootBundlePath();
+            $result = self::getSystemCaRootBundlePath();
             if ($result) {
-                if (preg_match("|^phar://|", $result)) {
-                    $tmp = rtrim(sys_get_temp_dir(), '\\/');
-                    $target = $tmp . DIRECTORY_SEPARATOR . 'composer-cacert.pem';
-                    $cacert = file_get_contents($result);
-                    $write = file_put_contents($target, $cacert, LOCK_EX);
-                    if (!$write) {
-                        throw new TransportException('Unable to write bundled cacert.pem to: '.$target);
-                    }
-                    $options['ssl']['cafile'] = $target;
+                if (preg_match('{^phar://}', $result)) {
+                    $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert.pem';
+
+                    // use stream_copy_to_stream instead of copy
+                    // to work around https://bugs.php.net/bug.php?id=64634
+                    $source = fopen($result, 'r');
+                    $target = fopen($targetPath, 'w+');
+                    stream_copy_to_stream($source, $target);
+                    fclose($source);
+                    fclose($target);
+                    unset($source, $target);
+
+                    $options['ssl']['cafile'] = $targetPath;
                 } else {
-                    $options['ssl']['cafile'] = $result;
+                    if (is_dir($result)) {
+                        $options['ssl']['capath'] = $result;
+                    } elseif ($result) {
+                        $options['ssl']['cafile'] = $result;
+                    }
                 }
             } else {
                 throw new TransportException('A valid cafile could not be located automatically.');
@@ -674,15 +683,17 @@ class RemoteFilesystem
     * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     */
-    protected static function getSystemCaRootBundlePath()
+    private static function getSystemCaRootBundlePath()
     {
-        if (isset($found)) {
+        static $found = null;
+        if ($found !== null) {
             return $found;
         }
+
         // If SSL_CERT_FILE env variable points to a valid certificate/bundle, use that.
         // This mimics how OpenSSL uses the SSL_CERT_FILE env variable.
         $envCertFile = getenv('SSL_CERT_FILE');
-        if ($envCertFile && is_readable($envCertFile) && \openssl_x509_parse(file_get_contents($envCertFile))) {
+        if ($envCertFile && is_readable($envCertFile) && self::validateCaFile(file_get_contents($envCertFile))) {
             // Possibly throw exception instead of ignoring SSL_CERT_FILE if it's invalid?
             return $envCertFile;
         }
@@ -696,19 +707,29 @@ class RemoteFilesystem
             '/opt/local/share/curl/curl-ca-bundle.crt', // OS X macports, curl-ca-bundle package
             '/usr/local/share/curl/curl-ca-bundle.crt', // Default cURL CA bunde path (without --with-ca-bundle option)
             '/usr/share/ssl/certs/ca-bundle.crt', // Really old RedHat?
+            '/etc/ssl/cert.pem', // OpenBSD
+            '/usr/local/etc/ssl/cert.pem', // FreeBSD 10.x
             __DIR__.'/../../../res/cacert.pem', // Bundled with Composer
         );
 
-        static $found = false;
         $configured = ini_get('openssl.cafile');
-        if ($configured && strlen($configured) > 0 && is_readable($caBundle) && \openssl_x509_parse(file_get_contents($caBundle))) {
+        if ($configured && strlen($configured) > 0 && is_readable($caBundle) && self::validateCaFile(file_get_contents($caBundle))) {
             $found = true;
             $caBundle = $configured;
         } else {
             foreach ($caBundlePaths as $caBundle) {
-                if (is_readable($caBundle) && \openssl_x509_parse(file_get_contents($caBundle))) {
+                if (@is_readable($caBundle) && self::validateCaFile(file_get_contents($caBundle))) {
                     $found = true;
                     break;
+                }
+            }
+            if (!$found) {
+                foreach ($caBundlePaths as $caBundle) {
+                    $caBundle = dirname($caBundle);
+                    if (is_dir($caBundle) && glob($caBundle.'/*')) {
+                        $found = true;
+                        break;
+                    }
                 }
             }
         }
@@ -716,5 +737,20 @@ class RemoteFilesystem
             $found = $caBundle;
         }
         return $found;
+    }
+
+    private static function validateCaFile($contents)
+    {
+        // assume the CA is valid if php is vulnerable to
+        // https://www.sektioneins.de/advisories/advisory-012013-php-openssl_x509_parse-memory-corruption-vulnerability.html
+        if (
+            PHP_VERSION_ID <= 50327
+            || (PHP_VERSION_ID >= 50400 && PHP_VERSION_ID < 50422)
+            || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50506)
+        ) {
+            return !empty($contents);
+        }
+
+        return (bool) openssl_x509_parse($contents);
     }
 }
