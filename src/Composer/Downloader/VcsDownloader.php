@@ -13,7 +13,6 @@
 namespace Composer\Downloader;
 
 use Composer\Config;
-use Composer\Factory;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;

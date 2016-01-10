@@ -86,20 +86,4 @@ abstract class BaseIO implements IOInterface
         // setup process timeout
         ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getInputOption($optionName)
-    {
-        return $this->input->getOption($optionName);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getInputArgument($ArgumentName)
-    {
-        return $this->input->getArgument($argumentName);
-    }
 }
