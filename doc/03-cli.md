@@ -589,6 +589,11 @@ To get more information about a certain command, just use `help`.
 php composer.phar help install
 ```
 
+## Command-line completion
+
+Command-line completion can be enabled by following instructions
+[on this page](https://github.com/bamarni/symfony-console-autocomplete).
+
 ## Environment variables
 
 You can set a number of environment variables that override certain settings.
