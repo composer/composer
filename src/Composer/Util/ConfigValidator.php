@@ -19,6 +19,7 @@ use Composer\Json\JsonValidationException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Spdx\SpdxLicenses;
+use Composer\Factory;
 
 /**
  * Validates a composer configuration.

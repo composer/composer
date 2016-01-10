@@ -41,8 +41,6 @@ class SearchCommand extends Command
             ->setDescription('Search for packages')
             ->setDefinition(array(
                 new InputOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in name'),
-                new InputOption('disable-tls', null, InputOption::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
-                new InputOption('cafile', null, InputOption::VALUE_REQUIRED, 'The path to a valid CA certificate file for SSL/TLS certificate verification'),
                 new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
             ))
             ->setHelp(<<<EOT

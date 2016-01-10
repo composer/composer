@@ -69,8 +69,6 @@ class CreateProjectCommand extends Command
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deletion vcs folder.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
-                new InputOption('disable-tls', null, InputOption::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
-                new InputOption('cafile', null, InputOption::VALUE_REQUIRED, 'The path to a valid CA certificate file for SSL/TLS certificate verification'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
             ))
             ->setHelp(<<<EOT

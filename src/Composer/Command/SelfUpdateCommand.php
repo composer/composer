@@ -43,8 +43,6 @@ class SelfUpdateCommand extends Command
             ->setDefinition(array(
                 new InputOption('rollback', 'r', InputOption::VALUE_NONE, 'Revert to an older installation of composer'),
                 new InputOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update'),
-                new InputOption('disable-tls', null, InputOption::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
-                new InputOption('cafile', null, InputOption::VALUE_REQUIRED, 'The path to a valid CA certificate file for SSL/TLS certificate verification'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'The version to update to'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
             ))
@@ -63,16 +61,14 @@ EOT
     {
         $config = Factory::createConfig();
 
-        if($config->get('disable-tls') === true || $input->getOption('disable-tls')) {
+        if ($config->get('disable-tls') === true) {
             $baseUrl = 'http://' . self::HOMEPAGE;
         } else {
             $baseUrl = 'https://' . self::HOMEPAGE;
         }
+
         $io = $this->getIO();
         $remoteFilesystem = Factory::createRemoteFilesystem($io, $config);
-
-        // TODO: Silent switch probably should be kicking out exception
-        $baseUrl = (extension_loaded('openssl') ? 'https' : 'http') . '://' . self::HOMEPAGE;
 
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('home');

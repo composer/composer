@@ -56,8 +56,6 @@ class ShowCommand extends Command
                 new InputOption('available', 'a', InputOption::VALUE_NONE, 'List available packages only'),
                 new InputOption('self', 's', InputOption::VALUE_NONE, 'Show the root package information'),
                 new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
-                new InputOption('disable-tls', null, InputOption::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
-                new InputOption('cafile', null, InputOption::VALUE_REQUIRED, 'The path to a valid CA certificate file for SSL/TLS certificate verification'),
                 new InputOption('path', 'P', InputOption::VALUE_NONE, 'Show package paths'),
                 new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
             ))

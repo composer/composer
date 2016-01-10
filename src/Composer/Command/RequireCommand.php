@@ -46,8 +46,6 @@ class RequireCommand extends InitCommand
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
-                new InputOption('disable-tls', null, InputOption::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
-                new InputOption('cafile', null, InputOption::VALUE_REQUIRED, 'The path to a valid CA certificate file for SSL/TLS certificate verification'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
                 new InputOption('sort-packages', null, InputOption::VALUE_NONE, 'Sorts packages when adding/updating a new dependency'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),

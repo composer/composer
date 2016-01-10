@@ -49,10 +49,7 @@ class DiagnoseCommand extends Command
 The <info>diagnose</info> command checks common errors to help debugging problems.
 
 EOT
-            )->setDefinition(array(
-                new InputOption('disable-tls', null, InputOption::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
-                new InputOption('cafile', null, InputOption::VALUE_REQUIRED, 'The path to a valid CA certificate file for SSL/TLS certificate verification'),
-            ))
+            )
         ;
     }
 

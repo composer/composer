@@ -40,6 +40,25 @@ of their API. [Read
 more](articles/troubleshooting.md#api-rate-limit-and-oauth-tokens) on how to get
 an OAuth token for GitHub.
 
+## gitlab-oauth
+
+A list of domain names and oauth keys. For example using `{"gitlab.com":
+"oauthtoken"}` as the value of this option will use `oauthtoken` to access
+private repositories on gitlab.
+
+## disable-tls
+
+Defaults to `false`. If set to true all HTTPS URLs will be tried with HTTP
+instead and no network level encryption is performed. Enabling this is a
+security risk and is NOT recommended. The better way is to enable the
+php_openssl extension in php.ini.
+
+## cafile
+
+A way to set the path to the openssl CA file. In PHP 5.6+ you should rather
+set this via openssl.cafile in php.ini, although PHP 5.6+ should be able to
+detect your system CA file automatically.
+
 ## http-basic
 
 A list of domain names and username/passwords to authenticate against them. For

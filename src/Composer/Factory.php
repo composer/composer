@@ -521,25 +521,25 @@ class Factory
             $disableTls = true;
         } elseif (!extension_loaded('openssl')) {
             throw new \RuntimeException('The openssl extension is required for SSL/TLS protection but is not available. '
-                . 'You can disable this error, at your own risk, by passing the \'--disable-tls\' option to this command.');
+                . 'You can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
         }
         $remoteFilesystemOptions = array();
         if ($disableTls === false) {
             if (isset($config) && !empty($config->get('cafile'))) {
-                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
-            }
-            if (!empty($io->getInputOption('cafile'))) {
-                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$io->getInputOption('cafile')));
+                $remoteFilesystemOptions = array('ssl' => array('cafile' => $config->get('cafile')));
             }
             $remoteFilesystemOptions = array_merge_recursive($remoteFilesystemOptions, $options);
         }
         try {
-            $remoteFilesystem = new RemoteFilesystem($io, $remoteFilesystemOptions, $disableTls);
+            $remoteFilesystem = new RemoteFilesystem($io, $config, $remoteFilesystemOptions, $disableTls);
         } catch (TransportException $e) {
             if (preg_match('|cafile|', $e->getMessage())) {
                 $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
                 $io->write('<error>A valid CA certificate file is required for SSL/TLS protection.</error>');
-                $io->write('<error>You can disable this error, at your own risk, by passing the \'--disable-tls\' option to this command.</error>');
+                if (PHP_VERSION_ID < 50600) {
+                    $io->write('<error>It is recommended you upgrade to PHP 5.6+ which can detect your system CA file automatically.</error>');
+                }
+                $io->write('<error>You can disable this error, at your own risk, by setting the \'disable-tls\' option to true.</error>');
             }
             throw $e;
         }
