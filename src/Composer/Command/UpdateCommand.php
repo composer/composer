@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\Installer;
+use Composer\IO\IOInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Helper\Table;
@@ -55,7 +56,7 @@ class UpdateCommand extends Command
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.'),
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
-                new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'interactive interface with autocompletion that can help to select the packages to update.'),
+                new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
@@ -73,6 +74,9 @@ You may also use an asterisk (*) pattern to limit the update operation to packag
 from a specific vendor:
 
 <info>php composer.phar update vendor/package1 foo/* [...]</info>
+
+To select packages names interactively with auto-completion use <info>-i</info>.
+
 EOT
             )
         ;
@@ -95,7 +99,7 @@ EOT
         $packages = $input->getArgument('packages');
 
         if ($input->getOption('interactive')) {
-            $packages = $this->getPackagesInteractively($input, $output, $composer, $packages);
+            $packages = $this->getPackagesInteractively($io, $input, $output, $composer, $packages);
         }
 
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
@@ -155,55 +159,43 @@ EOT
         return $install->run();
     }
 
-    private function getPackagesInteractively(InputInterface $input, OutputInterface $output, Composer $composer, $packages)
+    private function getPackagesInteractively(IOInterface $io, InputInterface $input, OutputInterface $output, Composer $composer, array $packages)
     {
         if (!$input->isInteractive()) {
             throw new \InvalidArgumentException('--interactive cannot be used in non-interactive terminals.');
         }
 
-        $packagesMap = $composer->getRepositoryManager()
-            ->getLocalRepository()->getPackages();
-
-        $requiredPackageNames = array();
-        foreach (
-            array_merge(
-                $composer->getPackage()->getRequires(),
-                $composer->getPackage()->getDevRequires()
-            ) as $require) {
-            $requiredPackageNames[] = $require->getTarget();
+        $requires = array_merge(
+            $composer->getPackage()->getRequires(),
+            $composer->getPackage()->getDevRequires()
+        );
+        $autocompleterValues = array();
+        foreach ($requires as $require) {
+            $autocompleterValues[strtolower($require->getTarget())] = $require->getTarget();
         }
 
-        $InstalledPackageNames = array();
-        foreach ($packagesMap as $package) {
-            $InstalledPackageNames[] = $package->getPrettyName();
+        $installedPackages = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
+        foreach ($installedPackages as $package) {
+            $autocompleterValues[$package->getName()] = $package->getPrettyName();
         }
 
-        $autocompleterValues = array_unique(
-            array_merge($InstalledPackageNames, $requiredPackageNames)
-        );
+        $helper = $this->getHelper('question');
+        $question = new Question('<comment>Enter package name: </comment>', null);
 
-        $helper       = $this->getHelper('question');
-        $question     = new Question(
-            '<comment>Enter package name: </comment>',
-            null
-        );
-
-        $packages = is_array($packages) ? $packages : array();
-        $output->writeln('<info>NB: Empty package ends submission.</info>'); // I couldn't find any better for now!
+        $io->writeError('<info>Press enter without value to end submission</info>');
 
         do {
+            $autocompleterValues = array_diff($autocompleterValues, $packages);
             $question->setAutocompleterValues($autocompleterValues);
             $addedPackage = $helper->ask($input, $output, $question);
 
-            if (!is_string($addedPackage)) {
+            if (!is_string($addedPackage) || empty($addedPackage)) {
                 break;
             }
 
+            $addedPackage = strtolower($addedPackage);
             if (!in_array($addedPackage, $packages)) {
                 $packages[] = $addedPackage;
-                $autocompleterValues = array_diff($autocompleterValues, array($addedPackage));
-            } else {
-                $output->writeln(sprintf('<error>The package "%s" was already added.</error>', $package));
             }
         } while (true);
 
@@ -214,20 +206,15 @@ EOT
 
         $table = new Table($output);
         $table->setHeaders(array('Selected packages'));
-        foreach ((array)$packages as $package) {
+        foreach ($packages as $package) {
             $table->addRow(array($package));
         }
         $table->render();
 
-        $continue = new ConfirmationQuestion(
-            sprintf(
-                '<question>Would you like to continue and update the above package%s [yes|no] ?</question><info> (yes) </info>',
-                1 === count($packages) ? '' : 's'
-            ),
-            true
-        );
-
-        if ($helper->ask($input, $output, $continue)) {
+        if ($io->askConfirmation(sprintf(
+            'Would you like to continue and update the above package%s [<comment>yes</comment>]? ',
+            1 === count($packages) ? '' : 's'
+        ), true)) {
             return $packages;
         }
 
