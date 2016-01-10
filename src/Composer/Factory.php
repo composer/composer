@@ -543,7 +543,7 @@ class Factory
         try {
             $remoteFilesystem = new RemoteFilesystem($io, $config, $remoteFilesystemOptions, $disableTls);
         } catch (TransportException $e) {
-            if (preg_match('{cafile}', $e->getMessage())) {
+            if (false !== strpos($e->getMessage(), 'cafile')) {
                 $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
                 $io->write('<error>A valid CA certificate file is required for SSL/TLS protection.</error>');
                 if (PHP_VERSION_ID < 50600) {

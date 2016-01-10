@@ -188,7 +188,7 @@ EOT
         try {
             $this->rfs->getContents('packagist.org', $proto . '://packagist.org/packages.json', false);
         } catch (TransportException $e) {
-            if (preg_match('|cafile|', $e->getMessage())) {
+            if (false !== strpos($e->getMessage(), 'cafile')) {
                 $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
                 $result[] = '<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>';
                 $result[] = '<error>You can alternatively disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>';
