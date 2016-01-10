@@ -17,6 +17,7 @@ use Composer\Cache;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\RemoteFilesystem;
 use Composer\IO\IOInterface;
 
 /**
@@ -29,11 +30,11 @@ class XzDownloader extends ArchiveDownloader
 {
     protected $process;
 
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null, RemoteFilesystem $rfs = null)
     {
         $this->process = $process ?: new ProcessExecutor($io);
 
-        parent::__construct($io, $config, $eventDispatcher, $cache);
+        parent::__construct($io, $config, $eventDispatcher, $cache, $rfs);
     }
 
     protected function extract($file, $path)

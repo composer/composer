@@ -19,6 +19,7 @@ use Composer\Package\Archiver;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
+use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
@@ -162,7 +163,7 @@ class Factory
                 throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
             }
             $factory = new static;
-            $rm = $factory->createRepositoryManager($io, $config);
+            $rm = $factory->createRepositoryManager($io, $config, null, self::createRemoteFilesystem($io, $config));
         }
 
         foreach ($config->getRepositories() as $index => $repo) {
@@ -262,12 +263,14 @@ class Factory
             $io->loadConfiguration($config);
         }
 
+        $rfs = self::createRemoteFilesystem($io, $config);
+
         // initialize event dispatcher
         $dispatcher = new EventDispatcher($composer, $io);
         $composer->setEventDispatcher($dispatcher);
 
         // initialize repository manager
-        $rm = $this->createRepositoryManager($io, $config, $dispatcher);
+        $rm = $this->createRepositoryManager($io, $config, $dispatcher, $rfs);
         $composer->setRepositoryManager($rm);
 
         // load local repository
@@ -292,7 +295,7 @@ class Factory
 
         if ($fullLoad) {
             // initialize download manager
-            $dm = $this->createDownloadManager($io, $config, $dispatcher);
+            $dm = $this->createDownloadManager($io, $config, $dispatcher, $rfs);
             $composer->setDownloadManager($dm);
 
             // initialize autoload generator
@@ -336,9 +339,9 @@ class Factory
      * @param  EventDispatcher              $eventDispatcher
      * @return Repository\RepositoryManager
      */
-    protected function createRepositoryManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
+    protected function createRepositoryManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
-        $rm = new RepositoryManager($io, $config, $eventDispatcher);
+        $rm = new RepositoryManager($io, $config, $eventDispatcher, $rfs);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
@@ -391,7 +394,7 @@ class Factory
      * @param  EventDispatcher            $eventDispatcher
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
+    public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
         $cache = null;
         if ($config->get('cache-files-ttl') > 0) {
@@ -412,18 +415,21 @@ class Factory
                 break;
         }
 
-        $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
-        $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
-        $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
+        $executor = new ProcessExecutor($io);
+        $fs = new Filesystem($executor);
+
+        $dm->setDownloader('git', new Downloader\GitDownloader($io, $config, $executor, $fs));
+        $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config, $executor, $fs));
+        $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config));
-        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
+        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
+        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $eventDispatcher, $cache, $rfs));
+        $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
+        $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
+        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache, $rfs));
+        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache, $rfs));
+        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $eventDispatcher, $cache, $rfs));
 
         return $dm;
     }
@@ -515,9 +521,13 @@ class Factory
      */
     public static function createRemoteFilesystem(IOInterface $io, Config $config = null, $options = array())
     {
+        static $warned = false;
         $disableTls = false;
         if (isset($config) && $config->get('disable-tls') === true) {
-            $io->write('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
+            if (!$warned) {
+                $io->write('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
+            }
+            $warned = true;
             $disableTls = true;
         } elseif (!extension_loaded('openssl')) {
             throw new \RuntimeException('The openssl extension is required for SSL/TLS protection but is not available. '

@@ -59,7 +59,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $degradedMode = false;
     private $rootData;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
         if (!preg_match('{^[\w.]+\??://}', $repoConfig['url'])) {
             // assume http as the default protocol
@@ -90,7 +90,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
-        $this->rfs = Factory::createRemoteFilesystem($this->io, $this->config, $this->options);
+        $this->rfs = $rfs ?: Factory::createRemoteFilesystem($this->io, $this->config, $this->options);
         $this->eventDispatcher = $eventDispatcher;
         $this->repoConfig = $repoConfig;
     }
