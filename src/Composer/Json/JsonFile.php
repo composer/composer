@@ -16,6 +16,7 @@ use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
 use Composer\Util\RemoteFilesystem;
+use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 
 /**
@@ -35,6 +36,7 @@ class JsonFile
 
     private $path;
     private $rfs;
+    private $io;
 
     /**
      * Initializes json file reader/parser.
@@ -43,7 +45,7 @@ class JsonFile
      * @param  RemoteFilesystem          $rfs  required for loading http/https json files
      * @throws \InvalidArgumentException
      */
-    public function __construct($path, RemoteFilesystem $rfs = null)
+    public function __construct($path, RemoteFilesystem $rfs = null, IOInterface $io = null)
     {
         $this->path = $path;
 
@@ -51,6 +53,7 @@ class JsonFile
             throw new \InvalidArgumentException('http urls require a RemoteFilesystem instance to be passed');
         }
         $this->rfs = $rfs;
+        $this->io = $io;
     }
 
     /**
@@ -83,6 +86,9 @@ class JsonFile
             if ($this->rfs) {
                 $json = $this->rfs->getContents($this->path, $this->path, false);
             } else {
+                if ($this->io && $this->io->isDebug()) {
+                    $this->io->writeError('Reading ' . $this->path);
+                }
                 $json = file_get_contents($this->path);
             }
         } catch (TransportException $e) {

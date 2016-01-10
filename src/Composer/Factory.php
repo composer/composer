@@ -206,13 +206,10 @@ class Factory
             $localConfig = static::getComposerFile();
         }
 
-        $rfs = Factory::createRemoteFilesystem($io);
-
         if (is_string($localConfig)) {
             $composerFile = $localConfig;
 
-            $rfs = Factory::createRemoteFilesystem($io);
-            $file = new JsonFile($localConfig, $rfs);
+            $file = new JsonFile($localConfig, null, $io);
 
             if (!$file->exists()) {
                 if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
@@ -274,7 +271,7 @@ class Factory
         $composer->setRepositoryManager($rm);
 
         // load local repository
-        $this->addLocalRepository($rm, $vendorDir);
+        $this->addLocalRepository($io, $rm, $vendorDir);
 
         // force-set the version of the global package if not defined as
         // guessing it adds no value and only takes time
@@ -326,7 +323,7 @@ class Factory
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
 
-            $locker = new Package\Locker($io, new JsonFile($lockFile, $rfs), $rm, $im, file_get_contents($composerFile));
+            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($composerFile));
             $composer->setLocker($locker);
         }
 
@@ -361,9 +358,9 @@ class Factory
      * @param Repository\RepositoryManager $rm
      * @param string                       $vendorDir
      */
-    protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
+    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir)
     {
-        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
+        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io)));
     }
 
     /**
