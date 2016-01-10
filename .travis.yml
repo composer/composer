@@ -30,6 +30,7 @@ before_script:
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
     - flags=""
     - if [ `phpenv version-name` == "5.3.3" ]; then flags="--ignore-platform-reqs"; fi
+    - if [ `phpenv version-name` == "5.3.3" ]; then composer config -g disable-tls true; fi
     - composer install $flags
     - bin/composer install $flags
     - git config --global user.name travis-ci
