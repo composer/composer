@@ -90,7 +90,7 @@ To setup a developer workable version you should create the project using the so
 controlled code by appending the <info>'--prefer-source'</info> flag.
 
 To install a package from another repository than the default one you
-can pass the <info>'--repository-url=http://myrepository.org'</info> flag.
+can pass the <info>'--repository-url=https://myrepository.org'</info> flag.
 
 EOT
             )

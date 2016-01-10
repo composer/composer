@@ -90,7 +90,7 @@ To edit the global config.json file:
 
 To add a repository:
 
-    <comment>%command.full_name% repositories.foo vcs http://bar.com</comment>
+    <comment>%command.full_name% repositories.foo vcs https://bar.com</comment>
 
 To remove a repository (repo is a short alias for repositories):
 
@@ -433,7 +433,7 @@ EOT
                 }
             }
 
-            throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
+            throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs https://bar.com');
         }
 
         // handle platform

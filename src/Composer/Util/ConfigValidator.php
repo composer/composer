@@ -86,7 +86,7 @@ class ConfigValidator
             $licenseValidator = new SpdxLicenses();
             if ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license'])) {
                 $warnings[] = sprintf(
-                    'License %s is not a valid SPDX license identifier, see http://www.spdx.org/licenses/ if you use an open license.'
+                    'License %s is not a valid SPDX license identifier, see https://spdx.org/licenses/ if you use an open license.'
                     ."\nIf the software is closed-source, you may use \"proprietary\" as license.",
                     json_encode($manifest['license'])
                 );
@@ -111,7 +111,7 @@ class ConfigValidator
         }
 
         if (!empty($manifest['type']) && $manifest['type'] == 'composer-installer') {
-            $warnings[] = "The package type 'composer-installer' is deprecated. Please distribute your custom installers as plugins from now on. See http://getcomposer.org/doc/articles/plugins.md for plugin documentation.";
+            $warnings[] = "The package type 'composer-installer' is deprecated. Please distribute your custom installers as plugins from now on. See https://getcomposer.org/doc/articles/plugins.md for plugin documentation.";
         }
 
         // check for require-dev overrides
