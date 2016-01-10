@@ -12,7 +12,6 @@ addons:
       - parallel
 
 php:
-  - 5.3.3
   - 5.3
   - 5.4
   - 5.5
@@ -29,8 +28,6 @@ matrix:
 before_script:
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
     - flags=""
-    - if [ `phpenv version-name` == "5.3.3" ]; then flags="--ignore-platform-reqs"; fi
-    - if [ `phpenv version-name` == "5.3.3" ]; then mkdir -p ~/.composer; echo '{"config":{"disable-tls":true}}' > ~/.composer/config.json; fi
     - composer install $flags
     - bin/composer install $flags
     - git config --global user.name travis-ci
