@@ -535,7 +535,7 @@ class Factory
         }
         $remoteFilesystemOptions = array();
         if ($disableTls === false) {
-            if (isset($config) && !empty($config->get('cafile'))) {
+            if (isset($config) && $config->get('cafile')) {
                 $remoteFilesystemOptions = array('ssl' => array('cafile' => $config->get('cafile')));
             }
             $remoteFilesystemOptions = array_merge_recursive($remoteFilesystemOptions, $options);
