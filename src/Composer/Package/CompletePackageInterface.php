@@ -82,7 +82,7 @@ interface CompletePackageInterface extends PackageInterface
     /**
      * Returns if the package is abandoned or not
      *
-     * @return boolean
+     * @return bool
      */
     public function isAbandoned();
 

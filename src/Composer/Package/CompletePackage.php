@@ -172,7 +172,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isAbandoned()
     {
@@ -180,7 +180,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * @param boolean|string $abandoned
+     * @param bool|string $abandoned
      */
     public function setAbandoned($abandoned)
     {

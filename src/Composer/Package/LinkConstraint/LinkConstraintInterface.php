@@ -12,15 +12,13 @@
 
 namespace Composer\Package\LinkConstraint;
 
+use Composer\Semver\Constraint\ConstraintInterface;
+
+trigger_error('The ' . __NAMESPACE__ . '\LinkConstraintInterface interface is deprecated, use Composer\Semver\Constraint\ConstraintInterface instead.', E_USER_DEPRECATED);
+
 /**
- * Defines a constraint on a link between two packages.
- *
- * @author Nils Adermann <naderman@naderman.de>
+ * @deprecated use Composer\Semver\Constraint\ConstraintInterface instead
  */
-interface LinkConstraintInterface
+interface LinkConstraintInterface extends ConstraintInterface
 {
-    public function matches(LinkConstraintInterface $provider);
-    public function setPrettyString($prettyString);
-    public function getPrettyString();
-    public function __toString();
 }

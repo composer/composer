@@ -27,12 +27,19 @@ use Composer\Util\Filesystem;
  */
 abstract class VcsDriver implements VcsDriverInterface
 {
+    /** @var string */
     protected $url;
+    /** @var string */
     protected $originUrl;
+    /** @var array */
     protected $repoConfig;
+    /** @var IOInterface */
     protected $io;
+    /** @var Config */
     protected $config;
+    /** @var ProcessExecutor */
     protected $process;
+    /** @var RemoteFilesystem */
     protected $remoteFilesystem;
 
     /**

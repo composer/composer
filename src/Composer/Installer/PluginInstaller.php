@@ -13,7 +13,6 @@
 namespace Composer\Installer;
 
 use Composer\Composer;
-use Composer\Package\Package;
 use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
@@ -27,7 +26,6 @@ use Composer\Package\PackageInterface;
 class PluginInstaller extends LibraryInstaller
 {
     private $installationManager;
-    private static $classCounter = 0;
 
     /**
      * Initializes Plugin installer.

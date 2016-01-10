@@ -33,14 +33,24 @@ class ConfigCommand extends Command
     protected $config;
 
     /**
-     * @var Composer\Json\JsonFile
+     * @var JsonFile
      */
     protected $configFile;
 
     /**
-     * @var Composer\Config\JsonConfigSource
+     * @var JsonConfigSource
      */
     protected $configSource;
+
+    /**
+     * @var JsonFile
+     */
+    protected $authConfigFile;
+
+    /**
+     * @var JsonConfigSource
+     */
+    protected $authConfigSource;
 
     /**
      * {@inheritDoc}
@@ -56,7 +66,7 @@ class ConfigCommand extends Command
                 new InputOption('auth', 'a', InputOption::VALUE_NONE, 'Affect auth config file (only used for --editor)'),
                 new InputOption('unset', null, InputOption::VALUE_NONE, 'Unset the given setting-key'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
-                new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json', 'composer.json'),
+                new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
                 new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
@@ -64,6 +74,15 @@ class ConfigCommand extends Command
             ->setHelp(<<<EOT
 This command allows you to edit some basic composer settings in either the
 local composer.json file or the global config.json file.
+
+To set a config setting:
+
+    <comment>%command.full_name% bin-dir bin/</comment>
+
+To read a config setting:
+
+    <comment>%command.full_name% bin-dir</comment>
+    Outputs: <info>bin</info>
 
 To edit the global config.json file:
 
@@ -73,7 +92,15 @@ To add a repository:
 
     <comment>%command.full_name% repositories.foo vcs http://bar.com</comment>
 
-You can add a repository to the global config.json file by passing in the
+To remove a repository (repo is a short alias for repositories):
+
+    <comment>%command.full_name% --unset repo.foo</comment>
+
+To disable packagist:
+
+    <comment>%command.full_name% repo.packagist false</comment>
+
+You can alter repositories in the global config.json file by passing in the
 <info>--global</info> option.
 
 To edit the file in an external editor:
@@ -102,7 +129,7 @@ EOT
     {
         parent::initialize($input, $output);
 
-        if ($input->getOption('global') && 'composer.json' !== $input->getOption('file')) {
+        if ($input->getOption('global') && null !== $input->getOption('file')) {
             throw new \RuntimeException('--file and --global can not be combined');
         }
 
@@ -112,14 +139,19 @@ EOT
         // passed in a file to use
         $configFile = $input->getOption('global')
             ? ($this->config->get('home') . '/config.json')
-            : $input->getOption('file');
+            : ($input->getOption('file') ?: trim(getenv('COMPOSER')) ?: 'composer.json');
+
+        // create global composer.json if this was invoked using `composer global config`
+        if ($configFile === 'composer.json' && !file_exists($configFile) && realpath(getcwd()) === realpath($this->config->get('home'))) {
+            file_put_contents($configFile, "{\n}\n");
+        }
 
         $this->configFile = new JsonFile($configFile);
         $this->configSource = new JsonConfigSource($this->configFile);
 
         $authConfigFile = $input->getOption('global')
             ? ($this->config->get('home') . '/auth.json')
-            : dirname(realpath($input->getOption('file'))) . '/auth.json';
+            : dirname(realpath($configFile)) . '/auth.json';
 
         $this->authConfigFile = new JsonFile($authConfigFile);
         $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);
@@ -132,7 +164,7 @@ EOT
         }
         if ($input->getOption('global') && !$this->authConfigFile->exists()) {
             touch($this->authConfigFile->getPath());
-            $this->authConfigFile->write(array('http-basic' => new \ArrayObject, 'github-oauth' => new \ArrayObject));
+            $this->authConfigFile->write(array('http-basic' => new \ArrayObject, 'github-oauth' => new \ArrayObject, 'gitlab-oauth' => new \ArrayObject));
             @chmod($this->authConfigFile->getPath(), 0600);
         }
 
@@ -206,17 +238,19 @@ EOT
             } elseif (strpos($settingKey, '.')) {
                 $bits = explode('.', $settingKey);
                 $data = $data['config'];
+                $match = false;
                 foreach ($bits as $bit) {
-                    if (isset($data[$bit])) {
-                        $data = $data[$bit];
-                    } elseif (isset($data[implode('.', $bits)])) {
-                        // last bit can contain domain names and such so try to join whatever is left if it exists
-                        $data = $data[implode('.', $bits)];
-                        break;
-                    } else {
-                        throw new \RuntimeException($settingKey.' is not defined');
+                    $key = isset($key) ? $key.'.'.$bit : $bit;
+                    $match = false;
+                    if (isset($data[$key])) {
+                        $match = true;
+                        $data = $data[$key];
+                        unset($key);
                     }
-                    array_shift($bits);
+                }
+
+                if (!$match) {
+                    throw new \RuntimeException($settingKey.' is not defined.');
                 }
 
                 $value = $data;
@@ -230,54 +264,12 @@ EOT
                 $value = json_encode($value);
             }
 
-            $output->writeln($value);
+            $this->getIO()->write($value);
 
             return 0;
         }
 
         $values = $input->getArgument('setting-value'); // what the user is trying to add/change
-
-        // handle repositories
-        if (preg_match('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
-            if ($input->getOption('unset')) {
-                return $this->configSource->removeRepository($matches[1]);
-            }
-
-            if (2 !== count($values)) {
-                throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
-            }
-
-            return $this->configSource->addRepository($matches[1], array(
-                'type' => $values[0],
-                'url'  => $values[1],
-            ));
-        }
-
-        // handle github-oauth
-        if (preg_match('/^(github-oauth|http-basic)\.(.+)/', $settingKey, $matches)) {
-            if ($input->getOption('unset')) {
-                $this->authConfigSource->removeConfigSetting($matches[1].'.'.$matches[2]);
-                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
-
-                return;
-            }
-
-            if ($matches[1] === 'github-oauth') {
-                if (1 !== count($values)) {
-                    throw new \RuntimeException('Too many arguments, expected only one token');
-                }
-                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
-                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], $values[0]);
-            } elseif ($matches[1] === 'http-basic') {
-                if (2 !== count($values)) {
-                    throw new \RuntimeException('Expected two arguments (username, password), got '.count($values));
-                }
-                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
-                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'password' => $values[1]));
-            }
-
-            return;
-        }
 
         $booleanValidator = function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); };
         $booleanNormalizer = function ($val) { return $val !== 'false' && (bool) $val; };
@@ -288,7 +280,7 @@ EOT
             'use-include-path' => array($booleanValidator, $booleanNormalizer),
             'preferred-install' => array(
                 function ($val) { return in_array($val, array('auto', 'source', 'dist'), true); },
-                function ($val) { return $val; }
+                function ($val) { return $val; },
             ),
             'store-auths' => array(
                 function ($val) { return in_array($val, array('true', 'false', 'prompt'), true); },
@@ -298,11 +290,13 @@ EOT
                     }
 
                     return $val !== 'false' && (bool) $val;
-                }
+                },
             ),
             'notify-on-install' => array($booleanValidator, $booleanNormalizer),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
             'bin-dir' => array('is_string', function ($val) { return $val; }),
+            'archive-dir' => array('is_string', function ($val) { return $val; }),
+            'archive-format' => array('is_string', function ($val) { return $val; }),
             'cache-dir' => array('is_string', function ($val) { return $val; }),
             'cache-files-dir' => array('is_string', function ($val) { return $val; }),
             'cache-repo-dir' => array('is_string', function ($val) { return $val; }),
@@ -311,7 +305,11 @@ EOT
             'cache-files-ttl' => array('is_numeric', 'intval'),
             'cache-files-maxsize' => array(
                 function ($val) { return preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val) > 0; },
-                function ($val) { return $val; }
+                function ($val) { return $val; },
+            ),
+            'bin-compat' => array(
+                function ($val) { return in_array($val, array('auto', 'full')); },
+                function ($val) { return $val; },
             ),
             'discard-changes' => array(
                 function ($val) { return in_array($val, array('stash', 'true', 'false', '1', '0'), true); },
@@ -321,9 +319,10 @@ EOT
                     }
 
                     return $val !== 'false' && (bool) $val;
-                }
+                },
             ),
             'autoloader-suffix' => array('is_string', function ($val) { return $val === 'null' ? null : $val; }),
+            'sort-packages' => array($booleanValidator, $booleanNormalizer),
             'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
             'classmap-authoritative' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
@@ -351,7 +350,7 @@ EOT
                 },
                 function ($vals) {
                     return $vals;
-                }
+                },
             ),
             'github-domains' => array(
                 function ($vals) {
@@ -363,7 +362,19 @@ EOT
                 },
                 function ($vals) {
                     return $vals;
-                }
+                },
+            ),
+            'gitlab-domains' => array(
+                function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
+
+                    return true;
+                },
+                function ($vals) {
+                    return $vals;
+                },
             ),
         );
 
@@ -407,6 +418,64 @@ EOT
             }
         }
 
+        // handle repositories
+        if (preg_match('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                return $this->configSource->removeRepository($matches[1]);
+            }
+
+            if (2 === count($values)) {
+                return $this->configSource->addRepository($matches[1], array(
+                    'type' => $values[0],
+                    'url'  => $values[1],
+                ));
+            }
+
+            if (1 === count($values)) {
+                $bool = strtolower($values[0]);
+                if (true === $booleanValidator($bool) && false === $booleanNormalizer($bool)) {
+                    return $this->configSource->addRepository($matches[1], false);
+                }
+            }
+
+            throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
+        }
+
+        // handle platform
+        if (preg_match('/^platform\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                return $this->configSource->removeConfigSetting($settingKey);
+            }
+
+            return $this->configSource->addConfigSetting($settingKey, $values[0]);
+        }
+
+        // handle github-oauth
+        if (preg_match('/^(github-oauth|gitlab-oauth|http-basic)\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                $this->authConfigSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+
+                return;
+            }
+
+            if ($matches[1] === 'github-oauth' || $matches[1] === 'gitlab-oauth') {
+                if (1 !== count($values)) {
+                    throw new \RuntimeException('Too many arguments, expected only one token');
+                }
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], $values[0]);
+            } elseif ($matches[1] === 'http-basic') {
+                if (2 !== count($values)) {
+                    throw new \RuntimeException('Expected two arguments (username, password), got '.count($values));
+                }
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'password' => $values[1]));
+            }
+
+            return;
+        }
+
         throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
     }
 
@@ -421,6 +490,7 @@ EOT
     protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, $k = null)
     {
         $origK = $k;
+        $io = $this->getIO();
         foreach ($contents as $key => $value) {
             if ($k === null && !in_array($key, array('config', 'repositories'))) {
                 continue;
@@ -431,13 +501,7 @@ EOT
             if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
                 $k .= preg_replace('{^config\.}', '', $key . '.');
                 $this->listConfiguration($value, $rawVal, $output, $k);
-
-                if (substr_count($k, '.') > 1) {
-                    $k = str_split($k, strrpos($k, '.', -2));
-                    $k = $k[0] . '.';
-                } else {
-                    $k = $origK;
-                }
+                $k = $origK;
 
                 continue;
             }
@@ -455,9 +519,9 @@ EOT
             }
 
             if (is_string($rawVal) && $rawVal != $value) {
-                $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>');
+                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>');
             } else {
-                $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
+                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
             }
         }
     }

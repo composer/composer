@@ -30,7 +30,9 @@ class DumpAutoloadCommand extends Command
             ->setAliases(array('dumpautoload'))
             ->setDescription('Dumps the autoloader')
             ->setDefinition(array(
+                new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.'),
+                new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules.'),
             ))
             ->setHelp(<<<EOT
@@ -52,16 +54,19 @@ EOT
         $package = $composer->getPackage();
         $config = $composer->getConfig();
 
-        $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader') || $config->get('classmap-authoritative');
+        $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader');
+        $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
 
-        if ($optimize) {
-            $output->writeln('<info>Generating optimized autoload files</info>');
+        if ($optimize || $authoritative) {
+            $this->getIO()->writeError('<info>Generating optimized autoload files</info>');
         } else {
-            $output->writeln('<info>Generating autoload files</info>');
+            $this->getIO()->writeError('<info>Generating autoload files</info>');
         }
 
         $generator = $composer->getAutoloadGenerator();
         $generator->setDevMode(!$input->getOption('no-dev'));
+        $generator->setClassMapAuthoritative($authoritative);
+        $generator->setRunScripts(!$input->getOption('no-scripts'));
         $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
     }
 }

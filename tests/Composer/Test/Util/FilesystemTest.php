@@ -18,12 +18,44 @@ use Composer\TestCase;
 class FilesystemTest extends TestCase
 {
     /**
+     * @var Filesystem
+     */
+    private $fs;
+
+    /**
+     * @var string
+     */
+    private $workingDir;
+
+    /**
+     * @var string
+     */
+    private $testFile;
+
+    /**
      * @dataProvider providePathCouplesAsCode
      */
     public function testFindShortestPathCode($a, $b, $directory, $expected)
     {
         $fs = new Filesystem;
         $this->assertEquals($expected, $fs->findShortestPathCode($a, $b, $directory));
+    }
+
+    public function setUp()
+    {
+        $this->fs = new Filesystem;
+        $this->workingDir = sys_get_temp_dir() . '/composer_testdir';
+        $this->testFile = sys_get_temp_dir() . '/composer_test_file';
+    }
+
+    public function tearDown()
+    {
+        if (is_dir($this->workingDir)) {
+            $this->fs->removeDirectory($this->workingDir);
+        }
+        if (is_file($this->testFile)) {
+            $this->fs->remove($this->testFile);
+        }
     }
 
     public function providePathCouplesAsCode()
@@ -112,6 +144,7 @@ class FilesystemTest extends TestCase
             array('/foo/bar_vendor', '/foo/bar', '../bar', true),
             array('/foo/bar_vendor', '/foo/bar/src', '../bar/src', true),
             array('/foo/bar_vendor/src2', '/foo/bar/src/lib', '../../bar/src/lib', true),
+            array('C:/', 'C:/foo/bar/', "foo/bar", true),
         );
     }
 
@@ -120,33 +153,30 @@ class FilesystemTest extends TestCase
      */
     public function testRemoveDirectoryPhp()
     {
-        $tmp = sys_get_temp_dir();
-        @mkdir($tmp . "/composer_testdir/level1/level2", 0777, true);
-        file_put_contents($tmp . "/composer_testdir/level1/level2/hello.txt", "hello world");
+        @mkdir($this->workingDir . "/level1/level2", 0777, true);
+        file_put_contents($this->workingDir . "/level1/level2/hello.txt", "hello world");
 
         $fs = new Filesystem;
-        $this->assertTrue($fs->removeDirectoryPhp($tmp . "/composer_testdir"));
-        $this->assertFalse(file_exists($tmp . "/composer_testdir/level1/level2/hello.txt"));
+        $this->assertTrue($fs->removeDirectoryPhp($this->workingDir));
+        $this->assertFalse(file_exists($this->workingDir . "/level1/level2/hello.txt"));
     }
 
     public function testFileSize()
     {
-        $tmp = sys_get_temp_dir();
-        file_put_contents("$tmp/composer_test_file", 'Hello');
+        file_put_contents($this->testFile, 'Hello');
 
         $fs = new Filesystem;
-        $this->assertGreaterThanOrEqual(5, $fs->size("$tmp/composer_test_file"));
+        $this->assertGreaterThanOrEqual(5, $fs->size($this->testFile));
     }
 
     public function testDirectorySize()
     {
-        $tmp = sys_get_temp_dir();
-        @mkdir("$tmp/composer_testdir", 0777, true);
-        file_put_contents("$tmp/composer_testdir/file1.txt", 'Hello');
-        file_put_contents("$tmp/composer_testdir/file2.txt", 'World');
+        @mkdir($this->workingDir, 0777, true);
+        file_put_contents($this->workingDir."/file1.txt", 'Hello');
+        file_put_contents($this->workingDir."/file2.txt", 'World');
 
         $fs = new Filesystem;
-        $this->assertGreaterThanOrEqual(10, $fs->size("$tmp/composer_testdir"));
+        $this->assertGreaterThanOrEqual(10, $fs->size($this->workingDir));
     }
 
     /**
@@ -179,11 +209,11 @@ class FilesystemTest extends TestCase
 
     /**
      * @link https://github.com/composer/composer/issues/3157
+     * @requires function symlink
      */
     public function testUnlinkSymlinkedDirectory()
     {
-        $tmp       = sys_get_temp_dir();
-        $basepath  = $tmp . "/composer_testdir";
+        $basepath  = $this->workingDir;
         $symlinked = $basepath . "/linked";
         @mkdir($basepath . "/real", 0777, true);
         touch($basepath . "/real/FILE");
@@ -206,17 +236,16 @@ class FilesystemTest extends TestCase
 
     /**
      * @link https://github.com/composer/composer/issues/3144
+     * @requires function symlink
      */
     public function testRemoveSymlinkedDirectoryWithTrailingSlash()
     {
-        $tmp = sys_get_temp_dir();
-        $basepath = $tmp . "/composer_testdir";
-        @mkdir($basepath . "/real", 0777, true);
-        touch($basepath . "/real/FILE");
-        $symlinked              = $basepath . "/linked";
+        @mkdir($this->workingDir . "/real", 0777, true);
+        touch($this->workingDir . "/real/FILE");
+        $symlinked              = $this->workingDir . "/linked";
         $symlinkedTrailingSlash = $symlinked . "/";
 
-        $result = @symlink($basepath . "/real", $symlinked);
+        $result = @symlink($this->workingDir . "/real", $symlinked);
 
         if (!$result) {
             $this->markTestSkipped('Symbolic links for directories not supported on this platform');

@@ -35,7 +35,7 @@ class Event
     protected $flags;
 
     /**
-     * @var boolean Whether the event should not be passed to more listeners
+     * @var bool Whether the event should not be passed to more listeners
      */
     private $propagationStopped = false;
 
@@ -86,7 +86,7 @@ class Event
     /**
      * Checks if stopPropagation has been called
      *
-     * @return boolean Whether propagation has been stopped
+     * @return bool Whether propagation has been stopped
      */
     public function isPropagationStopped()
     {

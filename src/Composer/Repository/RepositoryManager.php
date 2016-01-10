@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Package\PackageInterface;
 
 /**
  * Repositories manager.
@@ -42,15 +43,15 @@ class RepositoryManager
     /**
      * Searches for a package by it's name and version in managed repositories.
      *
-     * @param string $name    package name
-     * @param string $version package version
+     * @param string                                                 $name       package name
+     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface|null
      */
-    public function findPackage($name, $version)
+    public function findPackage($name, $constraint)
     {
         foreach ($this->repositories as $repository) {
-            if ($package = $repository->findPackage($name, $version)) {
+            if ($package = $repository->findPackage($name, $constraint)) {
                 return $package;
             }
         }
@@ -59,17 +60,17 @@ class RepositoryManager
     /**
      * Searches for all packages matching a name and optionally a version in managed repositories.
      *
-     * @param string $name    package name
-     * @param string $version package version
+     * @param string                                                 $name       package name
+     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return array
      */
-    public function findPackages($name, $version)
+    public function findPackages($name, $constraint)
     {
         $packages = array();
 
         foreach ($this->repositories as $repository) {
-            $packages = array_merge($packages, $repository->findPackages($name, $version));
+            $packages = array_merge($packages, $repository->findPackages($name, $constraint));
         }
 
         return $packages;
@@ -90,8 +91,8 @@ class RepositoryManager
      *
      * @param  string                    $type   repository type
      * @param  array                     $config repository configuration
-     * @return RepositoryInterface
      * @throws \InvalidArgumentException if repository for provided type is not registered
+     * @return RepositoryInterface
      */
     public function createRepository($type, $config)
     {

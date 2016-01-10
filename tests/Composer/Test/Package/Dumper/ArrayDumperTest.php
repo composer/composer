@@ -14,7 +14,7 @@ namespace Composer\Test\Package\Dumper;
 
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Link;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\Constraint;
 
 class ArrayDumperTest extends \PHPUnit_Framework_TestCase
 {
@@ -45,7 +45,7 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             array(
                 'name' => 'foo',
                 'version' => '1.0',
-                'version_normalized' => '1.0.0.0'
+                'version_normalized' => '1.0.0.0',
             ),
             $config
         );
@@ -100,7 +100,7 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
         return array(
             array(
                 'type',
-                'library'
+                'library',
             ),
             array(
                 'time',
@@ -110,46 +110,46 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 'authors',
-                array('Nils Adermann <naderman@naderman.de>', 'Jordi Boggiano <j.boggiano@seld.be>')
+                array('Nils Adermann <naderman@naderman.de>', 'Jordi Boggiano <j.boggiano@seld.be>'),
             ),
             array(
                 'homepage',
-                'http://getcomposer.org'
+                'https://getcomposer.org',
             ),
             array(
                 'description',
-                'Dependency Manager'
+                'Dependency Manager',
             ),
             array(
                 'keywords',
                 array('package', 'dependency', 'autoload'),
                 null,
-                array('autoload', 'dependency', 'package')
+                array('autoload', 'dependency', 'package'),
             ),
             array(
                 'bin',
                 array('bin/composer'),
-                'binaries'
+                'binaries',
             ),
             array(
                 'license',
-                array('MIT')
+                array('MIT'),
             ),
             array(
                 'autoload',
-                array('psr-0' => array('Composer' => 'src/'))
+                array('psr-0' => array('Composer' => 'src/')),
             ),
             array(
                 'repositories',
-                array('packagist' => false)
+                array('packagist' => false),
             ),
             array(
                 'scripts',
-                array('post-update-cmd' => 'MyVendor\\MyClass::postUpdate')
+                array('post-update-cmd' => 'MyVendor\\MyClass::postUpdate'),
             ),
             array(
                 'extra',
-                array('class' => 'MyVendor\\Installer')
+                array('class' => 'MyVendor\\Installer'),
             ),
             array(
                 'archive',
@@ -161,20 +161,20 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 'require',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'requires',
                 array('foo/bar' => '1.0.0'),
             ),
             array(
                 'require-dev',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires (for development)', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires (for development)', '1.0.0')),
                 'devRequires',
                 array('foo/bar' => '1.0.0'),
             ),
             array(
                 'suggest',
                 array('foo/bar' => 'very useful package'),
-                'suggests'
+                'suggests',
             ),
             array(
                 'support',
@@ -182,45 +182,45 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 'require',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'requires',
-                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
             ),
             array(
                 'require-dev',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'devRequires',
-                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
             ),
             array(
                 'suggest',
                 array('foo/bar' => 'very useful package', 'bar/baz' => 'another useful package'),
                 'suggests',
-                array('bar/baz' => 'another useful package', 'foo/bar' => 'very useful package')
+                array('bar/baz' => 'another useful package', 'foo/bar' => 'very useful package'),
             ),
             array(
                 'provide',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'provides',
-                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
             ),
             array(
                 'replace',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'replaces',
-                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
             ),
             array(
                 'conflict',
-                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'conflicts',
-                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
             ),
             array(
                 'transport-options',
                 array('ssl' => array('local_cert' => '/opt/certs/test.pem')),
-                'transportOptions'
-            )
+                'transportOptions',
+            ),
         );
     }
 

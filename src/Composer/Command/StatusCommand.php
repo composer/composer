@@ -57,9 +57,10 @@ EOT
         $im = $composer->getInstallationManager();
 
         // Dispatch pre-status-command
-        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::PRE_STATUS_CMD, true);
+        $composer->getEventDispatcher()->dispatchScript(ScriptEvents::PRE_STATUS_CMD, true);
 
         $errors = array();
+        $io = $this->getIO();
 
         // list packages
         foreach ($installedRepo->getPackages() as $package) {
@@ -67,6 +68,10 @@ EOT
 
             if ($downloader instanceof ChangeReportInterface) {
                 $targetDir = $im->getInstallPath($package);
+
+                if (is_link($targetDir)) {
+                    $errors[$targetDir] = $targetDir . ' is a symbolic link.';
+                }
 
                 if ($changes = $downloader->getLocalChanges($package, $targetDir)) {
                     $errors[$targetDir] = $changes;
@@ -76,9 +81,9 @@ EOT
 
         // output errors/warnings
         if (!$errors) {
-            $output->writeln('<info>No local changes</info>');
+            $io->writeError('<info>No local changes</info>');
         } else {
-            $output->writeln('<error>You have changes in the following dependencies:</error>');
+            $io->writeError('<error>You have changes in the following dependencies:</error>');
         }
 
         foreach ($errors as $path => $changes) {
@@ -86,19 +91,19 @@ EOT
                 $indentedChanges = implode("\n", array_map(function ($line) {
                     return '    ' . ltrim($line);
                 }, explode("\n", $changes)));
-                $output->writeln('<info>'.$path.'</info>:');
-                $output->writeln($indentedChanges);
+                $io->write('<info>'.$path.'</info>:');
+                $io->write($indentedChanges);
             } else {
-                $output->writeln($path);
+                $io->write($path);
             }
         }
 
         if ($errors && !$input->getOption('verbose')) {
-            $output->writeln('Use --verbose (-v) to see modified files');
+            $io->writeError('Use --verbose (-v) to see modified files');
         }
 
         // Dispatch post-status-command
-        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_STATUS_CMD, true);
+        $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_STATUS_CMD, true);
 
         return $errors ? 1 : 0;
     }

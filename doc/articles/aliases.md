@@ -38,8 +38,8 @@ specifying a `branch-alias` field under `extra` in `composer.json`:
 }
 ```
 
-If you alias a non-comparible version (such as dev-develop) `dev-` must prefix the
-branch name. You may also alias a comparible version (i.e. start with numbers,
+If you alias a non-comparable version (such as dev-develop) `dev-` must prefix the
+branch name. You may also alias a comparable version (i.e. start with numbers,
 and end with `.x-dev`), but only as a more specific version.
 For example, 1.x-dev could be aliased as 1.2.x-dev.
 

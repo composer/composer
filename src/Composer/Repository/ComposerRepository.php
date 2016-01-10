@@ -13,10 +13,9 @@
 namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Cache;
@@ -27,13 +26,16 @@ use Composer\Util\RemoteFilesystem;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ComposerRepository extends ArrayRepository
+class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface
 {
     protected $config;
+    protected $repoConfig;
     protected $options;
     protected $url;
     protected $baseUrl;
@@ -90,6 +92,12 @@ class ComposerRepository extends ArrayRepository
         $this->loader = new ArrayLoader();
         $this->rfs = Factory::createRemoteFilesystem($this->io, $this->config, $this->options);
         $this->eventDispatcher = $eventDispatcher;
+        $this->repoConfig = $repoConfig;
+    }
+
+    public function getRepoConfig()
+    {
+        return $this->repoConfig;
     }
 
     public function setRootAliases(array $rootAliases)
@@ -100,22 +108,27 @@ class ComposerRepository extends ArrayRepository
     /**
      * {@inheritDoc}
      */
-    public function findPackage($name, $version)
+    public function findPackage($name, $constraint)
     {
         if (!$this->hasProviders()) {
-            return parent::findPackage($name, $version);
+            return parent::findPackage($name, $constraint);
         }
-        // normalize version & name
-        $versionParser = new VersionParser();
-        $version = $versionParser->normalize($version);
+
         $name = strtolower($name);
+        if (!$constraint instanceof ConstraintInterface) {
+            $versionParser = new VersionParser();
+            $constraint = $versionParser->parseConstraints($constraint);
+        }
 
         foreach ($this->getProviderNames() as $providerName) {
             if ($name === $providerName) {
                 $packages = $this->whatProvides(new Pool('dev'), $providerName);
                 foreach ($packages as $package) {
-                    if ($name == $package->getName() && $version === $package->getVersion()) {
-                        return $package;
+                    if ($name === $package->getName()) {
+                        $pkgConstraint = new Constraint('==', $package->getVersion());
+                        if ($constraint->matches($pkgConstraint)) {
+                            return $package;
+                        }
                     }
                 }
             }
@@ -125,28 +138,30 @@ class ComposerRepository extends ArrayRepository
     /**
      * {@inheritDoc}
      */
-    public function findPackages($name, $version = null)
+    public function findPackages($name, $constraint = null)
     {
         if (!$this->hasProviders()) {
-            return parent::findPackages($name, $version);
+            return parent::findPackages($name, $constraint);
         }
         // normalize name
         $name = strtolower($name);
 
-        // normalize version
-        if (null !== $version) {
+        if (null !== $constraint && !$constraint instanceof ConstraintInterface) {
             $versionParser = new VersionParser();
-            $version = $versionParser->normalize($version);
+            $constraint = $versionParser->parseConstraints($constraint);
         }
 
         $packages = array();
 
         foreach ($this->getProviderNames() as $providerName) {
             if ($name === $providerName) {
-                $packages = $this->whatProvides(new Pool('dev'), $providerName);
-                foreach ($packages as $package) {
-                    if ($name == $package->getName() && (null === $version || $version === $package->getVersion())) {
-                        $packages[] = $package;
+                $candidates = $this->whatProvides(new Pool('dev'), $providerName);
+                foreach ($candidates as $package) {
+                    if ($name === $package->getName()) {
+                        $pkgConstraint = new Constraint('==', $package->getVersion());
+                        if (null === $constraint || $constraint->matches($pkgConstraint)) {
+                            $packages[] = $package;
+                        }
                     }
                 }
             }
@@ -203,6 +218,11 @@ class ComposerRepository extends ArrayRepository
 
         if (null === $this->providerListing) {
             $this->loadProviderListings($this->loadRootServerFile());
+        }
+
+        if ($this->lazyProvidersUrl) {
+            // Can not determine list of provided packages for lazy repositories
+            return array();
         }
 
         if ($this->providersUrl) {
@@ -289,6 +309,7 @@ class ComposerRepository extends ArrayRepository
         if ($cacheKey && $this->cache->sha256($cacheKey) === $hash) {
             $packages = json_decode($this->cache->read($cacheKey), true);
         } else {
+            // TODO check if we can do if-modified-since or etag header here and skip the listings
             $packages = $this->fetchFile($url, $cacheKey, $hash);
         }
 
@@ -430,7 +451,7 @@ class ComposerRepository extends ArrayRepository
         }
 
         if (!empty($data['warning'])) {
-            $this->io->write('<warning>Warning from '.$this->url.': '.$data['warning'].'</warning>');
+            $this->io->writeError('<warning>Warning from '.$this->url.': '.$data['warning'].'</warning>');
         }
 
         if (!empty($data['providers-lazy-url'])) {
@@ -440,6 +461,7 @@ class ComposerRepository extends ArrayRepository
 
         if ($this->allowSslDowngrade) {
             $this->url = str_replace('https://', 'http://', $this->url);
+            $this->baseUrl = str_replace('https://', 'http://', $this->baseUrl);
         }
 
         if (!empty($data['providers-url'])) {
@@ -571,6 +593,11 @@ class ComposerRepository extends ArrayRepository
             $filename = $this->baseUrl.'/'.$filename;
         }
 
+        // url-encode $ signs in URLs as bad proxies choke on them
+        if (($pos = strpos($filename, '$')) && preg_match('{^https?://.*}i', $filename)) {
+            $filename = substr($filename, 0, $pos) . '%24' . substr($filename, $pos + 1);
+        }
+
         $retries = 3;
         while ($retries--) {
             try {
@@ -609,8 +636,8 @@ class ComposerRepository extends ArrayRepository
 
                 if ($cacheKey && ($contents = $this->cache->read($cacheKey))) {
                     if (!$this->degradedMode) {
-                        $this->io->write('<warning>'.$e->getMessage().'</warning>');
-                        $this->io->write('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
+                        $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
+                        $this->io->writeError('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
                     }
                     $this->degradedMode = true;
                     $data = JsonFile::parseJson($contents, $this->cache->getRoot().$cacheKey);

@@ -68,7 +68,8 @@ EOT
         } else {
             $baseUrl = 'https://' . self::HOMEPAGE;
         }
-        $remoteFilesystem = Factory::createRemoteFilesystem($this->getIO(), $config);
+        $io = $this->getIO();
+        $remoteFilesystem = Factory::createRemoteFilesystem($io, $config);
 
         // TODO: Silent switch probably should be kicking out exception
         $baseUrl = (extension_loaded('openssl') ? 'https' : 'http') . '://' . self::HOMEPAGE;
@@ -96,13 +97,13 @@ EOT
         $updateVersion = $input->getArgument('version') ?: $latestVersion;
 
         if (preg_match('{^[0-9a-f]{40}$}', $updateVersion) && $updateVersion !== $latestVersion) {
-            $output->writeln('<error>You can not update to a specific SHA-1 as those phars are not available for download</error>');
+            $io->writeError('<error>You can not update to a specific SHA-1 as those phars are not available for download</error>');
 
             return 1;
         }
 
         if (Composer::VERSION === $updateVersion) {
-            $output->writeln('<info>You are already using composer version '.$updateVersion.'.</info>');
+            $io->writeError('<info>You are already using composer version '.$updateVersion.'.</info>');
 
             return 0;
         }
@@ -116,11 +117,11 @@ EOT
             self::OLD_INSTALL_EXT
         );
 
-        $output->writeln(sprintf("Updating to version <info>%s</info>.", $updateVersion));
+        $io->writeError(sprintf("Updating to version <info>%s</info>.", $updateVersion));
         $remoteFilename = $baseUrl . (preg_match('{^[0-9a-f]{40}$}', $updateVersion) ? '/composer.phar' : "/download/{$updateVersion}/composer.phar");
         $remoteFilesystem->copy(self::HOMEPAGE, $remoteFilename, $tempFilename, !$input->getOption('no-progress'));
         if (!file_exists($tempFilename)) {
-            $output->writeln('<error>The download of the new composer version failed for an unexpected reason</error>');
+            $io->writeError('<error>The download of the new composer version failed for an unexpected reason</error>');
 
             return 1;
         }
@@ -132,22 +133,22 @@ EOT
             $fs = new Filesystem;
             foreach ($finder as $file) {
                 $file = (string) $file;
-                $output->writeln('<info>Removing: '.$file.'</info>');
+                $io->writeError('<info>Removing: '.$file.'</info>');
                 $fs->remove($file);
             }
         }
 
         if ($err = $this->setLocalPhar($localFilename, $tempFilename, $backupFile)) {
-            $output->writeln('<error>The file is corrupted ('.$err->getMessage().').</error>');
-            $output->writeln('<error>Please re-run the self-update command to try again.</error>');
+            $io->writeError('<error>The file is corrupted ('.$err->getMessage().').</error>');
+            $io->writeError('<error>Please re-run the self-update command to try again.</error>');
 
             return 1;
         }
 
         if (file_exists($backupFile)) {
-            $output->writeln('Use <info>composer self-update --rollback</info> to return to version '.Composer::VERSION);
+            $io->writeError('Use <info>composer self-update --rollback</info> to return to version '.Composer::VERSION);
         } else {
-            $output->writeln('<warning>A backup of the current version could not be written to '.$backupFile.', no rollback possible</warning>');
+            $io->writeError('<warning>A backup of the current version could not be written to '.$backupFile.', no rollback possible</warning>');
         }
     }
 
@@ -172,9 +173,10 @@ EOT
         }
 
         $oldFile = $rollbackDir . "/{$rollbackVersion}" . self::OLD_INSTALL_EXT;
-        $output->writeln(sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
+        $io = $this->getIO();
+        $io->writeError(sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
         if ($err = $this->setLocalPhar($localFilename, $oldFile)) {
-            $output->writeln('<error>The backup file was corrupted ('.$err->getMessage().') and has been removed.</error>');
+            $io->writeError('<error>The backup file was corrupted ('.$err->getMessage().') and has been removed.</error>');
 
             return 1;
         }
@@ -182,6 +184,11 @@ EOT
         return 0;
     }
 
+    /**
+     * @param string $localFilename
+     * @param string $newFilename
+     * @param string $backupTarget
+     */
     protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
     {
         try {

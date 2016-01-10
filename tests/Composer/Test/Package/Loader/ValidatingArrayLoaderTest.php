@@ -12,7 +12,6 @@
 
 namespace Composer\Test\Package\Loader;
 
-use Composer\Package;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
 
@@ -47,7 +46,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'description' => 'Foo bar',
                     'version' => '1.0.0',
                     'type' => 'library',
-                    'keywords' => array('a', 'b_c', 'D E'),
+                    'keywords' => array('a', 'b_c', 'D E', 'éîüø', '微信'),
                     'homepage' => 'https://foo.com',
                     'time' => '2010-10-10T10:10:10+00:00',
                     'license' => 'MIT',
@@ -118,8 +117,8 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'repositories' => array(
                         array(
                             'type' => 'composer',
-                            'url' => 'http://packagist.org/',
-                        )
+                            'url' => 'https://packagist.org/',
+                        ),
                     ),
                     'config' => array(
                         'bin-dir' => 'bin',
@@ -140,14 +139,14 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         'branch-alias' => array(
                             'dev-master' => '2.0-dev',
                             'dev-old' => '1.0.x-dev',
-                            '3.x-dev' => '3.1.x-dev'
+                            '3.x-dev' => '3.1.x-dev',
                         ),
                     ),
                     'bin' => array(
                         'bin/foo',
                         'bin/bar',
                     ),
-                    'transport-options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem'))
+                    'transport-options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem')),
                 ),
             ),
             array( // test as array
@@ -221,8 +220,8 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'name' => 'foo',
                 ),
                 array(
-                    'name : invalid value (foo), must match [A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*'
-                )
+                    'name : invalid value (foo), must match [A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*',
+                ),
             ),
             array(
                 array(
@@ -231,7 +230,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                 ),
                 array(
                     'homepage : should be a string, integer given',
-                )
+                ),
             ),
             array(
                 array(
@@ -242,7 +241,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                 ),
                 array(
                     'support.source : invalid value, must be a string',
-                )
+                ),
             ),
             array(
                 array(
@@ -250,8 +249,8 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'autoload' => 'strings',
                 ),
                 array(
-                    'autoload : should be an array, string given'
-                )
+                    'autoload : should be an array, string given',
+                ),
             ),
             array(
                 array(
@@ -263,8 +262,8 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     ),
                 ),
                 array(
-                    'autoload : invalid value (psr0), must be one of psr-0, psr-4, classmap, files'
-                )
+                    'autoload : invalid value (psr0), must be one of psr-0, psr-4, classmap, files, exclude-from-classmap',
+                ),
             ),
             array(
                 array(
@@ -272,8 +271,8 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'transport-options' => 'test',
                 ),
                 array(
-                    'transport-options : should be an array, string given'
-                )
+                    'transport-options : should be an array, string given',
+                ),
             ),
         );
     }
@@ -287,8 +286,8 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'homepage' => 'foo:bar',
                 ),
                 array(
-                    'homepage : invalid value (foo:bar), must be an http/https URL'
-                )
+                    'homepage : invalid value (foo:bar), must be an http/https URL',
+                ),
             ),
             array(
                 array(
@@ -305,7 +304,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'support.forum : invalid value (foo:bar), must be an http/https URL',
                     'support.issues : invalid value (foo:bar), must be an http/https URL',
                     'support.wiki : invalid value (foo:bar), must be an http/https URL',
-                )
+                ),
             ),
             array(
                 array(
@@ -323,35 +322,35 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'require.bar/foo : unbound version constraints (dev-master) should be avoided',
                     'require.bar/hacked : unbound version constraints (@stable) should be avoided',
                 ),
-                false
+                false,
             ),
             array(
                 array(
                     'name' => 'foo/bar',
                     'extra' => array(
                         'branch-alias' => array(
-                            '5.x-dev' => '3.1.x-dev'
+                            '5.x-dev' => '3.1.x-dev',
                         ),
-                    )
+                    ),
                 ),
                 array(
-                    'extra.branch-alias.5.x-dev : the target branch (3.1.x-dev) is not a valid numeric alias for this version'
+                    'extra.branch-alias.5.x-dev : the target branch (3.1.x-dev) is not a valid numeric alias for this version',
                 ),
-                false
+                false,
             ),
             array(
                 array(
                     'name' => 'foo/bar',
                     'extra' => array(
                         'branch-alias' => array(
-                            '5.x-dev' => '3.1-dev'
+                            '5.x-dev' => '3.1-dev',
                         ),
-                    )
+                    ),
                 ),
                 array(
-                    'extra.branch-alias.5.x-dev : the target branch (3.1-dev) is not a valid numeric alias for this version'
+                    'extra.branch-alias.5.x-dev : the target branch (3.1-dev) is not a valid numeric alias for this version',
                 ),
-                false
+                false,
             ),
         );
     }

@@ -12,13 +12,18 @@
 
 namespace Composer\Command;
 
+use Composer\Composer;
 use Composer\Installer;
+use Composer\IO\IOInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -49,9 +54,11 @@ class UpdateCommand extends Command
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.'),
                 new InputOption('disable-tls', null, InputOption::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
                 new InputOption('cafile', null, InputOption::VALUE_REQUIRED, 'The path to a valid CA certificate file for SSL/TLS certificate verification'),
+                new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.'),
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
+                new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
@@ -69,6 +76,9 @@ You may also use an asterisk (*) pattern to limit the update operation to packag
 from a specific vendor:
 
 <info>php composer.phar update vendor/package1 foo/* [...]</info>
+
+To select packages names interactively with auto-completion use <info>-i</info>.
+
 EOT
             )
         ;
@@ -76,14 +86,25 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $io = $this->getIO();
         if ($input->getOption('no-custom-installers')) {
-            $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $io->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
         }
 
+        if ($input->getOption('dev')) {
+            $io->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
+        }
+
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+
+        $packages = $input->getArgument('packages');
+
+        if ($input->getOption('interactive')) {
+            $packages = $this->getPackagesInteractively($io, $input, $output, $composer, $packages);
+        }
+
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
-        $io = $this->getIO();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -112,7 +133,8 @@ EOT
             $preferDist = $input->getOption('prefer-dist');
         }
 
-        $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader') || $config->get('classmap-authoritative');
+        $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
+        $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
 
         $install
             ->setDryRun($input->getOption('dry-run'))
@@ -123,8 +145,9 @@ EOT
             ->setDumpAutoloader(!$input->getOption('no-autoloader'))
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($optimize)
+            ->setClassMapAuthoritative($authoritative)
             ->setUpdate(true)
-            ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $input->getArgument('packages'))
+            ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $packages)
             ->setWhitelistDependencies($input->getOption('with-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
@@ -136,5 +159,67 @@ EOT
         }
 
         return $install->run();
+    }
+
+    private function getPackagesInteractively(IOInterface $io, InputInterface $input, OutputInterface $output, Composer $composer, array $packages)
+    {
+        if (!$input->isInteractive()) {
+            throw new \InvalidArgumentException('--interactive cannot be used in non-interactive terminals.');
+        }
+
+        $requires = array_merge(
+            $composer->getPackage()->getRequires(),
+            $composer->getPackage()->getDevRequires()
+        );
+        $autocompleterValues = array();
+        foreach ($requires as $require) {
+            $autocompleterValues[strtolower($require->getTarget())] = $require->getTarget();
+        }
+
+        $installedPackages = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
+        foreach ($installedPackages as $package) {
+            $autocompleterValues[$package->getName()] = $package->getPrettyName();
+        }
+
+        $helper = $this->getHelper('question');
+        $question = new Question('<comment>Enter package name: </comment>', null);
+
+        $io->writeError('<info>Press enter without value to end submission</info>');
+
+        do {
+            $autocompleterValues = array_diff($autocompleterValues, $packages);
+            $question->setAutocompleterValues($autocompleterValues);
+            $addedPackage = $helper->ask($input, $output, $question);
+
+            if (!is_string($addedPackage) || empty($addedPackage)) {
+                break;
+            }
+
+            $addedPackage = strtolower($addedPackage);
+            if (!in_array($addedPackage, $packages)) {
+                $packages[] = $addedPackage;
+            }
+        } while (true);
+
+        $packages = array_filter($packages);
+        if (!$packages) {
+            throw new \InvalidArgumentException('You must enter minimum one package.');
+        }
+
+        $table = new Table($output);
+        $table->setHeaders(array('Selected packages'));
+        foreach ($packages as $package) {
+            $table->addRow(array($package));
+        }
+        $table->render();
+
+        if ($io->askConfirmation(sprintf(
+            'Would you like to continue and update the above package%s [<comment>yes</comment>]? ',
+            1 === count($packages) ? '' : 's'
+        ), true)) {
+            return $packages;
+        }
+
+        throw new \RuntimeException('Installation aborted.');
     }
 }

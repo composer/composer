@@ -12,8 +12,8 @@
 
 namespace Composer\Test;
 
-use Composer\Cache;
 use Composer\TestCase;
+use Composer\Util\Filesystem;
 
 class CacheTest extends TestCase
 {
@@ -46,6 +46,14 @@ class CacheTest extends TestCase
             ->expects($this->any())
             ->method('getFinder')
             ->will($this->returnValue($this->finder));
+    }
+
+    protected function tearDown()
+    {
+        if (is_dir($this->root)) {
+            $fs = new Filesystem;
+            $fs->removeDirectory($this->root);
+        }
     }
 
     public function testRemoveOutdatedFiles()

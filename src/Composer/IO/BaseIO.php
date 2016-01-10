@@ -13,6 +13,7 @@
 namespace Composer\IO;
 
 use Composer\Config;
+use Composer\Util\ProcessExecutor;
 
 abstract class BaseIO implements IOInterface
 {
@@ -69,12 +70,21 @@ abstract class BaseIO implements IOInterface
             }
         }
 
+        if ($tokens = $config->get('gitlab-oauth')) {
+            foreach ($tokens as $domain => $token) {
+                $this->setAuthentication($domain, $token, 'oauth2');
+            }
+        }
+
         // reload http basic credentials from config if available
         if ($creds = $config->get('http-basic')) {
             foreach ($creds as $domain => $cred) {
                 $this->setAuthentication($domain, $cred['username'], $cred['password']);
             }
         }
+
+        // setup process timeout
+        ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
     }
 
     /**

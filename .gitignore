@@ -8,3 +8,4 @@ phpunit.xml
 .vagrant
 Vagrantfile
 .idea
+.php_cs.cache

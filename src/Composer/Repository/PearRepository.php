@@ -13,13 +13,13 @@
 namespace Composer\Repository;
 
 use Composer\IO\IOInterface;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Repository\Pear\ChannelReader;
 use Composer\Package\CompletePackage;
 use Composer\Repository\Pear\ChannelInfo;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\Link;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Util\RemoteFilesystem;
 use Composer\Config;
 use Composer\Factory;
@@ -33,12 +33,13 @@ use Composer\Factory;
  * @author Benjamin Eberlei <kontakt@beberlei.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class PearRepository extends ArrayRepository
+class PearRepository extends ArrayRepository implements ConfigurableRepositoryInterface
 {
     private $url;
     private $io;
     private $rfs;
     private $versionParser;
+    private $repoConfig;
 
     /** @var string vendor makes additional alias for each channel as {prefix}/{packagename}. It allows smoother
      * package transition to composer-like repositories.
@@ -61,19 +62,25 @@ class PearRepository extends ArrayRepository
         $this->rfs = $rfs ?: Factory::createRemoteFilesystem($this->io, $config);
         $this->vendorAlias = isset($repoConfig['vendor-alias']) ? $repoConfig['vendor-alias'] : null;
         $this->versionParser = new VersionParser();
+        $this->repoConfig = $repoConfig;
+    }
+
+    public function getRepoConfig()
+    {
+        return $this->repoConfig;
     }
 
     protected function initialize()
     {
         parent::initialize();
 
-        $this->io->write('Initializing PEAR repository '.$this->url);
+        $this->io->writeError('Initializing PEAR repository '.$this->url);
 
         $reader = new ChannelReader($this->rfs);
         try {
             $channelInfo = $reader->read($this->url);
         } catch (\Exception $e) {
-            $this->io->write('<warning>PEAR repository from '.$this->url.' could not be loaded. '.$e->getMessage().'</warning>');
+            $this->io->writeError('<warning>PEAR repository from '.$this->url.' could not be loaded. '.$e->getMessage().'</warning>');
 
             return;
         }
@@ -99,7 +106,7 @@ class PearRepository extends ArrayRepository
                     $normalizedVersion = $versionParser->normalize($version);
                 } catch (\UnexpectedValueException $e) {
                     if ($this->io->isVerbose()) {
-                        $this->io->write('Could not load '.$packageDefinition->getPackageName().' '.$version.': '.$e->getMessage());
+                        $this->io->writeError('Could not load '.$packageDefinition->getPackageName().' '.$version.': '.$e->getMessage());
                     }
                     continue;
                 }
@@ -121,7 +128,7 @@ class PearRepository extends ArrayRepository
                 // cause we've know only repository channel alias
                 if ($channelInfo->getName() == $packageDefinition->getChannelName()) {
                     $composerPackageAlias = $this->buildComposerPackageName($channelInfo->getAlias(), $packageDefinition->getPackageName());
-                    $aliasConstraint = new VersionConstraint('==', $normalizedVersion);
+                    $aliasConstraint = new Constraint('==', $normalizedVersion);
                     $replaces[] = new Link($composerPackageName, $composerPackageAlias, $aliasConstraint, 'replaces', (string) $aliasConstraint);
                 }
 
@@ -130,7 +137,7 @@ class PearRepository extends ArrayRepository
                     && ($this->vendorAlias != 'pear-'.$channelInfo->getAlias() || $channelInfo->getName() != $packageDefinition->getChannelName())
                 ) {
                     $composerPackageAlias = "{$this->vendorAlias}/{$packageDefinition->getPackageName()}";
-                    $aliasConstraint = new VersionConstraint('==', $normalizedVersion);
+                    $aliasConstraint = new Constraint('==', $normalizedVersion);
                     $replaces[] = new Link($composerPackageName, $composerPackageAlias, $aliasConstraint, 'replaces', (string) $aliasConstraint);
                 }
 

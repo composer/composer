@@ -67,11 +67,11 @@ class CompositeRepository implements RepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function findPackage($name, $version)
+    public function findPackage($name, $constraint)
     {
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
-            $package = $repository->findPackage($name, $version);
+            $package = $repository->findPackage($name, $constraint);
             if (null !== $package) {
                 return $package;
             }
@@ -83,12 +83,12 @@ class CompositeRepository implements RepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function findPackages($name, $version = null)
+    public function findPackages($name, $constraint = null)
     {
         $packages = array();
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
-            $packages[] = $repository->findPackages($name, $version);
+            $packages[] = $repository->findPackages($name, $constraint);
         }
 
         return $packages ? call_user_func_array('array_merge', $packages) : array();
@@ -106,20 +106,6 @@ class CompositeRepository implements RepositoryInterface
         }
 
         return $matches ? call_user_func_array('array_merge', $matches) : array();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function filterPackages($callback, $class = 'Composer\Package\Package')
-    {
-        foreach ($this->repositories as $repository) {
-            if (false === $repository->filterPackages($callback, $class)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**

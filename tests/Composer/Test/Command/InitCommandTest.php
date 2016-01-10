@@ -33,6 +33,14 @@ class InitCommandTest extends TestCase
         $this->assertEquals('matti@example.com', $author['email']);
     }
 
+    public function testParseNumericAuthorString()
+    {
+        $command = new InitCommand;
+        $author = $command->parseAuthorString('h4x0r <h4x@example.com>');
+        $this->assertEquals('h4x0r', $author['name']);
+        $this->assertEquals('h4x@example.com', $author['email']);
+    }
+
     public function testParseEmptyAuthorString()
     {
         $command = new InitCommand;

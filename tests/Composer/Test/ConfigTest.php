@@ -35,7 +35,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $data = array();
         $data['local config inherits system defaults'] = array(
             array(
-                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true)
+                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true),
             ),
             array(),
         );
@@ -44,7 +44,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             array(),
             array(
                 array('packagist' => false),
-            )
+            ),
         );
 
         $data['local config adds above defaults'] = array(
@@ -62,7 +62,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $data['system config adds above core defaults'] = array(
             array(
                 'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
-                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true)
+                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true),
             ),
             array(),
             array(
@@ -73,11 +73,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $data['local config can disable repos by name and re-add them anonymously to bring them above system config'] = array(
             array(
                 0 => array('type' => 'composer', 'url' => 'http://packagist.org'),
-                'example.com' => array('type' => 'composer', 'url' => 'http://example.com')
+                'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
             ),
             array(
                 array('packagist' => false),
-                array('type' => 'composer', 'url' => 'http://packagist.org')
+                array('type' => 'composer', 'url' => 'http://packagist.org'),
             ),
             array(
                 'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
@@ -87,10 +87,10 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $data['local config can override by name to bring a repo above system config'] = array(
             array(
                 'packagist' => array('type' => 'composer', 'url' => 'http://packagistnew.org'),
-                'example.com' => array('type' => 'composer', 'url' => 'http://example.com')
+                'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
             ),
             array(
-                'packagist' => array('type' => 'composer', 'url' => 'http://packagistnew.org')
+                'packagist' => array('type' => 'composer', 'url' => 'http://packagistnew.org'),
             ),
             array(
                 'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
@@ -139,7 +139,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $config->merge(array('config' => array(
             'bin-dir' => '$HOME/foo',
             'cache-dir' => '/baz/',
-            'vendor-dir' => 'vendor'
+            'vendor-dir' => 'vendor',
         )));
 
         $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '\\/');
@@ -153,7 +153,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $config = new Config(false, '/foo/bar');
         $config->merge(array('config' => array(
             'bin-dir' => '{$vendor-dir}/foo',
-            'vendor-dir' => 'vendor'
+            'vendor-dir' => 'vendor',
         )));
 
         $this->assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));

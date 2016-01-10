@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use Composer\Composer;
+
 /**
  * Allows the creation of a basic context supporting http proxy
  *
@@ -26,8 +28,8 @@ final class StreamContextFactory
      * @param  string            $url            URL the context is to be used for
      * @param  array             $defaultOptions Options to merge with the default
      * @param  array             $defaultParams  Parameters to specify on the context
-     * @return resource          Default context
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
+     * @return resource          Default context
      */
     public static function getContext($url, array $defaultOptions = array(), array $defaultParams = array())
     {
@@ -96,7 +98,7 @@ final class StreamContextFactory
             // add SNI opts for https URLs
             if ('https' === parse_url($url, PHP_URL_SCHEME)) {
                 $options['ssl']['SNI_enabled'] = true;
-                if (version_compare(PHP_VERSION, '5.6.0', '<')) {
+                if (PHP_VERSION_ID < 50600) {
                     $options['ssl']['SNI_server_name'] = parse_url($url, PHP_URL_HOST);
                 }
             }
@@ -125,6 +127,22 @@ final class StreamContextFactory
 
         if (isset($options['http']['header'])) {
             $options['http']['header'] = self::fixHttpHeaderField($options['http']['header']);
+        }
+
+        if (defined('HHVM_VERSION')) {
+            $phpVersion = 'HHVM ' . HHVM_VERSION;
+        } else {
+            $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
+        }
+
+        if (!isset($options['http']['header']) || false === strpos(strtolower(implode('', $options['http']['header'])), 'user-agent')) {
+            $options['http']['header'][] = sprintf(
+                'User-Agent: Composer/%s (%s; %s; %s)',
+                Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
+                php_uname('s'),
+                php_uname('r'),
+                $phpVersion
+            );
         }
 
         return stream_context_create($options, $defaultParams);
