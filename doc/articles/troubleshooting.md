@@ -79,7 +79,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 The [`repositories`](04-schema.md#repositories) configuration property is defined as [root-only]
 (04-schema.md#root-package). It is not inherited. You can read more about the reasons behind this in the "[why can't
 composer load repositories recursively?](articles/why-can't-composer-load-repositories-recursively.md)" article.
-The simplest work-around to this limitation, is moving or duplicating the `repositories` definition to your root
+The simplest work-around to this limitation, is moving or duplicating the `repositories` definition into your root
 composer.json.
 
 ## I have locked a dependency to a specific commit but get unexpected results.
