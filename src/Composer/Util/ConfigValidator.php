@@ -19,6 +19,7 @@ use Composer\Json\JsonValidationException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Spdx\SpdxLicenses;
+use Composer\Factory;
 
 /**
  * Validates a composer configuration.
@@ -52,7 +53,7 @@ class ConfigValidator
         // validate json schema
         $laxValid = false;
         try {
-            $json = new JsonFile($file, new RemoteFilesystem($this->io));
+            $json = new JsonFile($file, null, $this->io);
             $manifest = $json->read();
 
             $json->validateSchema(JsonFile::LAX_SCHEMA);

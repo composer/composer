@@ -16,6 +16,7 @@ use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * Repositories manager.
@@ -32,12 +33,14 @@ class RepositoryManager
     private $io;
     private $config;
     private $eventDispatcher;
+    private $rfs;
 
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
         $this->io = $io;
         $this->config = $config;
         $this->eventDispatcher = $eventDispatcher;
+        $this->rfs = $rfs;
     }
 
     /**
@@ -102,7 +105,7 @@ class RepositoryManager
 
         $class = $this->repositoryClasses[$type];
 
-        return new $class($config, $this->io, $this->config, $this->eventDispatcher);
+        return new $class($config, $this->io, $this->config, $this->eventDispatcher, $this->rfs);
     }
 
     /**

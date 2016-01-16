@@ -170,4 +170,20 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(array('https'), $config->get('github-protocols'));
     }
+
+    /**
+     * @group TLS
+     */
+    public function testDisableTlsCanBeOverridden()
+    {
+        $config = new Config;
+        $config->merge(
+            array('config' => array('disable-tls' => 'false'))
+        );
+        $this->assertFalse($config->get('disable-tls'));
+        $config->merge(
+            array('config' => array('disable-tls' => 'true'))
+        );
+        $this->assertTrue($config->get('disable-tls'));
+    }
 }

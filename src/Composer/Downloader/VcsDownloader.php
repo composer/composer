@@ -37,7 +37,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor($io);
-        $this->filesystem = $fs ?: new Filesystem;
+        $this->filesystem = $fs ?: new Filesystem($this->process);
     }
 
     /**

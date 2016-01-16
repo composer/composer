@@ -39,7 +39,7 @@ class GitHub
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor;
-        $this->remoteFilesystem = $remoteFilesystem ?: new RemoteFilesystem($io, $config);
+        $this->remoteFilesystem = $remoteFilesystem ?: Factory::createRemoteFilesystem($this->io, $config);
     }
 
     /**

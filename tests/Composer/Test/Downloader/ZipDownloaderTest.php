@@ -55,7 +55,15 @@ class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
 
         $io = $this->getMock('Composer\IO\IOInterface');
         $config = $this->getMock('Composer\Config');
-        $config->expects($this->any())
+        $config->expects($this->at(0))
+            ->method('get')
+            ->with('disable-tls')
+            ->will($this->returnValue(false));
+        $config->expects($this->at(1))
+            ->method('get')
+            ->with('cafile')
+            ->will($this->returnValue(null));
+        $config->expects($this->at(2))
             ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));

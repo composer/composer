@@ -14,6 +14,7 @@ namespace Composer\Util;
 
 use Composer\IO\IOInterface;
 use Composer\Config;
+use Composer\Factory;
 use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
 
@@ -40,7 +41,7 @@ class GitLab
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor();
-        $this->remoteFilesystem = $remoteFilesystem ?: new RemoteFilesystem($io, $config);
+        $this->remoteFilesystem = $remoteFilesystem ?: Factory::createRemoteFilesystem($this->io, $config);
     }
 
     /**

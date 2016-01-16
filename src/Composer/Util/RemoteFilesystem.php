@@ -33,7 +33,8 @@ class RemoteFilesystem
     private $retry;
     private $progress;
     private $lastProgress;
-    private $options;
+    private $options = array();
+    private $disableTls = false;
     private $retryAuthFailure;
     private $lastHeaders;
     private $storeAuth;
@@ -42,15 +43,34 @@ class RemoteFilesystem
     /**
      * Constructor.
      *
-     * @param IOInterface $io      The IO instance
-     * @param Config      $config  The config
-     * @param array       $options The options
+     * @param IOInterface $io         The IO instance
+     * @param Config      $config     The config
+     * @param array       $options    The options
+     * @param bool        $disableTls
      */
-    public function __construct(IOInterface $io, Config $config = null, array $options = array())
+    public function __construct(IOInterface $io, Config $config = null, array $options = array(), $disableTls = false)
     {
         $this->io = $io;
+
+        // Setup TLS options
+        // The cafile option can be set via config.json
+        if ($disableTls === false) {
+            $this->options = $this->getTlsDefaults();
+            if (isset($options['ssl']['cafile'])
+                && (
+                    !is_readable($options['ssl']['cafile'])
+                    || !self::validateCaFile(file_get_contents($options['ssl']['cafile']))
+                )
+            ) {
+                throw new TransportException('The configured cafile was not valid or could not be read.');
+            }
+        } else {
+            $this->disableTls = true;
+        }
+
+        // handle the other externally set options normally.
+        $this->options = array_replace_recursive($this->options, $options);
         $this->config = $config;
-        $this->options = $options;
     }
 
     /**
@@ -94,6 +114,11 @@ class RemoteFilesystem
         return $this->options;
     }
 
+    public function isTlsDisabled()
+    {
+        return $this->disableTls === true;
+    }
+
     /**
      * Returns the headers of the last request
      *
@@ -118,7 +143,7 @@ class RemoteFilesystem
      *
      * @return bool|string
      */
-    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
+    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true, $expectedCommonName = '')
     {
         if (strpos($originUrl, '.github.com') === (strlen($originUrl) - 11)) {
             $originUrl = 'github.com';
@@ -145,7 +170,7 @@ class RemoteFilesystem
             unset($additionalOptions['retry-auth-failure']);
         }
 
-        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        $options = $this->getOptionsForUrl($originUrl, $additionalOptions, $expectedCommonName);
 
         if ($this->io->isDebug()) {
             $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
@@ -294,7 +319,7 @@ class RemoteFilesystem
         if ($this->retry) {
             $this->retry = false;
 
-            $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+            $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress, $expectedCommonName);
 
             $authHelper = new AuthHelper($this->io, $this->config);
             $authHelper->storeAuth($this->originUrl, $this->storeAuth);
@@ -304,7 +329,7 @@ class RemoteFilesystem
         }
 
         if (false === $result) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage.' using CN='.$expectedCommonName, $errorCode);
             if (!empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
@@ -449,13 +474,27 @@ class RemoteFilesystem
 
     protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
+        $tlsOptions = array();
+
+        // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
+        if ($this->disableTls === false && PHP_VERSION_ID < 50600) {
+            if (!preg_match('{^https?://}', $this->fileUrl)) {
+                $host = $originUrl;
+            } else {
+                $host = parse_url($this->fileUrl, PHP_URL_HOST);
+            }
+
+            $tlsOptions['ssl']['CN_match'] = $host;
+            $tlsOptions['ssl']['SNI_server_name'] = $host;
+        }
+
         $headers = array();
 
         if (extension_loaded('zlib')) {
             $headers[] = 'Accept-Encoding: gzip';
         }
 
-        $options = array_replace_recursive($this->options, $additionalOptions);
+        $options = array_replace_recursive($this->options, $tlsOptions, $additionalOptions);
         if (!$this->degradedMode) {
             // degraded mode disables HTTP/1.1 which causes issues with some bad
             // proxies/software due to the use of chunked encoding
@@ -485,5 +524,201 @@ class RemoteFilesystem
         }
 
         return $options;
+    }
+
+    private function getTlsDefaults()
+    {
+        $ciphers = implode(':', array(
+            'ECDHE-RSA-AES128-GCM-SHA256',
+            'ECDHE-ECDSA-AES128-GCM-SHA256',
+            'ECDHE-RSA-AES256-GCM-SHA384',
+            'ECDHE-ECDSA-AES256-GCM-SHA384',
+            'DHE-RSA-AES128-GCM-SHA256',
+            'DHE-DSS-AES128-GCM-SHA256',
+            'kEDH+AESGCM',
+            'ECDHE-RSA-AES128-SHA256',
+            'ECDHE-ECDSA-AES128-SHA256',
+            'ECDHE-RSA-AES128-SHA',
+            'ECDHE-ECDSA-AES128-SHA',
+            'ECDHE-RSA-AES256-SHA384',
+            'ECDHE-ECDSA-AES256-SHA384',
+            'ECDHE-RSA-AES256-SHA',
+            'ECDHE-ECDSA-AES256-SHA',
+            'DHE-RSA-AES128-SHA256',
+            'DHE-RSA-AES128-SHA',
+            'DHE-DSS-AES128-SHA256',
+            'DHE-RSA-AES256-SHA256',
+            'DHE-DSS-AES256-SHA',
+            'DHE-RSA-AES256-SHA',
+            'AES128-GCM-SHA256',
+             'AES256-GCM-SHA384',
+            'ECDHE-RSA-RC4-SHA',
+            'ECDHE-ECDSA-RC4-SHA',
+            'AES128',
+            'AES256',
+            'RC4-SHA',
+            'HIGH',
+            '!aNULL',
+            '!eNULL',
+            '!EXPORT',
+            '!DES',
+            '!3DES',
+            '!MD5',
+            '!PSK'
+        ));
+
+        /**
+         * CN_match and SNI_server_name are only known once a URL is passed.
+         * They will be set in the getOptionsForUrl() method which receives a URL.
+         *
+         * cafile or capath can be overridden by passing in those options to constructor.
+         */
+        $options = array(
+            'ssl' => array(
+                'ciphers' => $ciphers,
+                'verify_peer' => true,
+                'verify_depth' => 7,
+                'SNI_enabled' => true,
+            )
+        );
+
+        /**
+         * Attempt to find a local cafile or throw an exception if none pre-set
+         * The user may go download one if this occurs.
+         */
+        if (!isset($this->options['ssl']['cafile'])) {
+            $result = self::getSystemCaRootBundlePath();
+            if ($result) {
+                if (preg_match('{^phar://}', $result)) {
+                    $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert.pem';
+
+                    // use stream_copy_to_stream instead of copy
+                    // to work around https://bugs.php.net/bug.php?id=64634
+                    $source = fopen($result, 'r');
+                    $target = fopen($targetPath, 'w+');
+                    stream_copy_to_stream($source, $target);
+                    fclose($source);
+                    fclose($target);
+                    unset($source, $target);
+
+                    $options['ssl']['cafile'] = $targetPath;
+                } else {
+                    if (is_dir($result)) {
+                        $options['ssl']['capath'] = $result;
+                    } elseif ($result) {
+                        $options['ssl']['cafile'] = $result;
+                    }
+                }
+            } else {
+                throw new TransportException('A valid cafile could not be located automatically.');
+            }
+        }
+
+        /**
+         * Disable TLS compression to prevent CRIME attacks where supported.
+         */
+        if (PHP_VERSION_ID >= 50413) {
+            $options['ssl']['disable_compression'] = true;
+        }
+
+        return $options;
+    }
+
+    /**
+    * This method was adapted from Sslurp.
+    * https://github.com/EvanDotPro/Sslurp
+    *
+    * (c) Evan Coury <me@evancoury.com>
+    *
+    * For the full copyright and license information, please see below:
+    *
+    * Copyright (c) 2013, Evan Coury
+    * All rights reserved.
+    *
+    * Redistribution and use in source and binary forms, with or without modification,
+    * are permitted provided that the following conditions are met:
+    *
+    *     * Redistributions of source code must retain the above copyright notice,
+    *       this list of conditions and the following disclaimer.
+    *
+    *     * Redistributions in binary form must reproduce the above copyright notice,
+    *       this list of conditions and the following disclaimer in the documentation
+    *       and/or other materials provided with the distribution.
+    *
+    * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+    * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+    * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+    * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    */
+    private static function getSystemCaRootBundlePath()
+    {
+        static $caPath = null;
+
+        if ($caPath !== null) {
+            return $caPath;
+        }
+
+        // If SSL_CERT_FILE env variable points to a valid certificate/bundle, use that.
+        // This mimics how OpenSSL uses the SSL_CERT_FILE env variable.
+        $envCertFile = getenv('SSL_CERT_FILE');
+        if ($envCertFile && is_readable($envCertFile) && self::validateCaFile(file_get_contents($envCertFile))) {
+            // Possibly throw exception instead of ignoring SSL_CERT_FILE if it's invalid?
+            return $caPath = $envCertFile;
+        }
+
+        $caBundlePaths = array(
+            '/etc/pki/tls/certs/ca-bundle.crt', // Fedora, RHEL, CentOS (ca-certificates package)
+            '/etc/ssl/certs/ca-certificates.crt', // Debian, Ubuntu, Gentoo, Arch Linux (ca-certificates package)
+            '/etc/ssl/ca-bundle.pem', // SUSE, openSUSE (ca-certificates package)
+            '/usr/local/share/certs/ca-root-nss.crt', // FreeBSD (ca_root_nss_package)
+            '/usr/ssl/certs/ca-bundle.crt', // Cygwin
+            '/opt/local/share/curl/curl-ca-bundle.crt', // OS X macports, curl-ca-bundle package
+            '/usr/local/share/curl/curl-ca-bundle.crt', // Default cURL CA bunde path (without --with-ca-bundle option)
+            '/usr/share/ssl/certs/ca-bundle.crt', // Really old RedHat?
+            '/etc/ssl/cert.pem', // OpenBSD
+            '/usr/local/etc/ssl/cert.pem', // FreeBSD 10.x
+            __DIR__.'/../../../res/cacert.pem', // Bundled with Composer
+        );
+
+        $configured = ini_get('openssl.cafile');
+        if ($configured && strlen($configured) > 0 && is_readable($caBundle) && self::validateCaFile(file_get_contents($caBundle))) {
+            return $caPath = $configured;
+        }
+
+        foreach ($caBundlePaths as $caBundle) {
+            if (@is_readable($caBundle) && self::validateCaFile(file_get_contents($caBundle))) {
+                return $caPath = $caBundle;
+            }
+        }
+
+        foreach ($caBundlePaths as $caBundle) {
+            $caBundle = dirname($caBundle);
+            if (is_dir($caBundle) && glob($caBundle.'/*')) {
+                return $caPath = $caBundle;
+            }
+        }
+
+        return $caPath = false;
+    }
+
+    private static function validateCaFile($contents)
+    {
+        // assume the CA is valid if php is vulnerable to
+        // https://www.sektioneins.de/advisories/advisory-012013-php-openssl_x509_parse-memory-corruption-vulnerability.html
+        if (
+            PHP_VERSION_ID <= 50327
+            || (PHP_VERSION_ID >= 50400 && PHP_VERSION_ID < 50422)
+            || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50506)
+        ) {
+            return !empty($contents);
+        }
+
+        return (bool) openssl_x509_parse($contents);
     }
 }

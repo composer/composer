@@ -704,6 +704,11 @@ By default it points to $COMPOSER_HOME/cache on \*nix and OSX, and
 This env var controls the time Composer waits for commands (such as git
 commands) to finish executing. The default value is 300 seconds (5 minutes).
 
+### COMPOSER_CAFILE
+
+By setting this environmental value, you can set a path to a certificate bundle
+file to be used during SSL/TLS peer verification.
+
 ### COMPOSER_DISCARD_CHANGES
 
 This env var controls the [`discard-changes`](06-config.md#discard-changes) config option.

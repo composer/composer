@@ -137,6 +137,9 @@ class Compiler
             $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/include_paths.php'));
         }
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/ClassLoader.php'));
+
+        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/../../res/cacert.pem'), false);
+
         $this->addComposerBin($phar);
 
         // Stubs

@@ -19,12 +19,14 @@ use Composer\Package\Archiver;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
+use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Semver\VersionParser;
+use Composer\Downloader\TransportException;
 use Seld\JsonLint\JsonParser;
 
 /**
@@ -161,7 +163,7 @@ class Factory
                 throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
             }
             $factory = new static;
-            $rm = $factory->createRepositoryManager($io, $config);
+            $rm = $factory->createRepositoryManager($io, $config, null, self::createRemoteFilesystem($io, $config));
         }
 
         foreach ($config->getRepositories() as $index => $repo) {
@@ -207,7 +209,8 @@ class Factory
 
         if (is_string($localConfig)) {
             $composerFile = $localConfig;
-            $file = new JsonFile($localConfig, new RemoteFilesystem($io));
+
+            $file = new JsonFile($localConfig, null, $io);
 
             if (!$file->exists()) {
                 if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
@@ -260,16 +263,18 @@ class Factory
             $io->loadConfiguration($config);
         }
 
+        $rfs = self::createRemoteFilesystem($io, $config);
+
         // initialize event dispatcher
         $dispatcher = new EventDispatcher($composer, $io);
         $composer->setEventDispatcher($dispatcher);
 
         // initialize repository manager
-        $rm = $this->createRepositoryManager($io, $config, $dispatcher);
+        $rm = $this->createRepositoryManager($io, $config, $dispatcher, $rfs);
         $composer->setRepositoryManager($rm);
 
         // load local repository
-        $this->addLocalRepository($rm, $vendorDir);
+        $this->addLocalRepository($io, $rm, $vendorDir);
 
         // force-set the version of the global package if not defined as
         // guessing it adds no value and only takes time
@@ -290,7 +295,7 @@ class Factory
 
         if ($fullLoad) {
             // initialize download manager
-            $dm = $this->createDownloadManager($io, $config, $dispatcher);
+            $dm = $this->createDownloadManager($io, $config, $dispatcher, $rfs);
             $composer->setDownloadManager($dm);
 
             // initialize autoload generator
@@ -320,7 +325,8 @@ class Factory
             $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
-            $locker = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io, $config)), $rm, $im, file_get_contents($composerFile));
+
+            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($composerFile));
             $composer->setLocker($locker);
         }
 
@@ -333,9 +339,9 @@ class Factory
      * @param  EventDispatcher              $eventDispatcher
      * @return Repository\RepositoryManager
      */
-    protected function createRepositoryManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
+    protected function createRepositoryManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
-        $rm = new RepositoryManager($io, $config, $eventDispatcher);
+        $rm = new RepositoryManager($io, $config, $eventDispatcher, $rfs);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
@@ -355,9 +361,9 @@ class Factory
      * @param Repository\RepositoryManager $rm
      * @param string                       $vendorDir
      */
-    protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
+    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir)
     {
-        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
+        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io)));
     }
 
     /**
@@ -388,7 +394,7 @@ class Factory
      * @param  EventDispatcher            $eventDispatcher
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
+    public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
         $cache = null;
         if ($config->get('cache-files-ttl') > 0) {
@@ -409,18 +415,21 @@ class Factory
                 break;
         }
 
-        $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
-        $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
-        $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
+        $executor = new ProcessExecutor($io);
+        $fs = new Filesystem($executor);
+
+        $dm->setDownloader('git', new Downloader\GitDownloader($io, $config, $executor, $fs));
+        $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config, $executor, $fs));
+        $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config));
-        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache));
-        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
+        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
+        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $eventDispatcher, $cache, $rfs));
+        $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
+        $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
+        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache, $rfs));
+        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache, $rfs));
+        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $eventDispatcher, $cache, $rfs));
 
         return $dm;
     }
@@ -502,5 +511,49 @@ class Factory
         $factory = new static();
 
         return $factory->createComposer($io, $config, $disablePlugins);
+    }
+
+    /**
+     * @param IOInterface   $io         IO instance
+     * @param Config        $config     Config instance
+     * @param array         $options    Array of options passed directly to RemoteFilesystem constructor
+     * @return RemoteFilesystem
+     */
+    public static function createRemoteFilesystem(IOInterface $io, Config $config = null, $options = array())
+    {
+        static $warned = false;
+        $disableTls = false;
+        if ($config && $config->get('disable-tls') === true) {
+            if (!$warned) {
+                $io->write('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
+            }
+            $warned = true;
+            $disableTls = true;
+        } elseif (!extension_loaded('openssl')) {
+            throw new \RuntimeException('The openssl extension is required for SSL/TLS protection but is not available. '
+                . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
+        }
+        $remoteFilesystemOptions = array();
+        if ($disableTls === false) {
+            if ($config && $config->get('cafile')) {
+                $remoteFilesystemOptions = array('ssl' => array('cafile' => $config->get('cafile')));
+            }
+            $remoteFilesystemOptions = array_merge_recursive($remoteFilesystemOptions, $options);
+        }
+        try {
+            $remoteFilesystem = new RemoteFilesystem($io, $config, $remoteFilesystemOptions, $disableTls);
+        } catch (TransportException $e) {
+            if (false !== strpos($e->getMessage(), 'cafile')) {
+                $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
+                $io->write('<error>A valid CA certificate file is required for SSL/TLS protection.</error>');
+                if (PHP_VERSION_ID < 50600) {
+                    $io->write('<error>It is recommended you upgrade to PHP 5.6+ which can detect your system CA file automatically.</error>');
+                }
+                $io->write('<error>You can disable this error, at your own risk, by setting the \'disable-tls\' option to true.</error>');
+            }
+            throw $e;
+        }
+
+        return $remoteFilesystem;
     }
 }

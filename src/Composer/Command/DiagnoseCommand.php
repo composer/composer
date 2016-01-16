@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\Factory;
+use Composer\Config;
 use Composer\Downloader\TransportException;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -73,7 +74,7 @@ EOT
             $config = Factory::createConfig();
         }
 
-        $this->rfs = new RemoteFilesystem($io, $config);
+        $this->rfs = Factory::createRemoteFilesystem($io, $config);
         $this->process = new ProcessExecutor($io);
 
         $io->write('Checking platform settings: ', false);
@@ -83,10 +84,10 @@ EOT
         $this->outputResult($this->checkGit());
 
         $io->write('Checking http connectivity to packagist: ', false);
-        $this->outputResult($this->checkHttp('http'));
+        $this->outputResult($this->checkHttp('http', $config));
 
         $io->write('Checking https connectivity to packagist: ', false);
-        $this->outputResult($this->checkHttp('https'));
+        $this->outputResult($this->checkHttp('https', $config));
 
         $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
         if (!empty($opts['http']['proxy'])) {
@@ -172,12 +173,32 @@ EOT
         return true;
     }
 
-    private function checkHttp($proto)
+    private function checkHttp($proto, Config $config)
     {
+        $disableTls = false;
+        $result = array();
+        if ($proto === 'https' && $config->get('disable-tls') === true) {
+            $disableTls = true;
+            $result[] = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
+        }
+        if ($proto === 'https' && !extension_loaded('openssl') && !$disableTls) {
+            $result[] = '<error>Composer is configured to use SSL/TLS protection but the openssl extension is not available.</error>';
+        }
+
         try {
             $this->rfs->getContents('packagist.org', $proto . '://packagist.org/packages.json', false);
-        } catch (\Exception $e) {
-            return $e;
+        } catch (TransportException $e) {
+            if (false !== strpos($e->getMessage(), 'cafile')) {
+                $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
+                $result[] = '<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>';
+                $result[] = '<error>You can alternatively disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>';
+            } else {
+                array_unshift($result, '[' . get_class($e) . '] ' . $e->getMessage());
+            }
+        }
+
+        if (count($result) > 0) {
+            return $result;
         }
 
         return true;
@@ -332,7 +353,13 @@ EOT
             if ($result instanceof \Exception) {
                 $io->write('['.get_class($result).'] '.$result->getMessage());
             } elseif ($result) {
-                $io->write(trim($result));
+                if (is_array($result)) {
+                    foreach ($result as $message) {
+                        $io->write($message);
+                    }
+                } else {
+                    $io->write($result);
+                }
             }
         }
     }

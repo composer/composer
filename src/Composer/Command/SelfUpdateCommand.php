@@ -58,10 +58,17 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $baseUrl = (extension_loaded('openssl') ? 'https' : 'http') . '://' . self::HOMEPAGE;
         $config = Factory::createConfig();
+
+        if ($config->get('disable-tls') === true) {
+            $baseUrl = 'http://' . self::HOMEPAGE;
+        } else {
+            $baseUrl = 'https://' . self::HOMEPAGE;
+        }
+
         $io = $this->getIO();
-        $remoteFilesystem = new RemoteFilesystem($io, $config);
+        $remoteFilesystem = Factory::createRemoteFilesystem($io, $config);
+
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('home');
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];

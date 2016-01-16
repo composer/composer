@@ -14,6 +14,7 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Downloader\TransportException;
 use Composer\Config;
+use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
@@ -62,7 +63,7 @@ abstract class VcsDriver implements VcsDriverInterface
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor($io);
-        $this->remoteFilesystem = $remoteFilesystem ?: new RemoteFilesystem($io, $config);
+        $this->remoteFilesystem = $remoteFilesystem ?: Factory::createRemoteFilesystem($this->io, $config);
     }
 
     /**

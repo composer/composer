@@ -14,6 +14,7 @@ namespace Composer\Test\Downloader;
 
 use Composer\Downloader\XzDownloader;
 use Composer\Util\Filesystem;
+use Composer\Util\RemoteFilesystem;
 
 class XzDownloaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -63,7 +64,7 @@ class XzDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));
-        $downloader = new XzDownloader($io, $config);
+        $downloader = new XzDownloader($io, $config, null, null, null, new RemoteFilesystem($io));
 
         try {
             $downloader->download($packageMock, sys_get_temp_dir().'/composer-xz-test');

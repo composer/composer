@@ -33,7 +33,7 @@ class FactoryMock extends Factory
         return $config;
     }
 
-    protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
+    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir)
     {
     }
 

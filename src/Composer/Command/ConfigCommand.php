@@ -133,7 +133,8 @@ EOT
             throw new \RuntimeException('--file and --global can not be combined');
         }
 
-        $this->config = Factory::createConfig($this->getIO());
+        $io = $this->getIO();
+        $this->config = Factory::createConfig($io);
 
         // Get the local composer.json, global config.json, or if the user
         // passed in a file to use
@@ -146,14 +147,14 @@ EOT
             file_put_contents($configFile, "{\n}\n");
         }
 
-        $this->configFile = new JsonFile($configFile);
+        $this->configFile = new JsonFile($configFile, null, $io);
         $this->configSource = new JsonConfigSource($this->configFile);
 
         $authConfigFile = $input->getOption('global')
             ? ($this->config->get('home') . '/auth.json')
             : dirname(realpath($configFile)) . '/auth.json';
 
-        $this->authConfigFile = new JsonFile($authConfigFile);
+        $this->authConfigFile = new JsonFile($authConfigFile, null, $io);
         $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);
 
         // initialize the global file if it's not there
@@ -326,6 +327,11 @@ EOT
             'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
             'classmap-authoritative' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
+            'disable-tls' => array($booleanValidator, $booleanNormalizer),
+            'cafile' => array(
+                function ($val) { return file_exists($val) && is_readable($val); },
+                function ($val) { return $val === 'null' ? null : $val; }
+            ),
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
         );
         $multiConfigValues = array(
