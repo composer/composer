@@ -35,7 +35,6 @@ class RemoteFilesystem
     private $lastProgress;
     private $options = array();
     private $disableTls = false;
-    private $retryTls = true;
     private $retryAuthFailure;
     private $lastHeaders;
     private $storeAuth;
@@ -317,20 +316,6 @@ class RemoteFilesystem
             }
         }
 
-        // Check if the failure was due to a Common Name mismatch with remote SSL cert and retry once (excl normal retry)
-        if (
-            false === $result
-            && $this->retryTls === true
-            && preg_match('{did not match expected CN}i', $errorMessage)
-            && preg_match("{Peer certificate CN=`(.*)' did not match}i", $errorMessage, $matches)
-        ) {
-            $this->retryTls = false;
-            $expectedCommonName = $matches[1];
-            $this->io->write("    <warning>Retrying download from ".$originUrl." with SSL Cert Common Name (CN): ".$expectedCommonName."</warning>");
-
-            return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress, $expectedCommonName);
-        }
-
         if ($this->retry) {
             $this->retry = false;
 
@@ -487,7 +472,7 @@ class RemoteFilesystem
         throw new TransportException('RETRY');
     }
 
-    protected function getOptionsForUrl($originUrl, $additionalOptions, $validCommonName = '')
+    protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
         $tlsOptions = array();
 
@@ -499,18 +484,6 @@ class RemoteFilesystem
                 $host = parse_url($this->fileUrl, PHP_URL_HOST);
             }
 
-            // This is sheer painful, but hopefully it'll be a footnote once SAN support
-            // reaches PHP 5.4 and 5.5...
-            // Side-effect: We're betting on the CN being either a wildcard or www, e.g. *.github.com or www.example.com.
-            if (strlen($validCommonName) > 0) {
-                if (
-                    !preg_match('{'.$host.'$}i', $validCommonName)
-                    || (count(explode('.', $validCommonName)) - count(explode('.', $host))) > 1
-                ) {
-                    throw new TransportException('Unable to read or match the Common Name (CN) from the remote SSL certificate.');
-                }
-                $host = $validCommonName;
-            }
             $tlsOptions['ssl']['CN_match'] = $host;
             $tlsOptions['ssl']['SNI_server_name'] = $host;
         }
