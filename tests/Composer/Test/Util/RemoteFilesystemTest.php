@@ -179,30 +179,16 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($res['ssl']['verify_peer']);
         $this->assertTrue($res['ssl']['SNI_enabled']);
         $this->assertEquals(7, $res['ssl']['verify_depth']);
-        $this->assertEquals('www.example.org', $res['ssl']['CN_match']);
-        $this->assertEquals('www.example.org', $res['ssl']['SNI_server_name']);
+        if (PHP_VERSION_ID < 50600) {
+            $this->assertEquals('www.example.org', $res['ssl']['CN_match']);
+            $this->assertEquals('www.example.org', $res['ssl']['SNI_server_name']);
+        }
         $this->assertEquals('/some/path/file.crt', $res['ssl']['cafile']);
         if (version_compare(PHP_VERSION, '5.4.13') >= 0) {
             $this->assertTrue($res['ssl']['disable_compression']);
         } else {
             $this->assertFalse(isset($res['ssl']['disable_compression']));
         }
-    }
-
-    /**
-     * @group TLS
-     *
-     * Also illustrates a shortcoming with using originUrl (which is not a url but an ID)
-     * TLS would fail under this scenario if Common Name was www.example.org (i.e. doesn't apply to base example.org)
-     */
-    public function testGetOptionsForUrlSelectsOriginIfNoHttpFileUrlAvailable()
-    {
-        $io = $this->getMock('Composer\IO\IOInterface');
-
-        $res = $this->callGetOptionsForUrl($io, array('example.org', array('ssl'=>array('cafile'=>'/some/path/file.crt'))), array(), 'www.example.org');
-
-        $this->assertEquals('example.org', $res['ssl']['CN_match']);
-        $this->assertEquals('example.org', $res['ssl']['SNI_server_name']);
     }
 
     protected function callGetOptionsForUrl($io, array $args = array(), array $options = array(), $fileUrl = '')

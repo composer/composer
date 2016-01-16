@@ -523,7 +523,7 @@ class Factory
     {
         static $warned = false;
         $disableTls = false;
-        if (isset($config) && $config->get('disable-tls') === true) {
+        if ($config && $config->get('disable-tls') === true) {
             if (!$warned) {
                 $io->write('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
             }
@@ -535,7 +535,7 @@ class Factory
         }
         $remoteFilesystemOptions = array();
         if ($disableTls === false) {
-            if (isset($config) && $config->get('cafile')) {
+            if ($config && $config->get('cafile')) {
                 $remoteFilesystemOptions = array('ssl' => array('cafile' => $config->get('cafile')));
             }
             $remoteFilesystemOptions = array_merge_recursive($remoteFilesystemOptions, $options);

@@ -526,7 +526,7 @@ class RemoteFilesystem
         return $options;
     }
 
-    protected function getTlsDefaults()
+    private function getTlsDefaults()
     {
         $ciphers = implode(':', array(
             'ECDHE-RSA-AES128-GCM-SHA256',
@@ -617,7 +617,7 @@ class RemoteFilesystem
         /**
          * Disable TLS compression to prevent CRIME attacks where supported.
          */
-        if (version_compare(PHP_VERSION, '5.4.13') >= 0) {
+        if (PHP_VERSION_ID >= 50413) {
             $options['ssl']['disable_compression'] = true;
         }
 
@@ -658,9 +658,10 @@ class RemoteFilesystem
     */
     private static function getSystemCaRootBundlePath()
     {
-        static $found = null;
-        if ($found !== null) {
-            return $found;
+        static $caPath = null;
+
+        if ($caPath !== null) {
+            return $caPath;
         }
 
         // If SSL_CERT_FILE env variable points to a valid certificate/bundle, use that.
@@ -668,7 +669,7 @@ class RemoteFilesystem
         $envCertFile = getenv('SSL_CERT_FILE');
         if ($envCertFile && is_readable($envCertFile) && self::validateCaFile(file_get_contents($envCertFile))) {
             // Possibly throw exception instead of ignoring SSL_CERT_FILE if it's invalid?
-            return $envCertFile;
+            return $caPath = $envCertFile;
         }
 
         $caBundlePaths = array(
@@ -687,29 +688,23 @@ class RemoteFilesystem
 
         $configured = ini_get('openssl.cafile');
         if ($configured && strlen($configured) > 0 && is_readable($caBundle) && self::validateCaFile(file_get_contents($caBundle))) {
-            $found = true;
-            $caBundle = $configured;
-        } else {
-            foreach ($caBundlePaths as $caBundle) {
-                if (@is_readable($caBundle) && self::validateCaFile(file_get_contents($caBundle))) {
-                    $found = true;
-                    break;
-                }
-            }
-            if (!$found) {
-                foreach ($caBundlePaths as $caBundle) {
-                    $caBundle = dirname($caBundle);
-                    if (is_dir($caBundle) && glob($caBundle.'/*')) {
-                        $found = true;
-                        break;
-                    }
-                }
+            return $caPath = $configured;
+        }
+
+        foreach ($caBundlePaths as $caBundle) {
+            if (@is_readable($caBundle) && self::validateCaFile(file_get_contents($caBundle))) {
+                return $caPath = $caBundle;
             }
         }
-        if ($found) {
-            $found = $caBundle;
+
+        foreach ($caBundlePaths as $caBundle) {
+            $caBundle = dirname($caBundle);
+            if (is_dir($caBundle) && glob($caBundle.'/*')) {
+                return $caPath = $caBundle;
+            }
         }
-        return $found;
+
+        return $caPath = false;
     }
 
     private static function validateCaFile($contents)
