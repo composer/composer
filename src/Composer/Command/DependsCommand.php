@@ -46,7 +46,7 @@ class DependsCommand extends Command
                 new InputArgument('package', InputArgument::REQUIRED, 'Package to inspect'),
                 new InputOption('link-type', '', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Link types to show (require, require-dev)', array_keys($this->linkTypes)),
                 new InputOption('match-constraint', 'm', InputOption::VALUE_REQUIRED, 'Filters the dependencies shown using this constraint', '*'),
-                new InputOption('invert-match-constraint', 'i', InputOption::VALUE_NONE, 'Turns --match-constraint around into a blacklist insteead of whitelist'),
+                new InputOption('invert-match-constraint', 'i', InputOption::VALUE_NONE, 'Turns --match-constraint around into a blacklist instead of whitelist'),
                 new InputOption('with-replaces', '', InputOption::VALUE_NONE, 'Search for replaced packages as well'),
             ))
             ->setHelp(<<<EOT

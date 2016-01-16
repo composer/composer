@@ -341,8 +341,8 @@ symfony/monolog-bridge requires monolog/monolog (>=1.2)
 symfony/symfony requires monolog/monolog (~1)
 ```
 
-If you want, for example, find any package that is **not** ready
-for Symfony 3 or one of its components, you can run the following command:
+If you want, for example, find any installed package that is **not** allowing
+Symfony version 3 or one of its components, you can run the following command:
 
 ```sh
 php composer.phar depends symfony/symfony --with-replaces -im ^3.0
