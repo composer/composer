@@ -105,7 +105,13 @@ class RepositoryManager
 
         $class = $this->repositoryClasses[$type];
 
-        return new $class($config, $this->io, $this->config, $this->eventDispatcher, $this->rfs);
+        $reflMethod = new \ReflectionMethod($class, '__construct');
+        $params = $reflMethod->getParameters();
+        if (isset($params[4]) && $params[4]->getType()->__toString() === 'Composer\Util\RemoteFilesystem') {
+            return new $class($config, $this->io, $this->config, $this->eventDispatcher, $this->rfs);
+        }
+
+        return new $class($config, $this->io, $this->config, $this->eventDispatcher);
     }
 
     /**
