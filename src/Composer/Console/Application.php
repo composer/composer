@@ -103,9 +103,8 @@ class Application extends BaseApplication
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
-        ErrorHandler::register($this->io);
-        $io = $this->getIO();
+        $io = $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
+        ErrorHandler::register($io);
 
         // determine command name to be executed
         $commandName = '';
@@ -128,53 +127,58 @@ class Application extends BaseApplication
             if (defined('COMPOSER_DEV_WARNING_TIME') && $commandName !== 'self-update' && $commandName !== 'selfupdate' && time() > COMPOSER_DEV_WARNING_TIME) {
                 $io->writeError(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
             }
-        }
 
-        if (getenv('COMPOSER_NO_INTERACTION')) {
-            $input->setInteractive(false);
-        }
-
-        // switch working dir
-        if ($newWorkDir = $this->getNewWorkingDir($input)) {
-            $oldWorkingDir = getcwd();
-            chdir($newWorkDir);
-            if ($io->isDebug() >= 4) {
-                $io->writeError('Changed CWD to ' . getcwd());
+            if (getenv('COMPOSER_NO_INTERACTION')) {
+                $input->setInteractive(false);
             }
-        }
 
-        // add non-standard scripts as own commands
-        $file = Factory::getComposerFile();
-        if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
-            if (isset($composer['scripts']) && is_array($composer['scripts'])) {
-                foreach ($composer['scripts'] as $script => $dummy) {
-                    if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
-                        if ($this->has($script)) {
-                            $io->writeError('<warning>A script named '.$script.' would override a native Composer function and has been skipped</warning>');
-                        } else {
-                            $this->add(new Command\ScriptAliasCommand($script));
+            // switch working dir
+            if ($newWorkDir = $this->getNewWorkingDir($input)) {
+                $oldWorkingDir = getcwd();
+                chdir($newWorkDir);
+                if ($io->isDebug() >= 4) {
+                    $io->writeError('Changed CWD to ' . getcwd());
+                }
+            }
+
+            // add non-standard scripts as own commands
+            $file = Factory::getComposerFile();
+            if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
+                if (isset($composer['scripts']) && is_array($composer['scripts'])) {
+                    foreach ($composer['scripts'] as $script => $dummy) {
+                        if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
+                            if ($this->has($script)) {
+                                $io->writeError('<warning>A script named '.$script.' would override a native Composer function and has been skipped</warning>');
+                            } else {
+                                $this->add(new Command\ScriptAliasCommand($script));
+                            }
                         }
                     }
                 }
             }
         }
 
-        if ($input->hasParameterOption('--profile')) {
-            $startTime = microtime(true);
-            $this->io->enableDebugging($startTime);
+        try {
+            if ($input->hasParameterOption('--profile')) {
+                $startTime = microtime(true);
+                $this->io->enableDebugging($startTime);
+            }
+
+            $result = parent::doRun($input, $output);
+
+            if (isset($oldWorkingDir)) {
+                chdir($oldWorkingDir);
+            }
+
+            if (isset($startTime)) {
+                $io->writeError('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MB), time: '.round(microtime(true) - $startTime, 2).'s');
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            $this->hintCommonErrors($e);
+            throw $e;
         }
-
-        $result = parent::doRun($input, $output);
-
-        if (isset($oldWorkingDir)) {
-            chdir($oldWorkingDir);
-        }
-
-        if (isset($startTime)) {
-            $io->writeError('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MB), time: '.round(microtime(true) - $startTime, 2).'s');
-        }
-
-        return $result;
     }
 
     /**
@@ -195,7 +199,7 @@ class Application extends BaseApplication
     /**
      * {@inheritDoc}
      */
-    public function renderException($exception, $output)
+    private function hintCommonErrors($exception)
     {
         $io = $this->getIO();
 
@@ -223,12 +227,6 @@ class Application extends BaseApplication
         if (false !== strpos($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
             $io->writeError('<error>The following exception is caused by a lack of memory and not having swap configured</error>');
             $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>');
-        }
-
-        if ($output instanceof ConsoleOutputInterface) {
-            parent::renderException($exception, $output->getErrorOutput());
-        } else {
-            parent::renderException($exception, $output);
         }
     }
 
