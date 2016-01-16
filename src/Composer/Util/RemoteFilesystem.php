@@ -477,7 +477,7 @@ class RemoteFilesystem
         $tlsOptions = array();
 
         // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
-        if ($this->disableTls === false) {
+        if ($this->disableTls === false && PHP_VERSION_ID < 50600) {
             if (!preg_match('{^https?://}', $this->fileUrl)) {
                 $host = $originUrl;
             } else {
