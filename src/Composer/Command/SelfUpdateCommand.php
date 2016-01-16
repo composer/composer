@@ -14,7 +14,9 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\Factory;
+use Composer\Config;
 use Composer\Util\Filesystem;
+use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
 use Composer\Downloader\FilesystemException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -44,6 +46,7 @@ class SelfUpdateCommand extends Command
                 new InputOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'The version to update to'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
+                new InputOption('update-keys', null, InputOption::VALUE_NONE, 'Prompt user for a key update'),
             ))
             ->setHelp(<<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer
@@ -71,7 +74,12 @@ EOT
 
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('data-dir');
+        $home = $config->get('home');
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
+
+        if ($input->getOption('update-keys')) {
+            return $this->fetchKeys($io, $config);
+        }
 
         // check if current dir is writable and if not try the cache dir from settings
         $tmpDir = is_writable(dirname($localFilename)) ? dirname($localFilename) : $cacheDir;
@@ -112,13 +120,53 @@ EOT
             self::OLD_INSTALL_EXT
         );
 
-        $io->writeError(sprintf("Updating to version <info>%s</info>.", $updateVersion));
-        $remoteFilename = $baseUrl . (preg_match('{^[0-9a-f]{40}$}', $updateVersion) ? '/composer.phar' : "/download/{$updateVersion}/composer.phar");
+        $updatingToTag = !preg_match('{^[0-9a-f]{40}$}', $updateVersion);
+
+        $io->write(sprintf("Updating to version <info>%s</info>.", $updateVersion));
+        $remoteFilename = $baseUrl . ($updatingToTag ? "/download/{$updateVersion}/composer.phar" : '/composer.phar');
+        $signature = $remoteFilesystem->getContents(self::HOMEPAGE, $remoteFilename.'.sig', false);
         $remoteFilesystem->copy(self::HOMEPAGE, $remoteFilename, $tempFilename, !$input->getOption('no-progress'));
-        if (!file_exists($tempFilename)) {
+        if (!file_exists($tempFilename) || !$signature) {
             $io->writeError('<error>The download of the new composer version failed for an unexpected reason</error>');
 
             return 1;
+        }
+
+        // verify phar signature
+        if (!extension_loaded('openssl') && $config->get('disable-tls')) {
+            $io->writeError('<warning>Skipping phar signature verification as you have disabled OpenSSL via config.disable-tls</warning>');
+        } else {
+            if (!extension_loaded('openssl')) {
+                throw new \RuntimeException('The openssl extension is required for phar signatures to be verified but it is not available. '
+                . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
+            }
+
+            $sigFile = 'file://'.$home.'/' . ($updatingToTag ? 'keys.tags.pub' : 'keys.dev.pub');
+            if (!file_exists($sigFile)) {
+                $io->write('<warning>You are missing the public keys used to verify Composer phar file signatures</warning>');
+                if (!$io->isInteractive() || getenv('CI') || getenv('CONTINUOUS_INTEGRATION')) {
+                    $io->write('<warning>As this process is not interactive or you run on CI, it is allowed to run for now, but you should run "composer self-update --update-keys" to get them set up.</warning>');
+                } else {
+                    $this->fetchKeys($io, $config);
+                }
+            }
+
+            // if still no file is present it means we are on CI/travis or
+            // not interactive so we skip the check for now
+            if (file_exists($sigFile)) {
+                $pubkeyid = openssl_pkey_get_public($sigFile);
+                $algo = defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
+                if (!in_array('SHA384', openssl_get_md_methods())) {
+                    throw new \RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
+                }
+                $signature = json_decode($signature, true);
+                $signature = base64_decode($signature['sha384']);
+                $verified = 1 === openssl_verify(file_get_contents($tempFilename), $signature, $pubkeyid, $algo);
+                openssl_free_key($pubkeyid);
+                if (!$verified) {
+                    throw new \RuntimeException('The phar signature did not match the file you downloaded, this means your public keys are outdated or that the phar file is corrupt/has been modified');
+                }
+            }
         }
 
         // remove saved installations of composer
@@ -145,6 +193,48 @@ EOT
         } else {
             $io->writeError('<warning>A backup of the current version could not be written to '.$backupFile.', no rollback possible</warning>');
         }
+    }
+
+    protected function fetchKeys(IOInterface $io, Config $config)
+    {
+        if (!$io->isInteractive()) {
+            throw new \RuntimeException('Public keys are missing and can not be fetched in non-interactive mode, run this interactively or re-install composer using the installer to get the public keys set up');
+        }
+
+        $io->write('Open <info>https://composer.github.io/pubkeys.html</info> to find the latest keys');
+
+        $validator = function ($value) {
+            if (!preg_match('{^-----BEGIN PUBLIC KEY-----$}', trim($value))) {
+                throw new \UnexpectedValueException('Invalid input');
+            }
+            return trim($value)."\n";
+        };
+
+        $devKey = '';
+        while (!preg_match('{(-----BEGIN PUBLIC KEY-----.+?-----END PUBLIC KEY-----)}s', $devKey, $match)) {
+            $devKey = $io->askAndValidate('Enter Dev / Snapshot Public Key (including lines with -----): ', $validator);
+            while ($line = $io->ask('')) {
+                $devKey .= trim($line)."\n";
+                if (trim($line) === '-----END PUBLIC KEY-----') {
+                    break;
+                }
+            }
+        }
+        file_put_contents($config->get('home').'/keys.dev.pub', $match[0]);
+
+        $tagsKey = '';
+        while (!preg_match('{(-----BEGIN PUBLIC KEY-----.+?-----END PUBLIC KEY-----)}s', $tagsKey, $match)) {
+            $tagsKey = $io->askAndValidate('Enter Tags Public Key (including lines with -----): ', $validator);
+            while ($line = $io->ask('')) {
+                $tagsKey .= trim($line)."\n";
+                if (trim($line) === '-----END PUBLIC KEY-----') {
+                    break;
+                }
+            }
+        }
+        file_put_contents($config->get('home').'/keys.tags.pub', $match[0]);
+
+        $io->write('Public keys stored in '.$config->get('home'));
     }
 
     protected function rollback(OutputInterface $output, $rollbackDir, $localFilename)
