@@ -38,6 +38,8 @@ class RemoteFilesystem
     private $lastHeaders;
     private $storeAuth;
     private $degradedMode = false;
+    private $redirects = 0;
+    private $maxRedirects = 20;
 
     /**
      * Constructor.
@@ -293,6 +295,72 @@ class RemoteFilesystem
             $statusCode = $this->findStatusCode($http_response_header);
         }
 
+        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ (3\d\d)}i', $http_response_header[0], $match)) {
+            // TODO: Only follow if PHP is not set to follow.
+            foreach ($http_response_header as $header) {
+                if (preg_match('{^location: *(.+) *$}i', $header, $m)) {
+                    if (parse_url($m[1], PHP_URL_SCHEME)) {
+                        $targetUrl = $m[1];
+
+                        break;
+                    }
+
+                    if (parse_url($m[1], PHP_URL_HOST)) {
+                        // Scheme relative; e.g. //example.com/foo
+                        $targetUrl = $this->scheme.':'.$m[1];
+                        break;
+                    }
+
+                    if ('/' === $m[1][0]) {
+                        // Absolute path; e.g. /foo
+                        throw new \Exception('todo');
+                    }
+
+                    throw new \Exception('todo');
+                    break;
+                }
+            }
+
+            if ($targetUrl) {
+                $this->redirects++;
+
+                if ($this->redirects > $this->maxRedirects) {
+                    $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, too many redirects');
+                    $e->setHeaders($http_response_header);
+                    $e->setResponse($result);
+                    throw $e;
+                }
+
+                if ('http' === parse_url($targetUrl, PHP_URL_SCHEME) && 'https' === $this->scheme) {
+                    // Do not allow protocol downgrade.
+                    // TODO: Currently this will fail if a request goes http -> https -> http
+                    $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, not permitting protocol downgrade');
+                    $e->setHeaders($http_response_header);
+                    $e->setResponse($result);
+                    throw $e;
+                }
+
+                if ($this->io->isDebug()) {
+                    $this->io->writeError(sprintf('Following redirect (%u)', $this->redirects));
+                }
+
+                // TODO: Not so sure about preserving origin here...
+                $result = $this->get($this->originUrl, $targetUrl, $additionalOptions, $this->fileName, $this->progress);
+
+                $this->redirects--;
+
+                return $result;
+            }
+
+            if (!$this->retry) {
+                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, got redirect without Location ('.$http_response_header[0].')');
+                $e->setHeaders($http_response_header);
+                $e->setResponse($result);
+                throw $e;
+            }
+            $result = false;
+        }
+
         // fail 4xx and 5xx responses and capture the response
         if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
             if (!$this->retry) {
@@ -529,9 +597,9 @@ class RemoteFilesystem
                 $host = parse_url($this->fileUrl, PHP_URL_HOST);
             }
 
-            if ($host === 'github.com' || $host === 'api.github.com') {
-                $host = '*.github.com';
-            }
+            // if ($host === 'github.com' || $host === 'api.github.com') {
+            //     $host = '*.github.com';
+            // }
 
             $tlsOptions['ssl']['CN_match'] = $host;
             $tlsOptions['ssl']['SNI_server_name'] = $host;
@@ -549,6 +617,10 @@ class RemoteFilesystem
             // proxies/software due to the use of chunked encoding
             $options['http']['protocol_version'] = 1.1;
             $headers[] = 'Connection: close';
+        }
+
+        if (PHP_VERSION_ID >= 50304 && $this->disableTls === false) {
+            $options['http']['follow_location'] = 0;
         }
 
         if ($this->io->hasAuthentication($originUrl)) {
