@@ -143,7 +143,7 @@ class RemoteFilesystem
      *
      * @return bool|string
      */
-    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true, $expectedCommonName = '')
+    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
     {
         if (strpos($originUrl, '.github.com') === (strlen($originUrl) - 11)) {
             $originUrl = 'github.com';
@@ -170,7 +170,7 @@ class RemoteFilesystem
             unset($additionalOptions['retry-auth-failure']);
         }
 
-        $options = $this->getOptionsForUrl($originUrl, $additionalOptions, $expectedCommonName);
+        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
 
         if ($this->io->isDebug()) {
             $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
@@ -319,7 +319,7 @@ class RemoteFilesystem
         if ($this->retry) {
             $this->retry = false;
 
-            $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress, $expectedCommonName);
+            $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
 
             $authHelper = new AuthHelper($this->io, $this->config);
             $authHelper->storeAuth($this->originUrl, $this->storeAuth);
@@ -329,7 +329,7 @@ class RemoteFilesystem
         }
 
         if (false === $result) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage.' using CN='.$expectedCommonName, $errorCode);
+            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
             if (!empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
@@ -482,6 +482,10 @@ class RemoteFilesystem
                 $host = $originUrl;
             } else {
                 $host = parse_url($this->fileUrl, PHP_URL_HOST);
+            }
+
+            if ($host === 'github.com' || $host === 'api.github.com') {
+                $host = '*.github.com';
             }
 
             $tlsOptions['ssl']['CN_match'] = $host;
