@@ -303,7 +303,7 @@ class RemoteFilesystem
             $statusCode = $this->findStatusCode($http_response_header);
         }
 
-        if ($userlandFollow && !empty($http_response_header[0]) && preg_match('{^HTTP/\S+ (3\d\d)}i', $http_response_header[0], $match)) {
+        if ($userlandFollow && !empty($http_response_header[0]) && preg_match('{^HTTP/\S+ (3\d\d)}i', $http_response_header[0], $match) && $this->redirects < $this->maxRedirects) {
             foreach ($http_response_header as $header) {
                 if (preg_match('{^location: *(.+) *$}i', $header, $m)) {
                     if (parse_url($m[1], PHP_URL_SCHEME)) {
@@ -336,13 +336,6 @@ class RemoteFilesystem
 
             if ($targetUrl) {
                 $this->redirects++;
-
-                if ($this->redirects > $this->maxRedirects) {
-                    $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, too many redirects');
-                    $e->setHeaders($http_response_header);
-                    $e->setResponse($result);
-                    throw $e;
-                }
 
                 // TODO: Disabled because this is (probably) different behaviour to PHP following for us.
                 // if ('http' === parse_url($targetUrl, PHP_URL_SCHEME) && 'https' === $this->scheme) {
