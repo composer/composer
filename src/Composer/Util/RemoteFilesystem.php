@@ -38,7 +38,7 @@ class RemoteFilesystem
     private $lastHeaders;
     private $storeAuth;
     private $degradedMode = false;
-    private $redirects = 0;
+    private $redirects;
     private $maxRedirects = 20;
 
     /**
@@ -208,6 +208,7 @@ class RemoteFilesystem
         $this->lastProgress = null;
         $this->retryAuthFailure = true;
         $this->lastHeaders = array();
+        $this->redirects = 1; // The first request counts.
 
         // capture username/password from URL if there is one
         if (preg_match('{^https?://(.+):(.+)@([^/]+)}i', $fileUrl, $match)) {
@@ -218,6 +219,12 @@ class RemoteFilesystem
             $this->retryAuthFailure = (bool) $additionalOptions['retry-auth-failure'];
 
             unset($additionalOptions['retry-auth-failure']);
+        }
+
+        if (isset($additionalOptions['redirects'])) {
+            $this->redirects = $additionalOptions['redirects'];
+
+            unset($additionalOptions['redirects']);
         }
 
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
@@ -351,12 +358,10 @@ class RemoteFilesystem
                     $this->io->writeError(sprintf('Following redirect (%u)', $this->redirects));
                 }
 
+                $additionalOptions['redirects'] = $this->redirects;
+
                 // TODO: Not so sure about preserving origin here...
-                $result = $this->get($this->originUrl, $targetUrl, $additionalOptions, $this->fileName, $this->progress);
-
-                $this->redirects--;
-
-                return $result;
+                return $this->get($this->originUrl, $targetUrl, $additionalOptions, $this->fileName, $this->progress);
             }
 
             if (!$this->retry) {
