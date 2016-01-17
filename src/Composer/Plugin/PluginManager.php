@@ -106,6 +106,26 @@ class PluginManager
             return;
         }
 
+        $requiresComposer = null;
+        foreach ($package->getRequires() as $link) { /** @var Link $link */
+            if ('composer-plugin-api' === $link->getTarget()) {
+                $requiresComposer = $link->getConstraint();
+                break;
+            }
+        }
+
+        if (!$requiresComposer) {
+            throw new \RuntimeException("Plugin ".$package->getName()." is missing a require statement for a version of the composer-plugin-api package.");
+        }
+
+        $currentPluginApiVersion = $this->getPluginApiVersion();
+        $currentPluginApiConstraint = new Constraint('==', $this->versionParser->normalize($currentPluginApiVersion));
+
+        if (!$requiresComposer->matches($currentPluginApiConstraint)) {
+            $this->io->writeError('<warning>The "' . $package->getName() . '" plugin was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
+            return;
+        }
+
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
 
         if (in_array($package->getName(), $this->registeredPlugins)) {
@@ -209,28 +229,7 @@ class PluginManager
                 continue;
             }
             if ('composer-plugin' === $package->getType()) {
-                $requiresComposer = null;
-                foreach ($package->getRequires() as $link) { /** @var Link $link */
-                    if ('composer-plugin-api' === $link->getTarget()) {
-                        $requiresComposer = $link->getConstraint();
-                        break;
-                    }
-                }
-
-                if (!$requiresComposer) {
-                    throw new \RuntimeException("Plugin ".$package->getName()." is missing a require statement for a version of the composer-plugin-api package.");
-                }
-
-                $currentPluginApiVersion = $this->getPluginApiVersion();
-                $currentPluginApiConstraint = new Constraint('==', $this->versionParser->normalize($currentPluginApiVersion));
-
-                if (!$requiresComposer->matches($currentPluginApiConstraint)) {
-                    $this->io->writeError('<warning>The "' . $package->getName() . '" plugin was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
-                    continue;
-                }
-
                 $this->registerPackage($package);
-
             // Backward compatibility
             } elseif ('composer-installer' === $package->getType()) {
                 $this->registerPackage($package);
