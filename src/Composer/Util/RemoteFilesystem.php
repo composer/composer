@@ -221,6 +221,7 @@ class RemoteFilesystem
         }
 
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        $userlandFollow = isset($options['http']['follow_location']) && !$options['http']['follow_location'];
 
         if ($this->io->isDebug()) {
             $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
@@ -295,8 +296,7 @@ class RemoteFilesystem
             $statusCode = $this->findStatusCode($http_response_header);
         }
 
-        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ (3\d\d)}i', $http_response_header[0], $match)) {
-            // TODO: Only follow if PHP is not set to follow.
+        if ($userlandFollow && !empty($http_response_header[0]) && preg_match('{^HTTP/\S+ (3\d\d)}i', $http_response_header[0], $match)) {
             foreach ($http_response_header as $header) {
                 if (preg_match('{^location: *(.+) *$}i', $header, $m)) {
                     if (parse_url($m[1], PHP_URL_SCHEME)) {
@@ -597,9 +597,20 @@ class RemoteFilesystem
                 $host = parse_url($this->fileUrl, PHP_URL_HOST);
             }
 
-            // if ($host === 'github.com' || $host === 'api.github.com') {
-            //     $host = '*.github.com';
-            // }
+            if (PHP_VERSION_ID >= 50304) {
+                // Must manually follow when setting CN_match because this causes all
+                // redirects to be validated against the same CN_match value.
+                $userlandFollow = true;
+            } else {
+                // PHP < 5.3.4 does not support follow_location, for those people
+                // do some really nasty hard coded transformations. These will
+                // still breakdown if the site redirects to a domain we don't
+                // expect.
+
+                if ($host === 'github.com' || $host === 'api.github.com') {
+                    $host = '*.github.com';
+                }
+            }
 
             $tlsOptions['ssl']['CN_match'] = $host;
             $tlsOptions['ssl']['SNI_server_name'] = $host;
@@ -619,7 +630,7 @@ class RemoteFilesystem
             $headers[] = 'Connection: close';
         }
 
-        if (PHP_VERSION_ID >= 50304 && $this->disableTls === false) {
+        if (isset($userlandFollow)) {
             $options['http']['follow_location'] = 0;
         }
 
