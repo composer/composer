@@ -313,10 +313,16 @@ class RemoteFilesystem
 
                     if ('/' === $m[1][0]) {
                         // Absolute path; e.g. /foo
-                        throw new \Exception('todo');
+                        $urlHost = parse_url($this->fileUrl, PHP_URL_HOST);
+
+                        // Replace path using hostname as an anchor.
+                        $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).')(?:[/\?].*)?$}', '\1'.$m[1], $this->fileUrl);
                     }
 
-                    throw new \Exception('todo');
+                    // Relative path; e.g. foo
+                    // This actually differs from PHP which seems to add duplicate slashes.
+                    $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$m[1], $this->fileUrl);
+
                     break;
                 }
             }
