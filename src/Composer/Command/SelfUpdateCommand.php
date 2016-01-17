@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\Config;
 use Composer\Util\Filesystem;
+use Composer\Util\Keys;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
 use Composer\Downloader\FilesystemException;
@@ -220,7 +221,8 @@ EOT
                 }
             }
         }
-        file_put_contents($config->get('home').'/keys.dev.pub', $match[0]);
+        file_put_contents($keyPath = $config->get('home').'/keys.dev.pub', $match[0]);
+        $io->write('Stored key with fingerprint: ' . Keys::fingerprint($keyPath));
 
         $tagsKey = '';
         while (!preg_match('{(-----BEGIN PUBLIC KEY-----.+?-----END PUBLIC KEY-----)}s', $tagsKey, $match)) {
@@ -232,7 +234,8 @@ EOT
                 }
             }
         }
-        file_put_contents($config->get('home').'/keys.tags.pub', $match[0]);
+        file_put_contents($keyPath = $config->get('home').'/keys.tags.pub', $match[0]);
+        $io->write('Stored key with fingerprint: ' . Keys::fingerprint($keyPath));
 
         $io->write('Public keys stored in '.$config->get('home'));
     }
