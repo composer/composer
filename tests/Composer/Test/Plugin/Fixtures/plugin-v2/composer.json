@@ -7,6 +7,6 @@
         "class": "Installer\\Plugin2"
     },
     "require": {
-        "composer-plugin-api": "*"
+        "composer-plugin-api": "^1.0"
     }
 }

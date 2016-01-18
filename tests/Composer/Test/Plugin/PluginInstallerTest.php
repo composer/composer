@@ -147,7 +147,7 @@ class PluginInstallerTest extends TestCase
         $this->repository
             ->expects($this->exactly(2))
             ->method('getPackages')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue(array($this->packages[3])));
         $installer = new PluginInstaller($this->io, $this->composer);
         $this->pm->loadInstalledPlugins();
 
