@@ -18,7 +18,6 @@ namespace Composer\Plugin;
  * declared Plugin class implementing this interface.
  *
  * @api
- * @since Plugin API 1.1
  */
 interface Capable
 {

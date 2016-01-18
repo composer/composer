@@ -17,7 +17,6 @@ namespace Composer\Plugin\Capability;
  * Every new Capability which is added to the Plugin API must implement this interface.
  *
  * @api
- * @since Plugin API 1.1
  */
 interface Capability
 {
