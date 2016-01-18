@@ -139,6 +139,45 @@ class RemoteFilesystem
     }
 
     /**
+     * @param array $headers array of returned headers like from getLastHeaders()
+     * @param string $name header name (case insensitive)
+     * @return string|null
+     */
+    public function findHeaderValue(array $headers, $name)
+    {
+        $value = null;
+        foreach ($headers as $header) {
+            if (preg_match('{^'.$name.':\s*(.+?)\s*$}i', $header, $match)) {
+                $value = $match[1];
+            } elseif (preg_match('{^HTTP/}i', $header)) {
+                // In case of redirects, http_response_headers contains the headers of all responses
+                // so we reset the flag when a new response is being parsed as we are only interested in the last response
+                $value = null;
+            }
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array $headers array of returned headers like from getLastHeaders()
+     * @return int|null
+     */
+    public function findStatusCode(array $headers)
+    {
+        $value = null;
+        foreach ($headers as $header) {
+            if (preg_match('{^HTTP/\S+ (\d+)}i', $header, $match)) {
+                // In case of redirects, http_response_headers contains the headers of all responses
+                // so we can not return directly and need to keep iterating
+                $value = (int) $match[1];
+            }
+        }
+
+        return $value;
+    }
+
+    /**
      * Get file content or copy action.
      *
      * @param string $originUrl         The origin URL
@@ -224,6 +263,7 @@ class RemoteFilesystem
         } catch (\Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
+                $e->setStatusCode($this->findStatusCode($http_response_header));
             }
             if ($e instanceof TransportException && $result !== false) {
                 $e->setResponse($result);
@@ -248,13 +288,18 @@ class RemoteFilesystem
             throw $e;
         }
 
+        $statusCode = null;
+        if (!empty($http_response_header[0])) {
+            $statusCode = $this->findStatusCode($http_response_header);
+        }
+
         // fail 4xx and 5xx responses and capture the response
-        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ ([45]\d\d)}i', $http_response_header[0], $match)) {
-            $errorCode = $match[1];
+        if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
             if (!$this->retry) {
-                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $errorCode);
+                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
                 $e->setHeaders($http_response_header);
                 $e->setResponse($result);
+                $e->setStatusCode($statusCode);
                 throw $e;
             }
             $result = false;
@@ -266,16 +311,7 @@ class RemoteFilesystem
 
         // decode gzip
         if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
-            $decode = false;
-            foreach ($http_response_header as $header) {
-                if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
-                    $decode = true;
-                } elseif (preg_match('{^HTTP/}i', $header)) {
-                    // In case of redirects, http_response_headers contains the headers of all responses
-                    // so we reset the flag when a new response is being parsed as we are only interested in the last response
-                    $decode = false;
-                }
-            }
+            $decode = 'gzip' === strtolower($this->findHeaderValue($http_response_header, 'content-encoding'));
 
             if ($decode) {
                 try {

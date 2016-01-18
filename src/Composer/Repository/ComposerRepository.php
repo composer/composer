@@ -26,6 +26,7 @@ use Composer\Util\RemoteFilesystem;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Downloader\TransportException;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 
@@ -285,10 +286,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->loadProviderListings($this->loadRootServerFile());
         }
 
+        $useLastModifiedCheck = false;
         if ($this->lazyProvidersUrl && !isset($this->providerListing[$name])) {
             $hash = null;
             $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
-            $cacheKey = false;
+            $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
+            $useLastModifiedCheck = true;
         } elseif ($this->providersUrl) {
             // package does not exist in this repo
             if (!isset($this->providerListing[$name])) {
@@ -310,11 +313,36 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $cacheKey = null;
         }
 
-        if ($cacheKey && $this->cache->sha256($cacheKey) === $hash) {
-            $packages = json_decode($this->cache->read($cacheKey), true);
-        } else {
-            // TODO check if we can do if-modified-since or etag header here and skip the listings
-            $packages = $this->fetchFile($url, $cacheKey, $hash);
+        $packages = null;
+        if ($cacheKey) {
+            if (!$useLastModifiedCheck && $hash && $this->cache->sha256($cacheKey) === $hash) {
+                $packages = json_decode($this->cache->read($cacheKey), true);
+            } elseif ($useLastModifiedCheck) {
+                if ($contents = $this->cache->read($cacheKey)) {
+                    $contents = json_decode($contents, true);
+                    if (isset($contents['last-modified'])) {
+                        $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
+                        if (true === $response) {
+                            $packages = $contents;
+                        } elseif ($response) {
+                            $packages = $response;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!$packages) {
+            try {
+                $packages = $this->fetchFile($url, $cacheKey, $hash, $useLastModifiedCheck);
+            } catch (TransportException $e) {
+                // 404s are acceptable for lazy provider repos
+                if ($e->getStatusCode() === 404 && $this->lazyProvidersUrl) {
+                    $packages = array('packages' => array());
+                } else {
+                    throw $e;
+                }
+            }
         }
 
         $this->providers[$name] = array();
@@ -477,6 +505,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->hasProviders = true;
         }
 
+        // force values for packagist
+        if (preg_match('{^https?://packagist.org/?$}i', $this->url) && !empty($this->repoConfig['force-lazy-providers'])) {
+            $this->url = 'https://packagist.org';
+            $this->baseUrl = 'https://packagist.org';
+            $this->lazyProvidersUrl = $this->canonicalizeUrl('https://packagist.org/p/%package%.json');
+            $this->providersUrl = null;
+        }
+
         return $this->rootData = $data;
     }
 
@@ -590,7 +626,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
     }
 
-    protected function fetchFile($filename, $cacheKey = null, $sha256 = null)
+    protected function fetchFile($filename, $cacheKey = null, $sha256 = null, $storeLastModifiedTime = false)
     {
         if (null === $cacheKey) {
             $cacheKey = $filename;
@@ -611,7 +647,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
-                $json = $preFileDownloadEvent->getRemoteFilesystem()->getContents($hostname, $filename, false);
+                $rfs = $preFileDownloadEvent->getRemoteFilesystem();
+                $json = $rfs->getContents($hostname, $filename, false);
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     if ($retries) {
                         usleep(100000);
@@ -622,13 +659,25 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     // TODO use scarier wording once we know for sure it doesn't do false positives anymore
                     throw new RepositorySecurityException('The contents of '.$filename.' do not match its signature. This should indicate a man-in-the-middle attack. Try running composer again and report this if you think it is a mistake.');
                 }
+
                 $data = JsonFile::parseJson($json, $filename);
                 if ($cacheKey) {
+                    if ($storeLastModifiedTime) {
+                        $lastModifiedDate = $rfs->findHeaderValue($rfs->getLastHeaders(), 'last-modified');
+                        if ($lastModifiedDate) {
+                            $data['last-modified'] = $lastModifiedDate;
+                            $json = json_encode($data);
+                        }
+                    }
                     $this->cache->write($cacheKey, $json);
                 }
 
                 break;
             } catch (\Exception $e) {
+                if ($e instanceof TransportException && $e->getStatusCode() === 404) {
+                    throw $e;
+                }
+
                 if ($retries) {
                     usleep(100000);
                     continue;
@@ -654,5 +703,52 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         return $data;
+    }
+
+    protected function fetchFileIfLastModified($filename, $cacheKey, $lastModifiedTime)
+    {
+        $retries = 3;
+        while ($retries--) {
+            try {
+                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $filename);
+                if ($this->eventDispatcher) {
+                    $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                }
+
+                $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
+                $rfs = $preFileDownloadEvent->getRemoteFilesystem();
+                $options = array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime)));
+                $json = $rfs->getContents($hostname, $filename, false, $options);
+                if ($json === '' && $rfs->findStatusCode($rfs->getLastHeaders()) === 304) {
+                    return true;
+                }
+
+                $data = JsonFile::parseJson($json, $filename);
+                $lastModifiedDate = $rfs->findHeaderValue($rfs->getLastHeaders(), 'last-modified');
+                if ($lastModifiedDate) {
+                    $data['last-modified'] = $lastModifiedDate;
+                    $json = json_encode($data);
+                }
+                $this->cache->write($cacheKey, $json);
+
+                return $data;
+            } catch (\Exception $e) {
+                if ($e instanceof TransportException && $e->getStatusCode() === 404) {
+                    throw $e;
+                }
+
+                if ($retries) {
+                    usleep(100000);
+                    continue;
+                }
+
+                if (!$this->degradedMode) {
+                    $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
+                    $this->io->writeError('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
+                }
+                $this->degradedMode = true;
+                return true;
+            }
+        }
     }
 }

@@ -19,6 +19,7 @@ class TransportException extends \RuntimeException
 {
     protected $headers;
     protected $response;
+    protected $statusCode;
 
     public function setHeaders($headers)
     {
@@ -38,5 +39,15 @@ class TransportException extends \RuntimeException
     public function getResponse()
     {
         return $this->response;
+    }
+
+    public function setStatusCode($statusCode)
+    {
+        $this->statusCode = $statusCode;
+    }
+
+    public function getStatusCode()
+    {
+        return $this->statusCode;
     }
 }
