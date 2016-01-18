@@ -12,7 +12,6 @@
 
 namespace Composer\Util;
 
-use Composer\Composer;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
@@ -691,7 +690,7 @@ class RemoteFilesystem
         );
 
         $configured = ini_get('openssl.cafile');
-        if ($configured && strlen($configured) > 0 && is_readable($caBundle) && self::validateCaFile(file_get_contents($caBundle))) {
+        if ($configured && strlen($configured) > 0 && is_readable($configured) && self::validateCaFile(file_get_contents($configured))) {
             return $caPath = $configured;
         }
 
