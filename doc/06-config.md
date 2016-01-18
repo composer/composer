@@ -87,9 +87,17 @@ vendor-dir and all `*-dir` options below.
 Defaults to `vendor/bin`. If a project includes binaries, they will be symlinked
 into this directory.
 
+## data-dir
+
+Defaults to `C:\Users\<user>\AppData\Roaming\Composer` on Windows,
+`$XDG_DATA_HOME/composer` on unix systems that follow the XDG Base Directory
+Specifications, and `$home` on other unix systems. Right now it is only
+used for storing past composer.phar files to be able to rollback to older
+versions. See also [COMPOSER_HOME](03-cli.md#composer-home).
+
 ## cache-dir
 
-Defaults `C:\Users\<user>\AppData\Local\Composer` on Windows,
+Defaults to `C:\Users\<user>\AppData\Local\Composer` on Windows,
 `$XDG_CACHE_HOME/composer` on unix systems that follow the XDG Base Directory
 Specifications, and `$home/cache` on other unix systems. Stores all the caches
 used by Composer. See also [COMPOSER_HOME](03-cli.md#composer-home).

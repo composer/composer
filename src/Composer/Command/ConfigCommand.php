@@ -298,6 +298,7 @@ EOT
             'bin-dir' => array('is_string', function ($val) { return $val; }),
             'archive-dir' => array('is_string', function ($val) { return $val; }),
             'archive-format' => array('is_string', function ($val) { return $val; }),
+            'data-dir' => array('is_string', function ($val) { return $val; }),
             'cache-dir' => array('is_string', function ($val) { return $val; }),
             'cache-files-dir' => array('is_string', function ($val) { return $val; }),
             'cache-repo-dir' => array('is_string', function ($val) { return $val; }),

@@ -40,35 +40,6 @@ use Seld\JsonLint\JsonParser;
 class Factory
 {
     /**
-     *
-     * @return boolean
-     */
-    private static function useXdg()
-    {
-        foreach (array_keys($_SERVER) as $key) {
-            if (substr($key, 0, 4) === 'XDG_') {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @return string
-     * @throws \RuntimeException
-     */
-    private static function getUserDir()
-    {
-        if (!getenv('HOME')) {
-            throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
-        }
-        $userDir = rtrim(getenv('HOME'), '/');
-
-        return $userDir;
-    }
-
-    /**
      * @return string
      * @throws \RuntimeException
      */
@@ -83,33 +54,23 @@ class Factory
             if (!getenv('APPDATA')) {
                 throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
             }
-            $home = strtr(getenv('APPDATA'), '\\', '/') . '/Composer';
 
-            return $home;
+            return rtrim(strtr(getenv('APPDATA'), '\\', '/'), '/') . '/Composer';
         }
 
         $userDir = self::getUserDir();
-
         if (is_dir($userDir . '/.composer')) {
-            $home = $userDir . '/.composer';
-
-            return $home;
+            return $userDir . '/.composer';
         }
 
         if (self::useXdg()) {
             // XDG Base Directory Specifications
-            $xdgConfig = getenv('XDG_CONFIG_HOME');
-            if (!$xdgConfig) {
-                $xdgConfig = $userDir . '/.config';
-            }
-            $home = $xdgConfig . '/composer';
+            $xdgConfig = getenv('XDG_CONFIG_HOME') ?: $userDir . '/.config';
 
-            return $home;
+            return $xdgConfig . '/composer';
         }
 
-        $home = $userDir . '/.composer';
-
-        return $home;
+        return $userDir . '/.composer';
     }
 
     /**
@@ -129,69 +90,42 @@ class Factory
             } else {
                 $cacheDir = $home . '/cache';
             }
-            $cacheDir = strtr($cacheDir, '\\', '/');
 
-            return $cacheDir;
+            return rtrim(strtr($cacheDir, '\\', '/'), '/');
         }
 
         $userDir = self::getUserDir();
-
         if ($home === $userDir . '/.composer' && is_dir($home . '/cache')) {
-            $cacheDir = $home . '/cache';
-
-            return $cacheDir;
+            return $home . '/cache';
         }
 
         if (self::useXdg()) {
-            $xdgCache = getenv('XDG_CACHE_HOME');
-            if (!$xdgCache) {
-                $xdgCache = $userDir . '/.cache';
-            }
-            $cacheDir = $xdgCache . '/composer';
+            $xdgCache = getenv('XDG_CACHE_HOME') ?: $userDir . '/.cache';
 
-            return $cacheDir;
+            return $xdgCache . '/composer';
         }
 
-        $cacheDir = $home . '/cache';
-
-        return $cacheDir;
+        return $home . '/cache';
     }
 
     /**
      * @param string $home
-     *
      * @return string
      */
     protected static function getDataDir($home)
     {
         if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
-            $dataDir = strtr($home, '\\', '/');
-
-            return $dataDir;
+            return strtr($home, '\\', '/');
         }
 
         $userDir = self::getUserDir();
+        if ($home !== $userDir . '/.composer' && self::useXdg()) {
+            $xdgData = getenv('XDG_DATA_HOME') ?: $userDir . '/.local/share';
 
-        if ($home === $userDir . '/.composer') {
-            $cacheDir = $home;
-
-            return $cacheDir;
+            return $xdgData . '/composer';
         }
 
-        if (self::useXdg()) {
-            $xdgData = getenv('XDG_DATA_HOME');
-            if (!$xdgData) {
-                $userDir = self::getUserDir();
-                $xdgData = $userDir . '/.local/share';
-            }
-            $dataDir = $xdgData . '/composer';
-
-            return $dataDir;
-        }
-
-        $dataDir = $home;
-
-        return $dataDir;
+        return $home;
     }
 
     /**
@@ -664,5 +598,33 @@ class Factory
         }
 
         return $remoteFilesystem;
+    }
+
+    /**
+     * @return boolean
+     */
+    private static function useXdg()
+    {
+        foreach (array_keys($_SERVER) as $key) {
+            if (substr($key, 0, 4) === 'XDG_') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return string
+     * @throws \RuntimeException
+     */
+    private static function getUserDir()
+    {
+        $home = getenv('HOME');
+        if (!$home) {
+            throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
+        }
+
+        return rtrim(strtr($home, '\\', '/'), '/');
     }
 }

@@ -171,6 +171,10 @@
                     "type": "string",
                     "description": "The location where all binaries are linked, defaults to \"vendor/bin\"."
                 },
+                "data-dir": {
+                    "type": "string",
+                    "description": "The location where old phar files are stored, defaults to \"$home\" except on XDG Base Directory compliant unixes."
+                },
                 "cache-dir": {
                     "type": "string",
                     "description": "The location where all caches are located, defaults to \"~/.composer/cache\" on *nix and \"%LOCALAPPDATA%\\Composer\" on windows."
