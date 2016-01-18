@@ -90,7 +90,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
-        $this->rfs = $rfs ?: Factory::createRemoteFilesystem($this->io, $this->config, $this->options);
+        $this->rfs = $rfs ?: Factory::createRemoteFilesystem($this->io, $this->config);
         $this->eventDispatcher = $eventDispatcher;
         $this->repoConfig = $repoConfig;
     }
@@ -190,7 +190,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $url = str_replace('%query%', $query, $this->searchUrl);
 
             $hostname = parse_url($url, PHP_URL_HOST) ?: $url;
-            $json = $this->rfs->getContents($hostname, $url, false);
+            $json = $this->rfs->getContents($hostname, $url, false, $this->options);
             $results = JsonFile::parseJson($json, $url);
 
             return $results['results'];
@@ -607,7 +607,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
-                $json = $preFileDownloadEvent->getRemoteFilesystem()->getContents($hostname, $filename, false);
+                $json = $preFileDownloadEvent->getRemoteFilesystem()->getContents($hostname, $filename, false, $this->options);
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     if ($retries) {
                         usleep(100000);
