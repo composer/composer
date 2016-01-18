@@ -334,7 +334,7 @@ EOT
     private function checkPubKeys($config)
     {
         $home = $config->get('home');
-        $errors = [];
+        $errors = array();
         $io = $this->getIO();
 
         if (file_exists($home.'/keys.tags.pub') && file_exists($home.'/keys.dev.pub')) {
