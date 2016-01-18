@@ -90,7 +90,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
-        if ($rfs) {
+        if ($rfs && $this->options) {
             $rfs = clone $rfs;
             $rfs->setOptions($this->options);
         }
