@@ -89,6 +89,7 @@ class Git
 
         $command = call_user_func($commandCallable, $url);
 
+        $auth = null;
         if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
             // private github repository without git access, try https with auth
             if (preg_match('{^git@'.self::getGitHubDomainsRegex($this->config).':(.+?)\.git$}i', $url, $match)) {
