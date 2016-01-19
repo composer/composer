@@ -84,6 +84,11 @@ class Factory
             return $cacheDir;
         }
 
+        $homeEnv = getenv('COMPOSER_HOME');
+        if ($homeEnv) {
+            return $homeEnv . '/cache';
+        }
+
         if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
             if ($cacheDir = getenv('LOCALAPPDATA')) {
                 $cacheDir .= '/Composer';
@@ -114,6 +119,11 @@ class Factory
      */
     protected static function getDataDir($home)
     {
+        $homeEnv = getenv('COMPOSER_HOME');
+        if ($homeEnv) {
+            return $homeEnv;
+        }
+
         if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
             return strtr($home, '\\', '/');
         }
