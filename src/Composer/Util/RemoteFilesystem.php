@@ -33,6 +33,7 @@ class RemoteFilesystem
     private $progress;
     private $lastProgress;
     private $options = array();
+    private $peerCertificateMap = array();
     private $disableTls = false;
     private $retryAuthFailure;
     private $lastHeaders;
@@ -252,6 +253,18 @@ class RemoteFilesystem
         });
         try {
             $result = file_get_contents($fileUrl, false, $ctx);
+
+            if (PHP_VERSION_ID < 50600 && !empty($options['ssl']['peer_fingerprint'])) {
+                // Emulate fingerprint validation on PHP < 5.6
+                $params = stream_context_get_params($ctx);
+                $expectedPeerFingerprint = $options['ssl']['peer_fingerprint'];
+                $peerFingerprint = $this->getCertificateFingerprint($params['options']['ssl']['peer_certificate']);
+
+                // Constant time compare??!
+                if ($expectedPeerFingerprint !== $peerFingerprint) {
+                    throw new TransportException('Peer fingerprint did not match');
+                }
+            }
         } catch (\Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
@@ -350,6 +363,32 @@ class RemoteFilesystem
             restore_error_handler();
             if (false === $result) {
                 throw new TransportException('The "'.$this->fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
+            }
+        }
+
+        if (false === $result && false !== strpos($errorMessage, 'Peer certificate') && PHP_VERSION_ID < 50600) {
+            // Certificate name error, PHP doesn't support subjectAltName on PHP < 5.6
+            // The procedure to handle sAN for older PHP's is:
+            //
+            // 1. Open socket to remote server and fetch certificate (disabling peer
+            //    validation because PHP errors without giving up the certificate.)
+            //
+            // 2. Verifying the domain in the URL against the names in the sAN field.
+            //    If there is a match record the authority [host/port], certificate
+            //    common name, and certificate fingerprint.
+            //
+            // 3. Retry the original request but changing the CN_match parameter to
+            //    the common name extracted from the certificate in step 2.
+            //
+            // 4. To prevent any attempt at being hoodwinked by switching the
+            //    certificate between steps 2 and 3 the fingerprint of the certificate
+            //    presented in step 3 is compared against the one recorded in step 2.
+            $certDetails = $this->getCertificateCnAndFp($this->fileUrl, $options);
+
+            if ($certDetails) {
+                $this->peerCertificateMap[$this->getUrlAuthority($this->fileUrl)] = $certDetails;
+
+                $this->retry = true;
             }
         }
 
@@ -529,6 +568,14 @@ class RemoteFilesystem
             $tlsOptions['ssl']['SNI_server_name'] = $host;
         }
 
+        if (isset($this->peerCertificateMap[$this->getUrlAuthority($originUrl)])) {
+            // Handle subjectAltName on lesser PHP's.
+            $certMap = $this->peerCertificateMap[$this->getUrlAuthority($originUrl)];
+
+            $tlsOptions['ssl']['CN_match'] = $certMap['cn'];
+            $tlsOptions['ssl']['peer_fingerprint'] = $certMap['fp'];
+        }
+
         $headers = array();
 
         if (extension_loaded('zlib')) {
@@ -625,6 +672,7 @@ class RemoteFilesystem
                 'verify_peer' => true,
                 'verify_depth' => 7,
                 'SNI_enabled' => true,
+                'capture_peer_cert' => true,
             )
         );
 
@@ -799,5 +847,114 @@ class RemoteFilesystem
         fclose($target);
 
         unset($source, $target);
+    }
+
+    private function getCertificateCnAndFp($url, $options)
+    {
+        $context = StreamContextFactory::getContext($url, $options, array('options' => array(
+            'ssl' => array(
+                'capture_peer_cert' => true,
+                'verify_peer' => false, // Yes this is fucking insane! But PHP is lame.
+            ))
+        ));
+
+        if (false === $handle = @fopen($url, 'rb', false, $context)) {
+            return;
+        }
+
+        // Close non authenticated connection without reading any content.
+        fclose($handle);
+
+        $params = stream_context_get_params($context);
+
+        if (!empty($params['options']['ssl']['peer_certificate'])) {
+            $peerCertificate = $params['options']['ssl']['peer_certificate'];
+
+            $fp = $this->getCertificateFingerprint($peerCertificate);
+            $cert = openssl_x509_parse($peerCertificate, false);
+            $commonName = $cert['subject']['commonName'];
+
+            $subjectAltName = preg_split('{\s*,\s*}', $cert['extensions']['subjectAltName']);
+            $subjectAltName = array_filter(array_map(function ($name) {
+                if (0 === strpos($name, 'DNS:')) {
+                    return substr($name, 4);
+                }
+            }, $subjectAltName));
+
+            if (in_array(parse_url($url, PHP_URL_HOST), $subjectAltName, true)) {
+                return array(
+                    'cn' => $commonName,
+                    'fp' => $fp,
+                );
+            }
+
+            // TODO: Support wildcards.
+        }
+    }
+
+    /**
+     * Get the certificate pin.
+     *
+     * By Kevin McArthur of StormTide Digital Studios Inc.
+     * @KevinSMcArthur / https://github.com/StormTide
+     *
+     * See http://tools.ietf.org/html/draft-ietf-websec-key-pinning-02
+     *
+     * This method was adapted from Sslurp.
+     * https://github.com/EvanDotPro/Sslurp
+     *
+     * (c) Evan Coury <me@evancoury.com>
+     *
+     * For the full copyright and license information, please see below:
+     *
+     * Copyright (c) 2013, Evan Coury
+     * All rights reserved.
+     *
+     * Redistribution and use in source and binary forms, with or without modification,
+     * are permitted provided that the following conditions are met:
+     *
+     *     * Redistributions of source code must retain the above copyright notice,
+     *       this list of conditions and the following disclaimer.
+     *
+     *     * Redistributions in binary form must reproduce the above copyright notice,
+     *       this list of conditions and the following disclaimer in the documentation
+     *       and/or other materials provided with the distribution.
+     *
+     * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+     * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+     * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+     * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+     * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+     * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+     * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+     * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+     * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+     * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     */
+    private function getCertificateFingerprint($certificate)
+    {
+        $pubkeydetails = openssl_pkey_get_details(openssl_get_publickey($certificate));
+        $pubkeypem     = $pubkeydetails['key'];
+        //Convert PEM to DER before SHA1'ing
+        $start         = '-----BEGIN PUBLIC KEY-----';
+        $end           = '-----END PUBLIC KEY-----';
+        $pemtrim       = substr($pubkeypem, (strpos($pubkeypem, $start) + strlen($start)), (strlen($pubkeypem) - strpos($pubkeypem, $end)) * (-1));
+        $der           = base64_decode($pemtrim);
+
+        return sha1($der);
+    }
+
+    private function getUrlAuthority($url)
+    {
+        $defaultPorts = array(
+            'ftp' => 21,
+            'http' => 80,
+            'https' => 443,
+        );
+
+        $defaultPort = $defaultPorts[parse_url($this->fileUrl, PHP_URL_SCHEME)];
+        $port = parse_url($this->fileUrl, PHP_URL_PORT) ?: $defaultPort;
+
+        return parse_url($this->fileUrl, PHP_URL_HOST).':'.$port;
     }
 }
