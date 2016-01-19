@@ -60,6 +60,19 @@ abstract class BaseIO implements IOInterface
      */
     public function loadConfiguration(Config $config)
     {
+        // Use COMPOSER_AUTH environment variable if set
+        if ($envvar_data = getenv('COMPOSER_AUTH')) {
+            $auth_data = json_decode($envvar_data);
+
+            if (is_null($auth_data)) {
+                throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed');
+            }
+
+            foreach ($auth_data as $domain => $credentials) {
+                $this->setAuthentication($domain, $credentials->username, $credentials->password);
+            }
+        }
+
         // reload oauth token from config if available
         if ($tokens = $config->get('github-oauth')) {
             foreach ($tokens as $domain => $token) {

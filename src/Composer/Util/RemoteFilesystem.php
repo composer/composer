@@ -207,15 +207,6 @@ class RemoteFilesystem
         $this->retryAuthFailure = true;
         $this->lastHeaders = array();
 
-        // Use COMPOSER_AUTH environment variable if set
-        if (getenv('COMPOSER_AUTH')) {
-            $credentials = explode(':', getenv('COMPOSER_AUTH'), 2);
-
-            if (count($credentials) === 2) {
-                $this->io->setAuthentication($originUrl, $credentials[0], $credentials[1]);
-            }
-        }
-
         // capture username/password from URL if there is one
         if (preg_match('{^https?://(.+):(.+)@([^/]+)}i', $fileUrl, $match)) {
             $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
