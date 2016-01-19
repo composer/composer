@@ -303,38 +303,28 @@ class RemoteFilesystem
             $statusCode = $this->findStatusCode($http_response_header);
         }
 
-        if ($userlandFollow && !empty($http_response_header[0]) && preg_match('{^HTTP/\S+ (3\d\d)}i', $http_response_header[0], $match) && $this->redirects < $this->maxRedirects) {
-            foreach ($http_response_header as $header) {
-                if (preg_match('{^location: *(.+) *$}i', $header, $m)) {
-                    if (parse_url($m[1], PHP_URL_SCHEME)) {
-                        $targetUrl = $m[1];
+        if ($userlandFollow && $statusCode >= 300 && $statusCode <= 399 && $this->redirects < $this->maxRedirects) {
+            if ($locationHeader = $this->findHeaderValue($http_response_header, 'location')) {
+                if (parse_url($locationHeader, PHP_URL_SCHEME)) {
+                    // Absolute URL; e.g. https://example.com/composer
+                    $targetUrl = $locationHeader;
+                } elseif (parse_url($locationHeader, PHP_URL_HOST)) {
+                    // Scheme relative; e.g. //example.com/foo
+                    $targetUrl = $this->scheme.':'.$locationHeader;
+                } elseif ('/' === $locationHeader[0]) {
+                    // Absolute path; e.g. /foo
+                    $urlHost = parse_url($this->fileUrl, PHP_URL_HOST);
 
-                        break;
-                    }
-
-                    if (parse_url($m[1], PHP_URL_HOST)) {
-                        // Scheme relative; e.g. //example.com/foo
-                        $targetUrl = $this->scheme.':'.$m[1];
-                        break;
-                    }
-
-                    if ('/' === $m[1][0]) {
-                        // Absolute path; e.g. /foo
-                        $urlHost = parse_url($this->fileUrl, PHP_URL_HOST);
-
-                        // Replace path using hostname as an anchor.
-                        $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).')(?:[/\?].*)?$}', '\1'.$m[1], $this->fileUrl);
-                    }
-
+                    // Replace path using hostname as an anchor.
+                    $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).')(?:[/\?].*)?$}', '\1'.$locationHeader, $this->fileUrl);
+                } else {
                     // Relative path; e.g. foo
                     // This actually differs from PHP which seems to add duplicate slashes.
-                    $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$m[1], $this->fileUrl);
-
-                    break;
+                    $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$locationHeader, $this->fileUrl);
                 }
             }
 
-            if ($targetUrl) {
+            if (!empty($targetUrl)) {
                 $this->redirects++;
 
                 // TODO: Disabled because this is (probably) different behaviour to PHP following for us.
