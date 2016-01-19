@@ -58,7 +58,7 @@ class RemoteFilesystem
             if (isset($options['ssl']['cafile'])
                 && (
                     !is_readable($options['ssl']['cafile'])
-                    || !self::validateCaFile(file_get_contents($options['ssl']['cafile']))
+                    || !$this->validateCaFile($options['ssl']['cafile'])
                 )
             ) {
                 throw new TransportException('The configured cafile was not valid or could not be read.');
@@ -636,7 +636,7 @@ class RemoteFilesystem
          * The user may go download one if this occurs.
          */
         if (!isset($this->options['ssl']['cafile'])) {
-            $result = self::getSystemCaRootBundlePath();
+            $result = $this->getSystemCaRootBundlePath();
             if ($result) {
                 if (preg_match('{^phar://}', $result)) {
                     $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert.pem';
@@ -705,7 +705,7 @@ class RemoteFilesystem
     * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     */
-    private static function getSystemCaRootBundlePath()
+    private function getSystemCaRootBundlePath()
     {
         static $caPath = null;
 
@@ -716,7 +716,7 @@ class RemoteFilesystem
         // If SSL_CERT_FILE env variable points to a valid certificate/bundle, use that.
         // This mimics how OpenSSL uses the SSL_CERT_FILE env variable.
         $envCertFile = getenv('SSL_CERT_FILE');
-        if ($envCertFile && is_readable($envCertFile) && self::validateCaFile(file_get_contents($envCertFile))) {
+        if ($envCertFile && is_readable($envCertFile) && $this->validateCaFile($envCertFile)) {
             // Possibly throw exception instead of ignoring SSL_CERT_FILE if it's invalid?
             return $caPath = $envCertFile;
         }
@@ -736,12 +736,12 @@ class RemoteFilesystem
         );
 
         $configured = ini_get('openssl.cafile');
-        if ($configured && strlen($configured) > 0 && is_readable($configured) && self::validateCaFile(file_get_contents($configured))) {
+        if ($configured && strlen($configured) > 0 && is_readable($configured) && $this->validateCaFile($configured)) {
             return $caPath = $configured;
         }
 
         foreach ($caBundlePaths as $caBundle) {
-            if (@is_readable($caBundle) && self::validateCaFile(file_get_contents($caBundle))) {
+            if (@is_readable($caBundle) && $this->validateCaFile($caBundle)) {
                 return $caPath = $caBundle;
             }
         }
@@ -756,8 +756,13 @@ class RemoteFilesystem
         return $caPath = false;
     }
 
-    private static function validateCaFile($contents)
+    private function validateCaFile($filename)
     {
+        if ($this->io->isDebug()) {
+            $this->io->writeError('Checking CA file '.realpath($filename));
+        }
+        $contents = file_get_contents($filename);
+
         // assume the CA is valid if php is vulnerable to
         // https://www.sektioneins.de/advisories/advisory-012013-php-openssl_x509_parse-memory-corruption-vulnerability.html
         if (
