@@ -95,7 +95,7 @@ frequently overlooked:
 > workaround, and you should always try to switch to tagged releases as soon
 > as you can.
 
-There is no simple work-around to this limitation. It is therefor strongly recommended that you do not use it.
+There is no simple work-around to this limitation. It is therefore strongly recommended that you do not use it.
 
 ## Need to override a package version
 
