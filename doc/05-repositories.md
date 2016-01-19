@@ -639,6 +639,11 @@ file, you can use the following configuration:
 }
 ```
 
+If the package is a local VCS repository, the version may be inferred by
+the branch or tag that is currently checked out. Otherwise, the version should
+be explicitly defined in the package's `composer.json` file. If the version
+cannot be resolved by these means, it is assumed to be `dev-master`.
+
 The local package will be symlinked if possible, in which case the output in
 the console will read `Symlinked from ../../packages/my-package`. If symlinking
 is _not_ possible the package will be copied. In that case, the console will
