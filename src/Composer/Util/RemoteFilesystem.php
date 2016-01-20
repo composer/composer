@@ -631,7 +631,7 @@ class RemoteFilesystem
          * Attempt to find a local cafile or throw an exception if none pre-set
          * The user may go download one if this occurs.
          */
-        if (!isset($options['ssl']['cafile'], $options['ssl']['capath'])) {
+        if (!isset($defaults['ssl']['cafile'], $defaults['ssl']['capath'])) {
             $result = $this->getSystemCaRootBundlePath();
             if ($result) {
                 if (preg_match('{^phar://}', $result)) {
