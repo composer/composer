@@ -55,9 +55,15 @@ php_openssl extension in php.ini.
 
 ## cafile
 
-A way to set the path to the openssl CA file. In PHP 5.6+ you should rather
-set this via openssl.cafile in php.ini, although PHP 5.6+ should be able to
-detect your system CA file automatically.
+Location of Certificate Authority file on local filesystem. In PHP 5.6+ you
+should rather set this via openssl.cafile in php.ini, although PHP 5.6+ should
+be able to detect your system CA file automatically.
+
+## capath
+
+If cafile is not specified or if the certificate is not found there, the
+directory pointed to by capath is searched for a suitable certificate.
+capath must be a correctly hashed certificate directory.
 
 ## http-basic
 

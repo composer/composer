@@ -54,15 +54,7 @@ class RemoteFilesystem
         // Setup TLS options
         // The cafile option can be set via config.json
         if ($disableTls === false) {
-            $this->options = $this->getTlsDefaults();
-            if (isset($options['ssl']['cafile'])
-                && (
-                    !is_readable($options['ssl']['cafile'])
-                    || !$this->validateCaFile($options['ssl']['cafile'])
-                )
-            ) {
-                throw new TransportException('The configured cafile was not valid or could not be read.');
-            }
+            $this->options = $this->getTlsDefaults($options);
         } else {
             $this->disableTls = true;
         }
@@ -575,7 +567,7 @@ class RemoteFilesystem
         return $options;
     }
 
-    private function getTlsDefaults()
+    private function getTlsDefaults(array $options)
     {
         $ciphers = implode(':', array(
             'ECDHE-RSA-AES128-GCM-SHA256',
@@ -622,7 +614,7 @@ class RemoteFilesystem
          *
          * cafile or capath can be overridden by passing in those options to constructor.
          */
-        $options = array(
+        $defaults = array(
             'ssl' => array(
                 'ciphers' => $ciphers,
                 'verify_peer' => true,
@@ -635,7 +627,7 @@ class RemoteFilesystem
          * Attempt to find a local cafile or throw an exception if none pre-set
          * The user may go download one if this occurs.
          */
-        if (!isset($this->options['ssl']['cafile'])) {
+        if (!isset($options['ssl']['cafile']) && !isset($options['ssl']['capath'])) {
             $result = $this->getSystemCaRootBundlePath();
             if ($result) {
                 if (preg_match('{^phar://}', $result)) {
@@ -659,7 +651,7 @@ class RemoteFilesystem
                     }
                 }
             } else {
-                throw new TransportException('A valid cafile could not be located automatically.');
+                throw new TransportException('A valid cafile or capath could not be located automatically.');
             }
         }
 
@@ -667,10 +659,10 @@ class RemoteFilesystem
          * Disable TLS compression to prevent CRIME attacks where supported.
          */
         if (PHP_VERSION_ID >= 50413) {
-            $options['ssl']['disable_compression'] = true;
+            $defaults['ssl']['disable_compression'] = true;
         }
 
-        return $options;
+        return $defaults;
     }
 
     /**
@@ -721,6 +713,11 @@ class RemoteFilesystem
             return $caPath = $envCertFile;
         }
 
+        $configured = ini_get('openssl.cafile');
+        if ($configured && strlen($configured) > 0 && is_readable($configured) && $this->validateCaFile($configured)) {
+            return $caPath = $configured;
+        }
+
         $caBundlePaths = array(
             '/etc/pki/tls/certs/ca-bundle.crt', // Fedora, RHEL, CentOS (ca-certificates package)
             '/etc/ssl/certs/ca-certificates.crt', // Debian, Ubuntu, Gentoo, Arch Linux (ca-certificates package)
@@ -732,13 +729,7 @@ class RemoteFilesystem
             '/usr/share/ssl/certs/ca-bundle.crt', // Really old RedHat?
             '/etc/ssl/cert.pem', // OpenBSD
             '/usr/local/etc/ssl/cert.pem', // FreeBSD 10.x
-            __DIR__.'/../../../res/cacert.pem', // Bundled with Composer
         );
-
-        $configured = ini_get('openssl.cafile');
-        if ($configured && strlen($configured) > 0 && is_readable($configured) && $this->validateCaFile($configured)) {
-            return $caPath = $configured;
-        }
 
         foreach ($caBundlePaths as $caBundle) {
             if (@is_readable($caBundle) && $this->validateCaFile($caBundle)) {
@@ -753,7 +744,7 @@ class RemoteFilesystem
             }
         }
 
-        return $caPath = false;
+        return $caPath = __DIR__.'/../../../res/cacert.pem'; // Bundled with Composer, last resort
     }
 
     private function validateCaFile($filename)

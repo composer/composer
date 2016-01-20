@@ -47,6 +47,7 @@ class Config
         'github-domains' => array('github.com'),
         'disable-tls' => false,
         'cafile' => null,
+        'capath' => null,
         'github-expose-hostname' => true,
         'gitlab-domains' => array('gitlab.com'),
         'store-auths' => 'prompt',
@@ -179,6 +180,7 @@ class Config
             case 'cache-repo-dir':
             case 'cache-vcs-dir':
             case 'cafile':
+            case 'capath':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
