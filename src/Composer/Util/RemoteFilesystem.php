@@ -642,12 +642,12 @@ class RemoteFilesystem
                     fclose($target);
                     unset($source, $target);
 
-                    $options['ssl']['cafile'] = $targetPath;
+                    $defaults['ssl']['cafile'] = $targetPath;
                 } else {
                     if (is_dir($result)) {
-                        $options['ssl']['capath'] = $result;
+                        $defaults['ssl']['capath'] = $result;
                     } elseif ($result) {
-                        $options['ssl']['cafile'] = $result;
+                        $defaults['ssl']['cafile'] = $result;
                     }
                 }
             } else {
@@ -655,11 +655,11 @@ class RemoteFilesystem
             }
         }
 
-        if (isset($options['ssl']['cafile']) && (!is_readable($options['ssl']['cafile']) || !$this->validateCaFile($options['ssl']['cafile']))) {
+        if (isset($defaults['ssl']['cafile']) && (!is_readable($defaults['ssl']['cafile']) || !$this->validateCaFile($defaults['ssl']['cafile']))) {
             throw new TransportException('The configured cafile was not valid or could not be read.');
         }
 
-        if (isset($options['ssl']['capath']) && (!is_dir($options['ssl']['capath']) || !is_readable($options['ssl']['capath']))) {
+        if (isset($defaults['ssl']['capath']) && (!is_dir($defaults['ssl']['capath']) || !is_readable($defaults['ssl']['capath']))) {
             throw new TransportException('The configured capath was not valid or could not be read.');
         }
 
