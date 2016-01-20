@@ -370,7 +370,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     }
 
                     // load acceptable packages in the providers
-                    $package = $this->createPackage($version, 'Composer\Package\Package');
+                    $package = $this->createPackage($version, 'Composer\Package\CompletePackage');
                     $package->setRepository($this);
 
                     if ($package instanceof AliasPackage) {
@@ -606,14 +606,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return $packages;
     }
 
-    protected function createPackage(array $data, $class)
+    protected function createPackage(array $data, $class = 'Composer\Package\CompletePackage')
     {
         try {
             if (!isset($data['notification-url'])) {
                 $data['notification-url'] = $this->notifyUrl;
             }
 
-            $package = $this->loader->load($data, 'Composer\Package\CompletePackage');
+            $package = $this->loader->load($data, $class);
             if (isset($this->sourceMirrors[$package->getSourceType()])) {
                 $package->setSourceMirrors($this->sourceMirrors[$package->getSourceType()]);
             }
