@@ -623,6 +623,10 @@ class RemoteFilesystem
             )
         );
 
+        if (isset($options['ssl'])) {
+            $defaults['ssl'] = array_merge_recursive($defaults['ssl'], $options['ssl']);
+        }
+
         /**
          * Attempt to find a local cafile or throw an exception if none pre-set
          * The user may go download one if this occurs.
