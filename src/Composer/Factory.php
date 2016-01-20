@@ -146,15 +146,21 @@ class Factory
     {
         $cwd = $cwd ?: getcwd();
 
-        // determine home and cache dirs
-        $home     = self::getHomeDir();
-        $cacheDir = self::getCacheDir($home);
-        $dataDir  = self::getDataDir($home);
+        $config = new Config(true, $cwd);
+
+        // determine and add main dirs to the config
+        $home = self::getHomeDir();
+        $config->merge(array('config' => array(
+            'home' => $home,
+            'cache-dir' => self::getCacheDir($home),
+            'data-dir' => self::getDataDir($home),
+        )));
 
         // Protect directory against web access. Since HOME could be
         // the www-data's user home and be web-accessible it is a
         // potential security risk
-        foreach (array($home, $cacheDir, $dataDir) as $dir) {
+        $dirs = array($config->get('home'), $config->get('cache-dir'), $config->get('data-dir'));
+        foreach ($dirs as $dir) {
             if (!file_exists($dir . '/.htaccess')) {
                 if (!is_dir($dir)) {
                     @mkdir($dir, 0777, true);
@@ -162,11 +168,6 @@ class Factory
                 @file_put_contents($dir . '/.htaccess', 'Deny from all');
             }
         }
-
-        $config = new Config(true, $cwd);
-
-        // add dirs to the config
-        $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir, 'data-dir' => $dataDir)));
 
         // load global config
         $file = new JsonFile($config->get('home').'/config.json');

@@ -225,7 +225,9 @@ class Config
                 return (int) $this->config['cache-ttl'];
 
             case 'home':
-                return rtrim($this->process($this->config[$key], $flags), '/\\');
+                $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $this->config[$key]);
+
+                return rtrim($this->process($val, $flags), '/\\');
 
             case 'bin-compat':
                 $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
