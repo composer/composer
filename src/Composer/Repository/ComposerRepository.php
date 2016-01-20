@@ -136,6 +136,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
                 }
+                break;
             }
         }
     }
@@ -169,6 +170,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
                 }
+                break;
             }
         }
 
