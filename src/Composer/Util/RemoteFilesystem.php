@@ -655,6 +655,14 @@ class RemoteFilesystem
             }
         }
 
+        if (isset($options['ssl']['cafile']) && (!is_readable($options['ssl']['cafile']) || !$this->validateCaFile($options['ssl']['cafile']))) {
+            throw new TransportException('The configured cafile was not valid or could not be read.');
+        }
+
+        if (isset($options['ssl']['capath']) && (!is_dir($options['ssl']['capath']) || !is_readable($options['ssl']['capath']))) {
+            throw new TransportException('The configured capath was not valid or could not be read.');
+        }
+
         /**
          * Disable TLS compression to prevent CRIME attacks where supported.
          */
