@@ -65,6 +65,10 @@ class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(null));
         $config->expects($this->at(2))
             ->method('get')
+            ->with('capath')
+            ->will($this->returnValue(null));
+        $config->expects($this->at(3))
+            ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));
         $downloader = new ZipDownloader($io, $config);
