@@ -633,10 +633,15 @@ class RemoteFilesystem
          */
         if (!isset($defaults['ssl']['cafile'], $defaults['ssl']['capath'])) {
             $result = $this->getSystemCaRootBundlePath();
-            if ($result) {
-                if (preg_match('{^phar://}', $result)) {
-                    $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert.pem';
 
+            if (!$result) {
+                throw new TransportException('A valid cafile or capath could not be located automatically.');
+            }
+
+            if (preg_match('{^phar://}', $result)) {
+                $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert.pem';
+
+                if (!file_exists($targetPath)) {
                     // use stream_copy_to_stream instead of copy
                     // to work around https://bugs.php.net/bug.php?id=64634
                     $source = fopen($result, 'r');
@@ -644,18 +649,15 @@ class RemoteFilesystem
                     stream_copy_to_stream($source, $target);
                     fclose($source);
                     fclose($target);
+                    chmod($targetPath, 0744);
                     unset($source, $target);
-
-                    $defaults['ssl']['cafile'] = $targetPath;
-                } else {
-                    if (is_dir($result)) {
-                        $defaults['ssl']['capath'] = $result;
-                    } elseif ($result) {
-                        $defaults['ssl']['cafile'] = $result;
-                    }
                 }
+
+                $defaults['ssl']['cafile'] = $targetPath;
+            } elseif (is_dir($result)) {
+                $defaults['ssl']['capath'] = $result;
             } else {
-                throw new TransportException('A valid cafile or capath could not be located automatically.');
+                $defaults['ssl']['cafile'] = $result;
             }
         }
 
