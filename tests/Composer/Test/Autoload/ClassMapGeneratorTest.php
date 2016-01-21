@@ -19,10 +19,11 @@
 namespace Composer\Test\Autoload;
 
 use Composer\Autoload\ClassMapGenerator;
+use Composer\TestCase;
 use Symfony\Component\Finder\Finder;
 use Composer\Util\Filesystem;
 
-class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
+class ClassMapGeneratorTest extends TestCase
 {
     /**
      * @dataProvider getTestCreateMapTests
@@ -127,10 +128,8 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
     {
         $this->checkIfFinderIsAvailable();
 
-        $tempDir = sys_get_temp_dir().'/ComposerTestAmbiguousRefs';
-        if (!is_dir($tempDir.'/other')) {
-            mkdir($tempDir.'/other', 0777, true);
-        }
+        $tempDir = $this->getUniqueTmpDirectory();
+        $this->ensureDirectoryExistsAndClear($tempDir.'/other');
 
         $finder = new Finder();
         $finder->files()->in($tempDir);
@@ -171,13 +170,9 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
      */
     public function testUnambiguousReference()
     {
-        $tempDir = sys_get_temp_dir().'/ComposerTestUnambiguousRefs';
-        if (!is_dir($tempDir)) {
-            mkdir($tempDir, 0777, true);
-        }
+        $tempDir = $this->getUniqueTmpDirectory();
 
         file_put_contents($tempDir.'/A.php', "<?php\nclass A {}");
-
         file_put_contents(
             $tempDir.'/B.php',
             "<?php

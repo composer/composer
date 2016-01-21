@@ -44,8 +44,8 @@ class FilesystemTest extends TestCase
     public function setUp()
     {
         $this->fs = new Filesystem;
-        $this->workingDir = sys_get_temp_dir() . '/composer_testdir';
-        $this->testFile = sys_get_temp_dir() . '/composer_test_file';
+        $this->workingDir = $this->getUniqueTmpDirectory();
+        $this->testFile = $this->getUniqueTmpDirectory() . '/composer_test_file';
     }
 
     public function tearDown()
@@ -54,7 +54,7 @@ class FilesystemTest extends TestCase
             $this->fs->removeDirectory($this->workingDir);
         }
         if (is_file($this->testFile)) {
-            $this->fs->remove($this->testFile);
+            $this->fs->removeDirectory(dirname($this->testFile));
         }
     }
 

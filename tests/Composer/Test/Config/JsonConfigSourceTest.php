@@ -14,9 +14,10 @@ namespace Composer\Test\Json;
 
 use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
+use Composer\TestCase;
 use Composer\Util\Filesystem;
 
-class JsonConfigSourceTest extends \PHPUnit_Framework_TestCase
+class JsonConfigSourceTest extends TestCase
 {
     /** @var Filesystem */
     private $fs;
@@ -31,8 +32,7 @@ class JsonConfigSourceTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->fs = new Filesystem;
-        $this->workingDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest';
-        $this->fs->ensureDirectoryExists($this->workingDir);
+        $this->workingDir = $this->getUniqueTmpDirectory();
     }
 
     protected function tearDown()

@@ -13,9 +13,10 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\FileDownloader;
+use Composer\TestCase;
 use Composer\Util\Filesystem;
 
-class FileDownloaderTest extends \PHPUnit_Framework_TestCase
+class FileDownloaderTest extends TestCase
 {
     protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $rfs = null, $filesystem = null)
     {
@@ -53,9 +54,9 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(array('url')))
         ;
 
-        $path = tempnam(sys_get_temp_dir(), 'c');
-
+        $path = tempnam($this->getUniqueTmpDirectory(), 'c');
         $downloader = $this->getDownloader();
+
         try {
             $downloader->download($packageMock, $path);
             $this->fail();
@@ -102,10 +103,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(array()))
         ;
 
-        do {
-            $path = sys_get_temp_dir().'/'.md5(time().mt_rand());
-        } while (file_exists($path));
-
+        $path = $this->getUniqueTmpDirectory();
         $ioMock = $this->getMock('Composer\IO\IOInterface');
         $ioMock->expects($this->any())
             ->method('write')
@@ -187,14 +185,9 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         ;
         $filesystem = $this->getMock('Composer\Util\Filesystem');
 
-        do {
-            $path = sys_get_temp_dir().'/'.md5(time().mt_rand());
-        } while (file_exists($path));
-
+        $path = $this->getUniqueTmpDirectory();
         $downloader = $this->getDownloader(null, null, null, null, null, $filesystem);
-
         // make sure the file expected to be downloaded is on disk already
-        mkdir($path, 0777, true);
         touch($path.'/script.js');
 
         try {
