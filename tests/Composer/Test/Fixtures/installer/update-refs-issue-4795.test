@@ -9,13 +9,14 @@ Refs issue #4795
                 { "name": "A", "version": "1.0.0" },
                 { "name": "A", "version": "1.1.0" },
                 { "name": "B", "version": "1.0.0", "require": { "A": "~1.0" } },
-                { "name": "B", "version": "1.1.0", "require": { "A": "1.1.0" } },
+                { "name": "B", "version": "1.1.0", "require": { "A": "~1.1" } },
                 { "name": "C", "version": "1.0.0", "require": { "A": "~1.0" } }
             ]
         }
     ],
     "require": {
-        "B": "~1.1",
+        "A": "~1.0",
+        "B": "~1.0",
         "C": "~1.0"
     }
 }
