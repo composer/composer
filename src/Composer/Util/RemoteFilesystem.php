@@ -23,6 +23,8 @@ use Composer\Downloader\TransportException;
  */
 class RemoteFilesystem
 {
+    const MAXIMUM_REDIRECTS = 10;
+
     private $io;
     private $config;
     private $bytesMax;
@@ -160,10 +162,11 @@ class RemoteFilesystem
     }
 
     /**
-     * @param array $headers array of returned headers like from getLastHeaders()
+     * @param array $headers    array of returned headers like from getLastHeaders()
+     * @param bool  $firstMatch return first status code
      * @return int|null
      */
-    public function findStatusCode(array $headers)
+    public function findStatusCode(array $headers, $firstMatch = false)
     {
         $value = null;
         foreach ($headers as $header) {
@@ -171,6 +174,27 @@ class RemoteFilesystem
                 // In case of redirects, http_response_headers contains the headers of all responses
                 // so we can not return directly and need to keep iterating
                 $value = (int) $match[1];
+
+                if ($firstMatch) {
+                    break;
+                }
+            }
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array $headers array of returned headers like from getLastHeaders()
+     * @return int|null
+     */
+    public function findLocation(array $headers)
+    {
+        $value = null;
+        foreach ($headers as $header) {
+            if (preg_match('{^Location:[\s]*(.+)}i', $header, $match)) {
+                $value = (string) $match[1];
+                break;
             }
         }
 
@@ -243,67 +267,113 @@ class RemoteFilesystem
             $fileUrl = 'http://' . gethostbyname('packagist.org') . substr($fileUrl, 20);
         }
 
-        $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
+        $redirect = 0;
+        while (true) {
+            $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
-        if ($this->progress) {
-            $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
-        }
+            if ($redirect === 0) {
+                if ($this->progress) {
+                    $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
+                }
+            }
 
-        $errorMessage = '';
-        $errorCode = 0;
-        $result = false;
-        set_error_handler(function ($code, $msg) use (&$errorMessage) {
-            if ($errorMessage) {
-                $errorMessage .= "\n";
-            }
-            $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
-        });
-        try {
-            $result = file_get_contents($fileUrl, false, $ctx);
-        } catch (\Exception $e) {
-            if ($e instanceof TransportException && !empty($http_response_header[0])) {
-                $e->setHeaders($http_response_header);
-                $e->setStatusCode($this->findStatusCode($http_response_header));
-            }
-            if ($e instanceof TransportException && $result !== false) {
-                $e->setResponse($result);
-            }
+            $errorMessage = '';
+            $errorCode = 0;
             $result = false;
-        }
-        if ($errorMessage && !ini_get('allow_url_fopen')) {
-            $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
-        }
-        restore_error_handler();
-        if (isset($e) && !$this->retry) {
-            if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
-                $this->degradedMode = true;
-                $this->io->writeError(array(
-                    '<error>'.$e->getMessage().'</error>',
-                    '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
-                ));
-
-                return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+            set_error_handler(function ($code, $msg) use (&$errorMessage) {
+                if ($errorMessage) {
+                    $errorMessage .= "\n";
+                }
+                $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
+            });
+            try {
+                $result = file_get_contents($fileUrl, false, $ctx);
+            } catch (\Exception $e) {
+                if ($e instanceof TransportException && !empty($http_response_header[0])) {
+                    $e->setHeaders($http_response_header);
+                    $e->setStatusCode($this->findStatusCode($http_response_header));
+                }
+                if ($e instanceof TransportException && $result !== false) {
+                    $e->setResponse($result);
+                }
+                $result = false;
             }
+            if ($errorMessage && !ini_get('allow_url_fopen')) {
+                $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
+            }
+            restore_error_handler();
+            if (isset($e) && !$this->retry) {
+                if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
+                    $this->degradedMode = true;
+                    $this->io->writeError(array(
+                        '<error>'.$e->getMessage().'</error>',
+                        '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
+                    ));
 
-            throw $e;
-        }
+                    return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+                }
 
-        $statusCode = null;
-        if (!empty($http_response_header[0])) {
-            $statusCode = $this->findStatusCode($http_response_header);
-        }
-
-        // fail 4xx and 5xx responses and capture the response
-        if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
-            if (!$this->retry) {
-                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
-                $e->setHeaders($http_response_header);
-                $e->setResponse($result);
-                $e->setStatusCode($statusCode);
                 throw $e;
             }
-            $result = false;
+
+            $firstStatusCode = null;
+            $statusCode = null;
+            if (!empty($http_response_header[0])) {
+                $firstStatusCode = $this->findStatusCode($http_response_header, true);
+                $statusCode = $this->findStatusCode($http_response_header);
+            }
+
+            // fail 4xx and 5xx responses and capture the response
+            if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
+
+                // Behind some proxy servers it could be possible that redirects
+                // resolved by file_get_contents fails but try them again manual works
+                // this code works around this issue
+                if ($firstStatusCode == 301 || $firstStatusCode == 302) {
+                    $redirect++;
+                    $location = $this->findLocation($http_response_header);
+
+                    if ($location === null) {
+                        $e = new TransportException(
+                            'Redirect response not contains location header',
+                            $statusCode
+                        );
+                        $e->setHeaders($http_response_header);
+                        $e->setResponse($result);
+                        $e->setStatusCode($statusCode);
+                        throw $e;
+                    }
+
+                    $fileUrl = $location;
+
+                    if ($redirect > self::MAXIMUM_REDIRECTS) {
+                        $e = new TransportException(sprintf(
+                            'More then %d redirects',
+                            self::MAXIMUM_REDIRECTS
+                        ), $statusCode);
+                        $e->setHeaders($http_response_header);
+                        $e->setResponse($result);
+                        $e->setStatusCode($statusCode);
+                        throw $e;
+                    }
+
+                    continue;
+                }
+
+                if (!$this->retry) {
+                    $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
+                    $e->setHeaders($http_response_header);
+                    $e->setResponse($result);
+                    $e->setStatusCode($statusCode);
+                    throw $e;
+                }
+                $result = false;
+            }
+
+            break;
         }
+
+
 
         if ($this->progress && !$this->retry) {
             $this->io->overwriteError("    Downloading: <comment>100%</comment>");
