@@ -1,0 +1,32 @@
+--TEST--
+Refs issue #4795
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "A", "version": "1.0.0" },
+                { "name": "A", "version": "1.1.0" },
+                { "name": "B", "version": "1.0.0", "require": { "A": "~1.0" } },
+                { "name": "B", "version": "1.1.0", "require": { "A": "1.1.0" } },
+                { "name": "C", "version": "1.0.0", "require": { "A": "~1.0" } }
+            ]
+        }
+    ],
+    "require": {
+        "B": "~1.1",
+        "C": "~1.0"
+    }
+}
+--INSTALLED--
+[
+    { "name": "A", "version": "1.0.0" },
+    { "name": "B", "version": "1.0.0", "require": { "A": "~1.0" } },
+    { "name": "C", "version": "1.0.0", "require": { "A": "~1.0" } }
+]
+--RUN--
+update B --with-dependencies
+--EXPECT--
+Updating A (1.0.0) to A (1.1.0)
+Updating B (1.0.0) to B (1.1.0)
