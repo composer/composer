@@ -639,7 +639,8 @@ class RemoteFilesystem
             }
 
             if (preg_match('{^phar://}', $result)) {
-                $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert.pem';
+                $hash = md5(file_get_contents($result));
+                $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert-' . $hash . '.pem';
 
                 if (!file_exists($targetPath)) {
                     // use stream_copy_to_stream instead of copy
