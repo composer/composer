@@ -567,6 +567,11 @@ class RemoteFilesystem
         return $options;
     }
 
+    /**
+     * @param array $options
+     *
+     * @return array
+     */
     private function getTlsDefaults(array $options)
     {
         $ciphers = implode(':', array(
@@ -631,27 +636,16 @@ class RemoteFilesystem
          * Attempt to find a local cafile or throw an exception if none pre-set
          * The user may go download one if this occurs.
          */
-        if (!isset($defaults['ssl']['cafile'], $defaults['ssl']['capath'])) {
+        if (!isset($defaults['ssl']['cafile']) && !isset($defaults['ssl']['capath'])) {
             $result = $this->getSystemCaRootBundlePath();
 
-            if (!$result) {
-                throw new TransportException('A valid cafile or capath could not be located automatically.');
-            }
-
             if (preg_match('{^phar://}', $result)) {
-                $hash = md5(file_get_contents($result));
+                $hash = hash_file('sha256', $result);
                 $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert-' . $hash . '.pem';
 
-                if (!file_exists($targetPath)) {
-                    // use stream_copy_to_stream instead of copy
-                    // to work around https://bugs.php.net/bug.php?id=64634
-                    $source = fopen($result, 'r');
-                    $target = fopen($targetPath, 'w+');
-                    stream_copy_to_stream($source, $target);
-                    fclose($source);
-                    fclose($target);
-                    chmod($targetPath, 0744);
-                    unset($source, $target);
+                if (!file_exists($targetPath) || $hash !== hash_file('sha256', $targetPath)) {
+                    $this->safeCopy($result, $targetPath);
+                    chmod($targetPath, 0644);
                 }
 
                 $defaults['ssl']['cafile'] = $targetPath;
@@ -681,37 +675,39 @@ class RemoteFilesystem
     }
 
     /**
-    * This method was adapted from Sslurp.
-    * https://github.com/EvanDotPro/Sslurp
-    *
-    * (c) Evan Coury <me@evancoury.com>
-    *
-    * For the full copyright and license information, please see below:
-    *
-    * Copyright (c) 2013, Evan Coury
-    * All rights reserved.
-    *
-    * Redistribution and use in source and binary forms, with or without modification,
-    * are permitted provided that the following conditions are met:
-    *
-    *     * Redistributions of source code must retain the above copyright notice,
-    *       this list of conditions and the following disclaimer.
-    *
-    *     * Redistributions in binary form must reproduce the above copyright notice,
-    *       this list of conditions and the following disclaimer in the documentation
-    *       and/or other materials provided with the distribution.
-    *
-    * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-    * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-    * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-    * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    */
+     * This method was adapted from Sslurp.
+     * https://github.com/EvanDotPro/Sslurp
+     *
+     * (c) Evan Coury <me@evancoury.com>
+     *
+     * For the full copyright and license information, please see below:
+     *
+     * Copyright (c) 2013, Evan Coury
+     * All rights reserved.
+     *
+     * Redistribution and use in source and binary forms, with or without modification,
+     * are permitted provided that the following conditions are met:
+     *
+     *     * Redistributions of source code must retain the above copyright notice,
+     *       this list of conditions and the following disclaimer.
+     *
+     *     * Redistributions in binary form must reproduce the above copyright notice,
+     *       this list of conditions and the following disclaimer in the documentation
+     *       and/or other materials provided with the distribution.
+     *
+     * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+     * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+     * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+     * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+     * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+     * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+     * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+     * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+     * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+     * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     *
+     * @return string
+     */
     private function getSystemCaRootBundlePath()
     {
         static $caPath = null;
@@ -762,6 +758,11 @@ class RemoteFilesystem
         return $caPath = __DIR__.'/../../../res/cacert.pem'; // Bundled with Composer, last resort
     }
 
+    /**
+     * @param string $filename
+     *
+     * @return bool
+     */
     private function validateCaFile($filename)
     {
         if ($this->io->isDebug()) {
@@ -780,5 +781,25 @@ class RemoteFilesystem
         }
 
         return (bool) openssl_x509_parse($contents);
+    }
+
+    /**
+     * Safely copy a file.
+     *
+     * Uses stream_copy_to_stream instead of copy to work around https://bugs.php.net/bug.php?id=64634
+     *
+     * @param string $source
+     * @param string $target
+     */
+    private function safeCopy($source, $target)
+    {
+        $source = fopen($source, 'r');
+        $target = fopen($target, 'w+');
+
+        stream_copy_to_stream($source, $target);
+        fclose($source);
+        fclose($target);
+
+        unset($source, $target);
     }
 }

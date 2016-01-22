@@ -590,16 +590,10 @@ class Factory
         $remoteFilesystemOptions = array();
         if ($disableTls === false) {
             if ($config && $config->get('cafile')) {
-                $remoteFilesystemOptions = array_merge_recursive(
-                    $remoteFilesystemOptions,
-                    array('ssl' => array('cafile' => $config->get('cafile')))
-                );
+                $remoteFilesystemOptions['ssl']['cafile'] = $config->get('cafile');
             }
             if ($config && $config->get('capath')) {
-                $remoteFilesystemOptions = array_merge_recursive(
-                    $remoteFilesystemOptions,
-                    array('ssl' => array('capath' => $config->get('capath')))
-                );
+                $remoteFilesystemOptions['ssl']['capath'] = $config->get('capath');
             }
         }
         try {
