@@ -316,7 +316,7 @@ class RemoteFilesystem
                     $urlHost = parse_url($this->fileUrl, PHP_URL_HOST);
 
                     // Replace path using hostname as an anchor.
-                    $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).')(?:[/\?].*)?$}', '\1'.$locationHeader, $this->fileUrl);
+                    $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $this->fileUrl);
                 } else {
                     // Relative path; e.g. foo
                     // This actually differs from PHP which seems to add duplicate slashes.
