@@ -27,7 +27,7 @@ interface PluginInterface
      *
      * @var string
      */
-    const PLUGIN_API_VERSION = '1.1.0';
+    const PLUGIN_API_VERSION = '1.0.0';
 
     /**
      * Apply plugin modifications to Composer
