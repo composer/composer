@@ -28,9 +28,7 @@ interface Capable
      * The key must be a string, representing a fully qualified class/interface name
      * which Composer Plugin API exposes.
      * The value must be a string as well, representing the fully qualified class name
-     * of the API class.
-     *
-     * Every implementation will be passed a single array parameter via their constructor.
+     * of the implementing class.
      *
      * @tutorial
      *
