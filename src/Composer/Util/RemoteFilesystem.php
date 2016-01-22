@@ -54,15 +54,7 @@ class RemoteFilesystem
         // Setup TLS options
         // The cafile option can be set via config.json
         if ($disableTls === false) {
-            $this->options = $this->getTlsDefaults();
-            if (isset($options['ssl']['cafile'])
-                && (
-                    !is_readable($options['ssl']['cafile'])
-                    || !$this->validateCaFile($options['ssl']['cafile'])
-                )
-            ) {
-                throw new TransportException('The configured cafile was not valid or could not be read.');
-            }
+            $this->options = $this->getTlsDefaults($options);
         } else {
             $this->disableTls = true;
         }
@@ -575,7 +567,12 @@ class RemoteFilesystem
         return $options;
     }
 
-    private function getTlsDefaults()
+    /**
+     * @param array $options
+     *
+     * @return array
+     */
+    private function getTlsDefaults(array $options)
     {
         $ciphers = implode(':', array(
             'ECDHE-RSA-AES128-GCM-SHA256',
@@ -622,7 +619,7 @@ class RemoteFilesystem
          *
          * cafile or capath can be overridden by passing in those options to constructor.
          */
-        $options = array(
+        $defaults = array(
             'ssl' => array(
                 'ciphers' => $ciphers,
                 'verify_peer' => true,
@@ -631,80 +628,86 @@ class RemoteFilesystem
             )
         );
 
+        if (isset($options['ssl'])) {
+            $defaults['ssl'] = array_replace_recursive($defaults['ssl'], $options['ssl']);
+        }
+
         /**
          * Attempt to find a local cafile or throw an exception if none pre-set
          * The user may go download one if this occurs.
          */
-        if (!isset($this->options['ssl']['cafile'])) {
+        if (!isset($defaults['ssl']['cafile']) && !isset($defaults['ssl']['capath'])) {
             $result = $this->getSystemCaRootBundlePath();
-            if ($result) {
-                if (preg_match('{^phar://}', $result)) {
-                    $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert.pem';
 
-                    // use stream_copy_to_stream instead of copy
-                    // to work around https://bugs.php.net/bug.php?id=64634
-                    $source = fopen($result, 'r');
-                    $target = fopen($targetPath, 'w+');
-                    stream_copy_to_stream($source, $target);
-                    fclose($source);
-                    fclose($target);
-                    unset($source, $target);
+            if (preg_match('{^phar://}', $result)) {
+                $hash = hash_file('sha256', $result);
+                $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert-' . $hash . '.pem';
 
-                    $options['ssl']['cafile'] = $targetPath;
-                } else {
-                    if (is_dir($result)) {
-                        $options['ssl']['capath'] = $result;
-                    } elseif ($result) {
-                        $options['ssl']['cafile'] = $result;
-                    }
+                if (!file_exists($targetPath) || $hash !== hash_file('sha256', $targetPath)) {
+                    $this->streamCopy($result, $targetPath);
+                    chmod($targetPath, 0666);
                 }
+
+                $defaults['ssl']['cafile'] = $targetPath;
+            } elseif (is_dir($result)) {
+                $defaults['ssl']['capath'] = $result;
             } else {
-                throw new TransportException('A valid cafile could not be located automatically.');
+                $defaults['ssl']['cafile'] = $result;
             }
+        }
+
+        if (isset($defaults['ssl']['cafile']) && (!is_readable($defaults['ssl']['cafile']) || !$this->validateCaFile($defaults['ssl']['cafile']))) {
+            throw new TransportException('The configured cafile was not valid or could not be read.');
+        }
+
+        if (isset($defaults['ssl']['capath']) && (!is_dir($defaults['ssl']['capath']) || !is_readable($defaults['ssl']['capath']))) {
+            throw new TransportException('The configured capath was not valid or could not be read.');
         }
 
         /**
          * Disable TLS compression to prevent CRIME attacks where supported.
          */
         if (PHP_VERSION_ID >= 50413) {
-            $options['ssl']['disable_compression'] = true;
+            $defaults['ssl']['disable_compression'] = true;
         }
 
-        return $options;
+        return $defaults;
     }
 
     /**
-    * This method was adapted from Sslurp.
-    * https://github.com/EvanDotPro/Sslurp
-    *
-    * (c) Evan Coury <me@evancoury.com>
-    *
-    * For the full copyright and license information, please see below:
-    *
-    * Copyright (c) 2013, Evan Coury
-    * All rights reserved.
-    *
-    * Redistribution and use in source and binary forms, with or without modification,
-    * are permitted provided that the following conditions are met:
-    *
-    *     * Redistributions of source code must retain the above copyright notice,
-    *       this list of conditions and the following disclaimer.
-    *
-    *     * Redistributions in binary form must reproduce the above copyright notice,
-    *       this list of conditions and the following disclaimer in the documentation
-    *       and/or other materials provided with the distribution.
-    *
-    * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-    * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-    * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-    * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    */
+     * This method was adapted from Sslurp.
+     * https://github.com/EvanDotPro/Sslurp
+     *
+     * (c) Evan Coury <me@evancoury.com>
+     *
+     * For the full copyright and license information, please see below:
+     *
+     * Copyright (c) 2013, Evan Coury
+     * All rights reserved.
+     *
+     * Redistribution and use in source and binary forms, with or without modification,
+     * are permitted provided that the following conditions are met:
+     *
+     *     * Redistributions of source code must retain the above copyright notice,
+     *       this list of conditions and the following disclaimer.
+     *
+     *     * Redistributions in binary form must reproduce the above copyright notice,
+     *       this list of conditions and the following disclaimer in the documentation
+     *       and/or other materials provided with the distribution.
+     *
+     * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+     * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+     * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+     * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+     * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+     * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+     * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+     * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+     * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+     * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     *
+     * @return string
+     */
     private function getSystemCaRootBundlePath()
     {
         static $caPath = null;
@@ -721,6 +724,11 @@ class RemoteFilesystem
             return $caPath = $envCertFile;
         }
 
+        $configured = ini_get('openssl.cafile');
+        if ($configured && strlen($configured) > 0 && is_readable($configured) && $this->validateCaFile($configured)) {
+            return $caPath = $configured;
+        }
+
         $caBundlePaths = array(
             '/etc/pki/tls/certs/ca-bundle.crt', // Fedora, RHEL, CentOS (ca-certificates package)
             '/etc/ssl/certs/ca-certificates.crt', // Debian, Ubuntu, Gentoo, Arch Linux (ca-certificates package)
@@ -732,13 +740,7 @@ class RemoteFilesystem
             '/usr/share/ssl/certs/ca-bundle.crt', // Really old RedHat?
             '/etc/ssl/cert.pem', // OpenBSD
             '/usr/local/etc/ssl/cert.pem', // FreeBSD 10.x
-            __DIR__.'/../../../res/cacert.pem', // Bundled with Composer
         );
-
-        $configured = ini_get('openssl.cafile');
-        if ($configured && strlen($configured) > 0 && is_readable($configured) && $this->validateCaFile($configured)) {
-            return $caPath = $configured;
-        }
 
         foreach ($caBundlePaths as $caBundle) {
             if (@is_readable($caBundle) && $this->validateCaFile($caBundle)) {
@@ -753,9 +755,14 @@ class RemoteFilesystem
             }
         }
 
-        return $caPath = false;
+        return $caPath = __DIR__.'/../../../res/cacert.pem'; // Bundled with Composer, last resort
     }
 
+    /**
+     * @param string $filename
+     *
+     * @return bool
+     */
     private function validateCaFile($filename)
     {
         if ($this->io->isDebug()) {
@@ -774,5 +781,23 @@ class RemoteFilesystem
         }
 
         return (bool) openssl_x509_parse($contents);
+    }
+
+    /**
+     * Uses stream_copy_to_stream instead of copy to work around https://bugs.php.net/bug.php?id=64634
+     *
+     * @param string $source
+     * @param string $target
+     */
+    private function streamCopy($source, $target)
+    {
+        $source = fopen($source, 'r');
+        $target = fopen($target, 'w+');
+
+        stream_copy_to_stream($source, $target);
+        fclose($source);
+        fclose($target);
+
+        unset($source, $target);
     }
 }
