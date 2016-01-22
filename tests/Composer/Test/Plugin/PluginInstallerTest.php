@@ -302,31 +302,31 @@ class PluginInstallerTest extends TestCase
         $plugin = $this->getMockBuilder('Composer\Plugin\PluginInterface')
                        ->getMock();
 
-        $this->assertFalse($this->pm->getPluginCapability($plugin, 'Fake\Ability'));
+        $this->assertNull($this->pm->getPluginCapability($plugin, 'Fake\Ability'));
     }
 
     public function testCapabilityImplementsComposerPluginApiClassAndIsConstructedWithArgs()
     {
         $capabilityApi = 'Composer\Plugin\Capability\Capability';
-        $capabilitySpi = 'Composer\Test\Plugin\Mock\Capability';
+        $capabilityImplementation = 'Composer\Test\Plugin\Mock\Capability';
 
         $plugin = $this->getMockBuilder('Composer\Test\Plugin\Mock\CapablePluginInterface')
                        ->getMock();
 
         $plugin->expects($this->once())
                ->method('getCapabilities')
-               ->will($this->returnCallback(function() use ($capabilitySpi, $capabilityApi) {
-                   return array($capabilityApi => $capabilitySpi);
+               ->will($this->returnCallback(function() use ($capabilityImplementation, $capabilityApi) {
+                   return array($capabilityApi => $capabilityImplementation);
                }));
 
         $capability = $this->pm->getPluginCapability($plugin, $capabilityApi, array('a' => 1, 'b' => 2));
 
         $this->assertInstanceOf($capabilityApi, $capability);
-        $this->assertInstanceOf($capabilitySpi, $capability);
+        $this->assertInstanceOf($capabilityImplementation, $capability);
         $this->assertSame(array('a' => 1, 'b' => 2), $capability->args);
     }
 
-    public function invalidSpiValues()
+    public function invalidImplementationClassNames()
     {
         return array(
             array(null),
@@ -337,14 +337,22 @@ class PluginInstallerTest extends TestCase
             array(array(1)),
             array(array()),
             array(new \stdClass()),
-            array("NonExistentClassLikeMiddleClass"),
+        );
+    }
+
+    public function nonExistingOrInvalidImplementationClassTypes()
+    {
+        return array(
+            array('\stdClass'),
+            array('NonExistentClassLikeMiddleClass'),
         );
     }
 
     /**
-     * @dataProvider invalidSpiValues
+     * @dataProvider invalidImplementationClassNames
+     * @expectedException \RuntimeException
      */
-    public function testInvalidCapabilitySpiDeclarationsAreDisregarded($invalidSpi)
+    public function testQueryingWithInvalidCapabilityClassNameThrows($invalidImplementationClassNames)
     {
         $capabilityApi = 'Composer\Plugin\Capability\Capability';
 
@@ -353,10 +361,19 @@ class PluginInstallerTest extends TestCase
 
         $plugin->expects($this->once())
                ->method('getCapabilities')
-               ->will($this->returnCallback(function() use ($invalidSpi, $capabilityApi) {
-                   return array($capabilityApi => $invalidSpi);
+               ->will($this->returnCallback(function() use ($invalidImplementationClassNames, $capabilityApi) {
+                   return array($capabilityApi => $invalidImplementationClassNames);
                }));
 
-        $this->assertFalse($this->pm->getPluginCapability($plugin, $capabilityApi));
+        $this->pm->getPluginCapability($plugin, $capabilityApi);
+    }
+
+    /**
+     * @dataProvider nonExistingOrInvalidImplementationClassTypes
+     * @expectedException \RuntimeException
+     */
+    public function testQueryingWithNonExistingOrWrongCapabilityClassTypesThrows($wrongImplementationClassTypes)
+    {
+        $this->testQueryingWithInvalidCapabilityClassNameThrows($wrongImplementationClassTypes);
     }
 }

@@ -26,19 +26,17 @@ interface Capable
      * with a special structure.
      *
      * The key must be a string, representing a fully qualified class/interface name
-     * which Composer Plugin API exposes - named "API class".
+     * which Composer Plugin API exposes.
      * The value must be a string as well, representing the fully qualified class name
-     * of the API class - named "SPI class".
+     * of the API class.
      *
-     * Every SPI must implement their API class.
+     * Every implementation will be passed a single array parameter via their constructor.
      *
-     * Every SPI will be passed a single array parameter via their constructor.
+     * @tutorial
      *
-     * Example:
-     * // API as key, SPI as value
      * return array(
-     *      'Composer\Plugin\Capability\CommandProvider' => 'My\CommandProvider',
-     *      'Composer\Plugin\Capability\Validator'       => 'My\Validator',
+     *     'Composer\Plugin\Capability\CommandProvider' => 'My\CommandProvider',
+     *     'Composer\Plugin\Capability\Validator'       => 'My\Validator',
      * );
      *
      * @return string[]

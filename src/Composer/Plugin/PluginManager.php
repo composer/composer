@@ -187,6 +187,16 @@ class PluginManager
     }
 
     /**
+     * Returns the version of the internal composer-plugin-api package.
+     *
+     * @return string
+     */
+    protected function getPluginApiVersion()
+    {
+        return PluginInterface::PLUGIN_API_VERSION;
+    }
+
+    /**
      * Adds a plugin, activates it and registers it with the event dispatcher
      *
      * @param PluginInterface $plugin plugin instance
@@ -292,55 +302,57 @@ class PluginManager
     }
 
     /**
-     * Returns the version of the internal composer-plugin-api package.
-     *
-     * @return string
-     */
-    protected function getPluginApiVersion()
-    {
-        return PluginInterface::PLUGIN_API_VERSION;
-    }
-
-    /**
      * @param PluginInterface $plugin
      * @param string $capability
-     * @return bool|string The fully qualified class of the implementation or false if none was provided
+     * @return null|string The fully qualified class of the implementation or null if Plugin is not of Capable type
+     * @throws \RuntimeException On empty or non-string implementation class name value
      */
     protected function getCapabilityImplementationClassName(PluginInterface $plugin, $capability)
     {
         if (!($plugin instanceof Capable)) {
-            return false;
+            return null;
         }
 
         $capabilities = (array) $plugin->getCapabilities();
 
-        if (empty($capabilities[$capability]) || !is_string($capabilities[$capability])) {
-            return false;
+        if (!empty($capabilities[$capability]) && is_string($capabilities[$capability])) {
+            $capabilities[$capability] = trim($capabilities[$capability]);
         }
 
-        return trim($capabilities[$capability]);
+        if (empty($capabilities[$capability]) || !is_string($capabilities[$capability])) {
+            throw new \RuntimeException('Plugin provided invalid capability class name(s)');
+        }
+
+        return $capabilities[$capability];
     }
 
     /**
      * @param PluginInterface $plugin
-     * @param string          $capability The fully qualified name of the API interface which the plugin may provide
+     * @param string $capabilityClassName The fully qualified name of the API interface which the plugin may provide
      *                                    an implementation.
-     * @param array           $ctorArgs   Arguments passed to Capability's constructor.
-     *                                    Keeping it an array will allow future values to be passed w\o changing the signature.
-     * @return Capability|boolean         Bool false if the Plugin has no implementation of the requested Capability.
+     * @param array $ctorArgs Arguments passed to Capability's constructor.
+     *                        Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @return null|Capability
      */
-    public function getPluginCapability(PluginInterface $plugin, $capability, array $ctorArgs = array())
+    public function getPluginCapability(PluginInterface $plugin, $capabilityClassName, array $ctorArgs = array())
     {
-        if ($capabilityClass = $this->getCapabilityImplementationClassName($plugin, $capability)) {
+        if ($capabilityClass = $this->getCapabilityImplementationClassName($plugin, $capabilityClassName)) {
             if (class_exists($capabilityClass)) {
                 $capabilityObj = new $capabilityClass($ctorArgs);
                 if ($capabilityObj instanceof Capability &&
-                    $capabilityObj instanceof $capability
+                    $capabilityObj instanceof $capabilityClassName
                 ) {
                     return $capabilityObj;
+                } else {
+                    throw new \RuntimeException(
+                        'Class ' . $capabilityClass . ' must be of both \Composer\Plugin\Capability\Capability and '.
+                        $capabilityClassName . ' types.'
+                    );
                 }
+            } else {
+                throw new \RuntimeException("Cannot instantiate Capability, as class $capabilityClass does not exist.");
             }
         }
-        return false;
+        return null;
     }
 }
