@@ -306,7 +306,7 @@ class PluginManager
     /**
      * @param PluginInterface $plugin
      * @param string $capability
-     * @return null|string The fully qualified class of the implementation or null if Plugin is not of Capable type
+     * @return null|string The fully qualified class of the implementation or null if Plugin is not of Capable type or does not provide it
      * @throws \RuntimeException On empty or non-string implementation class name value
      */
     protected function getCapabilityImplementationClassName(PluginInterface $plugin, $capability)
@@ -317,21 +317,22 @@ class PluginManager
 
         $capabilities = (array) $plugin->getCapabilities();
 
-        if (!empty($capabilities[$capability]) && is_string($capabilities[$capability])) {
-            $capabilities[$capability] = trim($capabilities[$capability]);
+        if (!empty($capabilities[$capability]) && is_string($capabilities[$capability]) && trim($capabilities[$capability])) {
+            return trim($capabilities[$capability]);
         }
 
-        if (empty($capabilities[$capability]) || !is_string($capabilities[$capability])) {
-            throw new \RuntimeException('Plugin provided invalid capability class name(s)');
+        if (
+            array_key_exists($capability, $capabilities)
+            && (empty($capabilities[$capability]) || !is_string($capabilities[$capability]) || !trim($capabilities[$capability]))
+        ) {
+            throw new \UnexpectedValueException('Plugin '.get_class($plugin).' provided invalid capability class name(s), got '.var_export($capabilities[$capability], 1));
         }
-
-        return $capabilities[$capability];
     }
 
     /**
      * @param PluginInterface $plugin
      * @param string $capabilityClassName The fully qualified name of the API interface which the plugin may provide
-     *                                    an implementation.
+     *                                    an implementation of.
      * @param array $ctorArgs Arguments passed to Capability's constructor.
      *                        Keeping it an array will allow future values to be passed w\o changing the signature.
      * @return null|Capability
@@ -339,22 +340,20 @@ class PluginManager
     public function getPluginCapability(PluginInterface $plugin, $capabilityClassName, array $ctorArgs = array())
     {
         if ($capabilityClass = $this->getCapabilityImplementationClassName($plugin, $capabilityClassName)) {
-            if (class_exists($capabilityClass)) {
-                $capabilityObj = new $capabilityClass($ctorArgs);
-                if ($capabilityObj instanceof Capability &&
-                    $capabilityObj instanceof $capabilityClassName
-                ) {
-                    return $capabilityObj;
-                } else {
-                    throw new \RuntimeException(
-                        'Class ' . $capabilityClass . ' must be of both \Composer\Plugin\Capability\Capability and '.
-                        $capabilityClassName . ' types.'
-                    );
-                }
-            } else {
-                throw new \RuntimeException("Cannot instantiate Capability, as class $capabilityClass does not exist.");
+            if (!class_exists($capabilityClass)) {
+                throw new \RuntimeException("Cannot instantiate Capability, as class $capabilityClass from plugin ".get_class($plugin)." does not exist.");
             }
+
+            $capabilityObj = new $capabilityClass($ctorArgs);
+
+            // FIXME these could use is_a and do the check *before* instantiating once drop support for php<5.3.9
+            if (!$capabilityObj instanceof Capability || !$capabilityObj instanceof $capabilityClassName) {
+                throw new \RuntimeException(
+                    'Class ' . $capabilityClass . ' must implement both Composer\Plugin\Capability\Capability and '. $capabilityClassName . '.'
+                );
+            }
+
+            return $capabilityObj;
         }
-        return null;
     }
 }

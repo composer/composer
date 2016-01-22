@@ -350,7 +350,7 @@ class PluginInstallerTest extends TestCase
 
     /**
      * @dataProvider invalidImplementationClassNames
-     * @expectedException \RuntimeException
+     * @expectedException \UnexpectedValueException
      */
     public function testQueryingWithInvalidCapabilityClassNameThrows($invalidImplementationClassNames)
     {
@@ -366,6 +366,22 @@ class PluginInstallerTest extends TestCase
                }));
 
         $this->pm->getPluginCapability($plugin, $capabilityApi);
+    }
+
+    public function testQueryingNonProvidedCapabilityReturnsNullSafely()
+    {
+        $capabilityApi = 'Composer\Plugin\Capability\MadeUpCapability';
+
+        $plugin = $this->getMockBuilder('Composer\Test\Plugin\Mock\CapablePluginInterface')
+                       ->getMock();
+
+        $plugin->expects($this->once())
+               ->method('getCapabilities')
+               ->will($this->returnCallback(function() {
+                   return array();
+               }));
+
+        $this->assertNull($this->pm->getPluginCapability($plugin, $capabilityApi));
     }
 
     /**
