@@ -644,8 +644,8 @@ class RemoteFilesystem
                 $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert-' . $hash . '.pem';
 
                 if (!file_exists($targetPath) || $hash !== hash_file('sha256', $targetPath)) {
-                    $this->safeCopy($result, $targetPath);
-                    chmod($targetPath, 0644);
+                    $this->streamCopy($result, $targetPath);
+                    chmod($targetPath, 0666);
                 }
 
                 $defaults['ssl']['cafile'] = $targetPath;
@@ -784,14 +784,12 @@ class RemoteFilesystem
     }
 
     /**
-     * Safely copy a file.
-     *
      * Uses stream_copy_to_stream instead of copy to work around https://bugs.php.net/bug.php?id=64634
      *
      * @param string $source
      * @param string $target
      */
-    private function safeCopy($source, $target)
+    private function streamCopy($source, $target)
     {
         $source = fopen($source, 'r');
         $target = fopen($target, 'w+');
