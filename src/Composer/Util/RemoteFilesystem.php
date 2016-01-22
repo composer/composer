@@ -327,16 +327,6 @@ class RemoteFilesystem
             if (!empty($targetUrl)) {
                 $this->redirects++;
 
-                // TODO: Disabled because this is (probably) different behaviour to PHP following for us.
-                // if ('http' === parse_url($targetUrl, PHP_URL_SCHEME) && 'https' === $this->scheme) {
-                //     // Do not allow protocol downgrade.
-                //     // TODO: Currently this will fail if a request goes http -> https -> http
-                //     $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, not permitting protocol downgrade');
-                //     $e->setHeaders($http_response_header);
-                //     $e->setResponse($result);
-                //     throw $e;
-                // }
-
                 if ($this->io->isDebug()) {
                     $this->io->writeError(sprintf('Following redirect (%u)', $this->redirects));
                 }
