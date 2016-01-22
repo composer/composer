@@ -52,6 +52,24 @@ class JsonConfigSourceTest extends \PHPUnit_Framework_TestCase
         $this->assertFileEquals($this->fixturePath('config/config-with-exampletld-repository.json'), $config);
     }
 
+    public function testAddRepositoryWithOptions()
+    {
+        $config = $this->workingDir.'/composer.json';
+        copy($this->fixturePath('composer-repositories.json'), $config);
+        $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
+        $jsonConfigSource->addRepository('example_tld', array(
+            'type' => 'composer',
+            'url' => 'https://example.tld',
+            'options' => array(
+                'ssl' => array(
+                    'local_cert' => '/home/composer/.ssl/composer.pem'
+                )
+            )
+        ));
+
+        $this->assertFileEquals($this->fixturePath('config/config-with-exampletld-repository-and-options.json'), $config);
+    }
+
     public function testRemoveRepository()
     {
         $config = $this->workingDir.'/composer.json';
