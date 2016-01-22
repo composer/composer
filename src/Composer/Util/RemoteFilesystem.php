@@ -629,7 +629,7 @@ class RemoteFilesystem
         );
 
         if (isset($options['ssl'])) {
-            $defaults['ssl'] = array_merge_recursive($defaults['ssl'], $options['ssl']);
+            $defaults['ssl'] = array_replace_recursive($defaults['ssl'], $options['ssl']);
         }
 
         /**
