@@ -173,7 +173,7 @@ class JsonConfigSource implements ConfigSourceInterface
         }
 
         if ($newFile) {
-            @chmod($this->file->getPath(), 0600);
+            \MediaWiki\quietCall('chmod', $this->file->getPath(), 0600);
         }
     }
 

@@ -32,7 +32,8 @@
         "symfony/process": "~2.1",
         "symfony/filesystem": "~2.5",
         "seld/phar-utils": "~1.0",
-        "seld/cli-prompt": "~1.0"
+        "seld/cli-prompt": "~1.0",
+        "mediawiki/at-ease": "^1.1"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.5|^5.0.5",

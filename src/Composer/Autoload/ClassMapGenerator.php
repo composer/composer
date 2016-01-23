@@ -122,7 +122,7 @@ class ClassMapGenerator
         }
 
         try {
-            $contents = @php_strip_whitespace($path);
+            $contents = \MediaWiki\quietCall('php_strip_whitespace', $path);
             if (!$contents) {
                 if (!file_exists($path)) {
                     throw new \Exception('File does not exist');

@@ -62,7 +62,7 @@ class Application extends BaseApplication
         }
 
         if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
-            date_default_timezone_set(@date_default_timezone_get());
+            date_default_timezone_set(\MediaWiki\quietCall('date_default_timezone_get'));
         }
 
         parent::__construct('Composer', Composer::VERSION);

@@ -101,9 +101,9 @@ class Factory
         foreach (array($home, $cacheDir) as $dir) {
             if (!file_exists($dir . '/.htaccess')) {
                 if (!is_dir($dir)) {
-                    @mkdir($dir, 0777, true);
+                    \MediaWiki\quietCall('mkdir', $dir, 0777, true);
                 }
-                @file_put_contents($dir . '/.htaccess', 'Deny from all');
+                \MediaWiki\quietCall('file_put_contents', $dir . '/.htaccess', 'Deny from all');
             }
         }
 

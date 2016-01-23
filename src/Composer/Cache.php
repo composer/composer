@@ -44,7 +44,7 @@ class Cache
         $this->filesystem = $filesystem ?: new Filesystem();
 
         if (
-            (!is_dir($this->root) && !@mkdir($this->root, 0777, true))
+            (!is_dir($this->root) && !\MediaWiki\quietCall('mkdir', $this->root, 0777, true))
             || !is_writable($this->root)
         ) {
             $this->io->writeError('<warning>Cannot create cache directory ' . $this->root . ', or directory is not writable. Proceeding without cache</warning>');
@@ -100,7 +100,7 @@ class Cache
                         $this->root . $file,
                         $m[1],
                         $m[2],
-                        @disk_free_space($this->root . dirname($file))
+                        \MediaWiki\quietCall('disk_free_space', $this->root . dirname($file))
                     );
 
                     $this->io->writeError($message);

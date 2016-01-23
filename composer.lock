@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "af3956ae4c1a09e3e72cd66346a6176d",
-    "content-hash": "96817117d0ca449e7deff55c98eb7bdc",
+    "hash": "1b012c381e76f464eed9aff04d8b2b2c",
+    "content-hash": "fe9e5f4dff3c95a5e02a89ad0b627d3b",
     "packages": [
         {
             "name": "composer/semver",
@@ -195,6 +195,53 @@
             "time": "2015-09-08 22:28:04"
         },
         {
+            "name": "mediawiki/at-ease",
+            "version": "v1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wikimedia/at-ease.git",
+                "reference": "94c0b84888841d160419f915c2745d9d08fbf0c3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wikimedia/at-ease/zipball/94c0b84888841d160419f915c2745d9d08fbf0c3",
+                "reference": "94c0b84888841d160419f915c2745d9d08fbf0c3",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "jakub-onderka/php-parallel-lint": "0.9",
+                "mediawiki/mediawiki-codesniffer": "0.3.0",
+                "phpunit/phpunit": "~4.5",
+                "squizlabs/php_codesniffer": "2.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/Functions.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Tim Starling",
+                    "email": "tstarling@wikimedia.org"
+                },
+                {
+                    "name": "MediaWiki developers",
+                    "email": "wikitech-l@lists.wikimedia.org"
+                }
+            ],
+            "description": "Safe replacement to @ for suppressing warnings.",
+            "homepage": "https://www.mediawiki.org/wiki/at-ease",
+            "time": "2015-09-18 07:02:06"
+        },
+        {
             "name": "seld/cli-prompt",
             "version": "1.0.0",
             "source": {
@@ -338,12 +385,12 @@
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Console.git",
+                "url": "https://github.com/symfony/console.git",
                 "reference": "0e5e18ae09d3f5c06367759be940e9ed3f568359"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/0e5e18ae09d3f5c06367759be940e9ed3f568359",
+                "url": "https://api.github.com/repos/symfony/console/zipball/0e5e18ae09d3f5c06367759be940e9ed3f568359",
                 "reference": "0e5e18ae09d3f5c06367759be940e9ed3f568359",
                 "shasum": ""
             },
@@ -396,12 +443,12 @@
             "target-dir": "Symfony/Component/Filesystem",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Filesystem.git",
+                "url": "https://github.com/symfony/filesystem.git",
                 "reference": "823c035b1a5c13a4924e324d016eb07e70f94735"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Filesystem/zipball/823c035b1a5c13a4924e324d016eb07e70f94735",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/823c035b1a5c13a4924e324d016eb07e70f94735",
                 "reference": "823c035b1a5c13a4924e324d016eb07e70f94735",
                 "shasum": ""
             },
