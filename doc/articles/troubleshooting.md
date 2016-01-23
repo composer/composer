@@ -76,16 +76,16 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 
 ## I have a dependency which contains a "repositories" definition in its composer.json, but it seems to be ignored.
 
-The [`repositories`](04-schema.md#repositories) configuration property is defined as [root-only]
-(04-schema.md#root-package). It is not inherited. You can read more about the reasons behind this in the "[why can't
-composer load repositories recursively?](articles/why-can't-composer-load-repositories-recursively.md)" article.
+The [`repositories`](../04-schema.md#repositories) configuration property is defined as [root-only]
+(../04-schema.md#root-package). It is not inherited. You can read more about the reasons behind this in the "[why can't
+composer load repositories recursively?](../faqs/why-can't-composer-load-repositories-recursively.md)" article.
 The simplest work-around to this limitation, is moving or duplicating the `repositories` definition into your root
 composer.json.
 
 ## I have locked a dependency to a specific commit but get unexpected results.
 
 While Composer supports locking dependencies to a specific commit using the `#commit-ref` syntax, there are certain
-caveats that one should take into account. The most important one is [documented](04-schema.md#package-links), but
+caveats that one should take into account. The most important one is [documented](../04-schema.md#package-links), but
 frequently overlooked:
 
 > **Note:** While this is convenient at times, it should not be how you use
