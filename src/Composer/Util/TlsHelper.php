@@ -281,7 +281,6 @@ EOT;
             $wildcardRegex = "{^{$wildcardRegex}$}";
 
             return function ($hostname) use ($wildcardRegex) {
-                // var_dump($wildcardRegex);
                 return 1 === preg_match($wildcardRegex, $hostname);
             };
         }
