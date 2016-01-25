@@ -842,6 +842,12 @@ class RemoteFilesystem
      */
     private function validateCaFile($filename)
     {
+        static $files = array();
+
+        if (isset($files[$filename])) {
+            return $files[$filename];
+        }
+
         if ($this->io->isDebug()) {
             $this->io->writeError('Checking CA file '.realpath($filename));
         }
@@ -854,10 +860,10 @@ class RemoteFilesystem
             || (PHP_VERSION_ID >= 50400 && PHP_VERSION_ID < 50422)
             || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50506)
         ) {
-            return !empty($contents);
+            return $files[$filename] = !empty($contents);
         }
 
-        return (bool) openssl_x509_parse($contents);
+        return $files[$filename] = (bool) openssl_x509_parse($contents);
     }
 
     /**
