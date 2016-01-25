@@ -383,6 +383,7 @@ class RemoteFilesystem
             }
         }
 
+        // Handle SSL cert match issues
         if (false === $result && false !== strpos($errorMessage, 'Peer certificate') && PHP_VERSION_ID < 50600) {
             // Certificate name error, PHP doesn't support subjectAltName on PHP < 5.6
             // The procedure to handle sAN for older PHP's is:
@@ -421,9 +422,11 @@ class RemoteFilesystem
 
             $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
 
-            $authHelper = new AuthHelper($this->io, $this->config);
-            $authHelper->storeAuth($this->originUrl, $this->storeAuth);
-            $this->storeAuth = false;
+            if (false !== $this->storeAuth) {
+                $authHelper = new AuthHelper($this->io, $this->config);
+                $authHelper->storeAuth($this->originUrl, $this->storeAuth);
+                $this->storeAuth = false;
+            }
 
             return $result;
         }
@@ -734,7 +737,7 @@ class RemoteFilesystem
             'DHE-DSS-AES256-SHA',
             'DHE-RSA-AES256-SHA',
             'AES128-GCM-SHA256',
-             'AES256-GCM-SHA384',
+            'AES256-GCM-SHA384',
             'ECDHE-RSA-RC4-SHA',
             'ECDHE-ECDSA-RC4-SHA',
             'AES128',
@@ -916,11 +919,12 @@ class RemoteFilesystem
 
         // assume the CA is valid if php is vulnerable to
         // https://www.sektioneins.de/advisories/advisory-012013-php-openssl_x509_parse-memory-corruption-vulnerability.html
-        if (
-            PHP_VERSION_ID <= 50327
-            || (PHP_VERSION_ID >= 50400 && PHP_VERSION_ID < 50422)
-            || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50506)
-        ) {
+        if (!TlsHelper::isOpensslParseSafe()) {
+            $this->io->writeError(sprintf(
+                '<error>Your version of PHP, %s, is affected by CVE-2013-6420 and cannot safely perform certificate validation, we strongly suggest you upgrade.</error>',
+                PHP_VERSION
+            ));
+
             return $files[$filename] = !empty($contents);
         }
 
