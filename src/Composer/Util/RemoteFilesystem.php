@@ -213,8 +213,10 @@ class RemoteFilesystem
             unset($additionalOptions['retry-auth-failure']);
         }
 
+        $isRedirect = false;
         if (isset($additionalOptions['redirects'])) {
             $this->redirects = $additionalOptions['redirects'];
+            $isRedirect = true;
 
             unset($additionalOptions['redirects']);
         }
@@ -247,7 +249,7 @@ class RemoteFilesystem
 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
-        if ($this->progress) {
+        if ($this->progress && !$isRedirect) {
             $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
         }
 
@@ -295,47 +297,9 @@ class RemoteFilesystem
             $statusCode = $this->findStatusCode($http_response_header);
         }
 
-        if ($userlandFollow && $statusCode >= 300 && $statusCode <= 399 && $this->redirects < $this->maxRedirects) {
-            if ($locationHeader = $this->findHeaderValue($http_response_header, 'location')) {
-                if (parse_url($locationHeader, PHP_URL_SCHEME)) {
-                    // Absolute URL; e.g. https://example.com/composer
-                    $targetUrl = $locationHeader;
-                } elseif (parse_url($locationHeader, PHP_URL_HOST)) {
-                    // Scheme relative; e.g. //example.com/foo
-                    $targetUrl = $this->scheme.':'.$locationHeader;
-                } elseif ('/' === $locationHeader[0]) {
-                    // Absolute path; e.g. /foo
-                    $urlHost = parse_url($this->fileUrl, PHP_URL_HOST);
-
-                    // Replace path using hostname as an anchor.
-                    $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $this->fileUrl);
-                } else {
-                    // Relative path; e.g. foo
-                    // This actually differs from PHP which seems to add duplicate slashes.
-                    $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$locationHeader, $this->fileUrl);
-                }
-            }
-
-            if (!empty($targetUrl)) {
-                $this->redirects++;
-
-                if ($this->io->isDebug()) {
-                    $this->io->writeError(sprintf('Following redirect (%u)', $this->redirects));
-                }
-
-                $additionalOptions['redirects'] = $this->redirects;
-
-                // TODO: Not so sure about preserving origin here...
-                return $this->get($this->originUrl, $targetUrl, $additionalOptions, $this->fileName, $this->progress);
-            }
-
-            if (!$this->retry) {
-                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, got redirect without Location ('.$http_response_header[0].')');
-                $e->setHeaders($http_response_header);
-                $e->setResponse($result);
-                throw $e;
-            }
-            $result = false;
+        // handle 3xx redirects for php<5.6, 304 Not Modified is excluded
+        if ($userlandFollow && $statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $this->redirects < $this->maxRedirects) {
+            $result = $this->handleRedirect($http_response_header, $additionalOptions, $result);
         }
 
         // fail 4xx and 5xx responses and capture the response
@@ -350,7 +314,7 @@ class RemoteFilesystem
             $result = false;
         }
 
-        if ($this->progress && !$this->retry) {
+        if ($this->progress && !$this->retry && !$isRedirect) {
             $this->io->overwriteError("    Downloading: <comment>100%</comment>");
         }
 
@@ -387,7 +351,7 @@ class RemoteFilesystem
         }
 
         // handle copy command if download was successful
-        if (false !== $result && null !== $fileName) {
+        if (false !== $result && null !== $fileName && !$isRedirect) {
             if ('' === $result) {
                 throw new TransportException('"'.$this->fileUrl.'" appears broken, and returned an empty 200 response');
             }
@@ -633,6 +597,51 @@ class RemoteFilesystem
         }
 
         return $options;
+    }
+
+    private function handleRedirect(array $http_response_header, array $additionalOptions, $result)
+    {
+        if ($locationHeader = $this->findHeaderValue($http_response_header, 'location')) {
+            if (parse_url($locationHeader, PHP_URL_SCHEME)) {
+                // Absolute URL; e.g. https://example.com/composer
+                $targetUrl = $locationHeader;
+            } elseif (parse_url($locationHeader, PHP_URL_HOST)) {
+                // Scheme relative; e.g. //example.com/foo
+                $targetUrl = $this->scheme.':'.$locationHeader;
+            } elseif ('/' === $locationHeader[0]) {
+                // Absolute path; e.g. /foo
+                $urlHost = parse_url($this->fileUrl, PHP_URL_HOST);
+
+                // Replace path using hostname as an anchor.
+                $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $this->fileUrl);
+            } else {
+                // Relative path; e.g. foo
+                // This actually differs from PHP which seems to add duplicate slashes.
+                $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$locationHeader, $this->fileUrl);
+            }
+        }
+
+        if (!empty($targetUrl)) {
+            $this->redirects++;
+
+            if ($this->io->isDebug()) {
+                $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $targetUrl));
+            }
+
+            $additionalOptions['redirects'] = $this->redirects;
+
+            return $this->get($this->originUrl, $targetUrl, $additionalOptions, $this->fileName, $this->progress);
+        }
+
+        if (!$this->retry) {
+            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, got redirect without Location ('.$http_response_header[0].')');
+            $e->setHeaders($http_response_header);
+            $e->setResponse($result);
+
+            throw $e;
+        }
+
+        return false;
     }
 
     /**
