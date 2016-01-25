@@ -29,12 +29,12 @@ class SilencerTest extends \PHPUnit_Framework_TestCase
 
         // Check warnings are suppressed correctly
         Silencer::suppress();
-        trigger_error('Test', E_USER_WARNING);
+        @trigger_error('Test', E_USER_WARNING);
         Silencer::restore();
 
         // Check all parameters and return values are passed correctly in a silenced call.
         $result = Silencer::call(function($a, $b, $c) {
-            trigger_error('Test', E_USER_WARNING);
+            @trigger_error('Test', E_USER_WARNING);
             return $a * $b * $c;
         }, 2, 3, 4);
         $this->assertEquals(24, $result);
