@@ -144,29 +144,53 @@ EOT
 
             $sigFile = 'file://'.$home.'/' . ($updatingToTag ? 'keys.tags.pub' : 'keys.dev.pub');
             if (!file_exists($sigFile)) {
-                $io->write('<warning>You are missing the public keys used to verify Composer phar file signatures</warning>');
-                if (!$io->isInteractive() || getenv('CI') || getenv('CONTINUOUS_INTEGRATION')) {
-                    $io->write('<warning>As this process is not interactive or you run on CI, it is allowed to run for now, but you should run "composer self-update --update-keys" to get them set up.</warning>');
-                } else {
-                    $this->fetchKeys($io, $config);
-                }
+                file_put_contents($home.'/keys.dev.pub', <<<DEVPUBKEY
+-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAnBDHjZS6e0ZMoK3xTD7f
+FNCzlXjX/Aie2dit8QXA03pSrOTbaMnxON3hUL47Lz3g1SC6YJEMVHr0zYq4elWi
+i3ecFEgzLcj+pZM5X6qWu2Ozz4vWx3JYo1/a/HYdOuW9e3lwS8VtS0AVJA+U8X0A
+hZnBmGpltHhO8hPKHgkJtkTUxCheTcbqn4wGHl8Z2SediDcPTLwqezWKUfrYzu1f
+o/j3WFwFs6GtK4wdYtiXr+yspBZHO3y1udf8eFFGcb2V3EaLOrtfur6XQVizjOuk
+8lw5zzse1Qp/klHqbDRsjSzJ6iL6F4aynBc6Euqt/8ccNAIz0rLjLhOraeyj4eNn
+8iokwMKiXpcrQLTKH+RH1JCuOVxQ436bJwbSsp1VwiqftPQieN+tzqy+EiHJJmGf
+TBAbWcncicCk9q2md+AmhNbvHO4PWbbz9TzC7HJb460jyWeuMEvw3gNIpEo2jYa9
+pMV6cVqnSa+wOc0D7pC9a6bne0bvLcm3S+w6I5iDB3lZsb3A9UtRiSP7aGSo7D72
+8tC8+cIgZcI7k9vjvOqH+d7sdOU2yPCnRY6wFh62/g8bDnUpr56nZN1G89GwM4d4
+r/TU7BQQIzsZgAiqOGXvVklIgAMiV0iucgf3rNBLjjeNEwNSTTG9F0CtQ+7JLwaE
+wSEuAuRm+pRqi8BRnQ/GKUcCAwEAAQ==
+-----END PUBLIC KEY-----
+DEVPUBKEY
+);
+                file_put_contents($home.'/keys.tags.pub', <<<TAGSPUBKEY
+-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0Vi/2K6apCVj76nCnCl2
+MQUPdK+A9eqkYBacXo2wQBYmyVlXm2/n/ZsX6pCLYPQTHyr5jXbkQzBw8SKqPdlh
+vA7NpbMeNCz7wP/AobvUXM8xQuXKbMDTY2uZ4O7sM+PfGbptKPBGLe8Z8d2sUnTO
+bXtX6Lrj13wkRto7st/w/Yp33RHe9SlqkiiS4MsH1jBkcIkEHsRaveZzedUaxY0M
+mba0uPhGUInpPzEHwrYqBBEtWvP97t2vtfx8I5qv28kh0Y6t+jnjL1Urid2iuQZf
+noCMFIOu4vksK5HxJxxrN0GOmGmwVQjOOtxkwikNiotZGPR4KsVj8NnBrLX7oGuM
+nQvGciiu+KoC2r3HDBrpDeBVdOWxDzT5R4iI0KoLzFh2pKqwbY+obNPS2bj+2dgJ
+rV3V5Jjry42QOCBN3c88wU1PKftOLj2ECpewY6vnE478IipiEu7EAdK8Zwj2LmTr
+RKQUSa9k7ggBkYZWAeO/2Ag0ey3g2bg7eqk+sHEq5ynIXd5lhv6tC5PBdHlWipDK
+tl2IxiEnejnOmAzGVivE1YGduYBjN+mjxDVy8KGBrjnz1JPgAvgdwJ2dYw4Rsc/e
+TzCFWGk/HM6a4f0IzBWbJ5ot0PIi4amk07IotBXDWwqDiQTwyuGCym5EqWQ2BD95
+RGv89BPD+2DLnJysngsvVaUCAwEAAQ==
+-----END PUBLIC KEY-----
+TAGSPUBKEY
+);
             }
 
-            // if still no file is present it means we are on CI/travis or
-            // not interactive so we skip the check for now
-            if (file_exists($sigFile)) {
-                $pubkeyid = openssl_pkey_get_public($sigFile);
-                $algo = defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
-                if (!in_array('SHA384', openssl_get_md_methods())) {
-                    throw new \RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
-                }
-                $signature = json_decode($signature, true);
-                $signature = base64_decode($signature['sha384']);
-                $verified = 1 === openssl_verify(file_get_contents($tempFilename), $signature, $pubkeyid, $algo);
-                openssl_free_key($pubkeyid);
-                if (!$verified) {
-                    throw new \RuntimeException('The phar signature did not match the file you downloaded, this means your public keys are outdated or that the phar file is corrupt/has been modified');
-                }
+            $pubkeyid = openssl_pkey_get_public($sigFile);
+            $algo = defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
+            if (!in_array('SHA384', openssl_get_md_methods())) {
+                throw new \RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
+            }
+            $signature = json_decode($signature, true);
+            $signature = base64_decode($signature['sha384']);
+            $verified = 1 === openssl_verify(file_get_contents($tempFilename), $signature, $pubkeyid, $algo);
+            openssl_free_key($pubkeyid);
+            if (!$verified) {
+                throw new \RuntimeException('The phar signature did not match the file you downloaded, this means your public keys are outdated or that the phar file is corrupt/has been modified');
             }
         }
 
@@ -199,7 +223,7 @@ EOT
     protected function fetchKeys(IOInterface $io, Config $config)
     {
         if (!$io->isInteractive()) {
-            throw new \RuntimeException('Public keys are missing and can not be fetched in non-interactive mode, run this interactively or re-install composer using the installer to get the public keys set up');
+            throw new \RuntimeException('Public keys can not be fetched in non-interactive mode, please run Composer interactively');
         }
 
         $io->write('Open <info>https://composer.github.io/pubkeys.html</info> to find the latest keys');
