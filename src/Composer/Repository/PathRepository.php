@@ -113,7 +113,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         parent::initialize();
 
         foreach ($this->getUrlMatches() as $url) {
-            $path = realpath($url) . '/';
+            $path = realpath($url) . DIRECTORY_SEPARATOR;
             $composerFilePath = $path.'composer.json';
 
             if (!file_exists($composerFilePath)) {
@@ -131,7 +131,8 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             if (!isset($package['version'])) {
                 $package['version'] = $this->versionGuesser->guessVersion($package, $path) ?: 'dev-master';
             }
-            if (is_dir($path.'/.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
+            $output = '';
+            if (is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
                 $package['dist']['reference'] = trim($output);
             } else {
                 $package['dist']['reference'] = Locker::getContentHash($json);
@@ -153,6 +154,9 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      */
     private function getUrlMatches()
     {
-        return glob($this->url, GLOB_MARK | GLOB_ONLYDIR);
+        // Ensure environment-specific path separators are normalized to URL separators
+        return array_map(function($val) {
+            return str_replace(DIRECTORY_SEPARATOR, '/', $val);
+        }, glob($this->url, GLOB_MARK | GLOB_ONLYDIR));
     }
 }
