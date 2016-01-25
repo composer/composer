@@ -345,7 +345,7 @@ class Config
      */
     private function realpath($path)
     {
-        if (substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':') {
+        if (preg_match('{^(?:/|[a-z]:|[a-z0-9.]+://)}i', $path)) {
             return $path;
         }
 
