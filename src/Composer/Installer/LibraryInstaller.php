@@ -18,6 +18,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Silencer;
 
 /**
  * Package installation manager.
@@ -130,7 +131,7 @@ class LibraryInstaller implements InstallerInterface
         if (strpos($package->getName(), '/')) {
             $packageVendorDir = dirname($downloadPath);
             if (is_dir($packageVendorDir) && $this->filesystem->isDirEmpty($packageVendorDir)) {
-                @rmdir($packageVendorDir);
+                Silencer::call('rmdir', $packageVendorDir);
             }
         }
     }
@@ -233,7 +234,7 @@ class LibraryInstaller implements InstallerInterface
                     // likely leftover from a previous install, make sure
                     // that the target is still executable in case this
                     // is a fresh install of the vendor.
-                    @chmod($link, 0777 & ~umask());
+                    Silencer::call('chmod', $link, 0777 & ~umask());
                 }
                 $this->io->writeError('    Skipped installation of bin '.$bin.' for package '.$package->getName().': name conflicts with an existing file');
                 continue;
@@ -248,7 +249,7 @@ class LibraryInstaller implements InstallerInterface
             } elseif ($this->binCompat === "full") {
                 $this->installFullBinaries($binPath, $link, $bin, $package);
             }
-            @chmod($link, 0777 & ~umask());
+            Silencer::call('chmod', $link, 0777 & ~umask());
         }
     }
 
@@ -298,7 +299,7 @@ class LibraryInstaller implements InstallerInterface
 
         // attempt removing the bin dir in case it is left empty
         if ((is_dir($this->binDir)) && ($this->filesystem->isDirEmpty($this->binDir))) {
-            @rmdir($this->binDir);
+            Silencer::call('rmdir', $this->binDir);
         }
     }
 

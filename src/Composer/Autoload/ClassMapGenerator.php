@@ -18,6 +18,7 @@
 
 namespace Composer\Autoload;
 
+use Composer\Util\Silencer;
 use Symfony\Component\Finder\Finder;
 use Composer\IO\IOInterface;
 
@@ -122,7 +123,7 @@ class ClassMapGenerator
         }
 
         try {
-            $contents = @php_strip_whitespace($path);
+            $contents = Silencer::call('php_strip_whitespace', $path);
             if (!$contents) {
                 if (!file_exists($path)) {
                     throw new \Exception('File does not exist');

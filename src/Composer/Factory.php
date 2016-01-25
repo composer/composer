@@ -22,6 +22,7 @@ use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\Silencer;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
@@ -163,9 +164,9 @@ class Factory
         foreach ($dirs as $dir) {
             if (!file_exists($dir . '/.htaccess')) {
                 if (!is_dir($dir)) {
-                    @mkdir($dir, 0777, true);
+                    Silencer::call('mkdir', $dir, 0777, true);
                 }
-                @file_put_contents($dir . '/.htaccess', 'Deny from all');
+                Silencer::call('file_put_contents', $dir . '/.htaccess', 'Deny from all');
             }
         }
 
