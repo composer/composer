@@ -466,6 +466,12 @@ changes to the repositories section by using it the following way:
 php composer.phar config repositories.foo vcs https://github.com/foo/bar
 ```
 
+If your repository requires more configuration options, you can instead pass its JSON representation :
+
+```sh
+php composer.phar config repositories.foo '{"type": "vcs", "url": "http://svn.example.org/my-project/", "trunk-path": "master"}'
+```
+
 ## create-project
 
 You can use Composer to create new projects from an existing package. This is

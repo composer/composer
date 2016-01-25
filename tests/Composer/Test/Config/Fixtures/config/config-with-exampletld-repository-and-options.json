@@ -1,0 +1,15 @@
+{
+    "name": "my-vend/my-app",
+    "license": "MIT",
+    "repositories": {
+        "example_tld": {
+            "type": "composer",
+            "url": "https://example.tld",
+            "options": {
+                "ssl": {
+                    "local_cert": "/home/composer/.ssl/composer.pem"
+                }
+            }
+        }
+    }
+}
