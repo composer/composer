@@ -38,6 +38,8 @@ class RemoteFilesystem
     private $lastHeaders;
     private $storeAuth;
     private $degradedMode = false;
+    private $redirects;
+    private $maxRedirects = 20;
 
     /**
      * Constructor.
@@ -198,6 +200,7 @@ class RemoteFilesystem
         $this->lastProgress = null;
         $this->retryAuthFailure = true;
         $this->lastHeaders = array();
+        $this->redirects = 1; // The first request counts.
 
         // capture username/password from URL if there is one
         if (preg_match('{^https?://(.+):(.+)@([^/]+)}i', $fileUrl, $match)) {
@@ -210,7 +213,14 @@ class RemoteFilesystem
             unset($additionalOptions['retry-auth-failure']);
         }
 
+        if (isset($additionalOptions['redirects'])) {
+            $this->redirects = $additionalOptions['redirects'];
+
+            unset($additionalOptions['redirects']);
+        }
+
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        $userlandFollow = isset($options['http']['follow_location']) && !$options['http']['follow_location'];
 
         if ($this->io->isDebug()) {
             $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
@@ -283,6 +293,49 @@ class RemoteFilesystem
         $statusCode = null;
         if (!empty($http_response_header[0])) {
             $statusCode = $this->findStatusCode($http_response_header);
+        }
+
+        if ($userlandFollow && $statusCode >= 300 && $statusCode <= 399 && $this->redirects < $this->maxRedirects) {
+            if ($locationHeader = $this->findHeaderValue($http_response_header, 'location')) {
+                if (parse_url($locationHeader, PHP_URL_SCHEME)) {
+                    // Absolute URL; e.g. https://example.com/composer
+                    $targetUrl = $locationHeader;
+                } elseif (parse_url($locationHeader, PHP_URL_HOST)) {
+                    // Scheme relative; e.g. //example.com/foo
+                    $targetUrl = $this->scheme.':'.$locationHeader;
+                } elseif ('/' === $locationHeader[0]) {
+                    // Absolute path; e.g. /foo
+                    $urlHost = parse_url($this->fileUrl, PHP_URL_HOST);
+
+                    // Replace path using hostname as an anchor.
+                    $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $this->fileUrl);
+                } else {
+                    // Relative path; e.g. foo
+                    // This actually differs from PHP which seems to add duplicate slashes.
+                    $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$locationHeader, $this->fileUrl);
+                }
+            }
+
+            if (!empty($targetUrl)) {
+                $this->redirects++;
+
+                if ($this->io->isDebug()) {
+                    $this->io->writeError(sprintf('Following redirect (%u)', $this->redirects));
+                }
+
+                $additionalOptions['redirects'] = $this->redirects;
+
+                // TODO: Not so sure about preserving origin here...
+                return $this->get($this->originUrl, $targetUrl, $additionalOptions, $this->fileName, $this->progress);
+            }
+
+            if (!$this->retry) {
+                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, got redirect without Location ('.$http_response_header[0].')');
+                $e->setHeaders($http_response_header);
+                $e->setResponse($result);
+                throw $e;
+            }
+            $result = false;
         }
 
         // fail 4xx and 5xx responses and capture the response
@@ -521,8 +574,19 @@ class RemoteFilesystem
                 $host = parse_url($this->fileUrl, PHP_URL_HOST);
             }
 
-            if ($host === 'github.com' || $host === 'api.github.com') {
-                $host = '*.github.com';
+            if (PHP_VERSION_ID >= 50304) {
+                // Must manually follow when setting CN_match because this causes all
+                // redirects to be validated against the same CN_match value.
+                $userlandFollow = true;
+            } else {
+                // PHP < 5.3.4 does not support follow_location, for those people
+                // do some really nasty hard coded transformations. These will
+                // still breakdown if the site redirects to a domain we don't
+                // expect.
+
+                if ($host === 'github.com' || $host === 'api.github.com') {
+                    $host = '*.github.com';
+                }
             }
 
             $tlsOptions['ssl']['CN_match'] = $host;
@@ -541,6 +605,10 @@ class RemoteFilesystem
             // proxies/software due to the use of chunked encoding
             $options['http']['protocol_version'] = 1.1;
             $headers[] = 'Connection: close';
+        }
+
+        if (isset($userlandFollow)) {
+            $options['http']['follow_location'] = 0;
         }
 
         if ($this->io->hasAuthentication($originUrl)) {
