@@ -72,7 +72,7 @@ class SolverProblemsException extends \RuntimeException
             return '';
         }
 
-        $text = "\n  Because of missing extensions, please verify whether they are enabled in those .ini files:\n    - ";
+        $text = "\n  To enable extensions, verify that they are enabled in those .ini files:\n    - ";
         $text .= implode("\n    - ", $paths);
         $text .= "\n  You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.";
 
