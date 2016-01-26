@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -142,7 +143,7 @@ EOT
             ? ($this->config->get('home') . '/config.json')
             : ($input->getOption('file') ?: trim(getenv('COMPOSER')) ?: 'composer.json');
 
-        // create global composer.json if this was invoked using `composer global config`
+        // Create global composer.json if this was invoked using `composer global config`
         if ($configFile === 'composer.json' && !file_exists($configFile) && realpath(getcwd()) === realpath($this->config->get('home'))) {
             file_put_contents($configFile, "{\n}\n");
         }
@@ -157,16 +158,16 @@ EOT
         $this->authConfigFile = new JsonFile($authConfigFile, null, $io);
         $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);
 
-        // initialize the global file if it's not there
+        // Initialize the global file if it's not there, ignoring any warnings or notices
         if ($input->getOption('global') && !$this->configFile->exists()) {
             touch($this->configFile->getPath());
             $this->configFile->write(array('config' => new \ArrayObject));
-            @chmod($this->configFile->getPath(), 0600);
+            Silencer::call('chmod', $this->configFile->getPath(), 0600);
         }
         if ($input->getOption('global') && !$this->authConfigFile->exists()) {
             touch($this->authConfigFile->getPath());
             $this->authConfigFile->write(array('http-basic' => new \ArrayObject, 'github-oauth' => new \ArrayObject, 'gitlab-oauth' => new \ArrayObject));
-            @chmod($this->authConfigFile->getPath(), 0600);
+            Silencer::call('chmod', $this->authConfigFile->getPath(), 0600);
         }
 
         if (!$this->configFile->exists()) {

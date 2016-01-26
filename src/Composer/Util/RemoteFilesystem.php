@@ -886,7 +886,7 @@ class RemoteFilesystem
         );
 
         foreach ($caBundlePaths as $caBundle) {
-            if (@is_readable($caBundle) && $this->validateCaFile($caBundle)) {
+            if (Silencer::call('is_readable', $caBundle) && $this->validateCaFile($caBundle)) {
                 return $caPath = $caBundle;
             }
         }

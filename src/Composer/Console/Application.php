@@ -12,6 +12,7 @@
 
 namespace Composer\Console;
 
+use Composer\Util\Silencer;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -64,7 +65,7 @@ class Application extends BaseApplication
         }
 
         if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
-            date_default_timezone_set(@date_default_timezone_get());
+            date_default_timezone_set(Silencer::call('date_default_timezone_get'));
         }
 
         if (!$shutdownRegistered) {
@@ -203,21 +204,23 @@ class Application extends BaseApplication
     {
         $io = $this->getIO();
 
+        Silencer::suppress();
         try {
             $composer = $this->getComposer(false, true);
             if ($composer) {
                 $config = $composer->getConfig();
 
                 $minSpaceFree = 1024 * 1024;
-                if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
-                    || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
-                    || (($df = @disk_free_space($dir = sys_get_temp_dir())) !== false && $df < $minSpaceFree)
+                if ((($df = disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
+                    || (($df = disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+                    || (($df = disk_free_space($dir = sys_get_temp_dir())) !== false && $df < $minSpaceFree)
                 ) {
                     $io->writeError('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>');
                 }
             }
         } catch (\Exception $e) {
         }
+        Silencer::restore();
 
         if (defined('PHP_WINDOWS_VERSION_BUILD') && false !== strpos($exception->getMessage(), 'The system cannot find the path specified')) {
             $io->writeError('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>');

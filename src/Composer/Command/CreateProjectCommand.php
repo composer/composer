@@ -27,6 +27,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilesystemRepository;
 use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Script\ScriptEvents;
+use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -224,10 +225,10 @@ EOT
         chdir($oldCwd);
         $vendorComposerDir = $composer->getConfig()->get('vendor-dir').'/composer';
         if (is_dir($vendorComposerDir) && $fs->isDirEmpty($vendorComposerDir)) {
-            @rmdir($vendorComposerDir);
+            Silencer::call('rmdir', $vendorComposerDir);
             $vendorDir = $composer->getConfig()->get('vendor-dir');
             if (is_dir($vendorDir) && $fs->isDirEmpty($vendorDir)) {
-                @rmdir($vendorDir);
+                Silencer::call('rmdir', $vendorDir);
             }
         }
 
