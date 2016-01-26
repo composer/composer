@@ -36,8 +36,8 @@ class ErrorHandler
      */
     public static function handle($level, $message, $file, $line)
     {
-        // respect error_reporting being disabled
-        if (!error_reporting()) {
+        // error code is not included in error_reporting
+        if (!(error_reporting() & $level)) {
             return;
         }
 
