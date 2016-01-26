@@ -13,22 +13,49 @@
 namespace Composer\Repository;
 
 use Composer\TestCase;
+use Composer\Util\Filesystem;
 
 class RepositoryManagerTest extends TestCase
 {
+    protected $tmpdir;
+
+    public function setUp()
+    {
+        $this->tmpdir = $this->getUniqueTmpDirectory();
+    }
+
+    public function tearDown()
+    {
+        if (is_dir($this->tmpdir)) {
+            $fs = new Filesystem();
+            $fs->removeDirectory($this->tmpdir);
+        }
+    }
+
     /**
      * @dataProvider creationCases
      */
-    public function testRepoCreation($type, $config, $exception = null)
+    public function testRepoCreation($type, $options, $exception = null)
     {
         if ($exception) {
             $this->setExpectedException($exception);
         }
+
         $rm = new RepositoryManager(
             $this->getMock('Composer\IO\IOInterface'),
-            $this->getMock('Composer\Config'),
+            $config = $this->getMock('Composer\Config', array('get')),
             $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
+
+        $tmpdir = $this->tmpdir;
+        $config
+            ->expects($this->any())
+            ->method('get')
+            ->will($this->returnCallback(function ($arg) use ($tmpdir) {
+                return 'cache-repo-dir' === $arg ? $tmpdir : null;
+            }))
+        ;
+
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
@@ -40,7 +67,7 @@ class RepositoryManagerTest extends TestCase
         $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
 
         $rm->createRepository('composer', array('url' => 'http://example.org'));
-        $rm->createRepository($type, $config);
+        $rm->createRepository($type, $options);
     }
 
     public function creationCases()
