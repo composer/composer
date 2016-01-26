@@ -118,12 +118,12 @@ If multiple methods should be called, then an array of tupples can be attached t
 ```php
 public static function getSubscribedEvents()
 {
-    return [
+    return array(
         'post-autoload-dump' => array(
             array('methodToBeCalled'      ), // Priority defaults to 0
             array('someOtherMethodName', 1), // This fires first
         )
-    ];
+    );
 }
 ```
 
