@@ -1002,6 +1002,8 @@ class RemoteFilesystem
             'ftp' => 21,
             'http' => 80,
             'https' => 443,
+            'ssh2.sftp' => 22,
+            'ssh2.scp' => 22,
         );
 
         $scheme = parse_url($url, PHP_URL_SCHEME);
