@@ -82,7 +82,7 @@ class SolverProblemsException extends \RuntimeException
     private function hasExtensionProblems(array $reasonSets)
     {
         foreach ($reasonSets as $reasonSet) {
-            foreach($reasonSet as $reason) {
+            foreach ($reasonSet as $reason) {
                 if (isset($reason["rule"]) && 0 === strpos($reason["rule"]->getRequiredPackage(), 'ext-')) {
                     return true;
                 }

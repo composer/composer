@@ -24,9 +24,9 @@ final class TlsHelper
     /**
      * Match hostname against a certificate.
      *
-     * @param mixed $certificate X.509 certificate
-     * @param string $hostname Hostname in the URL
-     * @param string $cn Set to the common name of the certificate iff match found
+     * @param mixed  $certificate X.509 certificate
+     * @param string $hostname    Hostname in the URL
+     * @param string $cn          Set to the common name of the certificate iff match found
      *
      * @return bool
      */
@@ -46,13 +46,13 @@ final class TlsHelper
 
             if ($matcher && $matcher($hostname)) {
                 $cn = $names['cn'];
+
                 return true;
             }
         }
 
         return false;
     }
-
 
     /**
      * Extract DNS names out of an X.509 certificate.

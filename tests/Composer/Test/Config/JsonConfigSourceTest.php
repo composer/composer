@@ -62,9 +62,9 @@ class JsonConfigSourceTest extends TestCase
             'url' => 'https://example.tld',
             'options' => array(
                 'ssl' => array(
-                    'local_cert' => '/home/composer/.ssl/composer.pem'
-                )
-            )
+                    'local_cert' => '/home/composer/.ssl/composer.pem',
+                ),
+            ),
         ));
 
         $this->assertFileEquals($this->fixturePath('config/config-with-exampletld-repository-and-options.json'), $config);

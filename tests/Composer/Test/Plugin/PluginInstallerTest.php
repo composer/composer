@@ -315,7 +315,7 @@ class PluginInstallerTest extends TestCase
 
         $plugin->expects($this->once())
                ->method('getCapabilities')
-               ->will($this->returnCallback(function() use ($capabilityImplementation, $capabilityApi) {
+               ->will($this->returnCallback(function () use ($capabilityImplementation, $capabilityApi) {
                    return array($capabilityApi => $capabilityImplementation);
                }));
 
@@ -361,7 +361,7 @@ class PluginInstallerTest extends TestCase
 
         $plugin->expects($this->once())
                ->method('getCapabilities')
-               ->will($this->returnCallback(function() use ($invalidImplementationClassNames, $capabilityApi) {
+               ->will($this->returnCallback(function () use ($invalidImplementationClassNames, $capabilityApi) {
                    return array($capabilityApi => $invalidImplementationClassNames);
                }));
 
@@ -377,7 +377,7 @@ class PluginInstallerTest extends TestCase
 
         $plugin->expects($this->once())
                ->method('getCapabilities')
-               ->will($this->returnCallback(function() {
+               ->will($this->returnCallback(function () {
                    return array();
                }));
 

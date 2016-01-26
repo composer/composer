@@ -134,8 +134,8 @@ class RemoteFilesystem
     }
 
     /**
-     * @param array $headers array of returned headers like from getLastHeaders()
-     * @param string $name header name (case insensitive)
+     * @param  array       $headers array of returned headers like from getLastHeaders()
+     * @param  string      $name    header name (case insensitive)
      * @return string|null
      */
     public function findHeaderValue(array $headers, $name)
@@ -155,7 +155,7 @@ class RemoteFilesystem
     }
 
     /**
-     * @param array $headers array of returned headers like from getLastHeaders()
+     * @param  array    $headers array of returned headers like from getLastHeaders()
      * @return int|null
      */
     public function findStatusCode(array $headers)
@@ -752,7 +752,7 @@ class RemoteFilesystem
             '!DES',
             '!3DES',
             '!MD5',
-            '!PSK'
+            '!PSK',
         ));
 
         /**
@@ -768,7 +768,7 @@ class RemoteFilesystem
                 'verify_depth' => 7,
                 'SNI_enabled' => true,
                 'capture_peer_cert' => true,
-            )
+            ),
         );
 
         if (isset($options['ssl'])) {
@@ -969,7 +969,7 @@ class RemoteFilesystem
             'ssl' => array(
                 'capture_peer_cert' => true,
                 'verify_peer' => false, // Yes this is fucking insane! But PHP is lame.
-            ))
+            ), ),
         ));
 
         // Ideally this would just use stream_socket_client() to avoid sending a

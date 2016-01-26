@@ -24,5 +24,4 @@ class DefaultConfigTest extends \PHPUnit_Framework_TestCase
         $config = new Config;
         $this->assertFalse($config->get('disable-tls'));
     }
-
 }

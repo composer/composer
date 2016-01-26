@@ -18,7 +18,6 @@ use Composer\Config;
 use Composer\Util\Filesystem;
 use Composer\Util\Keys;
 use Composer\IO\IOInterface;
-use Composer\Util\RemoteFilesystem;
 use Composer\Downloader\FilesystemException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -232,6 +231,7 @@ TAGSPUBKEY
             if (!preg_match('{^-----BEGIN PUBLIC KEY-----$}', trim($value))) {
                 throw new \UnexpectedValueException('Invalid input');
             }
+
             return trim($value)."\n";
         };
 

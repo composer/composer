@@ -33,8 +33,9 @@ class SilencerTest extends \PHPUnit_Framework_TestCase
         Silencer::restore();
 
         // Check all parameters and return values are passed correctly in a silenced call.
-        $result = Silencer::call(function($a, $b, $c) {
+        $result = Silencer::call(function ($a, $b, $c) {
             @trigger_error('Test', E_USER_WARNING);
+
             return $a * $b * $c;
         }, 2, 3, 4);
         $this->assertEquals(24, $result);
@@ -50,7 +51,7 @@ class SilencerTest extends \PHPUnit_Framework_TestCase
     {
         $verification = microtime();
         $this->setExpectedException('\RuntimeException', $verification);
-        Silencer::call(function() use ($verification) {
+        Silencer::call(function () use ($verification) {
             throw new \RuntimeException($verification);
         });
     }

@@ -41,8 +41,8 @@ use Seld\JsonLint\JsonParser;
 class Factory
 {
     /**
-     * @return string
      * @throws \RuntimeException
+     * @return string
      */
     protected static function getHomeDir()
     {
@@ -115,7 +115,7 @@ class Factory
     }
 
     /**
-     * @param string $home
+     * @param  string $home
      * @return string
      */
     protected static function getDataDir($home)
@@ -140,7 +140,7 @@ class Factory
     }
 
     /**
-     * @param IOInterface|null $io
+     * @param  IOInterface|null $io
      * @return Config
      */
     public static function createConfig(IOInterface $io = null, $cwd = null)
@@ -569,9 +569,9 @@ class Factory
     }
 
     /**
-     * @param IOInterface   $io         IO instance
-     * @param Config        $config     Config instance
-     * @param array         $options    Array of options passed directly to RemoteFilesystem constructor
+     * @param  IOInterface      $io      IO instance
+     * @param  Config           $config  Config instance
+     * @param  array            $options Array of options passed directly to RemoteFilesystem constructor
      * @return RemoteFilesystem
      */
     public static function createRemoteFilesystem(IOInterface $io, Config $config = null, $options = array())
@@ -616,7 +616,7 @@ class Factory
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     private static function useXdg()
     {
@@ -630,8 +630,8 @@ class Factory
     }
 
     /**
-     * @return string
      * @throws \RuntimeException
+     * @return string
      */
     private static function getUserDir()
     {

@@ -747,6 +747,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $this->io->writeError('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
                 }
                 $this->degradedMode = true;
+
                 return true;
             }
         }

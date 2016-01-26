@@ -35,7 +35,7 @@ class GitLabDriverTest extends TestCase
         $this->config->merge(array(
             'config' => array(
                 'home' => $this->home,
-                'gitlab-domains' => array('mycompany.com/gitlab', 'gitlab.com')
+                'gitlab-domains' => array('mycompany.com/gitlab', 'gitlab.com'),
             ),
         ));
 

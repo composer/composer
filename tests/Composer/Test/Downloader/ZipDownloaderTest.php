@@ -18,7 +18,6 @@ use Composer\Util\Filesystem;
 
 class ZipDownloaderTest extends TestCase
 {
-
     /**
      * @var string
      */

@@ -332,11 +332,11 @@ EOT
             'disable-tls' => array($booleanValidator, $booleanNormalizer),
             'cafile' => array(
                 function ($val) { return file_exists($val) && is_readable($val); },
-                function ($val) { return $val === 'null' ? null : $val; }
+                function ($val) { return $val === 'null' ? null : $val; },
             ),
             'capath' => array(
                 function ($val) { return is_dir($val) && is_readable($val); },
-                function ($val) { return $val === 'null' ? null : $val; }
+                function ($val) { return $val === 'null' ? null : $val; },
             ),
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
         );

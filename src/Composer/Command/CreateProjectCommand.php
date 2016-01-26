@@ -36,7 +36,6 @@ use Symfony\Component\Finder\Finder;
 use Composer\Json\JsonFile;
 use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
-use Composer\Util\RemoteFilesystem;
 use Composer\Package\Version\VersionParser;
 
 /**

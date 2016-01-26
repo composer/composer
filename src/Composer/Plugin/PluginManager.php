@@ -127,6 +127,7 @@ class PluginManager
                 $this->io->writeError('<warning>The "' . $package->getName() . '" plugin requires composer-plugin-api 1.0.0, this *WILL* break in the future and it should be fixed ASAP (require ^1.0 for example).</warning>');
             } elseif (!$requiresComposer->matches($currentPluginApiConstraint)) {
                 $this->io->writeError('<warning>The "' . $package->getName() . '" plugin was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
+
                 return;
             }
         }
@@ -304,10 +305,10 @@ class PluginManager
     }
 
     /**
-     * @param PluginInterface $plugin
-     * @param string $capability
-     * @return null|string The fully qualified class of the implementation or null if Plugin is not of Capable type or does not provide it
+     * @param  PluginInterface   $plugin
+     * @param  string            $capability
      * @throws \RuntimeException On empty or non-string implementation class name value
+     * @return null|string       The fully qualified class of the implementation or null if Plugin is not of Capable type or does not provide it
      */
     protected function getCapabilityImplementationClassName(PluginInterface $plugin, $capability)
     {
@@ -330,11 +331,11 @@ class PluginManager
     }
 
     /**
-     * @param PluginInterface $plugin
-     * @param string $capabilityClassName The fully qualified name of the API interface which the plugin may provide
-     *                                    an implementation of.
-     * @param array $ctorArgs Arguments passed to Capability's constructor.
-     *                        Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @param  PluginInterface $plugin
+     * @param  string          $capabilityClassName The fully qualified name of the API interface which the plugin may provide
+     *                                              an implementation of.
+     * @param  array           $ctorArgs            Arguments passed to Capability's constructor.
+     *                                              Keeping it an array will allow future values to be passed w\o changing the signature.
      * @return null|Capability
      */
     public function getPluginCapability(PluginInterface $plugin, $capabilityClassName, array $ctorArgs = array())

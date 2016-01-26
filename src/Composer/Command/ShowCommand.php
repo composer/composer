@@ -458,7 +458,7 @@ EOT
     /**
      * Init styles for tree
      *
-     * @param  OutputInterface $output
+     * @param OutputInterface $output
      */
     protected function initStyles(OutputInterface $output)
     {
@@ -479,10 +479,10 @@ EOT
     /**
      * Display the tree
      *
-     * @param  PackageInterface|string $package
-     * @param  RepositoryInterface     $installedRepo
-     * @param  RepositoryInterface     $distantRepos
-     * @param  OutputInterface         $output
+     * @param PackageInterface|string $package
+     * @param RepositoryInterface     $installedRepo
+     * @param RepositoryInterface     $distantRepos
+     * @param OutputInterface         $output
      */
     protected function displayPackageTree(PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, OutputInterface $output)
     {
@@ -524,14 +524,14 @@ EOT
     /**
      * Display a package tree
      *
-     * @param  string                  $name
-     * @param  PackageInterface|string $package
-     * @param  RepositoryInterface     $installedRepo
-     * @param  RepositoryInterface     $distantRepos
-     * @param  array                   $packagesInTree
-     * @param  OutputInterface         $output
-     * @param  string                  $previousTreeBar
-     * @param  integer                 $level
+     * @param string                  $name
+     * @param PackageInterface|string $package
+     * @param RepositoryInterface     $installedRepo
+     * @param RepositoryInterface     $distantRepos
+     * @param array                   $packagesInTree
+     * @param OutputInterface         $output
+     * @param string                  $previousTreeBar
+     * @param int                     $level
      */
     protected function displayTree($name, $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, array $packagesInTree, OutputInterface $output, $previousTreeBar = '├', $level = 1)
     {
