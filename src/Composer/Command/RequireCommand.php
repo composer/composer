@@ -42,6 +42,7 @@ class RequireCommand extends InitCommand
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
+                new InputOption('no-plugins', null, InputOption::VALUE_NONE, 'Disables all plugins.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
@@ -93,7 +94,7 @@ EOT
         $composerDefinition = $json->read();
         $composerBackup = file_get_contents($json->getPath());
 
-        $composer = $this->getComposer();
+        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $repos = $composer->getRepositoryManager()->getRepositories();
 
         $platformOverrides = $composer->getConfig()->get('platform') ?: array();
@@ -143,7 +144,7 @@ EOT
 
         // Update packages
         $this->resetComposer();
-        $composer = $this->getComposer();
+        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
