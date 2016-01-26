@@ -208,21 +208,23 @@ class RemoteFilesystem
             $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
         }
 
-        if (isset($additionalOptions['retry-auth-failure'])) {
-            $this->retryAuthFailure = (bool) $additionalOptions['retry-auth-failure'];
+        $tempAdditionalOptions = $additionalOptions;
+        if (isset($tempAdditionalOptions['retry-auth-failure'])) {
+            $this->retryAuthFailure = (bool) $tempAdditionalOptions['retry-auth-failure'];
 
-            unset($additionalOptions['retry-auth-failure']);
+            unset($tempAdditionalOptions['retry-auth-failure']);
         }
 
         $isRedirect = false;
-        if (isset($additionalOptions['redirects'])) {
-            $this->redirects = $additionalOptions['redirects'];
+        if (isset($tempAdditionalOptions['redirects'])) {
+            $this->redirects = $tempAdditionalOptions['redirects'];
             $isRedirect = true;
 
-            unset($additionalOptions['redirects']);
+            unset($tempAdditionalOptions['redirects']);
         }
 
-        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        $options = $this->getOptionsForUrl($originUrl, $tempAdditionalOptions);
+        unset($tempAdditionalOptions);
         $userlandFollow = isset($options['http']['follow_location']) && !$options['http']['follow_location'];
 
         if ($this->io->isDebug()) {
@@ -422,7 +424,7 @@ class RemoteFilesystem
 
             $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
 
-            if (false !== $this->storeAuth) {
+            if ($this->storeAuth && $this->config) {
                 $authHelper = new AuthHelper($this->io, $this->config);
                 $authHelper->storeAuth($this->originUrl, $this->storeAuth);
                 $this->storeAuth = false;
