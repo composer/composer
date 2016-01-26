@@ -225,13 +225,11 @@ EOT
         chdir($oldCwd);
         $vendorComposerDir = $composer->getConfig()->get('vendor-dir').'/composer';
         if (is_dir($vendorComposerDir) && $fs->isDirEmpty($vendorComposerDir)) {
-            Silencer::suppress();
-            rmdir($vendorComposerDir);
+            Silencer::call('rmdir', $vendorComposerDir);
             $vendorDir = $composer->getConfig()->get('vendor-dir');
             if (is_dir($vendorDir) && $fs->isDirEmpty($vendorDir)) {
-                rmdir($vendorDir);
+                Silencer::call('rmdir', $vendorDir);
             }
-            Silencer::restore();
         }
 
         return 0;
