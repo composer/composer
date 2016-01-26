@@ -39,10 +39,10 @@ class LibraryInstallerTest extends TestCase
         $this->composer->setConfig($this->config);
 
         $this->rootDir = $this->getUniqueTmpDirectory();
-        $this->vendorDir = $this->rootDir.'/vendor';
+        $this->vendorDir = $this->rootDir.DIRECTORY_SEPARATOR.'vendor';
         $this->ensureDirectoryExistsAndClear($this->vendorDir);
 
-        $this->binDir = $this->rootDir.'/bin';
+        $this->binDir = $this->rootDir.DIRECTORY_SEPARATOR.'bin';
         $this->ensureDirectoryExistsAndClear($this->binDir);
 
         $this->config->merge(array(
