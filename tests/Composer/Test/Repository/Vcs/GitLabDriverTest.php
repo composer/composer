@@ -14,27 +14,40 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\GitLabDriver;
 use Composer\Config;
+use Composer\TestCase;
+use Composer\Util\Filesystem;
 
 /**
  * @author Jérôme Tamarelle <jerome@tamarelle.net>
  */
-class GitLabDriverTest extends \PHPUnit_Framework_TestCase
+class GitLabDriverTest extends TestCase
 {
+    private $home;
+    private $config;
+    private $io;
+    private $process;
+    private $remoteFilesystem;
+
     public function setUp()
     {
+        $this->home = $this->getUniqueTmpDirectory();
         $this->config = new Config();
         $this->config->merge(array(
             'config' => array(
-                'home' => sys_get_temp_dir().'/composer-test',
+                'home' => $this->home,
                 'gitlab-domains' => array('mycompany.com/gitlab', 'gitlab.com')
             ),
         ));
 
         $this->io = $this->prophesize('Composer\IO\IOInterface');
-
         $this->process = $this->prophesize('Composer\Util\ProcessExecutor');
-
         $this->remoteFilesystem = $this->prophesize('Composer\Util\RemoteFilesystem');
+    }
+
+    public function tearDown()
+    {
+        $fs = new Filesystem();
+        $fs->removeDirectory($this->home);
     }
 
     public function getInitializeUrls()

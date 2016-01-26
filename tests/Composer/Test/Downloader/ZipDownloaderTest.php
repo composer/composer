@@ -13,9 +13,10 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\ZipDownloader;
+use Composer\TestCase;
 use Composer\Util\Filesystem;
 
-class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
+class ZipDownloaderTest extends TestCase
 {
 
     /**
@@ -28,7 +29,8 @@ class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('zip extension missing');
         }
-        $this->testDir = sys_get_temp_dir().'/composer-zip-test-vendor';
+
+        $this->testDir = $this->getUniqueTmpDirectory();
     }
 
     public function tearDown()

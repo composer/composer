@@ -13,16 +13,17 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\HgDownloader;
+use Composer\TestCase;
 use Composer\Util\Filesystem;
 
-class HgDownloaderTest extends \PHPUnit_Framework_TestCase
+class HgDownloaderTest extends TestCase
 {
     /** @var string */
     private $workingDir;
 
     protected function setUp()
     {
-        $this->workingDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
+        $this->workingDir = $this->getUniqueTmpDirectory();
     }
 
     protected function tearDown()

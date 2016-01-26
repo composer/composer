@@ -14,9 +14,31 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\SvnDriver;
 use Composer\Config;
+use Composer\TestCase;
+use Composer\Util\Filesystem;
 
-class SvnDriverTest extends \PHPUnit_Framework_TestCase
+class SvnDriverTest extends TestCase
 {
+    protected $home;
+    protected $config;
+
+    public function setUp()
+    {
+        $this->home = $this->getUniqueTmpDirectory();
+        $this->config = new Config();
+        $this->config->merge(array(
+            'config' => array(
+                'home' => $this->home,
+            ),
+        ));
+    }
+
+    public function tearDown()
+    {
+        $fs = new Filesystem();
+        $fs->removeDirectory($this->home);
+    }
+
     /**
      * @expectedException RuntimeException
      */
@@ -39,17 +61,11 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
             ->method('execute')
             ->will($this->returnValue(0));
 
-        $config = new Config();
-        $config->merge(array(
-            'config' => array(
-                'home' => sys_get_temp_dir() . '/composer-test',
-            ),
-        ));
         $repoConfig = array(
             'url' => 'http://till:secret@corp.svn.local/repo',
         );
 
-        $svn = new SvnDriver($repoConfig, $console, $config, $process);
+        $svn = new SvnDriver($repoConfig, $console, $this->config, $process);
         $svn->initialize();
     }
 

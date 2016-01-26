@@ -14,9 +14,10 @@ namespace Composer\Test\Downloader;
 
 use Composer\Downloader\GitDownloader;
 use Composer\Config;
+use Composer\TestCase;
 use Composer\Util\Filesystem;
 
-class GitDownloaderTest extends \PHPUnit_Framework_TestCase
+class GitDownloaderTest extends TestCase
 {
     /** @var Filesystem */
     private $fs;
@@ -26,7 +27,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->fs = new Filesystem;
-        $this->workingDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
+        $this->workingDir = $this->getUniqueTmpDirectory();
     }
 
     protected function tearDown()
@@ -317,7 +318,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('execute')
             ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(1));
-        
+
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
         $downloader = $this->getDownloaderMock(null, new Config(), $processExecutor);
         $downloader->update($packageMock, $packageMock, $this->workingDir);

@@ -13,8 +13,9 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\PearPackageExtractor;
+use Composer\TestCase;
 
-class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
+class PearPackageExtractorTest extends TestCase
 {
     public function testShouldExtractPackage_1_0()
     {
@@ -122,7 +123,7 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
 
     public function testShouldPerformReplacements()
     {
-        $from = tempnam(sys_get_temp_dir(), 'pear-extract');
+        $from = tempnam($this->getUniqueTmpDirectory(), 'pear-extract');
         $to = $from.'-to';
 
         $original = 'replaced: @placeholder@; not replaced: @another@; replaced again: @placeholder@';
