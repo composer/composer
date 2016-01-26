@@ -101,6 +101,9 @@ class PathRepositoryTest extends TestCase
 
         $package = $packages[0];
         $this->assertEquals('test/path-versioned', $package->getName());
-        $this->assertEquals(rtrim($relativeUrl, DIRECTORY_SEPARATOR), rtrim($package->getDistUrl(), DIRECTORY_SEPARATOR));
+
+        // Convert platform specific separators back to generic URL slashes
+        $relativeUrl = str_replace(DIRECTORY_SEPARATOR, '/', $relativeUrl);
+        $this->assertEquals(rtrim($relativeUrl, '/'), rtrim($package->getDistUrl(), '/'));
     }
 }
