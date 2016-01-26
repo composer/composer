@@ -60,22 +60,32 @@ abstract class BaseIO implements IOInterface
      */
     public function loadConfiguration(Config $config)
     {
-        // Use COMPOSER_AUTH environment variable if set
-        if ($envvar_data = getenv('COMPOSER_AUTH')) {
-            $auth_data = json_decode($envvar_data);
+        $githubOauth = $config->get('github-oauth');
+        $gitlabOauth = $config->get('gitlab-oauth');
+        $httpBasic = $config->get('http-basic');
 
-            if (is_null($auth_data)) {
+        // Use COMPOSER_AUTH environment variable if set
+        if ($composerAuthEnv = getenv('COMPOSER_AUTH')) {
+            $authData = json_decode($composerAuthEnv, true);
+
+            if (is_null($authData)) {
                 throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed');
             }
 
-            foreach ($auth_data as $domain => $credentials) {
-                $this->setAuthentication($domain, $credentials->username, $credentials->password);
+            if (isset($authData['github-oauth'])) {
+                $githubOauth = array_merge($githubOauth, $authData['github-oauth']);
+            }
+            if (isset($authData['gitlab-oauth'])) {
+                $gitlabOauth = array_merge($gitlabOauth, $authData['gitlab-oauth']);
+            }
+            if (isset($authData['http-basic'])) {
+                $httpBasic = array_merge($httpBasic, $authData['http-basic']);
             }
         }
 
         // reload oauth token from config if available
-        if ($tokens = $config->get('github-oauth')) {
-            foreach ($tokens as $domain => $token) {
+        if ($githubOauth) {
+            foreach ($githubOauth as $domain => $token) {
                 if (!preg_match('{^[a-z0-9]+$}', $token)) {
                     throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
                 }
@@ -83,15 +93,15 @@ abstract class BaseIO implements IOInterface
             }
         }
 
-        if ($tokens = $config->get('gitlab-oauth')) {
-            foreach ($tokens as $domain => $token) {
+        if ($gitlabOauth) {
+            foreach ($gitlabOauth as $domain => $token) {
                 $this->setAuthentication($domain, $token, 'oauth2');
             }
         }
 
         // reload http basic credentials from config if available
-        if ($creds = $config->get('http-basic')) {
-            foreach ($creds as $domain => $cred) {
+        if ($httpBasic) {
+            foreach ($httpBasic as $domain => $cred) {
                 $this->setAuthentication($domain, $cred['username'], $cred['password']);
             }
         }

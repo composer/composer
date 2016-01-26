@@ -717,6 +717,13 @@ commands) to finish executing. The default value is 300 seconds (5 minutes).
 By setting this environmental value, you can set a path to a certificate bundle
 file to be used during SSL/TLS peer verification.
 
+### COMPOSER_AUTH
+
+The `COMPOSER_AUTH` var allows you to set up authentication as an environment variable.
+The contents of the variable should be a JSON formatted object containing http-basic,
+github-oauth, ... objects as needed, and following the
+[spec from the config](06-config.md#gitlab-oauth).
+
 ### COMPOSER_DISCARD_CHANGES
 
 This env var controls the [`discard-changes`](06-config.md#discard-changes) config option.
