@@ -64,7 +64,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         do {
             $unique = $root . DIRECTORY_SEPARATOR . uniqid('composer-test-');
             if (!file_exists($unique) && mkdir($unique, 0777)) {
-                return $unique;
+                return realpath($unique);
             }
         } while (--$attempts);
 
