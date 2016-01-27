@@ -159,9 +159,7 @@ class InstallerTest extends TestCase
             ->will($this->returnCallback($callback));
 
         // Prepare for exceptions
-        if (is_int($expectResult) || ctype_digit($expectResult)) {
-            $expectResult = (int) $expectResult;
-        } else {
+        if (!is_int($expectResult)) {
             $normalizedOutput = rtrim(str_replace("\n", PHP_EOL, $expect));
             $this->setExpectedException($expectResult, $normalizedOutput);
         }
