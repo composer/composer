@@ -159,108 +159,108 @@ class InstallerTest extends TestCase
             ->will($this->returnCallback($callback));
 
         // Prepare for exceptions
-        try {
-            $composer = FactoryMock::create($io, $composerConfig);
-
-            $jsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
-            $jsonMock->expects($this->any())
-                ->method('read')
-                ->will($this->returnValue($installed));
-            $jsonMock->expects($this->any())
-                ->method('exists')
-                ->will($this->returnValue(true));
-
-            $repositoryManager = $composer->getRepositoryManager();
-            $repositoryManager->setLocalRepository(new InstalledFilesystemRepositoryMock($jsonMock));
-
-            $lockJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
-            $lockJsonMock->expects($this->any())
-                ->method('read')
-                ->will($this->returnValue($lock));
-            $lockJsonMock->expects($this->any())
-                ->method('exists')
-                ->will($this->returnValue(true));
-
-            if ($expectLock) {
-                $actualLock = array();
-                $lockJsonMock->expects($this->atLeastOnce())
-                    ->method('write')
-                    ->will($this->returnCallback(function ($hash, $options) use (&$actualLock) {
-                        // need to do assertion outside of mock for nice phpunit output
-                        // so store value temporarily in reference for later assetion
-                        $actualLock = $hash;
-                    }));
-            }
-
-            $contents = json_encode($composerConfig);
-            $locker   = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), $contents);
-            $composer->setLocker($locker);
-
-            $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
-            $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator', array(), array($eventDispatcher));
-            $composer->setAutoloadGenerator($autoloadGenerator);
-            $composer->setEventDispatcher($eventDispatcher);
-
-            $installer = Installer::create($io, $composer);
-
-            $application = new Application;
-            $application->get('install')->setCode(function ($input, $output) use ($installer) {
-                $installer
-                    ->setDevMode(!$input->getOption('no-dev'))
-                    ->setDryRun($input->getOption('dry-run'))
-                    ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
-
-                return $installer->run();
-            });
-
-            $application->get('update')->setCode(function ($input, $output) use ($installer) {
-                $installer
-                    ->setDevMode(!$input->getOption('no-dev'))
-                    ->setUpdate(true)
-                    ->setDryRun($input->getOption('dry-run'))
-                    ->setUpdateWhitelist($input->getArgument('packages'))
-                    ->setWhitelistDependencies($input->getOption('with-dependencies'))
-                    ->setPreferStable($input->getOption('prefer-stable'))
-                    ->setPreferLowest($input->getOption('prefer-lowest'))
-                    ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
-
-                return $installer->run();
-            });
-
-            if (!preg_match('{^(install|update)\b}', $run)) {
-                throw new \UnexpectedValueException('The run command only supports install and update');
-            }
-
-            $application->setAutoExit(false);
-            $appOutput = fopen('php://memory', 'w+');
-            $result = $application->run(new StringInput($run), new StreamOutput($appOutput));
-            fseek($appOutput, 0);
-            $this->assertEquals($expectExitCode, $result, $output . stream_get_contents($appOutput));
-
-            if ($expectLock) {
-                unset($actualLock['hash']);
-                unset($actualLock['content-hash']);
-                unset($actualLock['_readme']);
-                $this->assertEquals($expectLock, $actualLock);
-            }
-
-            $installationManager = $composer->getInstallationManager();
-            $this->assertSame(rtrim($expect), implode("\n", $installationManager->getTrace()));
-
-            if ($expectOutput) {
-                $this->assertEquals(rtrim($expectOutput), rtrim($output));
-            }
+        if (is_int($expectExitCode) || ctype_digit($expectExitCode)) {
+            $expectExitCode = (int) $expectExitCode;
+        } else {
+            $normalizedOutput = rtrim(str_replace("\n", PHP_EOL, $expect));
+            $this->setExpectedException($expectExitCode, $normalizedOutput);
         }
-        catch(\Exception $e) {
-            // Exception was thrown during execution
-            if (!$expect || !$expectOutput) {
-                throw $e;
-            }
-            $this->assertEquals('EXCEPTION', rtrim($expect));
-            $normalizedOutput = rtrim(str_replace("\n", PHP_EOL, $expectOutput));
-            $this->assertEquals($normalizedOutput, rtrim($e->getMessage()));
+
+        // Create Composer mock object according to configuration
+        $composer = FactoryMock::create($io, $composerConfig);
+
+        $jsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
+        $jsonMock->expects($this->any())
+            ->method('read')
+            ->will($this->returnValue($installed));
+        $jsonMock->expects($this->any())
+            ->method('exists')
+            ->will($this->returnValue(true));
+
+        $repositoryManager = $composer->getRepositoryManager();
+        $repositoryManager->setLocalRepository(new InstalledFilesystemRepositoryMock($jsonMock));
+
+        $lockJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
+        $lockJsonMock->expects($this->any())
+            ->method('read')
+            ->will($this->returnValue($lock));
+        $lockJsonMock->expects($this->any())
+            ->method('exists')
+            ->will($this->returnValue(true));
+
+        if ($expectLock) {
+            $actualLock = array();
+            $lockJsonMock->expects($this->atLeastOnce())
+                ->method('write')
+                ->will($this->returnCallback(function ($hash, $options) use (&$actualLock) {
+                    // need to do assertion outside of mock for nice phpunit output
+                    // so store value temporarily in reference for later assetion
+                    $actualLock = $hash;
+                }));
         }
-        return;
+
+        $contents = json_encode($composerConfig);
+        $locker   = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), $contents);
+        $composer->setLocker($locker);
+
+        $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
+        $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator', array(), array($eventDispatcher));
+        $composer->setAutoloadGenerator($autoloadGenerator);
+        $composer->setEventDispatcher($eventDispatcher);
+
+        $installer = Installer::create($io, $composer);
+
+        $application = new Application;
+        $application->get('install')->setCode(function ($input, $output) use ($installer) {
+            $installer
+                ->setDevMode(!$input->getOption('no-dev'))
+                ->setDryRun($input->getOption('dry-run'))
+                ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
+
+            return $installer->run();
+        });
+
+        $application->get('update')->setCode(function ($input, $output) use ($installer) {
+            $installer
+                ->setDevMode(!$input->getOption('no-dev'))
+                ->setUpdate(true)
+                ->setDryRun($input->getOption('dry-run'))
+                ->setUpdateWhitelist($input->getArgument('packages'))
+                ->setWhitelistDependencies($input->getOption('with-dependencies'))
+                ->setPreferStable($input->getOption('prefer-stable'))
+                ->setPreferLowest($input->getOption('prefer-lowest'))
+                ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
+
+            return $installer->run();
+        });
+
+        if (!preg_match('{^(install|update)\b}', $run)) {
+            throw new \UnexpectedValueException('The run command only supports install and update');
+        }
+
+        $application->setAutoExit(false);
+        $appOutput = fopen('php://memory', 'w+');
+        $result = $application->run(new StringInput($run), new StreamOutput($appOutput));
+        fseek($appOutput, 0);
+        if (!is_int($expectExitCode)) {
+            // Shouldn't check output and results if an exception was expected by this point
+            return;
+        }
+
+        $this->assertEquals($expectExitCode, $result, $output . stream_get_contents($appOutput));
+        if ($expectLock) {
+            unset($actualLock['hash']);
+            unset($actualLock['content-hash']);
+            unset($actualLock['_readme']);
+            $this->assertEquals($expectLock, $actualLock);
+        }
+
+        $installationManager = $composer->getInstallationManager();
+        $this->assertSame(rtrim($expect), implode("\n", $installationManager->getTrace()));
+
+        if ($expectOutput) {
+            $this->assertEquals(rtrim($expectOutput), rtrim($output));
+        }
     }
 
     public function getIntegrationTests()
@@ -316,7 +316,7 @@ class InstallerTest extends TestCase
                 }
                 $expectOutput = isset($testData['EXPECT-OUTPUT']) ? $testData['EXPECT-OUTPUT'] : null;
                 $expect = $testData['EXPECT'];
-                $expectExitCode = isset($testData['EXPECT-EXIT-CODE']) ? (int) $testData['EXPECT-EXIT-CODE'] : 0;
+                $expectExitCode = isset($testData['EXPECT-EXIT-CODE']) ? $testData['EXPECT-EXIT-CODE'] : 0;
             } catch (\Exception $e) {
                 die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
             }

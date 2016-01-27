@@ -9,8 +9,8 @@ Tries to require a package with the same name as the root package
 }
 --RUN--
 install
---EXPECT-OUTPUT--
+--EXPECT-EXIT-CODE--
+InvalidArgumentException
+--EXPECT--
 Root package 'foo/bar' cannot require itself in its composer.json
 Did you accidentally name your root package after an external package?
---EXPECT--
-EXCEPTION
