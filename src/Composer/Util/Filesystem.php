@@ -14,6 +14,7 @@ namespace Composer\Util;
 
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -579,6 +580,24 @@ class Filesystem
         }
 
         return $resolved;
+    }
+
+    /**
+     * Creates an NTFS junction.
+     *
+     * @param string $originDir
+     * @param string $targetDir
+     */
+    public function junction($originDir, $targetDir)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $cmd = sprintf('mklink /J %s %s',
+                           ProcessExecutor::escape(str_replace('/', DIRECTORY_SEPARATOR, $targetDir)),
+                           ProcessExecutor::escape(realpath($originDir)));
+            if ($this->getProcess()->execute($cmd, $output) === 0)
+                return;
+        }
+        throw new IOException(sprintf('Failed to create symbolic link from "%s" to "%s".', $originDir, $targetDir), 0, null, $targetDir);
     }
 
     /**

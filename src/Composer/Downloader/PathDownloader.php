@@ -48,9 +48,16 @@ class PathDownloader extends FileDownloader
         }
 
         try {
-            $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
-            $fileSystem->symlink($shortestPath, $path);
-            $this->io->writeError(sprintf('    Symlinked from %s', $url));
+            if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                // Implement symlinks as junctions on Windows, with magic shell hackery
+                $this->filesystem->junction($realUrl, $path);
+                $this->io->writeError(sprintf('    Junctioned from %s', $url));
+
+            } else {
+                $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
+                $fileSystem->symlink($shortestPath, $path);
+                $this->io->writeError(sprintf('    Symlinked from %s', $url));
+            }
         } catch (IOException $e) {
             $fileSystem->mirror($realUrl, $path);
             $this->io->writeError(sprintf('    Mirrored from %s', $url));
