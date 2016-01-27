@@ -576,9 +576,8 @@ EOT
 
                     case 'openssl_version':
                         // Attempt to parse version number out, fallback to whole string value.
-                        $opensslVersion = trim(strstr(OPENSSL_VERSION_TEXT, ' '));
-                        $opensslVersion = substr($opensslVersion, 0, strpos($opensslVersion, ' '));
-                        $opensslVersion = $opensslVersion ? $opensslVersion : OPENSSL_VERSION_TEXT;
+                        $opensslVersion = strstr(trim(strstr(OPENSSL_VERSION_TEXT, ' ')), ' ', true);
+                        $opensslVersion = $opensslVersion ?: OPENSSL_VERSION_TEXT;
 
                         $text = "The OpenSSL library ({$opensslVersion}) used by PHP does not support TLSv1.2 or TLSv1.1.".PHP_EOL;
                         $text .= "If possible you should upgrade OpenSSL to version 1.0.1 or above.";
