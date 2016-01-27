@@ -98,6 +98,10 @@ class Filesystem
             return $this->unlinkSymlinkedDirectory($directory);
         }
 
+        if ($this->isJunction($directory)) {
+            return $this->removeJunction($directory);
+        }
+
         if (!file_exists($directory) || !is_dir($directory)) {
             return true;
         }
@@ -575,5 +579,37 @@ class Filesystem
         }
 
         return $resolved;
+    }
+
+    /**
+     * Returns whether the target directory is a Windows NTFS Junction.
+     *
+     * @param string $junction Path to check.
+     * @return bool
+     */
+    public function isJunction($junction)
+    {
+        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return false;
+        }
+        $normalized = rtrim(str_replace('/', DIRECTORY_SEPARATOR, $junction), DIRECTORY_SEPARATOR);
+        $real = rtrim(realpath($normalized), DIRECTORY_SEPARATOR);
+        return is_dir($normalized) && ($normalized !== $real);
+    }
+
+    /**
+     * Removes a Windows NTFS junction.
+     *
+     * @param string $junction
+     * @return bool
+     */
+    public function removeJunction($junction)
+    {
+        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return false;
+        }
+        $junction = rtrim(str_replace('/', DIRECTORY_SEPARATOR, $junction), DIRECTORY_SEPARATOR);
+        $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape($junction));
+        return $this->getProcess()->execute($cmd, $output) === 0;
     }
 }
