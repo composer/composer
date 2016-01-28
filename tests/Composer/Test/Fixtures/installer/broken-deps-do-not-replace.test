@@ -21,9 +21,9 @@ Broken dependencies should not lead to a replacer being installed which is not m
 --RUN--
 install
 --EXPECT-OUTPUT--
-<info>Loading composer repositories with package information</info>
-<info>Installing dependencies (including require-dev)</info>
-<error>Your requirements could not be resolved to an installable set of packages.</error>
+Loading composer repositories with package information
+Installing dependencies (including require-dev)
+Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - c/c 1.0.0 requires x/x 1.0 -> no matching package found.

@@ -21,6 +21,12 @@ use Composer\Config;
  */
 interface IOInterface
 {
+    const QUIET = 1;
+    const NORMAL = 2;
+    const VERBOSE = 4;
+    const VERY_VERBOSE = 8;
+    const DEBUG = 16;
+
     /**
      * Is this input means interactive?
      *
@@ -59,36 +65,40 @@ interface IOInterface
     /**
      * Writes a message to the output.
      *
-     * @param string|array $messages The message as an array of lines or a single string
-     * @param bool         $newline  Whether to add a newline or not
+     * @param string|array $messages  The message as an array of lines or a single string
+     * @param bool         $newline   Whether to add a newline or not
+     * @param int          $verbosity Verbosity level from the VERBOSITY_* constants
      */
-    public function write($messages, $newline = true);
+    public function write($messages, $newline = true, $verbosity = self::NORMAL);
 
     /**
      * Writes a message to the error output.
      *
-     * @param string|array $messages The message as an array of lines or a single string
-     * @param bool         $newline  Whether to add a newline or not
+     * @param string|array $messages  The message as an array of lines or a single string
+     * @param bool         $newline   Whether to add a newline or not
+     * @param int          $verbosity Verbosity level from the VERBOSITY_* constants
      */
-    public function writeError($messages, $newline = true);
+    public function writeError($messages, $newline = true, $verbosity = self::NORMAL);
 
     /**
      * Overwrites a previous message to the output.
      *
-     * @param string|array $messages The message as an array of lines or a single string
-     * @param bool         $newline  Whether to add a newline or not
-     * @param int          $size     The size of line
+     * @param string|array $messages  The message as an array of lines or a single string
+     * @param bool         $newline   Whether to add a newline or not
+     * @param int          $size      The size of line
+     * @param int          $verbosity Verbosity level from the VERBOSITY_* constants
      */
-    public function overwrite($messages, $newline = true, $size = null);
+    public function overwrite($messages, $newline = true, $size = null, $verbosity = self::NORMAL);
 
     /**
      * Overwrites a previous message to the error output.
      *
-     * @param string|array $messages The message as an array of lines or a single string
-     * @param bool         $newline  Whether to add a newline or not
-     * @param int          $size     The size of line
+     * @param string|array $messages  The message as an array of lines or a single string
+     * @param bool         $newline   Whether to add a newline or not
+     * @param int          $size      The size of line
+     * @param int          $verbosity Verbosity level from the VERBOSITY_* constants
      */
-    public function overwriteError($messages, $newline = true, $size = null);
+    public function overwriteError($messages, $newline = true, $size = null, $verbosity = self::NORMAL);
 
     /**
      * Asks a question to the user.

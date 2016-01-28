@@ -268,9 +268,7 @@ class GitHubDriver extends VcsDriver
         }
 
         if (!extension_loaded('openssl')) {
-            if ($io->isVerbose()) {
-                $io->writeError('Skipping GitHub driver for '.$url.' because the OpenSSL PHP extension is missing.');
-            }
+            $io->writeError('Skipping GitHub driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
 
             return false;
         }

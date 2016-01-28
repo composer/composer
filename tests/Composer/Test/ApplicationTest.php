@@ -14,6 +14,7 @@ namespace Composer\Test;
 
 use Composer\Console\Application;
 use Composer\TestCase;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class ApplicationTest extends TestCase
 {
@@ -31,9 +32,17 @@ class ApplicationTest extends TestCase
         $index = 0;
         if (extension_loaded('xdebug')) {
             $outputMock->expects($this->at($index++))
+                ->method("getVerbosity")
+                ->willReturn(OutputInterface::VERBOSITY_NORMAL);
+
+            $outputMock->expects($this->at($index++))
                 ->method("write")
                 ->with($this->equalTo('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>'));
         }
+
+        $outputMock->expects($this->at($index++))
+            ->method("getVerbosity")
+            ->willReturn(OutputInterface::VERBOSITY_NORMAL);
 
         $outputMock->expects($this->at($index++))
             ->method("write")

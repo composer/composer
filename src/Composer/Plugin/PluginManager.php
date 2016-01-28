@@ -206,9 +206,7 @@ class PluginManager
      */
     private function addPlugin(PluginInterface $plugin)
     {
-        if ($this->io->isDebug()) {
-            $this->io->writeError('Loading plugin '.get_class($plugin));
-        }
+        $this->io->writeError('Loading plugin '.get_class($plugin), true, IOInterface::DEBUG);
         $this->plugins[] =  $plugin;
         $plugin->activate($this->composer, $this->io);
 

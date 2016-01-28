@@ -293,14 +293,10 @@ class Factory
         $config = static::createConfig($io, $cwd);
         $config->merge($localConfig);
         if (isset($composerFile)) {
-            if ($io && $io->isDebug()) {
-                $io->writeError('Loading config file ' . $composerFile);
-            }
+            $io->writeError('Loading config file ' . $composerFile, true, IOInterface::DEBUG);
             $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json');
             if ($localAuthFile->exists()) {
-                if ($io && $io->isDebug()) {
-                    $io->writeError('Loading config file ' . $localAuthFile->getPath());
-                }
+                $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 $config->merge(array('config' => $localAuthFile->read()));
                 $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
@@ -435,9 +431,7 @@ class Factory
         try {
             $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), false);
         } catch (\Exception $e) {
-            if ($io->isDebug()) {
-                $io->writeError('Failed to initialize global composer: '.$e->getMessage());
-            }
+            $io->writeError('Failed to initialize global composer: '.$e->getMessage(), true, IOInterface::DEBUG);
         }
 
         return $composer;
