@@ -594,10 +594,10 @@ class Filesystem
             $cmd = sprintf('mklink /J %s %s',
                            ProcessExecutor::escape(str_replace('/', DIRECTORY_SEPARATOR, $targetDir)),
                            ProcessExecutor::escape(realpath($originDir)));
-            if ($this->getProcess()->execute($cmd, $output) === 0)
+            if ($this->getProcess()->execute($cmd) === 0)
                 return;
         }
-        throw new IOException(sprintf('Failed to create symbolic link from "%s" to "%s".', $originDir, $targetDir), 0, null, $targetDir);
+        throw new IOException(sprintf('Failed to create junction from "%s" to "%s".', $originDir, $targetDir), 0, null, $targetDir);
     }
 
     /**
@@ -629,6 +629,6 @@ class Filesystem
         }
         $junction = rtrim(str_replace('/', DIRECTORY_SEPARATOR, $junction), DIRECTORY_SEPARATOR);
         $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape($junction));
-        return $this->getProcess()->execute($cmd, $output) === 0;
+        return $this->getProcess()->execute($cmd) === 0;
     }
 }
