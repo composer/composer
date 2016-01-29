@@ -199,7 +199,7 @@ class Factory
             }
 
             if ($io && $io->isDebug()) {
-                $io->writeError('Loading auth config from COMPOESR_AUTH');
+                $io->writeError('Loading auth config from COMPOSER_AUTH');
             }
             $config->merge(array('config' => $authData));
         }
