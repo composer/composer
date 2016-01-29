@@ -57,7 +57,7 @@ EOT
 
         $filter = $input->getArgument('packages');
 
-        // First assemble list of packages that are installed, replaced or provided
+        // First assemble lookup list of packages that are installed, replaced or provided
         $installed = array();
         foreach($packages as $package) {
             $installed[] = $package['name'];
@@ -70,19 +70,23 @@ EOT
                 $installed = array_merge($installed, array_keys($package['replace']));
             }
         }
-        sort($installed);
-        $installed = array_unique($installed);
+
+        // Undub and sort the install list into a sorted lookup array
+        $installed = array_flip($installed);
+        ksort($installed);
 
         // Next gather all suggestions that are not in that list
         $suggesters = array();
         $suggested = array();
         foreach ($packages as $package) {
-            if ((empty($filter) || in_array($package['name'], $filter)) && !empty($package['suggest'])) {
-                foreach ($package['suggest'] as $suggestion => $reason) {
-                    if (!in_array($suggestion, $installed)) {
-                        $suggesters[$package['name']][$suggestion] = $reason;
-                        $suggested[$suggestion][$package['name']] = $reason;
-                    }
+            $packageName = $package['name'];
+            if ((!empty($filter) && !in_array($packageName, $filter)) || empty($package['suggest'])) {
+                continue;
+            }
+            foreach ($package['suggest'] as $suggestion => $reason) {
+                if (!isset($installed[$suggestion])) {
+                    $suggesters[$packageName][$suggestion] = $reason;
+                    $suggested[$suggestion][$packageName] = $reason;
                 }
             }
         }
@@ -103,7 +107,7 @@ EOT
         }
 
         // Simple mode
-        if ($mode == 0) {
+        if ($mode === 0) {
             foreach (array_keys($suggested) as $suggestion) {
                 $io->write(sprintf('<info>%s</info>', $suggestion));
             }
