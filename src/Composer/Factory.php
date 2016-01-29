@@ -190,6 +190,20 @@ class Factory
         }
         $config->setAuthConfigSource(new JsonConfigSource($file, true));
 
+        // load COMPOSER_AUTH environment variable if set
+        if ($composerAuthEnv = getenv('COMPOSER_AUTH')) {
+            $authData = json_decode($composerAuthEnv, true);
+
+            if (is_null($authData)) {
+                throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed, should be a valid JSON object');
+            }
+
+            if ($io && $io->isDebug()) {
+                $io->writeError('Loading auth config from COMPOESR_AUTH');
+            }
+            $config->merge(array('config' => $authData));
+        }
+
         return $config;
     }
 

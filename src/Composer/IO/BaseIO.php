@@ -64,46 +64,21 @@ abstract class BaseIO implements IOInterface
         $gitlabOauth = $config->get('gitlab-oauth') ?: array();
         $httpBasic = $config->get('http-basic') ?: array();
 
-        // Use COMPOSER_AUTH environment variable if set
-        if ($composerAuthEnv = getenv('COMPOSER_AUTH')) {
-            $authData = json_decode($composerAuthEnv, true);
-
-            if (is_null($authData)) {
-                throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed');
-            }
-
-            if (isset($authData['github-oauth'])) {
-                $githubOauth = array_merge($githubOauth, $authData['github-oauth']);
-            }
-            if (isset($authData['gitlab-oauth'])) {
-                $gitlabOauth = array_merge($gitlabOauth, $authData['gitlab-oauth']);
-            }
-            if (isset($authData['http-basic'])) {
-                $httpBasic = array_merge($httpBasic, $authData['http-basic']);
-            }
-        }
-
         // reload oauth token from config if available
-        if ($githubOauth) {
-            foreach ($githubOauth as $domain => $token) {
-                if (!preg_match('{^[a-z0-9]+$}', $token)) {
-                    throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
-                }
-                $this->setAuthentication($domain, $token, 'x-oauth-basic');
+        foreach ($githubOauth as $domain => $token) {
+            if (!preg_match('{^[a-z0-9]+$}', $token)) {
+                throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
             }
+            $this->setAuthentication($domain, $token, 'x-oauth-basic');
         }
 
-        if ($gitlabOauth) {
-            foreach ($gitlabOauth as $domain => $token) {
-                $this->setAuthentication($domain, $token, 'oauth2');
-            }
+        foreach ($gitlabOauth as $domain => $token) {
+            $this->setAuthentication($domain, $token, 'oauth2');
         }
 
         // reload http basic credentials from config if available
-        if ($httpBasic) {
-            foreach ($httpBasic as $domain => $cred) {
-                $this->setAuthentication($domain, $cred['username'], $cred['password']);
-            }
+        foreach ($httpBasic as $domain => $cred) {
+            $this->setAuthentication($domain, $cred['username'], $cred['password']);
         }
 
         // setup process timeout
