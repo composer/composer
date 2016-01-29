@@ -60,9 +60,9 @@ abstract class BaseIO implements IOInterface
      */
     public function loadConfiguration(Config $config)
     {
-        $githubOauth = $config->get('github-oauth');
-        $gitlabOauth = $config->get('gitlab-oauth');
-        $httpBasic = $config->get('http-basic');
+        $githubOauth = $config->get('github-oauth') ?: array();
+        $gitlabOauth = $config->get('gitlab-oauth') ?: array();
+        $httpBasic = $config->get('http-basic') ?: array();
 
         // Use COMPOSER_AUTH environment variable if set
         if ($composerAuthEnv = getenv('COMPOSER_AUTH')) {
