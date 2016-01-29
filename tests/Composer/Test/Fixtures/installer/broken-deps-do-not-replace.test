@@ -33,7 +33,7 @@ install
 Potential causes:
  - A typo in the package name
  - The package is not available in a stable-enough version according to your minimum-stability setting
-   see <https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion> for more details.
+   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.
 
 Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
 
