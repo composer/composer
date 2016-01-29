@@ -14,6 +14,9 @@ namespace Composer\Command;
 
 use Composer\Factory;
 use Composer\Package\Loader\ValidatingArrayLoader;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
+use Composer\Script\ScriptEvents;
 use Composer\Util\ConfigValidator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -110,6 +113,10 @@ EOT
                 }
             }
         }
+
+        $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'validate', $input, $output);
+        $eventCode = $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+        $exitCode = max($eventCode, $exitCode);
 
         return $exitCode;
     }
