@@ -29,6 +29,21 @@ class PathDownloader extends FileDownloader
      */
     public function download(PackageInterface $package, $path)
     {
+        $url = $package->getDistUrl();
+        $realUrl = realpath($url);
+        if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
+            throw new \RuntimeException(sprintf(
+                'Source path "%s" is not found for package %s', $url, $package->getName()
+            ));
+        }
+
+        if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
+            throw new \RuntimeException(sprintf(
+                'Package %s cannot install to "%s" inside its source at "%s"',
+                $package->getName(), realpath($path), $realUrl
+            ));
+        }
+
         $fileSystem = new Filesystem();
         $this->filesystem->removeDirectory($path);
 
@@ -37,15 +52,6 @@ class PathDownloader extends FileDownloader
             $package->getName(),
             $package->getFullPrettyVersion()
         ));
-
-        $url = $package->getDistUrl();
-        $realUrl = realpath($url);
-        if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
-            throw new \RuntimeException(sprintf(
-                'Path "%s" is not found',
-                $url
-            ));
-        }
 
         try {
             $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
