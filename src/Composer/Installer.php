@@ -1199,6 +1199,7 @@ class Installer
 
                     foreach ($requirePackages as $requirePackage) {
                         if (isset($skipPackages[$requirePackage->getName()])) {
+                            $this->io->writeError('<warning>Dependency "' . $requirePackage->getName() . '" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>');
                             continue;
                         }
                         $packageQueue->enqueue($requirePackage);
