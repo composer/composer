@@ -59,7 +59,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 // move files back out of the temp dir
                 foreach ($contentDir as $file) {
                     $file = (string) $file;
-                    $this->findEmptyFolders($file);
+                    $this->keepEmptyFolders($file);
                     $this->filesystem->rename($file, $path . '/' . basename($file));
                 }
 
@@ -161,7 +161,7 @@ abstract class ArchiveDownloader extends FileDownloader
      *
      * @param string $file
      */
-    private function findEmptyFolders($file) {
+    private function keepEmptyFolders($file) {
         // Check if file is a directory
         if(is_dir($file)) {
             $directoryContent = scandir($file);
@@ -172,7 +172,7 @@ abstract class ArchiveDownloader extends FileDownloader
             } else {
                 foreach ($directoryContent as $subPath) {
                     if($subPath !== '.' && $subPath !== '..') {
-                        $this->findEmptyFolders($file.'/'.$subPath);
+                        $this->keepEmptyFolders($file.'/'.$subPath);
                     }
                 }
             }
