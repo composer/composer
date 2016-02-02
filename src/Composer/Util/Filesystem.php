@@ -585,19 +585,23 @@ class Filesystem
     /**
      * Creates an NTFS junction.
      *
-     * @param string $originDir
-     * @param string $targetDir
+     * @param string $target
+     * @param string $junction
      */
-    public function junction($originDir, $targetDir)
+    public function junction($target, $junction)
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $cmd = sprintf('mklink /J %s %s',
-                           ProcessExecutor::escape(str_replace('/', DIRECTORY_SEPARATOR, $targetDir)),
-                           ProcessExecutor::escape(realpath($originDir)));
-            if ($this->getProcess()->execute($cmd) === 0)
-                return;
+        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+            throw new \LogicException(sprintf('Function %s is not available on non-Windows platform', __CLASS__));
         }
-        throw new IOException(sprintf('Failed to create junction from "%s" to "%s".', $originDir, $targetDir), 0, null, $targetDir);
+        if (!is_dir($target)) {
+            throw new IOException(sprintf('Cannot junction to "%s" as it is not a directory.', $target), 0, null, $target);
+        }
+        $cmd = sprintf('mklink /J %s %s',
+                       ProcessExecutor::escape(str_replace('/', DIRECTORY_SEPARATOR, $junction)),
+                       ProcessExecutor::escape(realpath($target)));
+        if ($this->getProcess()->execute($cmd, $output) !== 0) {
+            throw new IOException(sprintf('Failed to create junction to "%s" at "%s".', $target, $junction), 0, null, $target);
+        }
     }
 
     /**
@@ -611,9 +615,12 @@ class Filesystem
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
             return false;
         }
-        $normalized = rtrim(str_replace('/', DIRECTORY_SEPARATOR, $junction), DIRECTORY_SEPARATOR);
-        $real = rtrim(realpath($normalized), DIRECTORY_SEPARATOR);
-        return is_dir($normalized) && ($normalized !== $real);
+        if (!is_dir($junction) || is_link($junction)) {
+            return false;
+        }
+        // Junctions have no link stat but are otherwise indistinguishable from real directories
+        $stat = lstat($junction);
+        return ($stat['mode'] === 0);
     }
 
     /**
@@ -628,7 +635,10 @@ class Filesystem
             return false;
         }
         $junction = rtrim(str_replace('/', DIRECTORY_SEPARATOR, $junction), DIRECTORY_SEPARATOR);
+        if (!$this->isJunction($junction)) {
+            throw new IOException(sprintf('%s is not a junction and thus cannot be removed as one', $junction));
+        }
         $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape($junction));
-        return $this->getProcess()->execute($cmd) === 0;
+        return ($this->getProcess()->execute($cmd) === 0);
     }
 }

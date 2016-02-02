@@ -266,4 +266,33 @@ class FilesystemTest extends TestCase
         $this->assertFalse(file_exists($symlinkedTrailingSlash));
         $this->assertFalse(file_exists($symlinked));
     }
+
+    public function testJunctions()
+    {
+        @mkdir($this->workingDir . '/real/nesting/testing', 0777, true);
+        $fs = new Filesystem();
+
+        // Non-Windows systems do not support this and will return false on all tests, and an exception on creation
+        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $this->assertFalse($fs->isJunction($this->workingDir));
+            $this->assertFalse($fs->removeJunction($this->workingDir));
+            $this->setExpectedException('LogicException', 'not available on non-Windows platform');
+        }
+
+        $target = $this->workingDir . '/real/../real/nesting';
+        $junction = $this->workingDir . '/junction';
+
+        // Create and detect junction
+        $fs->junction($target, $junction);
+        $this->assertTrue($fs->isJunction($junction));
+        $this->assertFalse($fs->isJunction($target));
+        $this->assertTrue($fs->isJunction($target . '/../../junction'));
+        $this->assertFalse($fs->isJunction($junction . '/../real'));
+        $this->assertTrue($fs->isJunction($junction . '/../junction'));
+
+        // Remove junction
+        $this->assertTrue(is_dir($junction));
+        $this->assertTrue($fs->removeJunction($junction));
+        $this->assertFalse(is_dir($junction));
+    }
 }
