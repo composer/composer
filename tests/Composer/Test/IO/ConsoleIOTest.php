@@ -14,6 +14,7 @@ namespace Composer\Test\IO;
 
 use Composer\IO\ConsoleIO;
 use Composer\TestCase;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class ConsoleIOTest extends TestCase
 {
@@ -41,6 +42,9 @@ class ConsoleIOTest extends TestCase
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
         $outputMock->expects($this->once())
+            ->method('getVerbosity')
+            ->willReturn(OutputInterface::VERBOSITY_NORMAL);
+        $outputMock->expects($this->once())
             ->method('write')
             ->with($this->equalTo('some information about something'), $this->equalTo(false));
         $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
@@ -53,6 +57,9 @@ class ConsoleIOTest extends TestCase
     {
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\ConsoleOutputInterface');
+        $outputMock->expects($this->once())
+            ->method('getVerbosity')
+            ->willReturn(OutputInterface::VERBOSITY_NORMAL);
         $outputMock->expects($this->once())
             ->method('getErrorOutput')
             ->willReturn($outputMock);
@@ -69,6 +76,9 @@ class ConsoleIOTest extends TestCase
     {
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
+        $outputMock->expects($this->once())
+            ->method('getVerbosity')
+            ->willReturn(OutputInterface::VERBOSITY_NORMAL);
         $outputMock->expects($this->once())
             ->method('write')
             ->with(
@@ -95,25 +105,28 @@ class ConsoleIOTest extends TestCase
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
 
-        $outputMock->expects($this->at(0))
-            ->method('write')
-            ->with($this->equalTo('something (<question>strlen = 23</question>)'));
+        $outputMock->expects($this->any())
+            ->method('getVerbosity')
+            ->willReturn(OutputInterface::VERBOSITY_NORMAL);
         $outputMock->expects($this->at(1))
             ->method('write')
-            ->with($this->equalTo(str_repeat("\x08", 23)), $this->equalTo(false));
-        $outputMock->expects($this->at(2))
-            ->method('write')
-            ->with($this->equalTo('shorter (<comment>12</comment>)'), $this->equalTo(false));
+            ->with($this->equalTo('something (<question>strlen = 23</question>)'));
         $outputMock->expects($this->at(3))
             ->method('write')
-            ->with($this->equalTo(str_repeat(' ', 11)), $this->equalTo(false));
-        $outputMock->expects($this->at(4))
-            ->method('write')
-            ->with($this->equalTo(str_repeat("\x08", 11)), $this->equalTo(false));
+            ->with($this->equalTo(str_repeat("\x08", 23)), $this->equalTo(false));
         $outputMock->expects($this->at(5))
             ->method('write')
+            ->with($this->equalTo('shorter (<comment>12</comment>)'), $this->equalTo(false));
+        $outputMock->expects($this->at(7))
+            ->method('write')
+            ->with($this->equalTo(str_repeat(' ', 11)), $this->equalTo(false));
+        $outputMock->expects($this->at(9))
+            ->method('write')
+            ->with($this->equalTo(str_repeat("\x08", 11)), $this->equalTo(false));
+        $outputMock->expects($this->at(11))
+            ->method('write')
             ->with($this->equalTo(str_repeat("\x08", 12)), $this->equalTo(false));
-        $outputMock->expects($this->at(6))
+        $outputMock->expects($this->at(13))
             ->method('write')
             ->with($this->equalTo('something longer than initial (<info>34</info>)'));
 

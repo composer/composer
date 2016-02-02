@@ -12,7 +12,7 @@
   * Added --strict to the `validate` command to treat any warning as an error that then returns a non-zero exit code
   * Added a dependency on composer/semver, which is the externalized lib for all the version constraints parsing and handling
   * Added support for classmap autoloading to load plugin classes and script handlers
-  * Added `bin-compat` config option that if set to `full` will create .bat proxy for binaries even if Compoesr runs in a linux VM
+  * Added `bin-compat` config option that if set to `full` will create .bat proxy for binaries even if Composer runs in a linux VM
   * Added SPDX 2.0 support, and externalized that in a composer/spdx-licenses lib
   * Added warnings when the classmap autoloader finds duplicate classes
   * Added --file to the `archive` command to choose the filename

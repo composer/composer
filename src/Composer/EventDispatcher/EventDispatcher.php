@@ -155,9 +155,7 @@ class EventDispatcher
                 $event = $this->checkListenerExpectedEvent($callable, $event);
                 $return = false === call_user_func($callable, $event) ? 1 : 0;
             } elseif ($this->isComposerScript($callable)) {
-                if ($this->io->isVerbose()) {
-                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable));
-                }
+                $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable), true, IOInterface::VERBOSE);
                 $scriptName = substr($callable, 1);
                 $args = $event->getArguments();
                 $flags = $event->getFlags();

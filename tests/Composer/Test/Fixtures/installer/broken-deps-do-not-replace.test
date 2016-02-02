@@ -21,9 +21,9 @@ Broken dependencies should not lead to a replacer being installed which is not m
 --RUN--
 install
 --EXPECT-OUTPUT--
-<info>Loading composer repositories with package information</info>
-<info>Installing dependencies (including require-dev)</info>
-<error>Your requirements could not be resolved to an installable set of packages.</error>
+Loading composer repositories with package information
+Installing dependencies (including require-dev)
+Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - c/c 1.0.0 requires x/x 1.0 -> no matching package found.
@@ -33,7 +33,7 @@ install
 Potential causes:
  - A typo in the package name
  - The package is not available in a stable-enough version according to your minimum-stability setting
-   see <https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion> for more details.
+   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.
 
 Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
 

@@ -75,9 +75,7 @@ class PearInstaller extends LibraryInstaller
         $pearExtractor = new PearPackageExtractor($packageArchive);
         $pearExtractor->extractTo($this->getInstallPath($package), array('php' => '/', 'script' => '/bin', 'data' => '/data'), $vars);
 
-        if ($this->io->isVerbose()) {
-            $this->io->writeError('    Cleaning up');
-        }
+        $this->io->writeError('    Cleaning up', true, IOInterface::VERBOSE);
         $this->filesystem->unlink($packageArchive);
     }
 

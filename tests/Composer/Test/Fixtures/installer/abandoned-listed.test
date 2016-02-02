@@ -24,12 +24,12 @@ Abandoned packages are flagged
 --RUN--
 install
 --EXPECT-OUTPUT--
-<info>Loading composer repositories with package information</info>
-<info>Installing dependencies (including require-dev)</info>
+Loading composer repositories with package information
+Installing dependencies (including require-dev)
 <warning>Package a/a is abandoned, you should avoid using it. No replacement was suggested.</warning>
 <warning>Package c/c is abandoned, you should avoid using it. Use b/b instead.</warning>
-<info>Writing lock file</info>
-<info>Generating autoload files</info>
+Writing lock file
+Generating autoload files
 
 --EXPECT--
 Installing a/a (1.0.0)
