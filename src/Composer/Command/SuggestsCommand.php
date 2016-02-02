@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -75,6 +76,9 @@ EOT
         $installed = array_flip($installed);
         ksort($installed);
 
+        // Init platform repo
+        $platform = new PlatformRepository(array(), $this->getComposer()->getConfig()->get('platform') ?: array());
+
         // Next gather all suggestions that are not in that list
         $suggesters = array();
         $suggested = array();
@@ -84,6 +88,8 @@ EOT
                 continue;
             }
             foreach ($package['suggest'] as $suggestion => $reason) {
+                if (false === strpos('/', $suggestion) && !is_null($platform->findPackage($suggestion, '*')))
+                    continue;
                 if (!isset($installed[$suggestion])) {
                     $suggesters[$packageName][$suggestion] = $reason;
                     $suggested[$suggestion][$packageName] = $reason;
