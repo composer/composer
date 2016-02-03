@@ -88,9 +88,6 @@ EOT
         if (!is_writable($tmpDir)) {
             throw new FilesystemException('Composer update failed: the "'.$tmpDir.'" directory used to download the temp file could not be written');
         }
-        if (!is_writable($localFilename)) {
-            throw new FilesystemException('Composer update failed: the "'.$localFilename.'" file could not be written');
-        }
 
         if ($input->getOption('rollback')) {
             return $this->rollback($output, $rollbackDir, $localFilename);
@@ -269,10 +266,6 @@ TAGSPUBKEY
         $rollbackVersion = $this->getLastBackupVersion($rollbackDir);
         if (!$rollbackVersion) {
             throw new \UnexpectedValueException('Composer rollback failed: no installation to roll back to in "'.$rollbackDir.'"');
-        }
-
-        if (!is_writable($rollbackDir)) {
-            throw new FilesystemException('Composer rollback failed: the "'.$rollbackDir.'" dir could not be written to');
         }
 
         $old = $rollbackDir . '/' . $rollbackVersion . self::OLD_INSTALL_EXT;
