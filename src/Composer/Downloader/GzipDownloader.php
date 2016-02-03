@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\Cache;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\IO\IOInterface;
@@ -40,7 +41,7 @@ class GzipDownloader extends ArchiveDownloader
         $targetFilepath = $path . DIRECTORY_SEPARATOR . basename(substr($file, 0, -3));
 
         // Try to use gunzip on *nix
-        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (!Platform::isWindows()) {
             $command = 'gzip -cd ' . ProcessExecutor::escape($file) . ' > ' . ProcessExecutor::escape($targetFilepath);
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {

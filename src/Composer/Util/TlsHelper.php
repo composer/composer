@@ -175,7 +175,7 @@ final class TlsHelper
             return self::$useOpensslParse = true;
         }
 
-        if ('\\' === DIRECTORY_SEPARATOR) {
+        if (Platform::isWindows()) {
             // Windows is probably insecure in this case.
             return self::$useOpensslParse = false;
         }

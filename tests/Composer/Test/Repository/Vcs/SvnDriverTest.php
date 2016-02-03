@@ -16,6 +16,7 @@ use Composer\Repository\Vcs\SvnDriver;
 use Composer\Config;
 use Composer\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 
 class SvnDriverTest extends TestCase
 {
@@ -71,7 +72,7 @@ class SvnDriverTest extends TestCase
 
     private function getCmd($cmd)
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (Platform::isWindows()) {
             return strtr($cmd, "'", '"');
         }
 

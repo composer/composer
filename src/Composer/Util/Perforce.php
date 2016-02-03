@@ -51,10 +51,7 @@ class Perforce
 
     public static function create($repoConfig, $port, $path, ProcessExecutor $process, IOInterface $io)
     {
-        $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
-        $perforce = new Perforce($repoConfig, $port, $path, $process, $isWindows, $io);
-
-        return $perforce;
+        return new Perforce($repoConfig, $port, $path, $process, Platform::isWindows(), $io);
     }
 
     public static function checkServerExists($url, ProcessExecutor $processExecutor)
