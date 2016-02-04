@@ -48,18 +48,19 @@ class GzipDownloader extends ArchiveDownloader
                 return;
             }
 
+            if (extension_loaded('zlib')) {
+                // Fallback to using the PHP extension.
+                $this->extractUsingExt($file, $targetFilepath);
+
+                return;
+            }
+
             $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
             throw new \RuntimeException($processError);
         }
 
         // Windows version of PHP has built-in support of gzip functions
-        $archiveFile = gzopen($file, 'rb');
-        $targetFile = fopen($targetFilepath, 'wb');
-        while ($string = gzread($archiveFile, 4096)) {
-            fwrite($targetFile, $string, strlen($string));
-        }
-        gzclose($archiveFile);
-        fclose($targetFile);
+        $this->extractUsingExt($file, $targetFilepath);
     }
 
     /**
@@ -68,5 +69,16 @@ class GzipDownloader extends ArchiveDownloader
     protected function getFileName(PackageInterface $package, $path)
     {
         return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
+    }
+
+    private function extractUsingExt($file, $targetFilepath)
+    {
+        $archiveFile = gzopen($file, 'rb');
+        $targetFile = fopen($targetFilepath, 'wb');
+        while ($string = gzread($archiveFile, 4096)) {
+            fwrite($targetFile, $string, strlen($string));
+        }
+        gzclose($archiveFile);
+        fclose($targetFile);
     }
 }
