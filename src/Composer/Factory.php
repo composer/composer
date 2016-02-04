@@ -20,6 +20,7 @@ use Composer\Package\Version\VersionGuesser;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\Silencer;
@@ -51,7 +52,7 @@ class Factory
             return $home;
         }
 
-        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+        if (Platform::isWindows()) {
             if (!getenv('APPDATA')) {
                 throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
             }
@@ -90,7 +91,7 @@ class Factory
             return $homeEnv . '/cache';
         }
 
-        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+        if (Platform::isWindows()) {
             if ($cacheDir = getenv('LOCALAPPDATA')) {
                 $cacheDir .= '/Composer';
             } else {
@@ -125,7 +126,7 @@ class Factory
             return $homeEnv;
         }
 
-        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+        if (Platform::isWindows()) {
             return strtr($home, '\\', '/');
         }
 

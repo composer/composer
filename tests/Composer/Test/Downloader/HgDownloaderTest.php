@@ -15,6 +15,7 @@ namespace Composer\Test\Downloader;
 use Composer\Downloader\HgDownloader;
 use Composer\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 
 class HgDownloaderTest extends TestCase
 {
@@ -156,10 +157,6 @@ class HgDownloaderTest extends TestCase
 
     private function getCmd($cmd)
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            return strtr($cmd, "'", '"');
-        }
-
-        return $cmd;
+        return Platform::isWindows() ? strtr($cmd, "'", '"') : $cmd;
     }
 }

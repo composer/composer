@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Composer\Util\Git as GitUtil;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -43,7 +44,7 @@ class GitDownloader extends VcsDownloader
         $path = $this->normalizePath($path);
 
         $ref = $package->getSourceReference();
-        $flag = defined('PHP_WINDOWS_VERSION_MAJOR') ? '/D ' : '';
+        $flag = Platform::isWindows() ? '/D ' : '';
         $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->writeError("    Cloning ".$ref);
 
@@ -353,7 +354,7 @@ class GitDownloader extends VcsDownloader
 
     protected function normalizePath($path)
     {
-        if (defined('PHP_WINDOWS_VERSION_MAJOR') && strlen($path) > 0) {
+        if (Platform::isWindows() && strlen($path) > 0) {
             $basePath = $path;
             $removed = array();
 
