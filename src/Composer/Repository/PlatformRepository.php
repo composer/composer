@@ -147,16 +147,22 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'openssl':
-                    $prettyVersion = preg_replace_callback('{^(?:OpenSSL\s*)?([0-9.]+)([a-z]+).*}', function ($match) {
+                    $prettyVersion = preg_replace_callback('{^(?:OpenSSL\s*)?([0-9.]+)([a-z]*).*}', function ($match) {
                         if (empty($match[2])) {
                             return $match[1];
                         }
 
                         // OpenSSL versions add another letter when they reach Z.
                         // e.g. OpenSSL 0.9.8zh 3 Dec 2015
-                        $patchVersion = array_sum(array_map(function ($letter) {
-                            return ord($letter) - 96;
-                        }, str_split($match[2])));
+
+                        if (!preg_match('{^z*[a-z]$}', $match[2])) {
+                            // 0.9.8abc is garbage
+                            return 0;
+                        }
+
+                        $len = strlen($match[2]);
+                        $patchVersion = ($len - 1) * 26; // All Z
+                        $patchVersion += ord($match[2][$len - 1]) - 96;
 
                         return $match[1].'.'.$patchVersion;
                     }, OPENSSL_VERSION_TEXT);
