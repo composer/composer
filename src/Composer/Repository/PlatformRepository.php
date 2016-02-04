@@ -114,6 +114,7 @@ class PlatformRepository extends ArrayRepository
         // relying on them.
         foreach ($loadedExtensions as $name) {
             $prettyVersion = null;
+            $description = 'The '.$name.' PHP library';
             switch ($name) {
                 case 'curl':
                     $curlVersion = curl_version();
@@ -159,6 +160,8 @@ class PlatformRepository extends ArrayRepository
 
                         return $match[1].'.'.$patchVersion;
                     }, OPENSSL_VERSION_TEXT);
+
+                    $description = OPENSSL_VERSION_TEXT;
                     break;
 
                 case 'pcre':
@@ -185,7 +188,7 @@ class PlatformRepository extends ArrayRepository
             }
 
             $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
-            $lib->setDescription('The '.$name.' PHP library');
+            $lib->setDescription($description);
             $this->addPackage($lib);
         }
 
