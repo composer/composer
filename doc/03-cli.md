@@ -413,7 +413,7 @@ If you have installed Composer for your entire system (see [global installation]
 you may have to run the command with `root` privileges
 
 ```sh
-sudo composer self-update
+sudo -H composer self-update
 ```
 
 ### Options
@@ -464,6 +464,12 @@ changes to the repositories section by using it the following way:
 
 ```sh
 php composer.phar config repositories.foo vcs https://github.com/foo/bar
+```
+
+If your repository requires more configuration options, you can instead pass its JSON representation :
+
+```sh
+php composer.phar config repositories.foo '{"type": "vcs", "url": "http://svn.example.org/my-project/", "trunk-path": "master"}'
 ```
 
 ## create-project
@@ -710,6 +716,13 @@ commands) to finish executing. The default value is 300 seconds (5 minutes).
 
 By setting this environmental value, you can set a path to a certificate bundle
 file to be used during SSL/TLS peer verification.
+
+### COMPOSER_AUTH
+
+The `COMPOSER_AUTH` var allows you to set up authentication as an environment variable.
+The contents of the variable should be a JSON formatted object containing http-basic,
+github-oauth, ... objects as needed, and following the
+[spec from the config](06-config.md#gitlab-oauth).
 
 ### COMPOSER_DISCARD_CHANGES
 

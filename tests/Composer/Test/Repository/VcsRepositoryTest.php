@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Repository;
 
+use Composer\TestCase;
 use Symfony\Component\Process\ExecutableFinder;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\VcsRepository;
@@ -23,7 +24,7 @@ use Composer\Config;
 /**
  * @group slow
  */
-class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
+class VcsRepositoryTest extends TestCase
 {
     private static $composerHome;
     private static $gitRepo;
@@ -32,8 +33,8 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
     protected function initialize()
     {
         $oldCwd = getcwd();
-        self::$composerHome = sys_get_temp_dir() . '/composer-home-'.mt_rand().'/';
-        self::$gitRepo = sys_get_temp_dir() . '/composer-git-'.mt_rand().'/';
+        self::$composerHome = $this->getUniqueTmpDirectory();
+        self::$gitRepo = $this->getUniqueTmpDirectory();
 
         $locator = new ExecutableFinder();
         if (!$locator->find('git')) {

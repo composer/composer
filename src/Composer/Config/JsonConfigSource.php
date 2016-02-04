@@ -14,6 +14,7 @@ namespace Composer\Config;
 
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use Composer\Util\Silencer;
 
 /**
  * JSON Configuration Source
@@ -173,7 +174,7 @@ class JsonConfigSource implements ConfigSourceInterface
         }
 
         if ($newFile) {
-            @chmod($this->file->getPath(), 0600);
+            Silencer::call('chmod', $this->file->getPath(), 0600);
         }
     }
 

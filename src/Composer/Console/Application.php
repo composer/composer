@@ -12,10 +12,11 @@
 
 namespace Composer\Console;
 
+use Composer\Util\Platform;
+use Composer\Util\Silencer;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
@@ -64,7 +65,7 @@ class Application extends BaseApplication
         }
 
         if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
-            date_default_timezone_set(@date_default_timezone_get());
+            date_default_timezone_set(Silencer::call('date_default_timezone_get'));
         }
 
         if (!$shutdownRegistered) {
@@ -136,9 +137,7 @@ class Application extends BaseApplication
             if ($newWorkDir = $this->getNewWorkingDir($input)) {
                 $oldWorkingDir = getcwd();
                 chdir($newWorkDir);
-                if ($io->isDebug() >= 4) {
-                    $io->writeError('Changed CWD to ' . getcwd());
-                }
+                $io->writeError('Changed CWD to ' . getcwd(), true, IOInterface::DEBUG);
             }
 
             // add non-standard scripts as own commands
@@ -203,30 +202,32 @@ class Application extends BaseApplication
     {
         $io = $this->getIO();
 
+        Silencer::suppress();
         try {
             $composer = $this->getComposer(false, true);
             if ($composer) {
                 $config = $composer->getConfig();
 
                 $minSpaceFree = 1024 * 1024;
-                if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
-                    || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
-                    || (($df = @disk_free_space($dir = sys_get_temp_dir())) !== false && $df < $minSpaceFree)
+                if ((($df = disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
+                    || (($df = disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+                    || (($df = disk_free_space($dir = sys_get_temp_dir())) !== false && $df < $minSpaceFree)
                 ) {
-                    $io->writeError('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>');
+                    $io->writeError('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>', true, IOInterface::QUIET);
                 }
             }
         } catch (\Exception $e) {
         }
+        Silencer::restore();
 
-        if (defined('PHP_WINDOWS_VERSION_BUILD') && false !== strpos($exception->getMessage(), 'The system cannot find the path specified')) {
-            $io->writeError('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>');
-            $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#-the-system-cannot-find-the-path-specified-windows- for details</error>');
+        if (Platform::isWindows() && false !== strpos($exception->getMessage(), 'The system cannot find the path specified')) {
+            $io->writeError('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>', true, IOInterface::QUIET);
+            $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#-the-system-cannot-find-the-path-specified-windows- for details</error>', true, IOInterface::QUIET);
         }
 
         if (false !== strpos($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
-            $io->writeError('<error>The following exception is caused by a lack of memory and not having swap configured</error>');
-            $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>');
+            $io->writeError('<error>The following exception is caused by a lack of memory and not having swap configured</error>', true, IOInterface::QUIET);
+            $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>', true, IOInterface::QUIET);
         }
     }
 

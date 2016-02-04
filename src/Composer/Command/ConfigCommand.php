@@ -12,6 +12,8 @@
 
 namespace Composer\Command;
 
+use Composer\Util\Platform;
+use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -142,7 +144,7 @@ EOT
             ? ($this->config->get('home') . '/config.json')
             : ($input->getOption('file') ?: trim(getenv('COMPOSER')) ?: 'composer.json');
 
-        // create global composer.json if this was invoked using `composer global config`
+        // Create global composer.json if this was invoked using `composer global config`
         if ($configFile === 'composer.json' && !file_exists($configFile) && realpath(getcwd()) === realpath($this->config->get('home'))) {
             file_put_contents($configFile, "{\n}\n");
         }
@@ -157,16 +159,16 @@ EOT
         $this->authConfigFile = new JsonFile($authConfigFile, null, $io);
         $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);
 
-        // initialize the global file if it's not there
+        // Initialize the global file if it's not there, ignoring any warnings or notices
         if ($input->getOption('global') && !$this->configFile->exists()) {
             touch($this->configFile->getPath());
             $this->configFile->write(array('config' => new \ArrayObject));
-            @chmod($this->configFile->getPath(), 0600);
+            Silencer::call('chmod', $this->configFile->getPath(), 0600);
         }
         if ($input->getOption('global') && !$this->authConfigFile->exists()) {
             touch($this->authConfigFile->getPath());
             $this->authConfigFile->write(array('http-basic' => new \ArrayObject, 'github-oauth' => new \ArrayObject, 'gitlab-oauth' => new \ArrayObject));
-            @chmod($this->authConfigFile->getPath(), 0600);
+            Silencer::call('chmod', $this->authConfigFile->getPath(), 0600);
         }
 
         if (!$this->configFile->exists()) {
@@ -183,7 +185,7 @@ EOT
         if ($input->getOption('editor')) {
             $editor = escapeshellcmd(getenv('EDITOR'));
             if (!$editor) {
-                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                if (Platform::isWindows()) {
                     $editor = 'notepad';
                 } else {
                     foreach (array('vim', 'vi', 'nano', 'pico', 'ed') as $candidate) {
@@ -196,7 +198,7 @@ EOT
             }
 
             $file = $input->getOption('auth') ? $this->authConfigFile->getPath() : $this->configFile->getPath();
-            system($editor . ' ' . $file . (defined('PHP_WINDOWS_VERSION_BUILD') ? '' : ' > `tty`'));
+            system($editor . ' ' . $file . (Platform::isWindows() ? '' : ' > `tty`'));
 
             return 0;
         }
@@ -331,7 +333,11 @@ EOT
             'disable-tls' => array($booleanValidator, $booleanNormalizer),
             'cafile' => array(
                 function ($val) { return file_exists($val) && is_readable($val); },
-                function ($val) { return $val === 'null' ? null : $val; }
+                function ($val) { return $val === 'null' ? null : $val; },
+            ),
+            'capath' => array(
+                function ($val) { return is_dir($val) && is_readable($val); },
+                function ($val) { return $val === 'null' ? null : $val; },
             ),
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
         );
@@ -434,9 +440,18 @@ EOT
             }
 
             if (1 === count($values)) {
-                $bool = strtolower($values[0]);
-                if (true === $booleanValidator($bool) && false === $booleanNormalizer($bool)) {
-                    return $this->configSource->addRepository($matches[1], false);
+                $value = strtolower($values[0]);
+                if (true === $booleanValidator($value)) {
+                    if (false === $booleanNormalizer($value)) {
+                        return $this->configSource->addRepository($matches[1], false);
+                    }
+                } else {
+                    $value = json_decode($values[0], true);
+                    if (JSON_ERROR_NONE !== json_last_error()) {
+                        throw new \InvalidArgumentException(sprintf('%s is not valid JSON.', $values[0]));
+                    }
+
+                    return $this->configSource->addRepository($matches[1], $value);
                 }
             }
 

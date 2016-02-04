@@ -13,16 +13,18 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\HgDownloader;
+use Composer\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 
-class HgDownloaderTest extends \PHPUnit_Framework_TestCase
+class HgDownloaderTest extends TestCase
 {
     /** @var string */
     private $workingDir;
 
     protected function setUp()
     {
-        $this->workingDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
+        $this->workingDir = $this->getUniqueTmpDirectory();
     }
 
     protected function tearDown()
@@ -155,10 +157,6 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
 
     private function getCmd($cmd)
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            return strtr($cmd, "'", '"');
-        }
-
-        return $cmd;
+        return Platform::isWindows() ? strtr($cmd, "'", '"') : $cmd;
     }
 }

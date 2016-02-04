@@ -60,27 +60,25 @@ abstract class BaseIO implements IOInterface
      */
     public function loadConfiguration(Config $config)
     {
+        $githubOauth = $config->get('github-oauth') ?: array();
+        $gitlabOauth = $config->get('gitlab-oauth') ?: array();
+        $httpBasic = $config->get('http-basic') ?: array();
+
         // reload oauth token from config if available
-        if ($tokens = $config->get('github-oauth')) {
-            foreach ($tokens as $domain => $token) {
-                if (!preg_match('{^[a-z0-9]+$}', $token)) {
-                    throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
-                }
-                $this->setAuthentication($domain, $token, 'x-oauth-basic');
+        foreach ($githubOauth as $domain => $token) {
+            if (!preg_match('{^[a-z0-9]+$}', $token)) {
+                throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
             }
+            $this->setAuthentication($domain, $token, 'x-oauth-basic');
         }
 
-        if ($tokens = $config->get('gitlab-oauth')) {
-            foreach ($tokens as $domain => $token) {
-                $this->setAuthentication($domain, $token, 'oauth2');
-            }
+        foreach ($gitlabOauth as $domain => $token) {
+            $this->setAuthentication($domain, $token, 'oauth2');
         }
 
         // reload http basic credentials from config if available
-        if ($creds = $config->get('http-basic')) {
-            foreach ($creds as $domain => $cred) {
-                $this->setAuthentication($domain, $cred['username'], $cred['password']);
-            }
+        foreach ($httpBasic as $domain => $cred) {
+            $this->setAuthentication($domain, $cred['username'], $cred['password']);
         }
 
         // setup process timeout

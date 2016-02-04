@@ -67,16 +67,12 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
             $package = $this->getComposerInformation($file);
             if (!$package) {
-                if ($io->isVerbose()) {
-                    $io->writeError("File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package");
-                }
+                $io->writeError("File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package", true, IOInterface::VERBOSE);
                 continue;
             }
 
-            if ($io->isVerbose()) {
-                $template = 'Found package <info>%s</info> (<comment>%s</comment>) in file <info>%s</info>';
-                $io->writeError(sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename()));
-            }
+            $template = 'Found package <info>%s</info> (<comment>%s</comment>) in file <info>%s</info>';
+            $io->writeError(sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename()), true, IOInterface::VERBOSE);
 
             $this->addPackage($package);
         }

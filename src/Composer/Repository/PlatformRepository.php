@@ -203,6 +203,7 @@ class PlatformRepository extends ArrayRepository
         if (isset($this->overrides[strtolower($package->getName())])) {
             $overrider = $this->findPackage($package->getName(), '*');
             $overrider->setDescription($overrider->getDescription().' (actual: '.$package->getPrettyVersion().')');
+
             return;
         }
         parent::addPackage($package);

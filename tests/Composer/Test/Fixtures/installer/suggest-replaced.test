@@ -19,10 +19,10 @@ Suggestions are not displayed for packages if they are replaced
 --RUN--
 install
 --EXPECT-OUTPUT--
-<info>Loading composer repositories with package information</info>
-<info>Installing dependencies (including require-dev)</info>
-<info>Writing lock file</info>
-<info>Generating autoload files</info>
+Loading composer repositories with package information
+Installing dependencies (including require-dev)
+Writing lock file
+Generating autoload files
 
 --EXPECT--
 Installing c/c (1.0.0)

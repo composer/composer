@@ -20,6 +20,7 @@ use Composer\Semver\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -232,7 +233,7 @@ EOT
                     // outside of a real terminal, use space without a limit
                     $width = PHP_INT_MAX;
                 }
-                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                if (Platform::isWindows()) {
                     $width--;
                 }
 
@@ -246,10 +247,10 @@ EOT
                 $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
-                        $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
+                        $io->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
 
                         if ($writeVersion) {
-                            $output->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
+                            $io->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
                         }
 
                         if ($writeDescription) {
@@ -258,15 +259,15 @@ EOT
                             if (strlen($description) > $remaining) {
                                 $description = substr($description, 0, $remaining - 3) . '...';
                             }
-                            $output->write(' ' . $description);
+                            $io->write(' ' . $description, false);
                         }
 
                         if ($writePath) {
                             $path = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
-                            $output->write(' ' . $path);
+                            $io->write(' ' . $path, false);
                         }
                     } else {
-                        $output->write($indent . $package);
+                        $io->write($indent . $package, false);
                     }
                     $io->write('');
                 }
@@ -458,7 +459,7 @@ EOT
     /**
      * Init styles for tree
      *
-     * @param  OutputInterface $output
+     * @param OutputInterface $output
      */
     protected function initStyles(OutputInterface $output)
     {
@@ -479,20 +480,20 @@ EOT
     /**
      * Display the tree
      *
-     * @param  PackageInterface|string $package
-     * @param  RepositoryInterface     $installedRepo
-     * @param  RepositoryInterface     $distantRepos
-     * @param  OutputInterface         $output
+     * @param PackageInterface|string $package
+     * @param RepositoryInterface     $installedRepo
+     * @param RepositoryInterface     $distantRepos
+     * @param OutputInterface         $output
      */
     protected function displayPackageTree(PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, OutputInterface $output)
     {
         $packagesInTree = array();
         $packagesInTree[] = $package;
 
-        $output->write(sprintf('<info>%s</info>', $package->getPrettyName()));
-        $output->write(' ' . $package->getPrettyVersion());
-        $output->write(' ' . strtok($package->getDescription(), "\r\n"));
-        $output->writeln('');
+        $io = $this->getIO();
+        $io->write(sprintf('<info>%s</info>', $package->getPrettyName()), false);
+        $io->write(' ' . $package->getPrettyVersion(), false);
+        $io->write(' ' . strtok($package->getDescription(), "\r\n"));
 
         if (is_object($package)) {
             $requires = $package->getRequires();
@@ -524,14 +525,14 @@ EOT
     /**
      * Display a package tree
      *
-     * @param  string                  $name
-     * @param  PackageInterface|string $package
-     * @param  RepositoryInterface     $installedRepo
-     * @param  RepositoryInterface     $distantRepos
-     * @param  array                   $packagesInTree
-     * @param  OutputInterface         $output
-     * @param  string                  $previousTreeBar
-     * @param  integer                 $level
+     * @param string                  $name
+     * @param PackageInterface|string $package
+     * @param RepositoryInterface     $installedRepo
+     * @param RepositoryInterface     $distantRepos
+     * @param array                   $packagesInTree
+     * @param OutputInterface         $output
+     * @param string                  $previousTreeBar
+     * @param int                     $level
      */
     protected function displayTree($name, $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, array $packagesInTree, OutputInterface $output, $previousTreeBar = '├', $level = 1)
     {

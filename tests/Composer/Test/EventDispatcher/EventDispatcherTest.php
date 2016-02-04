@@ -15,9 +15,11 @@ namespace Composer\Test\EventDispatcher;
 use Composer\EventDispatcher\Event;
 use Composer\Installer\InstallerEvents;
 use Composer\TestCase;
+use Composer\IO\BufferIO;
 use Composer\Script\ScriptEvents;
 use Composer\Script\CommandEvent;
 use Composer\Util\ProcessExecutor;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class EventDispatcherTest extends TestCase
 {
@@ -101,7 +103,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->getMock('Composer\Composer'),
-                $io = $this->getMock('Composer\IO\IOInterface'),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
                 $process,
             ))
             ->setMethods(array(
@@ -123,23 +125,12 @@ class EventDispatcherTest extends TestCase
             ->method('getListeners')
             ->will($this->returnValue($listeners));
 
-        $io->expects($this->any())
-            ->method('isVerbose')
-            ->willReturn(1);
-
-        $io->expects($this->at(1))
-            ->method('writeError')
-            ->with($this->equalTo('> post-install-cmd: echo -n foo'));
-
-        $io->expects($this->at(3))
-            ->method('writeError')
-            ->with($this->equalTo('> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'));
-
-        $io->expects($this->at(5))
-            ->method('writeError')
-            ->with($this->equalTo('> post-install-cmd: echo -n bar'));
-
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
+
+        $expected = '> post-install-cmd: echo -n foo'.PHP_EOL.
+            '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL.
+            '> post-install-cmd: echo -n bar'.PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
     }
 
     public function testDispatcherCanExecuteComposerScriptGroups()
@@ -148,7 +139,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $composer = $this->getMock('Composer\Composer'),
-                $io = $this->getMock('Composer\IO\IOInterface'),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
                 $process,
             ))
             ->setMethods(array(
@@ -174,31 +165,13 @@ class EventDispatcherTest extends TestCase
                 return array();
             }));
 
-        $io->expects($this->any())
-            ->method('isVerbose')
-            ->willReturn(1);
-
-        $io->expects($this->at(1))
-            ->method('writeError')
-            ->with($this->equalTo('> root: @group'));
-
-        $io->expects($this->at(3))
-            ->method('writeError')
-            ->with($this->equalTo('> group: echo -n foo'));
-
-        $io->expects($this->at(5))
-            ->method('writeError')
-            ->with($this->equalTo('> group: @subgroup'));
-
-        $io->expects($this->at(7))
-            ->method('writeError')
-            ->with($this->equalTo('> subgroup: echo -n baz'));
-
-        $io->expects($this->at(9))
-            ->method('writeError')
-            ->with($this->equalTo('> group: echo -n bar'));
-
         $dispatcher->dispatch('root', new CommandEvent('root', $composer, $io));
+        $expected = '> root: @group'.PHP_EOL.
+            '> group: echo -n foo'.PHP_EOL.
+            '> group: @subgroup'.PHP_EOL.
+            '> subgroup: echo -n baz'.PHP_EOL.
+            '> group: echo -n bar'.PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
     }
 
     /**

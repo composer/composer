@@ -33,11 +33,14 @@ class RemoteFilesystem
     private $progress;
     private $lastProgress;
     private $options = array();
+    private $peerCertificateMap = array();
     private $disableTls = false;
     private $retryAuthFailure;
     private $lastHeaders;
     private $storeAuth;
     private $degradedMode = false;
+    private $redirects;
+    private $maxRedirects = 20;
 
     /**
      * Constructor.
@@ -54,15 +57,7 @@ class RemoteFilesystem
         // Setup TLS options
         // The cafile option can be set via config.json
         if ($disableTls === false) {
-            $this->options = $this->getTlsDefaults();
-            if (isset($options['ssl']['cafile'])
-                && (
-                    !is_readable($options['ssl']['cafile'])
-                    || !$this->validateCaFile($options['ssl']['cafile'])
-                )
-            ) {
-                throw new TransportException('The configured cafile was not valid or could not be read.');
-            }
+            $this->options = $this->getTlsDefaults($options);
         } else {
             $this->disableTls = true;
         }
@@ -139,8 +134,8 @@ class RemoteFilesystem
     }
 
     /**
-     * @param array $headers array of returned headers like from getLastHeaders()
-     * @param string $name header name (case insensitive)
+     * @param  array       $headers array of returned headers like from getLastHeaders()
+     * @param  string      $name    header name (case insensitive)
      * @return string|null
      */
     public function findHeaderValue(array $headers, $name)
@@ -160,7 +155,7 @@ class RemoteFilesystem
     }
 
     /**
-     * @param array $headers array of returned headers like from getLastHeaders()
+     * @param  array    $headers array of returned headers like from getLastHeaders()
      * @return int|null
      */
     public function findStatusCode(array $headers)
@@ -206,23 +201,33 @@ class RemoteFilesystem
         $this->lastProgress = null;
         $this->retryAuthFailure = true;
         $this->lastHeaders = array();
+        $this->redirects = 1; // The first request counts.
 
         // capture username/password from URL if there is one
         if (preg_match('{^https?://(.+):(.+)@([^/]+)}i', $fileUrl, $match)) {
             $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
         }
 
-        if (isset($additionalOptions['retry-auth-failure'])) {
-            $this->retryAuthFailure = (bool) $additionalOptions['retry-auth-failure'];
+        $tempAdditionalOptions = $additionalOptions;
+        if (isset($tempAdditionalOptions['retry-auth-failure'])) {
+            $this->retryAuthFailure = (bool) $tempAdditionalOptions['retry-auth-failure'];
 
-            unset($additionalOptions['retry-auth-failure']);
+            unset($tempAdditionalOptions['retry-auth-failure']);
         }
 
-        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        $isRedirect = false;
+        if (isset($tempAdditionalOptions['redirects'])) {
+            $this->redirects = $tempAdditionalOptions['redirects'];
+            $isRedirect = true;
 
-        if ($this->io->isDebug()) {
-            $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
+            unset($tempAdditionalOptions['redirects']);
         }
+
+        $options = $this->getOptionsForUrl($originUrl, $tempAdditionalOptions);
+        unset($tempAdditionalOptions);
+        $userlandFollow = isset($options['http']['follow_location']) && !$options['http']['follow_location'];
+
+        $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl, true, IOInterface::DEBUG);
 
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
@@ -245,7 +250,7 @@ class RemoteFilesystem
 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
-        if ($this->progress) {
+        if ($this->progress && !$isRedirect) {
             $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
         }
 
@@ -260,6 +265,18 @@ class RemoteFilesystem
         });
         try {
             $result = file_get_contents($fileUrl, false, $ctx);
+
+            if (PHP_VERSION_ID < 50600 && !empty($options['ssl']['peer_fingerprint'])) {
+                // Emulate fingerprint validation on PHP < 5.6
+                $params = stream_context_get_params($ctx);
+                $expectedPeerFingerprint = $options['ssl']['peer_fingerprint'];
+                $peerFingerprint = TlsHelper::getCertificateFingerprint($params['options']['ssl']['peer_certificate']);
+
+                // Constant time compare??!
+                if ($expectedPeerFingerprint !== $peerFingerprint) {
+                    throw new TransportException('Peer fingerprint did not match');
+                }
+            }
         } catch (\Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
@@ -293,6 +310,11 @@ class RemoteFilesystem
             $statusCode = $this->findStatusCode($http_response_header);
         }
 
+        // handle 3xx redirects for php<5.6, 304 Not Modified is excluded
+        if ($userlandFollow && $statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $this->redirects < $this->maxRedirects) {
+            $result = $this->handleRedirect($http_response_header, $additionalOptions, $result);
+        }
+
         // fail 4xx and 5xx responses and capture the response
         if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
             if (!$this->retry) {
@@ -305,7 +327,7 @@ class RemoteFilesystem
             $result = false;
         }
 
-        if ($this->progress && !$this->retry) {
+        if ($this->progress && !$this->retry && !$isRedirect) {
             $this->io->overwriteError("    Downloading: <comment>100%</comment>");
         }
 
@@ -342,7 +364,7 @@ class RemoteFilesystem
         }
 
         // handle copy command if download was successful
-        if (false !== $result && null !== $fileName) {
+        if (false !== $result && null !== $fileName && !$isRedirect) {
             if ('' === $result) {
                 throw new TransportException('"'.$this->fileUrl.'" appears broken, and returned an empty 200 response');
             }
@@ -361,14 +383,50 @@ class RemoteFilesystem
             }
         }
 
+        // Handle SSL cert match issues
+        if (false === $result && false !== strpos($errorMessage, 'Peer certificate') && PHP_VERSION_ID < 50600) {
+            // Certificate name error, PHP doesn't support subjectAltName on PHP < 5.6
+            // The procedure to handle sAN for older PHP's is:
+            //
+            // 1. Open socket to remote server and fetch certificate (disabling peer
+            //    validation because PHP errors without giving up the certificate.)
+            //
+            // 2. Verifying the domain in the URL against the names in the sAN field.
+            //    If there is a match record the authority [host/port], certificate
+            //    common name, and certificate fingerprint.
+            //
+            // 3. Retry the original request but changing the CN_match parameter to
+            //    the common name extracted from the certificate in step 2.
+            //
+            // 4. To prevent any attempt at being hoodwinked by switching the
+            //    certificate between steps 2 and 3 the fingerprint of the certificate
+            //    presented in step 3 is compared against the one recorded in step 2.
+            if (TlsHelper::isOpensslParseSafe()) {
+                $certDetails = $this->getCertificateCnAndFp($this->fileUrl, $options);
+
+                if ($certDetails) {
+                    $this->peerCertificateMap[$this->getUrlAuthority($this->fileUrl)] = $certDetails;
+
+                    $this->retry = true;
+                }
+            } else {
+                $this->io->writeError(sprintf(
+                    '<error>Your version of PHP, %s, is affected by CVE-2013-6420 and cannot safely perform certificate validation, we strongly suggest you upgrade.</error>',
+                    PHP_VERSION
+                ));
+            }
+        }
+
         if ($this->retry) {
             $this->retry = false;
 
             $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
 
-            $authHelper = new AuthHelper($this->io, $this->config);
-            $authHelper->storeAuth($this->originUrl, $this->storeAuth);
-            $this->storeAuth = false;
+            if ($this->storeAuth && $this->config) {
+                $authHelper = new AuthHelper($this->io, $this->config);
+                $authHelper->storeAuth($this->originUrl, $this->storeAuth);
+                $this->storeAuth = false;
+            }
 
             return $result;
         }
@@ -522,19 +580,42 @@ class RemoteFilesystem
         $tlsOptions = array();
 
         // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
-        if ($this->disableTls === false && PHP_VERSION_ID < 50600) {
-            if (!preg_match('{^https?://}', $this->fileUrl)) {
-                $host = $originUrl;
-            } else {
-                $host = parse_url($this->fileUrl, PHP_URL_HOST);
-            }
+        if ($this->disableTls === false && PHP_VERSION_ID < 50600 && !stream_is_local($this->fileUrl)) {
+            $host = parse_url($this->fileUrl, PHP_URL_HOST);
 
-            if ($host === 'github.com' || $host === 'api.github.com') {
-                $host = '*.github.com';
+            if (PHP_VERSION_ID >= 50304) {
+                // Must manually follow when setting CN_match because this causes all
+                // redirects to be validated against the same CN_match value.
+                $userlandFollow = true;
+            } else {
+                // PHP < 5.3.4 does not support follow_location, for those people
+                // do some really nasty hard coded transformations. These will
+                // still breakdown if the site redirects to a domain we don't
+                // expect.
+
+                if ($host === 'github.com' || $host === 'api.github.com') {
+                    $host = '*.github.com';
+                }
             }
 
             $tlsOptions['ssl']['CN_match'] = $host;
             $tlsOptions['ssl']['SNI_server_name'] = $host;
+
+            $urlAuthority = $this->getUrlAuthority($this->fileUrl);
+
+            if (isset($this->peerCertificateMap[$urlAuthority])) {
+                // Handle subjectAltName on lesser PHP's.
+                $certMap = $this->peerCertificateMap[$urlAuthority];
+
+                $this->io->writeError(sprintf(
+                    'Using <info>%s</info> as CN for subjectAltName enabled host <info>%s</info>',
+                    $certMap['cn'],
+                    $urlAuthority
+                ), true, IOInterface::DEBUG);
+
+                $tlsOptions['ssl']['CN_match'] = $certMap['cn'];
+                $tlsOptions['ssl']['peer_fingerprint'] = $certMap['fp'];
+            }
         }
 
         $headers = array();
@@ -549,6 +630,10 @@ class RemoteFilesystem
             // proxies/software due to the use of chunked encoding
             $options['http']['protocol_version'] = 1.1;
             $headers[] = 'Connection: close';
+        }
+
+        if (isset($userlandFollow)) {
+            $options['http']['follow_location'] = 0;
         }
 
         if ($this->io->hasAuthentication($originUrl)) {
@@ -575,7 +660,55 @@ class RemoteFilesystem
         return $options;
     }
 
-    private function getTlsDefaults()
+    private function handleRedirect(array $http_response_header, array $additionalOptions, $result)
+    {
+        if ($locationHeader = $this->findHeaderValue($http_response_header, 'location')) {
+            if (parse_url($locationHeader, PHP_URL_SCHEME)) {
+                // Absolute URL; e.g. https://example.com/composer
+                $targetUrl = $locationHeader;
+            } elseif (parse_url($locationHeader, PHP_URL_HOST)) {
+                // Scheme relative; e.g. //example.com/foo
+                $targetUrl = $this->scheme.':'.$locationHeader;
+            } elseif ('/' === $locationHeader[0]) {
+                // Absolute path; e.g. /foo
+                $urlHost = parse_url($this->fileUrl, PHP_URL_HOST);
+
+                // Replace path using hostname as an anchor.
+                $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $this->fileUrl);
+            } else {
+                // Relative path; e.g. foo
+                // This actually differs from PHP which seems to add duplicate slashes.
+                $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$locationHeader, $this->fileUrl);
+            }
+        }
+
+        if (!empty($targetUrl)) {
+            $this->redirects++;
+
+            $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $targetUrl), true, IOInterface::DEBUG);
+
+            $additionalOptions['redirects'] = $this->redirects;
+
+            return $this->get($this->originUrl, $targetUrl, $additionalOptions, $this->fileName, $this->progress);
+        }
+
+        if (!$this->retry) {
+            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, got redirect without Location ('.$http_response_header[0].')');
+            $e->setHeaders($http_response_header);
+            $e->setResponse($result);
+
+            throw $e;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array $options
+     *
+     * @return array
+     */
+    private function getTlsDefaults(array $options)
     {
         $ciphers = implode(':', array(
             'ECDHE-RSA-AES128-GCM-SHA256',
@@ -600,7 +733,7 @@ class RemoteFilesystem
             'DHE-DSS-AES256-SHA',
             'DHE-RSA-AES256-SHA',
             'AES128-GCM-SHA256',
-             'AES256-GCM-SHA384',
+            'AES256-GCM-SHA384',
             'ECDHE-RSA-RC4-SHA',
             'ECDHE-ECDSA-RC4-SHA',
             'AES128',
@@ -613,7 +746,7 @@ class RemoteFilesystem
             '!DES',
             '!3DES',
             '!MD5',
-            '!PSK'
+            '!PSK',
         ));
 
         /**
@@ -622,89 +755,96 @@ class RemoteFilesystem
          *
          * cafile or capath can be overridden by passing in those options to constructor.
          */
-        $options = array(
+        $defaults = array(
             'ssl' => array(
                 'ciphers' => $ciphers,
                 'verify_peer' => true,
                 'verify_depth' => 7,
                 'SNI_enabled' => true,
-            )
+                'capture_peer_cert' => true,
+            ),
         );
+
+        if (isset($options['ssl'])) {
+            $defaults['ssl'] = array_replace_recursive($defaults['ssl'], $options['ssl']);
+        }
 
         /**
          * Attempt to find a local cafile or throw an exception if none pre-set
          * The user may go download one if this occurs.
          */
-        if (!isset($this->options['ssl']['cafile'])) {
+        if (!isset($defaults['ssl']['cafile']) && !isset($defaults['ssl']['capath'])) {
             $result = $this->getSystemCaRootBundlePath();
-            if ($result) {
-                if (preg_match('{^phar://}', $result)) {
-                    $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert.pem';
 
-                    // use stream_copy_to_stream instead of copy
-                    // to work around https://bugs.php.net/bug.php?id=64634
-                    $source = fopen($result, 'r');
-                    $target = fopen($targetPath, 'w+');
-                    stream_copy_to_stream($source, $target);
-                    fclose($source);
-                    fclose($target);
-                    unset($source, $target);
+            if (preg_match('{^phar://}', $result)) {
+                $hash = hash_file('sha256', $result);
+                $targetPath = rtrim(sys_get_temp_dir(), '\\/') . '/composer-cacert-' . $hash . '.pem';
 
-                    $options['ssl']['cafile'] = $targetPath;
-                } else {
-                    if (is_dir($result)) {
-                        $options['ssl']['capath'] = $result;
-                    } elseif ($result) {
-                        $options['ssl']['cafile'] = $result;
-                    }
+                if (!file_exists($targetPath) || $hash !== hash_file('sha256', $targetPath)) {
+                    $this->streamCopy($result, $targetPath);
+                    chmod($targetPath, 0666);
                 }
+
+                $defaults['ssl']['cafile'] = $targetPath;
+            } elseif (is_dir($result)) {
+                $defaults['ssl']['capath'] = $result;
             } else {
-                throw new TransportException('A valid cafile could not be located automatically.');
+                $defaults['ssl']['cafile'] = $result;
             }
+        }
+
+        if (isset($defaults['ssl']['cafile']) && (!is_readable($defaults['ssl']['cafile']) || !$this->validateCaFile($defaults['ssl']['cafile']))) {
+            throw new TransportException('The configured cafile was not valid or could not be read.');
+        }
+
+        if (isset($defaults['ssl']['capath']) && (!is_dir($defaults['ssl']['capath']) || !is_readable($defaults['ssl']['capath']))) {
+            throw new TransportException('The configured capath was not valid or could not be read.');
         }
 
         /**
          * Disable TLS compression to prevent CRIME attacks where supported.
          */
         if (PHP_VERSION_ID >= 50413) {
-            $options['ssl']['disable_compression'] = true;
+            $defaults['ssl']['disable_compression'] = true;
         }
 
-        return $options;
+        return $defaults;
     }
 
     /**
-    * This method was adapted from Sslurp.
-    * https://github.com/EvanDotPro/Sslurp
-    *
-    * (c) Evan Coury <me@evancoury.com>
-    *
-    * For the full copyright and license information, please see below:
-    *
-    * Copyright (c) 2013, Evan Coury
-    * All rights reserved.
-    *
-    * Redistribution and use in source and binary forms, with or without modification,
-    * are permitted provided that the following conditions are met:
-    *
-    *     * Redistributions of source code must retain the above copyright notice,
-    *       this list of conditions and the following disclaimer.
-    *
-    *     * Redistributions in binary form must reproduce the above copyright notice,
-    *       this list of conditions and the following disclaimer in the documentation
-    *       and/or other materials provided with the distribution.
-    *
-    * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-    * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-    * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-    * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    */
+     * This method was adapted from Sslurp.
+     * https://github.com/EvanDotPro/Sslurp
+     *
+     * (c) Evan Coury <me@evancoury.com>
+     *
+     * For the full copyright and license information, please see below:
+     *
+     * Copyright (c) 2013, Evan Coury
+     * All rights reserved.
+     *
+     * Redistribution and use in source and binary forms, with or without modification,
+     * are permitted provided that the following conditions are met:
+     *
+     *     * Redistributions of source code must retain the above copyright notice,
+     *       this list of conditions and the following disclaimer.
+     *
+     *     * Redistributions in binary form must reproduce the above copyright notice,
+     *       this list of conditions and the following disclaimer in the documentation
+     *       and/or other materials provided with the distribution.
+     *
+     * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+     * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+     * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+     * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+     * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+     * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+     * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+     * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+     * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+     * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     *
+     * @return string
+     */
     private function getSystemCaRootBundlePath()
     {
         static $caPath = null;
@@ -721,6 +861,11 @@ class RemoteFilesystem
             return $caPath = $envCertFile;
         }
 
+        $configured = ini_get('openssl.cafile');
+        if ($configured && strlen($configured) > 0 && is_readable($configured) && $this->validateCaFile($configured)) {
+            return $caPath = $configured;
+        }
+
         $caBundlePaths = array(
             '/etc/pki/tls/certs/ca-bundle.crt', // Fedora, RHEL, CentOS (ca-certificates package)
             '/etc/ssl/certs/ca-certificates.crt', // Debian, Ubuntu, Gentoo, Arch Linux (ca-certificates package)
@@ -732,16 +877,10 @@ class RemoteFilesystem
             '/usr/share/ssl/certs/ca-bundle.crt', // Really old RedHat?
             '/etc/ssl/cert.pem', // OpenBSD
             '/usr/local/etc/ssl/cert.pem', // FreeBSD 10.x
-            __DIR__.'/../../../res/cacert.pem', // Bundled with Composer
         );
 
-        $configured = ini_get('openssl.cafile');
-        if ($configured && strlen($configured) > 0 && is_readable($configured) && $this->validateCaFile($configured)) {
-            return $caPath = $configured;
-        }
-
         foreach ($caBundlePaths as $caBundle) {
-            if (@is_readable($caBundle) && $this->validateCaFile($caBundle)) {
+            if (Silencer::call('is_readable', $caBundle) && $this->validateCaFile($caBundle)) {
                 return $caPath = $caBundle;
             }
         }
@@ -753,26 +892,124 @@ class RemoteFilesystem
             }
         }
 
-        return $caPath = false;
+        return $caPath = __DIR__.'/../../../res/cacert.pem'; // Bundled with Composer, last resort
     }
 
+    /**
+     * @param string $filename
+     *
+     * @return bool
+     */
     private function validateCaFile($filename)
     {
-        if ($this->io->isDebug()) {
-            $this->io->writeError('Checking CA file '.realpath($filename));
+        static $files = array();
+
+        if (isset($files[$filename])) {
+            return $files[$filename];
         }
+
+        $this->io->writeError('Checking CA file '.realpath($filename), true, IOInterface::DEBUG);
         $contents = file_get_contents($filename);
 
         // assume the CA is valid if php is vulnerable to
         // https://www.sektioneins.de/advisories/advisory-012013-php-openssl_x509_parse-memory-corruption-vulnerability.html
-        if (
-            PHP_VERSION_ID <= 50327
-            || (PHP_VERSION_ID >= 50400 && PHP_VERSION_ID < 50422)
-            || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50506)
-        ) {
-            return !empty($contents);
+        if (!TlsHelper::isOpensslParseSafe()) {
+            $this->io->writeError(sprintf(
+                '<error>Your version of PHP, %s, is affected by CVE-2013-6420 and cannot safely perform certificate validation, we strongly suggest you upgrade.</error>',
+                PHP_VERSION
+            ));
+
+            return $files[$filename] = !empty($contents);
         }
 
-        return (bool) openssl_x509_parse($contents);
+        return $files[$filename] = (bool) openssl_x509_parse($contents);
+    }
+
+    /**
+     * Uses stream_copy_to_stream instead of copy to work around https://bugs.php.net/bug.php?id=64634
+     *
+     * @param string $source
+     * @param string $target
+     */
+    private function streamCopy($source, $target)
+    {
+        $source = fopen($source, 'r');
+        $target = fopen($target, 'w+');
+
+        stream_copy_to_stream($source, $target);
+        fclose($source);
+        fclose($target);
+
+        unset($source, $target);
+    }
+
+    /**
+     * Fetch certificate common name and fingerprint for validation of SAN.
+     *
+     * @todo Remove when PHP 5.6 is minimum supported version.
+     */
+    private function getCertificateCnAndFp($url, $options)
+    {
+        if (PHP_VERSION_ID >= 50600) {
+            throw new \BadMethodCallException(sprintf(
+                '%s must not be used on PHP >= 5.6',
+                __METHOD__
+            ));
+        }
+
+        $context = StreamContextFactory::getContext($url, $options, array('options' => array(
+            'ssl' => array(
+                'capture_peer_cert' => true,
+                'verify_peer' => false, // Yes this is fucking insane! But PHP is lame.
+            ), ),
+        ));
+
+        // Ideally this would just use stream_socket_client() to avoid sending a
+        // HTTP request but that does not capture the certificate.
+        if (false === $handle = @fopen($url, 'rb', false, $context)) {
+            return;
+        }
+
+        // Close non authenticated connection without reading any content.
+        fclose($handle);
+        $handle = null;
+
+        $params = stream_context_get_params($context);
+
+        if (!empty($params['options']['ssl']['peer_certificate'])) {
+            $peerCertificate = $params['options']['ssl']['peer_certificate'];
+
+            if (TlsHelper::checkCertificateHost($peerCertificate, parse_url($url, PHP_URL_HOST), $commonName)) {
+                return array(
+                    'cn' => $commonName,
+                    'fp' => TlsHelper::getCertificateFingerprint($peerCertificate),
+                );
+            }
+        }
+    }
+
+    private function getUrlAuthority($url)
+    {
+        $defaultPorts = array(
+            'ftp' => 21,
+            'http' => 80,
+            'https' => 443,
+            'ssh2.sftp' => 22,
+            'ssh2.scp' => 22,
+        );
+
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+
+        if (!isset($defaultPorts[$scheme])) {
+            throw new \InvalidArgumentException(sprintf(
+                'Could not get default port for unknown scheme: %s',
+                $scheme
+            ));
+        }
+
+        $defaultPort = $defaultPorts[$scheme];
+        $port = parse_url($url, PHP_URL_PORT) ?: $defaultPort;
+
+        return parse_url($url, PHP_URL_HOST).':'.$port;
     }
 }

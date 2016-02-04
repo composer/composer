@@ -21,14 +21,14 @@ class PharArchiverTest extends ArchiverTest
         // Set up repository
         $this->setupDummyRepo();
         $package = $this->setupPackage();
-        $target  = sys_get_temp_dir().'/composer_archiver_test.tar';
+        $target  = $this->getUniqueTmpDirectory().'/composer_archiver_test.tar';
 
         // Test archive
         $archiver = new PharArchiver();
         $archiver->archive($package->getSourceUrl(), $target, 'tar', array('foo/bar', 'baz', '!/foo/bar/baz'));
         $this->assertFileExists($target);
 
-        unlink($target);
+        $this->filesystem->removeDirectory(dirname($target));
     }
 
     public function testZipArchive()
@@ -36,14 +36,14 @@ class PharArchiverTest extends ArchiverTest
         // Set up repository
         $this->setupDummyRepo();
         $package = $this->setupPackage();
-        $target  = sys_get_temp_dir().'/composer_archiver_test.zip';
+        $target  = $this->getUniqueTmpDirectory().'/composer_archiver_test.zip';
 
         // Test archive
         $archiver = new PharArchiver();
         $archiver->archive($package->getSourceUrl(), $target, 'zip');
         $this->assertFileExists($target);
 
-        unlink($target);
+        $this->filesystem->removeDirectory(dirname($target));
     }
 
     /**

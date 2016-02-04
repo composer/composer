@@ -13,11 +13,12 @@
 namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\ArchivableFilesFinder;
+use Composer\TestCase;
 use Composer\Util\Filesystem;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ExecutableFinder;
 
-class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
+class ArchivableFilesFinderTest extends TestCase
 {
     protected $sources;
     protected $finder;
@@ -29,7 +30,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
         $this->fs = $fs;
 
         $this->sources = $fs->normalizePath(
-            realpath(sys_get_temp_dir()).'/composer_archiver_test'.uniqid(mt_rand(), true)
+            $this->getUniqueTmpDirectory()
         );
 
         $fileTree = array(

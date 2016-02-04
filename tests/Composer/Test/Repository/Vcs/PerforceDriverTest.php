@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\PerforceDriver;
+use Composer\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
 use Composer\Util\Perforce;
@@ -20,7 +21,7 @@ use Composer\Util\Perforce;
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
  */
-class PerforceDriverTest extends \PHPUnit_Framework_TestCase
+class PerforceDriverTest extends TestCase
 {
     protected $config;
     protected $io;
@@ -29,6 +30,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
     protected $testPath;
     protected $driver;
     protected $repoConfig;
+    protected $perforce;
 
     const TEST_URL    = 'TEST_PERFORCE_URL';
     const TEST_DEPOT  = 'TEST_DEPOT_CONFIG';
@@ -36,7 +38,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->testPath         = sys_get_temp_dir() . '/composer-test';
+        $this->testPath         = $this->getUniqueTmpDirectory();
         $this->config           = $this->getTestConfig($this->testPath);
         $this->repoConfig       = $this->getTestRepoConfig();
         $this->io               = $this->getMockIOInterface();

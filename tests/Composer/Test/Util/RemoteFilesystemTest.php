@@ -172,7 +172,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
 
-        $res = $this->callGetOptionsForUrl($io, array('example.org', array('ssl'=>array('cafile'=>'/some/path/file.crt'))), array(), 'http://www.example.org');
+        $res = $this->callGetOptionsForUrl($io, array('example.org', array('ssl' => array('cafile' => '/some/path/file.crt'))), array(), 'http://www.example.org');
 
         $this->assertTrue(isset($res['ssl']['ciphers']));
         $this->assertRegExp("|!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK|", $res['ssl']['ciphers']);

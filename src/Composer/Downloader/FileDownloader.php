@@ -141,9 +141,7 @@ class FileDownloader implements DownloaderInterface
                         if ((0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
                             throw $e;
                         }
-                        if ($this->io->isVerbose()) {
-                            $this->io->writeError('    Download failed, retrying...');
-                        }
+                        $this->io->writeError('    Download failed, retrying...', true, IOInterface::VERBOSE);
                         usleep(500000);
                     }
                 }

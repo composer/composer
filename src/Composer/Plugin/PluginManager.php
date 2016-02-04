@@ -23,6 +23,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
 use Composer\DependencyResolver\Pool;
+use Composer\Plugin\Capability\Capability;
 
 /**
  * Plugin manager
@@ -122,8 +123,11 @@ class PluginManager
             $currentPluginApiVersion = $this->getPluginApiVersion();
             $currentPluginApiConstraint = new Constraint('==', $this->versionParser->normalize($currentPluginApiVersion));
 
-            if (!$requiresComposer->matches($currentPluginApiConstraint)) {
+            if ($requiresComposer->getPrettyString() === '1.0.0' && $this->getPluginApiVersion() === '1.0.0') {
+                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin requires composer-plugin-api 1.0.0, this *WILL* break in the future and it should be fixed ASAP (require ^1.0 for example).</warning>');
+            } elseif (!$requiresComposer->matches($currentPluginApiConstraint)) {
                 $this->io->writeError('<warning>The "' . $package->getName() . '" plugin was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
+
                 return;
             }
         }
@@ -202,9 +206,7 @@ class PluginManager
      */
     private function addPlugin(PluginInterface $plugin)
     {
-        if ($this->io->isDebug()) {
-            $this->io->writeError('Loading plugin '.get_class($plugin));
-        }
+        $this->io->writeError('Loading plugin '.get_class($plugin), true, IOInterface::DEBUG);
         $this->plugins[] =  $plugin;
         $plugin->activate($this->composer, $this->io);
 
@@ -298,5 +300,59 @@ class PluginManager
         }
 
         return $this->globalComposer->getInstallationManager()->getInstallPath($package);
+    }
+
+    /**
+     * @param  PluginInterface   $plugin
+     * @param  string            $capability
+     * @throws \RuntimeException On empty or non-string implementation class name value
+     * @return null|string       The fully qualified class of the implementation or null if Plugin is not of Capable type or does not provide it
+     */
+    protected function getCapabilityImplementationClassName(PluginInterface $plugin, $capability)
+    {
+        if (!($plugin instanceof Capable)) {
+            return null;
+        }
+
+        $capabilities = (array) $plugin->getCapabilities();
+
+        if (!empty($capabilities[$capability]) && is_string($capabilities[$capability]) && trim($capabilities[$capability])) {
+            return trim($capabilities[$capability]);
+        }
+
+        if (
+            array_key_exists($capability, $capabilities)
+            && (empty($capabilities[$capability]) || !is_string($capabilities[$capability]) || !trim($capabilities[$capability]))
+        ) {
+            throw new \UnexpectedValueException('Plugin '.get_class($plugin).' provided invalid capability class name(s), got '.var_export($capabilities[$capability], 1));
+        }
+    }
+
+    /**
+     * @param  PluginInterface $plugin
+     * @param  string          $capabilityClassName The fully qualified name of the API interface which the plugin may provide
+     *                                              an implementation of.
+     * @param  array           $ctorArgs            Arguments passed to Capability's constructor.
+     *                                              Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @return null|Capability
+     */
+    public function getPluginCapability(PluginInterface $plugin, $capabilityClassName, array $ctorArgs = array())
+    {
+        if ($capabilityClass = $this->getCapabilityImplementationClassName($plugin, $capabilityClassName)) {
+            if (!class_exists($capabilityClass)) {
+                throw new \RuntimeException("Cannot instantiate Capability, as class $capabilityClass from plugin ".get_class($plugin)." does not exist.");
+            }
+
+            $capabilityObj = new $capabilityClass($ctorArgs);
+
+            // FIXME these could use is_a and do the check *before* instantiating once drop support for php<5.3.9
+            if (!$capabilityObj instanceof Capability || !$capabilityObj instanceof $capabilityClassName) {
+                throw new \RuntimeException(
+                    'Class ' . $capabilityClass . ' must implement both Composer\Plugin\Capability\Capability and '. $capabilityClassName . '.'
+                );
+            }
+
+            return $capabilityObj;
+        }
     }
 }

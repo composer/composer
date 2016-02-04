@@ -47,6 +47,7 @@ class Config
         'github-domains' => array('github.com'),
         'disable-tls' => false,
         'cafile' => null,
+        'capath' => null,
         'github-expose-hostname' => true,
         'gitlab-domains' => array('gitlab.com'),
         'store-auths' => 'prompt',
@@ -179,6 +180,7 @@ class Config
             case 'cache-repo-dir':
             case 'cache-vcs-dir':
             case 'cafile':
+            case 'capath':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
@@ -189,7 +191,7 @@ class Config
                     return $val;
                 }
 
-                return ($flags & self::RELATIVE_PATHS == self::RELATIVE_PATHS) ? $val : $this->realpath($val);
+                return (($flags & self::RELATIVE_PATHS) == self::RELATIVE_PATHS) ? $val : $this->realpath($val);
 
             case 'cache-ttl':
                 return (int) $this->config[$key];
@@ -343,7 +345,7 @@ class Config
      */
     private function realpath($path)
     {
-        if (substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':') {
+        if (preg_match('{^(?:/|[a-z]:|[a-z0-9.]+://)}i', $path)) {
             return $path;
         }
 

@@ -14,9 +14,10 @@ namespace Composer\Test\Json;
 
 use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
+use Composer\TestCase;
 use Composer\Util\Filesystem;
 
-class JsonConfigSourceTest extends \PHPUnit_Framework_TestCase
+class JsonConfigSourceTest extends TestCase
 {
     /** @var Filesystem */
     private $fs;
@@ -31,8 +32,7 @@ class JsonConfigSourceTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->fs = new Filesystem;
-        $this->workingDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest';
-        $this->fs->ensureDirectoryExists($this->workingDir);
+        $this->workingDir = $this->getUniqueTmpDirectory();
     }
 
     protected function tearDown()
@@ -50,6 +50,24 @@ class JsonConfigSourceTest extends \PHPUnit_Framework_TestCase
         $jsonConfigSource->addRepository('example_tld', array('type' => 'git', 'url' => 'example.tld'));
 
         $this->assertFileEquals($this->fixturePath('config/config-with-exampletld-repository.json'), $config);
+    }
+
+    public function testAddRepositoryWithOptions()
+    {
+        $config = $this->workingDir.'/composer.json';
+        copy($this->fixturePath('composer-repositories.json'), $config);
+        $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
+        $jsonConfigSource->addRepository('example_tld', array(
+            'type' => 'composer',
+            'url' => 'https://example.tld',
+            'options' => array(
+                'ssl' => array(
+                    'local_cert' => '/home/composer/.ssl/composer.pem',
+                ),
+            ),
+        ));
+
+        $this->assertFileEquals($this->fixturePath('config/config-with-exampletld-repository-and-options.json'), $config);
     }
 
     public function testRemoveRepository()

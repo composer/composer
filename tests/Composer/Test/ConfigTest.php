@@ -148,6 +148,16 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('/baz', $config->get('cache-dir'));
     }
 
+    public function testStreamWrapperDirs()
+    {
+        $config = new Config(false, '/foo/bar');
+        $config->merge(array('config' => array(
+            'cache-dir' => 's3://baz/',
+        )));
+
+        $this->assertEquals('s3://baz', $config->get('cache-dir'));
+    }
+
     public function testFetchingRelativePaths()
     {
         $config = new Config(false, '/foo/bar');

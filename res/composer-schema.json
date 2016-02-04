@@ -149,6 +149,10 @@
                     "type": "string",
                     "description": "A way to set the path to the openssl CA file. In PHP 5.6+ you should rather set this via openssl.cafile in php.ini, although PHP 5.6+ should be able to detect your system CA file automatically."
                 },
+                "capath": {
+                    "type": "string",
+                    "description": "If cafile is not specified or if the certificate is not found there, the directory pointed to by capath is searched for a suitable certificate. capath must be a correctly hashed certificate directory."
+                },
                 "http-basic": {
                     "type": "object",
                     "description": "A hash of domain name => {\"username\": \"...\", \"password\": \"...\"}.",

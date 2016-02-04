@@ -36,7 +36,7 @@ as a normal package's.
 
 The current composer plugin API version is 1.0.0.
 
-An example of a valid plugin `composer.json` file (with the autoloading 
+An example of a valid plugin `composer.json` file (with the autoloading
 part omitted):
 
 ```json
@@ -89,9 +89,54 @@ Furthermore plugins may implement the
 event handlers automatically registered with the `EventDispatcher` when the
 plugin is loaded.
 
-Plugin can subscribe to any of the available [script events](scripts.md#event-names).
+To register a method to an event, implement the method `getSubscribedEvents()`
+and have it return an array. The array key must be the
+[event name](https://getcomposer.org/doc/articles/scripts.md#event-names)
+and the value is the name of the method in this class to be called.
 
-Example:
+```php
+public static function getSubscribedEvents()
+{
+    return array(
+        'post-autoload-dump' => 'methodToBeCalled',
+        // ^ event name ^         ^ method name ^
+    );
+}
+```
+
+By default, the priority of an event handler is set to 0. The priorty can be
+changed by attaching a tuple where the first value is the method name, as
+before, and the second value is an integer representing the priority.
+Higher integers represent higher priorities. Priortity 2 is called before
+priority 1, etc.
+
+```php
+public static function getSubscribedEvents()
+{
+    return array(
+        // Will be called before events with priority 0
+        'post-autoload-dump' => array('methodToBeCalled', 1)
+    );
+}
+```
+
+If multiple methods should be called, then an array of tuples can be attached
+to each event. The tuples do not need to include the priority. If it is
+omitted, it will default to 0.
+
+```php
+public static function getSubscribedEvents()
+{
+    return array(
+        'post-autoload-dump' => array(
+            array('methodToBeCalled'      ), // Priority defaults to 0
+            array('someOtherMethodName', 1), // This fires first
+        )
+    );
+}
+```
+
+Here's a complete example:
 
 ```php
 <?php

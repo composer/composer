@@ -17,11 +17,11 @@ Suggestions are displayed
 --RUN--
 install
 --EXPECT-OUTPUT--
-<info>Loading composer repositories with package information</info>
-<info>Installing dependencies (including require-dev)</info>
+Loading composer repositories with package information
+Installing dependencies (including require-dev)
 a/a suggests installing b/b (an obscure reason)
-<info>Writing lock file</info>
-<info>Generating autoload files</info>
+Writing lock file
+Generating autoload files
 
 --EXPECT--
 Installing a/a (1.0.0)

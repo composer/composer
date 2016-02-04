@@ -22,6 +22,7 @@ use Composer\Util\ConfigValidator;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
+use Composer\Util\Keys;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -132,6 +133,9 @@ EOT
 
         $io->write('Checking disk free space: ', false);
         $this->outputResult($this->checkDiskSpace($config));
+
+        $io->write('Checking pubkeys: ', false);
+        $this->outputResult($this->checkPubKeys($config));
 
         $io->write('Checking composer version: ', false);
         $this->outputResult($this->checkVersion());
@@ -325,6 +329,35 @@ EOT
         }
 
         return true;
+    }
+
+    private function checkPubKeys($config)
+    {
+        $home = $config->get('home');
+        $errors = array();
+        $io = $this->getIO();
+
+        if (file_exists($home.'/keys.tags.pub') && file_exists($home.'/keys.dev.pub')) {
+            $io->write('');
+        }
+
+        if (file_exists($home.'/keys.tags.pub')) {
+            $io->write('Tags Public Key Fingerprint: ' . Keys::fingerprint($home.'/keys.tags.pub'));
+        } else {
+            $errors[] = '<error>Missing pubkey for tags verification</error>';
+        }
+
+        if (file_exists($home.'/keys.dev.pub')) {
+            $io->write('Dev Public Key Fingerprint: ' . Keys::fingerprint($home.'/keys.dev.pub'));
+        } else {
+            $errors[] = '<error>Missing pubkey for dev verification</error>';
+        }
+
+        if ($errors) {
+            $errors[] = '<error>Run composer self-update --update-keys to set them up</error>';
+        }
+
+        return $errors ?: true;
     }
 
     private function checkVersion()

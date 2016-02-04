@@ -20,8 +20,10 @@ use Composer\Package\Version\VersionGuesser;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\Silencer;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
@@ -40,8 +42,8 @@ use Seld\JsonLint\JsonParser;
 class Factory
 {
     /**
-     * @return string
      * @throws \RuntimeException
+     * @return string
      */
     protected static function getHomeDir()
     {
@@ -50,7 +52,7 @@ class Factory
             return $home;
         }
 
-        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+        if (Platform::isWindows()) {
             if (!getenv('APPDATA')) {
                 throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
             }
@@ -89,7 +91,7 @@ class Factory
             return $homeEnv . '/cache';
         }
 
-        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+        if (Platform::isWindows()) {
             if ($cacheDir = getenv('LOCALAPPDATA')) {
                 $cacheDir .= '/Composer';
             } else {
@@ -114,7 +116,7 @@ class Factory
     }
 
     /**
-     * @param string $home
+     * @param  string $home
      * @return string
      */
     protected static function getDataDir($home)
@@ -124,7 +126,7 @@ class Factory
             return $homeEnv;
         }
 
-        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+        if (Platform::isWindows()) {
             return strtr($home, '\\', '/');
         }
 
@@ -139,7 +141,7 @@ class Factory
     }
 
     /**
-     * @param IOInterface|null $io
+     * @param  IOInterface|null $io
      * @return Config
      */
     public static function createConfig(IOInterface $io = null, $cwd = null)
@@ -163,9 +165,9 @@ class Factory
         foreach ($dirs as $dir) {
             if (!file_exists($dir . '/.htaccess')) {
                 if (!is_dir($dir)) {
-                    @mkdir($dir, 0777, true);
+                    Silencer::call('mkdir', $dir, 0777, true);
                 }
-                @file_put_contents($dir . '/.htaccess', 'Deny from all');
+                Silencer::call('file_put_contents', $dir . '/.htaccess', 'Deny from all');
             }
         }
 
@@ -188,6 +190,20 @@ class Factory
             $config->merge(array('config' => $file->read()));
         }
         $config->setAuthConfigSource(new JsonConfigSource($file, true));
+
+        // load COMPOSER_AUTH environment variable if set
+        if ($composerAuthEnv = getenv('COMPOSER_AUTH')) {
+            $authData = json_decode($composerAuthEnv, true);
+
+            if (is_null($authData)) {
+                throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed, should be a valid JSON object');
+            }
+
+            if ($io && $io->isDebug()) {
+                $io->writeError('Loading auth config from COMPOSER_AUTH');
+            }
+            $config->merge(array('config' => $authData));
+        }
 
         return $config;
     }
@@ -292,14 +308,10 @@ class Factory
         $config = static::createConfig($io, $cwd);
         $config->merge($localConfig);
         if (isset($composerFile)) {
-            if ($io && $io->isDebug()) {
-                $io->writeError('Loading config file ' . $composerFile);
-            }
+            $io->writeError('Loading config file ' . $composerFile, true, IOInterface::DEBUG);
             $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json');
             if ($localAuthFile->exists()) {
-                if ($io && $io->isDebug()) {
-                    $io->writeError('Loading config file ' . $localAuthFile->getPath());
-                }
+                $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 $config->merge(array('config' => $localAuthFile->read()));
                 $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
@@ -434,9 +446,7 @@ class Factory
         try {
             $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), false);
         } catch (\Exception $e) {
-            if ($io->isDebug()) {
-                $io->writeError('Failed to initialize global composer: '.$e->getMessage());
-            }
+            $io->writeError('Failed to initialize global composer: '.$e->getMessage(), true, IOInterface::DEBUG);
         }
 
         return $composer;
@@ -568,9 +578,9 @@ class Factory
     }
 
     /**
-     * @param IOInterface   $io         IO instance
-     * @param Config        $config     Config instance
-     * @param array         $options    Array of options passed directly to RemoteFilesystem constructor
+     * @param  IOInterface      $io      IO instance
+     * @param  Config           $config  Config instance
+     * @param  array            $options Array of options passed directly to RemoteFilesystem constructor
      * @return RemoteFilesystem
      */
     public static function createRemoteFilesystem(IOInterface $io, Config $config = null, $options = array())
@@ -590,9 +600,12 @@ class Factory
         $remoteFilesystemOptions = array();
         if ($disableTls === false) {
             if ($config && $config->get('cafile')) {
-                $remoteFilesystemOptions = array('ssl' => array('cafile' => $config->get('cafile')));
+                $remoteFilesystemOptions['ssl']['cafile'] = $config->get('cafile');
             }
-            $remoteFilesystemOptions = array_merge_recursive($remoteFilesystemOptions, $options);
+            if ($config && $config->get('capath')) {
+                $remoteFilesystemOptions['ssl']['capath'] = $config->get('capath');
+            }
+            $remoteFilesystemOptions = array_replace_recursive($remoteFilesystemOptions, $options);
         }
         try {
             $remoteFilesystem = new RemoteFilesystem($io, $config, $remoteFilesystemOptions, $disableTls);
@@ -612,7 +625,7 @@ class Factory
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     private static function useXdg()
     {
@@ -626,8 +639,8 @@ class Factory
     }
 
     /**
-     * @return string
      * @throws \RuntimeException
+     * @return string
      */
     private static function getUserDir()
     {
