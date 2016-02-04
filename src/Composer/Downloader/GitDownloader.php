@@ -72,9 +72,8 @@ class GitDownloader extends VcsDownloader
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
         GitUtil::cleanEnv();
-        $path = $this->normalizePath($path);
-        if (!is_dir($path.'/.git')) {
-            throw new \RuntimeException('The .git directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
+        if (!$this->hasMetadataRepository($path)) {
+            throw new VcsMissingMetadataException('The .git directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
         $ref = $target->getSourceReference();
@@ -100,8 +99,7 @@ class GitDownloader extends VcsDownloader
     public function getLocalChanges(PackageInterface $package, $path)
     {
         GitUtil::cleanEnv();
-        $path = $this->normalizePath($path);
-        if (!is_dir($path.'/.git')) {
+        if (!$this->hasMetadataRepository($path)) {
             return;
         }
 
@@ -370,5 +368,18 @@ class GitDownloader extends VcsDownloader
         }
 
         return $path;
+    }
+
+    /**
+     * Checks if VCS metadata repository has been initialized
+     * repository example: .git|.svn|.hg
+     *
+     * @param string $path
+     * @return bool
+     */
+    protected function hasMetadataRepository($path)
+    {
+        $path = $this->normalizePath($path);
+        return is_dir($path.'/.git');
     }
 }

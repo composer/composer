@@ -111,6 +111,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
 
         $this->cleanChanges($initial, $path, true);
         $urls = $target->getSourceUrls();
+
+        $exception = null;
         while ($url = array_shift($urls)) {
             try {
                 if (Filesystem::isLocalPath($url)) {
@@ -118,21 +120,23 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 }
                 $this->doUpdate($initial, $target, $path, $url);
                 break;
-            } catch (\Exception $e) {
+            } catch (\Exception $exception) {
                 if ($this->io->isDebug()) {
-                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
+                    $this->io->writeError('Failed: ['.get_class($exception).'] '.$exception->getMessage());
                 } elseif (count($urls)) {
                     $this->io->writeError('    Failed, trying the next URL');
-                } else {
-                    // in case of failed update, try to reapply the changes before aborting
-                    $this->reapplyChanges($path);
-
-                    throw $e;
                 }
             }
         }
 
         $this->reapplyChanges($path);
+
+        if (!$this->hasMetadataRepository($path) && !$urls && $exception) {
+            if (!$this->io->isDebug()) {
+                $this->io->write('    The VCS directory is missing from vendor package, see https://getcomposer.org/commit-deps for more information');
+            }
+            throw $exception;
+        }
 
         // print the commit logs if in verbose mode
         if ($this->io->isVerbose()) {
@@ -236,4 +240,13 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @return string
      */
     abstract protected function getCommitLogs($fromReference, $toReference, $path);
+
+    /**
+     * Checks if VCS metadata repository has been initialized
+     * repository example: .git|.svn|.hg
+     *
+     * @param string $path
+     * @return bool
+     */
+    abstract protected function hasMetadataRepository($path);
 }
