@@ -53,7 +53,7 @@ class SvnDownloader extends VcsDownloader
         $ref = $target->getSourceReference();
 
         if (!$this->hasMetadataRepository($path)) {
-            throw new VcsMissingMetadataException('The .svn directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
+            throw new \RuntimeException('The .svn directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
         $flags = "";

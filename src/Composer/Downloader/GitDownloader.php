@@ -73,7 +73,7 @@ class GitDownloader extends VcsDownloader
     {
         GitUtil::cleanEnv();
         if (!$this->hasMetadataRepository($path)) {
-            throw new VcsMissingMetadataException('The .git directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
+            throw new \RuntimeException('The .git directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
         $ref = $target->getSourceReference();

@@ -131,15 +131,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
 
         $this->reapplyChanges($path);
 
-        if (!$this->hasMetadataRepository($path) && !$urls && $exception) {
-            if (!$this->io->isDebug()) {
-                $this->io->write('    The VCS directory is missing from vendor package, see https://getcomposer.org/commit-deps for more information');
-            }
-            throw $exception;
-        }
-
-        // print the commit logs if in verbose mode
-        if ($this->io->isVerbose()) {
+        // print the commit logs if in verbose mode and VCS metadata is present
+        // because in case of missing metadata code would trigger another exception
+        if ($this->io->isVerbose() && $this->hasMetadataRepository($path)) {
             $message = 'Pulling in changes:';
             $logs = $this->getCommitLogs($initial->getSourceReference(), $target->getSourceReference(), $path);
 
@@ -159,6 +153,10 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 $this->io->writeError('    '.$message);
                 $this->io->writeError($logs);
             }
+        }
+
+        if (!$urls && $exception) {
+            throw $exception;
         }
 
         $this->io->writeError('');

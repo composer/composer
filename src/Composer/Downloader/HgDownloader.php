@@ -48,7 +48,7 @@ class HgDownloader extends VcsDownloader
         $this->io->writeError("    Updating to ".$target->getSourceReference());
 
         if (!$this->hasMetadataRepository($path)) {
-            throw new VcsMissingMetadataException('The .hg directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
+            throw new \RuntimeException('The .hg directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
         $command = sprintf('hg pull %s && hg up %s', $url, $ref);

@@ -26,7 +26,6 @@ class DownloadManager
     private $io;
     private $preferDist = false;
     private $preferSource = false;
-    private $forceUpdate = false;
     private $filesystem;
     private $downloaders  = array();
 
@@ -66,20 +65,6 @@ class DownloadManager
     public function setPreferDist($preferDist)
     {
         $this->preferDist = $preferDist;
-
-        return $this;
-    }
-
-    /**
-     * set force update mode
-     * forces to update the repository event when missing metadata
-     *
-     * @param $forceUpdate
-     * @return DownloadManager
-     */
-    public function setForceUpdate($forceUpdate)
-    {
-        $this->forceUpdate = (boolean) $forceUpdate;
 
         return $this;
     }
@@ -268,8 +253,9 @@ class DownloadManager
             try {
                 $downloader->update($initial, $target, $targetDir);
                 return;
-            } catch (VcsMissingMetadataException $ex) {
-                if ($this->forceUpdate === false) {
+            } catch (\RuntimeException $ex) {
+                if (!$this->io->isInteractive() ||
+                    !$this->io->askConfirmation('    Updating failed. Would you like to try reinstalling instead [<comment>yes</comment>]? ', true)) {
                     throw $ex;
                 }
             }
