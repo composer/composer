@@ -38,10 +38,10 @@ update B --with-dependencies
 
 --EXPECT-OUTPUT--
 <warning>Dependency "a" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>
-<info>Loading composer repositories with package information</info>
-<info>Updating dependencies (including require-dev)</info>
+Loading composer repositories with package information
+Updating dependencies (including require-dev)
 Nothing to install or update
-<info>Writing lock file</info>
-<info>Generating autoload files</info>
+Writing lock file
+Generating autoload files
 
 --EXPECT--
