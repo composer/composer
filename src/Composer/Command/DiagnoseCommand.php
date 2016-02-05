@@ -453,6 +453,10 @@ EOT
             $errors['openssl'] = true;
         }
 
+        if (extension_loaded('openssl') && OPENSSL_VERSION_NUMBER < 0x1000100f) {
+            $warnings['openssl_version'] = true;
+        }
+
         if (!defined('HHVM_VERSION') && !extension_loaded('apcu') && ini_get('apc.enable_cli')) {
             $warnings['apc_cli'] = true;
         }
@@ -568,6 +572,15 @@ EOT
                     case 'php':
                         $text  = "Your PHP ({$current}) is quite old, upgrading to PHP 5.3.4 or higher is recommended.".PHP_EOL;
                         $text .= " Composer works with 5.3.2+ for most people, but there might be edge case issues.";
+                        break;
+
+                    case 'openssl_version':
+                        // Attempt to parse version number out, fallback to whole string value.
+                        $opensslVersion = strstr(trim(strstr(OPENSSL_VERSION_TEXT, ' ')), ' ', true);
+                        $opensslVersion = $opensslVersion ?: OPENSSL_VERSION_TEXT;
+
+                        $text = "The OpenSSL library ({$opensslVersion}) used by PHP does not support TLSv1.2 or TLSv1.1.".PHP_EOL;
+                        $text .= "If possible you should upgrade OpenSSL to version 1.0.1 or above.";
                         break;
 
                     case 'xdebug_loaded':
