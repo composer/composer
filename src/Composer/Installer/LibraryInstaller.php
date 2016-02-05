@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Silencer;
 
@@ -241,7 +242,7 @@ class LibraryInstaller implements InstallerInterface
             }
 
             if ($this->binCompat === "auto") {
-                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                if (Platform::isWindows()) {
                     $this->installFullBinaries($binPath, $link, $bin, $package);
                 } else {
                     $this->installSymlinkBinaries($binPath, $link);

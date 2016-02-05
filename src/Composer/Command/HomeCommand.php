@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\Package\CompletePackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\ArrayRepository;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -117,7 +118,7 @@ EOT
     {
         $url = ProcessExecutor::escape($url);
 
-        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+        if (Platform::isWindows()) {
             return passthru('start "web" explorer "' . $url . '"');
         }
 

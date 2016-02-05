@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\Cache;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\IO\IOInterface;
@@ -40,10 +41,17 @@ class GzipDownloader extends ArchiveDownloader
         $targetFilepath = $path . DIRECTORY_SEPARATOR . basename(substr($file, 0, -3));
 
         // Try to use gunzip on *nix
-        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (!Platform::isWindows()) {
             $command = 'gzip -cd ' . ProcessExecutor::escape($file) . ' > ' . ProcessExecutor::escape($targetFilepath);
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {
+                return;
+            }
+
+            if (extension_loaded('zlib')) {
+                // Fallback to using the PHP extension.
+                $this->extractUsingExt($file, $targetFilepath);
+
                 return;
             }
 
@@ -52,13 +60,7 @@ class GzipDownloader extends ArchiveDownloader
         }
 
         // Windows version of PHP has built-in support of gzip functions
-        $archiveFile = gzopen($file, 'rb');
-        $targetFile = fopen($targetFilepath, 'wb');
-        while ($string = gzread($archiveFile, 4096)) {
-            fwrite($targetFile, $string, strlen($string));
-        }
-        gzclose($archiveFile);
-        fclose($targetFile);
+        $this->extractUsingExt($file, $targetFilepath);
     }
 
     /**
@@ -67,5 +69,16 @@ class GzipDownloader extends ArchiveDownloader
     protected function getFileName(PackageInterface $package, $path)
     {
         return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
+    }
+
+    private function extractUsingExt($file, $targetFilepath)
+    {
+        $archiveFile = gzopen($file, 'rb');
+        $targetFile = fopen($targetFilepath, 'wb');
+        while ($string = gzread($archiveFile, 4096)) {
+            fwrite($targetFile, $string, strlen($string));
+        }
+        gzclose($archiveFile);
+        fclose($targetFile);
     }
 }

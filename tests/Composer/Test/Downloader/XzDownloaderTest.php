@@ -15,6 +15,7 @@ namespace Composer\Test\Downloader;
 use Composer\Downloader\XzDownloader;
 use Composer\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Composer\Util\RemoteFilesystem;
 
 class XzDownloaderTest extends TestCase
@@ -31,7 +32,7 @@ class XzDownloaderTest extends TestCase
 
     public function setUp()
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (Platform::isWindows()) {
             $this->markTestSkipped('Skip test on Windows');
         }
         $this->testDir = $this->getUniqueTmpDirectory();
