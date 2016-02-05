@@ -207,7 +207,9 @@ class Rule
                         } elseif ($targetName === 'hhvm') {
                             $text .= ' -> you are running this with PHP and not HHVM.';
                         } else {
-                            $text .= ' -> your PHP version ('. phpversion() .') or value of "config.platform.php" in composer.json does not satisfy that requirement.';
+                            $available = $pool->whatProvides($targetName);
+                            $version = count($available) ? $available[0]->getPrettyVersion() : phpversion();
+                            $text .= ' -> your PHP version or "config.platform.php" value ('.$version.') does not satisfy that requirement.';
                         }
                     } elseif (0 === strpos($targetName, 'ext-')) {
                         // handle php extensions
