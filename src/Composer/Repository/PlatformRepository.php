@@ -59,6 +59,7 @@ class PlatformRepository extends ArrayRepository
             $version = $versionParser->normalize($override['version']);
             $package = new CompletePackage($override['name'], $version, $override['version']);
             $package->setDescription('Package overridden via config.platform');
+            $package->setExtra(array('config.platform' => true));
             parent::addPackage($package);
         }
 
