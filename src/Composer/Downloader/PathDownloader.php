@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Composer\Util\Platform;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -48,8 +49,8 @@ class PathDownloader extends FileDownloader
         }
 
         try {
-            if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-                // Implement symlinks as junctions on Windows, with magic shell hackery
+            if (Platform::isWindows()) {
+                // Implement symlinks as NTFS junctions on Windows
                 $this->filesystem->junction($realUrl, $path);
                 $this->io->writeError(sprintf('    Junctioned from %s', $url));
 

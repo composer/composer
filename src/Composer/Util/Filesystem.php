@@ -590,7 +590,7 @@ class Filesystem
      */
     public function junction($target, $junction)
     {
-        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (!Platform::isWindows()) {
             throw new \LogicException(sprintf('Function %s is not available on non-Windows platform', __CLASS__));
         }
         if (!is_dir($target)) {
@@ -612,7 +612,7 @@ class Filesystem
      */
     public function isJunction($junction)
     {
-        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (!Platform::isWindows()) {
             return false;
         }
         if (!is_dir($junction) || is_link($junction)) {
@@ -631,7 +631,7 @@ class Filesystem
      */
     public function removeJunction($junction)
     {
-        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (!Platform::isWindows()) {
             return false;
         }
         $junction = rtrim(str_replace('/', DIRECTORY_SEPARATOR, $junction), DIRECTORY_SEPARATOR);
@@ -639,6 +639,6 @@ class Filesystem
             throw new IOException(sprintf('%s is not a junction and thus cannot be removed as one', $junction));
         }
         $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape($junction));
-        return ($this->getProcess()->execute($cmd) === 0);
+        return ($this->getProcess()->execute($cmd, $output) === 0);
     }
 }
