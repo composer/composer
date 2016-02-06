@@ -122,20 +122,20 @@ class ClassMapGenerator
             $extraTypes .= '|enum';
         }
 
-        try {
-            // Use @ here instead of Silencer to actively suppress 'unhelpful' output
-            // @link https://github.com/composer/composer/pull/4886
-            $contents = @php_strip_whitespace($path);
-            if (!$contents) {
-                if (!file_exists($path)) {
-                    throw new \RuntimeException(sprintf('File at "%s" does not exist, check your classmap definitions', $path));
-                } elseif (!is_readable($path)) {
-                    throw new \RuntimeException(sprintf('File at "%s" is not readable, check its permissions', $path));
-                }
-                throw new \RuntimeException(sprintf('File at "%s" could not be parsed as PHP - it may be binary or corrupted', $path));
+        // Use @ here instead of Silencer to actively suppress 'unhelpful' output
+        // @link https://github.com/composer/composer/pull/4886
+        error_clear_last();
+        $contents = @php_strip_whitespace($path);
+        if (!$contents) {
+            if (is_null(error_get_last())) {
+                // No error, so the input file was really empty or contained only comments
+                return array();
+            } elseif (!file_exists($path)) {
+                throw new \RuntimeException(sprintf('File at "%s" does not exist, check your classmap definitions', $path));
+            } elseif (!is_readable($path)) {
+                throw new \RuntimeException(sprintf('File at "%s" is not readable, check its permissions', $path));
             }
-        } catch (\Exception $e) {
-            throw new \RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
+            throw new \RuntimeException(sprintf('File at "%s" could not be parsed as PHP - it may be binary or corrupted', $path));
         }
 
         // return early if there is no chance of matching anything in this file
