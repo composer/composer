@@ -113,7 +113,7 @@ class ClassMapGeneratorTest extends TestCase
 
     /**
      * @expectedException \RuntimeException
-     * @expectedExceptionMessage Could not scan for classes inside
+     * @expectedExceptionMessage does not exist
      */
     public function testFindClassesThrowsWhenFileDoesNotExist()
     {
