@@ -123,14 +123,14 @@ class ClassMapGenerator
         }
 
         try {
-            $contents = Silencer::call('php_strip_whitespace', $path);
+            $contents = @php_strip_whitespace($path);
             if (!$contents) {
                 if (!file_exists($path)) {
-                    throw new \Exception('File does not exist');
+                    throw new \RuntimeException(sprintf('File at "%s" does not exist, check your classmap definitions', $path));
+                } elseif (!is_readable($path)) {
+                    throw new \RuntimeException(sprintf('File at "%s" is not readable, check its permissions', $path));
                 }
-                if (!is_readable($path)) {
-                    throw new \Exception('File is not readable');
-                }
+                throw new \RuntimeException(sprintf('File at "%s" could not be parsed as PHP - it may be binary or corrupted', $path));
             }
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
