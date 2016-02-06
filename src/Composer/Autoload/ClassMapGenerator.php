@@ -123,6 +123,8 @@ class ClassMapGenerator
         }
 
         try {
+            // Use @ here instead of Silencer to actively suppress 'unhelpful' output
+            // @link https://github.com/composer/composer/pull/4886
             $contents = @php_strip_whitespace($path);
             if (!$contents) {
                 if (!file_exists($path)) {
