@@ -127,15 +127,21 @@ class ClassMapGenerator
         error_clear_last();
         $contents = @php_strip_whitespace($path);
         if (!$contents) {
-            if (is_null(error_get_last())) {
-                // No error, so the input file was really empty or contained only comments
+            $error = error_get_last();
+            if (is_null($error)) {
+                // No error, so the input file was really empty and thus contains no classes
                 return array();
             } elseif (!file_exists($path)) {
-                throw new \RuntimeException(sprintf('File at "%s" does not exist, check your classmap definitions', $path));
+                $message = 'File at "%s" does not exist, check your classmap definitions';
             } elseif (!is_readable($path)) {
-                throw new \RuntimeException(sprintf('File at "%s" is not readable, check its permissions', $path));
+                $message = 'File at "%s" is not readable, check its permissions';
+            } else {
+                $message = 'File at "%s" could not be parsed as PHP, it may be binary or corrupted';
             }
-            throw new \RuntimeException(sprintf('File at "%s" could not be parsed as PHP - it may be binary or corrupted', $path));
+            if (isset($error['message'])) {
+                $message .= PHP_EOL . 'The following message may be helpful:' . PHP_EOL . $error['message'];
+            }
+            throw new \RuntimeException(sprintf($message, $path));
         }
 
         // return early if there is no chance of matching anything in this file
