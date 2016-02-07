@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Package\CompletePackage;
+
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -203,25 +205,40 @@ class Rule
                     if ($targetName === 'php' || $targetName === 'php-64bit' || $targetName === 'hhvm') {
                         // handle php/hhvm
                         if (defined('HHVM_VERSION')) {
-                            $text .= ' -> your HHVM version does not satisfy that requirement.';
+                            return $text . ' -> your HHVM version does not satisfy that requirement.';
                         } elseif ($targetName === 'hhvm') {
-                            $text .= ' -> you are running this with PHP and not HHVM.';
+                            return $text . ' -> you are running this with PHP and not HHVM.';
                         } else {
-                            $text .= ' -> your PHP version ('. phpversion() .') or value of "config.platform.php" in composer.json does not satisfy that requirement.';
+                            $packages = $pool->whatProvides($targetName);
+                            $package = count($packages) ? current($packages) : phpversion();
+
+                            if (!($package instanceof CompletePackage)) {
+                                return $text . ' -> your PHP version ('.phpversion().') does not satisfy that requirement.';
+                            }
+
+                            $extra = $package->getExtra();
+
+                            if (!empty($extra['config.platform'])) {
+                                $text .= ' -> your PHP version ('.phpversion().') overriden by "config.platform.php" version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
+                            } else {
+                                $text .= ' -> your PHP version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
+                            }
+
+                            return $text;
                         }
                     } elseif (0 === strpos($targetName, 'ext-')) {
                         // handle php extensions
                         $ext = substr($targetName, 4);
                         $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
 
-                        $text .= ' -> the requested PHP extension '.$ext.' '.$error.'.';
+                        return $text . ' -> the requested PHP extension '.$ext.' '.$error.'.';
                     } elseif (0 === strpos($targetName, 'lib-')) {
                         // handle linked libs
                         $lib = substr($targetName, 4);
 
-                        $text .= ' -> the requested linked library '.$lib.' has the wrong version installed or is missing from your system, make sure to have the extension providing it.';
+                        return $text . ' -> the requested linked library '.$lib.' has the wrong version installed or is missing from your system, make sure to have the extension providing it.';
                     } else {
-                        $text .= ' -> no matching package found.';
+                        return $text . ' -> no matching package found.';
                     }
                 }
 

@@ -59,6 +59,7 @@ class PlatformRepository extends ArrayRepository
             $version = $versionParser->normalize($override['version']);
             $package = new CompletePackage($override['name'], $version, $override['version']);
             $package->setDescription('Package overridden via config.platform');
+            $package->setExtra(array('config.platform' => true));
             parent::addPackage($package);
         }
 
@@ -114,6 +115,7 @@ class PlatformRepository extends ArrayRepository
         // relying on them.
         foreach ($loadedExtensions as $name) {
             $prettyVersion = null;
+            $description = 'The '.$name.' PHP library';
             switch ($name) {
                 case 'curl':
                     $curlVersion = curl_version();
@@ -146,9 +148,27 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'openssl':
-                    $prettyVersion = preg_replace_callback('{^(?:OpenSSL\s*)?([0-9.]+)([a-z]?).*}', function ($match) {
-                        return $match[1] . (empty($match[2]) ? '' : '.'.(ord($match[2]) - 96));
+                    $prettyVersion = preg_replace_callback('{^(?:OpenSSL\s*)?([0-9.]+)([a-z]*).*}', function ($match) {
+                        if (empty($match[2])) {
+                            return $match[1];
+                        }
+
+                        // OpenSSL versions add another letter when they reach Z.
+                        // e.g. OpenSSL 0.9.8zh 3 Dec 2015
+
+                        if (!preg_match('{^z*[a-z]$}', $match[2])) {
+                            // 0.9.8abc is garbage
+                            return 0;
+                        }
+
+                        $len = strlen($match[2]);
+                        $patchVersion = ($len - 1) * 26; // All Z
+                        $patchVersion += ord($match[2][$len - 1]) - 96;
+
+                        return $match[1].'.'.$patchVersion;
                     }, OPENSSL_VERSION_TEXT);
+
+                    $description = OPENSSL_VERSION_TEXT;
                     break;
 
                 case 'pcre':
@@ -175,7 +195,7 @@ class PlatformRepository extends ArrayRepository
             }
 
             $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
-            $lib->setDescription('The '.$name.' PHP library');
+            $lib->setDescription($description);
             $this->addPackage($lib);
         }
 

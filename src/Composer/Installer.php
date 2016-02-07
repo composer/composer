@@ -529,10 +529,8 @@ class Installer
             return max(1, $e->getCode());
         }
 
-        if ($this->io->isVerbose()) {
-            $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies");
-            $this->io->writeError("Analyzed ".$solver->getRuleSetSize()." rules to resolve dependencies");
-        }
+        $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
+        $this->io->writeError("Analyzed ".$solver->getRuleSetSize()." rules to resolve dependencies", true, IOInterface::VERBOSE);
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
         $operations = $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $installFromLock, $withDevReqs, 'force-updates', $operations);
@@ -578,10 +576,8 @@ class Installer
                     && (!$operation->getTargetPackage()->getSourceReference() || $operation->getTargetPackage()->getSourceReference() === $operation->getInitialPackage()->getSourceReference())
                     && (!$operation->getTargetPackage()->getDistReference() || $operation->getTargetPackage()->getDistReference() === $operation->getInitialPackage()->getDistReference())
                 ) {
-                    if ($this->io->isDebug()) {
-                        $this->io->writeError('  - Skipping update of '. $operation->getTargetPackage()->getPrettyName().' to the same reference-locked version');
-                        $this->io->writeError('');
-                    }
+                    $this->io->writeError('  - Skipping update of '. $operation->getTargetPackage()->getPrettyName().' to the same reference-locked version', true, IOInterface::DEBUG);
+                    $this->io->writeError('', true, IOInterface::DEBUG);
 
                     continue;
                 }
@@ -1199,6 +1195,7 @@ class Installer
 
                     foreach ($requirePackages as $requirePackage) {
                         if (isset($skipPackages[$requirePackage->getName()])) {
+                            $this->io->writeError('<warning>Dependency "' . $requirePackage->getName() . '" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>');
                             continue;
                         }
                         $packageQueue->enqueue($requirePackage);

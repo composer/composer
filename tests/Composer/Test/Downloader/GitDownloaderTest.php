@@ -16,6 +16,7 @@ use Composer\Downloader\GitDownloader;
 use Composer\Config;
 use Composer\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 
 class GitDownloaderTest extends TestCase
 {
@@ -353,7 +354,7 @@ class GitDownloaderTest extends TestCase
 
     private function winCompat($cmd)
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (Platform::isWindows()) {
             $cmd = str_replace('cd ', 'cd /D ', $cmd);
             $cmd = str_replace('composerPath', getcwd().'/composerPath', $cmd);
 

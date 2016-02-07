@@ -105,9 +105,7 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 try {
                     $normalizedVersion = $versionParser->normalize($version);
                 } catch (\UnexpectedValueException $e) {
-                    if ($this->io->isVerbose()) {
-                        $this->io->writeError('Could not load '.$packageDefinition->getPackageName().' '.$version.': '.$e->getMessage());
-                    }
+                    $this->io->writeError('Could not load '.$packageDefinition->getPackageName().' '.$version.': '.$e->getMessage(), true, IOInterface::VERBOSE);
                     continue;
                 }
 

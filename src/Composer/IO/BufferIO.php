@@ -35,7 +35,7 @@ class BufferIO extends ConsoleIO
         $input = new StringInput($input);
         $input->setInteractive(false);
 
-        $output = new StreamOutput(fopen('php://memory', 'rw'), $verbosity, !empty($formatter), $formatter);
+        $output = new StreamOutput(fopen('php://memory', 'rw'), $verbosity, $formatter ? $formatter->isDecorated() : false, $formatter);
 
         parent::__construct($input, $output, new HelperSet(array()));
     }

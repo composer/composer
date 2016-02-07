@@ -367,9 +367,7 @@ class GitLabDriver extends VcsDriver
         }
 
         if ('https' === $scheme && !extension_loaded('openssl')) {
-            if ($io->isVerbose()) {
-                $io->write('Skipping GitLab driver for '.$url.' because the OpenSSL PHP extension is missing.');
-            }
+            $io->writeError('Skipping GitLab driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
 
             return false;
         }

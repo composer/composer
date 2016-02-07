@@ -110,7 +110,7 @@ class Filesystem
             return $this->removeDirectoryPhp($directory);
         }
 
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (Platform::isWindows()) {
             $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape(realpath($directory)));
         } else {
             $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
@@ -181,10 +181,10 @@ class Filesystem
     {
         if (!@$this->unlinkImplementation($path)) {
             // retry after a bit on windows since it tends to be touchy with mass removals
-            if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(350000) && !@$this->unlinkImplementation($path))) {
+            if (!Platform::isWindows() || (usleep(350000) && !@$this->unlinkImplementation($path))) {
                 $error = error_get_last();
                 $message = 'Could not delete '.$path.': ' . @$error['message'];
-                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                if (Platform::isWindows()) {
                     $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
                 }
 
@@ -206,10 +206,10 @@ class Filesystem
     {
         if (!@rmdir($path)) {
             // retry after a bit on windows since it tends to be touchy with mass removals
-            if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(350000) && !@rmdir($path))) {
+            if (!Platform::isWindows() || (usleep(350000) && !@rmdir($path))) {
                 $error = error_get_last();
                 $message = 'Could not delete '.$path.': ' . @$error['message'];
-                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                if (Platform::isWindows()) {
                     $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
                 }
 
@@ -264,7 +264,7 @@ class Filesystem
             return $this->copyThenRemove($source, $target);
         }
 
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (Platform::isWindows()) {
             // Try to copy & delete - this is a workaround for random "Access denied" errors.
             $command = sprintf('xcopy %s %s /E /I /Q /Y', ProcessExecutor::escape($source), ProcessExecutor::escape($target));
             $result = $this->processExecutor->execute($command, $output);
@@ -460,7 +460,7 @@ class Filesystem
 
     public static function getPlatformPath($path)
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (Platform::isWindows()) {
             $path = preg_replace('{^(?:file:///([a-z])/)}i', 'file://$1:/', $path);
         }
 
@@ -498,7 +498,7 @@ class Filesystem
      */
     private function unlinkImplementation($path)
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD') && is_dir($path) && is_link($path)) {
+        if (Platform::isWindows() && is_dir($path) && is_link($path)) {
             return rmdir($path);
         }
 

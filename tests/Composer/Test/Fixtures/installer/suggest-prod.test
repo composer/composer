@@ -17,10 +17,10 @@ Suggestions are not displayed in non-dev mode
 --RUN--
 install --no-dev
 --EXPECT-OUTPUT--
-<info>Loading composer repositories with package information</info>
-<info>Installing dependencies</info>
-<info>Writing lock file</info>
-<info>Generating autoload files</info>
+Loading composer repositories with package information
+Installing dependencies
+Writing lock file
+Generating autoload files
 
 --EXPECT--
 Installing a/a (1.0.0)

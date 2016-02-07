@@ -227,9 +227,7 @@ class RemoteFilesystem
         unset($tempAdditionalOptions);
         $userlandFollow = isset($options['http']['follow_location']) && !$options['http']['follow_location'];
 
-        if ($this->io->isDebug()) {
-            $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
-        }
+        $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl, true, IOInterface::DEBUG);
 
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
@@ -609,13 +607,11 @@ class RemoteFilesystem
                 // Handle subjectAltName on lesser PHP's.
                 $certMap = $this->peerCertificateMap[$urlAuthority];
 
-                if ($this->io->isDebug()) {
-                    $this->io->writeError(sprintf(
-                        'Using <info>%s</info> as CN for subjectAltName enabled host <info>%s</info>',
-                        $certMap['cn'],
-                        $urlAuthority
-                    ));
-                }
+                $this->io->writeError(sprintf(
+                    'Using <info>%s</info> as CN for subjectAltName enabled host <info>%s</info>',
+                    $certMap['cn'],
+                    $urlAuthority
+                ), true, IOInterface::DEBUG);
 
                 $tlsOptions['ssl']['CN_match'] = $certMap['cn'];
                 $tlsOptions['ssl']['peer_fingerprint'] = $certMap['fp'];
@@ -689,9 +685,7 @@ class RemoteFilesystem
         if (!empty($targetUrl)) {
             $this->redirects++;
 
-            if ($this->io->isDebug()) {
-                $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $targetUrl));
-            }
+            $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $targetUrl), true, IOInterface::DEBUG);
 
             $additionalOptions['redirects'] = $this->redirects;
 
@@ -914,9 +908,7 @@ class RemoteFilesystem
             return $files[$filename];
         }
 
-        if ($this->io->isDebug()) {
-            $this->io->writeError('Checking CA file '.realpath($filename));
-        }
+        $this->io->writeError('Checking CA file '.realpath($filename), true, IOInterface::DEBUG);
         $contents = file_get_contents($filename);
 
         // assume the CA is valid if php is vulnerable to

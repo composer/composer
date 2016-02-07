@@ -1,0 +1,16 @@
+--TEST--
+Tries to require a package with the same name as the root package
+--COMPOSER--
+{
+    "name": "foo/bar",
+    "require": {
+        "foo/bar": "@dev"
+    }
+}
+--RUN--
+install
+--EXPECT-EXCEPTION--
+InvalidArgumentException
+--EXPECT--
+Root package 'foo/bar' cannot require itself in its composer.json
+Did you accidentally name your root package after an external package?
