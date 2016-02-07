@@ -252,7 +252,7 @@ class InstallerTest extends TestCase
         $this->assertSame(rtrim($expect), implode("\n", $installationManager->getTrace()));
 
         if ($expectOutput) {
-            $this->assertEquals(rtrim($expectOutput), rtrim($output));
+            $this->assertStringMatchesFormat(rtrim($expectOutput), rtrim($output));
         }
     }
 

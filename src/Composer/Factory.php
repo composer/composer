@@ -512,6 +512,7 @@ class Factory
         }
 
         $am = new Archiver\ArchiveManager($dm);
+        $am->addArchiver(new Archiver\ZipArchiver);
         $am->addArchiver(new Archiver\PharArchiver);
 
         return $am;
