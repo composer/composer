@@ -413,7 +413,7 @@ If you have installed Composer for your entire system (see [global installation]
 you may have to run the command with `root` privileges
 
 ```sh
-sudo composer self-update
+sudo -H composer self-update
 ```
 
 ### Options

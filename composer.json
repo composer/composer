@@ -45,7 +45,8 @@
         }
     },
     "suggest": {
-        "ext-zip": "Enabling the zip extension allows you to unzip archives, and allows gzip compression of all internet traffic",
+        "ext-zip": "Enabling the zip extension allows you to unzip archives",
+        "ext-zlib": "Allow gzip compression of HTTP requests",
         "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages"
     },
     "autoload": {

@@ -1,0 +1,47 @@
+--TEST--
+
+See Github issue #4795 ( github.com/composer/composer/issues/4795 ).
+
+Composer\Installer::whitelistUpdateDependencies intentionally ignores root requirements even if said package is also a
+dependency of one the requirements that is whitelisted for update.
+
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a", "version": "1.0.0" },
+                { "name": "a", "version": "1.1.0" },
+                { "name": "b", "version": "1.0.0", "require": { "a": "~1.0" } },
+                { "name": "b", "version": "1.1.0", "require": { "a": "~1.1" } },
+                { "name": "c", "version": "1.0.0", "require": { "a": "~1.0" } }
+            ]
+        }
+    ],
+    "require": {
+        "a": "~1.0",
+        "b": "~1.0",
+        "c": "~1.0"
+    }
+}
+
+--INSTALLED--
+[
+    { "name": "a", "version": "1.0.0" },
+    { "name": "b", "version": "1.0.0", "require": { "a": "~1.0" } },
+    { "name": "c", "version": "1.0.0", "require": { "a": "~1.0" } }
+]
+
+--RUN--
+update B --with-dependencies
+
+--EXPECT-OUTPUT--
+<warning>Dependency "a" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>
+Loading composer repositories with package information
+Updating dependencies (including require-dev)
+Nothing to install or update
+Writing lock file
+Generating autoload files
+
+--EXPECT--

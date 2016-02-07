@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -184,7 +185,7 @@ EOT
         if ($input->getOption('editor')) {
             $editor = escapeshellcmd(getenv('EDITOR'));
             if (!$editor) {
-                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                if (Platform::isWindows()) {
                     $editor = 'notepad';
                 } else {
                     foreach (array('vim', 'vi', 'nano', 'pico', 'ed') as $candidate) {
@@ -197,7 +198,7 @@ EOT
             }
 
             $file = $input->getOption('auth') ? $this->authConfigFile->getPath() : $this->configFile->getPath();
-            system($editor . ' ' . $file . (defined('PHP_WINDOWS_VERSION_BUILD') ? '' : ' > `tty`'));
+            system($editor . ' ' . $file . (Platform::isWindows() ? '' : ' > `tty`'));
 
             return 0;
         }

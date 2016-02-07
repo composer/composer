@@ -1,0 +1,45 @@
+--TEST--
+
+See Github issue #4319 ( github.com/composer/composer/issues/4319 ).
+
+Present a clear error message when config.platform.php version results in a conflict rule.
+
+--CONDITION--
+!defined('HHVM_VERSION')
+
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a", "version": "1.0.0", "require": { "php": "5.5" } }
+            ]
+        }
+    ],
+    "require": {
+        "a": "~1.0"
+    },
+    "config": {
+        "platform": {
+            "php": "5.3"
+        }
+    }
+}
+
+--RUN--
+install
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Installing dependencies (including require-dev)
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Installation request for a ~1.0 -> satisfiable by a[1.0.0].
+    - a 1.0.0 requires php 5.5 -> your PHP version (%s) overriden by "config.platform.php" version (5.3) does not satisfy that requirement.
+
+--EXPECT--
+
+--EXPECT-EXIT-CODE--
+2

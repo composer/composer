@@ -109,7 +109,7 @@ mv composer.phar /usr/local/bin/composer
 A quick copy-paste version including sudo:
 
 ```sh
-curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+curl -sS https://getcomposer.org/installer | sudo -H php -- --install-dir=/usr/local/bin --filename=composer
 ```
 
 > **Note:** On some versions of OSX the `/usr` directory does not exist by

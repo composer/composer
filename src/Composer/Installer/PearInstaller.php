@@ -17,6 +17,7 @@ use Composer\Composer;
 use Composer\Downloader\PearPackageExtractor;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 
 /**
@@ -53,7 +54,7 @@ class PearInstaller extends LibraryInstaller
         parent::installCode($package);
         parent::initializeBinDir();
 
-        $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
+        $isWindows = Platform::isWindows();
         $php_bin = $this->binDir . ($isWindows ? '/composer-php.bat' : '/composer-php');
 
         if (!$isWindows) {

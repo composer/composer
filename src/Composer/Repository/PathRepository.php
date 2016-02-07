@@ -125,17 +125,16 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             $package['dist'] = array(
                 'type' => 'path',
                 'url' => $url,
-                'reference' => '',
+                'reference' => sha1($json),
             );
 
             if (!isset($package['version'])) {
                 $package['version'] = $this->versionGuesser->guessVersion($package, $path) ?: 'dev-master';
             }
+
             $output = '';
             if (is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
                 $package['dist']['reference'] = trim($output);
-            } else {
-                $package['dist']['reference'] = Locker::getContentHash($json);
             }
 
             $package = $this->loader->load($package);
