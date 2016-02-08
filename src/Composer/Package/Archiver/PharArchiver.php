@@ -20,8 +20,15 @@ namespace Composer\Package\Archiver;
 class PharArchiver implements ArchiverInterface
 {
     protected static $formats = array(
-        'zip' => \Phar::ZIP,
-        'tar' => \Phar::TAR,
+        'zip'     => \Phar::ZIP,
+        'tar'     => \Phar::TAR,
+        'tar.gz'  => \Phar::TAR,
+        'tar.bz2' => \Phar::TAR
+    );
+
+    protected static $compressFormats = array(
+        'tar.gz'  => \Phar::GZ,
+        'tar.bz2' => \Phar::BZ2
     );
 
     /**
@@ -37,9 +44,33 @@ class PharArchiver implements ArchiverInterface
         }
 
         try {
+            $filename = substr($target, 0, strrpos($target, $format) - 1);
+
+            // Check if compress format
+            if (isset(static::$compressFormats[$format])) {
+                // Current compress format supported base on tar
+                $target = $filename . '.tar';
+            }
+
             $phar = new \PharData($target, null, null, static::$formats[$format]);
             $files = new ArchivableFilesFinder($sources, $excludes);
             $phar->buildFromIterator($files, $sources);
+
+            if (isset(static::$compressFormats[$format])) {
+                // Check can be compressed?
+                if (!$phar->canCompress(static::$compressFormats[$format])) {
+                    throw new \RuntimeException(sprintf('Can not compress to %s format', $format));
+                }
+
+                // Delete old tar
+                unlink($target);
+
+                // Compress the new tar
+                $phar->compress(static::$compressFormats[$format]);
+
+                // Make the correct filename
+                $target = $filename . '.' . $format;
+            }
 
             return $target;
         } catch (\UnexpectedValueException $e) {
