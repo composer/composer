@@ -144,7 +144,7 @@ final class StreamContextFactory
             $options['http']['header'][] = sprintf(
                 'User-Agent: Composer/%s (%s%s%s)',
                 Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
-                $unameStatus ? ' ' . php_uname('s') . ';' : '',
+                $unameStatus ? php_uname('s') . ';' : '',
                 $unameStatus ? ' ' . php_uname('r') . ';' : '',
                 $phpVersion
             );
