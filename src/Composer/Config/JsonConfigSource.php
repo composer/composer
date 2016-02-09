@@ -25,7 +25,7 @@ use Composer\Util\Silencer;
 class JsonConfigSource implements ConfigSourceInterface
 {
     /**
-     * @var \Composer\Json\JsonFile
+     * @var JsonFile
      */
     private $file;
 
@@ -140,6 +140,14 @@ class JsonConfigSource implements ConfigSourceInterface
         $fallback = array_pop($args);
 
         if ($this->file->exists()) {
+            if (!is_writable($this->file->getPath())) {
+                throw new \RuntimeException(sprintf('The file "%s" is not writable.', $this->file->getPath()));
+            }
+
+            if (!is_readable($this->file->getPath())) {
+                throw new \RuntimeException(sprintf('The file "%s" is not readable.', $this->file->getPath()));
+            }
+
             $contents = file_get_contents($this->file->getPath());
         } elseif ($this->authConfig) {
             $contents = "{\n}\n";
