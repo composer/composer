@@ -737,4 +737,8 @@ If set to 1, this env var will make Composer behave as if you passed the
 
 If set to 1, this env disables the warning about having xdebug enabled.
 
+### COMPOSER_DISABLE_PHP_EXPOSE
+
+If set to 1, this env disables the php version exposure in requests.
+
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
