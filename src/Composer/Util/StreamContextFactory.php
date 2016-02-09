@@ -134,13 +134,18 @@ final class StreamContextFactory
         } else {
             $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
         }
+        
+        if (getenv('COMPOSER_DISABLE_PHP_EXPOSE')) {
+            $phpVersion = '';
+        }
 
         if (!isset($options['http']['header']) || false === strpos(strtolower(implode('', $options['http']['header'])), 'user-agent')) {
+            $unameStatus = function_exists('php_uname');
             $options['http']['header'][] = sprintf(
-                'User-Agent: Composer/%s (%s; %s; %s)',
+                'User-Agent: Composer/%s (%s%s%s)',
                 Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
-                php_uname('s'),
-                php_uname('r'),
+                $unameStatus ? ' ' . php_uname('s') . ';' : '',
+                $unameStatus ? ' ' . php_uname('r') . ';' : '',
                 $phpVersion
             );
         }
