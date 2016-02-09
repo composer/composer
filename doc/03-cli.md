@@ -737,4 +737,8 @@ If set to 1, this env var will make Composer behave as if you passed the
 
 If set to 1, this env disables the warning about having xdebug enabled.
 
+### COMPOSER_USER_AGENT
+
+If set to 1, this env will be defined as User-Agent header on every request.
+
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
