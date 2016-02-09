@@ -188,7 +188,16 @@ class EventDispatcher
                 } else {
                     $this->io->writeError(sprintf('> %s', $exec));
                 }
-                if (0 !== ($exitCode = $this->process->execute($exec))) {
+
+                // add the bin dir to the PATH to make local binaries of deps usable in scripts
+                $env = array();
+                $composerConfig = $this->composer->getConfig();
+                if ($composerConfig && $composerConfig->get('bin-dir')) {
+                    $env['PATH'] = $composerConfig->get('bin-dir').PATH_SEPARATOR.getenv('PATH');
+                }
+
+                // execute the script
+                if (0 !== ($exitCode = $this->process->executeCustomEnvironment($exec, $env ?: null))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 
                     throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
