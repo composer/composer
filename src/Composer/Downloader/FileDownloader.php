@@ -184,7 +184,6 @@ class FileDownloader implements DownloaderInterface
     protected function clearCache(PackageInterface $package, $path, $processedUrl)
     {
         if ($this->cache) {
-            $fileName = $this->getFileName($package, $path);
             $this->cache->remove($this->getCacheKey($package, $processedUrl));
         }
     }
