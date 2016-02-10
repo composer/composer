@@ -311,7 +311,9 @@ class RemoteFilesystem
         }
 
         // handle 3xx redirects for php<5.6, 304 Not Modified is excluded
+        $hasFollowedRedirect = false;
         if ($userlandFollow && $statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $this->redirects < $this->maxRedirects) {
+            $hasFollowedRedirect = true;
             $result = $this->handleRedirect($http_response_header, $additionalOptions, $result);
         }
 
@@ -332,7 +334,7 @@ class RemoteFilesystem
         }
 
         // decode gzip
-        if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
+        if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http' && !$hasFollowedRedirect) {
             $decode = 'gzip' === strtolower($this->findHeaderValue($http_response_header, 'content-encoding'));
 
             if ($decode) {
