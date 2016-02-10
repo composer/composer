@@ -14,6 +14,8 @@ namespace Composer\Test\EventDispatcher;
 
 use Composer\EventDispatcher\Event;
 use Composer\Installer\InstallerEvents;
+use Composer\Config;
+use Composer\Composer;
 use Composer\TestCase;
 use Composer\IO\BufferIO;
 use Composer\Script\ScriptEvents;
@@ -77,7 +79,7 @@ class EventDispatcherTest extends TestCase
         $process = $this->getMock('Composer\Util\ProcessExecutor');
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
-                $this->getMock('Composer\Composer'),
+                $this->createComposerInstance(),
                 $this->getMock('Composer\IO\IOInterface'),
                 $process,
             ))
@@ -102,7 +104,7 @@ class EventDispatcherTest extends TestCase
         $process = $this->getMock('Composer\Util\ProcessExecutor');
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
-                $this->getMock('Composer\Composer'),
+                $this->createComposerInstance(),
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
                 $process,
             ))
@@ -138,7 +140,7 @@ class EventDispatcherTest extends TestCase
         $process = $this->getMock('Composer\Util\ProcessExecutor');
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
-                $composer = $this->getMock('Composer\Composer'),
+                $composer = $this->createComposerInstance(),
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
                 $process,
             ))
@@ -182,7 +184,7 @@ class EventDispatcherTest extends TestCase
         $process = $this->getMock('Composer\Util\ProcessExecutor');
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
         ->setConstructorArgs(array(
-            $composer = $this->getMock('Composer\Composer'),
+            $composer = $this->createComposerInstance(),
             $io = $this->getMock('Composer\IO\IOInterface'),
             $process,
         ))
@@ -210,7 +212,7 @@ class EventDispatcherTest extends TestCase
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
-                $this->getMock('Composer\Composer'),
+                $this->createComposerInstance(),
                 $io,
             ))
             ->setMethods(array('getListeners'))
@@ -236,7 +238,7 @@ class EventDispatcherTest extends TestCase
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
-                $this->getMock('Composer\Composer'),
+                $this->createComposerInstance(),
                 $io = $this->getMock('Composer\IO\IOInterface'),
                 new ProcessExecutor,
             ))
@@ -261,7 +263,7 @@ class EventDispatcherTest extends TestCase
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
-                $this->getMock('Composer\Composer'),
+                $this->createComposerInstance(),
                 $io = $this->getMock('Composer\IO\IOInterface'),
                 new ProcessExecutor,
             ))
@@ -295,7 +297,7 @@ class EventDispatcherTest extends TestCase
         $process = $this->getMock('Composer\Util\ProcessExecutor');
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
-                    $this->getMock('Composer\Composer'),
+                    $this->createComposerInstance(),
                     $this->getMock('Composer\IO\IOInterface'),
                     $process,
                 ))
@@ -333,5 +335,14 @@ class EventDispatcherTest extends TestCase
     public static function someMethod()
     {
         return true;
+    }
+
+    private function createComposerInstance()
+    {
+        $composer = new Composer;
+        $config = new Config;
+        $composer->setConfig($config);
+
+        return $composer;
     }
 }
