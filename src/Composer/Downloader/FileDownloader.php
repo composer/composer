@@ -122,7 +122,7 @@ class FileDownloader implements DownloaderInterface
 
         try {
             $checksum = $package->getDistSha1Checksum();
-            $cacheKey = $this->getCacheKey($package);
+            $cacheKey = $this->getCacheKey($package, $processedUrl);
 
             // download if we don't have it in cache or the cache is invalidated
             if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
@@ -238,12 +238,14 @@ class FileDownloader implements DownloaderInterface
         return $url;
     }
 
-    private function getCacheKey(PackageInterface $package)
+    private function getCacheKey(PackageInterface $package, $processedUrl)
     {
-        if (preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
-            return $package->getName().'/'.$package->getDistReference().'.'.$package->getDistType();
-        }
+        // we use the complete download url here to avoid conflicting entries
+        // from different packages, which would potentially allow a given package
+        // in a third party repo to pre-populate the cache for the same package in
+        // packagist for example.
+        $cacheKey = sha1($processedUrl);
 
-        return $package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'.'.$package->getDistType();
+        return $package->getName().'/'.$cacheKey.'.'.$package->getDistType();
     }
 }
