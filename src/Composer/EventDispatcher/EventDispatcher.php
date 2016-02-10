@@ -145,6 +145,16 @@ class EventDispatcher
      */
     protected function doDispatch(Event $event)
     {
+        // add the bin dir to the PATH to make local binaries of deps usable in scripts
+        $binDir = $this->composer->getConfig()->get('bin-dir');
+        if (is_dir($binDir)) {
+            $binDir = realpath($binDir);
+            if (isset($_SERVER['PATH']) && !preg_match('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $_SERVER['PATH'])) {
+                $_SERVER['PATH'] = $binDir.PATH_SEPARATOR.getenv('PATH');
+                putenv('PATH='.$_SERVER['PATH']);
+            }
+        }
+
         $listeners = $this->getListeners($event);
 
         $this->pushEvent($event);

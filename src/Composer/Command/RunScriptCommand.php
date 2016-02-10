@@ -84,13 +84,6 @@ EOT
             throw new \InvalidArgumentException(sprintf('Script "%s" is not defined in this package', $script));
         }
 
-        // add the bin dir to the PATH to make local binaries of deps usable in scripts
-        $binDir = $composer->getConfig()->get('bin-dir');
-        if (is_dir($binDir)) {
-            $_SERVER['PATH'] = realpath($binDir).PATH_SEPARATOR.getenv('PATH');
-            putenv('PATH='.$_SERVER['PATH']);
-        }
-
         $args = $input->getArgument('args');
 
         return $composer->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args);
