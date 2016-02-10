@@ -43,7 +43,7 @@ abstract class ArchiveDownloader extends FileDownloader
                     $this->extract($fileName, $temporaryDir);
                 } catch (\Exception $e) {
                     // remove cache if the file was corrupted
-                    parent::clearCache($package, $path);
+                    parent::clearLastCacheWrite($package);
                     throw $e;
                 }
 

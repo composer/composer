@@ -39,6 +39,7 @@ class FileDownloader implements DownloaderInterface
     protected $filesystem;
     protected $cache;
     protected $outputProgress = true;
+    private $lastCacheWrites = array();
 
     /**
      * Constructor.
@@ -147,6 +148,7 @@ class FileDownloader implements DownloaderInterface
                 }
 
                 if ($this->cache) {
+                    $this->lastCacheWrites[$package->getName()] = $cacheKey;
                     $this->cache->copyFrom($cacheKey, $fileName);
                 }
             } else {
@@ -164,7 +166,7 @@ class FileDownloader implements DownloaderInterface
         } catch (\Exception $e) {
             // clean up
             $this->filesystem->removeDirectory($path);
-            $this->clearCache($package, $path, $processedUrl);
+            $this->clearLastCacheWrite($package);
             throw $e;
         }
 
@@ -181,10 +183,11 @@ class FileDownloader implements DownloaderInterface
         return $this;
     }
 
-    protected function clearCache(PackageInterface $package, $path, $processedUrl)
+    protected function clearLastCacheWrite(PackageInterface $package)
     {
-        if ($this->cache) {
-            $this->cache->remove($this->getCacheKey($package, $processedUrl));
+        if ($this->cache && isset($this->lastCacheWrites[$package->getName()])) {
+            $this->cache->remove($this->lastCacheWrites[$package->getName()]);
+            unset($this->lastCacheWrites[$package->getName()]);
         }
     }
 
