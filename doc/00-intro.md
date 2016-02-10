@@ -60,18 +60,8 @@ project, or globally as a system wide executable.
 #### Locally
 
 Installing Composer locally is a matter of just running the installer in your
-project directory:
-
-```sh
-curl -sS https://getcomposer.org/installer | php
-```
-
-> **Note:** If the above fails for some reason, you can download the installer
-> with `php` instead:
-
-```sh
-php -r "readfile('https://getcomposer.org/installer');" | php
-```
+project directory. See [the Download page](https://getcomposer.org/download/)
+for instructions.
 
 The installer will just check a few PHP settings and then download
 `composer.phar` to your working directory. This file is the Composer binary. It
@@ -81,10 +71,13 @@ the command line, amongst other things.
 Now just run `php composer.phar` in order to run Composer.
 
 You can install Composer to a specific directory by using the `--install-dir`
-option and additionally (re)name it as well using the `--filename` option:
+option and additionally (re)name it as well using the `--filename` option. When
+running the installer when following
+[the Download page instructions](https://getcomposer.org/download/) add the
+following parameters:
 
 ```sh
-curl -sS https://getcomposer.org/installer | php -- --install-dir=bin --filename=composer
+php composer-setup.php --install-dir=bin --filename=composer
 ```
 
 Now just run `php bin/composer` in order to run Composer.
@@ -96,21 +89,15 @@ that is part of your `PATH`, you can access it globally. On unixy systems you
 can even make it executable and invoke it without directly using the `php`
 interpreter.
 
-Run these commands to globally install `composer` on your system:
+After running the installer following [the Download page instructions](https://getcomposer.org/download/)
+you can run this to move composer.phar to a directory that is in your path:
 
 ```sh
-curl -sS https://getcomposer.org/installer | php
 mv composer.phar /usr/local/bin/composer
 ```
 
-> **Note:** If the above fails due to permissions, run the `mv` line again
+> **Note:** If the above fails due to permissions, you may need to run it again
 > with sudo.
-
-A quick copy-paste version including sudo:
-
-```sh
-curl -sS https://getcomposer.org/installer | sudo -H php -- --install-dir=/usr/local/bin --filename=composer
-```
 
 > **Note:** On some versions of OSX the `/usr` directory does not exist by
 > default. If you receive the error "/usr/local/bin/composer: No such file or
@@ -138,17 +125,9 @@ call `composer` from any directory in your command line.
 
 ### Manual Installation
 
-Change to a directory on your `PATH` and run the install snippet to download
-`composer.phar`:
-
-```sh
-C:\Users\username>cd C:\bin
-C:\bin>php -r "readfile('https://getcomposer.org/installer');" | php
-```
-
-> **Note:** If the above fails due to readfile, enable php_openssl.dll in php.ini.
-> You may use the `http` URL, however this will leave the request susceptible to a
-> Man-In-The-Middle (MITM) attack.
+Change to a directory on your `PATH` and run the installer following
+[the Download page instructions](https://getcomposer.org/download/)
+to download `composer.phar`.
 
 Create a new `composer.bat` file alongside `composer.phar`:
 
@@ -157,12 +136,15 @@ C:\bin>echo @php "%~dp0composer.phar" %*>composer.bat
 ```
 
 Add the directory to your PATH environment variable if it isn't already.
+For information on changing your PATH variable, please see
+[this article](http://www.computerhope.com/issues/ch000549.htm) and/or
+use Google.
 
 Close your current terminal. Test usage with a new terminal:
 
 ```sh
 C:\Users\username>composer -V
-Composer version 27d8904
+Composer version 1.0.0 2016-01-10 20:34:53
 ```
 
 ## Using Composer
