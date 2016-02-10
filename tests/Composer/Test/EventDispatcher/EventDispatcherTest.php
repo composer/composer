@@ -90,7 +90,7 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnValue($listener));
 
         $process->expects($this->once())
-            ->method('execute')
+            ->method('executeCustomEnvironment')
             ->with($command)
             ->will($this->returnValue(0));
 
@@ -112,7 +112,7 @@ class EventDispatcherTest extends TestCase
             ->getMock();
 
         $process->expects($this->exactly(2))
-            ->method('execute')
+            ->method('executeCustomEnvironment')
             ->will($this->returnValue(0));
 
         $listeners = array(
@@ -148,7 +148,7 @@ class EventDispatcherTest extends TestCase
             ->getMock();
 
         $process->expects($this->exactly(3))
-            ->method('execute')
+            ->method('executeCustomEnvironment')
             ->will($this->returnValue(0));
 
         $dispatcher->expects($this->atLeastOnce())

@@ -39,7 +39,7 @@ class ProcessExecutor
      * @param  mixed  $output  the output will be written into this var if passed by ref
      *                         if a callable is passed it will be used as output handler
      * @param  string $cwd     the working directory
-     * @return int    statuscode
+     * @return int    process exit code
      */
     public function execute($command, &$output = null, $cwd = null)
     {
@@ -64,6 +64,39 @@ class ProcessExecutor
         if ($this->captureOutput && !is_callable($output)) {
             $output = $process->getOutput();
         }
+
+        $this->errorOutput = $process->getErrorOutput();
+
+        return $process->getExitCode();
+    }
+
+    /**
+     * runs a process on the commandline in the sandbox environment
+     *
+     * @param   string $command the command to execute
+     * @param   array|null $env
+     * @return  int process exit code
+     */
+    public function executeCustomEnvironment($command, array $env = null)
+    {
+        if ($this->io && $this->io->isDebug()) {
+            $safeCommand = preg_replace('{(://[^:/\s]+:)[^@\s/]+}i', '$1****', $command);
+            $this->io->writeError('Executing command (\'CWD\'): '.$safeCommand);
+        }
+
+        // make sure that null translate to the proper directory in case the dir is a symlink
+        // and we call a git command, because msysgit does not handle symlinks properly
+        $cwd = null;
+        if (defined('PHP_WINDOWS_VERSION_BUILD') && false !== strpos($command, 'git') && getcwd()) {
+            $cwd = realpath(getcwd());
+        }
+
+        $this->captureOutput = 0;
+        $this->errorOutput = null;
+        $process = new Process($command, $cwd, $env, null, static::getTimeout());
+
+        $callback = array($this, 'outputHandler');
+        $process->run($callback);
 
         $this->errorOutput = $process->getErrorOutput();
 
