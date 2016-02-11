@@ -13,8 +13,8 @@
 namespace Composer\Util;
 
 use Composer\Config;
-use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use Composer\IO\IOInterface;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
@@ -45,9 +45,9 @@ class RemoteFilesystem
     /**
      * Constructor.
      *
-     * @param IOInterface $io         The IO instance
-     * @param Config      $config     The config
-     * @param array       $options    The options
+     * @param IOInterface $io      The IO instance
+     * @param Config      $config  The config
+     * @param array       $options The options
      * @param bool        $disableTls
      */
     public function __construct(IOInterface $io, Config $config = null, array $options = array(), $disableTls = false)
@@ -134,15 +134,16 @@ class RemoteFilesystem
     }
 
     /**
-     * @param  array       $headers array of returned headers like from getLastHeaders()
-     * @param  string      $name    header name (case insensitive)
+     * @param  array  $headers array of returned headers like from getLastHeaders()
+     * @param  string $name    header name (case insensitive)
+     *
      * @return string|null
      */
     public function findHeaderValue(array $headers, $name)
     {
         $value = null;
         foreach ($headers as $header) {
-            if (preg_match('{^'.$name.':\s*(.+?)\s*$}i', $header, $match)) {
+            if (preg_match('{^' . $name . ':\s*(.+?)\s*$}i', $header, $match)) {
                 $value = $match[1];
             } elseif (preg_match('{^HTTP/}i', $header)) {
                 // In case of redirects, http_response_headers contains the headers of all responses
@@ -155,7 +156,8 @@ class RemoteFilesystem
     }
 
     /**
-     * @param  array    $headers array of returned headers like from getLastHeaders()
+     * @param  array $headers array of returned headers like from getLastHeaders()
+     *
      * @return int|null
      */
     public function findStatusCode(array $headers)
@@ -165,7 +167,7 @@ class RemoteFilesystem
             if (preg_match('{^HTTP/\S+ (\d+)}i', $header, $match)) {
                 // In case of redirects, http_response_headers contains the headers of all responses
                 // so we can not return directly and need to keep iterating
-                $value = (int) $match[1];
+                $value = (int)$match[1];
             }
         }
 
@@ -183,7 +185,6 @@ class RemoteFilesystem
      *
      * @throws TransportException|\Exception
      * @throws TransportException            When the file could not be downloaded
-     *
      * @return bool|string
      */
     protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
@@ -210,7 +211,7 @@ class RemoteFilesystem
 
         $tempAdditionalOptions = $additionalOptions;
         if (isset($tempAdditionalOptions['retry-auth-failure'])) {
-            $this->retryAuthFailure = (bool) $tempAdditionalOptions['retry-auth-failure'];
+            $this->retryAuthFailure = (bool)$tempAdditionalOptions['retry-auth-failure'];
 
             unset($tempAdditionalOptions['retry-auth-failure']);
         }
@@ -227,15 +228,16 @@ class RemoteFilesystem
         unset($tempAdditionalOptions);
         $userlandFollow = isset($options['http']['follow_location']) && !$options['http']['follow_location'];
 
-        $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl, true, IOInterface::DEBUG);
+        $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl, true,
+            IOInterface::DEBUG);
 
         if (isset($options['github-token'])) {
-            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token=' . $options['github-token'];
             unset($options['github-token']);
         }
 
         if (isset($options['gitlab-token'])) {
-            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['gitlab-token'];
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token=' . $options['gitlab-token'];
             unset($options['gitlab-token']);
         }
 
@@ -248,17 +250,19 @@ class RemoteFilesystem
             $fileUrl = 'http://' . gethostbyname('packagist.org') . substr($fileUrl, 20);
         }
 
-        $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
+        $ctx = StreamContextFactory::getContext($fileUrl, $options,
+            array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress && !$isRedirect) {
             $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
         }
 
         // Check for secure HTTP
-        if(($this->scheme === 'http' || substr($fileUrl, 0, 5) !== 'https')
-            && $this->config && $this->config->get('secure-http')) {
+        if (($this->scheme === 'http' || substr($fileUrl, 0, 5) !== 'https')
+            && $this->config && $this->config->get('secure-http')
+        ) {
             // Rewrite unsecure Packagist urls to use https
-            if(substr($fileUrl, 0, 21) === 'http://packagist.org/') {
+            if (substr($fileUrl, 0, 21) === 'http://packagist.org/') {
                 $fileUrl = 'https://packagist.org/' . substr($fileUrl, 21);
             } else {
                 throw new TransportException(
@@ -302,18 +306,19 @@ class RemoteFilesystem
             $result = false;
         }
         if ($errorMessage && !ini_get('allow_url_fopen')) {
-            $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
+            $errorMessage = 'allow_url_fopen must be enabled in php.ini (' . $errorMessage . ')';
         }
         restore_error_handler();
         if (isset($e) && !$this->retry) {
             if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
                 $this->degradedMode = true;
                 $this->io->writeError(array(
-                    '<error>'.$e->getMessage().'</error>',
+                    '<error>' . $e->getMessage() . '</error>',
                     '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
                 ));
 
-                return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+                return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName,
+                    $this->progress);
             }
 
             throw $e;
@@ -334,7 +339,8 @@ class RemoteFilesystem
         // fail 4xx and 5xx responses and capture the response
         if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
             if (!$this->retry) {
-                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
+                $e = new TransportException('The "' . $this->fileUrl . '" file could not be downloaded (' . $http_response_header[0] . ')',
+                    $statusCode);
                 $e->setHeaders($http_response_header);
                 $e->setResponse($result);
                 $e->setStatusCode($statusCode);
@@ -357,7 +363,7 @@ class RemoteFilesystem
                         $result = zlib_decode($result);
                     } else {
                         // work around issue with gzuncompress & co that do not work with all gzip checksums
-                        $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
+                        $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,' . base64_encode($result));
                     }
 
                     if (!$result) {
@@ -370,11 +376,12 @@ class RemoteFilesystem
 
                     $this->degradedMode = true;
                     $this->io->writeError(array(
-                        '<error>Failed to decode response: '.$e->getMessage().'</error>',
+                        '<error>Failed to decode response: ' . $e->getMessage() . '</error>',
                         '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
                     ));
 
-                    return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+                    return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName,
+                        $this->progress);
                 }
             }
         }
@@ -382,7 +389,7 @@ class RemoteFilesystem
         // handle copy command if download was successful
         if (false !== $result && null !== $fileName && !$isRedirect) {
             if ('' === $result) {
-                throw new TransportException('"'.$this->fileUrl.'" appears broken, and returned an empty 200 response');
+                throw new TransportException('"' . $this->fileUrl . '" appears broken, and returned an empty 200 response');
             }
 
             $errorMessage = '';
@@ -392,10 +399,10 @@ class RemoteFilesystem
                 }
                 $errorMessage .= preg_replace('{^file_put_contents\(.*?\): }', '', $msg);
             });
-            $result = (bool) file_put_contents($fileName, $result);
+            $result = (bool)file_put_contents($fileName, $result);
             restore_error_handler();
             if (false === $result) {
-                throw new TransportException('The "'.$this->fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
+                throw new TransportException('The "' . $this->fileUrl . '" file could not be written to ' . $fileName . ': ' . $errorMessage);
             }
         }
 
@@ -436,7 +443,8 @@ class RemoteFilesystem
         if ($this->retry) {
             $this->retry = false;
 
-            $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+            $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName,
+                $this->progress);
 
             if ($this->storeAuth && $this->config) {
                 $authHelper = new AuthHelper($this->io, $this->config);
@@ -448,7 +456,8 @@ class RemoteFilesystem
         }
 
         if (false === $result) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+            $e = new TransportException('The "' . $this->fileUrl . '" file could not be downloaded: ' . $errorMessage,
+                $errorCode);
             if (!empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
@@ -456,11 +465,12 @@ class RemoteFilesystem
             if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
                 $this->degradedMode = true;
                 $this->io->writeError(array(
-                    '<error>'.$e->getMessage().'</error>',
+                    '<error>' . $e->getMessage() . '</error>',
                     '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
                 ));
 
-                return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+                return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName,
+                    $this->progress);
             }
 
             throw $e;
@@ -476,12 +486,13 @@ class RemoteFilesystem
     /**
      * Get notification action.
      *
-     * @param  int                $notificationCode The notification code
-     * @param  int                $severity         The severity level
-     * @param  string             $message          The message
-     * @param  int                $messageCode      The message code
-     * @param  int                $bytesTransferred The loaded size
-     * @param  int                $bytesMax         The total size
+     * @param  int    $notificationCode The notification code
+     * @param  int    $severity         The severity level
+     * @param  string $message          The message
+     * @param  int    $messageCode      The message code
+     * @param  int    $bytesTransferred The loaded size
+     * @param  int    $bytesMax         The total size
+     *
      * @throws TransportException
      */
     protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
@@ -491,10 +502,11 @@ class RemoteFilesystem
                 if (400 === $messageCode) {
                     // This might happen if your host is secured by ssl client certificate authentication
                     // but you do not send an appropriate certificate
-                    throw new TransportException("The '" . $this->fileUrl . "' URL could not be accessed: " . $message, $messageCode);
+                    throw new TransportException("The '" . $this->fileUrl . "' URL could not be accessed: " . $message,
+                        $messageCode);
                 }
-                // intentional fallthrough to the next case as the notificationCode
-                // isn't always consistent and we should inspect the messageCode for 401s
+            // intentional fallthrough to the next case as the notificationCode
+            // isn't always consistent and we should inspect the messageCode for 401s
 
             case STREAM_NOTIFY_AUTH_REQUIRED:
                 if (401 === $messageCode) {
@@ -543,20 +555,22 @@ class RemoteFilesystem
     protected function promptAuthAndRetry($httpStatus, $reason = null)
     {
         if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
-            $message = "\n".'Could not fetch '.$this->fileUrl.', please create a GitHub OAuth token '.($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
+            $message = "\n" . 'Could not fetch ' . $this->fileUrl . ', please create a GitHub OAuth token ' . ($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
             $gitHubUtil = new GitHub($this->io, $this->config, null);
             if (!$gitHubUtil->authorizeOAuth($this->originUrl)
-                && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
+                && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl,
+                        $message))
             ) {
-                throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
+                throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
             }
         } elseif ($this->config && in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
-            $message = "\n".'Could not fetch '.$this->fileUrl.', enter your ' . $this->originUrl . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
+            $message = "\n" . 'Could not fetch ' . $this->fileUrl . ', enter your ' . $this->originUrl . ' credentials ' . ($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
             if (!$gitLabUtil->authorizeOAuth($this->originUrl)
-                && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, $message))
+                && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively($this->scheme,
+                        $this->originUrl, $message))
             ) {
-                throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
+                throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
             }
         } else {
             // 404s are only handled for github
@@ -577,10 +591,12 @@ class RemoteFilesystem
             }
             // fail if we already have auth
             if ($this->io->hasAuthentication($this->originUrl)) {
-                throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
+                throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.",
+                    $httpStatus);
             }
 
-            $this->io->overwriteError('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+            $this->io->overwriteError('    Authentication required (<info>' . parse_url($this->fileUrl,
+                    PHP_URL_HOST) . '</info>):');
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');
             $this->io->setAuthentication($this->originUrl, $username, $password);
@@ -658,11 +674,11 @@ class RemoteFilesystem
                 $options['github-token'] = $auth['username'];
             } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
                 if ($auth['password'] === 'oauth2') {
-                    $headers[] = 'Authorization: Bearer '.$auth['username'];
+                    $headers[] = 'Authorization: Bearer ' . $auth['username'];
                 }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-                $headers[] = 'Authorization: Basic '.$authStr;
+                $headers[] = 'Authorization: Basic ' . $authStr;
             }
         }
 
@@ -684,24 +700,26 @@ class RemoteFilesystem
                 $targetUrl = $locationHeader;
             } elseif (parse_url($locationHeader, PHP_URL_HOST)) {
                 // Scheme relative; e.g. //example.com/foo
-                $targetUrl = $this->scheme.':'.$locationHeader;
+                $targetUrl = $this->scheme . ':' . $locationHeader;
             } elseif ('/' === $locationHeader[0]) {
                 // Absolute path; e.g. /foo
                 $urlHost = parse_url($this->fileUrl, PHP_URL_HOST);
 
                 // Replace path using hostname as an anchor.
-                $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $this->fileUrl);
+                $targetUrl = preg_replace('{^(.+(?://|@)' . preg_quote($urlHost) . '(?::\d+)?)(?:[/\?].*)?$}',
+                    '\1' . $locationHeader, $this->fileUrl);
             } else {
                 // Relative path; e.g. foo
                 // This actually differs from PHP which seems to add duplicate slashes.
-                $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$locationHeader, $this->fileUrl);
+                $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1' . $locationHeader, $this->fileUrl);
             }
         }
 
         if (!empty($targetUrl)) {
             $this->redirects++;
 
-            $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $targetUrl), true, IOInterface::DEBUG);
+            $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $targetUrl), true,
+                IOInterface::DEBUG);
 
             $additionalOptions['redirects'] = $this->redirects;
 
@@ -709,7 +727,7 @@ class RemoteFilesystem
         }
 
         if (!$this->retry) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, got redirect without Location ('.$http_response_header[0].')');
+            $e = new TransportException('The "' . $this->fileUrl . '" file could not be downloaded, got redirect without Location (' . $http_response_header[0] . ')');
             $e->setHeaders($http_response_header);
             $e->setResponse($result);
 
@@ -768,15 +786,14 @@ class RemoteFilesystem
         /**
          * CN_match and SNI_server_name are only known once a URL is passed.
          * They will be set in the getOptionsForUrl() method which receives a URL.
-         *
          * cafile or capath can be overridden by passing in those options to constructor.
          */
         $defaults = array(
             'ssl' => array(
-                'ciphers' => $ciphers,
-                'verify_peer' => true,
-                'verify_depth' => 7,
-                'SNI_enabled' => true,
+                'ciphers'           => $ciphers,
+                'verify_peer'       => true,
+                'verify_depth'      => 7,
+                'SNI_enabled'       => true,
                 'capture_peer_cert' => true,
             ),
         );
@@ -830,24 +847,17 @@ class RemoteFilesystem
     /**
      * This method was adapted from Sslurp.
      * https://github.com/EvanDotPro/Sslurp
-     *
      * (c) Evan Coury <me@evancoury.com>
-     *
      * For the full copyright and license information, please see below:
-     *
      * Copyright (c) 2013, Evan Coury
      * All rights reserved.
-     *
      * Redistribution and use in source and binary forms, with or without modification,
      * are permitted provided that the following conditions are met:
-     *
      *     * Redistributions of source code must retain the above copyright notice,
      *       this list of conditions and the following disclaimer.
-     *
      *     * Redistributions in binary form must reproduce the above copyright notice,
      *       this list of conditions and the following disclaimer in the documentation
      *       and/or other materials provided with the distribution.
-     *
      * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
      * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
      * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -903,12 +913,12 @@ class RemoteFilesystem
 
         foreach ($caBundlePaths as $caBundle) {
             $caBundle = dirname($caBundle);
-            if (is_dir($caBundle) && glob($caBundle.'/*')) {
+            if (is_dir($caBundle) && glob($caBundle . '/*')) {
                 return $caPath = $caBundle;
             }
         }
 
-        return $caPath = __DIR__.'/../../../res/cacert.pem'; // Bundled with Composer, last resort
+        return $caPath = __DIR__ . '/../../../res/cacert.pem'; // Bundled with Composer, last resort
     }
 
     /**
@@ -924,7 +934,7 @@ class RemoteFilesystem
             return $files[$filename];
         }
 
-        $this->io->writeError('Checking CA file '.realpath($filename), true, IOInterface::DEBUG);
+        $this->io->writeError('Checking CA file ' . realpath($filename), true, IOInterface::DEBUG);
         $contents = file_get_contents($filename);
 
         // assume the CA is valid if php is vulnerable to
@@ -938,7 +948,7 @@ class RemoteFilesystem
             return $files[$filename] = !empty($contents);
         }
 
-        return $files[$filename] = (bool) openssl_x509_parse($contents);
+        return $files[$filename] = (bool)openssl_x509_parse($contents);
     }
 
     /**
@@ -973,11 +983,13 @@ class RemoteFilesystem
             ));
         }
 
-        $context = StreamContextFactory::getContext($url, $options, array('options' => array(
-            'ssl' => array(
-                'capture_peer_cert' => true,
-                'verify_peer' => false, // Yes this is fucking insane! But PHP is lame.
-            ), ),
+        $context = StreamContextFactory::getContext($url, $options, array(
+            'options' => array(
+                'ssl' => array(
+                    'capture_peer_cert' => true,
+                    'verify_peer'       => false, // Yes this is fucking insane! But PHP is lame.
+                ),
+            ),
         ));
 
         // Ideally this would just use stream_socket_client() to avoid sending a
@@ -1007,11 +1019,11 @@ class RemoteFilesystem
     private function getUrlAuthority($url)
     {
         $defaultPorts = array(
-            'ftp' => 21,
-            'http' => 80,
-            'https' => 443,
+            'ftp'       => 21,
+            'http'      => 80,
+            'https'     => 443,
             'ssh2.sftp' => 22,
-            'ssh2.scp' => 22,
+            'ssh2.scp'  => 22,
         );
 
         $scheme = parse_url($url, PHP_URL_SCHEME);
@@ -1026,6 +1038,6 @@ class RemoteFilesystem
         $defaultPort = $defaultPorts[$scheme];
         $port = parse_url($url, PHP_URL_PORT) ?: $defaultPort;
 
-        return parse_url($url, PHP_URL_HOST).':'.$port;
+        return parse_url($url, PHP_URL_HOST) . ':' . $port;
     }
 }
