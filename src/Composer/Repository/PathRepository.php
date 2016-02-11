@@ -140,10 +140,6 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             $package = $this->loader->load($package);
             $this->addPackage($package);
         }
-
-        if (count($this->getPackages()) == 0) {
-            throw new \RuntimeException(sprintf('No `composer.json` file found in any path repository in "%s"', $this->url));
-        }
     }
 
     /**
