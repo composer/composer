@@ -188,7 +188,7 @@ EOT
                 if (Platform::isWindows()) {
                     $editor = 'notepad';
                 } else {
-                    foreach (array('vim', 'vi', 'nano', 'pico', 'ed') as $candidate) {
+                    foreach (array('editor', 'vim', 'vi', 'nano', 'pico', 'ed') as $candidate) {
                         if (exec('which '.$candidate)) {
                             $editor = $candidate;
                             break;
