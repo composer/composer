@@ -41,13 +41,15 @@ use Composer\Util\ProcessExecutor;
  *     },
  *     {
  *         "type": "path",
- *         "url": "/absolute/path/to/several/packages/*"
+ *         "url": "/absolute/path/to/several/packages/*",
+ *         "ignore-empty": true
  *     }
  * ]
  * @endcode
  *
  * @author Samuel Roze <samuel.roze@gmail.com>
  * @author Johann Reinke <johann.reinke@gmail.com>
+ * @author Gert Wijnalda <gert@redant.nl>
  */
 class PathRepository extends ArrayRepository implements ConfigurableRepositoryInterface
 {
@@ -65,6 +67,11 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      * @var string
      */
     private $url;
+
+    /**
+     * @var boolean
+     */
+    private $ignoreEmpty = false;
 
     /**
      * @var array
@@ -91,6 +98,11 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
         $this->loader = new ArrayLoader();
         $this->url = $repoConfig['url'];
+
+        if (isset($repoConfig['ignore-empty'])) {
+            $this->ignoreEmpty = (bool) $repoConfig['ignore-empty'];
+        }
+
         $this->process = new ProcessExecutor($io);
         $this->versionGuesser = new VersionGuesser($config, $this->process, new VersionParser());
         $this->repoConfig = $repoConfig;
@@ -141,7 +153,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             $this->addPackage($package);
         }
 
-        if (count($this->getPackages()) == 0) {
+        if ($this->ignoreEmpty !== true && count($this->getPackages()) == 0) {
             throw new \RuntimeException(sprintf('No `composer.json` file found in any path repository in "%s"', $this->url));
         }
     }

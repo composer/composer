@@ -651,6 +651,23 @@ output `Mirrored from ../../packages/my-package`.
 
 Instead of using a relative path, an absolute path can also be used.
 
+If you want to ignore errors when no packages could be found in the supplied path,
+for example when using the `composer.json` in different environments, use the
+`ignore-empty` option:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/my-package",
+            "ignore-empty": true
+        }
+    ]
+}
+```
+
+
 > **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
 > For details, see the [PHP glob function](http://php.net/glob).
 
