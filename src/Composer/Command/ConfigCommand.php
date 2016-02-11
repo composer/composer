@@ -331,6 +331,7 @@ EOT
             'classmap-authoritative' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
             'disable-tls' => array($booleanValidator, $booleanNormalizer),
+            'secure-http' => array($booleanValidator, $booleanNormalizer),
             'cafile' => array(
                 function ($val) { return file_exists($val) && is_readable($val); },
                 function ($val) { return $val === 'null' ? null : $val; },

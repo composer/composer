@@ -46,6 +46,7 @@ class Config
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
         'disable-tls' => false,
+        'secure-http' => true,
         'cafile' => null,
         'capath' => null,
         'github-expose-hostname' => true,
@@ -273,6 +274,9 @@ class Config
                 return $this->config[$key];
 
             case 'disable-tls':
+                return $this->config[$key] !== 'false' && (bool) $this->config[$key];
+
+            case 'secure-http':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
 
             default:
