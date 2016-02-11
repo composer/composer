@@ -255,7 +255,7 @@ class RemoteFilesystem
         }
 
         // Check for secure HTTP
-        if (($this->scheme === 'http' || substr($fileUrl, 0, 5) !== 'https')
+        if (($this->scheme === 'http' || substr($fileUrl, 0, 5) === 'http:')
             && $this->config && $this->config->get('secure-http')
         ) {
             // Rewrite unsecure Packagist urls to use https
