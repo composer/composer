@@ -71,7 +71,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
     /**
      * @var boolean
      */
-    private $ignoreEmpty;
+    private $ignoreEmpty = false;
 
     /**
      * @var array
@@ -108,11 +108,6 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         $this->repoConfig = $repoConfig;
 
         parent::__construct();
-    }
-
-    function __call($name, $arguments)
-    {
-        // TODO: Implement __call() method.
     }
 
     public function getRepoConfig()
@@ -158,7 +153,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             $this->addPackage($package);
         }
 
-        if (count($this->getPackages()) == 0 && $this->ignoreEmpty !== true) {
+        if ($this->ignoreEmpty !== true && count($this->getPackages()) == 0) {
             throw new \RuntimeException(sprintf('No `composer.json` file found in any path repository in "%s"', $this->url));
         }
     }
