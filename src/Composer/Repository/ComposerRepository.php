@@ -511,6 +511,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->baseUrl = 'https://packagist.org';
             $this->lazyProvidersUrl = $this->canonicalizeUrl('https://packagist.org/p/%package%.json');
             $this->providersUrl = null;
+        } elseif (!empty($this->repoConfig['force-lazy-providers'])) {
+            $this->lazyProvidersUrl = $this->canonicalizeUrl('/p/%package%.json');
+            $this->providersUrl = null;
         }
 
         return $this->rootData = $data;
