@@ -361,7 +361,7 @@ will not be allowed to be installed together with your package.
 Note that when specifying ranges like `<1.0 >=1.1` in a `conflict` link,
 this will state a conflict with all versions that are less than 1.0 *and* equal
 or newer than 1.1 at the same time, which is probably not what you want. You
-probably want to go for `<1.0 | >=1.1` in this case.
+probably want to go for `<1.0 || >=1.1` in this case.
 
 #### replace
 
