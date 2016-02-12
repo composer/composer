@@ -48,6 +48,7 @@ class DependsCommand extends Command
                 new InputOption('match-constraint', 'm', InputOption::VALUE_REQUIRED, 'Filters the dependencies shown using this constraint', '*'),
                 new InputOption('invert-match-constraint', 'i', InputOption::VALUE_NONE, 'Turns --match-constraint around into a blacklist instead of whitelist'),
                 new InputOption('with-replaces', '', InputOption::VALUE_NONE, 'Search for replaced packages as well'),
+                new InputOption('recursive', 'r', InputOption::VALUE_NONE, 'Recursively discover all dependencies'),
             ))
             ->setHelp(<<<EOT
 Displays detailed information about where a package is referenced.
@@ -72,69 +73,87 @@ EOT
             $composer->getRepositoryManager()->getLocalRepository(),
             new PlatformRepository(array(), $platformOverrides),
         ));
-        $needle = $input->getArgument('package');
+        $queue = array($input->getArgument('package'));
 
         $pool = new Pool();
         $pool->addRepository($repo);
+        $donePackages = array();
 
-        $packages = $pool->whatProvides($needle);
-        if (empty($packages)) {
-            throw new \InvalidArgumentException('Could not find package "'.$needle.'" in your project.');
-        }
-
-        $linkTypes = $this->linkTypes;
-
-        $types = array_map(function ($type) use ($linkTypes) {
-            $type = rtrim($type, 's');
-            if (!isset($linkTypes[$type])) {
-                throw new \InvalidArgumentException('Unexpected link type: '.$type.', valid types: '.implode(', ', array_keys($linkTypes)));
+        while (!empty($queue)) {
+            $needle = array_shift($queue);
+            $packages = $pool->whatProvides($needle);
+            if (empty($packages)) {
+                throw new \InvalidArgumentException('Could not find package "'.$needle.'" in your project.');
             }
 
-            return $type;
-        }, $input->getOption('link-type'));
+            $linkTypes = $this->linkTypes;
 
-        $versionParser = new VersionParser();
-        $constraint = $versionParser->parseConstraints($input->getOption('match-constraint'));
-        $matchInvert = $input->getOption('invert-match-constraint');
+            $types = array_map(function ($type) use ($linkTypes) {
+                $type = rtrim($type, 's');
+                if (!isset($linkTypes[$type])) {
+                    throw new \InvalidArgumentException('Unexpected link type: '.$type.', valid types: '.implode(', ', array_keys($linkTypes)));
+                }
 
-        $needles = array($needle);
-        if (true === $input->getOption('with-replaces')) {
-            foreach ($packages as $package) {
-                $needles = array_merge($needles, array_map(function (Link $link) {
-                    return $link->getTarget();
-                }, $package->getReplaces()));
+                return $type;
+            }, $input->getOption('link-type'));
+
+            $versionParser = new VersionParser();
+            $constraint = $versionParser->parseConstraints($input->getOption('match-constraint'));
+            $matchInvert = $input->getOption('invert-match-constraint');
+
+            $needles = array($needle);
+            if (true === $input->getOption('with-replaces')) {
+                foreach ($packages as $package) {
+                    $needles = array_merge($needles, array_map(function (Link $link) {
+                        return $link->getTarget();
+                    }, $package->getReplaces()));
+                }
             }
-        }
 
-        $messages = array();
-        $outputPackages = array();
-        $io = $this->getIO();
-        /** @var PackageInterface $package */
-        foreach ($repo->getPackages() as $package) {
-            foreach ($types as $type) {
-                /** @var Link $link */
-                foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
-                    foreach ($needles as $needle) {
-                        if ($link->getTarget() === $needle && ($link->getConstraint()->matches($constraint) ? !$matchInvert : $matchInvert)) {
-                            if (!isset($outputPackages[$package->getName()])) {
-                                $messages[] = '<info>'.$package->getPrettyName() . '</info> ' . $linkTypes[$type][1] . ' ' . $needle .' (<info>' . $link->getPrettyConstraint() . '</info>)';
-                                $outputPackages[$package->getName()] = true;
+            $messages = array();
+            $outputPackages = array();
+            $io = $this->getIO();
+
+            /** @var PackageInterface $package */
+            foreach ($repo->getPackages() as $package) {
+                foreach ($types as $type) {
+                    /** @var Link $link */
+                    foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
+                        foreach ($needles as $needle) {
+                            if ($link->getTarget() === $needle && ($link->getConstraint()->matches($constraint) ? !$matchInvert : $matchInvert)) {
+                                $packageName = $package->getName();
+                                if (!isset($outputPackages[$packageName])) {
+                                    if($packageName === '__root__') {
+                                        $prettyName = ' => root package';
+                                    } else {
+                                        $prettyName = $io->isVerbose() ? $package->getPrettyString() : $package->getPrettyName();
+                                        if (!isset($donePackages[$packageName])) {
+                                            $queue[] = $packageName;
+                                        }
+                                    }
+                                    $messages[] = '<info>' . $prettyName . '</info> ' . $linkTypes[$type][1] . ' ' . $needle .' (<info>' . $link->getPrettyConstraint() . '</info>)';
+                                    $outputPackages[$packageName] = true;
+                                    $donePackages[$packageName] = true;
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        if ($messages) {
-            sort($messages);
-            $io->write($messages);
-        } else {
-            $matchText = '';
-            if ($input->getOption('match-constraint') !== '*') {
-                $matchText = ' in versions '.($matchInvert ? 'not ' : '').'matching ' . $input->getOption('match-constraint');
+            if ($messages) {
+                sort($messages);
+                $io->write($messages);
+            } else {
+                $matchText = '';
+                if ($input->getOption('match-constraint') !== '*') {
+                    $matchText = ' in versions '.($matchInvert ? 'not ' : '').'matching ' . $input->getOption('match-constraint');
+                }
+                $io->writeError('<info>There is no installed package depending on "'.$needle.'"'.$matchText.'.</info>');
             }
-            $io->writeError('<info>There is no installed package depending on "'.$needle.'"'.$matchText.'.</info>');
+            if (!$input->getOption('recursive')) {
+                break;
+            }
         }
     }
 }
