@@ -69,14 +69,18 @@ class PathRepositoryTest extends TestCase
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
         $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config, $loader);
         $packages = $repository->getPackages();
+        $names = array();
 
         $this->assertEquals(2, $repository->count());
 
         $package = $packages[0];
-        $this->assertEquals('test/path-versioned', $package->getName());
+        $names[] = $package->getName();
 
         $package = $packages[1];
-        $this->assertEquals('test/path-unversioned', $package->getName());
+        $names[] = $package->getName();
+
+        sort($names);
+        $this->assertEquals(array('test/path-unversioned', 'test/path-versioned'), $names);
     }
 
     /**
