@@ -252,14 +252,19 @@ class DownloadManager
             $target->setInstallationSource($installationSource);
             try {
                 $downloader->update($initial, $target, $targetDir);
+
                 return;
-            } catch (\RuntimeException $ex) {
-                if (!$this->io->isInteractive() ||
-                    !$this->io->askConfirmation('    Updating failed. Would you like to try reinstalling instead [<comment>yes</comment>]? ', true)) {
-                    throw $ex;
+            } catch (\RuntimeException $e) {
+                if (!$this->io->isInteractive()) {
+                    throw $e;
+                }
+                $this->io->writeError('<error>    Update failed ('.$e->getMessage().')');
+                if (!$this->io->askConfirmation('    Would you like to try reinstalling the package instead [<comment>yes</comment>]? ', true)) {
+                    throw $e;
                 }
             }
         }
+
         $downloader->remove($initial, $targetDir);
         $this->download($target, $targetDir, 'source' === $installationSource);
     }

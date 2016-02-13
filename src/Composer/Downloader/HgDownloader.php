@@ -86,11 +86,7 @@ class HgDownloader extends VcsDownloader
     }
 
     /**
-     * Checks if VCS metadata repository has been initialized
-     * repository example: .git|.svn|.hg
-     *
-     * @param string $path
-     * @return bool
+     * {@inheritDoc}
      */
     protected function hasMetadataRepository($path)
     {

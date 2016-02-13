@@ -372,15 +372,12 @@ class GitDownloader extends VcsDownloader
     }
 
     /**
-     * Checks if VCS metadata repository has been initialized
-     * repository example: .git|.svn|.hg
-     *
-     * @param string $path
-     * @return bool
+     * {@inheritDoc}
      */
     protected function hasMetadataRepository($path)
     {
         $path = $this->normalizePath($path);
+
         return is_dir($path.'/.git');
     }
 }

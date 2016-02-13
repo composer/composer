@@ -133,7 +133,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
 
         // print the commit logs if in verbose mode and VCS metadata is present
         // because in case of missing metadata code would trigger another exception
-        if ($this->io->isVerbose() && $this->hasMetadataRepository($path)) {
+        if (!$exception && $this->io->isVerbose() && $this->hasMetadataRepository($path)) {
             $message = 'Pulling in changes:';
             $logs = $this->getCommitLogs($initial->getSourceReference(), $target->getSourceReference(), $path);
 
