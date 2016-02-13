@@ -258,7 +258,7 @@ class DownloadManager
                 if (!$this->io->isInteractive()) {
                     throw $e;
                 }
-                $this->io->writeError('<error>    Update failed ('.$e->getMessage().')');
+                $this->io->writeError('<error>    Update failed ('.$e->getMessage().')</error>');
                 if (!$this->io->askConfirmation('    Would you like to try reinstalling the package instead [<comment>yes</comment>]? ', true)) {
                     throw $e;
                 }
