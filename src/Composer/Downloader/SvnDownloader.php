@@ -52,7 +52,7 @@ class SvnDownloader extends VcsDownloader
         SvnUtil::cleanEnv();
         $ref = $target->getSourceReference();
 
-        if (!is_dir($path.'/.svn')) {
+        if (!$this->hasMetadataRepository($path)) {
             throw new \RuntimeException('The .svn directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
@@ -72,7 +72,7 @@ class SvnDownloader extends VcsDownloader
      */
     public function getLocalChanges(PackageInterface $package, $path)
     {
-        if (!is_dir($path.'/.svn')) {
+        if (!$this->hasMetadataRepository($path)) {
             return;
         }
 
@@ -187,5 +187,17 @@ class SvnDownloader extends VcsDownloader
         if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {
             throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
         }
+    }
+
+    /**
+     * Checks if VCS metadata repository has been initialized
+     * repository example: .git|.svn|.hg
+     *
+     * @param string $path
+     * @return bool
+     */
+    protected function hasMetadataRepository($path)
+    {
+        return is_dir($path.'/.svn');
     }
 }

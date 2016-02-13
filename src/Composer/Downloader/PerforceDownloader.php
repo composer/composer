@@ -104,4 +104,16 @@ class PerforceDownloader extends VcsDownloader
     {
         $this->perforce = $perforce;
     }
+
+    /**
+     * Checks if VCS metadata repository has been initialized
+     * repository example: .git|.svn|.hg
+     *
+     * @param string $path
+     * @return bool
+     */
+    protected function hasMetadataRepository($path)
+    {
+        return true;
+    }
 }

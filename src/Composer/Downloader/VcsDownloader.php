@@ -111,6 +111,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
 
         $this->cleanChanges($initial, $path, true);
         $urls = $target->getSourceUrls();
+
+        $exception = null;
         while ($url = array_shift($urls)) {
             try {
                 if (Filesystem::isLocalPath($url)) {
@@ -118,24 +120,20 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 }
                 $this->doUpdate($initial, $target, $path, $url);
                 break;
-            } catch (\Exception $e) {
+            } catch (\Exception $exception) {
                 if ($this->io->isDebug()) {
-                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
+                    $this->io->writeError('Failed: ['.get_class($exception).'] '.$exception->getMessage());
                 } elseif (count($urls)) {
                     $this->io->writeError('    Failed, trying the next URL');
-                } else {
-                    // in case of failed update, try to reapply the changes before aborting
-                    $this->reapplyChanges($path);
-
-                    throw $e;
                 }
             }
         }
 
         $this->reapplyChanges($path);
 
-        // print the commit logs if in verbose mode
-        if ($this->io->isVerbose()) {
+        // print the commit logs if in verbose mode and VCS metadata is present
+        // because in case of missing metadata code would trigger another exception
+        if ($this->io->isVerbose() && $this->hasMetadataRepository($path)) {
             $message = 'Pulling in changes:';
             $logs = $this->getCommitLogs($initial->getSourceReference(), $target->getSourceReference(), $path);
 
@@ -155,6 +153,10 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 $this->io->writeError('    '.$message);
                 $this->io->writeError($logs);
             }
+        }
+
+        if (!$urls && $exception) {
+            throw $exception;
         }
 
         $this->io->writeError('');
@@ -236,4 +238,13 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @return string
      */
     abstract protected function getCommitLogs($fromReference, $toReference, $path);
+
+    /**
+     * Checks if VCS metadata repository has been initialized
+     * repository example: .git|.svn|.hg
+     *
+     * @param string $path
+     * @return bool
+     */
+    abstract protected function hasMetadataRepository($path);
 }

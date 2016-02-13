@@ -250,11 +250,18 @@ class DownloadManager
 
         if ($initialType === $targetType) {
             $target->setInstallationSource($installationSource);
-            $downloader->update($initial, $target, $targetDir);
-        } else {
-            $downloader->remove($initial, $targetDir);
-            $this->download($target, $targetDir, 'source' === $installationSource);
+            try {
+                $downloader->update($initial, $target, $targetDir);
+                return;
+            } catch (\RuntimeException $ex) {
+                if (!$this->io->isInteractive() ||
+                    !$this->io->askConfirmation('    Updating failed. Would you like to try reinstalling instead [<comment>yes</comment>]? ', true)) {
+                    throw $ex;
+                }
+            }
         }
+        $downloader->remove($initial, $targetDir);
+        $this->download($target, $targetDir, 'source' === $installationSource);
     }
 
     /**
