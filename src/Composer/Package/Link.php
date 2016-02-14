@@ -67,6 +67,14 @@ class Link
     /**
      * @return string
      */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * @return string
+     */
     public function getSource()
     {
         return $this->source;
