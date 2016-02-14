@@ -29,8 +29,13 @@ class PathDownloader extends FileDownloader
      */
     public function download(PackageInterface $package, $path)
     {
-        $fileSystem = new Filesystem();
-        $this->filesystem->removeDirectory($path);
+        $url = $package->getDistUrl();
+        $realUrl = realpath($url);
+        $realPath = realpath($path);
+
+        if ($realUrl !== $realPath) {
+            $this->filesystem->removeDirectory($path);
+        }
 
         $this->io->writeError(sprintf(
             '  - Installing <info>%s</info> (<comment>%s</comment>)',
@@ -38,8 +43,6 @@ class PathDownloader extends FileDownloader
             $package->getFullPrettyVersion()
         ));
 
-        $url = $package->getDistUrl();
-        $realUrl = realpath($url);
         if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
             throw new \RuntimeException(sprintf(
                 'Path "%s" is not found',
@@ -47,13 +50,18 @@ class PathDownloader extends FileDownloader
             ));
         }
 
-        try {
-            $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
-            $fileSystem->symlink($shortestPath, $path);
-            $this->io->writeError(sprintf('    Symlinked from %s', $url));
-        } catch (IOException $e) {
-            $fileSystem->mirror($realUrl, $path);
-            $this->io->writeError(sprintf('    Mirrored from %s', $url));
+        if ($realUrl !== $realPath) {
+            $fileSystem = new Filesystem();
+            try {
+                $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
+                $fileSystem->symlink($shortestPath, $path);
+                $this->io->writeError(sprintf('    Symlinked from %s', $url));
+            } catch (IOException $e) {
+                $fileSystem->mirror($realUrl, $path);
+                $this->io->writeError(sprintf('    Mirrored from %s', $url));
+            }
+        } else {
+            $this->io->writeError(sprintf('    Kept in place (%s)', $url));
         }
 
         $this->io->writeError('');
