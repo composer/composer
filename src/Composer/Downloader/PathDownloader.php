@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Composer\Util\Platform;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -54,9 +55,16 @@ class PathDownloader extends FileDownloader
         ));
 
         try {
-            $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
-            $fileSystem->symlink($shortestPath, $path);
-            $this->io->writeError(sprintf('    Symlinked from %s', $url));
+            if (Platform::isWindows()) {
+                // Implement symlinks as NTFS junctions on Windows
+                $this->filesystem->junction($realUrl, $path);
+                $this->io->writeError(sprintf('    Junctioned from %s', $url));
+
+            } else {
+                $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
+                $fileSystem->symlink($shortestPath, $path);
+                $this->io->writeError(sprintf('    Symlinked from %s', $url));
+            }
         } catch (IOException $e) {
             $fileSystem->mirror($realUrl, $path);
             $this->io->writeError(sprintf('    Mirrored from %s', $url));
