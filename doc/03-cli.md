@@ -319,8 +319,13 @@ Lists all packages suggested by currently installed set of packages. You can
 optionally pass one or multiple package names in the format of `vendor/package`
 to limit output to suggestions made by those packages only.
 
+Use the `--by-package` or `--by-suggestion` flags to group the output by
+the package offering the suggestions or the suggested packages respectively.
+
 ### Options
 
+* **--by-package:** Groups output by suggesting package.
+* **--by-suggestion:** Groups output by suggested package.
 * **--no-dev:** Excludes suggestions from `require-dev` packages.
 * **--verbose (-v):** Increased verbosity adds suggesting package name and
   reason for suggestion.
