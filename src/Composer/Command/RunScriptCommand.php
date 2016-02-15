@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Script\CommandEvent;
 use Composer\Script\ScriptEvents;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -50,6 +51,7 @@ class RunScriptCommand extends Command
             ->setDefinition(array(
                 new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run.'),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
+                new InputOption('timeout', null, InputOption::VALUE_REQUIRED, 'Sets script timeout in seconds, or 0 for never.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List scripts.'),
@@ -85,6 +87,14 @@ EOT
         }
 
         $args = $input->getArgument('args');
+
+        if (!is_null($timeout = $input->getOption('timeout'))) {
+            if (!ctype_digit($timeout)) {
+                throw new \RuntimeException('Timeout value must be numeric and positive if defined, or 0 for forever');
+            }
+            // Override global timeout set before in Composer by environment or config
+            ProcessExecutor::setTimeout((int)$timeout);
+        }
 
         return $composer->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args);
     }

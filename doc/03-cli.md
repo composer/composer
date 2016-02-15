@@ -562,6 +562,7 @@ Lists the name, version and license of every package installed. Use
 
 ### Options
 
+* **--timeout:** Set the script timeout in seconds, or 0 for no timeout.
 * **--no-dev:** Disable dev mode
 * **--list:** List user defined scripts
 
