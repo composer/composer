@@ -350,12 +350,11 @@ php composer.phar depends symfony/symfony --with-replaces -im ^3.0
 
 ### Options
 
-* **--link-type:** The link types to match on, can be specified multiple
-  times.
+* **--recursive (-r):** Recursively resolves up to the root package.
+* **--tree (-t):** Prints the results as a nested tree, implies -r.
 * **--match-constraint (-m):** Filters the dependencies shown using this constraint.
 * **--invert-match-constraint (-i):** Turns --match-constraint around into a blacklist
   instead of a whitelist.
-* **--with-replaces:** Search for replaced packages as well.
 
 ## validate
 
