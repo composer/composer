@@ -154,17 +154,4 @@ class RepositoryManager
     {
         return $this->localRepository;
     }
-
-    /**
-     * Returns all local repositories for the project.
-     *
-     * @deprecated getLocalDevRepository is gone, so this is useless now, just use getLocalRepository instead
-     * @return array[WritableRepositoryInterface]
-     */
-    public function getLocalRepositories()
-    {
-        trigger_error('This method is deprecated, use getLocalRepository instead since the getLocalDevRepository is now gone', E_USER_DEPRECATED);
-
-        return array($this->localRepository);
-    }
 }

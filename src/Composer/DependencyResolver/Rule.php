@@ -147,14 +147,6 @@ class Rule
         return !(($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
-    /**
-     * @deprecated Use public literals member
-     */
-    public function getLiterals()
-    {
-        return $this->literals;
-    }
-
     public function isAssertion()
     {
         return 1 === count($this->literals);
