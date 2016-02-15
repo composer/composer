@@ -35,9 +35,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DependsCommand extends Command
 {
-    /** @var CompositeRepository  */
-    private $repository;
-
     protected function configure()
     {
         $this
@@ -70,13 +67,13 @@ EOT
 
         // Prepare repositories and set up a pool
         $platformOverrides = $composer->getConfig()->get('platform') ?: array();
-        $this->repository = new CompositeRepository(array(
+        $repository = new CompositeRepository(array(
             new ArrayRepository(array($composer->getPackage())),
             $composer->getRepositoryManager()->getLocalRepository(),
             new PlatformRepository(array(), $platformOverrides),
         ));
         $pool = new Pool();
-        $pool->addRepository($this->repository);
+        $pool->addRepository($repository);
 
         // Find packages that are or provide the requested package first
         $needle = $input->getArgument('package');
@@ -97,7 +94,7 @@ EOT
         $recursive = $renderTree || $input->getOption('recursive');
 
         // Resolve dependencies
-        $results = $this->getDependers($needle, $constraint, $matchInvert, $recursive);
+        $results = $this->getDependents($needle, $repository->getPackages(), $constraint, $matchInvert, $recursive);
         if (empty($results)) {
             $extra = isset($constraint) ? sprintf(' in versions %smatching %s', $matchInvert ? 'not ' : '', $textConstraint) : '';
             $this->getIO()->writeError(sprintf('<info>There is no installed package depending on "%s"%s</info>',
@@ -176,21 +173,21 @@ EOT
 
     /**
      * @param string $needle The package to inspect.
+     * @param PackageInterface[] $packages List of installed packages.
      * @param ConstraintInterface|null $constraint Optional constraint to filter by.
      * @param bool $invert Whether to invert matches on the previous constraint.
      * @param bool $recurse Whether to recursively expand the requirement tree.
      * @return array An array with dependers as key, and as values an array containing the source package and the link respectively
      */
-    private function getDependers($needle, $constraint = null, $invert = false, $recurse = true)
+    private function getDependents($needle, $packages, $constraint = null, $invert = false, $recurse = true)
     {
         $needles = is_array($needle) ? $needle : array($needle);
         $results = array();
 
         /**
          * Loop over all currently installed packages.
-         * @var PackageInterface $package
          */
-        foreach ($this->repository->getPackages() as $package) {
+        foreach ($packages as $package) {
             // Retrieve all requirements, but dev only for the root package
             $links = $package->getRequires();
             $links += $package->getReplaces();
@@ -203,7 +200,7 @@ EOT
                 foreach ($needles as $needle) {
                     if ($link->getTarget() === $needle) {
                         if (is_null($constraint) || (($link->getConstraint()->matches($constraint) === !$invert))) {
-                            $results[$link->getSource()] = array($package, $link, $recurse ? $this->getDependers($link->getSource(), null, false, true) : array());
+                            $results[$link->getSource()] = array($package, $link, $recurse ? $this->getDependents($link->getSource(), $packages, null, false, true) : array());
                         }
                     }
                 }
