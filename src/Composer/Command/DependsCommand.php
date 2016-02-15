@@ -46,6 +46,8 @@ class DependsCommand extends Command
             ->setDescription('Shows which packages depend on the given package')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::REQUIRED, 'Package to inspect'),
+                new InputOption('recursive', 'r', InputOption::VALUE_NONE, 'Recursively resolves up to the root package'),
+                new InputOption('tree', 't', InputOption::VALUE_NONE, 'Prints the results as a nested tree'),
                 new InputOption('match-constraint', 'm', InputOption::VALUE_REQUIRED, 'Filters the dependencies shown using this constraint', '*'),
                 new InputOption('invert-match-constraint', 'i', InputOption::VALUE_NONE, 'Turns --match-constraint around into a blacklist instead of whitelist'),
             ))
@@ -91,8 +93,8 @@ EOT
             $constraint = null;
         }
         $matchInvert = $input->getOption('invert-match-constraint');
-        $recursive = true;
-        $tree = true;
+        $renderTree = $input->getOption('tree');
+        $recursive = $renderTree || $input->getOption('recursive');
 
         // Resolve dependencies
         $results = $this->getDependers($needle, $constraint, $matchInvert, $recursive);
@@ -100,7 +102,7 @@ EOT
             $extra = isset($constraint) ? sprintf(' in versions %smatching %s', $matchInvert ? 'not ' : '', $textConstraint) : '';
             $this->getIO()->writeError(sprintf('<info>There is no installed package depending on "%s"%s</info>',
                         $needle, $extra));
-        } elseif ($tree) {
+        } elseif ($renderTree) {
             $root = $packages[0];
             $this->getIO()->write(sprintf('<info>%s</info> %s %s', $root->getPrettyName(), $root->getPrettyVersion(), $root->getDescription()));
             $this->printTree($output, $results);
@@ -109,6 +111,12 @@ EOT
         }
     }
 
+    /**
+     * Assembles and prints a bottom-up table of the dependencies.
+     *
+     * @param OutputInterface $output
+     * @param array $results
+     */
     private function printTable(OutputInterface $output, $results)
     {
         $table = array();
@@ -127,8 +135,8 @@ EOT
                     continue;
                 }
                 $doubles[$unique] = true;
-                $realVersion = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '-' : $package->getPrettyVersion();
-                $rows[] = array($package->getPrettyName(), $realVersion, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint()));
+                $version = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '-' : $package->getPrettyVersion();
+                $rows[] = array($package->getPrettyName(), $version, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint()));
                 $queue = array_merge($queue, $children);
             }
             $results = $queue;
@@ -140,6 +148,13 @@ EOT
         $renderer->setStyle('compact')->setRows($table)->render();
     }
 
+    /**
+     * Recursively prints a tree of the selected results.
+     *
+     * @param OutputInterface $output
+     * @param array $results
+     * @param string $prefix
+     */
     public function printTree(OutputInterface $output, $results, $prefix = '')
     {
         $count = count($results);
@@ -151,7 +166,10 @@ EOT
              */
             list($package, $link, $children) = $result;
             $isLast = (++$idx == $count);
-            $output->write(sprintf("%s%s %s %s %s (%s)\n", $prefix, $isLast ? '`-' : '|-', $link->getSource(), $link->getDescription(), $link->getTarget(), $link->getPrettyConstraint()));
+            $versionText = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '' : $package->getPrettyVersion();
+            $packageText = rtrim(sprintf('%s %s', $package->getPrettyName(), $versionText));
+            $linkText = implode(' ', array($link->getDescription(), $link->getTarget(), $link->getPrettyConstraint()));
+            $output->write(sprintf("%s%s %s (%s)\n", $prefix, $isLast ? '`-' : '|-', $packageText, $linkText));
             $this->printTree($output, $children, $prefix . ($isLast ? '   ' : '|  '));
         }
     }
