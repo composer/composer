@@ -209,7 +209,7 @@ for authentication asking your username and password so it can go ahead with its
 If you would prefer not to provide your GitHub credentials to Composer you can
 manually create a token using the following procedure:
 
-1. [Create](https://github.com/settings/applications) an OAuth token on GitHub.
+1. [Create](https://github.com/settings/tokens) an OAuth token on GitHub.
 [Read more](https://github.com/blog/1509-personal-api-tokens) on this.
 
 2. Add it to the configuration running `composer config -g github-oauth.github.com <oauthtoken>`
