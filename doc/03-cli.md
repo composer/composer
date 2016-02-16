@@ -328,24 +328,36 @@ to limit output to suggestions made by those packages only.
 ## depends
 
 The `depends` command tells you which other packages depend on a certain
-package. You can specify which link types (`require`, `require-dev`)
-should be included in the listing. By default both are used.
+package. As with installation `require-dev` relationships are only considered
+for the root package.
 
 ```sh
-php composer.phar depends --link-type=require monolog/monolog
-
-nrk/monolog-fluent requires monolog/monolog (~1.8)
-poc/poc requires monolog/monolog (^1.6)
-propel/propel requires monolog/monolog (1.*)
-symfony/monolog-bridge requires monolog/monolog (>=1.2)
-symfony/symfony requires monolog/monolog (~1)
+php composer.phar depends doctrine/lexer
+ doctrine/annotations v1.2.7 requires doctrine/lexer (1.*)
+ doctrine/common      v2.6.1 requires doctrine/lexer (1.*)
 ```
 
-If you want, for example, find any installed package that is **not** allowing
-Symfony version 3 or one of its components, you can run the following command:
+If you want, for example, to find any installed package that is **not**
+allowing Monolog to be upgraded to version 1.17 , try this:
 
 ```sh
-php composer.phar depends symfony/symfony --with-replaces -im ^3.0
+php composer.phar depends monolog/monolog -im ^1.17
+There is no installed package depending on "monolog/monolog" in versions not matching 1.17
+```
+
+Add the `--tree` or `-t` flag to show a recursive tree of why the package is depended
+upon, for example:
+
+```sh
+php composer.phar depends psr/log -t
+psr/log 1.0.0 Common interface for logging libraries
+|- aboutyou/app-sdk 2.6.11 (requires psr/log 1.0.*)
+|  `- __root__ (requires aboutyou/app-sdk ^2.6)
+|- monolog/monolog 1.17.2 (requires psr/log ~1.0)
+|  `- laravel/framework v5.2.16 (requires monolog/monolog ~1.11)
+|     `- __root__ (requires laravel/framework ^5.2)
+`- symfony/symfony v3.0.2 (requires psr/log ~1.0)
+   `- __root__ (requires symfony/symfony ^3.0)
 ```
 
 ### Options
