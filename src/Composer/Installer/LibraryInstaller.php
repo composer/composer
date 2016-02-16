@@ -153,7 +153,7 @@ class LibraryInstaller implements InstallerInterface
     /**
      * Returns the base path of the package without target-dir path
      *
-     * It is used for BC as getInstallPath tends to be overriden by
+     * It is used for BC as getInstallPath tends to be overridden by
      * installer plugins but not getPackageBasePath
      *
      * @param  PackageInterface $package

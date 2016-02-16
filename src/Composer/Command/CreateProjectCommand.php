@@ -104,6 +104,9 @@ EOT
 
         $this->updatePreferredOptions($config, $input, $preferSource, $preferDist, true);
 
+        if ($input->getOption('dev')) {
+            $io->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
+        }
         if ($input->getOption('no-custom-installers')) {
             $io->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);

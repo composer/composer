@@ -175,21 +175,6 @@ class Installer
             $this->mockLocalRepositories($this->repositoryManager);
         }
 
-        // TODO remove this BC feature at some point
-        // purge old require-dev packages to avoid conflicts with the new way of handling dev requirements
-        $devRepo = new InstalledFilesystemRepository(new JsonFile($this->config->get('vendor-dir').'/composer/installed_dev.json'));
-        if ($devRepo->getPackages()) {
-            $this->io->writeError('<warning>BC Notice: Removing old dev packages to migrate to the new require-dev handling.</warning>');
-            foreach ($devRepo->getPackages() as $package) {
-                if ($this->installationManager->isPackageInstalled($devRepo, $package)) {
-                    $this->installationManager->uninstall($devRepo, new UninstallOperation($package));
-                }
-            }
-            unlink($this->config->get('vendor-dir').'/composer/installed_dev.json');
-        }
-        unset($devRepo, $package);
-        // end BC
-
         if ($this->runScripts) {
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;

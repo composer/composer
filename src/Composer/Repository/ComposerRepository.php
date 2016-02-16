@@ -236,13 +236,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return array_keys($this->providerListing);
         }
 
-        // BC handling for old providers-includes
-        $providers = array();
-        foreach (array_keys($this->providerListing) as $provider) {
-            $providers[] = substr($provider, 2, -5);
-        }
-
-        return $providers;
+        return array();
     }
 
     protected function configurePackageTransportOptions(PackageInterface $package)
@@ -304,15 +298,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $url = str_replace(array('%package%', '%hash%'), array($name, $hash), $this->providersUrl);
             $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
         } else {
-            // BC handling for old providers-includes
-            $url = 'p/'.$name.'.json';
-
-            // package does not exist in this repo
-            if (!isset($this->providerListing[$url])) {
-                return array();
-            }
-            $hash = $this->providerListing[$url]['sha256'];
-            $cacheKey = null;
+            return array();
         }
 
         $packages = null;
@@ -459,9 +445,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (!empty($data['notify-batch'])) {
             $this->notifyUrl = $this->canonicalizeUrl($data['notify-batch']);
-        } elseif (!empty($data['notify_batch'])) {
-            // TODO remove this BC notify_batch support
-            $this->notifyUrl = $this->canonicalizeUrl($data['notify_batch']);
         } elseif (!empty($data['notify'])) {
             $this->notifyUrl = $this->canonicalizeUrl($data['notify']);
         }
@@ -555,18 +538,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $includedData = json_decode($this->cache->read($cacheKey), true);
                 } else {
                     $includedData = $this->fetchFile($url, $cacheKey, $metadata['sha256']);
-                }
-
-                $this->loadProviderListings($includedData);
-            }
-        } elseif (isset($data['providers-includes'])) {
-            // BC layer for old-style providers-includes
-            $includes = $data['providers-includes'];
-            foreach ($includes as $include => $metadata) {
-                if ($this->cache->sha256($include) === $metadata['sha256']) {
-                    $includedData = json_decode($this->cache->read($include), true);
-                } else {
-                    $includedData = $this->fetchFile($include, null, $metadata['sha256']);
                 }
 
                 $this->loadProviderListings($includedData);

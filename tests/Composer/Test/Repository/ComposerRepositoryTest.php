@@ -110,7 +110,8 @@ class ComposerRepositoryTest extends TestCase
         $properties = array(
             'cache' => $cache,
             'loader' => new ArrayLoader(),
-            'providerListing' => array('p/a.json' => array('sha256' => 'xxx')),
+            'providerListing' => array('a' => array('sha256' => 'xxx')),
+            'providersUrl' => 'https://dummy.test.link/to/%package%/file',
         );
 
         foreach ($properties as $property => $value) {
