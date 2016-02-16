@@ -143,7 +143,7 @@ class Cache
             } catch (\ErrorException $e) {
                 // fallback in case the above failed due to incorrect ownership
                 // see https://github.com/composer/composer/issues/4070
-                touch($this->root . $file);
+                Silencer::call('touch', $this->root . $file);
             }
 
             $this->io->writeError('Reading '.$this->root . $file.' from cache', true, IOInterface::DEBUG);
