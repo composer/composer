@@ -72,16 +72,21 @@ class RepositoryManagerTest extends TestCase
 
     public function creationCases()
     {
-        return array(
+        $cases = array(
             array('composer', array('url' => 'http://example.org')),
             array('vcs', array('url' => 'http://github.com/foo/bar')),
             array('git', array('url' => 'http://github.com/foo/bar')),
             array('git', array('url' => 'git@example.org:foo/bar.git')),
             array('svn', array('url' => 'svn://example.org/foo/bar')),
             array('pear', array('url' => 'http://pear.example.org/foo')),
-            array('artifact', array('url' => '/path/to/zips')),
             array('package', array('package' => array())),
             array('invalid', array(), 'InvalidArgumentException'),
         );
+
+        if (class_exists('ZipArchive')) {
+            $cases[] = array('artifact', array('url' => '/path/to/zips'));
+        }
+
+        return $cases;
     }
 }
