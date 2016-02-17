@@ -19,6 +19,10 @@ class ZipArchiverTest extends ArchiverTest
 
     public function testZipArchive()
     {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('Cannot run ZipArchiverTest, missing class "ZipArchive".');
+        }
+
         // Set up repository
         $this->setupDummyRepo();
         $package = $this->setupPackage();
