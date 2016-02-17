@@ -119,6 +119,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     $url = realpath($url);
                 }
                 $this->doUpdate($initial, $target, $path, $url);
+
+                $exception = null;
                 break;
             } catch (\Exception $exception) {
                 if ($this->io->isDebug()) {
