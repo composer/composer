@@ -15,7 +15,7 @@ namespace Composer\Command;
 use Composer\DependencyResolver\Pool;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
-use Composer\Package\RootPackage;
+use Composer\Package\RootPackageInterface;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
@@ -90,13 +90,15 @@ EOT
             $constraint = null;
         }
         $matchInvert = $input->getOption('invert-match-constraint');
+
+        // Parse rendering options
         $renderTree = $input->getOption('tree');
         $recursive = $renderTree || $input->getOption('recursive');
 
         // Resolve dependencies
         $results = $this->getDependents($needle, $repository->getPackages(), $constraint, $matchInvert, $recursive);
         if (empty($results)) {
-            $extra = isset($constraint) ? sprintf(' in versions %smatching %s', $matchInvert ? 'not ' : '', $textConstraint) : '';
+            $extra = (null !== $constraint) ? sprintf(' in versions %smatching %s', $matchInvert ? 'not ' : '', $textConstraint) : '';
             $this->getIO()->writeError(sprintf('<info>There is no installed package depending on "%s"%s</info>',
                         $needle, $extra));
         } elseif ($renderTree) {
@@ -172,7 +174,7 @@ EOT
     }
 
     /**
-     * @param string $needle The package to inspect.
+     * @param string|string[] $needle The package(s) to inspect.
      * @param PackageInterface[] $packages List of installed packages.
      * @param ConstraintInterface|null $constraint Optional constraint to filter by.
      * @param bool $invert Whether to invert matches on the previous constraint.
@@ -184,14 +186,13 @@ EOT
         $needles = is_array($needle) ? $needle : array($needle);
         $results = array();
 
-        /**
-         * Loop over all currently installed packages.
-         */
+        // Loop over all currently installed packages.
         foreach ($packages as $package) {
-            // Retrieve all requirements, but dev only for the root package
-            $links = $package->getRequires();
-            $links += $package->getReplaces();
-            if ($package instanceof RootPackage) {
+            // Requirements and replaces are both considered valid reasons for a package to be installed
+            $links = $package->getRequires() + $package->getReplaces();
+
+            // Require-dev is only relevant for the root package
+            if ($package instanceof RootPackageInterface) {
                 $links += $package->getDevRequires();
             }
 
