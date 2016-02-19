@@ -19,7 +19,7 @@ use Composer\Package\PackageInterface;
  *
  * @author Beau Simensen <beau@dflydev.com>
  */
-class CompositeRepository implements RepositoryInterface
+class CompositeRepository extends BaseRepository
 {
     /**
      * List of repositories
