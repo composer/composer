@@ -29,7 +29,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class DiagnoseCommand extends Command
+class DiagnoseCommand extends BaseCommand
 {
     /** @var RemoteFileSystem */
     protected $rfs;

@@ -38,7 +38,7 @@ use Composer\Spdx\SpdxLicenses;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Jérémy Romey <jeremyFreeAgent>
  */
-class ShowCommand extends Command
+class ShowCommand extends BaseCommand
 {
     protected $versionParser;
     protected $colors;

@@ -18,7 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Command\Command as BaseCommand;
+use Symfony\Component\Console\Command\Command;
 
 /**
  * Base class for Composer commands
@@ -26,7 +26,7 @@ use Symfony\Component\Console\Command\Command as BaseCommand;
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-abstract class Command extends BaseCommand
+abstract class BaseCommand extends Command
 {
     /**
      * @var Composer

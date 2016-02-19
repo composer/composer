@@ -15,13 +15,11 @@ namespace Composer\Command;
 use Composer\DependencyResolver\Pool;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
-use Composer\Package\RootPackageInterface;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\VersionParser;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -30,10 +28,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * @author Justin Rainbow <justin.rainbow@gmail.com>
- * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Niels Keurentjes <niels.keurentjes@omines.com>
  */
-class DependsCommand extends Command
+class DependsCommand extends BaseCommand
 {
     protected function configure()
     {
@@ -173,41 +170,5 @@ EOT
         }
     }
 
-    /**
-     * @param string|string[] $needle The package(s) to inspect.
-     * @param PackageInterface[] $packages List of installed packages.
-     * @param ConstraintInterface|null $constraint Optional constraint to filter by.
-     * @param bool $invert Whether to invert matches on the previous constraint.
-     * @param bool $recurse Whether to recursively expand the requirement tree.
-     * @return array An array with dependers as key, and as values an array containing the source package and the link respectively
-     */
-    private function getDependents($needle, $packages, $constraint = null, $invert = false, $recurse = true)
-    {
-        $needles = is_array($needle) ? $needle : array($needle);
-        $results = array();
 
-        // Loop over all currently installed packages.
-        foreach ($packages as $package) {
-            // Requirements and replaces are both considered valid reasons for a package to be installed
-            $links = $package->getRequires() + $package->getReplaces();
-
-            // Require-dev is only relevant for the root package
-            if ($package instanceof RootPackageInterface) {
-                $links += $package->getDevRequires();
-            }
-
-            // Cross-reference all discovered links to the needles
-            foreach ($links as $link) {
-                foreach ($needles as $needle) {
-                    if ($link->getTarget() === $needle) {
-                        if (is_null($constraint) || (($link->getConstraint()->matches($constraint) === !$invert))) {
-                            $results[$link->getSource()] = array($package, $link, $recurse ? $this->getDependents($link->getSource(), $packages, null, false, true) : array());
-                        }
-                    }
-                }
-            }
-        }
-        ksort($results);
-        return $results;
-    }
 }

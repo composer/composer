@@ -27,7 +27,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Pierre du Plessis <pdples@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class RemoveCommand extends Command
+class RemoveCommand extends BaseCommand
 {
     protected function configure()
     {

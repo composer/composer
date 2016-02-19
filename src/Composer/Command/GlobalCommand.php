@@ -21,7 +21,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class GlobalCommand extends Command
+class GlobalCommand extends BaseCommand
 {
     protected function configure()
     {

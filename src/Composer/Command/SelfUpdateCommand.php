@@ -30,7 +30,7 @@ use Symfony\Component\Finder\Finder;
  * @author Kevin Ran <kran@adobe.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class SelfUpdateCommand extends Command
+class SelfUpdateCommand extends BaseCommand
 {
     const HOMEPAGE = 'getcomposer.org';
     const OLD_INSTALL_EXT = '-old.phar';
