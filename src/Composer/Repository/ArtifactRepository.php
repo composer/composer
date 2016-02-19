@@ -143,7 +143,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         $package = JsonFile::parseJson($json, $composerFile);
         $package['dist'] = array(
             'type' => 'zip',
-            'url' => $file->getPathname(),
+            'url' => strtr($file->getPathname(), '\\', '/'),
             'shasum' => sha1_file($file->getRealPath()),
         );
 
