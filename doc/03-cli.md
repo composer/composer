@@ -337,16 +337,11 @@ php composer.phar depends doctrine/lexer
  doctrine/common      v2.6.1 requires doctrine/lexer (1.*)
 ```
 
-If you want, for example, to find any installed package that is **not**
-allowing Monolog to be upgraded to version 1.17 , try this:
+You can optionally specify a version constraint after the package to limit the
+search.
 
-```sh
-php composer.phar depends monolog/monolog -im ^1.17
-There is no installed package depending on "monolog/monolog" in versions not matching 1.17
-```
-
-Add the `--tree` or `-t` flag to show a recursive tree of why the package is depended
-upon, for example:
+Add the `--tree` or `-t` flag to show a recursive tree of why the package is
+depended upon, for example:
 
 ```sh
 php composer.phar depends psr/log -t
@@ -364,9 +359,36 @@ psr/log 1.0.0 Common interface for logging libraries
 
 * **--recursive (-r):** Recursively resolves up to the root package.
 * **--tree (-t):** Prints the results as a nested tree, implies -r.
-* **--match-constraint (-m):** Filters the dependencies shown using this constraint.
-* **--invert-match-constraint (-i):** Turns --match-constraint around into a blacklist
-  instead of a whitelist.
+
+## prohibits
+
+The `prohibits` command tells you which packages are blocking a given package
+from being installed. Specify a version constraint to verify whether upgrades
+can be performed in your project, and if not why not. See the following
+example:
+
+```sh
+php composer.phar prohibits symfony/symfony 3.1
+ laravel/framework v5.2.16 requires symfony/var-dumper (2.8.*|3.0.*)
+```
+
+Note that you can also specify platform requirements, for example to check
+whether you can upgrade your server to PHP 8.0:
+
+```sh
+php composer.phar prohibits php:8
+ doctrine/cache        v1.6.0 requires php (~5.5|~7.0)
+ doctrine/common       v2.6.1 requires php (~5.5|~7.0)
+ doctrine/instantiator 1.0.5  requires php (>=5.3,<8.0-DEV)
+```
+
+As with `depends` you can request a recursive lookup, which will list all
+packages depending on the packages that cause the conflict.
+
+### Options
+
+* **--recursive (-r):** Recursively resolves up to the root package.
+* **--tree (-t):** Prints the results as a nested tree, implies -r.
 
 ## validate
 
