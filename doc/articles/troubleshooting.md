@@ -261,21 +261,23 @@ If you have been pointed to this page, you want to check a few things:
   Take a look at the next section for IPv6 workarounds.
 
 - If none of the above helped, please report the error.
- 
+
 ## Operation timed out (IPv6 issues)
 
 You may run into errors if IPv6 is not configured correctly. A common error is:
 
 ```
-The "https://getcomposer.org/version" file could not be downloaded: failed to open stream: Operation timed out
+The "https://getcomposer.org/version" file could not be downloaded: failed to
+open stream: Operation timed out
 ```
 
-We recommend you fix your IPv6 setup. If that is not possible, you can try the following workarounds:
-
+We recommend you fix your IPv6 setup. If that is not possible, you can try the
+following workarounds:
 
 **Workaround Linux:**
 
-On linux, it seems that running this command helps to make ipv4 traffic have a higher prio than ipv6, which is a better alternative than disabling ipv6 entirely:
+On linux, it seems that running this command helps to make ipv4 traffic have a
+higher prio than ipv6, which is a better alternative than disabling ipv6 entirely:
 
 ```Bash
 sudo sh -c "echo 'precedence ::ffff:0:0/96 100' >> /etc/gai.conf"
@@ -293,7 +295,7 @@ Get name of your network device:
 networksetup -listallnetworkservices
 ```
 
-Disable IPv6 on that device (in this case "Wi-Fi")
+Disable IPv6 on that device (in this case "Wi-Fi"):
 
 ```
 networksetup -setv6off Wi-Fi
@@ -307,4 +309,6 @@ You can enable IPv6 again with:
 networksetup -setv6automatic Wi-Fi
 ```
 
-That said, if this fixes your problem, please talk to your ISP about it to try and resolve the routing errors. That's the best way to get things resolved for everyone.
+That said, if this fixes your problem, please talk to your ISP about it to
+try and resolve the routing errors. That's the best way to get things resolved
+for everyone.
