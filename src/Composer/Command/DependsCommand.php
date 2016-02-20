@@ -50,6 +50,6 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        parent::doExecute($input, $output, false);
+        return parent::doExecute($input, $output, false);
     }
 }
