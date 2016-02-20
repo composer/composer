@@ -34,15 +34,19 @@ abstract class BaseRepository implements RepositoryInterface
      * @param bool $recurse Whether to recursively expand the requirement tree up to the root package.
      * @return array An associative array of arrays as described above.
      */
-    private function getDependents($needle, $constraint = null, $invert = false, $recurse = true)
+    public function getDependents($needle, $constraint = null, $invert = false, $recurse = true)
     {
         $needles = is_array($needle) ? $needle : array($needle);
         $results = array();
 
         // Loop over all currently installed packages.
         foreach ($this->getPackages() as $package) {
-            // Requirements and replaces are both considered valid reasons for a package to be installed
-            $links = $package->getRequires() + $package->getReplaces();
+            $links = $package->getRequires();
+
+            // Replacements are considered valid reasons for a package to be installed during forward resolution
+            if (!$invert) {
+                $links += $package->getReplaces();
+            }
 
             // Require-dev is only relevant for the root package
             if ($package instanceof RootPackageInterface) {
