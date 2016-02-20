@@ -83,6 +83,8 @@ version-controlled installation for developers of your project.
 
 You can also specify the version with the package name using = or : as separator.
 
+<info>php composer.phar create-project vendor/project:version target-directory</info>
+
 To install unstable packages, either specify the version you want, or use the
 --stability=dev (where dev can be one of RC, beta, alpha or dev).
 
