@@ -103,18 +103,17 @@ EOT
         }
 
         if ($input->getOption('root-require')) {
-          $require = array_keys($composer->getPackage()->getRequires());
-          if (!$input->getOption('no-dev')) {
-            $require_dev = array_keys($composer->getPackage()->getDevRequires());
-            $require = array_merge($require, $require_dev);
-          }
+            $require = array_keys($composer->getPackage()->getRequires());
+            if (!$input->getOption('no-dev')) {
+                $require_dev = array_keys($composer->getPackage()->getDevRequires());
+                $require = array_merge($require, $require_dev);
+            }
 
-          if (!empty($packages)) {
-            $packages = array_intersect($packages, $require);
-          }
-          else {
-            $packages = $require;
-          }
+            if (!empty($packages)) {
+                $packages = array_intersect($packages, $require);
+            } else {
+                $packages = $require;
+            }
         }
 
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
