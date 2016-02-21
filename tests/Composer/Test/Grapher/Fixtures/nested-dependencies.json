@@ -1,0 +1,5 @@
+[
+  {"source": "a", "target": "b", "type": "requires"},
+  {"source": "b", "target": "c", "type": "requires"},
+  {"source": "c", "target": "d", "type": "requires"}
+]

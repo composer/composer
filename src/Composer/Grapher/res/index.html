@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<!-- 
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+-->
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Composer Dependency Graph</title>
+    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js?1.29.1"></script>
+    <style type="text/css">
+
+text {
+  font: 12px sans-serif;
+  pointer-events: none;
+  fill: #525252;
+}
+
+text.shadow {
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-opacity: .8;
+}
+
+line
+{
+  stroke: #fff;
+  stroke-width: 2.0;
+  shape-rendering:crispEdges;
+}
+
+html, body, div, svg
+{
+  padding: 0;
+  margin: 0;
+}
+
+html
+{
+  overflow: scroll;
+}
+
+
+rect.background
+{
+  fill: #F5F5F5;
+}
+
+rect.cell, rect.cell:hover
+{
+  -webkit-transition: fill 1s;
+  -moz-transition: fill 1s;
+  -ms-transition: fill 1s;
+  -o-transition: fill 1s;
+  transition: fill 1s;
+}
+
+rect.cell:hover
+{
+  fill: #fff;
+}
+
+    </style>
+
+{{ data }}
+
+  </head>
+  <body>
+    <script type="text/javascript">
+
+// margin so there is room for text labels
+var margin = { top: 175, left: 175, right: 40, bottom: 40 };
+var width  = window.innerWidth;
+var height = window.innerHeight;
+
+var cellSize = 20;
+
+
+var matrix = []; // 2 dimensional adjacency matrix; (int, int) indexed
+var matrixMapping = []; // map the vertices into the adjacency matrix; (string) indexed
+var reverseMapping = []; // map index of matrix into names
+var edgeCount = 0; // number of unique names in the graph
+
+// give every unique name a matrix index
+graph.forEach(function(v, i) {
+  if(matrixMapping[v.source] === undefined)
+  {
+    var idx = edgeCount++;
+    matrixMapping[v.source] = idx;
+    reverseMapping[idx] = v.source;
+    matrix[idx] = [];
+  }
+  if(matrixMapping[v.target] === undefined)
+  {
+    var idx = edgeCount++;
+    matrixMapping[v.target] = idx;
+    reverseMapping[idx] = v.target;
+    matrix[idx] = [];
+  }
+});
+
+// build the matrix making use of the indexes
+graph.forEach(function(v, i) {
+  matrix[matrixMapping[v.source]][matrixMapping[v.target]] = matrixMapping[v.target];
+});
+
+var svg = d3.select("body").append("svg")
+            .attr("width", reverseMapping.length * cellSize + margin.left + margin.right)
+            .attr("height", reverseMapping.length * cellSize + margin.top + margin.bottom)
+              .append("g")
+              .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+svg.append("rect")
+   .attr("class", "background")
+   .attr("width", reverseMapping.length * cellSize)
+   .attr("height", reverseMapping.length * cellSize);
+
+var row = svg.selectAll(".row")
+             .data(matrix)
+             .enter()
+              .append("g")
+              .attr("class", "row")
+              .attr("transform", function(d, i) { return "translate(0," + (i+1)*cellSize + ")"; })
+              .each(row);
+
+row.append("line")
+   .attr("x1", reverseMapping.length*cellSize);
+
+row.append("text")
+   .attr("x", -6)
+   .attr("dy", -6)
+   .attr("text-anchor", "end")
+   .text(function(d, i) { return reverseMapping[i]; });
+
+var column = svg.selectAll("column")
+                 .data(matrix)
+                 .enter()
+                  .append("g")
+                  .attr("class", "column")
+                  .attr("transform", function(d, i) { return "translate(" + (i+1)*cellSize + ")rotate(-90)"; });
+
+column.append("line")
+      .attr("x2", -(reverseMapping.length)*cellSize);
+
+column.append("text")
+      .attr("x", 6)
+      .attr("dy", -6)
+      .attr("text-anchor", "start")
+      .text(function(d, i) { return reverseMapping[i]; });
+
+function colorCell(cell)
+{
+  var r = 0,
+      g = 200 - Math.floor(cell * (200 / reverseMapping.length)),
+      b = Math.floor(cell * (200 / reverseMapping.length)),
+      a = 255;
+
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+}
+
+function row(row, rowIndex)
+{
+  var cell = d3.select(this).selectAll(".cell")
+               .data(row.filter(function(d) { return d !== undefined; }))
+               .enter()
+                .append("rect")
+                .attr("class", "cell")
+                .attr("fill", function(d) { return colorCell(d); })
+                .attr("x", function(d) { return d*cellSize; })
+                .attr("y", -cellSize)
+                .attr("width", cellSize)
+                .attr("height", cellSize)
+                  .append("title")
+                  .text(function(colIndex) { 
+                    return reverseMapping[rowIndex] + " depends on " + reverseMapping[colIndex]; 
+                  });
+}
+
+
+
+    </script>
+  </body>
+</html>

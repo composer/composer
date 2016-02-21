@@ -108,6 +108,15 @@ class Compiler
 
         $finder = new Finder();
         $finder->files()
+            ->name('*.html')
+            ->in(__DIR__ . '/Grapher/res')
+        ;
+        foreach ($finder as $file) {
+            $this->addFile($phar, $file, false);
+        }
+
+        $finder = new Finder();
+        $finder->files()
             ->ignoreVCS(true)
             ->name('*.php')
             ->name('LICENSE')

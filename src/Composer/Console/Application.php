@@ -287,6 +287,7 @@ class Application extends BaseApplication
         $commands[] = new Command\AboutCommand();
         $commands[] = new Command\ConfigCommand();
         $commands[] = new Command\DependsCommand();
+        $commands[] = new Command\GraphCommand();
         $commands[] = new Command\InitCommand();
         $commands[] = new Command\InstallCommand();
         $commands[] = new Command\CreateProjectCommand();
