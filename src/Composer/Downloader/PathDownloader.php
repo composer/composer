@@ -25,6 +25,9 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class PathDownloader extends FileDownloader
 {
+    const STRATEGY_SYMLINK = 10;
+    const STRATEGY_MIRROR  = 20;
+
     /**
      * {@inheritdoc}
      */
@@ -45,6 +48,21 @@ class PathDownloader extends FileDownloader
             ));
         }
 
+        // Get the transport options with default values
+        $transportOptions = $package->getTransportOptions() + array('symlink'=>null);
+
+        // When symlink transport option is null, both symlink and mirror are allowed
+        $currentStrategy = self::STRATEGY_SYMLINK;
+        $allowedStrategies = array(self::STRATEGY_SYMLINK, self::STRATEGY_MIRROR);
+
+        if (true === $transportOptions['symlink']) {
+            $currentStrategy = self::STRATEGY_SYMLINK;
+            $allowedStrategies = array(self::STRATEGY_SYMLINK);
+        } elseif(false === $transportOptions['symlink']) {
+            $currentStrategy = self::STRATEGY_MIRROR;
+            $allowedStrategies = array(self::STRATEGY_MIRROR);
+        }
+
         $fileSystem = new Filesystem();
         $this->filesystem->removeDirectory($path);
 
@@ -54,18 +72,29 @@ class PathDownloader extends FileDownloader
             $package->getFullPrettyVersion()
         ));
 
-        try {
-            if (Platform::isWindows()) {
-                // Implement symlinks as NTFS junctions on Windows
-                $this->filesystem->junction($realUrl, $path);
-                $this->io->writeError(sprintf('    Junctioned from %s', $url));
-
-            } else {
-                $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
-                $fileSystem->symlink($shortestPath, $path);
-                $this->io->writeError(sprintf('    Symlinked from %s', $url));
+        if (self::STRATEGY_SYMLINK == $currentStrategy) {
+            try {
+                if (Platform::isWindows()) {
+                    // Implement symlinks as NTFS junctions on Windows
+                    $this->filesystem->junction($realUrl, $path);
+                    $this->io->writeError(sprintf('    Junctioned from %s', $url));
+                } else {
+                    $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
+                    $fileSystem->symlink($shortestPath, $path);
+                    $this->io->writeError(sprintf('    Symlinked from %s', $url));
+                }
+            } catch (IOException $e) {
+                if (in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
+                    $this->io->writeError('    <error>Symlink failed, fallback to use mirroring!</error>');
+                    $currentStrategy = self::STRATEGY_MIRROR;
+                } else {
+                    throw new \RuntimeException(sprintf('Symlink from "%s" to "%s" failed!', $realUrl, $path));
+                }
             }
-        } catch (IOException $e) {
+        }
+
+        // Fallback if symlink failed or if symlink is not allowed for the package
+        if (self::STRATEGY_MIRROR == $currentStrategy) {
             $fileSystem->mirror($realUrl, $path);
             $this->io->writeError(sprintf('    Mirrored from %s', $url));
         }

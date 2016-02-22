@@ -42,7 +42,14 @@ use Composer\Util\ProcessExecutor;
  *     {
  *         "type": "path",
  *         "url": "/absolute/path/to/several/packages/*"
- *     }
+ *     },
+ *     {
+ *         "type": "path",
+ *         "url": "../../relative/path/to/package/",
+ *         "options": {
+ *             "symlink": false
+ *         }
+ *     },
  * ]
  * @endcode
  *
@@ -77,6 +84,11 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
     private $process;
 
     /**
+     * @var array
+     */
+    private $options;
+
+    /**
      * Initializes path repository.
      *
      * @param array       $repoConfig
@@ -89,11 +101,12 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             throw new \RuntimeException('You must specify the `url` configuration for the path repository');
         }
 
-        $this->loader = new ArrayLoader();
+        $this->loader = new ArrayLoader(null, true);
         $this->url = $repoConfig['url'];
         $this->process = new ProcessExecutor($io);
         $this->versionGuesser = new VersionGuesser($config, $this->process, new VersionParser());
         $this->repoConfig = $repoConfig;
+        $this->options = isset($repoConfig['options']) ? $repoConfig['options'] : array();
 
         parent::__construct();
     }
@@ -127,6 +140,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 'url' => $url,
                 'reference' => sha1($json),
             );
+            $package['transport-options'] = $this->getOptions();
 
             if (!isset($package['version'])) {
                 $package['version'] = $this->versionGuesser->guessVersion($package, $path) ?: 'dev-master';
@@ -136,7 +150,6 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             if (is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
                 $package['dist']['reference'] = trim($output);
             }
-
             $package = $this->loader->load($package);
             $this->addPackage($package);
         }
@@ -153,5 +166,21 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         return array_map(function ($val) {
             return str_replace(DIRECTORY_SEPARATOR, '/', $val);
         }, glob($this->url, GLOB_MARK | GLOB_ONLYDIR));
+    }
+
+    /**
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * @param array $options
+     */
+    public function setOptions($options)
+    {
+        $this->options = $options;
     }
 }

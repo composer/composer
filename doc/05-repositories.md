@@ -649,6 +649,26 @@ the console will read `Symlinked from ../../packages/my-package`. If symlinking
 is _not_ possible the package will be copied. In that case, the console will
 output `Mirrored from ../../packages/my-package`.
 
+Instead of default fallback strategy you can force to use symlink with `"symlink": true` or
+mirroring with `"symlink": false` option.
+Forcing mirroring can be useful when deploying or generating package from a monolithic repository.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/my-package",
+            "options": {
+                "symlink": false
+            }
+        }
+    ]
+}
+```
+
+
+
 Instead of using a relative path, an absolute path can also be used.
 
 > **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
