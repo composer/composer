@@ -113,6 +113,7 @@ class Installer
     protected $ignorePlatformReqs = false;
     protected $preferStable = false;
     protected $preferLowest = false;
+    protected $noInstall = false;
     /**
      * Array of package names/globs flagged for update
      *
@@ -168,8 +169,12 @@ class Installer
         gc_collect_cycles();
         gc_disable();
 
-        if ($this->dryRun) {
-            $this->verbose = true;
+        if ($this->dryRun || $this->noInstall) {
+            if ($this->dryRun) {
+                $this->verbose = true;
+            } else {
+                $this->dumpAutoloader = false;
+            }
             $this->runScripts = false;
             $this->installationManager->addInstaller(new NoopInstaller);
             $this->mockLocalRepositories($this->repositoryManager);
@@ -219,13 +224,13 @@ class Installer
                 return $res;
             }
         } catch (\Exception $e) {
-            if (!$this->dryRun) {
+            if (!($this->dryRun || $this->noInstall)) {
                 $this->installationManager->notifyInstalls($this->io);
             }
 
             throw $e;
         }
-        if (!$this->dryRun) {
+        if (!($this->dryRun || $this->noInstall)) {
             $this->installationManager->notifyInstalls($this->io);
         }
 
@@ -1482,6 +1487,24 @@ class Installer
     public function setPreferLowest($preferLowest = true)
     {
         $this->preferLowest = (boolean) $preferLowest;
+
+        return $this;
+    }
+
+    /**
+     * Should packages be installed?
+     *
+     * Call this if you want Composer to update the composer.lock but not
+     * effectively download the packages from the respective sources.
+     * Useful if you want to call "composer install" later.
+     *
+     * @param boolean $noInstall
+     *
+     * @return Installer
+     */
+    public function setNoInstall($noInstall = true)
+    {
+        $this->noInstall = $noInstall;
 
         return $this;
     }
