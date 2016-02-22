@@ -44,9 +44,9 @@ class VersionGuesser
     private $versionParser;
 
     /**
-     * @param Config          $config
+     * @param Config $config
      * @param ProcessExecutor $process
-     * @param VersionParser   $versionParser
+     * @param VersionParser $versionParser
      */
     public function __construct(Config $config, ProcessExecutor $process, SemverVersionParser $versionParser)
     {
@@ -56,20 +56,22 @@ class VersionGuesser
     }
 
     /**
-     * @param array  $packageConfig
-     * @param string $path          Path to guess into
+     * @param array $packageConfig
+     * @param string $path Path to guess into
+     *
+     * @return array versionData, 'version' and 'commit' keys
      */
     public function guessVersion(array $packageConfig, $path)
     {
         if (function_exists('proc_open')) {
-            $version = $this->guessGitVersion($packageConfig, $path);
-            if (null !== $version) {
-                return $version;
+            $versionData = $this->guessGitVersion($packageConfig, $path);
+            if (null !== $versionData) {
+                return $versionData;
             }
 
-            $version = $this->guessHgVersion($packageConfig, $path);
-            if (null !== $version) {
-                return $version;
+            $versionData = $this->guessHgVersion($packageConfig, $path);
+            if (null !== $versionData) {
+                return $versionData;
             }
 
             return $this->guessSvnVersion($packageConfig, $path);
@@ -79,33 +81,33 @@ class VersionGuesser
     private function guessGitVersion(array $packageConfig, $path)
     {
         GitUtil::cleanEnv();
-
-        // try to fetch current version from git tags
-        if (0 === $this->process->execute('git describe --exact-match --tags', $output, $path)) {
-            try {
-                return $this->versionParser->normalize(trim($output));
-            } catch (\Exception $e) {
-            }
-        }
+        $version = null;
+        $commit = null;
+        $version = $this->versionFromGitTags($path);
 
         // try to fetch current version from git branch
         if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output, $path)) {
             $branches = array();
             $isFeatureBranch = false;
-            $version = null;
 
             // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
-                    if ($match[1] === '(no branch)' || substr($match[1], 0, 10) === '(detached ') {
-                        $version = 'dev-'.$match[2];
-                        $isFeatureBranch = true;
-                    } else {
-                        $version = $this->versionParser->normalizeBranch($match[1]);
-                        $isFeatureBranch = 0 === strpos($version, 'dev-');
-                        if ('9999999-dev' === $version) {
-                            $version = 'dev-'.$match[1];
+                    if (!$version) {
+                        if ($match[1] === '(no branch)' || substr($match[1], 0, 10) === '(detached ') {
+                            $version = 'dev-' . $match[2];
+                            $isFeatureBranch = true;
+                        } else {
+                            $version = $this->versionParser->normalizeBranch($match[1]);
+                            $isFeatureBranch = 0 === strpos($version, 'dev-');
+                            if ('9999999-dev' === $version) {
+                                $version = 'dev-' . $match[1];
+                            }
                         }
+                    }
+
+                    if ($match[2]) {
+                        $commit = $match[2];
                     }
                 }
 
@@ -116,15 +118,26 @@ class VersionGuesser
                 }
             }
 
-            if (!$isFeatureBranch) {
-                return $version;
+            if ($isFeatureBranch) {
+                // try to find the best (nearest) version branch to assume this feature's version
+                $version = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path);
+            }
+        }
+
+        return array('version' => $version, 'commit' => $commit);
+    }
+
+    private function versionFromGitTags($path)
+    {
+        // try to fetch current version from git tags
+        if (0 === $this->process->execute('git describe --exact-match --tags', $output, $path)) {
+            try {
+                return $this->versionParser->normalize(trim($output));
+            } catch (\Exception $e) {
             }
 
-            // try to find the best (nearest) version branch to assume this feature's version
-            $version = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path);
-
-            return $version;
         }
+        return null;
     }
 
     private function guessHgVersion(array $packageConfig, $path)
@@ -136,7 +149,7 @@ class VersionGuesser
             $isFeatureBranch = 0 === strpos($version, 'dev-');
 
             if ('9999999-dev' === $version) {
-                $version = 'dev-'.$branch;
+                $version = 'dev-' . $branch;
             }
 
             if (!$isFeatureBranch) {
@@ -150,7 +163,7 @@ class VersionGuesser
             // try to find the best (nearest) version branch to assume this feature's version
             $version = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path);
 
-            return $version;
+            return array('version' => $version, 'commit' => '');
         }
     }
 
@@ -189,7 +202,7 @@ class VersionGuesser
                     $length = strlen($output);
                     $version = $this->versionParser->normalizeBranch($candidate);
                     if ('9999999-dev' === $version) {
-                        $version = 'dev-'.$match[1];
+                        $version = 'dev-' . $match[1];
                     }
                 }
             }
@@ -208,21 +221,23 @@ class VersionGuesser
             $branchesPath = isset($packageConfig['branches-path']) ? preg_quote($packageConfig['branches-path'], '#') : 'branches';
             $tagsPath = isset($packageConfig['tags-path']) ? preg_quote($packageConfig['tags-path'], '#') : 'tags';
 
-            $urlPattern = '#<url>.*/('.$trunkPath.'|('.$branchesPath.'|'. $tagsPath .')/(.*))</url>#';
+            $urlPattern = '#<url>.*/(' . $trunkPath . '|(' . $branchesPath . '|' . $tagsPath . ')/(.*))</url>#';
 
             if (preg_match($urlPattern, $output, $matches)) {
                 if (isset($matches[2]) && ($branchesPath === $matches[2] || $tagsPath === $matches[2])) {
                     // we are in a branches path
                     $version = $this->versionParser->normalizeBranch($matches[3]);
                     if ('9999999-dev' === $version) {
-                        $version = 'dev-'.$matches[3];
+                        $version = 'dev-' . $matches[3];
                     }
 
-                    return $version;
+                    return array('version' => $version, 'commit' => '');
                 }
 
-                return $this->versionParser->normalize(trim($matches[1]));
+                $version = $this->versionParser->normalize(trim($matches[1]));
+                return array('version' => $version, 'commit' => '');
             }
         }
     }
+
 }

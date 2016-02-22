@@ -71,8 +71,11 @@ class RootPackageLoader extends ArrayLoader
             // override with env var if available
             if (getenv('COMPOSER_ROOT_VERSION')) {
                 $version = getenv('COMPOSER_ROOT_VERSION');
+                $commit = null;
             } else {
-                $version = $this->versionGuesser->guessVersion($config, $cwd ?: getcwd());
+                $versionData =  $this->versionGuesser->guessVersion($config, $cwd ?: getcwd());
+                $version = $versionData['version'];
+                $commit = $versionData['commit'];
             }
 
             if (!$version) {
@@ -81,6 +84,13 @@ class RootPackageLoader extends ArrayLoader
             }
 
             $config['version'] = $version;
+            if($commit){
+                $config['source'] = array(
+                    'type' => '',
+                    'url' => '',
+                    'reference' => $commit
+                );
+            }
         }
 
         $realPackage = $package = parent::load($config, $class);
