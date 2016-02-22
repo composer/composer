@@ -312,3 +312,20 @@ networksetup -setv6automatic Wi-Fi
 That said, if this fixes your problem, please talk to your ISP about it to
 try and resolve the routing errors. That's the best way to get things resolved
 for everyone.
+
+## Composer hangs with SSH ControlMaster
+
+When you try to install packages from a Git repository and you use the ```ControlMaster```
+setting for you SSH connection  Composer might just hang endlessly and you see a ```sh```
+process in the ```defunct``` state in your process list
+
+The reason for this is a SSH Bug: https://bugzilla.mindrot.org/show_bug.cgi?id=1988
+
+As a workaround, open a SSH connection to your Git host before running Composer:
+
+```
+ssh -t git@mygitserver.tld
+composer update
+```
+
+See also https://github.com/composer/composer/issues/4180 for more information.
