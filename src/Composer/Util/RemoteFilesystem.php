@@ -41,6 +41,7 @@ class RemoteFilesystem
     private $degradedMode = false;
     private $redirects;
     private $maxRedirects = 20;
+    private $githubRateLimited = false;
 
     /**
      * Constructor.
@@ -228,6 +229,10 @@ class RemoteFilesystem
         $userlandFollow = isset($options['http']['follow_location']) && !$options['http']['follow_location'];
 
         $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl, true, IOInterface::DEBUG);
+
+        if ($originUrl === 'github.com' && $this->githubRateLimited && $directUrl = $this->getDirectGithubUrl($fileUrl)) {
+            $fileUrl = $this->fileUrl = $directUrl;
+        }
 
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
@@ -530,6 +535,16 @@ class RemoteFilesystem
     {
         if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
             $message = "\n".'Could not fetch '.$this->fileUrl.', please create a GitHub OAuth token '.($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
+
+            // Try to download using an github.com instead of api.github.com
+            if ($httpStatus !== 404 && $this->getDirectGithubUrl($this->fileUrl)) {
+                $this->io->writeError($message);
+                $this->io->writeError('    <warning>Now trying to download from github.com directly.</warning>');
+                $this->retry = true;
+                $this->githubRateLimited = true;
+                throw new TransportException('RETRY');
+            }
+
             $gitHubUtil = new GitHub($this->io, $this->config, null);
             if (!$gitHubUtil->authorizeOAuth($this->originUrl)
                 && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
@@ -1013,5 +1028,19 @@ class RemoteFilesystem
         $port = parse_url($url, PHP_URL_PORT) ?: $defaultPort;
 
         return parse_url($url, PHP_URL_HOST).':'.$port;
+    }
+
+    /**
+     * Converts an API download url to a direct GitHub archive url.
+     *
+     * @param  string                        $url The original api.github.com url
+     * @return string|null                   null when not valid
+     */
+    private function getDirectGithubUrl($url)
+    {
+        if (preg_match('#^https://api\.github\.com/repos/([^/]++/[^/]++)/(tar|zip)ball/(.++)$#', $url, $match)) {
+            $extension = $match[2] === 'zip' ? 'zip' : 'tar.gz';
+            return 'https://github.com/'.$match[1].'/archive/'.$match[3].'.'.$extension;
+        }
     }
 }
