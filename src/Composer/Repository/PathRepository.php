@@ -129,7 +129,8 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             );
 
             if (!isset($package['version'])) {
-                $package['version'] = $this->versionGuesser->guessVersion($package, $path)['version'] ?: 'dev-master';
+                $versionData = $this->versionGuesser->guessVersion($package, $path);
+                $package['version'] = $versionData['version'] ?: 'dev-master';
             }
 
             $output = '';

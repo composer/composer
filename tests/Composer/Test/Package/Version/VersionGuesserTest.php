@@ -100,9 +100,9 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
-        $version = $guesser->guessVersion(array(), 'dummy/path')['version'];
+        $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
-        $this->assertEquals("dev-$commitHash", $version);
+        $this->assertEquals("dev-$commitHash", $versionData['version']);
     }
 
     public function testTagBecomesVersion()
@@ -130,9 +130,9 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
-        $version = $guesser->guessVersion(array(), 'dummy/path')['version'];
+        $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
-        $this->assertEquals("2.0.5.0-alpha2", $version);
+        $this->assertEquals("2.0.5.0-alpha2", $versionData['version']);
     }
 
     public function testInvalidTagBecomesVersion()
@@ -171,8 +171,8 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
-        $version = $guesser->guessVersion(array(), 'dummy/path')['version'];
+        $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
-        $this->assertEquals("dev-foo", $version);
+        $this->assertEquals("dev-foo", $versionData['version']);
     }
 }
