@@ -32,6 +32,22 @@ class RepositoryManagerTest extends TestCase
         }
     }
 
+    public function testPrepend()
+    {
+        $rm = new RepositoryManager(
+            $this->getMock('Composer\IO\IOInterface'),
+            $this->getMock('Composer\Config'),
+            $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
+        );
+
+        $repository1 = $this->getMock('Composer\Repository\RepositoryInterface');
+        $repository2 = $this->getMock('Composer\Repository\RepositoryInterface');
+        $rm->addRepository($repository1);
+        $rm->prependRepository($repository2);
+
+        $this->assertEquals(array($repository2, $repository1), $rm->getRepositories());
+    }
+
     /**
      * @dataProvider creationCases
      */
