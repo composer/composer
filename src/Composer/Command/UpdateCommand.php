@@ -105,8 +105,8 @@ EOT
         if ($input->getOption('root-require')) {
             $require = array_keys($composer->getPackage()->getRequires());
             if (!$input->getOption('no-dev')) {
-                $require_dev = array_keys($composer->getPackage()->getDevRequires());
-                $require = array_merge($require, $require_dev);
+                $requireDev = array_keys($composer->getPackage()->getDevRequires());
+                $require = array_merge($require, $requireDev);
             }
 
             if (!empty($packages)) {
