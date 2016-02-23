@@ -90,6 +90,18 @@ class RepositoryManager
     }
 
     /**
+     * Adds a repository to the beginning of the chain
+     *
+     * This is useful when injecting additional repositories that should trump Packagist, e.g. from a plugin.
+     *
+     * @param RepositoryInterface $repository repository instance
+     */
+    public function prependRepository(RepositoryInterface $repository)
+    {
+        array_unshift($this->repositories, $repository);
+    }
+
+    /**
      * Returns a new repository for a specific installation type.
      *
      * @param  string                    $type   repository type
