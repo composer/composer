@@ -56,7 +56,7 @@ class UpdateCommand extends Command
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.'),
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
-                new InputOption('root-require', null, InputOption::VALUE_NONE, "Only update dependencies that are listed in the root package's compoer.json file."),
+                new InputOption('root-require', null, InputOption::VALUE_NONE, 'Only update dependencies that are listed in the root package\'s composer.json file.'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
