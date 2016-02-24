@@ -28,7 +28,7 @@ use Symfony\Component\Console\Question\Question;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nils Adermann <naderman@naderman.de>
  */
-class UpdateCommand extends Command
+class UpdateCommand extends BaseCommand
 {
     protected function configure()
     {

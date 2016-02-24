@@ -24,7 +24,7 @@ use Composer\Script\ScriptEvents;
  * @author Tiago Ribeiro <tiago.ribeiro@seegno.com>
  * @author Rui Marinho <rui.marinho@seegno.com>
  */
-class StatusCommand extends Command
+class StatusCommand extends BaseCommand
 {
     protected function configure()
     {

@@ -24,7 +24,7 @@ use Composer\Semver\Constraint\Constraint;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class ArrayRepository implements RepositoryInterface
+class ArrayRepository extends BaseRepository
 {
     /** @var PackageInterface[] */
     protected $packages;

@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Niels Keurentjes <niels.keurentjes@omines.com>
  */
-class DependsCommand extends BaseDependencyCommand
+class ProhibitsCommand extends BaseDependencyCommand
 {
     /**
      * Configure command metadata.
@@ -28,13 +28,13 @@ class DependsCommand extends BaseDependencyCommand
         parent::configure();
 
         $this
-            ->setName('depends')
-            ->setAliases(array('why'))
-            ->setDescription('Shows which packages cause the given package to be installed')
+            ->setName('prohibits')
+            ->setAliases(array('why-not'))
+            ->setDescription('Shows which packages prevent the given package from being installed')
             ->setHelp(<<<EOT
-Displays detailed information about where a package is referenced.
+Displays detailed information about why a package cannot be installed.
 
-<info>php composer.phar depends composer/composer</info>
+<info>php composer.phar prohibits composer/composer</info>
 
 EOT
             )
@@ -50,6 +50,6 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        return parent::doExecute($input, $output, false);
+        return parent::doExecute($input, $output, true);
     }
 }

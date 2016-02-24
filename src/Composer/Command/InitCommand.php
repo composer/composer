@@ -31,7 +31,7 @@ use Symfony\Component\Process\ExecutableFinder;
  * @author Justin Rainbow <justin.rainbow@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class InitCommand extends Command
+class InitCommand extends BaseCommand
 {
     /** @var CompositeRepository */
     protected $repos;

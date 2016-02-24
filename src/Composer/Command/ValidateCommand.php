@@ -29,7 +29,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Robert Schönthal <seroscho@googlemail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ValidateCommand extends Command
+class ValidateCommand extends BaseCommand
 {
     /**
      * configure

@@ -26,7 +26,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  * @author Nils Adermann <naderman@naderman.de>
  */
-class InstallCommand extends Command
+class InstallCommand extends BaseCommand
 {
     protected function configure()
     {

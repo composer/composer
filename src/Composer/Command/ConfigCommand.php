@@ -27,7 +27,7 @@ use Composer\Json\JsonFile;
  * @author Joshua Estes <Joshua.Estes@iostudio.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ConfigCommand extends Command
+class ConfigCommand extends BaseCommand
 {
     /**
      * @var Config

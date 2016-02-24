@@ -23,7 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Fabien Potencier <fabien.potencier@gmail.com>
  */
-class RunScriptCommand extends Command
+class RunScriptCommand extends BaseCommand
 {
     /**
      * @var array Array with command events

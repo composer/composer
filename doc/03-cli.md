@@ -328,34 +328,67 @@ to limit output to suggestions made by those packages only.
 ## depends
 
 The `depends` command tells you which other packages depend on a certain
-package. You can specify which link types (`require`, `require-dev`)
-should be included in the listing. By default both are used.
+package. As with installation `require-dev` relationships are only considered
+for the root package.
 
 ```sh
-php composer.phar depends --link-type=require monolog/monolog
-
-nrk/monolog-fluent requires monolog/monolog (~1.8)
-poc/poc requires monolog/monolog (^1.6)
-propel/propel requires monolog/monolog (1.*)
-symfony/monolog-bridge requires monolog/monolog (>=1.2)
-symfony/symfony requires monolog/monolog (~1)
+php composer.phar depends doctrine/lexer
+ doctrine/annotations v1.2.7 requires doctrine/lexer (1.*)
+ doctrine/common      v2.6.1 requires doctrine/lexer (1.*)
 ```
 
-If you want, for example, find any installed package that is **not** allowing
-Symfony version 3 or one of its components, you can run the following command:
+You can optionally specify a version constraint after the package to limit the
+search.
+
+Add the `--tree` or `-t` flag to show a recursive tree of why the package is
+depended upon, for example:
 
 ```sh
-php composer.phar depends symfony/symfony --with-replaces -im ^3.0
+php composer.phar depends psr/log -t
+psr/log 1.0.0 Common interface for logging libraries
+|- aboutyou/app-sdk 2.6.11 (requires psr/log 1.0.*)
+|  `- __root__ (requires aboutyou/app-sdk ^2.6)
+|- monolog/monolog 1.17.2 (requires psr/log ~1.0)
+|  `- laravel/framework v5.2.16 (requires monolog/monolog ~1.11)
+|     `- __root__ (requires laravel/framework ^5.2)
+`- symfony/symfony v3.0.2 (requires psr/log ~1.0)
+   `- __root__ (requires symfony/symfony ^3.0)
 ```
 
 ### Options
 
-* **--link-type:** The link types to match on, can be specified multiple
-  times.
-* **--match-constraint (-m):** Filters the dependencies shown using this constraint.
-* **--invert-match-constraint (-i):** Turns --match-constraint around into a blacklist
-  instead of a whitelist.
-* **--with-replaces:** Search for replaced packages as well.
+* **--recursive (-r):** Recursively resolves up to the root package.
+* **--tree (-t):** Prints the results as a nested tree, implies -r.
+
+## prohibits
+
+The `prohibits` command tells you which packages are blocking a given package
+from being installed. Specify a version constraint to verify whether upgrades
+can be performed in your project, and if not why not. See the following
+example:
+
+```sh
+php composer.phar prohibits symfony/symfony 3.1
+ laravel/framework v5.2.16 requires symfony/var-dumper (2.8.*|3.0.*)
+```
+
+Note that you can also specify platform requirements, for example to check
+whether you can upgrade your server to PHP 8.0:
+
+```sh
+php composer.phar prohibits php:8
+ doctrine/cache        v1.6.0 requires php (~5.5|~7.0)
+ doctrine/common       v2.6.1 requires php (~5.5|~7.0)
+ doctrine/instantiator 1.0.5  requires php (>=5.3,<8.0-DEV)
+```
+
+As with `depends` you can request a recursive lookup, which will list all
+packages depending on the packages that cause the conflict.
+
+### Options
+
+* **--recursive (-r):** Recursively resolves up to the root package.
+* **--tree (-t):** Prints the results as a nested tree, implies -r.
 
 ## validate
 

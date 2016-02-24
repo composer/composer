@@ -279,33 +279,35 @@ class Application extends BaseApplication
     }
 
     /**
-     * Initializes all the composer commands
+     * Initializes all the composer commands.
      */
     protected function getDefaultCommands()
     {
-        $commands = parent::getDefaultCommands();
-        $commands[] = new Command\AboutCommand();
-        $commands[] = new Command\ConfigCommand();
-        $commands[] = new Command\DependsCommand();
-        $commands[] = new Command\InitCommand();
-        $commands[] = new Command\InstallCommand();
-        $commands[] = new Command\CreateProjectCommand();
-        $commands[] = new Command\UpdateCommand();
-        $commands[] = new Command\SearchCommand();
-        $commands[] = new Command\ValidateCommand();
-        $commands[] = new Command\ShowCommand();
-        $commands[] = new Command\SuggestsCommand();
-        $commands[] = new Command\RequireCommand();
-        $commands[] = new Command\DumpAutoloadCommand();
-        $commands[] = new Command\StatusCommand();
-        $commands[] = new Command\ArchiveCommand();
-        $commands[] = new Command\DiagnoseCommand();
-        $commands[] = new Command\RunScriptCommand();
-        $commands[] = new Command\LicensesCommand();
-        $commands[] = new Command\GlobalCommand();
-        $commands[] = new Command\ClearCacheCommand();
-        $commands[] = new Command\RemoveCommand();
-        $commands[] = new Command\HomeCommand();
+        $commands = array_merge(parent::getDefaultCommands(), array(
+            new Command\AboutCommand(),
+            new Command\ConfigCommand(),
+            new Command\DependsCommand(),
+            new Command\ProhibitsCommand(),
+            new Command\InitCommand(),
+            new Command\InstallCommand(),
+            new Command\CreateProjectCommand(),
+            new Command\UpdateCommand(),
+            new Command\SearchCommand(),
+            new Command\ValidateCommand(),
+            new Command\ShowCommand(),
+            new Command\SuggestsCommand(),
+            new Command\RequireCommand(),
+            new Command\DumpAutoloadCommand(),
+            new Command\StatusCommand(),
+            new Command\ArchiveCommand(),
+            new Command\DiagnoseCommand(),
+            new Command\RunScriptCommand(),
+            new Command\LicensesCommand(),
+            new Command\GlobalCommand(),
+            new Command\ClearCacheCommand(),
+            new Command\RemoveCommand(),
+            new Command\HomeCommand(),
+        ));
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();

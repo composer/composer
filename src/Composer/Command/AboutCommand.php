@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class AboutCommand extends Command
+class AboutCommand extends BaseCommand
 {
     protected function configure()
     {

@@ -26,7 +26,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
  */
-class HomeCommand extends Command
+class HomeCommand extends BaseCommand
 {
     /**
      * {@inheritDoc}

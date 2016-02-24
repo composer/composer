@@ -46,7 +46,7 @@ use Composer\Package\Version\VersionParser;
  * @author Tobias Munk <schmunk@usrbin.de>
  * @author Nils Adermann <naderman@naderman.de>
  */
-class CreateProjectCommand extends Command
+class CreateProjectCommand extends BaseCommand
 {
     protected function configure()
     {

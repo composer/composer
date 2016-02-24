@@ -20,7 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ScriptAliasCommand extends Command
+class ScriptAliasCommand extends BaseCommand
 {
     private $script;
 

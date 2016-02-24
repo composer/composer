@@ -30,7 +30,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class ArchiveCommand extends Command
+class ArchiveCommand extends BaseCommand
 {
     protected function configure()
     {

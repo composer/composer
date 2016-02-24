@@ -26,7 +26,7 @@ use Composer\Plugin\PluginEvents;
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
  */
-class SearchCommand extends Command
+class SearchCommand extends BaseCommand
 {
     protected $matches;
     protected $lowMatches = array();
