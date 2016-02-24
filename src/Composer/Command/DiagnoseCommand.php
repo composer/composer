@@ -286,7 +286,7 @@ EOT
     {
         $this->getIO()->setAuthentication($domain, $token, 'x-oauth-basic');
         try {
-            $url = $domain === 'github.com' ? 'https://api.'.$domain.'/user/repos' : 'https://'.$domain.'/api/v3/user/repos';
+            $url = $domain === 'github.com' ? 'https://api.'.$domain.'/' : 'https://'.$domain.'/api/v3/';
 
             return $this->rfs->getContents($domain, $url, false, array(
                 'retry-auth-failure' => false,

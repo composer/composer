@@ -50,7 +50,7 @@ class GitHubTest extends \PHPUnit_Framework_TestCase
             ->method('getContents')
             ->with(
                 $this->equalTo($this->origin),
-                $this->equalTo(sprintf('https://api.%s', $this->origin)),
+                $this->equalTo(sprintf('https://api.%s/', $this->origin)),
                 $this->isFalse(),
                 $this->anything()
             )
