@@ -134,7 +134,7 @@ class BaseDependencyCommand extends BaseCommand
      * @param OutputInterface $output
      * @param array $results
      */
-    protected function printTable($output, $results)
+    protected function printTable(OutputInterface $output, $results)
     {
         $table = array();
         $doubles = array();
