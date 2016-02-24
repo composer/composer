@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\IO\IOInterface;
+use Composer\Semver\VersionParser as SemverVersionParser;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\Pear\ChannelReader;
 use Composer\Package\CompletePackage;
@@ -93,11 +94,11 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
     /**
      * Builds CompletePackages from PEAR package definition data.
      *
-     * @param  ChannelInfo     $channelInfo
-     * @param  VersionParser   $versionParser
+     * @param  ChannelInfo           $channelInfo
+     * @param  SemverVersionParser   $versionParser
      * @return CompletePackage
      */
-    private function buildComposerPackages(ChannelInfo $channelInfo, VersionParser $versionParser)
+    private function buildComposerPackages(ChannelInfo $channelInfo, SemverVersionParser $versionParser)
     {
         $result = array();
         foreach ($channelInfo->getPackages() as $packageDefinition) {

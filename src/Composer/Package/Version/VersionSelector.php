@@ -17,7 +17,6 @@ use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
-use Composer\Package\Version\VersionParser;
 use Composer\Semver\Semver;
 use Composer\Semver\Constraint\Constraint;
 
