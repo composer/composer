@@ -78,8 +78,11 @@ class BaseDependencyCommand extends BaseCommand
         $pool->addRepository($repository);
 
         // Parse package name and constraint
-        list($needle, $textConstraint) = array_pad(explode(':', $input->getArgument(self::ARGUMENT_PACKAGE)),
-                    2, $input->getArgument(self::ARGUMENT_CONSTRAINT));
+        list($needle, $textConstraint) = array_pad(
+            explode(':', $input->getArgument(self::ARGUMENT_PACKAGE)),
+            2,
+            $input->getArgument(self::ARGUMENT_CONSTRAINT)
+        );
 
         // Find packages that are or provide the requested package first
         $packages = $pool->whatProvides($needle);
@@ -118,7 +121,7 @@ class BaseDependencyCommand extends BaseCommand
         } elseif ($renderTree) {
             $root = $packages[0];
             $this->getIO()->write(sprintf('<info>%s</info> %s %s', $root->getPrettyName(), $root->getPrettyVersion(), $root->getDescription()));
-            $this->printTree($output, $results);
+            $this->printTree($results);
         } else {
             $this->printTable($output, $results);
         }
@@ -131,7 +134,7 @@ class BaseDependencyCommand extends BaseCommand
      * @param OutputInterface $output
      * @param array $results
      */
-    protected function printTable(OutputInterface $output, $results)
+    protected function printTable($output, $results)
     {
         $table = array();
         $doubles = array();
@@ -159,17 +162,19 @@ class BaseDependencyCommand extends BaseCommand
 
         // Render table
         $renderer = new Table($output);
-        $renderer->setStyle('compact')->setRows($table)->render();
+        $renderer->setStyle('compact');
+        $renderer->getStyle()->setVerticalBorderChar('');
+        $renderer->getStyle()->setCellRowContentFormat('%s  ');
+        $renderer->setRows($table)->render();
     }
 
     /**
      * Recursively prints a tree of the selected results.
      *
-     * @param OutputInterface $output
      * @param array $results
      * @param string $prefix
      */
-    protected function printTree(OutputInterface $output, $results, $prefix = '')
+    protected function printTree($results, $prefix = '')
     {
         $count = count($results);
         $idx = 0;
@@ -183,8 +188,18 @@ class BaseDependencyCommand extends BaseCommand
             $versionText = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '' : $package->getPrettyVersion();
             $packageText = rtrim(sprintf('%s %s', $package->getPrettyName(), $versionText));
             $linkText = implode(' ', array($link->getDescription(), $link->getTarget(), $link->getPrettyConstraint()));
-            $output->write(sprintf("%s%s %s (%s)\n", $prefix, $isLast ? '`-' : '|-', $packageText, $linkText));
-            $this->printTree($output, $children, $prefix . ($isLast ? '   ' : '|  '));
+            $this->writeTreeLine(sprintf("%s%s%s (%s)", $prefix, $isLast ? '└──' : '├──', $packageText, $linkText));
+            $this->printTree($children, $prefix . ($isLast ? '   ' : '│  '));
         }
+    }
+
+    private function writeTreeLine($line)
+    {
+        $io = $this->getIO();
+        if (!$io->isDecorated()) {
+            $line = str_replace(array('└', '├', '──', '│'), array('`-', '|-', '-', '|'), $line);
+        }
+
+        $io->write($line);
     }
 }

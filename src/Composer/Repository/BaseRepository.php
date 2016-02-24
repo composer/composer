@@ -36,7 +36,7 @@ abstract class BaseRepository implements RepositoryInterface
      */
     public function getDependents($needle, $constraint = null, $invert = false, $recurse = true)
     {
-        $needles = is_array($needle) ? $needle : array($needle);
+        $needles = (array) $needle;
         $results = array();
 
         // Loop over all currently installed packages.
@@ -58,13 +58,16 @@ abstract class BaseRepository implements RepositoryInterface
                 foreach ($needles as $needle) {
                     if ($link->getTarget() === $needle) {
                         if (is_null($constraint) || (($link->getConstraint()->matches($constraint) === !$invert))) {
-                            $results[$link->getSource()] = array($package, $link, $recurse ? $this->getDependents($link->getSource(), null, false, true) : array());
+                            $dependents = $recurse ? $this->getDependents($link->getSource(), null, false, true) : array();
+                            $results[$link->getSource()] = array($package, $link, $dependents);
                         }
                     }
                 }
             }
         }
+
         ksort($results);
+
         return $results;
     }
 }

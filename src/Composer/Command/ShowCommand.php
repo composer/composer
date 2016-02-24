@@ -137,7 +137,7 @@ EOT
             }
 
             if ($input->getOption('tree')) {
-                $this->displayPackageTree($package, $installedRepo, $repos, $output);
+                $this->displayPackageTree($package, $installedRepo, $repos);
             } else {
                 $this->printMeta($package, $versions, $installedRepo, $repos);
                 $this->printLinks($package, 'requires');
@@ -166,7 +166,7 @@ EOT
 
             foreach ($installedRepo->getPackages() as $package) {
                 if (in_array($package->getName(), $rootRequires, true)) {
-                    $this->displayPackageTree($package, $installedRepo, $repos, $output);
+                    $this->displayPackageTree($package, $installedRepo, $repos);
                 }
             }
 
@@ -483,9 +483,8 @@ EOT
      * @param PackageInterface|string $package
      * @param RepositoryInterface     $installedRepo
      * @param RepositoryInterface     $distantRepos
-     * @param OutputInterface         $output
      */
-    protected function displayPackageTree(PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, OutputInterface $output)
+    protected function displayPackageTree(PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos)
     {
         $packagesInTree = array();
         $packagesInTree[] = $package;
@@ -517,7 +516,7 @@ EOT
 
                 $packagesInTree[] = $requireName;
 
-                $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $output, $treeBar, $level + 1);
+                $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $treeBar, $level + 1);
             }
         }
     }
@@ -530,11 +529,10 @@ EOT
      * @param RepositoryInterface     $installedRepo
      * @param RepositoryInterface     $distantRepos
      * @param array                   $packagesInTree
-     * @param OutputInterface         $output
      * @param string                  $previousTreeBar
      * @param int                     $level
      */
-    protected function displayTree($name, $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, array $packagesInTree, OutputInterface $output, $previousTreeBar = '├', $level = 1)
+    protected function displayTree($name, $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, array $packagesInTree, $previousTreeBar = '├', $level = 1)
     {
         $previousTreeBar = str_replace('├', '│', $previousTreeBar);
         list($package, $versions) = $this->getPackage($installedRepo, $distantRepos, $name, $package->getPrettyConstraint() === 'self.version' ? $package->getConstraint() : $package->getPrettyConstraint());
@@ -556,7 +554,7 @@ EOT
                 $treeBar = str_replace('└', ' ', $treeBar);
                 if (!in_array($requireName, $packagesInTree)) {
                     $packagesInTree[] = $requireName;
-                    $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $output, $treeBar, $level + 1);
+                    $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $treeBar, $level + 1);
                 }
             }
         }
