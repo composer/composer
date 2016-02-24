@@ -16,6 +16,20 @@ use Composer\Semver\VersionParser as SemverVersionParser;
 
 class VersionParser extends SemverVersionParser
 {
+    private static $constraints = array();
+
+    /**
+     * {@inheritDoc}
+     */
+    public function parseConstraints($constraints)
+    {
+        if (!isset(self::$constraints[$constraints])) {
+            self::$constraints[$constraints] = parent::parseConstraints($constraints);
+        }
+
+        return self::$constraints[$constraints];
+    }
+
     /**
      * Parses an array of strings representing package/version pairs.
      *

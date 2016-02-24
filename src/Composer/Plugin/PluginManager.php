@@ -16,7 +16,7 @@ use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\Package;
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;

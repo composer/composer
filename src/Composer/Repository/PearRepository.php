@@ -13,7 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\IO\IOInterface;
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 use Composer\Repository\Pear\ChannelReader;
 use Composer\Package\CompletePackage;
 use Composer\Repository\Pear\ChannelInfo;

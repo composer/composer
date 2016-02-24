@@ -27,7 +27,7 @@ use Composer\Util\Silencer;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 use Composer\Downloader\TransportException;
 use Seld\JsonLint\JsonParser;
 

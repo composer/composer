@@ -15,7 +15,7 @@ namespace Composer\Repository;
 use Composer\Config;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackage;
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginInterface;
 
 /**

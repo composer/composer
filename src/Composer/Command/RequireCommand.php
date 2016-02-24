@@ -20,7 +20,7 @@ use Composer\Factory;
 use Composer\Installer;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;

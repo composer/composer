@@ -13,7 +13,7 @@
 namespace Composer\Package;
 
 use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

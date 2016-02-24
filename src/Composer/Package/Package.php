@@ -12,7 +12,7 @@
 
 namespace Composer\Package;
 
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 use Composer\Util\ComposerMirror;
 
 /**

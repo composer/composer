@@ -17,7 +17,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
-use Composer\Semver\VersionParser as SemverVersionParser;
+use Composer\Package\Version\VersionParser;
 use Composer\Semver\Semver;
 use Composer\Semver\Constraint\Constraint;
 
@@ -160,7 +160,7 @@ class VersionSelector
     private function getParser()
     {
         if ($this->parser === null) {
-            $this->parser = new SemverVersionParser();
+            $this->parser = new VersionParser();
         }
 
         return $this->parser;

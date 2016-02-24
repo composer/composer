@@ -14,7 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\VcsDriverInterface;
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
