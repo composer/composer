@@ -313,9 +313,9 @@ EOF;
         return $classMap;
     }
 
-    private function generateClassMap($dir, $blacklist = null, $namespaceFilter = null)
+    private function generateClassMap($dir, $blacklist = null, $namespaceFilter = null, $showAmbiguousWarning = true)
     {
-        return ClassMapGenerator::createMap($dir, $blacklist, $this->io, $namespaceFilter);
+        return ClassMapGenerator::createMap($dir, $blacklist, $showAmbiguousWarning ? $this->io : null, $namespaceFilter);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
@@ -417,7 +417,7 @@ EOF;
         if (isset($autoloads['classmap'])) {
             foreach ($autoloads['classmap'] as $dir) {
                 try {
-                    $loader->addClassMap($this->generateClassMap($dir));
+                    $loader->addClassMap($this->generateClassMap($dir, null, null, false));
                 } catch (\RuntimeException $e) {
                     $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
                 }
