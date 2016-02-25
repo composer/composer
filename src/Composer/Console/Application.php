@@ -307,6 +307,7 @@ class Application extends BaseApplication
             new Command\ClearCacheCommand(),
             new Command\RemoveCommand(),
             new Command\HomeCommand(),
+            new Command\ExecCommand(),
         ));
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
