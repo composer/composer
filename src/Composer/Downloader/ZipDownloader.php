@@ -44,13 +44,16 @@ class ZipDownloader extends ArchiveDownloader
     {
         if (null === self::$hasSystemUnzip) {
             $finder = new ExecutableFinder;
-            if (!(self::$hasSystemUnzip = (bool) $finder->find('unzip'))) {
-                if (!class_exists('ZipArchive')) {
-                    throw new \RuntimeException('The zip extension and unzip command are both missing, skipping');
-                }
+            self::$hasSystemUnzip = (bool) $finder->find('unzip');
+
+            if (!self::$hasSystemUnzip && class_exists('ZipArchive')) {
                 $this->io->writeError("<warn>As there is no 'unzip' command installed zip files will be unpacked using the PHP zip extension. This may cause</warn>");
                 $this->io->writeError("<warn>unexpected permission issues or reports of corrupted archives. Installing 'unzip' may remediate them.</warn>");
             }
+        }
+
+        if (!self::$hasSystemUnzip && !class_exists('ZipArchive')) {
+            throw new \RuntimeException('The zip extension and unzip command are both missing, skipping');
         }
 
         return parent::download($package, $path);
