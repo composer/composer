@@ -20,6 +20,7 @@
     <groups>
         <exclude>
             <group>slow</group>
+            <group>legacy</group>
         </exclude>
     </groups>
 

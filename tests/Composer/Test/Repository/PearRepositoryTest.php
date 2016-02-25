@@ -15,7 +15,7 @@ namespace Composer\Repository;
 use Composer\TestCase;
 
 /**
- * @group slow
+ * @group legacy
  */
 class PearRepositoryTest extends TestCase
 {
