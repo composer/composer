@@ -102,14 +102,11 @@ EOT
         // Determine output mode
         $mode = 0;
         $io = $this->getIO();
-        if ($input->getOption('by-package')) {
+        if ($input->getOption('by-package') || $io->isVerbose()) {
             $mode |= 1;
         }
         if ($input->getOption('by-suggestion')) {
             $mode |= 2;
-        }
-        if ($io->isVerbose()) {
-            $mode = ~0;
         }
 
         // Simple mode
