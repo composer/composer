@@ -20,7 +20,7 @@ use ZipArchive;
 class ZipArchiver implements ArchiverInterface
 {
     protected static $formats = array(
-        'zip' => 1
+        'zip' => 1,
     );
 
     /**
@@ -33,7 +33,7 @@ class ZipArchiver implements ArchiverInterface
         $res = $zip->open($target, ZipArchive::CREATE);
         if ($res === true) {
             $files = new ArchivableFilesFinder($sources, $excludes);
-            foreach($files as $file) {
+            foreach ($files as $file) {
                 /** @var $file \SplFileInfo */
                 $filepath = $file->getPath()."/".$file->getFilename();
                 $localname = str_replace($sources."/", '', $filepath);
@@ -59,7 +59,8 @@ class ZipArchiver implements ArchiverInterface
         return isset(static::$formats[$format]) && $this->compressionAvailable();
     }
 
-    private function compressionAvailable() {
+    private function compressionAvailable()
+    {
         return class_exists('ZipArchive');
     }
 }

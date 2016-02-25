@@ -93,7 +93,7 @@ EOT
                 throw new \RuntimeException('Timeout value must be numeric and positive if defined, or 0 for forever');
             }
             // Override global timeout set before in Composer by environment or config
-            ProcessExecutor::setTimeout((int)$timeout);
+            ProcessExecutor::setTimeout((int) $timeout);
         }
 
         return $composer->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args);

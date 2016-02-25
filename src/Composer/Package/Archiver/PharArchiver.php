@@ -23,12 +23,12 @@ class PharArchiver implements ArchiverInterface
         'zip'     => \Phar::ZIP,
         'tar'     => \Phar::TAR,
         'tar.gz'  => \Phar::TAR,
-        'tar.bz2' => \Phar::TAR
+        'tar.bz2' => \Phar::TAR,
     );
 
     protected static $compressFormats = array(
         'tar.gz'  => \Phar::GZ,
-        'tar.bz2' => \Phar::BZ2
+        'tar.bz2' => \Phar::BZ2,
     );
 
     /**

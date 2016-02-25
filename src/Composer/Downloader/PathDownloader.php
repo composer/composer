@@ -59,7 +59,6 @@ class PathDownloader extends FileDownloader
                 // Implement symlinks as NTFS junctions on Windows
                 $this->filesystem->junction($realUrl, $path);
                 $this->io->writeError(sprintf('    Junctioned from %s', $url));
-
             } else {
                 $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
                 $fileSystem->symlink($shortestPath, $path);

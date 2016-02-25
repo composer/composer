@@ -55,10 +55,10 @@ class BaseDependencyCommand extends BaseCommand
     /**
      * Execute the command.
      *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param bool $inverted Whether to invert matching process (why-not vs why behaviour)
-     * @return int|null Exit code of the operation.
+     * @param  InputInterface  $input
+     * @param  OutputInterface $output
+     * @param  bool            $inverted Whether to invert matching process (why-not vs why behaviour)
+     * @return int|null        Exit code of the operation.
      */
     protected function doExecute(InputInterface $input, OutputInterface $output, $inverted = false)
     {
@@ -125,6 +125,7 @@ class BaseDependencyCommand extends BaseCommand
         } else {
             $this->printTable($output, $results);
         }
+
         return 0;
     }
 
@@ -132,7 +133,7 @@ class BaseDependencyCommand extends BaseCommand
      * Assembles and prints a bottom-up table of the dependencies.
      *
      * @param OutputInterface $output
-     * @param array $results
+     * @param array           $results
      */
     protected function printTable(OutputInterface $output, $results)
     {
@@ -141,13 +142,13 @@ class BaseDependencyCommand extends BaseCommand
         do {
             $queue = array();
             $rows = array();
-            foreach($results as $result) {
+            foreach ($results as $result) {
                 /**
                  * @var PackageInterface $package
-                 * @var Link $link
+                 * @var Link             $link
                  */
                 list($package, $link, $children) = $result;
-                $unique = (string)$link;
+                $unique = (string) $link;
                 if (isset($doubles[$unique])) {
                     continue;
                 }
@@ -158,7 +159,7 @@ class BaseDependencyCommand extends BaseCommand
             }
             $results = $queue;
             $table = array_merge($rows, $table);
-        } while(!empty($results));
+        } while (!empty($results));
 
         // Render table
         $renderer = new Table($output);
@@ -171,17 +172,17 @@ class BaseDependencyCommand extends BaseCommand
     /**
      * Recursively prints a tree of the selected results.
      *
-     * @param array $results
+     * @param array  $results
      * @param string $prefix
      */
     protected function printTree($results, $prefix = '')
     {
         $count = count($results);
         $idx = 0;
-        foreach($results as $key => $result) {
+        foreach ($results as $key => $result) {
             /**
              * @var PackageInterface $package
-             * @var Link $link
+             * @var Link             $link
              */
             list($package, $link, $children) = $result;
             $isLast = (++$idx == $count);

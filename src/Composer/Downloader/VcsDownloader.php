@@ -245,7 +245,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * Checks if VCS metadata repository has been initialized
      * repository example: .git|.svn|.hg
      *
-     * @param string $path
+     * @param  string $path
      * @return bool
      */
     abstract protected function hasMetadataRepository($path);

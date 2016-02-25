@@ -28,11 +28,11 @@ abstract class BaseRepository implements RepositoryInterface
      * as values. If recursive lookup was requested a third value is returned containing an identically formed array up
      * to the root package.
      *
-     * @param string|string[] $needle The package name(s) to inspect.
-     * @param ConstraintInterface|null $constraint Optional constraint to filter by.
-     * @param bool $invert Whether to invert matches to discover reasons for the package *NOT* to be installed.
-     * @param bool $recurse Whether to recursively expand the requirement tree up to the root package.
-     * @return array An associative array of arrays as described above.
+     * @param  string|string[]          $needle     The package name(s) to inspect.
+     * @param  ConstraintInterface|null $constraint Optional constraint to filter by.
+     * @param  bool                     $invert     Whether to invert matches to discover reasons for the package *NOT* to be installed.
+     * @param  bool                     $recurse    Whether to recursively expand the requirement tree up to the root package.
+     * @return array                    An associative array of arrays as described above.
      */
     public function getDependents($needle, $constraint = null, $invert = false, $recurse = true)
     {

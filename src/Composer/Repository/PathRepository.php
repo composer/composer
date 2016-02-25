@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Locker;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;

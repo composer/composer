@@ -16,7 +16,6 @@ use Composer\Package\Archiver\ZipArchiver;
 
 class ZipArchiverTest extends ArchiverTest
 {
-
     public function testZipArchive()
     {
         if (!class_exists('ZipArchive')) {

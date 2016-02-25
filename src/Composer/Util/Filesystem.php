@@ -607,7 +607,7 @@ class Filesystem
     /**
      * Returns whether the target directory is a Windows NTFS Junction.
      *
-     * @param string $junction Path to check.
+     * @param  string $junction Path to check.
      * @return bool
      */
     public function isJunction($junction)
@@ -620,13 +620,14 @@ class Filesystem
         }
         // Junctions have no link stat but are otherwise indistinguishable from real directories
         $stat = lstat($junction);
+
         return ($stat['mode'] === 0);
     }
 
     /**
      * Removes a Windows NTFS junction.
      *
-     * @param string $junction
+     * @param  string $junction
      * @return bool
      */
     public function removeJunction($junction)
@@ -639,6 +640,7 @@ class Filesystem
             throw new IOException(sprintf('%s is not a junction and thus cannot be removed as one', $junction));
         }
         $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape($junction));
+
         return ($this->getProcess()->execute($cmd, $output) === 0);
     }
 }

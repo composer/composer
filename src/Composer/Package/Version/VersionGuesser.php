@@ -44,9 +44,9 @@ class VersionGuesser
     private $versionParser;
 
     /**
-     * @param Config          $config
-     * @param ProcessExecutor $process
-     * @param SemverVersionParser   $versionParser
+     * @param Config              $config
+     * @param ProcessExecutor     $process
+     * @param SemverVersionParser $versionParser
      */
     public function __construct(Config $config, ProcessExecutor $process, SemverVersionParser $versionParser)
     {
