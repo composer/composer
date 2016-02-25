@@ -190,6 +190,20 @@ composer update
 php /usr/local/bin/composer update
 ```
 
+As a workaround in bash (and other shells) you can create a function which is named `composer`,
+which disables xdebug before it executes composer, and then enables it afterwards.
+
+Create a function in a file read by bash, like `~/.bashrc` or `~/.bash_aliases` depending on
+your setup. This also assumes that you have sudo privileges and the `php5enmod` and `php5dismod`
+commands available. It also assumes that you have `composer` in your path.
+
+```sh
+echo 'function composer() { COMPOSER="$(which composer)" && sudo php5dismod -s cli xdebug && $COMPOSER "$@" && sudo php5enmod -s cli xdebug ;}' >> ~/.bash_aliases
+. ~/.bash_aliases
+```
+
+When executing `composer` you will run it with xdebug **disabled** (**as long as the command is executing**), andy if you execute composer using explicit path (like `./composer` or `/usr/local/bin/composer`) xdebug will be **enabled**.
+
 If you do not want to disable it and want to get rid of the warning you can also define the
 [COMPOSER_DISABLE_XDEBUG_WARN](../03-cli.md#composer-disable-xdebug-warn) environment variable.
 
