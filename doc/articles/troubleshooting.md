@@ -202,7 +202,9 @@ echo 'function composer() { COMPOSER="$(which composer)" && sudo php5dismod -s c
 . ~/.bash_aliases
 ```
 
-When executing `composer` you will run it with xdebug **disabled** (**as long as the command is executing**), andy if you execute composer using explicit path (like `./composer` or `/usr/local/bin/composer`) xdebug will be **enabled**.
+When executing `composer` you will run it with xdebug **disabled** (**as long as the command is executing**),
+and if you execute composer using explicit path (like `./composer` or `/usr/local/bin/composer`)
+xdebug will be **enabled**.
 
 If you do not want to disable it and want to get rid of the warning you can also define the
 [COMPOSER_DISABLE_XDEBUG_WARN](../03-cli.md#composer-disable-xdebug-warn) environment variable.
