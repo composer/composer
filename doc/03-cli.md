@@ -602,6 +602,16 @@ Lists the name, version and license of every package installed. Use
 To run [scripts](articles/scripts.md) manually you can use this command,
 just give it the script name and optionally any required arguments.
 
+## exec
+
+Executes a vendored binary/script. You can execute any command and this will
+ensure that the Composer bin-dir is pushed on your PATH before the command
+runs.
+
+### Options
+
+* **--list:** List the available composer binaries
+
 ## diagnose
 
 If you think you found a bug, or something is behaving strangely, you might

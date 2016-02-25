@@ -29,11 +29,11 @@ class ExecCommand extends BaseCommand
             ->setDescription('Execute a vendored binary/script')
             ->setDefinition(array(
                 new InputOption('list', 'l', InputOption::VALUE_NONE),
-                new InputArgument('script', InputArgument::OPTIONAL, 'The script to run, e.g. phpunit'),
+                new InputArgument('binary', InputArgument::OPTIONAL, 'The binary to run, e.g. phpunit'),
                 new InputArgument(
                     'args',
                     InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
-                    'Arguments to pass to the script. Use <info>--</info> to separate from composer arguments'
+                    'Arguments to pass to the binary. Use <info>--</info> to separate from composer arguments'
                 ),
             ))
         ;
@@ -43,15 +43,15 @@ class ExecCommand extends BaseCommand
     {
         $composer = $this->getComposer();
         $binDir = $composer->getConfig()->get('bin-dir');
-        if ($input->getOption('list') || !$input->getArgument('script')) {
+        if ($input->getOption('list') || !$input->getArgument('binary')) {
             $bins = glob($binDir . '/*');
 
             if (!$bins) {
-                throw new \RuntimeException("No scripts found in bin-dir ($binDir)");
+                throw new \RuntimeException("No binaries found in bin-dir ($binDir)");
             }
 
             $this->getIO()->write(<<<EOT
-<comment>Available scripts:</comment>
+<comment>Available binaries:</comment>
 EOT
             );
 
@@ -72,10 +72,10 @@ EOT
             return;
         }
 
-        $script = $input->getArgument('script');
+        $binary = $input->getArgument('binary');
 
         $dispatcher = $composer->getEventDispatcher();
-        $dispatcher->addListener('__exec_command', $script);
+        $dispatcher->addListener('__exec_command', $binary);
         if ($output->getVerbosity() === OutputInterface::VERBOSITY_NORMAL) {
             $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
         }
