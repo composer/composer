@@ -101,4 +101,25 @@ class PathDownloader extends FileDownloader
 
         $this->io->writeError('');
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function remove(PackageInterface $package, $path)
+    {
+        /**
+         * For junctions don't blindly rely on Filesystem::removeDirectory as it may be overzealous. If a process
+         * inadvertently locks the file the removal will fail, but it would fall back to recursive delete which
+         * is disastrous within a junction. So in that case we have no other real choice but to fail hard.
+         */
+        if (Platform::isWindows() && $this->filesystem->isJunction($path)) {
+            $this->io->writeError("  - Removing junction for <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+            if (!$this->filesystem->removeJunction($path)) {
+                $this->io->writeError("<warn>Could not remove junction at " . $path . " - is another process locking it?</warn>");
+                throw new \RuntimeException('Could not reliably remove junction for package ' . $package->getName());
+            }
+        } else {
+            parent::remove($package, $path);
+        }
+    }
 }
