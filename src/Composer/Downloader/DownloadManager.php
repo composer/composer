@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use Composer\Config;
 use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -26,6 +27,7 @@ class DownloadManager
     private $io;
     private $preferDist = false;
     private $preferSource = false;
+    private $packagePreferences = array();
     private $filesystem;
     private $downloaders  = array();
 
@@ -65,6 +67,19 @@ class DownloadManager
     public function setPreferDist($preferDist)
     {
         $this->preferDist = $preferDist;
+
+        return $this;
+    }
+
+    /**
+     * Sets fine tuned preference settings for package level source/dist selection.
+     *
+     * @param  array           $preferences array of preferences by package patterns
+     * @return DownloadManager
+     */
+    public function setPreferences(array $preferences)
+    {
+        $this->packagePreferences = $preferences;
 
         return $this;
     }
@@ -182,7 +197,7 @@ class DownloadManager
             throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }
 
-        if ((!$package->isDev() || $this->preferDist) && !$preferSource) {
+        if (!$preferSource && ($this->preferDist || Config::INSTALL_PREFERENCE_DIST === $this->resolvePackageInstallPreference($package))) {
             $sources = array_reverse($sources);
         }
 
@@ -281,5 +296,27 @@ class DownloadManager
         if ($downloader) {
             $downloader->remove($package, $targetDir);
         }
+    }
+
+    /**
+     * Determines the install preference of a package
+     *
+     * @param PackageInterface $package package instance
+     *
+     * @return string
+     */
+    protected function resolvePackageInstallPreference(PackageInterface $package)
+    {
+        foreach ($this->packagePreferences as $pattern => $preference) {
+            $pattern = '{^'.str_replace('*', '.*', $pattern).'$}i';
+            if (preg_match($pattern, $package->getName())) {
+                if (Config::INSTALL_PREFERENCE_DIST === $preference || (!$package->isDev() && Config::INSTALL_PREFERENCE_AUTO === $preference)) {
+                    return Config::INSTALL_PREFERENCE_DIST;
+                }
+                return Config::INSTALL_PREFERENCE_SOURCE;
+            }
+        }
+
+        return $package->isDev() ? Config::INSTALL_PREFERENCE_SOURCE : Config::INSTALL_PREFERENCE_DIST;
     }
 }

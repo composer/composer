@@ -466,7 +466,7 @@ class Factory
         }
 
         $dm = new Downloader\DownloadManager($io);
-        switch ($config->get('preferred-install')) {
+        switch ($preferred = $config->get('preferred-install')) {
             case 'dist':
                 $dm->setPreferDist(true);
                 break;
@@ -477,6 +477,10 @@ class Factory
             default:
                 // noop
                 break;
+        }
+
+        if (is_array($preferred)) {
+            $dm->setPreferences($preferred);
         }
 
         $executor = new ProcessExecutor($io);

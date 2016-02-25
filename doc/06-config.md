@@ -17,7 +17,26 @@ in the PHP include path.
 ## preferred-install
 
 Defaults to `auto` and can be any of `source`, `dist` or `auto`. This option
-allows you to set the install method Composer will prefer to use.
+allows you to set the install method Composer will prefer to use. Can
+optionally be a hash of patterns for more granular install preferences.
+
+```json
+{
+    "config": {
+        "preferred-install": {
+            "my-organization/stable-package": "dist",
+            "my-organization/*": "source",
+            "partner-organization/*": "auto",
+            "*": "dist"
+        }
+    }
+}
+```
+
+> **Note:** Order matters. More specific patterns should be earlier than
+> more relaxed patterns. When mixing the string notation with the hash
+> configuration in global and package configurations the string notation
+> is translated to a `*` package pattern.
 
 ## store-auths
 

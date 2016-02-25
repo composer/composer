@@ -112,6 +112,27 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         return $data;
     }
 
+    public function testPreferredInstallAsString()
+    {
+        $config = new Config(false);
+        $config->merge(array('config' => array('preferred-install' => 'source')));
+        $config->merge(array('config' => array('preferred-install' => 'dist')));
+
+        $this->assertEquals('dist', $config->get('preferred-install'));
+    }
+
+    public function testMergePreferredInstall()
+    {
+        $config = new Config(false);
+        $config->merge(array('config' => array('preferred-install' => 'dist')));
+        $config->merge(array('config' => array('preferred-install' => array('foo/*' => 'source'))));
+
+        // This assertion needs to make sure full wildcard preferences are placed last
+        // Handled by composer because we convert string preferences for BC, all other
+        // care for ordering and collision prevention is up to the user
+        $this->assertEquals(array('foo/*' => 'source', '*' => 'dist'), $config->get('preferred-install'));
+    }
+
     public function testMergeGithubOauth()
     {
         $config = new Config(false);
