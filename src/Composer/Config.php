@@ -21,10 +21,6 @@ class Config
 {
     const RELATIVE_PATHS = 1;
 
-    const INSTALL_PREFERENCE_AUTO = 'auto';
-    const INSTALL_PREFERENCE_DIST = 'dist';
-    const INSTALL_PREFERENCE_SOURCE = 'source';
-    
     public static $defaultConfig = array(
         'process-timeout' => 300,
         'use-include-path' => false,
