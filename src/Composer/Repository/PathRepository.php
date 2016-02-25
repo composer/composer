@@ -139,7 +139,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 'url' => $url,
                 'reference' => sha1($json),
             );
-            $package['transport-options'] = $this->getOptions();
+            $package['transport-options'] = $this->options;
 
             if (!isset($package['version'])) {
                 $package['version'] = $this->versionGuesser->guessVersion($package, $path) ?: 'dev-master';
@@ -165,21 +165,5 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         return array_map(function ($val) {
             return str_replace(DIRECTORY_SEPARATOR, '/', $val);
         }, glob($this->url, GLOB_MARK | GLOB_ONLYDIR));
-    }
-
-    /**
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    /**
-     * @param array $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = $options;
     }
 }
