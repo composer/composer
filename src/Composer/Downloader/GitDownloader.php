@@ -45,11 +45,13 @@ class GitDownloader extends VcsDownloader
 
         $ref = $package->getSourceReference();
         $flag = Platform::isWindows() ? '/D ' : '';
-        $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
+        $command = '(git clone --no-checkout --depth 1 --single-branch %s %s --branch %s || git clone --no-checkout %1$s %2$s)'.
+            ' && cd '.$flag.'%2$s && git remote add composer %1$s && (git fetch composer %3$s || git fetch composer)';
         $this->io->writeError("    Cloning ".$ref);
 
-        $commandCallable = function ($url) use ($ref, $path, $command) {
-            return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($path), ProcessExecutor::escape($ref));
+        $branch = $this->guessBranchName($package);
+        $commandCallable = function ($url) use ($ref, $path, $command, $branch) {
+            return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($path), ProcessExecutor::escape($branch));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
@@ -59,7 +61,7 @@ class GitDownloader extends VcsDownloader
         }
         $this->setPushUrl($path, $url);
 
-        if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
+        if ($newRef = $this->updateToCommit($path, $ref, $branch, $package->getReleaseDate())) {
             if ($package->getDistReference() === $package->getSourceReference()) {
                 $package->setDistReference($newRef);
             }
@@ -79,14 +81,15 @@ class GitDownloader extends VcsDownloader
 
         $ref = $target->getSourceReference();
         $this->io->writeError("    Checking out ".$ref);
-        $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
+        $command = 'git remote set-url composer %s && (git fetch composer %s || git fetch composer) && git fetch --tags composer';
+        $branch = $this->guessBranchName($target);
 
-        $commandCallable = function ($url) use ($command) {
-            return sprintf($command, ProcessExecutor::escape($url));
+        $commandCallable = function ($url) use ($command, $branch) {
+            return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($branch));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
-        if ($newRef =  $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate())) {
+        if ($newRef =  $this->updateToCommit($path, $ref, $branch, $target->getReleaseDate())) {
             if ($target->getDistReference() === $target->getSourceReference()) {
                 $target->setDistReference($newRef);
             }
@@ -228,7 +231,6 @@ class GitDownloader extends VcsDownloader
         // If the non-existent branch is actually the name of a file, the file
         // is checked out.
         $template = 'git checkout '.$force.'%s -- && git reset --hard %1$s --';
-        $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
 
         $branches = null;
         if (0 === $this->process->execute('git branch -r', $output, $path)) {
@@ -379,5 +381,10 @@ class GitDownloader extends VcsDownloader
         $path = $this->normalizePath($path);
 
         return is_dir($path.'/.git');
+    }
+
+    private function guessBranchName(PackageInterface $package)
+    {
+        return preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $package->getPrettyVersion());;
     }
 }
