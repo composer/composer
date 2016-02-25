@@ -134,11 +134,13 @@ EOT
         $io->write('Checking disk free space: ', false);
         $this->outputResult($this->checkDiskSpace($config));
 
-        $io->write('Checking pubkeys: ', false);
-        $this->outputResult($this->checkPubKeys($config));
+        if ('phar:' === substr(__FILE__, 0, 5)) {
+            $io->write('Checking pubkeys: ', false);
+            $this->outputResult($this->checkPubKeys($config));
 
-        $io->write('Checking composer version: ', false);
-        $this->outputResult($this->checkVersion());
+            $io->write('Checking composer version: ', false);
+            $this->outputResult($this->checkVersion());
+        }
 
         return $this->failures;
     }
