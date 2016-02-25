@@ -89,7 +89,7 @@ EOT
         }
 
         // output errors/warnings
-        if (!$errors && !$unpushed) {
+        if (!$errors && !$unpushedChanges) {
             $io->writeError('<info>No local changes</info>');
         } elseif ($errors) {
             $io->writeError('<error>You have changes in the following dependencies:</error>');
