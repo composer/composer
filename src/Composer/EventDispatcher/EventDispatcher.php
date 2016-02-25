@@ -284,7 +284,7 @@ class EventDispatcher
      * @param Callable $listener  A callable expecting an event argument
      * @param int      $priority  A higher value represents a higher priority
      */
-    protected function addListener($eventName, $listener, $priority = 0)
+    public function addListener($eventName, $listener, $priority = 0)
     {
         $this->listeners[$eventName][$priority][] = $listener;
     }

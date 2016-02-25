@@ -20,7 +20,7 @@ use Symfony\Component\Console\Input\InputArgument;
 /**
  * @author Davey Shafik <me@daveyshafik.com>
  */
-class ExecCommand extends Command
+class ExecCommand extends BaseCommand
 {
     protected function configure()
     {
@@ -41,8 +41,9 @@ class ExecCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $binDir = $this->getComposer()->getConfig()->get('bin-dir');
-        if ($input->hasArgument('list') || !$input->hasArgument('script') || !$input->getArgument('script')) {
+        $composer = $this->getComposer();
+        $binDir = $composer->getConfig()->get('bin-dir');
+        if ($input->getOption('list') || !$input->getArgument('script')) {
             $bins = glob($binDir . '/*');
 
             if (!$bins) {
@@ -55,6 +56,12 @@ EOT
             );
 
             foreach ($bins as $bin) {
+                // skip .bat copies
+                if (isset($previousBin) && $bin === $previousBin.'.bat') {
+                    continue;
+                }
+
+                $previousBin = $bin;
                 $bin = basename($bin);
                 $this->getIO()->write(<<<EOT
 <info>- $bin</info>
@@ -66,19 +73,13 @@ EOT
         }
 
         $script = $input->getArgument('script');
-        if (!file_exists($binDir . '/' . $script)) {
-            throw new \RuntimeException("script '$script' not found in bin-dir ($binDir)");
+
+        $dispatcher = $composer->getEventDispatcher();
+        $dispatcher->addListener('__exec_command', $script);
+        if ($output->getVerbosity() === OutputInterface::VERBOSITY_NORMAL) {
+            $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
         }
 
-        if ($args = $input->getArgument('args')) {
-            $args = " " . implode(" ", $args);
-        }
-
-        $this->getIO()->write(<<<EOT
-<comment>Executing $script$args:</comment>
-EOT
-        );
-
-        passthru($binDir . '/' . $script . $args);
+        return $dispatcher->dispatchScript('__exec_command', true, $input->getArgument('args'));
     }
 }
