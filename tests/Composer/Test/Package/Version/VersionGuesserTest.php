@@ -25,6 +25,47 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testGuessVersionReturnsData()
+    {
+        $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
+        $anotherCommitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
+
+        $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
+            ->setMethods(array('execute'))
+            ->disableArgumentCloning()
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+
+        $executor
+            ->expects($this->at(0))
+            ->method('execute')
+            ->with('git describe --exact-match --tags')
+            ->willReturn(1)
+        ;
+
+        $self = $this;
+
+        $executor
+            ->expects($this->at(1))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self, $commitHash, $anotherCommitHash) {
+                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $output = "* master $commitHash Commit message\n(no branch) $anotherCommitHash Commit message\n";
+
+                return 0;
+            })
+        ;
+
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $guesser = new VersionGuesser($config, $executor, new VersionParser());
+        $versionArray = $guesser->guessVersion(array(), 'dummy/path');
+
+        $this->assertEquals("dev-master", $versionArray['version']);
+        $this->assertEquals($commitHash, $versionArray['commit']);
+    }
+
     public function testDetachedHeadBecomesDevHash()
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
@@ -59,9 +100,9 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
-        $version = $guesser->guessVersion(array(), 'dummy/path');
+        $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
-        $this->assertEquals("dev-$commitHash", $version);
+        $this->assertEquals("dev-$commitHash", $versionData['version']);
     }
 
     public function testTagBecomesVersion()
@@ -89,9 +130,9 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
-        $version = $guesser->guessVersion(array(), 'dummy/path');
+        $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
-        $this->assertEquals("2.0.5.0-alpha2", $version);
+        $this->assertEquals("2.0.5.0-alpha2", $versionData['version']);
     }
 
     public function testInvalidTagBecomesVersion()
@@ -130,8 +171,8 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
-        $version = $guesser->guessVersion(array(), 'dummy/path');
+        $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
-        $this->assertEquals("dev-foo", $version);
+        $this->assertEquals("dev-foo", $versionData['version']);
     }
 }
