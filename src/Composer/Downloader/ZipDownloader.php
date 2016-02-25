@@ -15,10 +15,12 @@ namespace Composer\Downloader;
 use Composer\Config;
 use Composer\Cache;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Package\PackageInterface;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\IO\IOInterface;
+use Symfony\Component\Process\ExecutableFinder;
 use ZipArchive;
 
 /**
@@ -27,6 +29,7 @@ use ZipArchive;
 class ZipDownloader extends ArchiveDownloader
 {
     protected $process;
+    protected static $hasSystemZip;
 
     public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null, RemoteFilesystem $rfs = null)
     {
@@ -34,12 +37,29 @@ class ZipDownloader extends ArchiveDownloader
         parent::__construct($io, $config, $eventDispatcher, $cache, $rfs);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function download(PackageInterface $package, $path)
+    {
+        if (null === self::$hasSystemZip) {
+            $finder = new ExecutableFinder;
+            self::$hasSystemZip = (bool) $finder->find('unzip');
+        }
+
+        if (!class_exists('ZipArchive') && !self::$hasSystemZip) {
+            throw new \RuntimeException('The zip extension and unzip command are both missing, skipping');
+        }
+
+        return parent::download($package, $path);
+    }
+
     protected function extract($file, $path)
     {
         $processError = null;
 
         // try to use unzip on *nix
-        if (!Platform::isWindows()) {
+        if (self::$hasSystemZip) {
             $command = 'unzip '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path) . ' && chmod -R u+w ' . ProcessExecutor::escape($path);
             try {
                 if (0 === $this->process->execute($command, $ignoredOutput)) {
@@ -63,11 +83,7 @@ class ZipDownloader extends ArchiveDownloader
             }
 
             $error = "Could not decompress the archive, enable the PHP zip extension or install unzip.\n"
-                . $iniMessage . "\n" . $processError;
-
-            if (!Platform::isWindows()) {
-                $error = "Could not decompress the archive, enable the PHP zip extension.\n" . $iniMessage;
-            }
+                . $iniMessage . ($processError ? "\n" . $processError : '');
 
             throw new \RuntimeException($error);
         }
