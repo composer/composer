@@ -84,8 +84,13 @@ class RootPackageLoader extends ArrayLoader
             }
 
             $config['version'] = $version;
-            if($commit){
+            if ($commit) {
                 $config['source'] = array(
+                    'type' => '',
+                    'url' => '',
+                    'reference' => $commit
+                );
+                $config['dist'] = array(
                     'type' => '',
                     'url' => '',
                     'reference' => $commit
