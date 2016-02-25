@@ -12,6 +12,8 @@
 
 namespace Composer\Downloader;
 
+use Composer\Package\PackageInterface;
+
 /**
  * DVCS Downloader interface.
  *
@@ -22,8 +24,9 @@ interface DvcsDownloaderInterface
     /**
      * Checks for unpushed changes to a current branch
      *
-     * @param  string      $path package directory
-     * @return string|null changes or null
+     * @param  PackageInterface $package package directory
+     * @param  string           $path package directory
+     * @return string|null      changes or null
      */
-    public function getUnpushedChanges($path);
+    public function getUnpushedChanges(PackageInterface $package, $path);
 }

@@ -81,7 +81,7 @@ EOT
                 }
 
                 if ($downloader instanceof DvcsDownloaderInterface) {
-                    if ($unpushed = $downloader->getUnpushedChanges($targetDir)) {
+                    if ($unpushed = $downloader->getUnpushedChanges($package, $targetDir)) {
                         $unpushedChanges[$targetDir] = $unpushed;
                     }
                 }
@@ -123,8 +123,8 @@ EOT
             }
         }
 
-        if ($errors && !$input->getOption('verbose')) {
-            $io->writeError('Use --verbose (-v) to see modified files');
+        if (($errors || $unpushedChanges) && !$input->getOption('verbose')) {
+            $io->writeError('Use --verbose (-v) to see a list of files');
         }
 
         // Dispatch post-status-command

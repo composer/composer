@@ -112,7 +112,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         return trim($output) ?: null;
     }
 
-    public function getUnpushedChanges($path)
+    public function getUnpushedChanges(PackageInterface $package, $path)
     {
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
@@ -127,9 +127,39 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $branch = trim($output);
 
-        $command = sprintf('git diff --name-status %s..composer/%s', $branch, $branch);
+        // we are on a detached HEAD tag so no need to check for changes
+        if ($branch === 'HEAD') {
+            return;
+        }
+
+        // check that the branch exists in composer remote, if not then we should assume it is an unpushed branch
+        $command = sprintf('git rev-parse --verify composer/%s', $branch);
+        if (0 !== $this->process->execute($command, $output, $path)) {
+            $composerBranch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $package->getPrettyVersion());
+            $branches = '';
+            if (0 === $this->process->execute('git branch -r', $output, $path)) {
+                $branches = $output;
+            }
+            // add 'v' in front of the branch if it was stripped when generating the pretty name
+            if (!preg_match('{^\s+composer/'.preg_quote($composerBranch).'$}m', $branches) && preg_match('{^\s+composer/v'.preg_quote($composerBranch).'$}m', $branches)) {
+                $composerBranch = 'v' . $composerBranch;
+            }
+        } else {
+            $composerBranch = $branch;
+        }
+
+        $command = sprintf('git diff --name-status composer/%s...%s', $composerBranch, $branch);
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        if (trim($output)) {
+            // fetch from both to make sure we have up to date remotes
+            $this->process->execute('git fetch composer && git fetch origin', $output, $path);
+
+            if (0 !== $this->process->execute($command, $output, $path)) {
+                throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            }
         }
 
         return trim($output) ?: null;
@@ -143,8 +173,9 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
 
-        if (null !== $this->getUnpushedChanges($path)) {
-            throw new \RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch.');
+        $unpushed = $this->getUnpushedChanges($package, $path);
+        if ($unpushed && ($this->io->isInteractive() || $this->config->get('discard-changes') !== true)) {
+            throw new \RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch: '."\n".$unpushed);
         }
 
         if (!$changes = $this->getLocalChanges($package, $path)) {
