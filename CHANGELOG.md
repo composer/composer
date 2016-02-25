@@ -1,3 +1,27 @@
+### [1.0.0-beta1] - 2016-XX-XX
+
+  * Added VCS repo support for the GitLab API, see also `gitlab-oauth` and `gitlab-domains` config options
+  * Added `prohibits` / `why-not` command to show what blocks an upgrade to a given package:version pair
+  * Added --tree / -t to the `show` command to see all your installed packages in a tree view
+  * Added --interactive / -i to the `update` command, which lets you pick packages to update interactively
+  * Added `exec` command to run binaries while having bin-dir in the PATH for convenience
+  * Added --root-reqs to the `update` command to update only your direct, first degree dependencies
+  * Added `cafile` and `capath` config options to control HTTPS certificate authority
+  * Added pubkey verification of composer.phar when running self-update
+  * Added possibility to configure per-package `preferred-install` types for more flexibility between prefer-source and prefer-dist
+  * Added unpushed-changes detection when updating dependencies and in the `status` command
+  * Added COMPOSER_AUTH env var that lets you pass a json configuration like the auth.json file
+  * Added `secure-http` and `disable-tls` config options to control HTTPS/HTTP
+  * Added warning when Xdebug is enabled as it reduces performance quite a bit, hide it with COMPOSER_DISABLE_XDEBUG_WARN=1 if you must
+  * Added duplicate key detection when loading composer.json
+  * Added `sort-packages` config option to force sorting of the requirements when using the `require` command
+  * Added support for the XDG Base Directory spec on linux
+  * Added XzDownloader for xz file support
+  * Fixed SSL support to fully verify peers in all PHP versions, unsecure HTTP is also disabled by default
+  * Fixed stashing and cleaning up of untracked files when updating packages
+  * Fixed plugins being enabled after installation even when --no-plugins
+  * Many small bug fixes and additions
+
 ### [1.0.0-alpha11] - 2015-11-14
 
   * Added config.platform to let you specify what your target environment looks like and make sure you do not inadvertently install dependencies that would break it
