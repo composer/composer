@@ -227,7 +227,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 if ('dev-' === substr($parsedBranch, 0, 4) || '9999999-dev' === $parsedBranch) {
                     $data['version'] = 'dev-' . $data['version'];
                 } else {
-                    $data['version'] = preg_replace('{(\.9{7})+}', '.x', $parsedBranch);
+                    $prefix = substr($branch, 0, 1) === 'v' ? 'v' : '';
+                    $data['version'] = $prefix . preg_replace('{(\.9{7})+}', '.x', $parsedBranch);
                 }
 
                 if ($verbose) {
