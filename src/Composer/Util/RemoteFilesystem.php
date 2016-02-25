@@ -254,6 +254,21 @@ class RemoteFilesystem
             $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
         }
 
+        // Check for secure HTTP
+        if (($this->scheme === 'http' || substr($fileUrl, 0, 5) === 'http:')
+            && $this->config && $this->config->get('secure-http')
+        ) {
+            // Rewrite unsecure Packagist urls to use https
+            if (substr($fileUrl, 0, 21) === 'http://packagist.org/') {
+                $fileUrl = 'https://packagist.org/' . substr($fileUrl, 21);
+            } else {
+                throw new TransportException(
+                    sprintf('Your configuration does not allow connection to %s://%s. Enable http connections in your configuration by setting secure-http=false',
+                        $this->scheme, $originUrl
+                    ));
+            }
+        }
+
         $errorMessage = '';
         $errorCode = 0;
         $result = false;
