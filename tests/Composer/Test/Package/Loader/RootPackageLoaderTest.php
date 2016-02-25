@@ -110,16 +110,6 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         $executor
             ->expects($this->at(0))
             ->method('execute')
-            ->willReturnCallback(function ($command) use ($self) {
-                $self->assertEquals('git describe --exact-match --tags', $command);
-
-                return 1;
-            })
-        ;
-
-        $executor
-            ->expects($this->at(1))
-            ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
                 $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
                 $output = "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n";
@@ -129,7 +119,7 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         ;
 
         $executor
-            ->expects($this->at(2))
+            ->expects($this->at(1))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
                 $self->assertEquals('git rev-list master..latest-production', $command);
@@ -169,16 +159,6 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
 
         $executor
             ->expects($this->at(0))
-            ->method('execute')
-            ->willReturnCallback(function ($command) use ($self) {
-                $self->assertEquals('git describe --exact-match --tags', $command);
-
-                return 1;
-            })
-        ;
-
-        $executor
-            ->expects($this->at(1))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
                 $self->assertEquals('git branch --no-color --no-abbrev -v', $command);

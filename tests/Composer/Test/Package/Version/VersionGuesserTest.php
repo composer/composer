@@ -37,17 +37,10 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
             ->getMock()
         ;
 
-        $executor
-            ->expects($this->at(0))
-            ->method('execute')
-            ->with('git describe --exact-match --tags')
-            ->willReturn(1)
-        ;
-
         $self = $this;
 
         $executor
-            ->expects($this->at(1))
+            ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash, $anotherCommitHash) {
                 $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
@@ -77,17 +70,10 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
             ->getMock()
         ;
 
-        $executor
-            ->expects($this->at(0))
-            ->method('execute')
-            ->with('git describe --exact-match --tags')
-            ->willReturn(1)
-        ;
-
         $self = $this;
 
         $executor
-            ->expects($this->at(1))
+            ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash) {
                 $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
@@ -120,6 +106,17 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
+                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $output = "* (HEAD detached at v2.0.5-alpha2) 433b98d4218c181bae01865901aac045585e8a1a Commit message\n";
+
+                return 0;
+            })
+        ;
+
+        $executor
+            ->expects($this->at(1))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self) {
                 $self->assertEquals('git describe --exact-match --tags', $command);
                 $output = "v2.0.5-alpha2";
 
@@ -148,17 +145,6 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
 
         $executor
             ->expects($this->at(0))
-            ->method('execute')
-            ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git describe --exact-match --tags', $command);
-                $output = "foo-bar";
-
-                return 0;
-            })
-        ;
-
-        $executor
-            ->expects($this->at(1))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
                 $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
