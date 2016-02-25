@@ -29,7 +29,7 @@ use ZipArchive;
 class ZipDownloader extends ArchiveDownloader
 {
     protected $process;
-    protected static $hasSystemZip;
+    protected static $hasSystemUnzip;
 
     public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null, RemoteFilesystem $rfs = null)
     {
@@ -42,12 +42,12 @@ class ZipDownloader extends ArchiveDownloader
      */
     public function download(PackageInterface $package, $path)
     {
-        if (null === self::$hasSystemZip) {
+        if (null === self::$hasSystemUnzip) {
             $finder = new ExecutableFinder;
-            self::$hasSystemZip = (bool) $finder->find('unzip');
+            self::$hasSystemUnzip = (bool) $finder->find('unzip');
         }
 
-        if (!class_exists('ZipArchive') && !self::$hasSystemZip) {
+        if (!class_exists('ZipArchive') && !self::$hasSystemUnzip) {
             throw new \RuntimeException('The zip extension and unzip command are both missing, skipping');
         }
 
@@ -58,8 +58,7 @@ class ZipDownloader extends ArchiveDownloader
     {
         $processError = null;
 
-        // try to use unzip on *nix
-        if (self::$hasSystemZip) {
+        if (self::$hasSystemUnzip) {
             $command = 'unzip '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path) . ' && chmod -R u+w ' . ProcessExecutor::escape($path);
             try {
                 if (0 === $this->process->execute($command, $ignoredOutput)) {
