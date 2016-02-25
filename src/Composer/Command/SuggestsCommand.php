@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -25,14 +26,16 @@ class SuggestsCommand extends BaseCommand
             ->setName('suggests')
             ->setDescription('Show package suggestions')
             ->setDefinition(array(
+                new InputOption('by-package', null, InputOption::VALUE_NONE, 'Groups output by suggesting package'),
+                new InputOption('by-suggestion', null, InputOption::VALUE_NONE, 'Groups output by suggested package'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Exclude suggestions from require-dev packages'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that you want to list suggestions from.'),
             ))
             ->setHelp(<<<EOT
 
-The <info>%command.name%</info> command shows suggested packages.
+The <info>%command.name%</info> command shows a sorted list of suggested packages.
 
-With <info>-v</info> you also see which package suggested it and why.
+Enabling <info>-v</info> implies <info>--by-package --by-suggestion</info>, showing both lists.
 
 EOT
             )
@@ -55,44 +58,94 @@ EOT
 
         $filter = $input->getArgument('packages');
 
-        foreach ($packages as $package) {
-            if (empty($package['suggest'])) {
-                continue;
+        // First assemble lookup list of packages that are installed, replaced or provided
+        $installed = array();
+        foreach($packages as $package) {
+            $installed[] = $package['name'];
+
+            if (!empty($package['provide'])) {
+                $installed = array_merge($installed, array_keys($package['provide']));
             }
 
-            if (!empty($filter) && !in_array($package['name'], $filter)) {
-                continue;
+            if (!empty($package['replace'])) {
+                $installed = array_merge($installed, array_keys($package['replace']));
             }
-
-            $this->printSuggestions($packages, $package['name'], $package['suggest']);
         }
-    }
 
-    protected function printSuggestions($installed, $source, $suggestions)
-    {
-        foreach ($suggestions as $suggestion => $reason) {
-            foreach ($installed as $package) {
-                if ($package['name'] === $suggestion) {
-                    continue 2;
+        // Undub and sort the install list into a sorted lookup array
+        $installed = array_flip($installed);
+        ksort($installed);
+
+        // Init platform repo
+        $platform = new PlatformRepository(array(), $this->getComposer()->getConfig()->get('platform') ?: array());
+
+        // Next gather all suggestions that are not in that list
+        $suggesters = array();
+        $suggested = array();
+        foreach ($packages as $package) {
+            $packageName = $package['name'];
+            if ((!empty($filter) && !in_array($packageName, $filter)) || empty($package['suggest'])) {
+                continue;
+            }
+            foreach ($package['suggest'] as $suggestion => $reason) {
+                if (false === strpos('/', $suggestion) && !is_null($platform->findPackage($suggestion, '*')))
+                    continue;
+                if (!isset($installed[$suggestion])) {
+                    $suggesters[$packageName][$suggestion] = $reason;
+                    $suggested[$suggestion][$packageName] = $reason;
                 }
             }
-
-            if (empty($reason)) {
-                $reason = '*';
-            }
-
-            $this->printSuggestion($source, $suggestion, $reason);
         }
-    }
+        ksort($suggesters);
+        ksort($suggested);
 
-    protected function printSuggestion($package, $suggestion, $reason)
-    {
+        // Determine output mode
+        $mode = 0;
         $io = $this->getIO();
-
+        if ($input->getOption('by-package')) {
+            $mode |= 1;
+        }
+        if ($input->getOption('by-suggestion')) {
+            $mode |= 2;
+        }
         if ($io->isVerbose()) {
-            $io->write(sprintf('<comment>%s</comment> suggests <info>%s</info>: %s', $package, $suggestion, $reason));
-        } else {
-            $io->write(sprintf('<info>%s</info>', $suggestion));
+            $mode = ~0;
+        }
+
+        // Simple mode
+        if ($mode === 0) {
+            foreach (array_keys($suggested) as $suggestion) {
+                $io->write(sprintf('<info>%s</info>', $suggestion));
+            }
+            return;
+        }
+
+        // Grouped by package
+        if ($mode & 1) {
+            foreach ($suggesters as $suggester => $suggestions) {
+                $io->write(sprintf('<comment>%s</comment> suggests:', $suggester));
+
+                foreach ($suggestions as $suggestion => $reason) {
+                    $io->write(sprintf(' - <info>%s</info>: %s', $suggestion, $reason ?: '*'));
+                }
+                $io->write('');
+            }
+        }
+
+        // Grouped by suggestion
+        if ($mode & 2) {
+            // Improve readability in full mode
+            if ($mode & 1) {
+                $io->write(str_repeat('-', 78));
+            }
+            foreach ($suggested as $suggestion => $suggesters) {
+                $io->write(sprintf('<comment>%s</comment> is suggested by:', $suggestion));
+
+                foreach ($suggesters as $suggester => $reason) {
+                    $io->write(sprintf(' - <info>%s</info>: %s', $suggester, $reason ?: '*'));
+                }
+                $io->write('');
+            }
         }
     }
 }
