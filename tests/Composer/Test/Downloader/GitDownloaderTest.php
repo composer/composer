@@ -400,10 +400,6 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(11))
             ->method('execute')
-            ->with($this->equalTo('git branch -r'))
-            ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(13))
-            ->method('execute')
             ->with($this->equalTo($this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo($this->winCompat($this->workingDir)))
             ->will($this->returnValue(0));
 
