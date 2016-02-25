@@ -56,6 +56,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.'),
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
+                new InputOption('root-require', null, InputOption::VALUE_NONE, 'Only update dependencies that are listed in the root package\'s composer.json file.'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
@@ -99,6 +100,20 @@ EOT
 
         if ($input->getOption('interactive')) {
             $packages = $this->getPackagesInteractively($io, $input, $output, $composer, $packages);
+        }
+
+        if ($input->getOption('root-require')) {
+            $require = array_keys($composer->getPackage()->getRequires());
+            if (!$input->getOption('no-dev')) {
+                $requireDev = array_keys($composer->getPackage()->getDevRequires());
+                $require = array_merge($require, $requireDev);
+            }
+
+            if (!empty($packages)) {
+                $packages = array_intersect($packages, $require);
+            } else {
+                $packages = $require;
+            }
         }
 
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
