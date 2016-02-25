@@ -53,6 +53,13 @@ instead and no network level encryption is performed. Enabling this is a
 security risk and is NOT recommended. The better way is to enable the
 php_openssl extension in php.ini.
 
+## secure-http
+
+Defaults to `true`. If set to true only HTTPS URLs are allowed to be
+downloaded via Composer. If you really absolutely need HTTP access to something
+then you can disable it, but using [Let's Encrypt](https://letsencrypt.org/) to
+get a free SSL certificate is generally a better alternative.
+
 ## cafile
 
 Location of Certificate Authority file on local filesystem. In PHP 5.6+ you
