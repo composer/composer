@@ -81,9 +81,8 @@ class VersionGuesser
     private function guessGitVersion(array $packageConfig, $path)
     {
         GitUtil::cleanEnv();
-        $version = null;
         $commit = null;
-        $version = $this->versionFromGitTags($path);
+        $version = null;
 
         // try to fetch current version from git branch
         if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output, $path)) {
@@ -93,16 +92,14 @@ class VersionGuesser
             // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
-                    if (!$version) {
-                        if ($match[1] === '(no branch)' || substr($match[1], 0, 10) === '(detached ') {
-                            $version = 'dev-' . $match[2];
-                            $isFeatureBranch = true;
-                        } else {
-                            $version = $this->versionParser->normalizeBranch($match[1]);
-                            $isFeatureBranch = 0 === strpos($version, 'dev-');
-                            if ('9999999-dev' === $version) {
-                                $version = 'dev-' . $match[1];
-                            }
+                    if ($match[1] === '(no branch)' || substr($match[1], 0, 10) === '(detached ') {
+                        $version = 'dev-' . $match[2];
+                        $isFeatureBranch = true;
+                    } else {
+                        $version = $this->versionParser->normalizeBranch($match[1]);
+                        $isFeatureBranch = 0 === strpos($version, 'dev-');
+                        if ('9999999-dev' === $version) {
+                            $version = 'dev-' . $match[1];
                         }
                     }
 
@@ -122,6 +119,10 @@ class VersionGuesser
                 // try to find the best (nearest) version branch to assume this feature's version
                 $version = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path);
             }
+        }
+
+        if (!$version) {
+            $version = $this->versionFromGitTags($path);
         }
 
         return array('version' => $version, 'commit' => $commit);
