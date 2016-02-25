@@ -198,7 +198,7 @@ your setup. This also assumes that you have sudo privileges and the `php5enmod` 
 commands available. It also assumes that you have `composer` in your path.
 
 ```sh
-echo 'function composer() { COMPOSER="$(which composer)" ; sudo php5dismod -s cli xdebug ; $COMPOSER "$@" && sudo php5enmod -s cli xdebug ;}' >> ~/.bash_aliases
+echo 'function composer() { COMPOSER="$(which composer)" && sudo php5dismod -s cli xdebug ; $COMPOSER "$@" ; STATUS=$? ; sudo php5enmod -s cli xdebug ; return $STATUS ; }' >> ~/.bash_aliases
 . ~/.bash_aliases
 ```
 
