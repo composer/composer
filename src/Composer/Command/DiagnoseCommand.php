@@ -75,6 +75,8 @@ EOT
             $config = Factory::createConfig();
         }
 
+        $config->merge(array('config' => array('secure-http' => false)));
+
         $this->rfs = Factory::createRemoteFilesystem($io, $config);
         $this->process = new ProcessExecutor($io);
 
