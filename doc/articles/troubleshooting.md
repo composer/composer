@@ -345,3 +345,14 @@ composer update
 ```
 
 See also https://github.com/composer/composer/issues/4180 for more information.
+
+## Zip archives are being reported as corrupted or not unpacked correctly.
+
+Composer can unpack zipballs using either a system-provided `unzip` utility or PHP's
+native `ZipArchiver` class, preferring the first. The `ZipArchiver` class however is
+known to occassionally report valid zip files as corrupted, and does not support certain
+advanced features with permissions and symlinks.
+
+If you have issues with zip files you should install a native implementation of unzip
+and verify whether the problem persists. If so it is likely a real issue in the file
+itself and you should contact the provider.
