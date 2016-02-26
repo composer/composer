@@ -99,7 +99,7 @@ class ZipDownloader extends ArchiveDownloader
 
         if (true !== $zipArchive->extractTo($path)) {
             $this->io->writeError("<warn>As there is no 'unzip' command installed zip files are being unpacked using the PHP zip extension.</warn>");
-            $this->io->writeError("<warn> This may cause invalid reports of corrupted archives. Installing 'unzip' may remediate them.</warn>");
+            $this->io->writeError("<warn>This may cause invalid reports of corrupted archives. Installing 'unzip' may remediate them.</warn>");
 
             throw new \RuntimeException("There was an error extracting the ZIP file, it is either corrupted or using an invalid format");
         }
