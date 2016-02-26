@@ -618,10 +618,17 @@ class Filesystem
         if (!is_dir($junction) || is_link($junction)) {
             return false;
         }
-        // Junctions have no link stat but are otherwise indistinguishable from real directories
+        /**
+         * According to MSDN at https://msdn.microsoft.com/en-us/library/14h5k7ff.aspx we can detect a junction now
+         * using the 'mode' value from stat: "The _S_IFDIR bit is set if path specifies a directory; the _S_IFREG bit
+         * is set if path specifies an ordinary file or a device." We have just tested for a directory above, so if
+         * we have a directory that isn't one according to lstat(...) we must have a junction.
+         *
+         * #define	_S_IFDIR	0x4000
+         * #define	_S_IFREG	0x8000
+         */
         $stat = lstat($junction);
-
-        return ($stat['mode'] === 0);
+        return !($stat['mode'] & 0xC000);
     }
 
     /**
