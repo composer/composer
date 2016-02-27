@@ -174,6 +174,7 @@ EOT
                 // package names must be in the format foo/bar
                 $name = $name . '/' . $name;
             }
+            $name = strtolower($name);
         } else {
             if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}', $name)) {
                 throw new \InvalidArgumentException(
@@ -217,8 +218,11 @@ EOT
 
         $self = $this;
         $author = $io->askAndValidate(
-            'Author [<comment>'.$author.'</comment>]: ',
+            'Author [<comment>'.$author.'</comment>, n to skip]: ',
             function ($value) use ($self, $author) {
+                if ($value === 'n' || $value === 'no') {
+                    return;
+                }
                 $value = $value ?: $author;
                 $author = $self->parseAuthorString($value);
 
