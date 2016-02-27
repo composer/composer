@@ -247,7 +247,7 @@ EOT;
     /**
      * Convert certificate name into matching function.
      *
-     * @param $certName CN/SAN
+     * @param string $certName CN/SAN
      *
      * @return callable|null
      */

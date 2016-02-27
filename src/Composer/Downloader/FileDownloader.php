@@ -40,6 +40,7 @@ class FileDownloader implements DownloaderInterface
     protected $cache;
     protected $outputProgress = true;
     private $lastCacheWrites = array();
+    private $eventDispatcher;
 
     /**
      * Constructor.
