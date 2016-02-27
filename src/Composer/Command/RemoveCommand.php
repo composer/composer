@@ -116,10 +116,18 @@ EOT
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
         ;
 
-        $status = $install->run();
+        $exception = null;
+        try {
+            $status = $install->run();
+        } catch (\Exception $exception) {
+            $status = 1;
+        }
         if ($status !== 0) {
             $io->writeError("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
             file_put_contents($jsonFile->getPath(), $composerBackup);
+        }
+        if ($exception) {
+            throw $exception;
         }
 
         return $status;
