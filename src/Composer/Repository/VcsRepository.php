@@ -41,6 +41,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, array $drivers = null)
     {
+        parent::__construct();
         $this->drivers = $drivers ?: array(
             'github'        => 'Composer\Repository\Vcs\GitHubDriver',
             'gitlab'        => 'Composer\Repository\Vcs\GitLabDriver',

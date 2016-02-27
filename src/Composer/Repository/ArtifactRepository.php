@@ -30,6 +30,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
     public function __construct(array $repoConfig, IOInterface $io)
     {
+        parent::__construct();
         if (!extension_loaded('zip')) {
             throw new \RuntimeException('The artifact repository requires PHP\'s zip extension');
         }
