@@ -175,10 +175,10 @@ class RootPackageLoader extends ArrayLoader
 
             // extract all sub-constraints in case it is an OR/AND multi-constraint
             $orSplit = preg_split('{\s*\|\|?\s*}', trim($reqVersion));
-            foreach ($orSplit as $constraint) {
-                $andSplit = preg_split('{(?<!^|as|[=>< ,]) *(?<!-)[, ](?!-) *(?!,|as|$)}', $constraint);
-                foreach ($andSplit as $constraint) {
-                    $constraints[] = $constraint;
+            foreach ($orSplit as $orConstraint) {
+                $andSplit = preg_split('{(?<!^|as|[=>< ,]) *(?<!-)[, ](?!-) *(?!,|as|$)}', $orConstraint);
+                foreach ($andSplit as $andConstraint) {
+                    $constraints[] = $andConstraint;
                 }
             }
 

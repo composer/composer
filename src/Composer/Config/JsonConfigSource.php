@@ -79,10 +79,11 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function addConfigSetting($name, $value)
     {
-        $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) {
+        $that = $this;
+        $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) use ($that) {
             if (preg_match('{^(github-oauth|gitlab-oauth|http-basic|platform)\.}', $key)) {
                 list($key, $host) = explode('.', $key, 2);
-                if ($this->authConfig) {
+                if ($that->authConfig) {
                     $config[$key][$host] = $val;
                 } else {
                     $config['config'][$key][$host] = $val;
@@ -98,10 +99,11 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function removeConfigSetting($name)
     {
-        $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) {
+        $that = $this;
+        $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) use ($that) {
             if (preg_match('{^(github-oauth|gitlab-oauth|http-basic|platform)\.}', $key)) {
                 list($key, $host) = explode('.', $key, 2);
-                if ($this->authConfig) {
+                if ($that->authConfig) {
                     unset($config[$key][$host]);
                 } else {
                     unset($config['config'][$key][$host]);
