@@ -19,7 +19,6 @@ use Composer\Downloader\ChangeReportInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Script\ScriptEvents;
-use Composer\Downloader\VcsDownloader;
 use Composer\Downloader\DvcsDownloaderInterface;
 
 /**

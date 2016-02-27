@@ -18,7 +18,6 @@
 
 namespace Composer\Autoload;
 
-use Composer\Util\Silencer;
 use Symfony\Component\Finder\Finder;
 use Composer\IO\IOInterface;
 

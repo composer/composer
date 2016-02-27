@@ -23,5 +23,5 @@ interface PolicyInterface
 
     public function findUpdatePackages(Pool $pool, array $installedMap, PackageInterface $package);
 
-    public function selectPreferredPackages(Pool $pool, array $installedMap, array $literals);
+    public function selectPreferredPackages(Pool $pool, array $installedMap, array $literals, $requiredPackage = null);
 }

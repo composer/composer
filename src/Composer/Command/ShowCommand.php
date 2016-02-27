@@ -125,7 +125,6 @@ EOT
 
         // show single package or single version
         if ($input->getArgument('package') || !empty($package)) {
-            $versions = array();
             if (empty($package)) {
                 list($package, $versions) = $this->getPackage($installedRepo, $repos, $input->getArgument('package'), $input->getArgument('version'));
 
@@ -139,7 +138,7 @@ EOT
             if ($input->getOption('tree')) {
                 $this->displayPackageTree($package, $installedRepo, $repos);
             } else {
-                $this->printMeta($package, $versions, $installedRepo, $repos);
+                $this->printMeta($package, $versions, $installedRepo);
                 $this->printLinks($package, 'requires');
                 $this->printLinks($package, 'devRequires', 'requires (dev)');
                 if ($package->getSuggests()) {
