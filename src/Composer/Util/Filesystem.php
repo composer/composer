@@ -145,7 +145,15 @@ class Filesystem
      */
     public function removeDirectoryPhp($directory)
     {
-        $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);
+        try {
+            $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);
+        } catch (\UnexpectedValueException $e) {
+            // re-try once after clearing the stat cache if it failed as it
+            // sometimes fails without apparent reason, see https://github.com/composer/composer/issues/4009
+            clearstatcache();
+            usleep(100000);
+            $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);
+        }
         $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
 
         foreach ($ri as $file) {
