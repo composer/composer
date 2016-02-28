@@ -152,6 +152,9 @@ class Filesystem
             // sometimes fails without apparent reason, see https://github.com/composer/composer/issues/4009
             clearstatcache();
             usleep(100000);
+            if (!is_dir($directory)) {
+                return true;
+            }
             $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);
         }
         $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
