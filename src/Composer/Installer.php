@@ -163,6 +163,7 @@ class Installer
      */
     public function run()
     {
+        // Disable garbage collection to save memory and time
         gc_collect_cycles();
         gc_disable();
 
@@ -340,6 +341,8 @@ class Installer
                 @touch($vendorDir);
             }
         }
+
+        gc_enable();
 
         return 0;
     }
