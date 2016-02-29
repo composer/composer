@@ -172,9 +172,9 @@ class PluginManager
                 $path = $classLoader->findFile($class);
                 $code = file_get_contents($path);
                 $code = preg_replace('{^((?:final\s+)?(?:\s*))class\s+(\S+)}mi', '$1class $2_composer_tmp'.self::$classCounter, $code);
-                $code = str_replace('__FILE__', "'$path'", $code);
-                $code = str_replace('__DIR__', "'".dirname($path)."'", $code);
-                $code = str_replace('__CLASS__', "'$class'", $code);
+                $code = str_replace('__FILE__', "'".str_replace(array('\\', "'"), array('\\\\', "\\'"), $path)."'", $code);
+                $code = str_replace('__DIR__', "'".str_replace(array('\\', "'"), array('\\\\', "\\'"), dirname($path))."'", $code);
+                $code = str_replace('__CLASS__', "'".str_replace(array('\\', "'"), array('\\\\', "\\'"), $class)."'", $code);
                 eval('?>'.$code);
                 $class .= '_composer_tmp'.self::$classCounter;
                 self::$classCounter++;
