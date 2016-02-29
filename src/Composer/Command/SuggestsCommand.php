@@ -60,7 +60,7 @@ EOT
 
         // First assemble lookup list of packages that are installed, replaced or provided
         $installed = array();
-        foreach($packages as $package) {
+        foreach ($packages as $package) {
             $installed[] = $package['name'];
 
             if (!empty($package['provide'])) {
@@ -88,8 +88,9 @@ EOT
                 continue;
             }
             foreach ($package['suggest'] as $suggestion => $reason) {
-                if (false === strpos('/', $suggestion) && !is_null($platform->findPackage($suggestion, '*')))
+                if (false === strpos('/', $suggestion) && !is_null($platform->findPackage($suggestion, '*'))) {
                     continue;
+                }
                 if (!isset($installed[$suggestion])) {
                     $suggesters[$packageName][$suggestion] = $reason;
                     $suggested[$suggestion][$packageName] = $reason;
@@ -114,6 +115,7 @@ EOT
             foreach (array_keys($suggested) as $suggestion) {
                 $io->write(sprintf('<info>%s</info>', $suggestion));
             }
+
             return;
         }
 

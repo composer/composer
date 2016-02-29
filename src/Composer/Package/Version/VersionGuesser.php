@@ -56,8 +56,8 @@ class VersionGuesser
     }
 
     /**
-     * @param array $packageConfig
-     * @param string $path Path to guess into
+     * @param array  $packageConfig
+     * @param string $path          Path to guess into
      *
      * @return array versionData, 'version' and 'commit' keys
      */
@@ -136,8 +136,8 @@ class VersionGuesser
                 return $this->versionParser->normalize(trim($output));
             } catch (\Exception $e) {
             }
-
         }
+
         return null;
     }
 
@@ -236,9 +236,9 @@ class VersionGuesser
                 }
 
                 $version = $this->versionParser->normalize(trim($matches[1]));
+
                 return array('version' => $version, 'commit' => '');
             }
         }
     }
-
 }

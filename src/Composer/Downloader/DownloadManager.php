@@ -12,7 +12,6 @@
 
 namespace Composer\Downloader;
 
-use Composer\Config;
 use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -313,6 +312,7 @@ class DownloadManager
                 if ('dist' === $preference || (!$package->isDev() && 'auto' === $preference)) {
                     return 'dist';
                 }
+
                 return 'source';
             }
         }

@@ -842,7 +842,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
 
         $manager->download($package, 'target_dir');
     }
-    
+
     /**
      * @covers Composer\Downloader\DownloadManager::resolvePackageInstallPreference
      */

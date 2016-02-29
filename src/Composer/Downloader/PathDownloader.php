@@ -49,7 +49,7 @@ class PathDownloader extends FileDownloader
         }
 
         // Get the transport options with default values
-        $transportOptions = $package->getTransportOptions() + array('symlink'=>null);
+        $transportOptions = $package->getTransportOptions() + array('symlink' => null);
 
         // When symlink transport option is null, both symlink and mirror are allowed
         $currentStrategy = self::STRATEGY_SYMLINK;
@@ -58,7 +58,7 @@ class PathDownloader extends FileDownloader
         if (true === $transportOptions['symlink']) {
             $currentStrategy = self::STRATEGY_SYMLINK;
             $allowedStrategies = array(self::STRATEGY_SYMLINK);
-        } elseif(false === $transportOptions['symlink']) {
+        } elseif (false === $transportOptions['symlink']) {
             $currentStrategy = self::STRATEGY_MIRROR;
             $allowedStrategies = array(self::STRATEGY_MIRROR);
         }

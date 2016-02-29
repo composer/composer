@@ -639,6 +639,7 @@ class Filesystem
          * #define	_S_IFREG	0x8000
          */
         $stat = lstat($junction);
+
         return !($stat['mode'] & 0xC000);
     }
 

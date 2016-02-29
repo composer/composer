@@ -88,12 +88,12 @@ class RootPackageLoader extends ArrayLoader
                 $config['source'] = array(
                     'type' => '',
                     'url' => '',
-                    'reference' => $commit
+                    'reference' => $commit,
                 );
                 $config['dist'] = array(
                     'type' => '',
                     'url' => '',
-                    'reference' => $commit
+                    'reference' => $commit,
                 );
             }
         }

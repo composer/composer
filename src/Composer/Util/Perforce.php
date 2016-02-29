@@ -244,6 +244,7 @@ class Perforce
                     return $value;
                 }
             }
+
             return null;
         } else {
             $command = 'echo $' . $name;
