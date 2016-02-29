@@ -17,6 +17,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Config;
 use Composer\Factory;
+use Composer\Repository\RepositoryFactory;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
@@ -141,7 +142,7 @@ class RootPackageLoader extends ArrayLoader
             $realPackage->setPreferStable((bool) $config['prefer-stable']);
         }
 
-        $repos = Factory::createDefaultRepositories(null, $this->config, $this->manager);
+        $repos = RepositoryFactory::default(null, $this->config, $this->manager);
         foreach ($repos as $repo) {
             $this->manager->addRepository($repo);
         }

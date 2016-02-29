@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\RepositoryFactory;
 use Composer\Script\ScriptEvents;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -126,7 +127,7 @@ EOT
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $repo = new CompositeRepository(array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
-            $defaultRepos = Factory::createDefaultRepositories($this->getIO());
+            $defaultRepos = RepositoryFactory::default($this->getIO());
             $io->writeError('No composer.json found in the current directory, searching packages from ' . implode(', ', array_keys($defaultRepos)));
             $repo = new CompositeRepository($defaultRepos);
         }

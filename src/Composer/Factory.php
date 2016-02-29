@@ -18,6 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Repository\RepositoryManager;
+use Composer\Repository\RepositoryFactory;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
@@ -221,39 +222,12 @@ class Factory
         );
     }
 
+    /**
+     * @deprecated Use Composer\Repository\RepositoryFactory::default instead
+     */
     public static function createDefaultRepositories(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
     {
-        $repos = array();
-
-        if (!$config) {
-            $config = static::createConfig($io);
-        }
-        if (!$rm) {
-            if (!$io) {
-                throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
-            }
-            $factory = new static;
-            $rm = $factory->createRepositoryManager($io, $config, null, self::createRemoteFilesystem($io, $config));
-        }
-
-        foreach ($config->getRepositories() as $index => $repo) {
-            if (is_string($repo)) {
-                throw new \UnexpectedValueException('"repositories" should be an array of repository definitions, only a single repository was given');
-            }
-            if (!is_array($repo)) {
-                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
-            }
-            if (!isset($repo['type'])) {
-                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') must have a type defined');
-            }
-            $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
-            while (isset($repos[$name])) {
-                $name .= '2';
-            }
-            $repos[$name] = $rm->createRepository($repo['type'], $repo);
-        }
-
-        return $repos;
+        return RepositoryFactory::default($io, $config, $rm);
     }
 
     /**
@@ -336,7 +310,7 @@ class Factory
         $composer->setEventDispatcher($dispatcher);
 
         // initialize repository manager
-        $rm = $this->createRepositoryManager($io, $config, $dispatcher, $rfs);
+        $rm = RepositoryFactory::manager($io, $config, $dispatcher, $rfs);
         $composer->setRepositoryManager($rm);
 
         // load local repository
@@ -397,30 +371,6 @@ class Factory
         }
 
         return $composer;
-    }
-
-    /**
-     * @param  IOInterface                  $io
-     * @param  Config                       $config
-     * @param  EventDispatcher              $eventDispatcher
-     * @return Repository\RepositoryManager
-     */
-    protected function createRepositoryManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
-    {
-        $rm = new RepositoryManager($io, $config, $eventDispatcher, $rfs);
-        $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
-        $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
-        $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
-        $rm->setRepositoryClass('git', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('gitlab', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('svn', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('perforce', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('hg', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
-        $rm->setRepositoryClass('path', 'Composer\Repository\PathRepository');
-
-        return $rm;
     }
 
     /**

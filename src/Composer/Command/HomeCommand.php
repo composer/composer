@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\Package\CompletePackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\ArrayRepository;
+use Composer\Repository\RepositoryFactory;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputArgument;
@@ -153,8 +154,6 @@ EOT
             );
         }
 
-        $defaultRepos = Factory::createDefaultRepositories($this->getIO());
-
-        return $defaultRepos;
+        return RepositoryFactory::default($this->getIO());
     }
 }

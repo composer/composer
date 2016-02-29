@@ -50,6 +50,11 @@ php composer.phar init
   in format `foo/bar:1.0.0`.
 * **--require-dev:** Development requirements, see **--require**.
 * **--stability (-s):** Value for the `minimum-stability` field.
+* **--repository:** Provide one (or more) custom repositories. They will be stored
+  in the generated composer.json, and used for auto-completion when prompting for
+  the list of requires. Every repository can be either an HTTP URL pointing
+  to a `composer` repository or a JSON string which similar to what the
+  [repositories](04-schema.md#repositories) key accepts.
 
 ## install
 
@@ -541,9 +546,11 @@ By default the command checks for the packages on packagist.org.
 
 ### Options
 
-* **--repository-url:** Provide a custom repository to search for the package,
+* **--repository:** Provide a custom repository to search for the package,
   which will be used instead of packagist. Can be either an HTTP URL pointing
-  to a `composer` repository, or a path to a local `packages.json` file.
+  to a `composer` repository, a path to a local `packages.json` file, or a
+  JSON string which similar to what the [repositories](04-schema.md#repositories)
+  key accepts.
 * **--stability (-s):** Minimum stability of package. Defaults to `stable`.
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.

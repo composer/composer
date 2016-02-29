@@ -31,6 +31,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RepositoryFactory;
 use Composer\Spdx\SpdxLicenses;
 
 /**
@@ -106,7 +107,7 @@ EOT
             if ($composer) {
                 $repos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
             } else {
-                $defaultRepos = Factory::createDefaultRepositories($io);
+                $defaultRepos = RepositoryFactory::default($io);
                 $repos = new CompositeRepository($defaultRepos);
                 $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             }
@@ -115,7 +116,7 @@ EOT
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } elseif ($input->getOption('all')) {
-            $defaultRepos = Factory::createDefaultRepositories($io);
+            $defaultRepos = RepositoryFactory::default($io);
             $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));

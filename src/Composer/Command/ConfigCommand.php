@@ -447,10 +447,7 @@ EOT
                         return $this->configSource->addRepository($matches[1], false);
                     }
                 } else {
-                    $value = json_decode($values[0], true);
-                    if (JSON_ERROR_NONE !== json_last_error()) {
-                        throw new \InvalidArgumentException(sprintf('%s is not valid JSON.', $values[0]));
-                    }
+                    $value = JsonFile::parseJson($values[0]);
 
                     return $this->configSource->addRepository($matches[1], $value);
                 }
