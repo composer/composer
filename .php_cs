@@ -20,6 +20,7 @@ $finder = Symfony\CS\Finder::create()
 
 return Symfony\CS\Config::create()
     ->setUsingCache(true)
+    //->setUsingLinter(false)
     ->setRiskyAllowed(true)
     ->setRules(array(
         '@PSR2' => true,

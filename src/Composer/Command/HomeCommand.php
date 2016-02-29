@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Factory;
 use Composer\Package\CompletePackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\ArrayRepository;

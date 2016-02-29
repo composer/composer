@@ -91,10 +91,10 @@ class RepositoryFactory
     }
 
     /**
-     * @param  IOInterface                  $io
-     * @param  Config                       $config
-     * @param  EventDispatcher              $eventDispatcher
-     * @param  RemoteFilesystem             $rfs
+     * @param  IOInterface       $io
+     * @param  Config            $config
+     * @param  EventDispatcher   $eventDispatcher
+     * @param  RemoteFilesystem  $rfs
      * @return RepositoryManager
      */
     public static function manager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)

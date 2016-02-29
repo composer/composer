@@ -14,7 +14,6 @@ namespace Composer\Command;
 
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\DefaultPolicy;
-use Composer\Factory;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
@@ -87,6 +86,7 @@ EOT
 
         if ($input->getOption('tree') && ($input->getOption('all') || $input->getOption('available'))) {
             $io->writeError('The --tree (-t) option is not usable in combination with --all or --available (-a)');
+
             return;
         }
 

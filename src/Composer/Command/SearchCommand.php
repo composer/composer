@@ -20,7 +20,6 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositoryInterface;
-use Composer\Factory;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 
