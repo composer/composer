@@ -219,17 +219,11 @@ class ConsoleIO extends BaseIO
      */
     public function ask($question, $default = null)
     {
-        $output = $this->output;
-
-        if ($output instanceof ConsoleOutputInterface) {
-            $output = $output->getErrorOutput();
-        }
-
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
         $question = new Question($question, $default);
 
-        return $helper->ask($this->input, $output, $question);
+        return $helper->ask($this->input, $this->getErrorOutput(), $question);
     }
 
     /**
@@ -237,17 +231,11 @@ class ConsoleIO extends BaseIO
      */
     public function askConfirmation($question, $default = true)
     {
-        $output = $this->output;
-
-        if ($output instanceof ConsoleOutputInterface) {
-            $output = $output->getErrorOutput();
-        }
-
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
         $question = new ConfirmationQuestion($question, $default);
 
-        return $helper->ask($this->input, $output, $question);
+        return $helper->ask($this->input, $this->getErrorOutput(), $question);
     }
 
     /**
@@ -255,19 +243,13 @@ class ConsoleIO extends BaseIO
      */
     public function askAndValidate($question, $validator, $attempts = null, $default = null)
     {
-        $output = $this->output;
-
-        if ($output instanceof ConsoleOutputInterface) {
-            $output = $output->getErrorOutput();
-        }
-
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
         $question = new Question($question, $default);
         $question->setValidator($validator);
         $question->setMaxAttempts($attempts);
 
-        return $helper->ask($this->input, $output, $question);
+        return $helper->ask($this->input, $this->getErrorOutput(), $question);
     }
 
     /**
@@ -283,8 +265,21 @@ class ConsoleIO extends BaseIO
     /**
      * {@inheritDoc}
      */
-    public function select($question, $choices, $default = null, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false)
+    public function select($question, $choices, $default, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false)
     {
-        return $this->helperSet->get('dialog')->select($this->output, $question, $choices, $default, $attempts, $errorMessage, $multiselect);
+        if ($this->isInteractive()) {
+            return $this->helperSet->get('dialog')->select($this->getErrorOutput(), $question, $choices, $default, $attempts, $errorMessage, $multiselect);
+        }
+
+        return $default;
+    }
+
+    private function getErrorOutput()
+    {
+        if ($this->output instanceof ConsoleOutputInterface) {
+            return $this->output->getErrorOutput();
+        }
+
+        return $this->output;
     }
 }

@@ -163,7 +163,7 @@ interface IOInterface
      *
      * @throws \InvalidArgumentException
      */
-    public function select($question, $choices, $default = null, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false);
+    public function select($question, $choices, $default, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false);
 
     /**
      * Get all authentication information entered.
