@@ -154,6 +154,6 @@ EOT
             );
         }
 
-        return RepositoryFactory::default($this->getIO());
+        return RepositoryFactory::defaultRepos($this->getIO());
     }
 }

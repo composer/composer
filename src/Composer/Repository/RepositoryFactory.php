@@ -75,7 +75,7 @@ class RepositoryFactory
     /**
      * @return RepositoryInterface[]
      */
-    public static function default(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
+    public static function defaultRepos(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
     {
         if (!$config) {
             $config = Factory::createConfig($io);

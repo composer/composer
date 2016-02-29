@@ -345,7 +345,7 @@ EOT
         if (!$this->repos) {
             $this->repos = new CompositeRepository(array_merge(
                 array(new PlatformRepository),
-                RepositoryFactory::default($this->getIO())
+                RepositoryFactory::defaultRepos($this->getIO())
             ));
         }
 

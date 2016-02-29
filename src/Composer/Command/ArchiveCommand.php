@@ -127,7 +127,7 @@ EOT
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $repo = new CompositeRepository(array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
-            $defaultRepos = RepositoryFactory::default($this->getIO());
+            $defaultRepos = RepositoryFactory::defaultRepos($this->getIO());
             $io->writeError('No composer.json found in the current directory, searching packages from ' . implode(', ', array_keys($defaultRepos)));
             $repo = new CompositeRepository($defaultRepos);
         }

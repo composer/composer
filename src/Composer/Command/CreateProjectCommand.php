@@ -244,7 +244,7 @@ EOT
     protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false)
     {
         if (null === $repository) {
-            $sourceRepo = new CompositeRepository(RepositoryFactory::default($io, $config));
+            $sourceRepo = new CompositeRepository(RepositoryFactory::defaultRepos($io, $config));
         } else {
             $sourceRepo = RepositoryFactory::fromString($io, $config, $repository, true);
         }
