@@ -38,9 +38,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     protected $loader;
     protected $repoConfig;
     protected $branchErrorOccurred = false;
+    private $drivers;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, array $drivers = null)
     {
+        parent::__construct();
         $this->drivers = $drivers ?: array(
             'github'        => 'Composer\Repository\Vcs\GitHubDriver',
             'gitlab'        => 'Composer\Repository\Vcs\GitLabDriver',
@@ -76,6 +78,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         if (isset($this->drivers[$this->type])) {
             $class = $this->drivers[$this->type];
             $driver = new $class($this->repoConfig, $this->io, $this->config);
+            /** @var VcsDriverInterface $driver */
             $driver->initialize();
 
             return $driver;
@@ -84,6 +87,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->config, $this->url)) {
                 $driver = new $driver($this->repoConfig, $this->io, $this->config);
+                /** @var VcsDriverInterface $driver */
                 $driver->initialize();
 
                 return $driver;
@@ -93,6 +97,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->config, $this->url, true)) {
                 $driver = new $driver($this->repoConfig, $this->io, $this->config);
+                /** @var VcsDriverInterface $driver */
                 $driver->initialize();
 
                 return $driver;

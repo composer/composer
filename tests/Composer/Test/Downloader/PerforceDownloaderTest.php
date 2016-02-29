@@ -25,6 +25,7 @@ use Composer\Util\Filesystem;
 class PerforceDownloaderTest extends TestCase
 {
     protected $config;
+    /** @var PerforceDownloader */
     protected $downloader;
     protected $io;
     protected $package;
@@ -130,7 +131,7 @@ class PerforceDownloaderTest extends TestCase
         $perforce = $this->getMockBuilder('Composer\Util\Perforce', $perforceMethods)->disableOriginalConstructor()->getMock();
         $perforce->expects($this->at(0))->method('initializePath')->with($this->equalTo($this->testPath));
         $perforce->expects($this->at(1))->method('setStream')->with($this->equalTo($ref));
-        $perforce->expects($this->at(2))->method('p4Login')->with($this->identicalTo($this->io));
+        $perforce->expects($this->at(2))->method('p4Login');
         $perforce->expects($this->at(3))->method('writeP4ClientSpec');
         $perforce->expects($this->at(4))->method('connectClient');
         $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);
@@ -153,7 +154,7 @@ class PerforceDownloaderTest extends TestCase
         $perforce = $this->getMockBuilder('Composer\Util\Perforce', $perforceMethods)->disableOriginalConstructor()->getMock();
         $perforce->expects($this->at(0))->method('initializePath')->with($this->equalTo($this->testPath));
         $perforce->expects($this->at(1))->method('setStream')->with($this->equalTo($ref));
-        $perforce->expects($this->at(2))->method('p4Login')->with($this->identicalTo($this->io));
+        $perforce->expects($this->at(2))->method('p4Login');
         $perforce->expects($this->at(3))->method('writeP4ClientSpec');
         $perforce->expects($this->at(4))->method('connectClient');
         $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);

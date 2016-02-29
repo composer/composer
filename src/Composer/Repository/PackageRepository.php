@@ -31,6 +31,7 @@ class PackageRepository extends ArrayRepository
      */
     public function __construct(array $config)
     {
+        parent::__construct();
         $this->config = $config['package'];
 
         // make sure we have an array of package definitions

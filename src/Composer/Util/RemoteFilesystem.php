@@ -25,6 +25,7 @@ class RemoteFilesystem
 {
     private $io;
     private $config;
+    private $scheme;
     private $bytesMax;
     private $originUrl;
     private $fileUrl;

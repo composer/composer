@@ -62,6 +62,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
+        parent::__construct();
         if (!preg_match('{^[\w.]+\??://}', $repoConfig['url'])) {
             // assume http as the default protocol
             $repoConfig['url'] = 'http://'.$repoConfig['url'];

@@ -49,6 +49,7 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, RemoteFilesystem $rfs = null)
     {
+        parent::__construct();
         if (!preg_match('{^https?://}', $repoConfig['url'])) {
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
