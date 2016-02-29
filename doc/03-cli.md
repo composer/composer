@@ -50,6 +50,7 @@ php composer.phar init
   in format `foo/bar:1.0.0`.
 * **--require-dev:** Development requirements, see **--require**.
 * **--stability (-s):** Value for the `minimum-stability` field.
+* **--repository-url:** Provide a custom repository to search for packages.
 
 ## install
 
