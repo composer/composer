@@ -163,6 +163,10 @@ class Installer
      */
     public function run()
     {
+        // Disable GC to save CPU cycles, as the dependency solver can create hundreds of thousands
+        // of PHP objects, the GC can spend quite some time walking the tree of references looking
+        // for stuff to collect while there is nothing to collect. This slows things down dramatically
+        // and turning it off results in much better performance. Do not try this at home however.
         gc_collect_cycles();
         gc_disable();
 
@@ -339,6 +343,11 @@ class Installer
                 // see https://github.com/composer/composer/issues/4070#issuecomment-129792748
                 @touch($vendorDir);
             }
+        }
+
+        // re-enable GC except on HHVM which triggers a warning here
+        if (!defined('HHVM_VERSION')) {
+            gc_enable();
         }
 
         return 0;
