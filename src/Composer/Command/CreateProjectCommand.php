@@ -23,9 +23,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Repository\RepositoryFactory;
-use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
-use Composer\Repository\FilesystemRepository;
 use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Silencer;
@@ -127,7 +125,7 @@ EOT
             $preferSource,
             $preferDist,
             !$input->getOption('no-dev'),
-            $input->getOption('repository') || $input->getOption('repository-url'),
+            $input->getOption('repository') ?: $input->getOption('repository-url'),
             $input->getOption('no-plugins'),
             $input->getOption('no-scripts'),
             $input->getOption('keep-vcs'),
