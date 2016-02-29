@@ -169,8 +169,12 @@ class PluginManager
 
         foreach ($classes as $class) {
             if (class_exists($class, false)) {
-                $code = file_get_contents($classLoader->findFile($class));
+                $path = $classLoader->findFile($class);
+                $code = file_get_contents($path);
                 $code = preg_replace('{^((?:final\s+)?(?:\s*))class\s+(\S+)}mi', '$1class $2_composer_tmp'.self::$classCounter, $code);
+                $code = str_replace('__FILE__', "'$path'", $code);
+                $code = str_replace('__DIR__', "'".dirname($path)."'", $code);
+                $code = str_replace('__CLASS__', "'$class'", $code);
                 eval('?>'.$code);
                 $class .= '_composer_tmp'.self::$classCounter;
                 self::$classCounter++;
