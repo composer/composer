@@ -118,4 +118,12 @@ class NullIO extends BaseIO
     {
         return null;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function select($question, $choices, $default = null, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false)
+    {
+        return $default;
+    }
 }

@@ -279,4 +279,12 @@ class ConsoleIO extends BaseIO
 
         return \Seld\CliPrompt\CliPrompt::hiddenPrompt(true);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function select($question, $choices, $default = null, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false)
+    {
+        return $this->helperSet->get('dialog')->select($this->output, $question, $choices, $default, $attempts, $errorMessage, $multiselect);
+    }
 }
