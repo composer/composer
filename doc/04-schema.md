@@ -197,7 +197,7 @@ The authors of the package. This is an array of objects.
 
 Each author object can have following properties:
 
-* **name:** The author's name. Usually his real name.
+* **name:** The author's name. Usually their real name.
 * **email:** The author's email address.
 * **homepage:** An URL to the author's website.
 * **role:** The authors' role in the project (e.g. developer or translator)
