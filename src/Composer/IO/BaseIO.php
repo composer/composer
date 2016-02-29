@@ -56,6 +56,26 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
+     * Check for overwrite and set the authentication information for the repository.
+     *
+     * @param string $repositoryName The unique name of repository
+     * @param string $username       The username
+     * @param string $password       The password
+     */
+    protected function checkAndSetAuthentication($repositoryName, $username, $password = null)
+    {
+        if ($this->hasAuthentication($repositoryName)) {
+            $this->writeError(
+                sprintf(
+                    "<warning>Warning: You should avoid overwriting already defined auth settings for %s.</warning>",
+                    $repositoryName
+                )
+            );
+        }
+        $this->setAuthentication($repositoryName, $username, $password);
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function loadConfiguration(Config $config)
@@ -69,16 +89,16 @@ abstract class BaseIO implements IOInterface
             if (!preg_match('{^[a-z0-9]+$}', $token)) {
                 throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
             }
-            $this->setAuthentication($domain, $token, 'x-oauth-basic');
+            $this->checkAndSetAuthentication($domain, $token, 'x-oauth-basic');
         }
 
         foreach ($gitlabOauth as $domain => $token) {
-            $this->setAuthentication($domain, $token, 'oauth2');
+            $this->checkAndSetAuthentication($domain, $token, 'oauth2');
         }
 
         // reload http basic credentials from config if available
         foreach ($httpBasic as $domain => $cred) {
-            $this->setAuthentication($domain, $cred['username'], $cred['password']);
+            $this->checkAndSetAuthentication($domain, $cred['username'], $cred['password']);
         }
 
         // setup process timeout
