@@ -229,6 +229,9 @@ class ConsoleIOTest extends TestCase
         $dialogMock = $this->getMock('Symfony\Component\Console\Helper\DialogHelper');
         $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
 
+        $inputMock->expects($this->once())
+            ->method('isInteractive')
+            ->will($this->returnValue(true));
         $dialogMock->expects($this->once())
             ->method('select')
             ->with($this->isInstanceOf('Symfony\Component\Console\Output\OutputInterface'),
