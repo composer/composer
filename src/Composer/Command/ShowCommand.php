@@ -52,7 +52,8 @@ class ShowCommand extends BaseCommand
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),
-                new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only'),
+                new InputOption('all', null, InputOption::VALUE_NONE, 'List all packages'),
+                new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only (enabled by default, only present for BC).'),
                 new InputOption('platform', 'p', InputOption::VALUE_NONE, 'List platform packages only'),
                 new InputOption('available', 'a', InputOption::VALUE_NONE, 'List available packages only'),
                 new InputOption('self', 's', InputOption::VALUE_NONE, 'Show the root package information'),
@@ -79,9 +80,13 @@ EOT
         $composer = $this->getComposer(false);
         $io = $this->getIO();
 
-        if ($input->getOption('tree') && !$input->getOption('installed')) {
-            $io->writeError('The --tree (-t) option is only usable in combination with --installed (-i) or by passing a single package name to show, assuming -i');
-            $input->setOption('installed', true);
+        if ($input->getOption('installed')) {
+            $io->writeError('<warning>You are using the deprecated option "installed". Only installed packages are shown by default now. The --all option can be used to show all packages.</warning>');
+        }
+
+        if ($input->getOption('tree') && ($input->getOption('all') || $input->getOption('available'))) {
+            $io->writeError('The --tree (-t) option is not usable in combination with --all or --available (-a)');
+            return;
         }
 
         // init repos
@@ -96,8 +101,6 @@ EOT
             $repos = $installedRepo = new ArrayRepository(array($package));
         } elseif ($input->getOption('platform')) {
             $repos = $installedRepo = $platformRepo;
-        } elseif ($input->getOption('installed')) {
-            $repos = $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
         } elseif ($input->getOption('available')) {
             $installedRepo = $platformRepo;
             if ($composer) {
@@ -107,15 +110,17 @@ EOT
                 $repos = new CompositeRepository($defaultRepos);
                 $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             }
-        } elseif ($composer) {
+        } elseif ($input->getOption('all') && $composer) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
-        } else {
+        } elseif ($input->getOption('all')) {
             $defaultRepos = Factory::createDefaultRepositories($io);
             $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
+        } else {
+            $repos = $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
         }
 
         if ($composer) {
@@ -208,7 +213,7 @@ EOT
             }
         }
 
-        $showAllTypes = !$input->getOption('platform') && !$input->getOption('installed') && !$input->getOption('available');
+        $showAllTypes = $input->getOption('all');
         $indent = $showAllTypes ? '  ' : '';
         foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
