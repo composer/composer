@@ -356,8 +356,6 @@ class GitDownloaderTest extends TestCase
 
     public function testUpdateDoesntThrowsRuntimeExceptionIfGitCommandFailsAtFirstButIsAbleToRecover()
     {
-        $this->markTestIncomplete('This test is disabled until https://github.com/composer/composer/issues/4973 is resolved');
-
         $expectedFirstGitUpdateCommand = $this->winCompat("git remote set-url composer '' && git fetch composer && git fetch --tags composer");
         $expectedSecondGitUpdateCommand = $this->winCompat("git remote set-url composer 'https://github.com/composer/composer' && git fetch composer && git fetch --tags composer");
 
@@ -448,7 +446,7 @@ class GitDownloaderTest extends TestCase
             $cmd = str_replace('cd ', 'cd /D ', $cmd);
             $cmd = str_replace('composerPath', getcwd().'/composerPath', $cmd);
 
-            return strtr($cmd, "'", '"');
+            return str_replace('""', '', strtr($cmd, "'", '"'));
         }
 
         return $cmd;
