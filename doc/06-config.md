@@ -45,10 +45,12 @@ What to do after prompting for authentication, one of: `true` (always store),
 
 ## github-protocols
 
-Defaults to `["git", "https", "ssh"]`. A list of protocols to use when cloning
-from github.com, in priority order. You can reconfigure it to for example
-prioritize the https protocol if you are behind a proxy or have somehow bad
-performances with the git protocol.
+Defaults to `["https", "ssh", "git"]`. A list of protocols to use when cloning
+from github.com, in priority order. By default `git` is present but only if [secure-http](#secure-http)
+is disabled, as the git protocol is not encrypted. If you want your origin remote
+push URLs to be using https and not ssh (`git@github.com:...`), then set the protocol
+list to be only `["https"]` and Composer will stop overwriting the push URL to an ssh
+URL.
 
 ## github-oauth
 
