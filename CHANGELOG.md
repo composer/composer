@@ -1,6 +1,7 @@
 ### [1.0.0-beta1] - 2016-XX-XX
 
   * Break: By default we now disable any non-secure protocols (http, git, svn). This may lead to issues if you rely on those. See `secure-http` config option.
+  * Break: `show` / `list` command now only show installed packages by default. An `--all` option is added to show all packages.
   * Added VCS repo support for the GitLab API, see also `gitlab-oauth` and `gitlab-domains` config options
   * Added `prohibits` / `why-not` command to show what blocks an upgrade to a given package:version pair
   * Added --tree / -t to the `show` command to see all your installed packages in a tree view
