@@ -99,6 +99,10 @@ class Svn
      */
     public function execute($command, $url, $cwd = null, $path = null, $verbose = false)
     {
+        if (preg_match('{^(http|svn):}i', $url) && $this->config->get('secure-http')) {
+            throw new TransportException("Your configuration does not allow connection to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
+        }
+
         $svnCommand = $this->getCommand($command, $url, $path);
         $output = null;
         $io = $this->io;

@@ -69,6 +69,10 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 $this->doDownload($package, $path, $url);
                 break;
             } catch (\Exception $e) {
+                // rethrow phpunit exceptions to avoid hard to debug bug failures
+                if ($e instanceof \PHPUnit_Framework_Exception) {
+                    throw $e;
+                }
                 if ($this->io->isDebug()) {
                     $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
                 } elseif (count($urls)) {

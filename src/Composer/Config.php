@@ -26,7 +26,7 @@ class Config
         'use-include-path' => false,
         'preferred-install' => 'auto',
         'notify-on-install' => true,
-        'github-protocols' => array('git', 'https', 'ssh'),
+        'github-protocols' => array('https', 'ssh', 'git'),
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'cache-dir' => '{$home}/cache',
@@ -285,11 +285,15 @@ class Config
                 return $this->config[$key];
 
             case 'github-protocols':
-                if (reset($this->config['github-protocols']) === 'http') {
+                $protos = $this->config['github-protocols'];
+                if ($this->config['secure-http'] && false !== ($index = array_search('git', $protos))) {
+                    unset($protos[$index]);
+                }
+                if (reset($protos) === 'http') {
                     throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https", "git" or "ssh"');
                 }
 
-                return $this->config[$key];
+                return $protos;
 
             case 'disable-tls':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];

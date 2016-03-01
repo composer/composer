@@ -47,9 +47,9 @@ class SvnDriverTest extends TestCase
     {
         $console = $this->getMock('Composer\IO\IOInterface');
 
-        $output  = "svn: OPTIONS of 'http://corp.svn.local/repo':";
+        $output  = "svn: OPTIONS of 'https://corp.svn.local/repo':";
         $output .= " authorization failed: Could not authenticate to server:";
-        $output .= " rejected Basic challenge (http://corp.svn.local/)";
+        $output .= " rejected Basic challenge (https://corp.svn.local/)";
 
         $process = $this->getMock('Composer\Util\ProcessExecutor');
         $process->expects($this->at(1))
@@ -63,7 +63,7 @@ class SvnDriverTest extends TestCase
             ->will($this->returnValue(0));
 
         $repoConfig = array(
-            'url' => 'http://till:secret@corp.svn.local/repo',
+            'url' => 'https://till:secret@corp.svn.local/repo',
         );
 
         $svn = new SvnDriver($repoConfig, $console, $this->config, $process);

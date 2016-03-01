@@ -47,6 +47,10 @@ class HgDriver extends VcsDriver
                 throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$cacheDir.'" directory is not writable by the current user.');
             }
 
+            if (preg_match('{^http:}i', $this->url) && $this->config->get('secure-http')) {
+                throw new TransportException("Your configuration does not allow connection to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
+            }
+
             // update the repo if it is a valid hg repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {
                 if (0 !== $this->process->execute('hg pull', $output, $this->repoDir)) {

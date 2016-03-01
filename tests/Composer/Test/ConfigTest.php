@@ -196,10 +196,20 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     public function testOverrideGithubProtocols()
     {
         $config = new Config(false);
-        $config->merge(array('config' => array('github-protocols' => array('https', 'git'))));
+        $config->merge(array('config' => array('github-protocols' => array('https', 'ssh'))));
         $config->merge(array('config' => array('github-protocols' => array('https'))));
 
         $this->assertEquals(array('https'), $config->get('github-protocols'));
+    }
+
+    public function testGitDisabledByDefaultInGithubProtocols()
+    {
+        $config = new Config(false);
+        $config->merge(array('config' => array('github-protocols' => array('https', 'git'))));
+        $this->assertEquals(array('https'), $config->get('github-protocols'));
+
+        $config->merge(array('config' => array('secure-http' => false)));
+        $this->assertEquals(array('https', 'git'), $config->get('github-protocols'));
     }
 
     /**
