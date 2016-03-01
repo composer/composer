@@ -344,7 +344,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         if (preg_match('{^(?:https?|git)://'.GitUtil::getGitHubDomainsRegex($this->config).'/([^/]+)/([^/]+?)(?:\.git)?$}', $url, $match)) {
             $protocols = $this->config->get('github-protocols');
             $pushUrl = 'git@'.$match[1].':'.$match[2].'/'.$match[3].'.git';
-            if ($protocols[0] !== 'git') {
+            if (!in_array('ssh', $protocols, true)) {
                 $pushUrl = 'https://' . $match[1] . '/'.$match[2].'/'.$match[3].'.git';
             }
             $cmd = sprintf('git remote set-url --push origin %s', ProcessExecutor::escape($pushUrl));

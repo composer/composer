@@ -146,7 +146,7 @@ class GitDownloaderTest extends TestCase
             ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
-        $expectedGitCommand = $this->winCompat("git remote set-url --push origin 'https://github.com/composer/composer.git'");
+        $expectedGitCommand = $this->winCompat("git remote set-url --push origin 'git@github.com:composer/composer.git'");
         $processExecutor->expects($this->at(4))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
@@ -169,15 +169,19 @@ class GitDownloaderTest extends TestCase
     public function pushUrlProvider()
     {
         return array(
-            array('ssh', 'git@github.com:composer/composer', 'https://github.com/composer/composer.git'),
-            array('https', 'https://github.com/composer/composer', 'https://github.com/composer/composer.git'),
+            // ssh proto should use git@ all along
+            array(array('ssh'),                 'git@github.com:composer/composer',     'git@github.com:composer/composer.git'),
+            // auto-proto uses git@ by default for push url, but not fetch
+            array(array('https', 'ssh', 'git'), 'https://github.com/composer/composer', 'git@github.com:composer/composer.git'),
+            // if restricted to https then push url is not overwritten to git@
+            array(array('https'),               'https://github.com/composer/composer', 'https://github.com/composer/composer.git'),
         );
     }
 
     /**
      * @dataProvider pushUrlProvider
      */
-    public function testDownloadAndSetPushUrlUseCustomVariousProtocolsForGithub($protocol, $url, $pushUrl)
+    public function testDownloadAndSetPushUrlUseCustomVariousProtocolsForGithub($protocols, $url, $pushUrl)
     {
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -211,7 +215,7 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(0));
 
         $config = new Config();
-        $config->merge(array('config' => array('github-protocols' => array($protocol))));
+        $config->merge(array('config' => array('github-protocols' => $protocols)));
 
         $downloader = $this->getDownloaderMock(null, $config, $processExecutor);
         $downloader->download($packageMock, 'composerPath');
