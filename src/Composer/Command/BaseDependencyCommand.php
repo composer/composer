@@ -20,6 +20,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Package\Version\VersionParser;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
@@ -38,6 +39,8 @@ class BaseDependencyCommand extends BaseCommand
     const ARGUMENT_CONSTRAINT = 'constraint';
     const OPTION_RECURSIVE = 'recursive';
     const OPTION_TREE = 'tree';
+
+    protected $colors;
 
     /**
      * Set common options and arguments.
@@ -119,6 +122,7 @@ class BaseDependencyCommand extends BaseCommand
             $this->getIO()->writeError(sprintf('<info>There is no installed package depending on "%s"%s</info>',
                 $needle, $extra));
         } elseif ($renderTree) {
+            $this->initStyles($output);
             $root = $packages[0];
             $this->getIO()->write(sprintf('<info>%s</info> %s %s', $root->getPrettyName(), $root->getPrettyVersion(), $root->getDescription()));
             $this->printTree($results);
@@ -170,12 +174,33 @@ class BaseDependencyCommand extends BaseCommand
     }
 
     /**
+     * Init styles for tree
+     *
+     * @param OutputInterface $output
+     */
+    protected function initStyles(OutputInterface $output)
+    {
+        $this->colors = array(
+            'green',
+            'yellow',
+            'cyan',
+            'magenta',
+            'blue',
+        );
+
+        foreach ($this->colors as $color) {
+            $style = new OutputFormatterStyle($color);
+            $output->getFormatter()->setStyle($color, $style);
+        }
+    }
+
+    /**
      * Recursively prints a tree of the selected results.
      *
      * @param array  $results
      * @param string $prefix
      */
-    protected function printTree($results, $prefix = '')
+    protected function printTree($results, $prefix = '', $level = 1)
     {
         $count = count($results);
         $idx = 0;
@@ -185,12 +210,18 @@ class BaseDependencyCommand extends BaseCommand
              * @var Link             $link
              */
             list($package, $link, $children) = $result;
+
+            $color = $this->colors[$level % count($this->colors)];
+            $prevColor = $this->colors[($level - 1) % count($this->colors)];
             $isLast = (++$idx == $count);
             $versionText = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '' : $package->getPrettyVersion();
-            $packageText = rtrim(sprintf('%s %s', $package->getPrettyName(), $versionText));
-            $linkText = implode(' ', array($link->getDescription(), $link->getTarget(), $link->getPrettyConstraint()));
-            $this->writeTreeLine(sprintf("%s%s%s (%s)", $prefix, $isLast ? '└──' : '├──', $packageText, $linkText));
-            $this->printTree($children, $prefix . ($isLast ? '   ' : '│  '));
+            $packageText = rtrim(sprintf('<%s>%s</%1$s> %s', $color, $package->getPrettyName(), $versionText));
+            $linkText = sprintf('%s <%s>%s</%2$s> %s', $link->getDescription(), $prevColor, $link->getTarget(), $link->getPrettyConstraint());
+            $circularWarn = $children === false ? '(circular dependency aborted here)' : '';
+            $this->writeTreeLine(rtrim(sprintf("%s%s%s (%s) %s", $prefix, $isLast ? '└──' : '├──', $packageText, $linkText, $circularWarn)));
+            if ($children) {
+                $this->printTree($children, $prefix . ($isLast ? '   ' : '│  '), $level + 1);
+            }
         }
     }
 

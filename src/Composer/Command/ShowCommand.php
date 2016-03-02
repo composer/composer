@@ -491,9 +491,6 @@ EOT
      */
     protected function displayPackageTree(PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos)
     {
-        $packagesInTree = array();
-        $packagesInTree[] = $package;
-
         $io = $this->getIO();
         $io->write(sprintf('<info>%s</info>', $package->getPrettyName()), false);
         $io->write(' ' . $package->getPrettyVersion(), false);
@@ -518,8 +515,7 @@ EOT
                 $this->writeTreeLine($info);
 
                 $treeBar = str_replace('└', ' ', $treeBar);
-
-                $packagesInTree[] = $requireName;
+                $packagesInTree = array($package->getName(), $requireName);
 
                 $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $treeBar, $level + 1);
             }
@@ -547,19 +543,22 @@ EOT
             $i = 0;
             $total = count($requires);
             foreach ($requires as $requireName => $require) {
+                $currentTree = $packagesInTree;
                 $i++;
                 if ($i == $total) {
                     $treeBar = $previousTreeBar . '  └';
                 }
                 $colorIdent = $level % count($this->colors);
                 $color = $this->colors[$colorIdent];
-                $info = sprintf('%s──<%s>%s</%s> %s', $treeBar, $color, $requireName, $color, $require->getPrettyConstraint());
+
+                $circularWarn = in_array($requireName, $currentTree) ? '(circular dependency aborted here)' : '';
+                $info = rtrim(sprintf('%s──<%s>%s</%s> %s %s', $treeBar, $color, $requireName, $color, $require->getPrettyConstraint(), $circularWarn));
                 $this->writeTreeLine($info);
 
                 $treeBar = str_replace('└', ' ', $treeBar);
-                if (!in_array($requireName, $packagesInTree)) {
-                    $packagesInTree[] = $requireName;
-                    $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $treeBar, $level + 1);
+                if (!in_array($requireName, $currentTree)) {
+                    $currentTree[] = $requireName;
+                    $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $currentTree, $treeBar, $level + 1);
                 }
             }
         }
