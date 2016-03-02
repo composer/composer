@@ -65,6 +65,11 @@ abstract class BaseIO implements IOInterface
     protected function checkAndSetAuthentication($repositoryName, $username, $password = null)
     {
         if ($this->hasAuthentication($repositoryName)) {
+            $auth = $this->getAuthentication($repositoryName);
+            if ($auth['username'] === $username && $auth['password'] === $password) {
+                return;
+            }
+
             $this->writeError(
                 sprintf(
                     "<warning>Warning: You should avoid overwriting already defined auth settings for %s.</warning>",
