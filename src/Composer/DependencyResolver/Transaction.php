@@ -165,7 +165,9 @@ class Transaction
                 $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                 foreach ($possibleRequires as $require) {
-                    unset($roots[$require->id]);
+                    if ($require !== $package) {
+                        unset($roots[$require->id]);
+                    }
                 }
             }
         }
