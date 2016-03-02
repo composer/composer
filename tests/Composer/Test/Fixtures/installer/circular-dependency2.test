@@ -1,0 +1,36 @@
+--TEST--
+Circular dependencies are possible between packages
+--COMPOSER--
+{
+    "name": "root",
+    "version": "dev-master",
+    "require": {
+        "require/itself": "1.0.0",
+        "regular/pkg": "1.0.0"
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "require/itself",
+                    "version": "1.0.0",
+                    "source": { "reference": "some.branch", "type": "git", "url": "" },
+                    "require": {
+                        "require/itself": "1.0.0"
+                    }
+                },
+                {
+                    "name": "regular/pkg",
+                    "version": "1.0.0",
+                    "source": { "reference": "some.branch", "type": "git", "url": "" }
+                }
+            ]
+        }
+    ]
+}
+--RUN--
+update -v
+--EXPECT--
+Installing require/itself (1.0.0)
+Installing regular/pkg (1.0.0)
