@@ -29,6 +29,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\NoopInstaller;
+use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackage;
@@ -120,9 +121,9 @@ class Installer
     protected $whitelistDependencies = false;
 
     /**
-     * @var array
+     * @var SuggestedPackagesReporter
      */
-    protected $suggestedPackages;
+    protected $suggestedPackagesReporter;
 
     /**
      * @var RepositoryInterface
@@ -214,8 +215,11 @@ class Installer
         $aliases = $this->getRootAliases();
         $this->aliasPlatformPackages($platformRepo, $aliases);
 
+        if (!$this->suggestedPackagesReporter) {
+            $this->suggestedPackagesReporter = new SuggestedPackagesReporter($this->io);
+        }
+
         try {
-            $this->suggestedPackages = array();
             $res = $this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode);
             if ($res !== 0) {
                 return $res;
@@ -233,16 +237,7 @@ class Installer
 
         // output suggestions if we're in dev mode
         if ($this->devMode) {
-            foreach ($this->suggestedPackages as $suggestion) {
-                $target = $suggestion['target'];
-                foreach ($installedRepo->getPackages() as $package) {
-                    if (in_array($target, $package->getNames())) {
-                        continue 2;
-                    }
-                }
-
-                $this->io->writeError($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
-            }
+            $this->suggestedPackagesReporter->output($installedRepo);
         }
 
         # Find abandoned packages and warn user
@@ -538,13 +533,7 @@ class Installer
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
-                foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
-                    $this->suggestedPackages[] = array(
-                        'source' => $operation->getPackage()->getPrettyName(),
-                        'target' => $target,
-                        'reason' => $reason,
-                    );
-                }
+                $this->suggestedPackagesReporter->addSuggestionsFromPackage($operation->getPackage());
             }
 
             // not installing from lock, force dev packages' references if they're in root package refs
@@ -1505,6 +1494,17 @@ class Installer
     public function disablePlugins()
     {
         $this->installationManager->disablePlugins();
+
+        return $this;
+    }
+
+    /**
+     * @param SuggestedPackagesReporter $suggestedPackagesReporter
+     * @return Installer
+     */
+    public function setSuggestedPackagesReporter(SuggestedPackagesReporter $suggestedPackagesReporter)
+    {
+        $this->suggestedPackagesReporter = $suggestedPackagesReporter;
 
         return $this;
     }
