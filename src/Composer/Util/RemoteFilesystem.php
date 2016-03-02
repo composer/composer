@@ -228,7 +228,7 @@ class RemoteFilesystem
         unset($tempAdditionalOptions);
         $userlandFollow = isset($options['http']['follow_location']) && !$options['http']['follow_location'];
 
-        $this->io->writeError((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl, true, IOInterface::DEBUG);
+        $origFileUrl = $fileUrl;
 
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
@@ -250,6 +250,11 @@ class RemoteFilesystem
         }
 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
+
+        $actualContextOptions = stream_context_get_options($ctx);
+        $usingProxy = !empty($actualContextOptions['http']['proxy']) ? ' using proxy ' . $actualContextOptions['http']['proxy'] : '';
+        $this->io->writeError((substr($origFileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $origFileUrl . $usingProxy, true, IOInterface::DEBUG);
+        unset($origFileUrl, $actualContextOptions);
 
         if ($this->progress && !$isRedirect) {
             $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
