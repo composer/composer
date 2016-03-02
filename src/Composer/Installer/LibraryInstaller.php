@@ -333,6 +333,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         return "@ECHO OFF\r\n".
+            "setlocal DISABLEDELAYEDEXPANSION\r\n".
             "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape($binPath), '"')."\r\n".
             "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
