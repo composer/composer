@@ -120,49 +120,65 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             return;
         }
 
-        $command = 'git rev-parse --abbrev-ref HEAD';
+        $command = 'git show-ref --head -d';
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
-        $branch = trim($output);
-
-        // we are on a detached HEAD tag so no need to check for changes
-        if ($branch === 'HEAD') {
+        $refs = trim($output);
+        if (!preg_match('{^([a-f0-9]+) HEAD$}mi', $refs, $match)) {
+            // could not match the HEAD for some reason
             return;
         }
 
-        // check that the branch exists in composer remote, if not then we should assume it is an unpushed branch
-        $command = sprintf('git rev-parse --verify composer/%s', $branch);
-        if (0 !== $this->process->execute($command, $output, $path)) {
-            $composerBranch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $package->getPrettyVersion());
-            $branches = '';
-            if (0 === $this->process->execute('git branch -r', $output, $path)) {
-                $branches = $output;
-            }
-            // add 'v' in front of the branch if it was stripped when generating the pretty name
-            if (!preg_match('{^\s+composer/'.preg_quote($composerBranch).'$}m', $branches) && preg_match('{^\s+composer/v'.preg_quote($composerBranch).'$}m', $branches)) {
-                $composerBranch = 'v' . $composerBranch;
-            }
-        } else {
-            $composerBranch = $branch;
+        $headRef = $match[1];
+        if (!preg_match_all('{^'.$headRef.' refs/heads/(.+)$}mi', $refs, $matches)) {
+            // not on a branch, we are either on a not-modified tag or some sort of detached head, so skip this
+            return;
         }
 
-        $command = sprintf('git diff --name-status composer/%s...%s', $composerBranch, $branch);
-        if (0 !== $this->process->execute($command, $output, $path)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
-        }
+        // use the first match as branch name for now
+        $branch = $matches[1][0];
+        $unpushedChanges = null;
 
-        if (trim($output)) {
-            // fetch from both to make sure we have up to date remotes
-            $this->process->execute('git fetch composer && git fetch origin', $output, $path);
+        // do two passes, as if we find anything we want to fetch and then re-try
+        for ($i = 0; $i <= 1; $i++) {
+            // try to find the a matching branch name in the composer remote
+            foreach ($matches[1] as $candidate) {
+                if (preg_match('{^[a-f0-9]+ refs/remotes/((?:composer|origin)/'.preg_quote($candidate).')$}mi', $refs, $match)) {
+                    $branch = $candidate;
+                    $remoteBranch = $match[1];
+                    break;
+                }
+            }
 
-            if (0 !== $this->process->execute($command, $output, $path)) {
-                throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            // if it doesn't exist, then we assume it is an unpushed branch
+            // this is bad as we have no reference point to do a diff so we just bail listing
+            // the branch as being unpushed
+            if (!isset($remoteBranch)) {
+                $unpushedChanges = 'Branch ' . $branch . ' could not be found on the origin remote and appears to be unpushed';
+            } else {
+                $command = sprintf('git diff --name-status %s...%s --', $remoteBranch, $branch);
+                if (0 !== $this->process->execute($command, $output, $path)) {
+                    throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+                }
+
+                $unpushedChanges = trim($output) ?: null;
+            }
+
+            // first pass and we found unpushed changes, fetch from both remotes to make sure we have up to date
+            // remotes and then try again as outdated remotes can sometimes cause false-positives
+            if ($unpushedChanges && $i === 0) {
+                $this->process->execute('git fetch composer && git fetch origin', $output, $path);
+            }
+
+            // abort after first pass if we didn't find anything
+            if (!$unpushedChanges) {
+                break;
             }
         }
 
-        return trim($output) ?: null;
+        return $unpushedChanges;
     }
 
     /**

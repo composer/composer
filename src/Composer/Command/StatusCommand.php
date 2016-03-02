@@ -65,7 +65,7 @@ EOT
         $unpushedChanges = array();
 
         // list packages
-        foreach ($installedRepo->getPackages() as $package) {
+        foreach ($installedRepo->getCanonicalPackages() as $package) {
             $downloader = $dm->getDownloaderForInstalledPackage($package);
 
             if ($downloader instanceof ChangeReportInterface) {

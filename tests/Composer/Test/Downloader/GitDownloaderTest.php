@@ -276,33 +276,25 @@ class GitDownloaderTest extends TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git rev-parse --abbrev-ref HEAD")))
+            ->with($this->equalTo($this->winCompat("git show-ref --head -d")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git rev-parse --verify composer/")))
+            ->with($this->equalTo($this->winCompat("git status --porcelain --untracked-files=no")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(2))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git diff --name-status composer/...")))
+            ->with($this->equalTo($this->winCompat("git remote -v")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(3))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git status --porcelain --untracked-files=no")))
+            ->with($this->equalTo($this->winCompat($expectedGitUpdateCommand)), $this->equalTo(null), $this->equalTo($this->winCompat($this->workingDir)))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(4))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git remote -v")))
-            ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(5))
-            ->method('execute')
-            ->with($this->equalTo($this->winCompat($expectedGitUpdateCommand)), $this->equalTo(null), $this->equalTo($this->winCompat($this->workingDir)))
-            ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(6))
-            ->method('execute')
             ->with($this->equalTo('git branch -r'))
             ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(7))
+        $processExecutor->expects($this->at(5))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo($this->winCompat($this->workingDir)))
             ->will($this->returnValue(0));
@@ -330,25 +322,17 @@ class GitDownloaderTest extends TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git rev-parse --abbrev-ref HEAD")))
+            ->with($this->equalTo($this->winCompat("git show-ref --head -d")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git rev-parse --verify composer/")))
+            ->with($this->equalTo($this->winCompat("git status --porcelain --untracked-files=no")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(2))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git diff --name-status composer/...")))
-            ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(3))
-            ->method('execute')
-            ->with($this->equalTo($this->winCompat("git status --porcelain --untracked-files=no")))
-            ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(4))
-            ->method('execute')
             ->with($this->equalTo($this->winCompat("git remote -v")))
             ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(5))
+        $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(1));
@@ -373,41 +357,33 @@ class GitDownloaderTest extends TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git rev-parse --abbrev-ref HEAD")))
+            ->with($this->equalTo($this->winCompat("git show-ref --head -d")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git rev-parse --verify composer/")))
-            ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(2))
-            ->method('execute')
-            ->with($this->equalTo($this->winCompat("git diff --name-status composer/...")))
-            ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(3))
-            ->method('execute')
             ->with($this->equalTo($this->winCompat("git status --porcelain --untracked-files=no")))
             ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(4))
+        $processExecutor->expects($this->at(2))
            ->method('execute')
             ->with($this->equalTo($this->winCompat("git remote -v")))
             ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(5))
+        $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($expectedFirstGitUpdateCommand))
             ->will($this->returnValue(1));
-        $processExecutor->expects($this->at(7))
+        $processExecutor->expects($this->at(5))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git --version")))
             ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(8))
+        $processExecutor->expects($this->at(6))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git remote -v")))
             ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(9))
+        $processExecutor->expects($this->at(7))
             ->method('execute')
             ->with($this->equalTo($expectedSecondGitUpdateCommand))
             ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(11))
+        $processExecutor->expects($this->at(9))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo($this->winCompat($this->workingDir)))
             ->will($this->returnValue(0));
