@@ -105,6 +105,11 @@ EOT
         if (Composer::VERSION === $updateVersion) {
             $io->writeError('<info>You are already using composer version '.$updateVersion.'.</info>');
 
+            // remove all backups except for the most recent, if any
+            if ($input->getOption('clean-backups')) {
+                $this->cleanBackups($rollbackDir, $this->getLastBackupVersion());
+            }
+
             return 0;
         }
 
@@ -315,13 +320,16 @@ TAGSPUBKEY
         }
     }
 
-    protected function cleanBackups($rollbackDir)
+    protected function cleanBackups($rollbackDir, $except = null)
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
         $io = $this->getIO();
         $fs = new Filesystem;
 
         foreach ($finder as $file) {
+            if ($except && $file->getBasename(self::OLD_INSTALL_EXT) === $except) {
+                continue;
+            }
             $file = (string) $file;
             $io->writeError('<info>Removing: '.$file.'</info>');
             $fs->remove($file);
