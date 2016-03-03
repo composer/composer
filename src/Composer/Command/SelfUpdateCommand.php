@@ -192,14 +192,7 @@ TAGSPUBKEY
 
         // remove saved installations of composer
         if ($input->getOption('clean-backups')) {
-            $finder = $this->getOldInstallationFinder($rollbackDir);
-
-            $fs = new Filesystem;
-            foreach ($finder as $file) {
-                $file = (string) $file;
-                $io->writeError('<info>Removing: '.$file.'</info>');
-                $fs->remove($file);
-            }
+            $this->cleanBackups($rollbackDir);
         }
 
         if ($err = $this->setLocalPhar($localFilename, $tempFilename, $backupFile)) {
@@ -319,6 +312,19 @@ TAGSPUBKEY
             }
 
             return $e;
+        }
+    }
+
+    protected function cleanBackups($rollbackDir)
+    {
+        $finder = $this->getOldInstallationFinder($rollbackDir);
+        $io = $this->getIO();
+        $fs = new Filesystem;
+
+        foreach ($finder as $file) {
+            $file = (string) $file;
+            $io->writeError('<info>Removing: '.$file.'</info>');
+            $fs->remove($file);
         }
     }
 
