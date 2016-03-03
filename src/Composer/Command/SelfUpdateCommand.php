@@ -268,16 +268,15 @@ TAGSPUBKEY
             throw new \UnexpectedValueException('Composer rollback failed: no installation to roll back to in "'.$rollbackDir.'"');
         }
 
-        $old = $rollbackDir . '/' . $rollbackVersion . self::OLD_INSTALL_EXT;
+        $oldFile = $rollbackDir . '/' . $rollbackVersion . self::OLD_INSTALL_EXT;
 
-        if (!is_file($old)) {
-            throw new FilesystemException('Composer rollback failed: "'.$old.'" could not be found');
+        if (!is_file($oldFile)) {
+            throw new FilesystemException('Composer rollback failed: "'.$oldFile.'" could not be found');
         }
-        if (!is_readable($old)) {
-            throw new FilesystemException('Composer rollback failed: "'.$old.'" could not be read');
+        if (!is_readable($oldFile)) {
+            throw new FilesystemException('Composer rollback failed: "'.$oldFile.'" could not be read');
         }
 
-        $oldFile = $rollbackDir . "/{$rollbackVersion}" . self::OLD_INSTALL_EXT;
         $io = $this->getIO();
         $io->writeError(sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
         if ($err = $this->setLocalPhar($localFilename, $oldFile)) {
