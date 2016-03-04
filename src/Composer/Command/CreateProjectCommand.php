@@ -143,7 +143,7 @@ EOT
         $io->loadConfiguration($config);
 
         if ($packageName !== null) {
-            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repository, $disablePlugins, $noScripts, $keepVcs, $noProgress);
+            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repository, $disablePlugins, $noScripts, $keepVcs, $noProgress, $ignorePlatformReqs);
         } else {
             $installedFromVcs = false;
         }
@@ -239,7 +239,7 @@ EOT
         return 0;
     }
 
-    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false)
+    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $ignorePlatformReqs = false)
     {
         if (null === $repository) {
             $sourceRepo = new CompositeRepository(RepositoryFactory::defaultRepos($io, $config));
@@ -271,8 +271,11 @@ EOT
         $pool = new Pool($stability);
         $pool->addRepository($sourceRepo);
 
-        // using those 3 constants to build a version without the 'extra' bit that can contain garbage
-        $phpVersion = PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION;
+        $phpVersion = null;
+        if (!$ignorePlatformReqs) {
+            // using those 3 constants to build a version without the 'extra' bit that can contain garbage
+            $phpVersion = PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION;
+        }
 
         // find the latest version if there are multiple
         $versionSelector = new VersionSelector($pool);
