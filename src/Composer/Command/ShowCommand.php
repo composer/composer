@@ -297,7 +297,7 @@ EOT
     {
         $name = strtolower($name);
         $constraint = null;
-        if ($version) {
+        if (is_string($version)) {
             $constraint = $this->versionParser->parseConstraints($version);
         }
 
