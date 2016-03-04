@@ -19,6 +19,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
+use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
@@ -40,6 +41,7 @@ use Composer\Spdx\SpdxLicenses;
  */
 class ShowCommand extends BaseCommand
 {
+    /** @var VersionParser */
     protected $versionParser;
     protected $colors;
 
@@ -286,20 +288,17 @@ EOT
     /**
      * finds a package by name and version if provided
      *
-     * @param  RepositoryInterface       $installedRepo
-     * @param  RepositoryInterface       $repos
-     * @param  string                    $name
-     * @param  string                    $version
+     * @param  RepositoryInterface        $installedRepo
+     * @param  RepositoryInterface        $repos
+     * @param  string                     $name
+     * @param  ConstraintInterface|string $version
      * @throws \InvalidArgumentException
-     * @return array                     array(CompletePackageInterface, array of versions)
+     * @return array                      array(CompletePackageInterface, array of versions)
      */
     protected function getPackage(RepositoryInterface $installedRepo, RepositoryInterface $repos, $name, $version = null)
     {
         $name = strtolower($name);
-        $constraint = null;
-        if (is_string($version)) {
-            $constraint = $this->versionParser->parseConstraints($version);
-        }
+        $constraint = is_string($version) ? $this->versionParser->parseConstraints($version) : $version;
 
         $policy = new DefaultPolicy();
         $pool = new Pool('dev');
