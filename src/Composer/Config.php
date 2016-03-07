@@ -27,6 +27,7 @@ class Config
         'preferred-install' => 'auto',
         'notify-on-install' => true,
         'github-protocols' => array('https', 'ssh', 'git'),
+        'bitbucket-protocols' => array('https'),
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'cache-dir' => '{$home}/cache',
@@ -45,6 +46,8 @@ class Config
         'classmap-authoritative' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
+        'bitbucket-domains' => array('bitbucket.org'),
+        'bitbucket-expose-hostname' => true,
         'disable-tls' => false,
         'secure-http' => true,
         'cafile' => null,
@@ -59,6 +62,7 @@ class Config
         // github-oauth
         // gitlab-oauth
         // http-basic
+        // bitbucket-oauth
     );
 
     public static $defaultRepositories = array(

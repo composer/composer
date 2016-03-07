@@ -108,7 +108,33 @@ class Git
 
                 if ($this->io->hasAuthentication($match[1])) {
                     $auth = $this->io->getAuthentication($match[1]);
-                    $authUrl = 'https://'.rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@'.$match[1].'/'.$match[2].'.git';
+                    $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
+                    $command = call_user_func($commandCallable, $authUrl);
+                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                        return;
+                    }
+                }
+            } elseif (preg_match('{^(?:https?|git)://'.self::getBitbucketDomainsRegex($this->config).'/(.*)\.git}', $url, $match)) { //bitbucket oauth
+                $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process);
+
+                if (!$this->io->hasAuthentication($match[1])) {
+                    $message = 'Cloning failed using an ssh key for authentication, enter your Bitbucket credentials to access private repos';
+
+                    if (!$bitbucketUtil->authorizeOAuth($match[1]) && $this->io->isInteractive()) {
+                        $bitbucketUtil->authorizeOAuthInteractively($match[1], $message);
+                        $token = $bitbucketUtil->getToken();
+                        $this->io->setAuthentication($match[1], 'x-token-auth', $token['access_token']);
+                    }
+                } else { //We're authenticating with a locally stored consumer.
+                    $auth = $this->io->getAuthentication($match[1]);
+                    $token = $bitbucketUtil->requestToken($match[1], $auth['username'], $auth['password']);
+                    $this->io->setAuthentication($match[1], 'x-token-auth', $token['access_token']);
+                }
+
+                if ($this->io->hasAuthentication($match[1])) {
+                    $auth = $this->io->getAuthentication($match[1]);
+                    $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
+
                     $command = call_user_func($commandCallable, $authUrl);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
@@ -212,6 +238,11 @@ class Git
     public static function getGitHubDomainsRegex(Config $config)
     {
         return '('.implode('|', array_map('preg_quote', $config->get('github-domains'))).')';
+    }
+
+    public static function getBitbucketDomainsRegex(Config $config)
+    {
+        return '('.implode('|', array_map('preg_quote', $config->get('bitbucket-domains'))).')';
     }
 
     public static function sanitizeUrl($message)

@@ -491,6 +491,17 @@ EOT
             return;
         }
 
+        // handle bitbucket-oauth
+        if (preg_match('/^(bitbucket-oauth)\.(.+)/', $settingKey, $matches)) {
+            if (2 !== count($values)) {
+                throw new \RuntimeException('Excepted two arguments (consumer-key, consumer-secret), got '.count($values));
+            }
+            $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+            $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('consumer-key' => $values[0], 'consumer-secret' => $values[1]));
+
+            return;
+        }
+
         throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
     }
 

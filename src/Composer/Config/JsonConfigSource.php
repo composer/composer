@@ -81,7 +81,7 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) use ($authConfig) {
-            if (preg_match('{^(github-oauth|gitlab-oauth|http-basic|platform)\.}', $key)) {
+            if (preg_match('{^(github-oauth|gitlab-oauth|http-basic|platform|bitbucket)\.}', $key)) {
                 list($key, $host) = explode('.', $key, 2);
                 if ($authConfig) {
                     $config[$key][$host] = $val;
