@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\RootPackageInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * Common ancestor class for generic repository functionality.
@@ -76,6 +77,18 @@ abstract class BaseRepository implements RepositoryInterface
                             $packagesInTree[] = $link->getSource();
                             $dependents = $recurse ? $this->getDependents($link->getSource(), null, false, true, $packagesInTree) : array();
                             $results[$link->getSource()] = array($package, $link, $dependents);
+                        }
+                    }
+                }
+            }
+
+            // When inverting, we need to check for conflicts of the needles against installed packages
+            if ($invert && in_array($package->getName(), $needles)) {
+                foreach ($package->getConflicts() as $link) {
+                    foreach ($this->findPackages($link->getTarget()) as $pkg) {
+                        $version = new Constraint('=', $pkg->getVersion());
+                        if ($link->getConstraint()->matches($version) === $invert) {
+                            $results[$package->getName()] = array($package, $link, false);
                         }
                     }
                 }

@@ -18,6 +18,7 @@ use Composer\Package\PackageInterface;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryFactory;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
@@ -91,6 +92,15 @@ class BaseDependencyCommand extends BaseCommand
         $packages = $pool->whatProvides($needle);
         if (empty($packages)) {
             throw new \InvalidArgumentException(sprintf('Could not find package "%s" in your project', $needle));
+        }
+
+        // If the version we ask for is not installed then we need to locate it in remote repos and add it.
+        // This is needed for why-not to resolve conflicts from an uninstalled version against installed packages.
+        if (!$repository->findPackage($needle, $textConstraint)) {
+            $defaultRepos = new CompositeRepository(RepositoryFactory::defaultRepos($this->getIO()));
+            if ($match = $defaultRepos->findPackage($needle, $textConstraint)) {
+                $repository->addRepository(new ArrayRepository(array(clone $match)));
+            }
         }
 
         // Include replaced packages for inverted lookups as they are then the actual starting point to consider
