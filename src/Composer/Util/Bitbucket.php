@@ -91,7 +91,7 @@ class Bitbucket
         } catch (TransportException $e) {
             if (in_array($e->getCode(), array(403, 401))) {
                 $this->io->writeError('<error>Invalid consumer provided.</error>');
-                $this->io->writeError('You can also add it manually later by using "composer config bitbucket-oauth.bitbucket.org <consumerKey> <consumerSecret>"');
+                $this->io->writeError('You can also add it manually later by using "composer config bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
 
                 return false;
             }

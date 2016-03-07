@@ -778,7 +778,7 @@ file to be used during SSL/TLS peer verification.
 
 The `COMPOSER_AUTH` var allows you to set up authentication as an environment variable.
 The contents of the variable should be a JSON formatted object containing http-basic,
-github-oauth, ... objects as needed, and following the
+github-oauth, bitbucket-oauth, ... objects as needed, and following the
 [spec from the config](06-config.md#gitlab-oauth).
 
 ### COMPOSER_DISCARD_CHANGES

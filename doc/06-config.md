@@ -81,6 +81,12 @@ downloaded via Composer. If you really absolutely need HTTP access to something
 then you can disable it, but using [Let's Encrypt](https://letsencrypt.org/) to
 get a free SSL certificate is generally a better alternative.
 
+## bitbucket-oauth
+
+A list of domain names and consumers. For example using `{"bitbucket.org":
+{"consumer-key": "myKey", "consumer-secret": "mySecret"}}`. [Read](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html)
+how to set up a consumer on Bitbucket.
+
 ## cafile
 
 Location of Certificate Authority file on local filesystem. In PHP 5.6+ you
