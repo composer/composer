@@ -17,6 +17,7 @@ use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
 use Composer\Installer\InstallationManager;
+use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Pool;
@@ -47,6 +48,11 @@ use Composer\Package\Version\VersionParser;
  */
 class CreateProjectCommand extends BaseCommand
 {
+    /**
+     * @var SuggestedPackagesReporter
+     */
+    protected $suggestedPackagesReporter;
+
     protected function configure()
     {
         $this
@@ -142,6 +148,8 @@ EOT
         // we need to manually load the configuration to pass the auth credentials to the io interface!
         $io->loadConfiguration($config);
 
+        $this->suggestedPackagesReporter = new SuggestedPackagesReporter($io);
+
         if ($packageName !== null) {
             $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repository, $disablePlugins, $noScripts, $keepVcs, $noProgress, $ignorePlatformReqs);
         } else {
@@ -168,7 +176,8 @@ EOT
                 ->setPreferDist($preferDist)
                 ->setDevMode($installDevPackages)
                 ->setRunScripts(!$noScripts)
-                ->setIgnorePlatformRequirements($ignorePlatformReqs);
+                ->setIgnorePlatformRequirements($ignorePlatformReqs)
+                ->setSuggestedPackagesReporter($this->suggestedPackagesReporter);
 
             if ($disablePlugins) {
                 $installer->disablePlugins();
@@ -320,6 +329,9 @@ EOT
         $im->addInstaller($projectInstaller);
         $im->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
         $im->notifyInstalls($io);
+
+        // collect suggestions
+        $this->suggestedPackagesReporter->addSuggestionsFromPackage($package);
 
         $installedFromVcs = 'source' === $package->getInstallationSource();
 
