@@ -881,12 +881,23 @@ class RemoteFilesystem
         // This mimics how OpenSSL uses the SSL_CERT_FILE env variable.
         $envCertFile = getenv('SSL_CERT_FILE');
         if ($envCertFile && is_readable($envCertFile) && $this->validateCaFile($envCertFile)) {
-            // Possibly throw exception instead of ignoring SSL_CERT_FILE if it's invalid?
             return $caPath = $envCertFile;
+        }
+
+        // If SSL_CERT_DIR env variable points to a valid certificate/bundle, use that.
+        // This mimics how OpenSSL uses the SSL_CERT_FILE env variable.
+        $envCertDir = getenv('SSL_CERT_DIR');
+        if ($envCertDir && is_dir($envCertDir) && is_readable($envCertDir)) {
+            return $caPath = $envCertDir;
         }
 
         $configured = ini_get('openssl.cafile');
         if ($configured && strlen($configured) > 0 && is_readable($configured) && $this->validateCaFile($configured)) {
+            return $caPath = $configured;
+        }
+
+        $configured = ini_get('openssl.capath');
+        if ($configured && is_dir($configured) && is_readable($configured)) {
             return $caPath = $configured;
         }
 
