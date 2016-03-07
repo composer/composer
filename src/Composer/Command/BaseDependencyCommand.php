@@ -159,7 +159,9 @@ class BaseDependencyCommand extends BaseCommand
                 $doubles[$unique] = true;
                 $version = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '-' : $package->getPrettyVersion();
                 $rows[] = array($package->getPrettyName(), $version, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint()));
-                $queue = array_merge($queue, $children);
+                if ($children) {
+                    $queue = array_merge($queue, $children);
+                }
             }
             $results = $queue;
             $table = array_merge($rows, $table);
