@@ -281,7 +281,7 @@ TAGSPUBKEY
         $io = $this->getIO();
         $io->writeError(sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
         if ($err = $this->setLocalPhar($localFilename, $oldFile)) {
-            $io->writeError('<error>The backup file was corrupted ('.$err->getMessage().') and has been removed.</error>');
+            $io->writeError('<error>The backup file was corrupted ('.$err->getMessage().').</error>');
 
             return 1;
         }
