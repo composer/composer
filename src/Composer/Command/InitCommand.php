@@ -633,6 +633,12 @@ EOT
         $package = $versionSelector->findBestCandidate($name, null, $phpVersion);
 
         if (!$package) {
+            // Check whether the PHP version was the problem
+            if ($phpVersion && $versionSelector->findBestCandidate($name)) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Could not find package %s at any version matching your PHP version %s', $name, $phpVersion
+                ));
+            }
             throw new \InvalidArgumentException(sprintf(
                 'Could not find package %s at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
                 $name,
