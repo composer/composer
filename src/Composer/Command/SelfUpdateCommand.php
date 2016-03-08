@@ -203,6 +203,7 @@ TAGSPUBKEY
         }
 
         if ($err = $this->setLocalPhar($localFilename, $tempFilename, $backupFile)) {
+            @unlink($tempFilename);
             $io->writeError('<error>The file is corrupted ('.$err->getMessage().').</error>');
             $io->writeError('<error>Please re-run the self-update command to try again.</error>');
 
@@ -281,7 +282,7 @@ TAGSPUBKEY
         $io = $this->getIO();
         $io->writeError(sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
         if ($err = $this->setLocalPhar($localFilename, $oldFile)) {
-            $io->writeError('<error>The backup file was corrupted ('.$err->getMessage().') and has been removed.</error>');
+            $io->writeError('<error>The backup file was corrupted ('.$err->getMessage().').</error>');
 
             return 1;
         }
@@ -312,9 +313,6 @@ TAGSPUBKEY
 
             rename($newFilename, $localFilename);
         } catch (\Exception $e) {
-            if ($backupTarget) {
-                @unlink($newFilename);
-            }
             if (!$e instanceof \UnexpectedValueException && !$e instanceof \PharException) {
                 throw $e;
             }
