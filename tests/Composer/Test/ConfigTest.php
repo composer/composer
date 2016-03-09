@@ -13,6 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Config;
+use Composer\Downloader\TransportException;
 
 class ConfigTest extends \PHPUnit_Framework_TestCase
 {
@@ -212,6 +213,66 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('https', 'git'), $config->get('github-protocols'));
     }
 
+    /**
+     * @dataProvider allowedUrlProvider
+     *
+     * @param string $url
+     */
+    public function testAllowedUrlsPass($url)
+    {
+        $config = new Config(false);
+        $config->prohibitUrlByConfig($url);
+    }
+
+    /**
+     * @dataProvider prohibitedUrlProvider
+     *
+     * @param string $url
+     */
+    public function testProhibitedUrlsThrowException($url)
+    {
+        $this->setExpectedException(
+            'Composer\Downloader\TransportException',
+            'Your configuration does not allow connections to ' . $url
+        );
+        $config = new Config(false);
+        $config->prohibitUrlByConfig($url);
+    }
+
+    /**
+     * @return array List of test URLs that should pass strict security
+     */
+    public function allowedUrlProvider()
+    {
+        $urls = array(
+            'https://packagist.org',
+            'git@github.com:composer/composer.git',
+            'hg://user:pass@my.satis/satis',
+            '\\myserver\myplace.git',
+            'file://myserver.localhost/mygit.git',
+            'file://example.org/mygit.git',
+        );
+        return array_combine($urls, array_map(function($e) { return array($e); }, $urls));
+    }
+
+    /**
+     * @return array List of test URLs that should not pass strict security
+     */
+    public function prohibitedUrlProvider()
+    {
+        $urls = array(
+            'http://packagist.org',
+            'http://10.1.0.1/satis',
+            'http://127.0.0.1/satis',
+            'svn://localhost/trunk',
+            'svn://will.not.resolve/trunk',
+            'svn://192.168.0.1/trunk',
+            'svn://1.2.3.4/trunk',
+            'git://5.6.7.8/git.git',
+        );
+        return array_combine($urls, array_map(function($e) { return array($e); }, $urls));
+    }
+    
     /**
      * @group TLS
      */

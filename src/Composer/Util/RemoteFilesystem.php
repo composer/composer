@@ -260,20 +260,9 @@ class RemoteFilesystem
             $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
         }
 
-        // Check for secure HTTP
-        if (
-            ($this->scheme === 'http' || substr($fileUrl, 0, 5) === 'http:')
-            && $this->config && $this->config->get('secure-http')
-        ) {
-            // Passthru unsecure Packagist calls to $hashed providers as file integrity is verified with sha256
-            if (substr($fileUrl, 0, 23) !== 'http://packagist.org/p/' || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) {
-                // other URLs must fail hard
-                throw new TransportException(sprintf(
-                    'Your configuration does not allow connection to %s://%s. See https://getcomposer.org/doc/06-config.md#secure-http for details.',
-                    $this->scheme,
-                    $originUrl
-                ));
-            }
+        // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
+        if ((substr($fileUrl, 0, 23) !== 'http://packagist.org/p/' || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && $this->config) {
+            $this->config->prohibitUrlByConfig($fileUrl);
         }
 
         $errorMessage = '';

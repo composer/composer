@@ -40,9 +40,8 @@ class Git
 
     public function runCommand($commandCallable, $url, $cwd, $initialClone = false)
     {
-        if (preg_match('{^(http|git):}i', $url) && $this->config->get('secure-http')) {
-            throw new TransportException("Your configuration does not allow connection to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
-        }
+        // Ensure we are allowed to use this URL by config
+        $this->config->prohibitUrlByConfig($url);
 
         if ($initialClone) {
             $origCwd = $cwd;
