@@ -16,6 +16,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
+use Composer\Package\Version\VersionSelector;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
@@ -45,6 +46,12 @@ class ShowCommand extends BaseCommand
     protected $versionParser;
     protected $colors;
 
+    /** @var CompositeRepository */
+    protected $repos;
+
+    /** @var Pool */
+    private $pool;
+
     protected function configure()
     {
         $this
@@ -62,6 +69,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
                 new InputOption('path', 'P', InputOption::VALUE_NONE, 'Show package paths'),
                 new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
+                new InputOption('latest', 'l', InputOption::VALUE_NONE, 'Show the latest version'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -146,7 +154,11 @@ EOT
             if ($input->getOption('tree')) {
                 $this->displayPackageTree($package, $installedRepo, $repos);
             } else {
-                $this->printMeta($package, $versions, $installedRepo);
+                $latestVersion = null;
+                if ($input->getOption('latest')) {
+                    $latestVersion = $this->findBestVersionForPackage($package->getName(), null);
+                }
+                $this->printMeta($package, $versions, $installedRepo, $latestVersion);
                 $this->printLinks($package, 'requires');
                 $this->printLinks($package, 'devRequires', 'requires (dev)');
                 if ($package->getSuggests()) {
@@ -217,6 +229,7 @@ EOT
         }
 
         $showAllTypes = $input->getOption('all');
+        $showLatest = $input->getOption('latest');
         $indent = $showAllTypes ? '  ' : '';
         foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
@@ -225,7 +238,7 @@ EOT
                 }
                 ksort($packages[$type]);
 
-                $nameLength = $versionLength = 0;
+                $nameLength = $versionLength = $latestLength = 0;
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
                         $nameLength = max($nameLength, strlen($package->getPrettyName()));
@@ -249,9 +262,11 @@ EOT
                     $input->setOption('path', false);
                 }
 
+                $latestLength = $versionLength;
                 $writePath = !$input->getOption('name-only') && $input->getOption('path');
                 $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
-                $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
+                $writeLatest = !$input->getOption('name-only') && !$input->getOption('path') && $showLatest && ($nameLength + ($showVersion ? $versionLength : 0) + $latestLength + 3 <= $width);
+                $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + ($showVersion ? $versionLength : 0) + ($showLatest ? $latestLength : 0) + 24 <= $width);
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
                         $io->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
@@ -260,9 +275,15 @@ EOT
                             $io->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
                         }
 
+                        if ($writeLatest) {
+                            $latestVersion = $this->findBestVersionForPackage($package->getName());
+                            $type = $latestVersion == $package->getFullPrettyVersion() ? 'info' : 'comment';
+                            $io->write(' <'.$type.'>' . str_pad($latestVersion, $latestLength, ' ') . '</'.$type.'>', false);
+                        }
+
                         if ($writeDescription) {
                             $description = strtok($package->getDescription(), "\r\n");
-                            $remaining = $width - $nameLength - $versionLength - 4;
+                            $remaining = $width - $nameLength - $versionLength -  ($writeLatest ? $latestLength : 0) - 4;
                             if (strlen($description) > $remaining) {
                                 $description = substr($description, 0, $remaining - 3) . '...';
                             }
@@ -334,13 +355,16 @@ EOT
     /**
      * prints package meta data
      */
-    protected function printMeta(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo)
+    protected function printMeta(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, $latestVersion = null)
     {
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
         $io->write('<info>descrip.</info> : ' . $package->getDescription());
         $io->write('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
         $this->printVersions($package, $versions, $installedRepo);
+        if ($latestVersion) {
+            $io->write('<info>latest</info>   : ' . $latestVersion);
+        }
         $io->write('<info>type</info>     : ' . $package->getType());
         $this->printLicenses($package);
         $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
@@ -571,5 +595,50 @@ EOT
         }
 
         $io->write($line);
+    }
+
+    /**
+     * Given a package name, this determines the best version to use in the require key.
+     *
+     * @param  string                    $name
+     * @throws \InvalidArgumentException
+     * @return string|null
+     */
+    private function findBestVersionForPackage($name)
+    {
+        // find the latest version allowed in this pool
+        $versionSelector = new VersionSelector($this->getPool());
+        $package = $versionSelector->findBestCandidate($name);
+
+        if ($package) {
+            return $package->getPrettyVersion();
+        }
+    }
+
+    protected function getRepos()
+    {
+        if (!$this->repos) {
+            $this->repos = new CompositeRepository(array_merge(
+                array(new PlatformRepository),
+                RepositoryFactory::defaultRepos($this->getIO())
+            ));
+        }
+
+        return $this->repos;
+    }
+
+    private function getPool()
+    {
+        if (!$this->pool) {
+            $this->pool = new Pool($this->getMinimumStability());
+            $this->pool->addRepository($this->getRepos());
+        }
+
+        return $this->pool;
+    }
+
+    private function getMinimumStability()
+    {
+        return 'stable';
     }
 }
