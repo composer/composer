@@ -148,7 +148,11 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
             'shasum' => sha1_file($file->getRealPath()),
         );
 
-        $package = $this->loader->load($package);
+        try {
+            $package = $this->loader->load($package);
+        } catch (\UnexpectedValueException $e) {
+            throw new \UnexpectedValueException('Failed loading package in '.$file.': '.$e->getMessage(), 0, $e);
+        }
 
         return $package;
     }
