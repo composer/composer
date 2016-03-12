@@ -137,7 +137,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             $package['dist'] = array(
                 'type' => 'path',
                 'url' => $url,
-                'reference' => sha1($json),
+                'reference' => sha1($json . serialize($this->options)),
             );
             $package['transport-options'] = $this->options;
 
