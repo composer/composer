@@ -26,7 +26,7 @@ matrix:
     - php: nightly
 
 before_script:
-    - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
+    - phpenv config-rm xdebug.ini
     - flags=""
     - composer install $flags
     - bin/composer install $flags
