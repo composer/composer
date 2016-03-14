@@ -129,7 +129,7 @@ final class StreamContextFactory
             $options['http']['header'] = self::fixHttpHeaderField($options['http']['header']);
         }
 
-        if (isset($options['http']['content'])) {
+        if (isset($options['http']['content']) && (is_array($options['http']['content']) || is_object($options['http']['content']))) {
             $options['http']['content'] = http_build_query($options['http']['content']);
         }
 

@@ -18,6 +18,7 @@ use Composer\Config;
 use Composer\Downloader\TransportException;
 
 /**
+ * I used GitHub.php as a template.
  * @author Paul Wenke <wenke.paul@gmail.com>
  */
 class Bitbucket
