@@ -613,6 +613,7 @@ class Filesystem
         if ($this->getProcess()->execute($cmd, $output) !== 0) {
             throw new IOException(sprintf('Failed to create junction to "%s" at "%s".', $target, $junction), 0, null, $target);
         }
+        clearstatcache(true, $junction);
     }
 
     /**
@@ -637,7 +638,10 @@ class Filesystem
          *
          * #define	_S_IFDIR	0x4000
          * #define	_S_IFREG	0x8000
+         *
+         * Stat cache should be cleared before to avoid accidentally reading wrong information from previous installs.
          */
+        clearstatcache(true, $junction);
         $stat = lstat($junction);
 
         return !($stat['mode'] & 0xC000);
@@ -659,6 +663,7 @@ class Filesystem
             throw new IOException(sprintf('%s is not a junction and thus cannot be removed as one', $junction));
         }
         $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape($junction));
+        clearstatcache(true, $junction);
 
         return ($this->getProcess()->execute($cmd, $output) === 0);
     }
