@@ -22,7 +22,8 @@ use Composer\Util\ConfigValidator;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
-use Composer\Util\Keys;
+use Composer\SelfUpdate\Keys;
+use Composer\SelfUpdate\Versions;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -141,7 +142,7 @@ EOT
             $this->outputResult($this->checkPubKeys($config));
 
             $io->write('Checking composer version: ', false);
-            $this->outputResult($this->checkVersion());
+            $this->outputResult($this->checkVersion($config));
         }
 
         return $this->failures;
@@ -364,13 +365,13 @@ EOT
         return $errors ?: true;
     }
 
-    private function checkVersion()
+    private function checkVersion($config)
     {
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
-        $latest = trim($this->rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/version', false));
+        $versionsUtil = new Versions($config, $this->rfs);
+        $latest = $versionsUtil->getLatest();
 
-        if (Composer::VERSION !== $latest && Composer::VERSION !== '@package_version@') {
-            return '<comment>You are not running the latest version, run `composer self-update` to update</comment>';
+        if (Composer::VERSION !== $latest['version'] && Composer::VERSION !== '@package_version@') {
+            return '<comment>You are not running the latest '.$versionsUtil->getChannel().' version, run `composer self-update` to update ('.Composer::VERSION.' => '.$latest['version'].')</comment>';
         }
 
         return true;

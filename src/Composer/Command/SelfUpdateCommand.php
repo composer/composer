@@ -16,7 +16,8 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\Config;
 use Composer\Util\Filesystem;
-use Composer\Util\Keys;
+use Composer\SelfUpdate\Keys;
+use Composer\SelfUpdate\Versions;
 use Composer\IO\IOInterface;
 use Composer\Downloader\FilesystemException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -47,6 +48,9 @@ class SelfUpdateCommand extends BaseCommand
                 new InputArgument('version', InputArgument::OPTIONAL, 'The version to update to'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('update-keys', null, InputOption::VALUE_NONE, 'Prompt user for a key update'),
+                new InputOption('stable', null, InputOption::VALUE_NONE, 'Force an update to the stable channel'),
+                new InputOption('preview', null, InputOption::VALUE_NONE, 'Force an update to the preview channel'),
+                new InputOption('snapshot', null, InputOption::VALUE_NONE, 'Force an update to the snapshot channel'),
             ))
             ->setHelp(<<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer
@@ -72,6 +76,15 @@ EOT
         $io = $this->getIO();
         $remoteFilesystem = Factory::createRemoteFilesystem($io, $config);
 
+        $versionsUtil = new Versions($config, $remoteFilesystem);
+
+        // switch channel if requested
+        foreach (array('stable', 'preview', 'snapshot') as $channel) {
+            if ($input->getOption($channel)) {
+                $versionsUtil->setChannel($channel);
+            }
+        }
+
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('data-dir');
         $home = $config->get('home');
@@ -93,7 +106,8 @@ EOT
             return $this->rollback($output, $rollbackDir, $localFilename);
         }
 
-        $latestVersion = trim($remoteFilesystem->getContents(self::HOMEPAGE, $baseUrl. '/version', false));
+        $latest = $versionsUtil->getLatest();
+        $latestVersion = $latest['version'];
         $updateVersion = $input->getArgument('version') ?: $latestVersion;
 
         if (preg_match('{^[0-9a-f]{40}$}', $updateVersion) && $updateVersion !== $latestVersion) {
