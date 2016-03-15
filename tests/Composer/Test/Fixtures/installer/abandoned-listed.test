@@ -25,7 +25,7 @@ Abandoned packages are flagged
 install
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-Installing dependencies (including require-dev)
+Updating dependencies (including require-dev)
 <warning>Package a/a is abandoned, you should avoid using it. No replacement was suggested.</warning>
 <warning>Package c/c is abandoned, you should avoid using it. Use b/b instead.</warning>
 Writing lock file

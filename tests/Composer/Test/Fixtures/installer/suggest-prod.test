@@ -18,7 +18,7 @@ Suggestions are not displayed in non-dev mode
 install --no-dev
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-Installing dependencies
+Updating dependencies
 Writing lock file
 Generating autoload files
 
