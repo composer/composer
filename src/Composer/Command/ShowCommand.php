@@ -294,6 +294,22 @@ EOT
                             $path = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
                             $io->write(' ' . $path, false);
                         }
+
+                        if ($showLatest && $package->isAbandoned()) {
+                            $replacement = (is_string($package->getReplacementPackage()))
+                                ? 'Use ' . $package->getReplacementPackage() . ' instead'
+                                : 'No replacement was suggested';
+
+                            $io->write('');
+                            $io->write(
+                                sprintf(
+                                    "<warning>Package %s is abandoned, you should avoid using it. %s.</warning>",
+                                    $package->getPrettyName(),
+                                    $replacement
+                                ),
+                                false
+                            );
+                        }
                     } else {
                         $io->write($indent . $package, false);
                     }
