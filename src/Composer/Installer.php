@@ -1175,10 +1175,15 @@ class Installer
                     $requirePackages = $pool->whatProvides($require->getTarget());
 
                     foreach ($requirePackages as $requirePackage) {
+                        if (isset($this->updateWhitelist[$requirePackage->getName()])) {
+                            continue;
+                        }
+
                         if (isset($skipPackages[$requirePackage->getName()])) {
                             $this->io->writeError('<warning>Dependency "' . $requirePackage->getName() . '" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>');
                             continue;
                         }
+
                         $packageQueue->enqueue($requirePackage);
                     }
                 }

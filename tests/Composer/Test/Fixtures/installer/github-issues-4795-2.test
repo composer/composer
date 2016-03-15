@@ -2,8 +2,8 @@
 
 See Github issue #4795 ( github.com/composer/composer/issues/4795 ).
 
-Composer\Installer::whitelistUpdateDependencies intentionally ignores root requirements even if said package is also a
-dependency of one the requirements that is whitelisted for update.
+Composer\Installer::whitelistUpdateDependencies should not output a warning for dependencies that need to be updated
+that are also a root package, when that root package is also explicitly whitelisted.
 
 --COMPOSER--
 {
@@ -31,14 +31,14 @@ dependency of one the requirements that is whitelisted for update.
 ]
 
 --RUN--
-update b --with-dependencies
+update a b --with-dependencies
 
 --EXPECT-OUTPUT--
-<warning>Dependency "a" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>
 Loading composer repositories with package information
 Updating dependencies (including require-dev)
-Nothing to install or update
 Writing lock file
 Generating autoload files
 
 --EXPECT--
+Updating a (1.0.0) to a (1.1.0)
+Updating b (1.0.0) to b (1.1.0)
