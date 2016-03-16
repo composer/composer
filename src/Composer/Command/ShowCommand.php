@@ -154,11 +154,11 @@ EOT
             if ($input->getOption('tree')) {
                 $this->displayPackageTree($package, $installedRepo, $repos);
             } else {
-                $latestVersion = null;
+                $latestPackage = null;
                 if ($input->getOption('latest')) {
-                    $latestVersion = $this->findBestVersionForPackage($package->getName(), null);
+                    $latestPackage = $this->findLatestPackages($package->getName());
                 }
-                $this->printMeta($package, $versions, $installedRepo, $latestVersion);
+                $this->printMeta($package, $versions, $installedRepo, $latestPackage);
                 $this->printLinks($package, 'requires');
                 $this->printLinks($package, 'devRequires', 'requires (dev)');
                 if ($package->getSuggests()) {
@@ -231,6 +231,7 @@ EOT
         $showAllTypes = $input->getOption('all');
         $showLatest = $input->getOption('latest');
         $indent = $showAllTypes ? '  ' : '';
+        $latestPackages = array();
         foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
                 if ($showAllTypes) {
@@ -243,6 +244,11 @@ EOT
                     if (is_object($package)) {
                         $nameLength = max($nameLength, strlen($package->getPrettyName()));
                         $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
+                        if ($showLatest) {
+                            $latestPackage = $this->findLatestPackages($package->getName());
+                            $latestPackages[$package->getPrettyName()] = $latestPackage;
+                            $latestLength =  max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
+                        }
                     } else {
                         $nameLength = max($nameLength, $package);
                     }
@@ -262,7 +268,6 @@ EOT
                     $input->setOption('path', false);
                 }
 
-                $latestLength = $versionLength;
                 $writePath = !$input->getOption('name-only') && $input->getOption('path');
                 $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
                 $writeLatest = !$input->getOption('name-only') && !$input->getOption('path') && $showLatest && ($nameLength + ($showVersion ? $versionLength : 0) + $latestLength + 3 <= $width);
@@ -275,8 +280,13 @@ EOT
                             $io->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
                         }
 
-                        if ($writeLatest) {
-                            $latestVersion = $this->findBestVersionForPackage($package->getName());
+                        $latestPackackage = null;
+                        if ($showLatest && isset($latestPackages[$package->getPrettyName()])) {
+                            $latestPackackage = $latestPackages[$package->getPrettyName()];
+                        }
+
+                        if ($writeLatest && $latestPackackage) {
+                            $latestVersion = $latestPackackage->getFullPrettyVersion();
                             $type = $latestVersion == $package->getFullPrettyVersion() ? 'info' : 'comment';
                             $io->write(' <'.$type.'>' . str_pad($latestVersion, $latestLength, ' ') . '</'.$type.'>', false);
                         }
@@ -295,9 +305,9 @@ EOT
                             $io->write(' ' . $path, false);
                         }
 
-                        if ($showLatest && $package->isAbandoned()) {
-                            $replacement = (is_string($package->getReplacementPackage()))
-                                ? 'Use ' . $package->getReplacementPackage() . ' instead'
+                        if ($latestPackackage && $latestPackackage->isAbandoned()) {
+                            $replacement = (is_string($latestPackackage->getReplacementPackage()))
+                                ? 'Use ' . $latestPackackage->getReplacementPackage() . ' instead'
                                 : 'No replacement was suggested';
 
                             $io->write('');
@@ -371,15 +381,17 @@ EOT
     /**
      * prints package meta data
      */
-    protected function printMeta(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, $latestVersion = null)
+    protected function printMeta(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, PackageInterface $latestPackage = null)
     {
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
         $io->write('<info>descrip.</info> : ' . $package->getDescription());
         $io->write('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
         $this->printVersions($package, $versions, $installedRepo);
-        if ($latestVersion) {
-            $io->write('<info>latest</info>   : ' . $latestVersion);
+        if ($latestPackage) {
+            $io->write('<info>latest</info>   : ' . $latestPackage->getPrettyVersion());
+        } else {
+            $latestPackage = $package;
         }
         $io->write('<info>type</info>     : ' . $package->getType());
         $this->printLicenses($package);
@@ -387,9 +399,9 @@ EOT
         $io->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
         $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
 
-        if ($package->isAbandoned()) {
-            $replacement = ($package->getReplacementPackage() !== null)
-                ? ' The author suggests using the ' . $package->getReplacementPackage(). ' package instead.'
+        if ($latestPackage->isAbandoned()) {
+            $replacement = ($latestPackage->getReplacementPackage() !== null)
+                ? ' The author suggests using the ' . $latestPackage->getReplacementPackage(). ' package instead.'
                 : null;
 
             $io->writeError(
@@ -618,17 +630,14 @@ EOT
      *
      * @param  string                    $name
      * @throws \InvalidArgumentException
-     * @return string|null
+     * @return PackageInterface|null
      */
-    private function findBestVersionForPackage($name)
+    private function findLatestPackages($name)
     {
         // find the latest version allowed in this pool
         $versionSelector = new VersionSelector($this->getPool());
-        $package = $versionSelector->findBestCandidate($name);
 
-        if ($package) {
-            return $package->getPrettyVersion();
-        }
+        return $versionSelector->findBestCandidate($name);
     }
 
     protected function getRepos()
