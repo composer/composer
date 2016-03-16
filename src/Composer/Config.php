@@ -49,6 +49,7 @@ class Config
         'secure-http' => true,
         'cafile' => null,
         'capath' => null,
+        'git-clone-depth' => 1,
         'github-expose-hostname' => true,
         'gitlab-domains' => array('gitlab.com'),
         'store-auths' => 'prompt',

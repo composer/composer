@@ -340,6 +340,7 @@ EOT
                 function ($val) { return is_dir($val) && is_readable($val); },
                 function ($val) { return $val === 'null' ? null : $val; },
             ),
+            'git-clone-depth' => array('is_numeric', 'intval'),
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
         );
         $multiConfigValues = array(
