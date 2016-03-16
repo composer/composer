@@ -243,11 +243,13 @@ EOT
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
                         $nameLength = max($nameLength, strlen($package->getPrettyName()));
-                        $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
-                        if ($showLatest) {
-                            $latestPackage = $this->findLatestPackages($package->getName());
-                            $latestPackages[$package->getPrettyName()] = $latestPackage;
-                            $latestLength =  max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
+                        if ($showVersion) {
+                            $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
+                            if ($showLatest) {
+                                $latestPackage = $this->findLatestPackages($package->getName());
+                                $latestPackages[$package->getPrettyName()] = $latestPackage;
+                                $latestLength =  max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
+                            }
                         }
                     } else {
                         $nameLength = max($nameLength, $package);
@@ -270,8 +272,8 @@ EOT
 
                 $writePath = !$input->getOption('name-only') && $input->getOption('path');
                 $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
-                $writeLatest = !$input->getOption('name-only') && !$input->getOption('path') && $showLatest && ($nameLength + ($showVersion ? $versionLength : 0) + $latestLength + 3 <= $width);
-                $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + ($showVersion ? $versionLength : 0) + ($showLatest ? $latestLength : 0) + 24 <= $width);
+                $writeLatest = $writeVersion && $showLatest && ($nameLength + $versionLength + $latestLength + 3 <= $width);
+                $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + $versionLength + $latestLength + 24 <= $width);
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
                         $io->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
@@ -293,7 +295,10 @@ EOT
 
                         if ($writeDescription) {
                             $description = strtok($package->getDescription(), "\r\n");
-                            $remaining = $width - $nameLength - $versionLength -  ($writeLatest ? $latestLength : 0) - 4;
+                            $remaining = $width - $nameLength - $versionLength - 4;
+                            if ($writeLatest) {
+                                $remaining -= $latestLength;
+                            }
                             if (strlen($description) > $remaining) {
                                 $description = substr($description, 0, $remaining - 3) . '...';
                             }
