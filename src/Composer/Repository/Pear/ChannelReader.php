@@ -80,8 +80,18 @@ class ChannelReader extends BaseChannelReader
         $channelXml->registerXPathNamespace('ns', self::CHANNEL_NS);
 
         foreach ($supportedVersions as $version) {
-            $xpathTest = "ns:servers/ns:primary/ns:rest/ns:baseurl[@type='{$version}']";
+            $xpathTest = "ns:servers/ns:*/ns:rest/ns:baseurl[@type='{$version}']";
             $testResult = $channelXml->xpath($xpathTest);
+
+            foreach ($testResult as $result) {
+                // Choose first https:// option.
+                $result = (string) $result;
+                if (preg_match('{^https://}i', $result)) {
+                    return array('version' => $version, 'baseUrl' => $result);
+                }
+            }
+
+            // Fallback to non-https if it does not exist.
             if (count($testResult) > 0) {
                 return array('version' => $version, 'baseUrl' => (string) $testResult[0]);
             }
