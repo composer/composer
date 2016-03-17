@@ -57,7 +57,7 @@ abstract class BaseChannelReader
             throw new \UnexpectedValueException('The PEAR channel at ' . $url . ' did not respond.');
         }
 
-        return $content;
+        return str_replace('http://pear.php.net/rest/', 'https://pear.php.net/rest/', $content);
     }
 
     /**
