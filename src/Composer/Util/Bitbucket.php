@@ -18,16 +18,15 @@ use Composer\Config;
 use Composer\Downloader\TransportException;
 
 /**
- * I used GitHub.php as a template.
  * @author Paul Wenke <wenke.paul@gmail.com>
  */
 class Bitbucket
 {
-    protected $io;
-    protected $config;
-    protected $process;
-    protected $remoteFilesystem;
-    protected $token = array();
+    private $io;
+    private $config;
+    private $process;
+    private $remoteFilesystem;
+    private $token = array();
 
     /**
      * Constructor.
@@ -61,13 +60,13 @@ class Bitbucket
      */
     public function authorizeOAuth($originUrl)
     {
-        if (!in_array($originUrl, $this->config->get('bitbucket-domains'))) {
+        if ($originUrl !== 'bitbucket.org') {
             return false;
         }
 
         // if available use token from git config
         if (0 === $this->process->execute('git config bitbucket.accesstoken', $output)) {
-            $this->io->setAuthentication($originUrl, trim($output), 'x-oauth-basic');
+            $this->io->setAuthentication($originUrl, 'x-token-auth', trim($output));
 
             return true;
         }
@@ -82,10 +81,16 @@ class Bitbucket
     private function requestAccessToken($originUrl)
     {
         try {
-            $apiUrl = 'bitbucket.org/site/oauth2/access_token';
+            $apiUrl = 'https://bitbucket.org/site/oauth2/access_token';
 
-            $json = $this->remoteFilesystem->getContents($originUrl, 'https://'.$apiUrl, false, array(
+            $json = $this->remoteFilesystem->getContents($originUrl, $apiUrl, false, array(
                 'retry-auth-failure' => false,
+                'http' => array(
+                    'method' => 'POST',
+                    'content' => array(
+                        'grant_type' => 'client_credentials'
+                    )
+                )
             ));
 
             $this->token = json_decode($json, true);
@@ -115,12 +120,6 @@ class Bitbucket
         if ($message) {
             $this->io->writeError($message);
         }
-
-        $note = 'Composer';
-        if ($this->config->get('bitbucket-expose-hostname') === true && 0 === $this->process->execute('hostname', $output)) {
-            $note .= ' on ' . trim($output);
-        }
-        $note .= ' ' . date('Y-m-d Hi');
 
         $url = 'https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html';
         $this->io->writeError(sprintf('Follow the instructions on %s', $url));

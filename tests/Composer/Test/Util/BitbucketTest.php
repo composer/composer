@@ -15,7 +15,6 @@ namespace Composer\Test\Util;
 use Composer\Util\Bitbucket;
 
 /**
- * I used GitHubTest.php as a template.
  * @author Paul Wenke <wenke.paul@gmail.com>
  */
 class BitbucketTest extends \PHPUnit_Framework_TestCase

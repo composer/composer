@@ -672,11 +672,6 @@ class RemoteFilesystem
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
             }
-
-            if ('bitbucket.org' === $originUrl) {
-                $options['http']['method'] = 'POST';
-                $options['http']['content']['grant_type'] = 'client_credentials';
-            }
         }
 
         if (isset($options['http']['header']) && !is_array($options['http']['header'])) {

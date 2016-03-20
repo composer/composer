@@ -114,11 +114,11 @@ class Git
                         return;
                     }
                 }
-            } elseif (preg_match('{^(?:https?|git)://'.self::getBitbucketDomainsRegex($this->config).'/(.*)}', $url, $match)) { //bitbucket oauth
+            } elseif (preg_match('{^https://(bitbucket.org)/(.*)}', $url, $match)) { //bitbucket oauth
                 $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process);
 
                 if (!$this->io->hasAuthentication($match[1])) {
-                    $message = 'Cloning failed using an ssh key for authentication, enter your Bitbucket credentials to access private repos';
+                    $message = 'Enter your Bitbucket credentials to access private repos';
 
                     if (!$bitbucketUtil->authorizeOAuth($match[1]) && $this->io->isInteractive()) {
                         $bitbucketUtil->authorizeOAuthInteractively($match[1], $message);
@@ -242,11 +242,6 @@ class Git
     public static function getGitHubDomainsRegex(Config $config)
     {
         return '('.implode('|', array_map('preg_quote', $config->get('github-domains'))).')';
-    }
-
-    public static function getBitbucketDomainsRegex(Config $config)
-    {
-        return '('.implode('|', array_map('preg_quote', $config->get('bitbucket-domains'))).')';
     }
 
     public static function sanitizeUrl($message)
