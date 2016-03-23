@@ -748,6 +748,10 @@ FOOTER;
                         continue;
                     }
 
+                    // Patch corrupted namespaces through external manipulation
+                    if ($namespace = '_empty_') {
+                        $namespace = '';
+                    }
                     $autoloads[$namespace][] = $relativePath;
                 }
             }
