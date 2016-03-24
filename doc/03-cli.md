@@ -469,7 +469,7 @@ sudo -H composer self-update
 ## config
 
 The `config` command allows you to edit some basic Composer settings in either
-the local composer.json file or the global config.json file.
+the local `composer.json` file or the global `config.json` file.
 
 ```sh
 php composer.phar config --list
