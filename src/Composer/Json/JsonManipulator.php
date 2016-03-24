@@ -31,9 +31,9 @@ class JsonManipulator
     public function __construct($contents)
     {
         if (!self::$RECURSE_BLOCKS) {
-            self::$RECURSE_BLOCKS = '(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{[^{}]*\})*\})*\})*\})*';
-            self::$RECURSE_ARRAYS = '(?:[^\]]*|\[(?:[^\]]*|\[(?:[^\]]*|\[(?:[^\]]*|\[[^\]]*\])*\])*\])*\]|'.self::$RECURSE_BLOCKS.')*';
-            self::$JSON_STRING = '"(?:[^\0-\x09\x0a-\x1f\\\\"]+|\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4})*"';
+            self::$RECURSE_BLOCKS = '(?:[^{}]*+|\{(?:[^{}]*+|\{(?:[^{}]*+|\{(?:[^{}]*+|\{[^{}]*+\})*\})*\})*\})*';
+            self::$RECURSE_ARRAYS = '(?:[^\]]*+|\[(?:[^\]]*+|\[(?:[^\]]*+|\[(?:[^\]]*+|\[[^\]]*+\])*\])*\])*\]|'.self::$RECURSE_BLOCKS.')*';
+            self::$JSON_STRING = '"(?:[^\0-\x09\x0a-\x1f\\\\"]+|\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4})*+"';
             self::$JSON_VALUE = '(?:[0-9.]+|null|true|false|'.self::$JSON_STRING.'|\['.self::$RECURSE_ARRAYS.'\]|\{'.self::$RECURSE_BLOCKS.'\})';
         }
 
