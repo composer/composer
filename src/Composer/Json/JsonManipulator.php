@@ -422,6 +422,12 @@ class JsonManipulator
                     throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_ERROR', PREG_BAD_UTF8_ERROR);
                 case PREG_BAD_UTF8_OFFSET_ERROR:
                     throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_OFFSET_ERROR', PREG_BAD_UTF8_OFFSET_ERROR);
+                case 6: // PREG_JIT_STACKLIMIT_ERROR
+                    if (PHP_VERSION_ID > 70000) {
+                        throw new \RuntimeException('Failed to execute regex: PREG_JIT_STACKLIMIT_ERROR', 6);
+                    }
+                    // fallthrough
+
                 default:
                     throw new \RuntimeException('Failed to execute regex: Unknown error');
             }
