@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\IO\IOInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
 
@@ -56,13 +57,18 @@ class Solver
     /** @var array */
     protected $learnedWhy = array();
 
+    /** @var IOInterface */
+    protected $io;
+
     /**
      * @param PolicyInterface     $policy
      * @param Pool                $pool
      * @param RepositoryInterface $installed
+     * @param IOInterface         $io
      */
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
+    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, IOInterface $io)
     {
+        $this->io = $io;
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
@@ -217,7 +223,10 @@ class Solver
         /* make decisions based on job/update assertions */
         $this->makeAssertionRuleDecisions();
 
+        $this->io->writeError('Resolving dependencies through SAT', true, IOInterface::DEBUG);
+        $before = microtime(true);
         $this->runSat(true);
+        $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
         // decide to remove everything that's installed and undecided
         foreach ($this->installedMap as $packageId => $void) {
