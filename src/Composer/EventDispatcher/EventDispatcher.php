@@ -146,10 +146,10 @@ class EventDispatcher
     protected function doDispatch(Event $event)
     {
         $pathStr = 'PATH';
-        if (!isset($_SERVER[$pathStr])) {
+        if (!isset($_SERVER[$pathStr]) && isset($_SERVER['Path'])) {
             $pathStr = 'Path';
         }
-        
+
         // add the bin dir to the PATH to make local binaries of deps usable in scripts
         $binDir = $this->composer->getConfig()->get('bin-dir');
         if (is_dir($binDir)) {
