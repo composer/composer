@@ -107,7 +107,7 @@ EOT
 
             // remove all backups except for the most recent, if any
             if ($input->getOption('clean-backups')) {
-                $this->cleanBackups($rollbackDir, $this->getLastBackupVersion());
+                $this->cleanBackups($rollbackDir, $this->getLastBackupVersion($rollbackDir));
             }
 
             return 0;
