@@ -20,13 +20,13 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\Silencer;
 
 /**
- * Package installation manager.
+ * Utility to handle installation of package "bin"/binaries
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  * @author Helmut Hummel <info@helhum.io>
  */
-class LibraryBinariesHandler
+class BinaryInstaller
 {
     protected $binDir;
     protected $binCompat;
@@ -34,14 +34,12 @@ class LibraryBinariesHandler
     protected $filesystem;
 
     /**
-     * LibraryBinaryHandler constructor.
-     *
+     * @param IOInterface $io
      * @param string $binDir
      * @param string $binCompat
-     * @param IOInterface $io
      * @param Filesystem $filesystem
      */
-    public function __construct($binDir, $binCompat, IOInterface $io, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, $binDir, $binCompat, Filesystem $filesystem = null)
     {
         $this->binDir = $binDir;
         $this->binCompat = $binCompat;

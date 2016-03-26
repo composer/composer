@@ -35,7 +35,7 @@ class LibraryInstaller implements InstallerInterface
     protected $type;
     protected $filesystem;
     protected $binCompat;
-    protected $libraryBinariesHandler;
+    protected $binaryInstaller;
 
     /**
      * Initializes library installer.
@@ -44,9 +44,9 @@ class LibraryInstaller implements InstallerInterface
      * @param Composer             $composer
      * @param string               $type
      * @param Filesystem           $filesystem
-     * @param LibraryBinariesHandler $libraryBinariesHandler
+     * @param BinaryInstaller      $binaryInstaller
      */
-    public function __construct(IOInterface $io, Composer $composer, $type = 'library', Filesystem $filesystem = null, LibraryBinariesHandler $libraryBinariesHandler = null)
+    public function __construct(IOInterface $io, Composer $composer, $type = 'library', Filesystem $filesystem = null, BinaryInstaller $binaryInstaller = null)
     {
         $this->composer = $composer;
         $this->downloadManager = $composer->getDownloadManager();
@@ -55,7 +55,7 @@ class LibraryInstaller implements InstallerInterface
 
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
-        $this->libraryBinariesHandler = $libraryBinariesHandler ?: new LibraryBinariesHandler(rtrim($composer->getConfig()->get('bin-dir'), '/'), $composer->getConfig()->get('bin-compat'), $this->io, $this->filesystem);
+        $this->binaryInstaller = $binaryInstaller ?: new BinaryInstaller($this->io, rtrim($composer->getConfig()->get('bin-dir'), '/'), $composer->getConfig()->get('bin-compat'), $this->filesystem);
     }
 
     /**
@@ -84,11 +84,11 @@ class LibraryInstaller implements InstallerInterface
 
         // remove the binaries if it appears the package files are missing
         if (!is_readable($downloadPath) && $repo->hasPackage($package)) {
-            $this->libraryBinariesHandler->removeBinaries($package);
+            $this->binaryInstaller->removeBinaries($package);
         }
 
         $this->installCode($package);
-        $this->libraryBinariesHandler->installBinaries($package, $this->getInstallPath($package));
+        $this->binaryInstaller->installBinaries($package, $this->getInstallPath($package));
         if (!$repo->hasPackage($package)) {
             $repo->addPackage(clone $package);
         }
@@ -105,9 +105,9 @@ class LibraryInstaller implements InstallerInterface
 
         $this->initializeVendorDir();
 
-        $this->libraryBinariesHandler->removeBinaries($initial);
+        $this->binaryInstaller->removeBinaries($initial);
         $this->updateCode($initial, $target);
-        $this->libraryBinariesHandler->installBinaries($target, $this->getInstallPath($target));
+        $this->binaryInstaller->installBinaries($target, $this->getInstallPath($target));
         $repo->removePackage($initial);
         if (!$repo->hasPackage($target)) {
             $repo->addPackage(clone $target);
@@ -124,7 +124,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         $this->removeCode($package);
-        $this->libraryBinariesHandler->removeBinaries($package);
+        $this->binaryInstaller->removeBinaries($package);
         $repo->removePackage($package);
 
         $downloadPath = $this->getPackageBasePath($package);
