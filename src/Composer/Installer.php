@@ -574,7 +574,7 @@ class Installer
                 if ($reason instanceof Rule) {
                     switch ($reason->getReason()) {
                         case Rule::RULE_JOB_INSTALL:
-                            $this->io->writeError('    REASON: Required by root: '.$reason->getPrettyString($pool));
+                            $this->io->writeError('    REASON: Required by the root package: '.$reason->getPrettyString($pool));
                             $this->io->writeError('');
                             break;
                         case Rule::RULE_PACKAGE_REQUIRES:
