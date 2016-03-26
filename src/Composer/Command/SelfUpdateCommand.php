@@ -105,6 +105,11 @@ EOT
         if (Composer::VERSION === $updateVersion) {
             $io->writeError('<info>You are already using composer version '.$updateVersion.'.</info>');
 
+            // remove all backups except for the most recent, if any
+            if ($input->getOption('clean-backups')) {
+                $this->cleanBackups($rollbackDir, $this->getLastBackupVersion());
+            }
+
             return 0;
         }
 
@@ -192,14 +197,7 @@ TAGSPUBKEY
 
         // remove saved installations of composer
         if ($input->getOption('clean-backups')) {
-            $finder = $this->getOldInstallationFinder($rollbackDir);
-
-            $fs = new Filesystem;
-            foreach ($finder as $file) {
-                $file = (string) $file;
-                $io->writeError('<info>Removing: '.$file.'</info>');
-                $fs->remove($file);
-            }
+            $this->cleanBackups($rollbackDir);
         }
 
         if ($err = $this->setLocalPhar($localFilename, $tempFilename, $backupFile)) {
@@ -269,16 +267,15 @@ TAGSPUBKEY
             throw new \UnexpectedValueException('Composer rollback failed: no installation to roll back to in "'.$rollbackDir.'"');
         }
 
-        $old = $rollbackDir . '/' . $rollbackVersion . self::OLD_INSTALL_EXT;
+        $oldFile = $rollbackDir . '/' . $rollbackVersion . self::OLD_INSTALL_EXT;
 
-        if (!is_file($old)) {
-            throw new FilesystemException('Composer rollback failed: "'.$old.'" could not be found');
+        if (!is_file($oldFile)) {
+            throw new FilesystemException('Composer rollback failed: "'.$oldFile.'" could not be found');
         }
-        if (!is_readable($old)) {
-            throw new FilesystemException('Composer rollback failed: "'.$old.'" could not be read');
+        if (!is_readable($oldFile)) {
+            throw new FilesystemException('Composer rollback failed: "'.$oldFile.'" could not be read');
         }
 
-        $oldFile = $rollbackDir . "/{$rollbackVersion}" . self::OLD_INSTALL_EXT;
         $io = $this->getIO();
         $io->writeError(sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
         if ($err = $this->setLocalPhar($localFilename, $oldFile)) {
@@ -318,6 +315,22 @@ TAGSPUBKEY
             }
 
             return $e;
+        }
+    }
+
+    protected function cleanBackups($rollbackDir, $except = null)
+    {
+        $finder = $this->getOldInstallationFinder($rollbackDir);
+        $io = $this->getIO();
+        $fs = new Filesystem;
+
+        foreach ($finder as $file) {
+            if ($except && $file->getBasename(self::OLD_INSTALL_EXT) === $except) {
+                continue;
+            }
+            $file = (string) $file;
+            $io->writeError('<info>Removing: '.$file.'</info>');
+            $fs->remove($file);
         }
     }
 
