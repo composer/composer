@@ -79,7 +79,11 @@ class PathDownloader extends FileDownloader
                     $this->filesystem->junction($realUrl, $path);
                     $this->io->writeError(sprintf('    Junctioned from %s', $url));
                 } else {
-                    $shortestPath = $this->filesystem->findShortestPath($path, $realUrl);
+                    $absolutePath = $path;
+                    if ( ! $this->filesystem->isAbsolutePath($absolutePath)) {
+                        $absolutePath = getcwd() . DIRECTORY_SEPARATOR . $path;
+                    }
+                    $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
                     $fileSystem->symlink($shortestPath, $path);
                     $this->io->writeError(sprintf('    Symlinked from %s', $url));
                 }
