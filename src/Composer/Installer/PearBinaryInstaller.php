@@ -27,6 +27,7 @@ use Composer\Util\Silencer;
 class PearBinaryInstaller extends BinaryInstaller
 {
     private $installer;
+    private $vendorDir;
 
     /**
      * @param IOInterface $io
@@ -34,10 +35,11 @@ class PearBinaryInstaller extends BinaryInstaller
      * @param string $binCompat
      * @param Filesystem $filesystem
      */
-    public function __construct(IOInterface $io, $binDir, $binCompat, Filesystem $filesystem, PearInstaller $installer)
+    public function __construct(IOInterface $io, $binDir, $vendorDir, $binCompat, Filesystem $filesystem, PearInstaller $installer)
     {
         parent::__construct($io, $binDir, $binCompat, $filesystem);
         $this->installer = $installer;
+        $this->vendorDir = $vendorDir;
     }
 
     protected function getBinaries(PackageInterface $package)

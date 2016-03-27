@@ -39,7 +39,7 @@ class PearInstaller extends LibraryInstaller
     public function __construct(IOInterface $io, Composer $composer, $type = 'pear-library')
     {
         $filesystem = new Filesystem();
-        $binaryInstaller = new PearBinaryInstaller($io, rtrim($composer->getConfig()->get('bin-dir'), '/'), $composer->getConfig()->get('bin-compat'), $filesystem, $this);
+        $binaryInstaller = new PearBinaryInstaller($io, rtrim($composer->getConfig()->get('bin-dir'), '/'), rtrim($composer->getConfig()->get('vendor-dir'), '/'), $composer->getConfig()->get('bin-compat'), $filesystem, $this);
 
         parent::__construct($io, $composer, $type, $filesystem, $binaryInstaller);
     }
