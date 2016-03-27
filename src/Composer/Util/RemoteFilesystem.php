@@ -342,6 +342,10 @@ class RemoteFilesystem
         // fail 4xx and 5xx responses and capture the response
         if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
             if (!$this->retry) {
+                if ($this->progress && !$this->retry && !$isRedirect) {
+                    $this->io->overwriteError("    Downloading: <error>Failed</error>");
+                }
+
                 $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
                 $e->setHeaders($http_response_header);
                 $e->setResponse($result);
@@ -352,7 +356,7 @@ class RemoteFilesystem
         }
 
         if ($this->progress && !$this->retry && !$isRedirect) {
-            $this->io->overwriteError("    Downloading: <comment>100%</comment>");
+            $this->io->overwriteError("    Downloading: ".($result === false ? '<error>Failed</error>' : '<comment>100%</comment>'));
         }
 
         // decode gzip
