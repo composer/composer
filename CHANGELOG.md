@@ -1,3 +1,18 @@
+### [1.0.0-beta2] - 2016-03-27
+
+  * Break: The `install` command now turns into an `update` command automatically if you have no composer.lock. This was done only half-way before which caused inconsistencies
+  * Break: By default the `remove` command now removes dependencies as well, and --update-with-dependencies is deprecated. Use --no-update-with-dependencies to get old behavior
+  * Added support for update channels in `self-update`. All users will now update to stable builds by default. Run `self-update` with `--snapshot`, `--preview` or `--stable` to switch between update channels.
+  * Added support for SSL_CERT_DIR env var and openssl.capath ini value
+  * Added some conflict detection in `why-not` command
+  * Added suggestion of root package's suggests in `create-project` command
+  * Fixed `create-project` ignoring --ignore-platform-reqs when choosing a version of the package
+  * Fixed `search` command in a directory without composer.json
+  * Fixed path repository handling of symlinks on windows
+  * Fixed PEAR repo handling to prefer HTTPS mirrors over HTTP ones
+  * Fixed handling of Path env var on Windows, only PATH was accepted before
+  * Small error reporting and docs improvements
+
 ### [1.0.0-beta1] - 2016-03-03
 
   * Break: By default we now disable any non-secure protocols (http, git, svn). This may lead to issues if you rely on those. See `secure-http` config option.
@@ -298,6 +313,7 @@
 
   * Initial release
 
+[1.0.0-beta1]: https://github.com/composer/composer/compare/1.0.0-beta1...1.0.0-beta2
 [1.0.0-beta1]: https://github.com/composer/composer/compare/1.0.0-alpha11...1.0.0-beta1
 [1.0.0-alpha11]: https://github.com/composer/composer/compare/1.0.0-alpha10...1.0.0-alpha11
 [1.0.0-alpha10]: https://github.com/composer/composer/compare/1.0.0-alpha9...1.0.0-alpha10
