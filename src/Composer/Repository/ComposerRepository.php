@@ -268,9 +268,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
     }
 
-    public function whatProvides(Pool $pool, $name)
+    /**
+     * @param Pool   $pool
+     * @param string $name package name
+     * @param bool   $bypassFilters If set to true, this bypasses the stability filtering, and forces a recompute without cache
+     */
+    public function whatProvides(Pool $pool, $name, $bypassFilters = false)
     {
-        if (isset($this->providers[$name])) {
+        if (isset($this->providers[$name]) && !$bypassFilters) {
             return $this->providers[$name];
         }
 
@@ -354,7 +359,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
                 } else {
-                    if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
+                    if (!$bypassFilters && !$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                         continue;
                     }
 
@@ -396,7 +401,18 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
         }
 
-        return $this->providers[$name];
+        $result = $this->providers[$name];
+
+        // clean up the cache because otherwise using this puts the repo in an inconsistent state with a polluted unfiltered cache
+        // which is likely not an issue but might cause hard to track behaviors depending on how the repo is used
+        if ($bypassFilters) {
+            foreach ($this->providers[$name] as $uid => $provider) {
+                unset($this->providersByUid[$uid]);
+            }
+            unset($this->providers[$name]);
+        }
+
+        return $result;
     }
 
     /**
