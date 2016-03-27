@@ -49,7 +49,7 @@ class BinaryInstaller
 
     public function installBinaries(PackageInterface $package, $installPath)
     {
-        $binaries = $package->getBinaries();
+        $binaries = $this->getBinaries($package);
         if (!$binaries) {
             return;
         }
@@ -92,6 +92,35 @@ class BinaryInstaller
         }
     }
 
+    public function removeBinaries(PackageInterface $package)
+    {
+        $this->initializeBinDir();
+
+        $binaries = $this->getBinaries($package);
+        if (!$binaries) {
+            return;
+        }
+        foreach ($binaries as $bin) {
+            $link = $this->binDir.'/'.basename($bin);
+            if (is_link($link) || file_exists($link)) {
+                $this->filesystem->unlink($link);
+            }
+            if (file_exists($link.'.bat')) {
+                $this->filesystem->unlink($link.'.bat');
+            }
+        }
+
+        // attempt removing the bin dir in case it is left empty
+        if ((is_dir($this->binDir)) && ($this->filesystem->isDirEmpty($this->binDir))) {
+            Silencer::call('rmdir', $this->binDir);
+        }
+    }
+
+    protected function getBinaries(PackageInterface $package)
+    {
+        return $package->getBinaries();
+    }
+
     protected function installFullBinaries($binPath, $link, $bin, PackageInterface $package)
     {
         // add unixy support for cygwin and similar environments
@@ -118,28 +147,6 @@ class BinaryInstaller
     protected function installUnixyProxyBinaries($binPath, $link)
     {
         file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
-    }
-
-    public function removeBinaries(PackageInterface $package)
-    {
-        $binaries = $package->getBinaries();
-        if (!$binaries) {
-            return;
-        }
-        foreach ($binaries as $bin) {
-            $link = $this->binDir.'/'.basename($bin);
-            if (is_link($link) || file_exists($link)) {
-                $this->filesystem->unlink($link);
-            }
-            if (file_exists($link.'.bat')) {
-                $this->filesystem->unlink($link.'.bat');
-            }
-        }
-
-        // attempt removing the bin dir in case it is left empty
-        if ((is_dir($this->binDir)) && ($this->filesystem->isDirEmpty($this->binDir))) {
-            Silencer::call('rmdir', $this->binDir);
-        }
     }
 
     protected function initializeBinDir()
