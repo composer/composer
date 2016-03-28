@@ -465,6 +465,11 @@
                     "type": "string",
                     "description": "URL to the documentation.",
                     "format": "uri"
+                },
+                "rss": {
+                    "type": "string",
+                    "description": "URL to the RSS feed.",
+                    "format": "uri"
                 }
             }
         },
