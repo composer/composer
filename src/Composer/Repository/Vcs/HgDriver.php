@@ -49,7 +49,7 @@ class HgDriver extends VcsDriver
             }
 
             if (preg_match('{^http:}i', $this->url) && $this->config->get('secure-http')) {
-                throw new TransportException("Your configuration does not allow connection to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
+                throw new TransportException("Your configuration does not allow connection to " .$this->url. ". See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             }
 
             // update the repo if it is a valid hg repository
