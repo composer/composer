@@ -128,6 +128,22 @@ class InstallationManager
     }
 
     /**
+     * Install binary for the given package.
+     * If the installer associated to this package doesn't handle that function, it'll do nothing.
+     *
+     * @param PackageInterface $package Package instance
+     */
+    public function installBinary(PackageInterface $package)
+    {
+        try {
+            $installer = $this->getInstaller($package->getType());
+            $installer->installBinary($package);
+        } catch (\InvalidArgumentException $e) {
+            // the given installer doesn't support installing binaries
+        }
+    }
+
+    /**
      * Executes solver operation.
      *
      * @param RepositoryInterface $repo      repository in which to check

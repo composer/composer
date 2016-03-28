@@ -255,6 +255,32 @@ class LibraryInstallerTest extends TestCase
         $this->assertEquals($this->vendorDir.'/'.$package->getPrettyName().'/Some/Namespace', $library->getInstallPath($package));
     }
 
+    /**
+     * @depends testInstallerCreationShouldNotCreateVendorDirectory
+     * @depends testInstallerCreationShouldNotCreateBinDirectory
+     */
+    public function testInstallBinary()
+    {
+        $binaryInstallerMock = $this->getMockBuilder('Composer\Installer\BinaryInstaller')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $library = new LibraryInstaller($this->io, $this->composer, 'library', null, $binaryInstallerMock);
+        $package = $this->createPackageMock();
+
+        $binaryInstallerMock
+            ->expects($this->once())
+            ->method('removeBinaries')
+            ->with($package);
+
+        $binaryInstallerMock
+            ->expects($this->once())
+            ->method('installBinaries')
+            ->with($package, $library->getInstallPath($package));
+
+        $library->installBinary($package);
+    }
+
     protected function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')

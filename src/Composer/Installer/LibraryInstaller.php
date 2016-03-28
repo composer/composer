@@ -150,6 +150,17 @@ class LibraryInstaller implements InstallerInterface
     }
 
     /**
+     * Re-install binary by removing previous one
+     *
+     * @param PackageInterface $package Package instance
+     */
+    public function installBinary(PackageInterface $package)
+    {
+        $this->binaryInstaller->removeBinaries($package);
+        $this->binaryInstaller->installBinaries($package, $this->getInstallPath($package));
+    }
+
+    /**
      * Returns the base path of the package without target-dir path
      *
      * It is used for BC as getInstallPath tends to be overridden by
