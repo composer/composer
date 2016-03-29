@@ -145,7 +145,7 @@ class RuleSetTest extends TestCase
             ->method('getHash')
             ->will($this->returnValue('rule_1_hash'));
         $rule3->expects($this->any())
-            ->method('equal')
+            ->method('equals')
             ->will($this->returnValue(false));
 
         $ruleSet->add($rule, RuleSet::TYPE_LEARNED);
