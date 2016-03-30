@@ -59,6 +59,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 // move files back out of the temp dir
                 foreach ($contentDir as $file) {
                     $file = (string) $file;
+                    $this->keepEmptyDirectories($file);
                     $this->filesystem->rename($file, $path . '/' . basename($file));
                 }
 
@@ -153,5 +154,27 @@ abstract class ArchiveDownloader extends FileDownloader
             ->in($dir);
 
         return iterator_to_array($finder);
+    }
+
+    /**
+     * Check for empty folders and add a .keep file if it is empty
+     *
+     * @param string $file
+     */
+    private function keepEmptyDirectories($file) {
+        // Check if file is a directory
+        if(is_dir($file)) {
+            $directoryContent = scandir($file);
+            // Check if the folder is empty (there is more than . and ..)
+            if (count($directoryContent) <= 2) {
+                file_put_contents($file . "/.gitkeep", "");
+            } else {
+                foreach ($directoryContent as $subPath) {
+                    if($subPath !== '.' && $subPath !== '..') {
+                        $this->keepEmptyDirectories($file.'/'.$subPath);
+                    }
+                }
+            }
+        }
     }
 }
