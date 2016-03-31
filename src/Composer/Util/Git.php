@@ -107,7 +107,37 @@ class Git
 
                 if ($this->io->hasAuthentication($match[1])) {
                     $auth = $this->io->getAuthentication($match[1]);
-                    $authUrl = 'https://'.rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@'.$match[1].'/'.$match[2].'.git';
+                    $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
+                    $command = call_user_func($commandCallable, $authUrl);
+                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                        return;
+                    }
+                }
+            } elseif (preg_match('{^https://(bitbucket.org)/(.*)}', $url, $match)) { //bitbucket oauth
+                $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process);
+
+                if (!$this->io->hasAuthentication($match[1])) {
+                    $message = 'Enter your Bitbucket credentials to access private repos';
+
+                    if (!$bitbucketUtil->authorizeOAuth($match[1]) && $this->io->isInteractive()) {
+                        $bitbucketUtil->authorizeOAuthInteractively($match[1], $message);
+                        $token = $bitbucketUtil->getToken();
+                        $this->io->setAuthentication($match[1], 'x-token-auth', $token['access_token']);
+                    }
+                } else { //We're authenticating with a locally stored consumer.
+                    $auth = $this->io->getAuthentication($match[1]);
+
+                    //We already have an access_token from a previous request.
+                    if($auth['username'] !== 'x-token-auth') {
+                        $token = $bitbucketUtil->requestToken($match[1], $auth['username'], $auth['password']);
+                        $this->io->setAuthentication($match[1], 'x-token-auth', $token['access_token']);
+                    }
+                }
+
+                if ($this->io->hasAuthentication($match[1])) {
+                    $auth = $this->io->getAuthentication($match[1]);
+                    $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
+
                     $command = call_user_func($commandCallable, $authUrl);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;

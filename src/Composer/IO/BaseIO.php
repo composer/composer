@@ -88,6 +88,7 @@ abstract class BaseIO implements IOInterface
         $githubOauth = $config->get('github-oauth') ?: array();
         $gitlabOauth = $config->get('gitlab-oauth') ?: array();
         $httpBasic = $config->get('http-basic') ?: array();
+        $bitbucketOauth = $config->get('bitbucket-oauth') ?: array();
 
         // reload oauth token from config if available
         foreach ($githubOauth as $domain => $token) {
@@ -104,6 +105,10 @@ abstract class BaseIO implements IOInterface
         // reload http basic credentials from config if available
         foreach ($httpBasic as $domain => $cred) {
             $this->checkAndSetAuthentication($domain, $cred['username'], $cred['password']);
+        }
+
+        foreach ($bitbucketOauth as $domain => $cred) {
+            $this->checkAndSetAuthentication($domain, $cred['consumer-key'], $cred['consumer-secret']);
         }
 
         // setup process timeout

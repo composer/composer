@@ -46,6 +46,7 @@ class Config
         'classmap-authoritative' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
+        'bitbucket-expose-hostname' => true,
         'disable-tls' => false,
         'secure-http' => true,
         'cafile' => null,
@@ -60,6 +61,7 @@ class Config
         // github-oauth
         // gitlab-oauth
         // http-basic
+        // bitbucket-oauth
     );
 
     public static $defaultRepositories = array(
