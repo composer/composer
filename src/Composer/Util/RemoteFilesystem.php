@@ -277,6 +277,11 @@ class RemoteFilesystem
         try {
             $result = file_get_contents($fileUrl, false, $ctx);
 
+            if ($this->bytesMax && strlen($result) < $this->bytesMax) {
+                // alas, this is not possible via the stream callback because STREAM_NOTIFY_COMPLETED is documented, but not implemented anywhere in PHP
+                throw new TransportException('Content-Length mismatch');
+            }
+
             if (PHP_VERSION_ID < 50600 && !empty($options['ssl']['peer_fingerprint'])) {
                 // Emulate fingerprint validation on PHP < 5.6
                 $params = stream_context_get_params($ctx);
