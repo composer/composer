@@ -59,7 +59,6 @@ abstract class ArchiveDownloader extends FileDownloader
                 // move files back out of the temp dir
                 foreach ($contentDir as $file) {
                     $file = (string) $file;
-                    $this->keepEmptyDirectories($file);
                     $this->filesystem->rename($file, $path . '/' . basename($file));
                 }
 
@@ -154,31 +153,5 @@ abstract class ArchiveDownloader extends FileDownloader
             ->in($dir);
 
         return iterator_to_array($finder);
-    }
-
-    /**
-     * Check for empty directories.
-     * If the directory is empty, add a .gitkeep file.
-     *
-     * This is mainly done because Composer doesn't add empty directories to it's
-     * archives.
-     * Adding a .gitkeep files makes sure that Composer doesn't forget about this
-     * directory
-     *
-     * @param string $resource
-     */
-    private function keepEmptyDirectories($resource)
-    {
-        if (is_dir($resource)) {
-            if ($this->filesystem->isDirEmpty($resource)) {
-                file_put_contents($resource . "/.gitkeep", "");
-            } else {
-                foreach (scandir($resource) as $subPath) {
-                    if ($subPath !== '.' && $subPath !== '..') {
-                        $this->keepEmptyDirectories($resource . '/' . $subPath);
-                    }
-                }
-            }
-        }
     }
 }

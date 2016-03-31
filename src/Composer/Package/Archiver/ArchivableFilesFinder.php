@@ -55,6 +55,21 @@ class ArchivableFilesFinder extends \FilterIterator
                 return false;
             }
 
+            /*
+            * Check if the current \SplFileInfo instance is a directory.
+            * If it is and the directory is empty, add a .gitkeep file.
+            *
+            * This is mainly done because Composer doesn't add empty directories to it's archives.
+            * Adding a .gitkeep files makes sure that Composer doesn't forget about this directory.
+            */
+            if ($file->isDir()) {
+                $directoryContents = scandir($file->getPathname());
+
+                if (count($directoryContents) <= 2) {
+                    file_put_contents($file->getPathname() . DIRECTORY_SEPARATOR . '.gitkeep', '');
+                }
+            }
+
             $relativePath = preg_replace(
                 '#^'.preg_quote($sources, '#').'#',
                 '',
