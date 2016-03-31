@@ -158,11 +158,11 @@ abstract class ArchiveDownloader extends FileDownloader
 
     /**
      * Check for empty directories.
-     * If the directory is empty, add a .gitignore file.
+     * If the directory is empty, add a .gitkeep file.
      *
-     * This is mainly done because Satis doesn't add empty directories to it's
+     * This is mainly done because Composer doesn't add empty directories to it's
      * archives.
-     * Adding a .gitignore files makes sure that Satis doesn't forget about this
+     * Adding a .gitkeep files makes sure that Composer doesn't forget about this
      * directory
      *
      * @param string $resource
