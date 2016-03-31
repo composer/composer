@@ -157,21 +157,25 @@ abstract class ArchiveDownloader extends FileDownloader
     }
 
     /**
-     * Check for empty folders and add a .keep file if it is empty
+     * Check for empty directories.
+     * If the directory is empty, add a .gitignore file.
      *
-     * @param string $file
+     * This is mainly done because Satis doesn't add empty directories to it's
+     * archives.
+     * Adding a .gitignore files makes sure that Satis doesn't forget about this
+     * directory
+     *
+     * @param string $resource
      */
-    private function keepEmptyDirectories($file) {
-        // Check if file is a directory
-        if(is_dir($file)) {
-            $directoryContent = scandir($file);
-            // Check if the folder is empty (there is more than . and ..)
-            if (count($directoryContent) <= 2) {
-                file_put_contents($file . "/.gitkeep", "");
+    private function keepEmptyDirectories($resource)
+    {
+        if (is_dir($resource)) {
+            if ($this->filesystem->isDirEmpty($resource)) {
+                file_put_contents($resource . "/.gitkeep", "");
             } else {
-                foreach ($directoryContent as $subPath) {
-                    if($subPath !== '.' && $subPath !== '..') {
-                        $this->keepEmptyDirectories($file.'/'.$subPath);
+                foreach (scandir($resource) as $subPath) {
+                    if ($subPath !== '.' && $subPath !== '..') {
+                        $this->keepEmptyDirectories($resource . '/' . $subPath);
                     }
                 }
             }
