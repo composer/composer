@@ -22,6 +22,22 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
     private static $parser;
 
+    public static function getUniqueTmpDirectory()
+    {
+        $attempts = 5;
+        $root = sys_get_temp_dir();
+
+        do {
+            $unique = $root . DIRECTORY_SEPARATOR . uniqid('composer-test-' . rand(1000, 9000));
+
+            if (!file_exists($unique) && Silencer::call('mkdir', $unique, 0777)) {
+                return realpath($unique);
+            }
+        } while (--$attempts);
+
+        throw new \RuntimeException('Failed to create a unique temporary directory.');
+    }
+
     protected static function getVersionParser()
     {
         if (!self::$parser) {
@@ -55,22 +71,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         $normVersion = self::getVersionParser()->normalize($version);
 
         return new AliasPackage($package, $normVersion, $version);
-    }
-
-    protected static function getUniqueTmpDirectory()
-    {
-        $attempts = 5;
-        $root = sys_get_temp_dir();
-
-        do {
-            $unique = $root . DIRECTORY_SEPARATOR . uniqid('composer-test-' . rand(1000, 9000));
-
-            if (!file_exists($unique) && Silencer::call('mkdir', $unique, 0777)) {
-                return realpath($unique);
-            }
-        } while (--$attempts);
-
-        throw new \RuntimeException('Failed to create a unique temporary directory.');
     }
 
     protected static function ensureDirectoryExistsAndClear($directory)

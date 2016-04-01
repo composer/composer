@@ -15,6 +15,7 @@ namespace Composer\Test;
 use Composer\Installer;
 use Composer\Console\Application;
 use Composer\Json\JsonFile;
+use Composer\Util\Filesystem;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\InstalledArrayRepository;
@@ -34,6 +35,7 @@ use Composer\IO\BufferIO;
 class InstallerTest extends TestCase
 {
     protected $prevCwd;
+    protected $tempComposerHome;
 
     public function setUp()
     {
@@ -44,6 +46,10 @@ class InstallerTest extends TestCase
     public function tearDown()
     {
         chdir($this->prevCwd);
+        if (is_dir($this->tempComposerHome)) {
+            $fs = new Filesystem;
+            $fs->removeDirectory($this->tempComposerHome);
+        }
     }
 
     /**
@@ -159,6 +165,7 @@ class InstallerTest extends TestCase
 
         // Create Composer mock object according to configuration
         $composer = FactoryMock::create($io, $composerConfig);
+        $this->tempComposerHome = $composer->getConfig()->get('home');
 
         $jsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
         $jsonMock->expects($this->any())
