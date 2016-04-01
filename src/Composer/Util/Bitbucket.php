@@ -87,9 +87,7 @@ class Bitbucket
                 'retry-auth-failure' => false,
                 'http' => array(
                     'method' => 'POST',
-                    'content' => array(
-                        'grant_type' => 'client_credentials'
-                    )
+                    'content' => 'grant_type=client_credentials',
                 )
             ));
 
