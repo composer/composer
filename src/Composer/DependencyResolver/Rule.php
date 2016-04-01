@@ -13,12 +13,15 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\CompletePackage;
+use Composer\Package\PackageInterface;
+use Composer\Package\Link;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
 class Rule
 {
+    // reason constants
     const RULE_INTERNAL_ALLOW_UPDATE = 1;
     const RULE_JOB_INSTALL = 2;
     const RULE_JOB_REMOVE = 3;
@@ -31,6 +34,7 @@ class Rule
     const RULE_LEARNED = 12;
     const RULE_PACKAGE_ALIAS = 13;
 
+    // bitfield defs
     const BITFIELD_TYPE = 0;
     const BITFIELD_REASON = 8;
     const BITFIELD_DISABLED = 16;
@@ -44,6 +48,12 @@ class Rule
     protected $bitfield;
     protected $reasonData;
 
+    /**
+     * @param array                 $literals
+     * @param int                   $reason     A RULE_* constant describing the reason for generating this rule
+     * @param Link|PackageInterface $reasonData
+     * @param array                 $job        The job this rule was created from
+     */
     public function __construct(array $literals, $reason, $reasonData, $job = null)
     {
         // sort all packages ascending by id
