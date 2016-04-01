@@ -133,17 +133,17 @@ class Application extends BaseApplication
                 $input->setInteractive(false);
             }
 
-            if (!Platform::isWindows()) {
+            if (!Platform::isWindows() && function_exists('exec')) {
                 if (function_exists('posix_getuid') && posix_getuid() === 0) {
                     $io->writeError('<warning>Running composer as root is highly discouraged as packages, plugins and scripts cannot always be trusted</warning>');
                     if ($uid = getenv('SUDO_UID')) {
                         // Silently clobber any sudo credentials on the invoking user to avoid privilege escalations later on
                         // ref. https://github.com/composer/composer/issues/5119
-                        exec("sudo -u \\#{$uid} sudo -K > /dev/null 2>&1");
+                        Silencer::call('exec', "sudo -u \\#{$uid} sudo -K > /dev/null 2>&1");
                     }
                 }
                 // Silently clobber any remaining sudo leases on the current user as well to avoid privilege escalations
-                exec("sudo -K > /dev/null 2>&1");
+                Silencer::call('exec', 'sudo -K > /dev/null 2>&1');
             }
 
             // switch working dir
