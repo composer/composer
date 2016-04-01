@@ -344,6 +344,23 @@ repository like this:
 If you have no branches or tags directory you can disable them entirely by
 setting the `branches-path` or `tags-path` to `false`.
 
+If you have a more complex repository directory structure, you may also implement 
+an array of paths against the `branches-path` and `tags-path` clauses.
+For example:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "http://svn.example.org/projectA/",
+            "branches-path": ["branches/development","branches/staging"],
+            "tags-path": ["tags/releases","tags/patches"]
+        }
+    ]
+}
+```
+
 If the package is in a sub-directory, e.g. `/trunk/foo/bar/composer.json` and
 `/tags/1.0/foo/bar/composer.json`, then you can make Composer access it by
 setting the `"package-path"` option to the sub-directory, in this example it
