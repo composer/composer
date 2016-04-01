@@ -1,0 +1,52 @@
+--TEST--
+Test the error output of solver problems.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "unstable/package", "version": "2.0.0-alpha" },
+                { "name": "unstable/package", "version": "1.0.0" },
+                { "name": "requirer", "version": "1.0.0", "require": {"dependency": "1.0.0" } },
+                { "name": "dependency", "version": "2.0.0" },
+                { "name": "dependency", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "unstable/package": "2.*",
+        "bogus": "1.*",
+        "requirer": "1.*",
+        "dependency": "2.*"
+    }
+}
+
+--RUN--
+install
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies (including require-dev)
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - The requested package unstable/package 2.* exists as unstable/package[1.0.0] but those are rejected by your constraint.
+  Problem 2
+    - The requested package bogus could not be found in any version, there may be a typo in the package name.
+  Problem 3
+    - Installation request for requirer 1.* -> satisfiable by requirer[1.0.0].
+    - requirer 1.0.0 requires dependency 1.0.0 -> satisfiable by dependency[1.0.0] but these conflict with your requirements or minimum-stability
+
+Potential causes:
+ - A typo in the package name
+ - The package is not available in a stable-enough version according to your minimum-stability setting
+   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.
+
+Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
+
+--EXPECT--
+

@@ -176,27 +176,32 @@ class Pool implements \Countable
      *                                            packages must match or null to return all
      * @param  bool                $mustMatchName Whether the name of returned packages
      *                                            must match the given name
+     * @param  bool                $bypassFilters If enabled, filterRequires and stability matching is ignored
      * @return PackageInterface[]  A set of packages
      */
-    public function whatProvides($name, ConstraintInterface $constraint = null, $mustMatchName = false)
+    public function whatProvides($name, ConstraintInterface $constraint = null, $mustMatchName = false, $bypassFilters = false)
     {
+        if ($bypassFilters) {
+            return $this->computeWhatProvides($name, $constraint, $mustMatchName, true);
+        }
+
         $key = ((int) $mustMatchName).$constraint;
         if (isset($this->providerCache[$name][$key])) {
             return $this->providerCache[$name][$key];
         }
 
-        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $mustMatchName);
+        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $mustMatchName, $bypassFilters);
     }
 
     /**
      * @see whatProvides
      */
-    private function computeWhatProvides($name, $constraint, $mustMatchName = false)
+    private function computeWhatProvides($name, $constraint, $mustMatchName = false, $bypassFilters = false)
     {
         $candidates = array();
 
         foreach ($this->providerRepos as $repo) {
-            foreach ($repo->whatProvides($this, $name) as $candidate) {
+            foreach ($repo->whatProvides($this, $name, $bypassFilters) as $candidate) {
                 $candidates[] = $candidate;
                 if ($candidate->id < 1) {
                     $candidate->setId($this->id++);
@@ -228,13 +233,13 @@ class Pool implements \Countable
                 $aliasOfCandidate = $candidate->getAliasOf();
             }
 
-            if ($this->whitelist !== null && (
+            if ($this->whitelist !== null && !$bypassFilters && (
                 (!($candidate instanceof AliasPackage) && !isset($this->whitelist[$candidate->id])) ||
                 ($candidate instanceof AliasPackage && !isset($this->whitelist[$aliasOfCandidate->id]))
             )) {
                 continue;
             }
-            switch ($this->match($candidate, $name, $constraint)) {
+            switch ($this->match($candidate, $name, $constraint, $bypassFilters)) {
                 case self::MATCH_NONE:
                     break;
 
@@ -317,14 +322,14 @@ class Pool implements \Countable
      * @param  ConstraintInterface    $constraint The constraint to verify
      * @return int                    One of the MATCH* constants of this class or 0 if there is no match
      */
-    private function match($candidate, $name, ConstraintInterface $constraint = null)
+    private function match($candidate, $name, ConstraintInterface $constraint = null, $bypassFilters)
     {
         $candidateName = $candidate->getName();
         $candidateVersion = $candidate->getVersion();
         $isDev = $candidate->getStability() === 'dev';
         $isAlias = $candidate instanceof AliasPackage;
 
-        if (!$isDev && !$isAlias && isset($this->filterRequires[$name])) {
+        if (!$bypassFilters && !$isDev && !$isAlias && isset($this->filterRequires[$name])) {
             $requireFilter = $this->filterRequires[$name];
         } else {
             $requireFilter = new EmptyConstraint;

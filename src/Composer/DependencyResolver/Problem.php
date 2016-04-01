@@ -129,11 +129,15 @@ class Problem
                     return "\n    - The requested package ".$job['packageName'].' could not be found, it looks like its name is invalid, "'.$illegalChars.'" is not allowed in package names.';
                 }
 
-                if (!$this->pool->whatProvides($job['packageName'])) {
-                    return "\n    - The requested package ".$job['packageName'].' could not be found in any version, there may be a typo in the package name.';
+                if ($providers = $this->pool->whatProvides($job['packageName'], $job['constraint'], true, true)) {
+                    return "\n    - The requested package ".$job['packageName'].$this->constraintToText($job['constraint']).' is satisfiable by '.$this->getPackageList($providers).' but those are rejected by your minimum-stability.';
                 }
 
-                return "\n    - The requested package ".$job['packageName'].$this->constraintToText($job['constraint']).' could not be found.';
+                if ($providers = $this->pool->whatProvides($job['packageName'], null, true, true)) {
+                    return "\n    - The requested package ".$job['packageName'].$this->constraintToText($job['constraint']).' exists as '.$this->getPackageList($providers).' but those are rejected by your constraint.';
+                }
+
+                return "\n    - The requested package ".$job['packageName'].' could not be found in any version, there may be a typo in the package name.';
             }
         }
 
