@@ -34,11 +34,7 @@ final class TlsHelper
     {
         $names = self::getCertificateNames($certificate);
 
-        if (empty($names)) {
-            return false;
-        }
-
-        $combinedNames = array_merge($names['san'], array($names['cn']));
+        $combinedNames = array_filter(array_merge($names['san'], array($names['cn'])));
         $hostname = strtolower($hostname);
 
         foreach ($combinedNames as $certName) {
@@ -69,11 +65,11 @@ final class TlsHelper
             $info = openssl_x509_parse($certificate, false);
         }
 
-        if (!isset($info['subject']['commonName'])) {
-            return;
+        $commonName = '';
+        if (isset($info['subject']['commonName'])) {
+            $commonName = strtolower($info['subject']['commonName']);
         }
 
-        $commonName = strtolower($info['subject']['commonName']);
         $subjectAltNames = array();
 
         if (isset($info['extensions']['subjectAltName'])) {

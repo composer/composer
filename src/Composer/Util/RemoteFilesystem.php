@@ -401,7 +401,7 @@ class RemoteFilesystem
         }
 
         // Handle SSL cert match issues
-        if (false === $result && false !== strpos($errorMessage, 'Peer certificate') && PHP_VERSION_ID < 50600) {
+        if (false === $result && (false !== strpos($errorMessage, 'Peer certificate') || false !== strpos($errorMessage, 'Unable to locate peer certificate CN')) && PHP_VERSION_ID < 50600) {
             // Certificate name error, PHP doesn't support subjectAltName on PHP < 5.6
             // The procedure to handle sAN for older PHP's is:
             //
@@ -632,6 +632,13 @@ class RemoteFilesystem
 
                 $tlsOptions['ssl']['CN_match'] = $certMap['cn'];
                 $tlsOptions['ssl']['peer_fingerprint'] = $certMap['fp'];
+
+                // in case no CN is present in the certificate, we have to cancel peer verification
+                // so that PHP doesn't fail the request and we can inspect the certificate fingerprint
+                // after the request to check if the fingerprint matched the one we stored in $certMap
+                if ($certMap['cn'] === '') {
+                    $tlsOptions['ssl']['verify_peer'] = false;
+                }
             }
         }
 
