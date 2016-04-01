@@ -20,6 +20,7 @@ namespace Composer\Autoload;
 
 use Symfony\Component\Finder\Finder;
 use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
 
 /**
  * ClassMapGenerator
@@ -73,12 +74,18 @@ class ClassMapGenerator
         }
 
         $map = array();
+        $filesystem = new Filesystem();
+        $cwd = getcwd();
 
         foreach ($path as $file) {
-            $filePath = $file->getRealPath();
-
+            $filePath = $file->getPathname();
             if (!in_array(pathinfo($filePath, PATHINFO_EXTENSION), array('php', 'inc', 'hh'))) {
                 continue;
+            }
+
+            if (!$filesystem->isAbsolutePath($filePath)) {
+                $filePath = $cwd . '/' . $filePath;
+                $filePath = $filesystem->normalizePath($filePath);
             }
 
             if ($blacklist && preg_match($blacklist, strtr($filePath, '\\', '/'))) {
