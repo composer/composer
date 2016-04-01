@@ -238,6 +238,7 @@ Support information includes the following:
 * **irc:** IRC channel for support, as irc://server/channel.
 * **source:** URL to browse or download the sources.
 * **docs:** URL to the documentation.
+* **rss:** URL to the RSS feed.
 
 An example:
 
