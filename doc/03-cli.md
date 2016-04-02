@@ -794,10 +794,10 @@ If set to 1, this env var will make Composer behave as if you passed the
 
 If set to 1, this env disables the warning about having xdebug enabled.
 
-### COMPOSER_DISABLE_ROOT_WARN
+### COMPOSER_ALLOW_SUPERUSER
 
-If set to 1, this env disables the warning about running commands as root. It also
-disables automatic clearing of sudo sessions, so you should really only set this
-if you use Composer as root at all times like in docker containers.
+If set to 1, this env disables the warning about running commands as root/super user.
+It also disables automatic clearing of sudo sessions, so you should really only set this
+if you use Composer as super user at all times like in docker containers.
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
