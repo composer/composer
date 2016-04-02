@@ -29,7 +29,9 @@ class RepositoryFactory
      */
     public static function configFromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false)
     {
-        if ("json" === pathinfo($repository, PATHINFO_EXTENSION)) {
+        if (0 === strpos($repository, 'http')) {
+            $repoConfig = array('type' => 'composer', 'url' => $repository);
+        } elseif ("json" === pathinfo($repository, PATHINFO_EXTENSION)) {
             $json = new JsonFile($repository, Factory::createRemoteFilesystem($io, $config));
             $data = $json->read();
             if (!empty($data['packages']) || !empty($data['includes']) || !empty($data['provider-includes'])) {
@@ -39,8 +41,6 @@ class RepositoryFactory
             } else {
                 throw new \InvalidArgumentException("Invalid repository URL ($repository) given. This file does not contain a valid composer repository.");
             }
-        } elseif (0 === strpos($repository, 'http')) {
-            $repoConfig = array('type' => 'composer', 'url' => $repository);
         } elseif ('{' === substr($repository, 0, 1)) {
             // assume it is a json object that makes a repo config
             $repoConfig = JsonFile::parseJson($repository);
