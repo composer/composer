@@ -37,7 +37,11 @@ class ZipArchiver implements ArchiverInterface
                 /** @var $file \SplFileInfo */
                 $filepath = $file->getPath()."/".$file->getFilename();
                 $localname = str_replace($sources."/", '', $filepath);
-                $zip->addFile($filepath, $localname);
+                if ($file->isDir()) {
+                    $zip->addEmptyDir($localname);
+                } else {
+                    $zip->addFile($filepath, $localname);
+                }
             }
             if ($zip->close()) {
                 return $target;
