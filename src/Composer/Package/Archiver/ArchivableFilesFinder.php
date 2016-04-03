@@ -13,7 +13,9 @@
 namespace Composer\Package\Archiver;
 
 use Composer\Util\Filesystem;
+use FilesystemIterator;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * A Symfony Finder wrapper which locates files that should go into archives
@@ -84,6 +86,14 @@ class ArchivableFilesFinder extends \FilterIterator
 
     public function accept()
     {
-        return !$this->getInnerIterator()->current()->isDir();
+        /** @var SplFileInfo $current */
+        $current = $this->getInnerIterator()->current();
+
+        if (!$current->isDir()) {
+            return true;
+        }
+
+        $iterator = new FilesystemIterator($current, FilesystemIterator::SKIP_DOTS);
+        return !$iterator->valid();
     }
 }
