@@ -1,3 +1,13 @@
+### [1.0.0] - 2016-04-05
+
+  * Added support for bitbucket-oauth configuration
+  * Added warning when running composer as super user, set COMPOSER_ALLOW_SUPERUSER=1 to hide the warning if you really must
+  * Added PluginManager::getGlobalComposer getter to retrieve the global instance (which can be null!)
+  * Fixed dependency solver error reporting in many cases it now shows you proper errors instead of just saying a package does not exist
+  * Fixed output of failed downloads appearing as 100% done instead of Failed
+  * Fixed handling of empty directories when archiving, they are not skipped anymore
+  * Fixed installation of broken plugins corrupting the vendor state when combined with symlinked path repositories
+
 ### [1.0.0-beta2] - 2016-03-27
 
   * Break: The `install` command now turns into an `update` command automatically if you have no composer.lock. This was done only half-way before which caused inconsistencies
@@ -313,6 +323,7 @@
 
   * Initial release
 
+[1.0.0]: https://github.com/composer/composer/compare/1.0.0-beta2...1.0.0
 [1.0.0-beta2]: https://github.com/composer/composer/compare/1.0.0-beta1...1.0.0-beta2
 [1.0.0-beta1]: https://github.com/composer/composer/compare/1.0.0-alpha11...1.0.0-beta1
 [1.0.0-alpha11]: https://github.com/composer/composer/compare/1.0.0-alpha10...1.0.0-alpha11
