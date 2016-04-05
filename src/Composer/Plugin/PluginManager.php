@@ -91,6 +91,16 @@ class PluginManager
     }
 
     /**
+     * Gets global composer or null when main composer is not fully loaded
+     *
+     * @return Composer|null
+     */
+    public function getGlobalComposer()
+    {
+        return $this->globalComposer;
+    }
+
+    /**
      * Register a plugin package, activate it etc.
      *
      * If it's of type composer-installer it is registered as an installer
