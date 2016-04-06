@@ -25,6 +25,7 @@ use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\Silencer;
+use Seld\JsonLint\DuplicateKeyException;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
@@ -270,7 +271,7 @@ class Factory
             $jsonParser = new JsonParser;
             try {
                 $jsonParser->parse(file_get_contents($localConfig), JsonParser::DETECT_KEY_CONFLICTS);
-            } catch (\Seld\JsonLint\DuplicateKeyException $e) {
+            } catch (DuplicateKeyException $e) {
                 $details = $e->getDetails();
                 $io->writeError('<warning>Key '.$details['key'].' is a duplicate in '.$localConfig.' at line '.$details['line'].'</warning>');
             }

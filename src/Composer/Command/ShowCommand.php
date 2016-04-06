@@ -89,7 +89,7 @@ EOT
         if ($input->getOption('tree') && ($input->getOption('all') || $input->getOption('available'))) {
             $io->writeError('The --tree (-t) option is not usable in combination with --all or --available (-a)');
 
-            return;
+            return 0;
         }
 
         // init repos

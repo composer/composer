@@ -69,7 +69,7 @@ EOT
                 );
             }
 
-            return;
+            return 0;
         }
 
         $binary = $input->getArgument('binary');

@@ -73,7 +73,7 @@ class SvnDownloader extends VcsDownloader
     public function getLocalChanges(PackageInterface $package, $path)
     {
         if (!$this->hasMetadataRepository($path)) {
-            return;
+            return null;
         }
 
         $this->process->execute('svn status --ignore-externals', $output, $path);

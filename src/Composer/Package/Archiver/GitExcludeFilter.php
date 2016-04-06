@@ -69,12 +69,9 @@ class GitExcludeFilter extends BaseExcludeFilter
     {
         $parts = preg_split('#\s+#', $line);
 
-        if (count($parts) != 2) {
-            return null;
-        }
-
-        if ($parts[1] === 'export-ignore') {
+        if (count($parts) == 2 && $parts[1] === 'export-ignore') {
             return $this->generatePattern($parts[0]);
         }
+        return null;
     }
 }
