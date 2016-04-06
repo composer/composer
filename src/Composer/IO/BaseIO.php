@@ -85,12 +85,17 @@ abstract class BaseIO implements IOInterface
      */
     public function loadConfiguration(Config $config)
     {
+        $bitbucketOauth = $config->get('bitbucket-oauth') ?: array();
         $githubOauth = $config->get('github-oauth') ?: array();
         $gitlabOauth = $config->get('gitlab-oauth') ?: array();
         $httpBasic = $config->get('http-basic') ?: array();
-        $bitbucketOauth = $config->get('bitbucket-oauth') ?: array();
 
-        // reload oauth token from config if available
+        // reload oauth tokens from config if available
+
+        foreach ($bitbucketOauth as $domain => $cred) {
+            $this->checkAndSetAuthentication($domain, $cred['consumer-key'], $cred['consumer-secret']);
+        }
+
         foreach ($githubOauth as $domain => $token) {
             if (!preg_match('{^[a-z0-9]+$}', $token)) {
                 throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
@@ -105,10 +110,6 @@ abstract class BaseIO implements IOInterface
         // reload http basic credentials from config if available
         foreach ($httpBasic as $domain => $cred) {
             $this->checkAndSetAuthentication($domain, $cred['username'], $cred['password']);
-        }
-
-        foreach ($bitbucketOauth as $domain => $cred) {
-            $this->checkAndSetAuthentication($domain, $cred['consumer-key'], $cred['consumer-secret']);
         }
 
         // setup process timeout

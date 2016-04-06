@@ -167,7 +167,7 @@ EOT
         }
         if ($input->getOption('global') && !$this->authConfigFile->exists()) {
             touch($this->authConfigFile->getPath());
-            $this->authConfigFile->write(array('http-basic' => new \ArrayObject, 'github-oauth' => new \ArrayObject, 'gitlab-oauth' => new \ArrayObject));
+            $this->authConfigFile->write(array('bitbucket-oauth' => new \ArrayObject, 'github-oauth' => new \ArrayObject, 'gitlab-oauth' => new \ArrayObject, 'http-basic' => new \ArrayObject));
             Silencer::call('chmod', $this->authConfigFile->getPath(), 0600);
         }
 
@@ -465,8 +465,8 @@ EOT
             return $this->configSource->addConfigSetting($settingKey, $values[0]);
         }
 
-        // handle github-oauth
-        if (preg_match('/^(github-oauth|gitlab-oauth|http-basic)\.(.+)/', $settingKey, $matches)) {
+        // handle auth
+        if (preg_match('/^(bitbucket-oauth|github-oauth|gitlab-oauth|http-basic)\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->authConfigSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
@@ -474,7 +474,13 @@ EOT
                 return;
             }
 
-            if ($matches[1] === 'github-oauth' || $matches[1] === 'gitlab-oauth') {
+            if ($matches[1] === 'bitbucket-oauth') {
+                if (2 !== count($values)) {
+                    throw new \RuntimeException('Expected two arguments (consumer-key, consumer-secret), got '.count($values));
+                }
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('consumer-key' => $values[0], 'consumer-secret' => $values[1]));
+            } elseif ($matches[1] === 'github-oauth' || $matches[1] === 'gitlab-oauth') {
                 if (1 !== count($values)) {
                     throw new \RuntimeException('Too many arguments, expected only one token');
                 }
@@ -487,17 +493,6 @@ EOT
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'password' => $values[1]));
             }
-
-            return;
-        }
-
-        // handle bitbucket-oauth
-        if (preg_match('/^(bitbucket-oauth)\.(.+)/', $settingKey, $matches)) {
-            if (2 !== count($values)) {
-                throw new \RuntimeException('Expected two arguments (consumer-key, consumer-secret), got '.count($values));
-            }
-            $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
-            $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('consumer-key' => $values[0], 'consumer-secret' => $values[1]));
 
             return;
         }
