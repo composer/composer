@@ -72,7 +72,7 @@ class EventDispatcher
      */
     public function dispatch($eventName, Event $event = null)
     {
-        if (null == $event) {
+        if (null === $event) {
             $event = new Event($eventName);
         }
 
