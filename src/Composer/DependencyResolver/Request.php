@@ -45,6 +45,9 @@ class Request
      * Mark an existing package as being installed and having to remain installed
      *
      * These jobs will not be tempered with by the solver
+     *
+     * @param string                    $packageName
+     * @param ConstraintInterface|null  $constraint
      */
     public function fix($packageName, ConstraintInterface $constraint = null)
     {

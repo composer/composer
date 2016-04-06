@@ -25,7 +25,11 @@ use Composer\Json\JsonFile;
 class RepositoryFactory
 {
     /**
-     * @return array
+     * @param IOInterface   $io
+     * @param Config        $config
+     * @param string        $repository
+     * @param bool          $allowFilesystem
+     * @return array|mixed
      */
     public static function configFromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false)
     {
@@ -52,6 +56,10 @@ class RepositoryFactory
     }
 
     /**
+     * @param IOInterface   $io
+     * @param Config        $config
+     * @param string        $repository
+     * @param bool          $allowFilesystem
      * @return RepositoryInterface
      */
     public static function fromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false)

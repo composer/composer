@@ -209,8 +209,9 @@ class BaseDependencyCommand extends BaseCommand
     /**
      * Recursively prints a tree of the selected results.
      *
-     * @param array  $results
-     * @param string $prefix
+     * @param array  $results Results to be printed at this level.
+     * @param string $prefix  Prefix of the current tree level.
+     * @param int    $level   Current level of recursion.
      */
     protected function printTree($results, $prefix = '', $level = 1)
     {

@@ -362,6 +362,7 @@ EOT
      * @param InputInterface $input
      * @param bool           $preferSource
      * @param bool           $preferDist
+     * @param bool           $keepVcsRequiresPreferSource
      */
     protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist, $keepVcsRequiresPreferSource = false)
     {
