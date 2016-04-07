@@ -29,7 +29,7 @@ class SuggestedPackagesReporter
     protected $suggestedPackages = array();
 
     /**
-     * @var \Composer\IO\IOInterface
+     * @var IOInterface
      */
     private $io;
 

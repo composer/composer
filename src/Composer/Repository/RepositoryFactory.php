@@ -70,9 +70,12 @@ class RepositoryFactory
     }
 
     /**
+     * @param IOInterface   $io
+     * @param Config        $config
+     * @param array         $repoConfig
      * @return RepositoryInterface
      */
-    public static function createRepo($io, $config, array $repoConfig)
+    public static function createRepo(IOInterface $io, Config $config, array $repoConfig)
     {
         $rm = static::manager($io, $config, null, Factory::createRemoteFilesystem($io, $config));
         $repos = static::createRepos($rm, array($repoConfig));
@@ -81,6 +84,9 @@ class RepositoryFactory
     }
 
     /**
+     * @param IOInterface|null          $io
+     * @param Config|null               $config
+     * @param RepositoryManager|null    $rm
      * @return RepositoryInterface[]
      */
     public static function defaultRepos(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)

@@ -15,9 +15,7 @@ namespace Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
-use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Silencer;
 
 /**
  * Utility to handle installation of package "bin"/binaries for PEAR packages

@@ -17,7 +17,6 @@ use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
-use Composer\Downloader\TransportException;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>

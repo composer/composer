@@ -27,12 +27,20 @@ use Symfony\Component\Console\Question\Question;
  */
 class ConsoleIO extends BaseIO
 {
+    /** @var InputInterface */
     protected $input;
+    /** @var OutputInterface */
     protected $output;
+    /** @var HelperSet */
     protected $helperSet;
+    /** @var string */
     protected $lastMessage;
+    /** @var string */
     protected $lastMessageErr;
+
+    /** @var float */
     private $startTime;
+    /** @var array<int, int> */
     private $verbosityMap;
 
     /**
@@ -56,6 +64,9 @@ class ConsoleIO extends BaseIO
         );
     }
 
+    /**
+     * @param float $startTime
+     */
     public function enableDebugging($startTime)
     {
         $this->startTime = $startTime;
@@ -274,6 +285,9 @@ class ConsoleIO extends BaseIO
         return $default;
     }
 
+    /**
+     * @return OutputInterface
+     */
     private function getErrorOutput()
     {
         if ($this->output instanceof ConsoleOutputInterface) {

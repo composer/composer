@@ -13,9 +13,9 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package\BasePackage;
-use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Config;
+use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryFactory;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
@@ -59,7 +59,7 @@ class RootPackageLoader extends ArrayLoader
      * @param  array            $config package data
      * @param  string           $class  FQCN to be instantiated
      * @param  string           $cwd    cwd of the root package to be used to guess the version if it is not provided
-     * @return PackageInterface
+     * @return RootPackageInterface
      */
     public function load(array $config, $class = 'Composer\Package\RootPackage', $cwd = null)
     {
