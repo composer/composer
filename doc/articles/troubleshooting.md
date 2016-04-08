@@ -202,6 +202,22 @@ echo 'function composer() { COMPOSER="$(which composer)" || { echo "Could not fi
 . ~/.bash_aliases
 ```
 
+On platforms without `php5enmod` and `php5dismod` you can run:
+
+```sh
+php -i | grep php.ini
+```
+
+To check where the PHP configuration is, and then run use a similar script:
+
+```sh
+mkdir /usr/local/etc/php/7.0/conf.dis
+echo 'function composer() { COMPOSER="$(which composer)" || { echo "Could not find composer in path" >&2 ; return 1 ; } && mv /usr/local/etc/php/7.0/conf.d/ext-xdebug.ini /usr/local/etc/php/7.0/conf.dis ; $COMPOSER "$@" ; STATUS=$? ; mv /usr/local/etc/php/7.0/conf.dis/ext-xdebug.ini /usr/local/etc/php/7.0/conf.d ; return $STATUS ; }' >> ~/.bash_aliases
+. ~/.bash_aliases
+```
+
+In the example above, we have PHP 7.0 installed on a Mac with Homebrew (which doesn't have the stated commands and places the configurations on a folder where there is no need for sudo permissions.
+
 When executing `composer` you will run it with xdebug **disabled** (**as long as the command is executing**),
 and if you execute composer using explicit path (like `./composer` or `/usr/local/bin/composer`)
 xdebug will be **enabled**.
