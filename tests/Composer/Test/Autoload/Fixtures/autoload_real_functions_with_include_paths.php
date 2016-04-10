@@ -10,6 +10,8 @@ class ComposerAutoloaderInitFilesAutoload
     {
         if ('Composer\Autoload\ClassLoader' === $class) {
             require __DIR__ . '/ClassLoader.php';
+        } elseif ('Composer\Autoload\ApcuClassLoader' === $class) {
+            require __DIR__ . '/ApcuClassLoader.php';
         }
     }
 
@@ -19,13 +21,13 @@ class ComposerAutoloaderInitFilesAutoload
             return self::$loader;
         }
 
-        spl_autoload_register(array('ComposerAutoloaderInitFilesAutoload', 'loadClassLoader'), true, true);
-        self::$loader = $loader = new \Composer\Autoload\ClassLoader();
-        spl_autoload_unregister(array('ComposerAutoloaderInitFilesAutoload', 'loadClassLoader'));
-
         $includePaths = require __DIR__ . '/include_paths.php';
         array_push($includePaths, get_include_path());
         set_include_path(join(PATH_SEPARATOR, $includePaths));
+
+        spl_autoload_register(array('ComposerAutoloaderInitFilesAutoload', 'loadClassLoader'), true, true);
+        self::$loader = $loader = new \Composer\Autoload\ClassLoader();
+        spl_autoload_unregister(array('ComposerAutoloaderInitFilesAutoload', 'loadClassLoader'));
 
         $map = require __DIR__ . '/autoload_namespaces.php';
         foreach ($map as $namespace => $path) {

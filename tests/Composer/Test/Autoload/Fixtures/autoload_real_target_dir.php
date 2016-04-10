@@ -10,6 +10,8 @@ class ComposerAutoloaderInitTargetDir
     {
         if ('Composer\Autoload\ClassLoader' === $class) {
             require __DIR__ . '/ClassLoader.php';
+        } elseif ('Composer\Autoload\ApcuClassLoader' === $class) {
+            require __DIR__ . '/ApcuClassLoader.php';
         }
     }
 

@@ -51,6 +51,11 @@ class AutoloadGenerator
     /**
      * @var bool
      */
+    private $apcuLoader = false;
+
+    /**
+     * @var bool
+     */
     private $runScripts = false;
 
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
@@ -73,6 +78,16 @@ class AutoloadGenerator
     public function setClassMapAuthoritative($classMapAuthoritative)
     {
         $this->classMapAuthoritative = (boolean) $classMapAuthoritative;
+    }
+
+    /**
+     * Whether or not generated autoloader uses the APCu loader.
+     *
+     * @param bool $apcuLoader
+     */
+    public function setApcuLoader($apcuLoader)
+    {
+        $this->apcuLoader = (boolean) $apcuLoader;
     }
 
     /**
@@ -287,6 +302,7 @@ EOF;
         file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader));
 
         $this->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+        $this->safeCopy(__DIR__.'/ApcuClassLoader.php', $targetDir.'/ApcuClassLoader.php');
         $this->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
 
         if ($this->runScripts) {
@@ -552,6 +568,8 @@ class ComposerAutoloaderInit$suffix
     {
         if ('Composer\\Autoload\\ClassLoader' === \$class) {
             require __DIR__ . '/ClassLoader.php';
+        } elseif ('Composer\\Autoload\\ApcuClassLoader' === \$class) {
+            require __DIR__ . '/ApcuClassLoader.php';
         }
     }
 
@@ -560,10 +578,6 @@ class ComposerAutoloaderInit$suffix
         if (null !== self::\$loader) {
             return self::\$loader;
         }
-
-        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prependAutoloader);
-        self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
-        spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
 
 
 HEADER;
@@ -578,8 +592,10 @@ HEADER;
 INCLUDE_PATH;
         }
 
+        $initializer = '';
+
         if (!$this->classMapAuthoritative) {
-            $file .= <<<'PSR04'
+            $initializer .= <<<'PSR04'
         $map = require __DIR__ . '/autoload_namespaces.php';
         foreach ($map as $namespace => $path) {
             $loader->set($namespace, $path);
@@ -595,7 +611,7 @@ PSR04;
         }
 
         if ($useClassMap) {
-            $file .= <<<'CLASSMAP'
+            $initializer .= <<<'CLASSMAP'
         $classMap = require __DIR__ . '/autoload_classmap.php';
         if ($classMap) {
             $loader->addClassMap($classMap);
@@ -606,17 +622,40 @@ CLASSMAP;
         }
 
         if ($this->classMapAuthoritative) {
-            $file .= <<<'CLASSMAPAUTHORITATIVE'
+            $initializer .= <<<'CLASSMAPAUTHORITATIVE'
         $loader->setClassMapAuthoritative(true);
 
 CLASSMAPAUTHORITATIVE;
         }
 
         if ($useGlobalIncludePath) {
-            $file .= <<<'INCLUDEPATH'
+            $initializer .= <<<'INCLUDEPATH'
         $loader->setUseIncludePath(true);
 
 INCLUDEPATH;
+        }
+
+        if (!$this->apcuLoader) {
+            $file .= <<<REGISTER_CLASS_LOADER
+        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prependAutoloader);
+        self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
+        spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
+
+$initializer
+REGISTER_CLASS_LOADER;
+        } else {
+            $initializer = preg_replace('/^ +/m', '    $0', $initializer);
+            $apcuPrefix = substr(base64_encode(md5(uniqid('', true), true)), 0, -2);
+
+            $file .= <<<REGISTER_APCU_CLASS_LOADER
+        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prependAutoloader);
+        self::\$loader = \$loader = new \\Composer\\Autoload\\ApcuClassLoader('$apcuPrefix', function (\$loader) {
+$initializer        });
+        spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
+
+
+REGISTER_APCU_CLASS_LOADER;
+
         }
 
         if ($targetDirLoader) {
