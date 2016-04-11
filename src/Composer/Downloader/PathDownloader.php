@@ -84,6 +84,7 @@ class PathDownloader extends FileDownloader
                         $absolutePath = getcwd() . DIRECTORY_SEPARATOR . $path;
                     }
                     $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
+                    $path = rtrim($path,"/");
                     $fileSystem->symlink($shortestPath, $path);
                     $this->io->writeError(sprintf('    Symlinked from %s', $url));
                 }
