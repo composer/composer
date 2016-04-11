@@ -172,6 +172,9 @@ class EventDispatcher
                 $scriptName = substr($callable, 1);
                 $args = $event->getArguments();
                 $flags = $event->getFlags();
+                if (!$this->getListeners(new Event($scriptName))) {
+                    $this->io->writeError(sprintf('<warning>You made a reference to a non-existent script %s</warning>', $callable));
+                }
                 $return = $this->dispatch($scriptName, new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode(), $args, $flags));
             } elseif ($this->isPhpScript($callable)) {
                 $className = substr($callable, 0, strpos($callable, '::'));
