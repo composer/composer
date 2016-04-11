@@ -915,7 +915,7 @@ class RemoteFilesystem
 
         foreach ($caBundlePaths as $caBundle) {
             $caBundle = dirname($caBundle);
-            if (is_dir($caBundle) && glob($caBundle.'/*')) {
+            if (Silencer::call('is_dir', $caBundle) && glob($caBundle.'/*')) {
                 return $caPath = $caBundle;
             }
         }
