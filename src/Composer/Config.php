@@ -58,10 +58,10 @@ class Config
         'archive-format' => 'tar',
         'archive-dir' => '.',
         // valid keys without defaults (auth config stuff):
+        // bitbucket-oauth
         // github-oauth
         // gitlab-oauth
         // http-basic
-        // bitbucket-oauth
     );
 
     public static $defaultRepositories = array(
@@ -121,7 +121,7 @@ class Config
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('github-oauth', 'gitlab-oauth', 'http-basic')) && isset($this->config[$key])) {
+                if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'http-basic')) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
                 } elseif ('preferred-install' === $key && isset($this->config[$key])) {
                     if (is_array($val) || is_array($this->config[$key])) {
