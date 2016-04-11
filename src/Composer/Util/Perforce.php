@@ -64,7 +64,7 @@ class Perforce
     public function initialize($repoConfig)
     {
         $this->uniquePerforceClientName = $this->generateUniquePerforceClientName();
-        if (null === $repoConfig) {
+        if (!$repoConfig) {
             return;
         }
         if (isset($repoConfig['unique_perforce_client_name'])) {
