@@ -25,6 +25,7 @@ use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\PlatformRepository;
 use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Silencer;
@@ -281,9 +282,14 @@ EOT
         $pool->addRepository($sourceRepo);
 
         $phpVersion = null;
+        $prettyPhpVersion = null;
         if (!$ignorePlatformReqs) {
-            // using those 3 constants to build a version without the 'extra' bit that can contain garbage
-            $phpVersion = PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION;
+            $platformOverrides = $config->get('platform') ?: array();
+            // initialize $this->repos as it is used by the parent InitCommand
+            $platform = new PlatformRepository(array(), $platformOverrides);
+            $phpPackage = $platform->findPackage('php', '*');
+            $phpVersion = $phpPackage->getVersion();
+            $prettyPhpVersion = $phpPackage->getPrettyVersion();
         }
 
         // find the latest version if there are multiple
@@ -291,7 +297,12 @@ EOT
         $package = $versionSelector->findBestCandidate($name, $packageVersion, $phpVersion, $stability);
 
         if (!$package) {
-            throw new \InvalidArgumentException("Could not find package $name" . ($packageVersion ? " with version $packageVersion." : " with stability $stability."));
+            $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
+            if ($phpVersion && $versionSelector->findBestCandidate($name, $packageVersion, null, $stability)) {
+                throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version '.$prettyPhpVersion.'.');
+            }
+
+            throw new \InvalidArgumentException($errorMessage .'.');
         }
 
         if (null === $directory) {
