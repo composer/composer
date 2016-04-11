@@ -52,9 +52,9 @@ class SuggestedPackagesReporter
      * Could be used to add suggested packages both from the installer
      * or from CreateProjectCommand.
      *
-     * @param string $source Source package which made the suggestion
-     * @param string $target Target package to be suggested
-     * @param string $reason Reason the target package to be suggested
+     * @param  string                    $source Source package which made the suggestion
+     * @param  string                    $target Target package to be suggested
+     * @param  string                    $reason Reason the target package to be suggested
      * @return SuggestedPackagesReporter
      */
     public function addPackage($source, $target, $reason)
@@ -71,7 +71,7 @@ class SuggestedPackagesReporter
     /**
      * Add all suggestions from a package.
      *
-     * @param PackageInterface $package
+     * @param  PackageInterface          $package
      * @return SuggestedPackagesReporter
      */
     public function addSuggestionsFromPackage(PackageInterface $package)
@@ -92,7 +92,7 @@ class SuggestedPackagesReporter
      * Output suggested packages.
      * Do not list the ones already installed if installed repository provided.
      *
-     * @param RepositoryInterface $installedRepo Installed packages
+     * @param  RepositoryInterface       $installedRepo Installed packages
      * @return SuggestedPackagesReporter
      */
     public function output(RepositoryInterface $installedRepo = null)

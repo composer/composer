@@ -94,6 +94,7 @@ class ArchivableFilesFinder extends \FilterIterator
         }
 
         $iterator = new FilesystemIterator($current, FilesystemIterator::SKIP_DOTS);
+
         return !$iterator->valid();
     }
 }

@@ -136,10 +136,10 @@ class EventDispatcher
     /**
      * Triggers the listeners of an event.
      *
-     * @param  Event             $event          The event object to pass to the event handlers/listeners.
-     * @return int               return code of the executed script if any, for php scripts a false return
-     *                                          value is changed to 1, anything else to 0
+     * @param  Event                        $event The event object to pass to the event handlers/listeners.
      * @throws \RuntimeException|\Exception
+     * @return int                          return code of the executed script if any, for php scripts a false return
+     *                                            value is changed to 1, anything else to 0
      */
     protected function doDispatch(Event $event)
     {

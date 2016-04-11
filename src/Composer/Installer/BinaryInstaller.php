@@ -35,9 +35,9 @@ class BinaryInstaller
 
     /**
      * @param IOInterface $io
-     * @param string $binDir
-     * @param string $binCompat
-     * @param Filesystem $filesystem
+     * @param string      $binDir
+     * @param string      $binCompat
+     * @param Filesystem  $filesystem
      */
     public function __construct(IOInterface $io, $binDir, $binCompat, Filesystem $filesystem = null)
     {

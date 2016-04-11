@@ -40,11 +40,11 @@ class LibraryInstaller implements InstallerInterface
     /**
      * Initializes library installer.
      *
-     * @param IOInterface          $io
-     * @param Composer             $composer
-     * @param string               $type
-     * @param Filesystem           $filesystem
-     * @param BinaryInstaller      $binaryInstaller
+     * @param IOInterface     $io
+     * @param Composer        $composer
+     * @param string          $type
+     * @param Filesystem      $filesystem
+     * @param BinaryInstaller $binaryInstaller
      */
     public function __construct(IOInterface $io, Composer $composer, $type = 'library', Filesystem $filesystem = null, BinaryInstaller $binaryInstaller = null)
     {

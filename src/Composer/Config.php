@@ -80,8 +80,8 @@ class Config
     private $useEnvironment;
 
     /**
-     * @param bool      $useEnvironment Use COMPOSER_ environment variables to replace config settings
-     * @param string    $baseDir        Optional base directory of the config
+     * @param bool   $useEnvironment Use COMPOSER_ environment variables to replace config settings
+     * @param string $baseDir        Optional base directory of the config
      */
     public function __construct($useEnvironment = true, $baseDir = null)
     {

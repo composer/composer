@@ -117,7 +117,7 @@ EOT
             ->setClassMapAuthoritative($authoritative)
             ->setUpdate(true)
             ->setUpdateWhitelist($packages)
-            ->setWhitelistDependencies( ! $input->getOption('no-update-with-dependencies'))
+            ->setWhitelistDependencies(!$input->getOption('no-update-with-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
         ;
 

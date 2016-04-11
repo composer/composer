@@ -13,7 +13,6 @@
 namespace Composer\Test;
 
 use Composer\Config;
-use Composer\Downloader\TransportException;
 
 class ConfigTest extends \PHPUnit_Framework_TestCase
 {
@@ -252,7 +251,8 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             'file://myserver.localhost/mygit.git',
             'file://example.org/mygit.git',
         );
-        return array_combine($urls, array_map(function($e) { return array($e); }, $urls));
+
+        return array_combine($urls, array_map(function ($e) { return array($e); }, $urls));
     }
 
     /**
@@ -270,9 +270,10 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             'svn://1.2.3.4/trunk',
             'git://5.6.7.8/git.git',
         );
-        return array_combine($urls, array_map(function($e) { return array($e); }, $urls));
+
+        return array_combine($urls, array_map(function ($e) { return array($e); }, $urls));
     }
-    
+
     /**
      * @group TLS
      */

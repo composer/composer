@@ -1488,7 +1488,7 @@ class Installer
     }
 
     /**
-     * @param SuggestedPackagesReporter $suggestedPackagesReporter
+     * @param  SuggestedPackagesReporter $suggestedPackagesReporter
      * @return Installer
      */
     public function setSuggestedPackagesReporter(SuggestedPackagesReporter $suggestedPackagesReporter)

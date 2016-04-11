@@ -75,7 +75,7 @@ class Bitbucket
     }
 
     /**
-     * @param string $originUrl
+     * @param  string $originUrl
      * @return bool
      */
     private function requestAccessToken($originUrl)
@@ -88,7 +88,7 @@ class Bitbucket
                 'http' => array(
                     'method' => 'POST',
                     'content' => 'grant_type=client_credentials',
-                )
+                ),
             ));
 
             $this->token = json_decode($json, true);
@@ -150,7 +150,7 @@ class Bitbucket
 
         $consumer = array(
             "consumer-key" => $consumerKey,
-            "consumer-secret" => $consumerSecret
+            "consumer-secret" => $consumerSecret,
         );
         $this->config->getAuthConfigSource()->addConfigSetting('bitbucket-oauth.'.$originUrl, $consumer);
 
@@ -162,9 +162,9 @@ class Bitbucket
     /**
      * Retrieves an access token from Bitbucket.
      *
-     * @param string $originUrl
-     * @param string $consumerKey
-     * @param string $consumerSecret
+     * @param  string $originUrl
+     * @param  string $consumerKey
+     * @param  string $consumerSecret
      * @return array
      */
     public function requestToken($originUrl, $consumerKey, $consumerSecret)

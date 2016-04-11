@@ -10,7 +10,7 @@ For the full copyright and license information, please view the LICENSE
 file that was distributed with this source code.
 EOF;
 
-$finder = Symfony\CS\Finder::create()
+$finder = PhpCsFixer\Finder::create()
     ->files()
     ->name('*.php')
     ->exclude('Fixtures')
@@ -18,7 +18,7 @@ $finder = Symfony\CS\Finder::create()
     ->in(__DIR__.'/tests')
 ;
 
-return Symfony\CS\Config::create()
+return PhpCsFixer\Config::create()
     ->setUsingCache(true)
     //->setUsingLinter(false)
     ->setRiskyAllowed(true)
@@ -26,6 +26,7 @@ return Symfony\CS\Config::create()
         '@PSR2' => true,
         'binary_operator_spaces' => true,
         'blank_line_before_return' => true,
+        'cast_spaces' => true,
         'header_comment' => array('header' => $header),
         'include' => true,
         'long_array_syntax' => true,
@@ -39,6 +40,7 @@ return Symfony\CS\Config::create()
         'no_leading_namespace_whitespace' => true,
         'no_trailing_comma_in_singleline_array' => true,
         'no_unused_imports' => true,
+        'no_whitespace_in_blank_lines' => true,
         'object_operator_without_whitespace' => true,
         'phpdoc_align' => true,
         'phpdoc_indent' => true,
@@ -50,11 +52,9 @@ return Symfony\CS\Config::create()
         'phpdoc_type_to_var' => true,
         'psr0' => true,
         'single_blank_line_before_namespace' => true,
-        'spaces_cast' => true,
         'standardize_not_equals' => true,
         'ternary_operator_spaces' => true,
         'trailing_comma_in_multiline_array' => true,
-        'whitespacy_lines' => true,
     ))
     ->finder($finder)
 ;

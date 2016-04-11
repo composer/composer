@@ -302,11 +302,11 @@ TAGSPUBKEY
     }
 
     /**
-     * @param string $localFilename
-     * @param string $newFilename
-     * @param string $backupTarget
-     * @return \UnexpectedValueException|\PharException|null
+     * @param  string                                        $localFilename
+     * @param  string                                        $newFilename
+     * @param  string                                        $backupTarget
      * @throws \Exception
+     * @return \UnexpectedValueException|\PharException|null
      */
     protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
     {
@@ -325,6 +325,7 @@ TAGSPUBKEY
             }
 
             rename($newFilename, $localFilename);
+
             return null;
         } catch (\Exception $e) {
             if (!$e instanceof \UnexpectedValueException && !$e instanceof \PharException) {

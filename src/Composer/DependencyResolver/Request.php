@@ -46,8 +46,8 @@ class Request
      *
      * These jobs will not be tempered with by the solver
      *
-     * @param string                    $packageName
-     * @param ConstraintInterface|null  $constraint
+     * @param string                   $packageName
+     * @param ConstraintInterface|null $constraint
      */
     public function fix($packageName, ConstraintInterface $constraint = null)
     {

@@ -58,6 +58,7 @@ class RepositoryManager
                 return $package;
             }
         }
+
         return null;
     }
 
