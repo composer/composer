@@ -108,6 +108,6 @@ class PathRepositoryTest extends TestCase
 
         // Convert platform specific separators back to generic URL slashes
         $relativeUrl = str_replace(DIRECTORY_SEPARATOR, '/', $relativeUrl);
-        $this->assertEquals(rtrim($relativeUrl, '/'), rtrim($package->getDistUrl(), '/'));
+        $this->assertEquals($relativeUrl, $package->getDistUrl());
     }
 }
