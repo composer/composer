@@ -205,10 +205,10 @@ echo 'function composer() { COMPOSER="$(which composer)" || { echo "Could not fi
 On platforms without `php5enmod` and `php5dismod` you can run:
 
 ```sh
-php -i | grep php.ini
+php --ini
 ```
 
-To check where the PHP configuration is, and then run use a similar script:
+To check where the PHP configuration is, and then use a similar script:
 
 ```sh
 mkdir /usr/local/etc/php/7.0/conf.dis
