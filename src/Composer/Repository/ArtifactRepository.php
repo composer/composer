@@ -108,7 +108,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 $length = strlen($stat['name']);
-                if ($indexOfShortestMatch == false || $length < $lengthOfShortestMatch) {
+                if ($indexOfShortestMatch === false || $length < $lengthOfShortestMatch) {
                     //Check it's not a directory.
                     $contents = $zip->getFromIndex($i);
                     if ($contents !== false) {

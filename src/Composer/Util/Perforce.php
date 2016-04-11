@@ -64,7 +64,7 @@ class Perforce
     public function initialize($repoConfig)
     {
         $this->uniquePerforceClientName = $this->generateUniquePerforceClientName();
-        if (null == $repoConfig) {
+        if (null === $repoConfig) {
             return;
         }
         if (isset($repoConfig['unique_perforce_client_name'])) {
@@ -313,7 +313,7 @@ class Perforce
         $prevDir = getcwd();
         chdir($this->path);
         $p4SyncCommand = $this->generateP4Command('sync -f ');
-        if (null != $sourceReference) {
+        if (null !== $sourceReference) {
             $p4SyncCommand = $p4SyncCommand . '@' . $sourceReference;
         }
         $this->executeCommand($p4SyncCommand);
@@ -362,7 +362,7 @@ class Perforce
             return;
         }
         $line = fgets($pipe);
-        while ($line != false) {
+        while ($line !== false) {
             $line = fgets($pipe);
         }
 
@@ -549,11 +549,11 @@ class Perforce
     public function getCommitLogs($fromReference, $toReference)
     {
         $fromChangeList = $this->getChangeList($fromReference);
-        if ($fromChangeList == null) {
+        if ($fromChangeList === null) {
             return null;
         }
         $toChangeList = $this->getChangeList($toReference);
-        if ($toChangeList == null) {
+        if ($toChangeList === null) {
             return null;
         }
         $index = strpos($fromReference, '@');
