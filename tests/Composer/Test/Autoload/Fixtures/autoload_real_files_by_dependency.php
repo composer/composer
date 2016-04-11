@@ -26,7 +26,7 @@ class ComposerAutoloaderInitFilesAutoloadOrder
         if (PHP_VERSION_ID >= 50600) {
             require_once __DIR__ . '/autoload_static.php';
 
-            \call_user_func(\Composer\Autoload\ComposerStaticInitFilesAutoloadOrder::getInitializer($loader));
+            call_user_func(\Composer\Autoload\ComposerStaticInitFilesAutoloadOrder::getInitializer($loader));
         } else {
             $map = require __DIR__ . '/autoload_namespaces.php';
             foreach ($map as $namespace => $path) {
