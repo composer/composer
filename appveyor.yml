@@ -28,7 +28,7 @@ install:
     - IF %PHP%==1 echo @php %%~dp0composer.phar %%* > composer.bat
     - appveyor DownloadFile https://getcomposer.org/composer.phar
     - cd c:\projects\composer
-    - composer install --prefer-source --no-progress
+    - composer install --prefer-dist --no-progress
 
 test_script:
     - cd c:\projects\composer
