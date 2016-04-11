@@ -70,7 +70,7 @@ final class TlsHelper
         }
 
         if (!isset($info['subject']['commonName'])) {
-            return;
+            return null;
         }
 
         $commonName = strtolower($info['subject']['commonName']);
@@ -82,6 +82,7 @@ final class TlsHelper
                 if (0 === strpos($name, 'DNS:')) {
                     return strtolower(ltrim(substr($name, 4)));
                 }
+                return null;
             }, $subjectAltNames));
             $subjectAltNames = array_values($subjectAltNames);
         }

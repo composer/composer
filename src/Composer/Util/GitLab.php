@@ -70,6 +70,7 @@ class GitLab
     /**
      * Authorizes a GitLab domain interactively via OAuth.
      *
+     * @param string $scheme    Scheme used in the origin URL
      * @param string $originUrl The host this GitLab instance is located at
      * @param string $message   The reason this authorization is required
      *

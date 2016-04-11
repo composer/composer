@@ -15,9 +15,7 @@ namespace Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
-use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Silencer;
 
 /**
  * Utility to handle installation of package "bin"/binaries for PEAR packages
@@ -30,10 +28,12 @@ class PearBinaryInstaller extends BinaryInstaller
     private $vendorDir;
 
     /**
-     * @param IOInterface $io
-     * @param string $binDir
-     * @param string $binCompat
-     * @param Filesystem $filesystem
+     * @param IOInterface   $io
+     * @param string        $binDir
+     * @param string        $vendorDir
+     * @param string        $binCompat
+     * @param Filesystem    $filesystem
+     * @param PearInstaller $installer
      */
     public function __construct(IOInterface $io, $binDir, $vendorDir, $binCompat, Filesystem $filesystem, PearInstaller $installer)
     {

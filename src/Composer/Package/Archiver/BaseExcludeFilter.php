@@ -83,7 +83,7 @@ abstract class BaseExcludeFilter
                     $line = trim($line);
 
                     if (!$line || 0 === strpos($line, '#')) {
-                        return;
+                        return null;
                     }
 
                     return call_user_func($lineParser, $line);

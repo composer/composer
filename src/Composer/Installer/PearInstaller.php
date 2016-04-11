@@ -18,7 +18,6 @@ use Composer\Downloader\PearPackageExtractor;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Platform;
-use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 
 /**

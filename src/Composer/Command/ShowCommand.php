@@ -89,7 +89,7 @@ EOT
         if ($input->getOption('tree') && ($input->getOption('all') || $input->getOption('available'))) {
             $io->writeError('The --tree (-t) option is not usable in combination with --all or --available (-a)');
 
-            return;
+            return 0;
         }
 
         // init repos
@@ -332,7 +332,11 @@ EOT
     }
 
     /**
-     * prints package meta data
+     * Prints package metadata.
+     *
+     * @param CompletePackageInterface $package
+     * @param array                    $versions
+     * @param RepositoryInterface      $installedRepo
      */
     protected function printMeta(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo)
     {
@@ -389,7 +393,11 @@ EOT
     }
 
     /**
-     * prints all available versions of this package and highlights the installed one if any
+     * Prints all available versions of this package and highlights the installed one if any.
+     *
+     * @param CompletePackageInterface $package
+     * @param array                    $versions
+     * @param RepositoryInterface      $installedRepo
      */
     protected function printVersions(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo)
     {

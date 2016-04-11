@@ -56,6 +56,7 @@ class ArrayRepository extends BaseRepository
                 }
             }
         }
+        return null;
     }
 
     /**

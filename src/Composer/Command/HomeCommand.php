@@ -67,7 +67,7 @@ EOT
             foreach ($repos as $repo) {
                 foreach ($repo->findPackages($packageName) as $package) {
                     $packageExists = true;
-                    if ($this->handlePackage($package, $input->getOption('homepage'), $input->getOption('show'))) {
+                    if ($package instanceof CompletePackageInterface && $this->handlePackage($package, $input->getOption('homepage'), $input->getOption('show'))) {
                         $handled = true;
                         break 2;
                     }

@@ -13,7 +13,6 @@
 namespace Composer\Util;
 
 use Composer\Config;
-use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 
 /**

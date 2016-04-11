@@ -69,7 +69,7 @@ class HgDownloader extends VcsDownloader
     public function getLocalChanges(PackageInterface $package, $path)
     {
         if (!is_dir($path.'/.hg')) {
-            return;
+            return null;
         }
 
         $this->process->execute('hg st', $output, realpath($path));

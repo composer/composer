@@ -25,7 +25,11 @@ use Composer\Json\JsonFile;
 class RepositoryFactory
 {
     /**
-     * @return array
+     * @param IOInterface   $io
+     * @param Config        $config
+     * @param string        $repository
+     * @param bool          $allowFilesystem
+     * @return array|mixed
      */
     public static function configFromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false)
     {
@@ -52,6 +56,10 @@ class RepositoryFactory
     }
 
     /**
+     * @param IOInterface   $io
+     * @param Config        $config
+     * @param string        $repository
+     * @param bool          $allowFilesystem
      * @return RepositoryInterface
      */
     public static function fromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false)
@@ -62,9 +70,12 @@ class RepositoryFactory
     }
 
     /**
+     * @param IOInterface   $io
+     * @param Config        $config
+     * @param array         $repoConfig
      * @return RepositoryInterface
      */
-    public static function createRepo($io, $config, array $repoConfig)
+    public static function createRepo(IOInterface $io, Config $config, array $repoConfig)
     {
         $rm = static::manager($io, $config, null, Factory::createRemoteFilesystem($io, $config));
         $repos = static::createRepos($rm, array($repoConfig));
@@ -73,6 +84,9 @@ class RepositoryFactory
     }
 
     /**
+     * @param IOInterface|null          $io
+     * @param Config|null               $config
+     * @param RepositoryManager|null    $rm
      * @return RepositoryInterface[]
      */
     public static function defaultRepos(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)

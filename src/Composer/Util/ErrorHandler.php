@@ -66,9 +66,9 @@ class ErrorHandler
     }
 
     /**
-     * Register error handler
+     * Register error handler.
      *
-     * @static
+     * @param IOInterface|null $io
      */
     public static function register(IOInterface $io = null)
     {

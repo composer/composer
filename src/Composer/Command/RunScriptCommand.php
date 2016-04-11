@@ -70,7 +70,7 @@ EOT
         if ($input->getOption('list')) {
             return $this->listScripts();
         } elseif (!$input->getArgument('script')) {
-            throw new \RunTimeException('Missing required argument "script"');
+            throw new \RuntimeException('Missing required argument "script"');
         }
 
         $script = $input->getArgument('script');

@@ -53,7 +53,6 @@ class ChannelReader extends BaseChannelReader
         $xml = $this->requestXml($url, "/channel.xml");
 
         $channelName = (string) $xml->name;
-        $channelSummary = (string) $xml->summary;
         $channelAlias = (string) $xml->suggestedalias;
 
         $supportedVersions = array_keys($this->readerMap);

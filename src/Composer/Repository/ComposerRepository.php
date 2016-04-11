@@ -272,6 +272,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @param Pool   $pool
      * @param string $name package name
      * @param bool   $bypassFilters If set to true, this bypasses the stability filtering, and forces a recompute without cache
+     * @return array|mixed
      */
     public function whatProvides(Pool $pool, $name, $bypassFilters = false)
     {
