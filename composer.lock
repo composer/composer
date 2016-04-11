@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "566a14fadc9a5f62f733f4f9a6cedd1e",
-    "content-hash": "924a1d97b52715f41db37e3792a0d74a",
+    "hash": "139d401995e94b07b6ef32f5ac51b53e",
+    "content-hash": "094f6d065f20d465a84e3727bb50c7bb",
     "packages": [
         {
             "name": "composer/ca-bundle",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "4059c02b474668bde9d115731615eaf073691ee1"
+                "reference": "5c4905c04fc61f092879bf7e710b199c3bbb6c43"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/4059c02b474668bde9d115731615eaf073691ee1",
-                "reference": "4059c02b474668bde9d115731615eaf073691ee1",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/5c4905c04fc61f092879bf7e710b199c3bbb6c43",
+                "reference": "5c4905c04fc61f092879bf7e710b199c3bbb6c43",
                 "shasum": ""
             },
             "require": {
@@ -60,7 +60,7 @@
                 "ssl",
                 "tls"
             ],
-            "time": "2016-04-11 15:47:46"
+            "time": "2016-04-11 17:23:25"
         },
         {
             "name": "composer/semver",
