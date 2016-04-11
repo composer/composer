@@ -305,7 +305,7 @@ TAGSPUBKEY
      * @param string $localFilename
      * @param string $newFilename
      * @param string $backupTarget
-     * @return \Exception|null
+     * @return \UnexpectedValueException|\PharException|null
      * @throws \Exception
      */
     protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)

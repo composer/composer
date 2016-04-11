@@ -18,7 +18,7 @@ use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
-use Composer\Repository\WritableRepositoryInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Script\ScriptEvents;
 
@@ -85,7 +85,7 @@ class AutoloadGenerator
         $this->runScripts = (boolean) $runScripts;
     }
 
-    public function dump(Config $config, WritableRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
+    public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
         if ($this->classMapAuthoritative) {
             // Force scanPsr0Packages when classmap is authoritative
