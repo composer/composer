@@ -21,7 +21,18 @@ use Composer\Util\Platform;
  */
 class PlatformTest extends \PHPUnit_Framework_TestCase
 {
-    public function testWindows()
+    public function testExpandPath()
+    {
+        putenv('TESTENV=/home/test');
+        if (Platform::isWindows()) {
+            $this->assertEquals('/home/test/myPath', Platform::expandPath('%TESTENV%/myPath'));
+        } else {
+            $this->assertEquals('/home/test/myPath', Platform::expandPath('$TESTENV/myPath'));
+        }
+        $this->assertEquals((getenv('HOME') ?: getenv('USERPROFILE')) . DIRECTORY_SEPARATOR . 'test', Platform::expandPath('~/test'));
+    }
+    
+    public function testIsWindows()
     {
         // Compare 2 common tests for Windows to the built-in Windows test
         $this->assertEquals(('\\' === DIRECTORY_SEPARATOR), Platform::isWindows());
