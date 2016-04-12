@@ -609,8 +609,8 @@ update to the latest version.
 ### Path
 
 In addition to the artifact repository, you can use the path one, which allows
-you to depend on a relative directory. This can be especially useful when dealing
-with monolith repositories.
+you to depend on a local directory, either absolute or relative. This can be
+especially useful when dealing with monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
 ```
@@ -667,9 +667,9 @@ Forcing mirroring can be useful when deploying or generating package from a mono
 }
 ```
 
-
-
-Instead of using a relative path, an absolute path can also be used.
+If present on *nix systems leading tildes are expanded to the current user's home folder, which
+can be handy when working on teams on the same packages. For example `~/git/mypackage` will
+automatically load the mypackage clone from `/home/<username>/git/mypackage` for every developer.
 
 > **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
 > For details, see the [PHP glob function](http://php.net/glob).
