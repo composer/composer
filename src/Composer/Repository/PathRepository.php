@@ -18,6 +18,7 @@ use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 
 /**
@@ -101,7 +102,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         }
 
         $this->loader = new ArrayLoader(null, true);
-        $this->url = $repoConfig['url'];
+        $this->url = Platform::expandPath($repoConfig['url']);
         $this->process = new ProcessExecutor($io);
         $this->versionGuesser = new VersionGuesser($config, $this->process, new VersionParser());
         $this->repoConfig = $repoConfig;
