@@ -29,7 +29,7 @@ class PlatformTest extends \PHPUnit_Framework_TestCase
         } else {
             $this->assertEquals('/home/test/myPath', Platform::expandPath('$TESTENV/myPath'));
         }
-        $this->assertEquals((getenv('HOME') ?: getenv('USERPROFILE')) . DIRECTORY_SEPARATOR . 'test', Platform::expandPath('~/test'));
+        $this->assertEquals((getenv('HOME') ?: getenv('USERPROFILE')) . '/test', Platform::expandPath('~/test'));
     }
     
     public function testIsWindows()

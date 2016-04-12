@@ -31,7 +31,7 @@ class Platform
             return self::getUserDirectory() . substr($path, 1);
         }
         return preg_replace_callback(self::isWindows() ? '#^(%(\\w+)%)[/\\\\]#' : '#^(\\$(\\w+))/#', function($matches) {
-            return getenv($matches[2]) . DIRECTORY_SEPARATOR;
+            return getenv($matches[2]) . '/';
         }, $path);
     }
 
