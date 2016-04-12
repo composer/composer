@@ -283,9 +283,9 @@ EOF;
         } elseif (file_exists($includeFilesFilePath)) {
             unlink($includeFilesFilePath);
         }
+        file_put_contents($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader));
-        file_put_contents($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath));
+        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion));
 
         $this->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
         $this->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
@@ -538,7 +538,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader)
+    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion = 70000)
     {
         $file = <<<HEADER
 <?php
@@ -580,7 +580,7 @@ INCLUDE_PATH;
         }
 
         $file .= <<<STATIC_INIT
-        if (PHP_VERSION_ID >= 50600) {
+        if (PHP_VERSION_ID >= $staticPhpVersion) {
             require_once __DIR__ . '/autoload_static.php';
 
             call_user_func(\Composer\Autoload\ComposerStaticInit$suffix::getInitializer(\$loader));
@@ -646,7 +646,7 @@ REGISTER_LOADER;
 
         if ($useIncludeFiles) {
             $file .= <<<INCLUDE_FILES
-        if (PHP_VERSION_ID >= 50600) {
+        if (PHP_VERSION_ID >= $staticPhpVersion) {
             \$includeFiles = Composer\Autoload\ComposerStaticInit$suffix::\$files;
         } else {
             \$includeFiles = require __DIR__ . '/autoload_files.php';
@@ -689,8 +689,10 @@ FOOTER;
 FOOTER;
     }
 
-    protected function getStaticFile($suffix, $targetDir, $vendorPath, $basePath)
+    protected function getStaticFile($suffix, $targetDir, $vendorPath, $basePath, &$staticPhpVersion)
     {
+        $staticPhpVersion = 50600;
+
         $file = <<<HEADER
 <?php
 
@@ -744,6 +746,11 @@ HEADER;
         }
 
         foreach ($maps as $prop => $value) {
+            if (count($value) > 32767) {
+                // Static arrays are limited to 32767 values on PHP 5.6
+                // See https://bugs.php.net/68057
+                $staticPhpVersion = 70000;
+            }
             $value = var_export($value, true);
             $value = str_replace($absoluteVendorPathCode, $vendorPathCode, $value);
             $value = str_replace($absoluteAppBaseDirCode, $appBaseDirCode, $value);
