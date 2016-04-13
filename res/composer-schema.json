@@ -238,6 +238,10 @@
                         "type": "string"
                     }
                 },
+                "git-clone-depth": {
+                    "type": "integer",
+                    "description": "Defaults to 1 (shallow clone). Set to the desired history size. If set to -1, the source will be cloned in full."
+                },
                 "github-expose-hostname": {
                     "type": "boolean",
                     "description": "Defaults to true. If set to false, the OAuth tokens created to access the github API will have a date instead of the machine hostname."

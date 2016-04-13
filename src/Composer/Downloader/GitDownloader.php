@@ -45,7 +45,11 @@ class GitDownloader extends VcsDownloader
 
         $ref = $package->getSourceReference();
         $flag = Platform::isWindows() ? '/D ' : '';
-        $command = '(git clone --no-checkout --depth 1 --single-branch %s %s --branch %s || git clone --no-checkout %1$s %2$s)'.
+        $cloneDepth = '';
+        if ($this->config->get('git-clone-depth') !== -1) {
+            $cloneDepth = '--depth '.$this->config->get('git-clone-depth');
+        }
+        $command = '(git clone --no-checkout '.$cloneDepth.' --single-branch %s %s --branch %s || git clone --no-checkout %1$s %2$s)'.
             ' && cd '.$flag.'%2$s && git remote add composer %1$s && (git fetch composer %3$s || git fetch composer)';
         $this->io->writeError("    Cloning ".$ref);
 
