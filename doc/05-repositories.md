@@ -668,10 +668,10 @@ Forcing mirroring can be useful when deploying or generating package from a mono
 ```
 
 Leading tildes are expanded to the current user's home folder, and environment
-variables are parsed according to host platform. For example `~/git/mypackage`
-will automatically load the mypackage clone from `/home/<username>/git/mypackage`,
-which is equivalent to `$HOME/git/mypackage` on Linux/Mac or
-`%USERPROFILE%/git/mypackage` on Windows.
+variables are parsed in both Windows and Linux/Mac notations. For example
+`~/git/mypackage` will automatically load the mypackage clone from
+`/home/<username>/git/mypackage`, equivalent to `$HOME/git/mypackage` or
+`%USERPROFILE%/git/mypackage`.
 
 > **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
 > For details, see the [PHP glob function](http://php.net/glob).

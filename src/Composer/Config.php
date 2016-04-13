@@ -14,6 +14,7 @@ namespace Composer;
 
 use Composer\Config\ConfigSourceInterface;
 use Composer\Downloader\TransportException;
+use Composer\Util\Platform;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -207,7 +208,7 @@ class Config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
                 $val = rtrim($this->process($this->getComposerEnv($env) ?: $this->config[$key], $flags), '/\\');
-                $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $val);
+                $val = Platform::expandPath($val);
 
                 if (substr($key, -4) !== '-dir') {
                     return $val;

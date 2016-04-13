@@ -13,7 +13,6 @@
 namespace Composer\Test;
 
 use Composer\Config;
-use Composer\Downloader\TransportException;
 
 class ConfigTest extends \PHPUnit_Framework_TestCase
 {
@@ -151,7 +150,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '\\/');
         $this->assertEquals('b', $config->get('c'));
-        $this->assertEquals($home.'/', $config->get('bin-dir'));
+        $this->assertEquals($home, $config->get('bin-dir'));
         $this->assertEquals($home.'/foo', $config->get('cache-dir'));
     }
 

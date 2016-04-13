@@ -30,8 +30,8 @@ class Platform
         if (preg_match('#^~[/\\\\]#', $path)) {
             return self::getUserDirectory() . substr($path, 1);
         }
-        return preg_replace_callback(self::isWindows() ? '#^(%(\\w+)%)[/\\\\]#' : '#^(\\$(\\w+))/#', function($matches) {
-            return getenv($matches[2]) . '/';
+        return preg_replace_callback('#^([\\$%])(\\w+)\\1?(([/\\\\].*)?)#', function($matches) {
+            return getenv($matches[2]) . $matches[3];
         }, $path);
     }
 
