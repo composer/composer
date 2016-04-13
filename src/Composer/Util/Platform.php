@@ -31,6 +31,10 @@ class Platform
             return self::getUserDirectory() . substr($path, 1);
         }
         return preg_replace_callback('#^([\\$%])(\\w+)\\1?(([/\\\\].*)?)#', function($matches) {
+            // Treat HOME as an alias for USERPROFILE on Windows for legacy reasons
+            if (Platform::isWindows() && $matches[2] == 'HOME') {
+                return (getenv('HOME') ?: getenv('USERPROFILE')) . $matches[3];
+            }
             return getenv($matches[2]) . $matches[3];
         }, $path);
     }
