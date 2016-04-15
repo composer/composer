@@ -104,7 +104,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             return;
         }
 
-        $command = 'git status --porcelain ' . ($showUntracked ? '' : ' --untracked-files=no');
+        $command = 'git status --porcelain' . ($showUntracked ? '' : ' --untracked-files=no');
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
