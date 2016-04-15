@@ -15,6 +15,8 @@ namespace Composer\Util;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use Composer\CaBundle\CaBundle;
+use Psr\Log\LoggerInterface;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
@@ -277,6 +279,11 @@ class RemoteFilesystem
         try {
             $result = file_get_contents($fileUrl, false, $ctx);
 
+            if ($this->bytesMax && strlen($result) < $this->bytesMax) {
+                // alas, this is not possible via the stream callback because STREAM_NOTIFY_COMPLETED is documented, but not implemented anywhere in PHP
+                throw new TransportException('Content-Length mismatch');
+            }
+
             if (PHP_VERSION_ID < 50600 && !empty($options['ssl']['peer_fingerprint'])) {
                 // Emulate fingerprint validation on PHP < 5.6
                 $params = stream_context_get_params($ctx);
@@ -418,7 +425,7 @@ class RemoteFilesystem
             // 4. To prevent any attempt at being hoodwinked by switching the
             //    certificate between steps 2 and 3 the fingerprint of the certificate
             //    presented in step 3 is compared against the one recorded in step 2.
-            if (TlsHelper::isOpensslParseSafe()) {
+            if (CaBundle::isOpensslParseSafe()) {
                 $certDetails = $this->getCertificateCnAndFp($this->fileUrl, $options);
 
                 if ($certDetails) {
@@ -786,12 +793,14 @@ class RemoteFilesystem
             $defaults['ssl'] = array_replace_recursive($defaults['ssl'], $options['ssl']);
         }
 
+        $caBundleLogger = $this->io instanceof LoggerInterface ? $this->io : null;
+
         /**
          * Attempt to find a local cafile or throw an exception if none pre-set
          * The user may go download one if this occurs.
          */
         if (!isset($defaults['ssl']['cafile']) && !isset($defaults['ssl']['capath'])) {
-            $result = $this->getSystemCaRootBundlePath();
+            $result = CaBundle::getSystemCaRootBundlePath($caBundleLogger);
 
             if (preg_match('{^phar://}', $result)) {
                 $hash = hash_file('sha256', $result);
@@ -810,7 +819,7 @@ class RemoteFilesystem
             }
         }
 
-        if (isset($defaults['ssl']['cafile']) && (!is_readable($defaults['ssl']['cafile']) || !$this->validateCaFile($defaults['ssl']['cafile']))) {
+        if (isset($defaults['ssl']['cafile']) && (!is_readable($defaults['ssl']['cafile']) || !CaBundle::validateCaFile($defaults['ssl']['cafile'], $caBundleLogger))) {
             throw new TransportException('The configured cafile was not valid or could not be read.');
         }
 
@@ -826,131 +835,6 @@ class RemoteFilesystem
         }
 
         return $defaults;
-    }
-
-    /**
-     * This method was adapted from Sslurp.
-     * https://github.com/EvanDotPro/Sslurp
-     *
-     * (c) Evan Coury <me@evancoury.com>
-     *
-     * For the full copyright and license information, please see below:
-     *
-     * Copyright (c) 2013, Evan Coury
-     * All rights reserved.
-     *
-     * Redistribution and use in source and binary forms, with or without modification,
-     * are permitted provided that the following conditions are met:
-     *
-     *     * Redistributions of source code must retain the above copyright notice,
-     *       this list of conditions and the following disclaimer.
-     *
-     *     * Redistributions in binary form must reproduce the above copyright notice,
-     *       this list of conditions and the following disclaimer in the documentation
-     *       and/or other materials provided with the distribution.
-     *
-     * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-     * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-     * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-     * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-     * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-     * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-     * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-     * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-     * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-     * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-     *
-     * @return string
-     */
-    private function getSystemCaRootBundlePath()
-    {
-        static $caPath = null;
-
-        if ($caPath !== null) {
-            return $caPath;
-        }
-
-        // If SSL_CERT_FILE env variable points to a valid certificate/bundle, use that.
-        // This mimics how OpenSSL uses the SSL_CERT_FILE env variable.
-        $envCertFile = getenv('SSL_CERT_FILE');
-        if ($envCertFile && is_readable($envCertFile) && $this->validateCaFile($envCertFile)) {
-            return $caPath = $envCertFile;
-        }
-
-        // If SSL_CERT_DIR env variable points to a valid certificate/bundle, use that.
-        // This mimics how OpenSSL uses the SSL_CERT_FILE env variable.
-        $envCertDir = getenv('SSL_CERT_DIR');
-        if ($envCertDir && is_dir($envCertDir) && is_readable($envCertDir)) {
-            return $caPath = $envCertDir;
-        }
-
-        $configured = ini_get('openssl.cafile');
-        if ($configured && strlen($configured) > 0 && is_readable($configured) && $this->validateCaFile($configured)) {
-            return $caPath = $configured;
-        }
-
-        $configured = ini_get('openssl.capath');
-        if ($configured && is_dir($configured) && is_readable($configured)) {
-            return $caPath = $configured;
-        }
-
-        $caBundlePaths = array(
-            '/etc/pki/tls/certs/ca-bundle.crt', // Fedora, RHEL, CentOS (ca-certificates package)
-            '/etc/ssl/certs/ca-certificates.crt', // Debian, Ubuntu, Gentoo, Arch Linux (ca-certificates package)
-            '/etc/ssl/ca-bundle.pem', // SUSE, openSUSE (ca-certificates package)
-            '/usr/local/share/certs/ca-root-nss.crt', // FreeBSD (ca_root_nss_package)
-            '/usr/ssl/certs/ca-bundle.crt', // Cygwin
-            '/opt/local/share/curl/curl-ca-bundle.crt', // OS X macports, curl-ca-bundle package
-            '/usr/local/share/curl/curl-ca-bundle.crt', // Default cURL CA bunde path (without --with-ca-bundle option)
-            '/usr/share/ssl/certs/ca-bundle.crt', // Really old RedHat?
-            '/etc/ssl/cert.pem', // OpenBSD
-            '/usr/local/etc/ssl/cert.pem', // FreeBSD 10.x
-        );
-
-        foreach ($caBundlePaths as $caBundle) {
-            if (Silencer::call('is_readable', $caBundle) && $this->validateCaFile($caBundle)) {
-                return $caPath = $caBundle;
-            }
-        }
-
-        foreach ($caBundlePaths as $caBundle) {
-            $caBundle = dirname($caBundle);
-            if (Silencer::call('is_dir', $caBundle) && glob($caBundle.'/*')) {
-                return $caPath = $caBundle;
-            }
-        }
-
-        return $caPath = __DIR__.'/../../../res/cacert.pem'; // Bundled with Composer, last resort
-    }
-
-    /**
-     * @param string $filename
-     *
-     * @return bool
-     */
-    private function validateCaFile($filename)
-    {
-        static $files = array();
-
-        if (isset($files[$filename])) {
-            return $files[$filename];
-        }
-
-        $this->io->writeError('Checking CA file '.realpath($filename), true, IOInterface::DEBUG);
-        $contents = file_get_contents($filename);
-
-        // assume the CA is valid if php is vulnerable to
-        // https://www.sektioneins.de/advisories/advisory-012013-php-openssl_x509_parse-memory-corruption-vulnerability.html
-        if (!TlsHelper::isOpensslParseSafe()) {
-            $this->io->writeError(sprintf(
-                '<error>Your version of PHP, %s, is affected by CVE-2013-6420 and cannot safely perform certificate validation, we strongly suggest you upgrade.</error>',
-                PHP_VERSION
-            ));
-
-            return $files[$filename] = !empty($contents);
-        }
-
-        return $files[$filename] = (bool) openssl_x509_parse($contents);
     }
 
     /**

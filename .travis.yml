@@ -27,7 +27,7 @@ matrix:
 
 before_script:
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
-    - flags=""
+    - flags="--prefer-dist"
     - composer install $flags
     - bin/composer install $flags
     - git config --global user.name travis-ci

@@ -171,6 +171,9 @@ class ArrayLoader implements LoaderInterface
                 foreach ($config['scripts'] as $event => $listeners) {
                     $config['scripts'][$event] = (array) $listeners;
                 }
+                if (isset($config['scripts']['composer'])) {
+                    trigger_error('The `composer` script name is reserved for internal use, please avoid defining it', E_USER_DEPRECATED);
+                }
                 $package->setScripts($config['scripts']);
             }
 

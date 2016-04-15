@@ -24,6 +24,7 @@ use Composer\Script;
 use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
 use Composer\Util\ProcessExecutor;
+use Symfony\Component\Process\PhpExecutableFinder;
 
 /**
  * The Event Dispatcher.
@@ -172,7 +173,25 @@ class EventDispatcher
                 $scriptName = substr($callable, 1);
                 $args = $event->getArguments();
                 $flags = $event->getFlags();
-                $return = $this->dispatch($scriptName, new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode(), $args, $flags));
+                if (substr($callable, 0, 10) === '@composer ') {
+                    $finder = new PhpExecutableFinder();
+                    $phpPath = $finder->find();
+                    if (!$phpPath) {
+                        throw new \RuntimeException('Failed to locate PHP binary to execute '.$scriptName);
+                    }
+                    $exec = $phpPath . '  ' . realpath($_SERVER['argv'][0]) . substr($callable, 9);
+                    if (0 !== ($exitCode = $this->process->execute($exec))) {
+                        $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
+
+                        throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
+                    }
+                } else {
+                    if (!$this->getListeners(new Event($scriptName))) {
+                        $this->io->writeError(sprintf('<warning>You made a reference to a non-existent script %s</warning>', $callable));
+                    }
+
+                    $return = $this->dispatch($scriptName, new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode(), $args, $flags));
+                }
             } elseif ($this->isPhpScript($callable)) {
                 $className = substr($callable, 0, strpos($callable, '::'));
                 $methodName = substr($callable, strpos($callable, '::') + 2);
