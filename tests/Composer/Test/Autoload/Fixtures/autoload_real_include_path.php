@@ -23,7 +23,8 @@ class ComposerAutoloaderInitIncludePath
         self::$loader = $loader = new \Composer\Autoload\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInitIncludePath', 'loadClassLoader'));
 
-        if (PHP_VERSION_ID >= 50600 && !defined('HHVM_VERSION')) {
+        $useStaticLoader = PHP_VERSION_ID >= 50600 && !defined('HHVM_VERSION');
+        if ($useStaticLoader) {
             require_once __DIR__ . '/autoload_static.php';
 
             call_user_func(\Composer\Autoload\ComposerStaticInitIncludePath::getInitializer($loader));

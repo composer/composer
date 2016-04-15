@@ -580,7 +580,8 @@ INCLUDE_PATH;
         }
 
         $file .= <<<STATIC_INIT
-        if (PHP_VERSION_ID >= $staticPhpVersion && !defined('HHVM_VERSION')) {
+        \$useStaticLoader = PHP_VERSION_ID >= $staticPhpVersion && !defined('HHVM_VERSION');
+        if (\$useStaticLoader) {
             require_once __DIR__ . '/autoload_static.php';
 
             call_user_func(\Composer\Autoload\ComposerStaticInit$suffix::getInitializer(\$loader));
@@ -646,7 +647,7 @@ REGISTER_LOADER;
 
         if ($useIncludeFiles) {
             $file .= <<<INCLUDE_FILES
-        if (PHP_VERSION_ID >= $staticPhpVersion) {
+        if (\$useStaticLoader) {
             \$includeFiles = Composer\Autoload\ComposerStaticInit$suffix::\$files;
         } else {
             \$includeFiles = require __DIR__ . '/autoload_files.php';
