@@ -97,14 +97,14 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges(PackageInterface $package, $path)
+    public function getLocalChanges(PackageInterface $package, $path, $showUntracked = false)
     {
         GitUtil::cleanEnv();
         if (!$this->hasMetadataRepository($path)) {
             return;
         }
 
-        $command = 'git status --porcelain --untracked-files=no';
+        $command = 'git status --porcelain ' . ($showUntracked ? '' : ' --untracked-files=no');
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
