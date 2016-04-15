@@ -27,7 +27,7 @@ class ComposerAutoloaderInitFilesAutoload
         array_push($includePaths, get_include_path());
         set_include_path(join(PATH_SEPARATOR, $includePaths));
 
-        if (PHP_VERSION_ID >= 50600) {
+        if (PHP_VERSION_ID >= 50600 && !defined('HHVM_VERSION')) {
             require_once __DIR__ . '/autoload_static.php';
 
             call_user_func(\Composer\Autoload\ComposerStaticInitFilesAutoload::getInitializer($loader));
