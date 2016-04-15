@@ -280,8 +280,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $this->providers[$name];
         }
 
-        // skip platform packages
-        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
+        // skip platform packages, root package and composer-plugin-api
+        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
             return array();
         }
 
