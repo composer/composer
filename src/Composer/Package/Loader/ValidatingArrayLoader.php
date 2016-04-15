@@ -23,8 +23,9 @@ use Composer\Repository\PlatformRepository;
  */
 class ValidatingArrayLoader implements LoaderInterface
 {
-    const CHECK_ALL = 1;
+    const CHECK_ALL = 3;
     const CHECK_UNBOUND_CONSTRAINTS = 1;
+    const CHECK_STRICT_CONSTRAINTS = 2;
 
     private $loader;
     private $versionParser;
@@ -177,6 +178,13 @@ class ValidatingArrayLoader implements LoaderInterface
                             && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $package)
                         ) {
                             $this->warnings[] = $linkType.'.'.$package.' : unbound version constraints ('.$constraint.') should be avoided';
+                        } elseif (
+                            // check requires for exact constraints
+                            ($this->flags & self::CHECK_STRICT_CONSTRAINTS)
+                            && 'require' === $linkType
+                            && substr($linkConstraint, 0, 1) === '='
+                        ) {
+                            $this->warnings[] = $linkType.'.'.$package.' : exact version constraints ('.$constraint.') should be avoided if the package follows semantic versioning';
                         }
                     }
                 }
