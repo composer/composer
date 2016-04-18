@@ -241,7 +241,7 @@ class Rule
                         return $text . ' -> the requested linked library '.$lib.' has the wrong version installed or is missing from your system, make sure to have the extension providing it.';
                     } else {
                         if ($providers = $pool->whatProvides($targetName, $this->reasonData->getConstraint(), true, true)) {
-                            return $text . ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $providers) .' but these conflict with your requirements or minimum-stability';
+                            return $text . ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $providers) .' but these conflict with your requirements or minimum-stability.';
                         }
 
                         return $text . ' -> no matching package found.';
