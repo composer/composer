@@ -117,7 +117,7 @@ EOT
         }
 
         if (Composer::VERSION === $updateVersion) {
-            $io->writeError('<info>You are already using composer version '.$updateVersion.'.</info>');
+            $io->writeError(sprintf('<info>You are already using composer version %s (%s channel).</info>', $updateVersion, $versionsUtil->getChannel()));
 
             // remove all backups except for the most recent, if any
             if ($input->getOption('clean-backups')) {
