@@ -14,6 +14,7 @@ namespace Composer;
 
 use Composer\Config\ConfigSourceInterface;
 use Composer\Downloader\TransportException;
+use Composer\Package\Url;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -412,14 +413,14 @@ class Config
         }
 
         // Parse the URL into its separate parts
-        $parsed = parse_url($url);
-        if (false === $parsed || !isset($parsed['scheme'])) {
+        $protocol = Url::create($url)->getProtocol();
+        if (!$protocol) {
             // If the URL is malformed or does not contain a usable scheme it's not going to work anyway
             return;
         }
 
         // Throw exception on known insecure protocols
-        if (in_array($parsed['scheme'], array('http', 'git', 'ftp', 'svn'))) {
+        if (in_array($protocol, array('http', 'git', 'ftp', 'svn'))) {
             throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
         }
     }
