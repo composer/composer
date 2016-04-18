@@ -448,6 +448,7 @@ class Installer
                 $candidates = array();
                 foreach ($links as $link) {
                     $candidates[$link->getTarget()] = true;
+                    $rootRequires[$link->getTarget()] = $link;
                 }
                 foreach ($localRepo->getPackages() as $package) {
                     $candidates[$package->getName()] = true;
@@ -459,6 +460,9 @@ class Installer
                         if ($curPackage->getName() === $candidate) {
                             if (!$this->isUpdateable($curPackage) && !isset($removedUnstablePackages[$curPackage->getName()])) {
                                 $constraint = new Constraint('=', $curPackage->getVersion());
+                                $description = $this->locker->isLocked() ? '(locked at' : '(installed at';
+                                $requiredAt = isset($rootRequires[$candidate]) ? ', required as ' . $rootRequires[$candidate]->getPrettyConstraint() : '';
+                                $constraint->setPrettyString($description . ' ' . $curPackage->getPrettyVersion() . $requiredAt . ')');
                                 $request->install($curPackage->getName(), $constraint);
                             }
                             break;
