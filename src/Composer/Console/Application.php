@@ -117,6 +117,14 @@ class Application extends BaseApplication
         }
 
         if ($commandName !== 'global') {
+            $io->writeError(sprintf(
+                'Running %s (%s) with %s on %s',
+                Composer::VERSION,
+                Composer::RELEASE_DATE,
+                defined('HHVM_VERSION') ? 'HHVM '.HHVM_VERSION : 'PHP '.PHP_VERSION,
+                php_uname('s') . ' / ' . php_uname('r')
+            ), true, IOInterface::DEBUG);
+
             if (PHP_VERSION_ID < 50302) {
                 $io->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
             }
