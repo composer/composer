@@ -54,7 +54,9 @@ class PharArchiver implements ArchiverInterface
 
             $phar = new \PharData($target, null, null, static::$formats[$format]);
             $files = new ArchivableFilesFinder($sources, $excludes);
-            $phar->buildFromIterator($files, $sources);
+            $filesOnly = new ArchivableFilesFilter($files);
+            $phar->buildFromIterator($filesOnly, $sources);
+            $filesOnly->addEmptyDir($phar, $sources);
 
             if (isset(static::$compressFormats[$format])) {
                 // Check can be compressed?
