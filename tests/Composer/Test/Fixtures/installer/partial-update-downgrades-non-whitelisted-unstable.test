@@ -53,7 +53,8 @@ update c/uptodate
     "packages": [
         { "name": "a/old", "version": "1.0.0", "type": "library" },
         { "name": "b/unstable", "version": "1.0.0", "type": "library" },
-        { "name": "c/uptodate", "version": "2.0.0", "type": "library" }
+        { "name": "c/uptodate", "version": "2.0.0", "type": "library" },
+        { "name": "d/removed", "version": "1.0.0", "type": "library" }
     ],
     "packages-dev": [],
     "aliases": [],
@@ -67,3 +68,4 @@ update c/uptodate
 --EXPECT--
 Updating b/unstable (1.1.0-alpha) to b/unstable (1.0.0)
 Updating a/old (0.9.0) to a/old (1.0.0)
+Installing d/removed (1.0.0)

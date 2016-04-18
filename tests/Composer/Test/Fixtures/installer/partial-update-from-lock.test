@@ -8,10 +8,13 @@ Partial update from lock file should update everything to the state of the lock,
             "package": [
                 { "name": "a/old", "version": "1.0.0" },
                 { "name": "a/old", "version": "2.0.0" },
-                { "name": "b/unstable", "version": "1.0.0" },
-                { "name": "b/unstable", "version": "1.1.0-alpha" },
+                { "name": "b/unstable", "version": "1.0.0", "require": {"f/dependency": "1.*"} },
+                { "name": "b/unstable", "version": "1.1.0-alpha", "require": {"f/dependency": "1.*"} },
                 { "name": "c/uptodate", "version": "1.0.0" },
-                { "name": "d/removed", "version": "1.0.0" }
+                { "name": "d/removed", "version": "1.0.0" },
+                { "name": "e/newreq", "version": "1.0.0" },
+                { "name": "f/dependency", "version": "1.1.0" },
+                { "name": "f/dependency", "version": "1.0.0" }
             ]
         }
     ],
@@ -25,9 +28,11 @@ Partial update from lock file should update everything to the state of the lock,
 {
     "packages": [
         { "name": "a/old", "version": "1.0.0" },
-        { "name": "b/unstable", "version": "1.1.0-alpha" },
+        { "name": "b/unstable", "version": "1.1.0-alpha", "require": {"f/dependency": "1.*"} },
         { "name": "c/uptodate", "version": "1.0.0" },
-        { "name": "d/removed", "version": "1.0.0" }
+        { "name": "d/removed", "version": "1.0.0" },
+        { "name": "e/newreq", "version": "1.0.0" },
+        { "name": "f/dependency", "version": "1.0.0" }
     ],
     "packages-dev": [],
     "aliases": [],
@@ -43,8 +48,9 @@ Partial update from lock file should update everything to the state of the lock,
 --INSTALLED--
 [
     { "name": "a/old", "version": "0.9.0" },
-    { "name": "b/unstable", "version": "1.1.0-alpha" },
-    { "name": "c/uptodate", "version": "2.0.0" }
+    { "name": "b/unstable", "version": "1.1.0-alpha", "require": {"f/dependency": "1.*"} },
+    { "name": "c/uptodate", "version": "2.0.0" },
+    { "name": "f/dependency", "version": "1.0.0" }
 ]
 --RUN--
 update b/unstable
@@ -52,8 +58,11 @@ update b/unstable
 {
     "packages": [
         { "name": "a/old", "version": "1.0.0", "type": "library" },
-        { "name": "b/unstable", "version": "1.0.0", "type": "library" },
-        { "name": "c/uptodate", "version": "1.0.0", "type": "library" }
+        { "name": "b/unstable", "version": "1.0.0", "type": "library", "require": {"f/dependency": "1.*"} },
+        { "name": "c/uptodate", "version": "1.0.0", "type": "library" },
+        { "name": "d/removed", "version": "1.0.0", "type": "library" },
+        { "name": "e/newreq", "version": "1.0.0", "type": "library" },
+        { "name": "f/dependency", "version": "1.0.0", "type": "library" }
     ],
     "packages-dev": [],
     "aliases": [],
@@ -68,3 +77,5 @@ update b/unstable
 Updating b/unstable (1.1.0-alpha) to b/unstable (1.0.0)
 Updating a/old (0.9.0) to a/old (1.0.0)
 Updating c/uptodate (2.0.0) to c/uptodate (1.0.0)
+Installing d/removed (1.0.0)
+Installing e/newreq (1.0.0)
