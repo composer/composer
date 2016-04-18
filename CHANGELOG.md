@@ -1,3 +1,15 @@
+### [1.0.1] - 2016-04-18
+
+  * Fixed URL updating when a package's URL changes, composer.lock now contains the right URL including correct reference
+  * Fixed URL updating of the origin git remote as well for packages installed as git clone
+  * Fixed binary .bat files generated from linux being incompatible with windows cmd
+  * Fixed handling of paths with trailing slashes in path repository
+  * Fixed create-project not using platform config when selecting a package
+  * Fixed self-update not showing the channel it uses to perform the update
+  * Fixed file downloads not failing loudly when the content does not match the Content-Length header
+  * Fixed secure-http detecting some malformed URLs as insecure
+  * Updated CA bundle
+
 ### [1.0.0] - 2016-04-05
 
   * Added support for bitbucket-oauth configuration
@@ -323,6 +335,7 @@
 
   * Initial release
 
+[1.0.1]: https://github.com/composer/composer/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/composer/composer/compare/1.0.0-beta2...1.0.0
 [1.0.0-beta2]: https://github.com/composer/composer/compare/1.0.0-beta1...1.0.0-beta2
 [1.0.0-beta1]: https://github.com/composer/composer/compare/1.0.0-alpha11...1.0.0-beta1
