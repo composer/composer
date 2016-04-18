@@ -250,6 +250,8 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             '\\myserver\myplace.git',
             'file://myserver.localhost/mygit.git',
             'file://example.org/mygit.git',
+            'git:Department/Repo.git',
+            'ssh://[user@]host.xz[:port]/path/to/repo.git/',
         );
 
         return array_combine($urls, array_map(function ($e) { return array($e); }, $urls));

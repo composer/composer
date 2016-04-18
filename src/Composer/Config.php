@@ -407,19 +407,14 @@ class Config
      */
     public function prohibitUrlByConfig($url)
     {
-        if (!$this->get('secure-http')) {
+        // Return right away if check is disabled, or if the URL is malformed or custom (see issue #5173)
+        if (!$this->get('secure-http') || false === filter_var($url, FILTER_VALIDATE_URL)) {
             return;
         }
 
-        // Parse the URL into its separate parts
-        $parsed = parse_url($url);
-        if (false === $parsed || !isset($parsed['scheme'])) {
-            // If the URL is malformed or does not contain a usable scheme it's not going to work anyway
-            return;
-        }
-
-        // Throw exception on known insecure protocols
-        if (in_array($parsed['scheme'], array('http', 'git', 'ftp', 'svn'))) {
+        // Extract scheme and throw exception on known insecure protocols
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        if (in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
             throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
         }
     }
