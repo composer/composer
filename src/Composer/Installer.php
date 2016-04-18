@@ -535,8 +535,7 @@ class Installer
                 if ($package && $package->isDev()) {
                     $references = $this->package->getReferences();
                     if (isset($references[$package->getName()])) {
-                        $package->setSourceReference($references[$package->getName()]);
-                        $package->setDistReference($references[$package->getName()]);
+                        $this->updateInstallReferences($package, $references[$package->getName()]);
                     }
                 }
                 if ('update' === $operation->getJobType()
@@ -993,20 +992,37 @@ class Installer
                 $sourceUrl = $package->getSourceUrl();
                 $newSourceUrl = $newPackage->getSourceUrl();
 
-                if ($sourceUrl !== $newSourceUrl) {
-                    $package->setSourceType($newPackage->getSourceType());
-                    $package->setSourceUrl($newSourceUrl);
-                    $package->setSourceReference($newPackage->getSourceReference());
-                }
-
-                // only update dist url for github/bitbucket dists as they use a combination of dist url + dist reference to install
-                // but for other urls this is ambiguous and could result in bad outcomes
-                if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}', $newPackage->getDistUrl())) {
-                    $package->setDistUrl($newPackage->getDistUrl());
-                }
+                $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newPackage->getSourceReference(), $newPackage->getDistUrl());
             }
         }
     }
+
+    private function updatePackageUrl(PackageInterface $package, $sourceUrl, $sourceType, $sourceReference, $distUrl)
+    {
+        if ($package->getSourceUrl() !== $sourceUrl) {
+            $package->setSourceType($sourceType);
+            $package->setSourceUrl($sourceUrl);
+            $package->setSourceReference($sourceReference);
+        }
+
+        // only update dist url for github/bitbucket dists as they use a combination of dist url + dist reference to install
+        // but for other urls this is ambiguous and could result in bad outcomes
+        if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}i', $distUrl)) {
+            $package->setDistUrl($distUrl);
+            $this->updateInstallReferences($package, $sourceReference);
+        }
+    }
+
+    private function updateInstallReferences(PackageInterface $package, $reference)
+    {
+        $package->setSourceReference($reference);
+        $package->setDistReference($reference);
+
+        if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}i', $package->getDistUrl())) {
+            $package->setDistUrl(preg_replace('{(?<=/)[a-f0-9]{40}(?=/|$)}i', $reference, $package->getDistUrl()));
+        }
+    }
+
 
     /**
      * @param PlatformRepository $platformRepo
