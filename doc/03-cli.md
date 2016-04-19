@@ -274,6 +274,19 @@ To list all of the available packages, you can use the `show` command.
 php composer.phar show
 ```
 
+To list packages of a specific vendor, you can use the `--vendor` option
+
+```sh
+php composer.phar show --vendor=sebastian
+sebastian/comparator        1.2.0 Provides the functionality to compare PHP values for equality
+sebastian/diff              1.4.1 Diff implementation
+sebastian/environment       1.3.5 Provides functionality to handle HHVM/PHP environments
+sebastian/exporter          1.2.1 Provides the functionality to export PHP variables for visualization
+sebastian/global-state      1.1.1 Snapshotting of global state
+sebastian/recursion-context 1.0.2 Provides functionality to recursively process PHP variables
+sebastian/version           1.0.6 Library that helps with managing the version number of Git-hosted PHP projects
+```
+
 If you want to see the details of a certain package, you can pass the package
 name.
 

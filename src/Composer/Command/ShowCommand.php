@@ -62,6 +62,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
                 new InputOption('path', 'P', InputOption::VALUE_NONE, 'Show package paths'),
                 new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
+                new InputOption('vendor', null, InputOption::VALUE_REQUIRED, 'Vendor constraint to inspect'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -88,6 +89,12 @@ EOT
 
         if ($input->getOption('tree') && ($input->getOption('all') || $input->getOption('available'))) {
             $io->writeError('The --tree (-t) option is not usable in combination with --all or --available (-a)');
+
+            return 0;
+        }
+
+        if ($input->getOption('vendor') && ($input->getArgument('package') || $input->getOption('tree'))) {
+            $io->writeError('The --vendor option is not usable in combination with package argument or --tree (-t)');
 
             return 0;
         }
@@ -202,10 +209,18 @@ EOT
             }
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
                 foreach ($repo->getProviderNames() as $name) {
+                    if ($input->getOption('vendor') && !$this->isVendor($input->getOption('vendor'), $name)) {
+                        continue;
+                    }
+
                     $packages[$type][$name] = $name;
                 }
             } else {
                 foreach ($repo->getPackages() as $package) {
+                    if ($input->getOption('vendor') && !$this->isVendor($input->getOption('vendor'), $package->getName())) {
+                        continue;
+                    }
+
                     if (!isset($packages[$type][$package->getName()])
                         || !is_object($packages[$type][$package->getName()])
                         || version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '<')
@@ -569,6 +584,19 @@ EOT
                 }
             }
         }
+    }
+
+    /**
+     * @param string $vendorName
+     * @param string $packageName
+     *
+     * @return bool
+     */
+    private function isVendor($vendorName, $packageName)
+    {
+        list($vendor) = explode('/', $packageName);
+
+        return $vendor === $vendorName;
     }
 
     private function writeTreeLine($line)
