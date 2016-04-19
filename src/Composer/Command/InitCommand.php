@@ -115,7 +115,7 @@ EOT
             }
         }
 
-        $file = new JsonFile('composer.json');
+        $file = new JsonFile(Factory::getComposerFile());
         $json = $file->encode($options);
 
         if ($input->isInteractive()) {
