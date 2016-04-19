@@ -40,7 +40,7 @@ class Git
     public function runCommand($commandCallable, $url, $cwd, $initialClone = false)
     {
         // Ensure we are allowed to use this URL by config
-        $this->config->prohibitUrlByConfig($url);
+        $this->config->prohibitUrlByConfig($url, $this->io);
 
         if ($initialClone) {
             $origCwd = $cwd;

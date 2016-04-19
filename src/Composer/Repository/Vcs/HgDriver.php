@@ -48,7 +48,7 @@ class HgDriver extends VcsDriver
             }
 
             // Ensure we are allowed to use this URL by config
-            $this->config->prohibitUrlByConfig($this->url);
+            $this->config->prohibitUrlByConfig($this->url, $this->io);
 
             // update the repo if it is a valid hg repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {

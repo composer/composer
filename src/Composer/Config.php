@@ -14,6 +14,7 @@ namespace Composer;
 
 use Composer\Config\ConfigSourceInterface;
 use Composer\Downloader\TransportException;
+use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -78,6 +79,7 @@ class Config
     private $configSource;
     private $authConfigSource;
     private $useEnvironment;
+    private $warnedHosts = array();
 
     /**
      * @param bool   $useEnvironment Use COMPOSER_ environment variables to replace config settings
@@ -403,19 +405,28 @@ class Config
     /**
      * Validates that the passed URL is allowed to be used by current config, or throws an exception.
      *
-     * @param string $url
+     * @param string      $url
+     * @param IOInterface $io
      */
-    public function prohibitUrlByConfig($url)
+    public function prohibitUrlByConfig($url, IOInterface $io = null)
     {
-        // Return right away if check is disabled, or if the URL is malformed or custom (see issue #5173)
-        if (!$this->get('secure-http') || false === filter_var($url, FILTER_VALIDATE_URL)) {
+        // Return right away if the URL is malformed or custom (see issue #5173)
+        if (false === filter_var($url, FILTER_VALIDATE_URL)) {
             return;
         }
 
         // Extract scheme and throw exception on known insecure protocols
         $scheme = parse_url($url, PHP_URL_SCHEME);
         if (in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
-            throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
+            if ($this->get('secure-http')) {
+                throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
+            } elseif ($io) {
+                $host = parse_url($url, PHP_URL_HOST);
+                if (!isset($this->warnedHosts[$host])) {
+                    $io->writeError("<warning>Warning: Accessing $host over $scheme which is an insecure protocol.</warning>");
+                }
+                $this->warnedHosts[$host] = true;
+            }
         }
     }
 }

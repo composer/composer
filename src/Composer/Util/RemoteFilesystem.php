@@ -258,13 +258,13 @@ class RemoteFilesystem
         $this->io->writeError((substr($origFileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $origFileUrl . $usingProxy, true, IOInterface::DEBUG);
         unset($origFileUrl, $actualContextOptions);
 
-        if ($this->progress && !$isRedirect) {
-            $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
-        }
-
         // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
         if ((substr($fileUrl, 0, 23) !== 'http://packagist.org/p/' || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && $this->config) {
-            $this->config->prohibitUrlByConfig($fileUrl);
+            $this->config->prohibitUrlByConfig($fileUrl, $this->io);
+        }
+
+        if ($this->progress && !$isRedirect) {
+            $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
         }
 
         $errorMessage = '';
