@@ -190,10 +190,8 @@ EOT
 
         // list packages
         $packages = array();
-        if ($packageFilter) {
+        if (null !== $packageFilter) {
             $packageFilter = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
-        } else {
-            $packageFilter = '{.}';
         }
 
         foreach ($repos as $repo) {
@@ -209,7 +207,7 @@ EOT
             }
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
                 foreach ($repo->getProviderNames() as $name) {
-                    if (preg_match($packageFilter, $name)) {
+                    if (!$packageFilter || preg_match($packageFilter, $name)) {
                         $packages[$type][$name] = $name;
                     }
                 }
@@ -219,7 +217,7 @@ EOT
                         || !is_object($packages[$type][$package->getName()])
                         || version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '<')
                     ) {
-                        if (preg_match($packageFilter, $package->getName())) {
+                        if (!$packageFilter || preg_match($packageFilter, $package->getName())) {
                             $packages[$type][$package->getName()] = $package;
                         }
                     }
