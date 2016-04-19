@@ -450,7 +450,7 @@ class Installer
                     $candidates[$link->getTarget()] = true;
                     $rootRequires[$link->getTarget()] = $link;
                 }
-                foreach ($localRepo->getPackages() as $package) {
+                foreach ($currentPackages as $package) {
                     $candidates[$package->getName()] = true;
                 }
 
