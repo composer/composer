@@ -156,6 +156,14 @@ class Application extends BaseApplication
                 Silencer::call('exec', 'sudo -K > /dev/null 2>&1');
             }
 
+            // Check system temp folder for usability as it can cause weird runtime issues otherwise
+            Silencer::call(function() {
+                $tempfile = sys_get_temp_dir() . '/temp-' . md5(microtime());
+                if (!(file_put_contents($tempfile, __FILE__) && (file_get_contents($tempfile) == __FILE__) && unlink($tempfile) && !file_exists($tempfile))) {
+                    throw new \RuntimeException(sprintf('PHP temp directory "%s" does not exist or is not writable to Composer - check sys_temp_dir in your php.ini', sys_get_temp_dir()));
+                }
+            });
+
             // switch working dir
             if ($newWorkDir = $this->getNewWorkingDir($input)) {
                 $oldWorkingDir = getcwd();
