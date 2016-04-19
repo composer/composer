@@ -18,15 +18,13 @@ This idea is not new and Composer is strongly inspired by node's
 
 Suppose:
 
-a) You have a project that depends on a number of libraries.
-
-b) Some of those libraries depend on other libraries.
+1. You have a project that depends on a number of libraries.
+1. Some of those libraries depend on other libraries.
 
 Composer:
 
-c) Enables you to declare the libraries you depend on.
-
-d) Finds out which versions of which packages can and need to be installed, and
+1. Enables you to declare the libraries you depend on.
+1. Finds out which versions of which packages can and need to be installed, and
    installs them (meaning it downloads them into your project).
 
 See the [Basic usage](01-basic-usage.md) chapter for more details on declaring
