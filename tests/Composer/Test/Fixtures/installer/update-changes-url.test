@@ -1,11 +1,12 @@
 --TEST--
 Update updates URLs for updated packages if they have changed
 
-a/a gets everything updated as it updates to a new ref
-b/b gets everything updated by updating the package URL directly
-c/c is not whitelisted but still gets its URL updated
+a/a is dev and gets everything updated as it updates to a new ref
+b/b is a tag and gets everything updated by updating the package URL directly
+c/c is a tag and not whitelisted and gets the new URL but keeps its old ref
 d/d is dev but with a #ref so it should get URL updated but not the reference
-e/e is newly installed with a #ref so it should get the correct URL but with the #111 ref
+e/e is dev and newly installed with a #ref so it should get the correct URL but with the #111 ref
+e/e is dev but not whitelisted and gets the new URL but keeps its old ref
 --COMPOSER--
 {
     "repositories": [
@@ -36,6 +37,11 @@ e/e is newly installed with a #ref so it should get the correct URL but with the
                     "name": "e/e", "version": "dev-master",
                     "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/e/newe", "type": "git" },
                     "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/e/newe/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                },
+                {
+                    "name": "f/f", "version": "dev-master",
+                    "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/f/newf", "type": "git" },
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/f/newf/zipball/2222222222222222222222222222222222222222", "type": "zip" }
                 }
             ]
         }
@@ -45,7 +51,8 @@ e/e is newly installed with a #ref so it should get the correct URL but with the
         "b/b": "2.0.3",
         "c/c": "1.0.0",
         "d/d": "dev-master#1111111111111111111111111111111111111111",
-        "e/e": "dev-master#1111111111111111111111111111111111111111"
+        "e/e": "dev-master#1111111111111111111111111111111111111111",
+        "f/f": "dev-master"
     }
 }
 --INSTALLED--
@@ -69,6 +76,11 @@ e/e is newly installed with a #ref so it should get the correct URL but with the
         "name": "d/d", "version": "dev-master",
         "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/d/d", "type": "git" },
         "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/d/d/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+    },
+    {
+        "name": "f/f", "version": "dev-master",
+        "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/f/f", "type": "git" },
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/f/zipball/1111111111111111111111111111111111111111", "type": "zip" }
     }
 ]
 --EXPECT-LOCK--
@@ -88,8 +100,8 @@ e/e is newly installed with a #ref so it should get the correct URL but with the
         },
         {
             "name": "c/c", "version": "1.0.0",
-            "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/c/newc", "type": "git" },
-            "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/c/newc/zipball/2222222222222222222222222222222222222222", "type": "zip", "shasum": null },
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/c/newc", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/c/newc/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
             "type": "library"
         },
         {
@@ -103,6 +115,12 @@ e/e is newly installed with a #ref so it should get the correct URL but with the
             "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/e/newe", "type": "git" },
             "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/e/newe/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
             "type": "library"
+        },
+        {
+            "name": "f/f", "version": "dev-master",
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/f/newf", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/newf/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
+            "type": "library"
         }
     ],
     "packages-dev": [],
@@ -111,7 +129,8 @@ e/e is newly installed with a #ref so it should get the correct URL but with the
     "stability-flags": {
         "a/a": 20,
         "d/d": 20,
-        "e/e": 20
+        "e/e": 20,
+        "f/f": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
