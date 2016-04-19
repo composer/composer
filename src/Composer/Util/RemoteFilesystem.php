@@ -279,7 +279,7 @@ class RemoteFilesystem
         try {
             $result = file_get_contents($fileUrl, false, $ctx);
 
-            if ($this->bytesMax && strlen($result) < $this->bytesMax) {
+            if ($this->bytesMax && Platform::strlen($result) < $this->bytesMax) {
                 // alas, this is not possible via the stream callback because STREAM_NOTIFY_COMPLETED is documented, but not implemented anywhere in PHP
                 throw new TransportException('Content-Length mismatch');
             }

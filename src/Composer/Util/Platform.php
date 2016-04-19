@@ -26,4 +26,22 @@ class Platform
     {
         return defined('PHP_WINDOWS_VERSION_BUILD');
     }
+
+    /**
+     * @param  string $str
+     * @return int return a guaranteed binary length of the string, regardless of silly mbstring configs
+     */
+    public static function strlen($str)
+    {
+        static $useMbString = null;
+        if (null === $useMbString) {
+            $useMbString = function_exists('mb_strlen') && ini_get('mbstring.func_overload');
+        }
+
+        if ($useMbString) {
+            return mb_strlen($str, '8bit');
+        }
+
+        return strlen($str);
+    }
 }
