@@ -52,7 +52,7 @@ class ShowCommand extends BaseCommand
             ->setAliases(array('info'))
             ->setDescription('Show information about packages')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect'),
+                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),
                 new InputOption('all', null, InputOption::VALUE_NONE, 'List all packages'),
                 new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only (enabled by default, only present for BC).'),
@@ -131,8 +131,10 @@ EOT
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
         }
 
+        $packageFilter = $input->getArgument('package');
+
         // show single package or single version
-        if ($input->getArgument('package') || !empty($package)) {
+        if (($packageFilter && false === strpos($packageFilter, '*')) || !empty($package)) {
             if (empty($package)) {
                 list($package, $versions) = $this->getPackage($installedRepo, $repos, $input->getArgument('package'), $input->getArgument('version'));
 
@@ -188,6 +190,11 @@ EOT
 
         // list packages
         $packages = array();
+        if ($packageFilter) {
+            $packageFilter = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
+        } else {
+            $packageFilter = '{.}';
+        }
 
         foreach ($repos as $repo) {
             if ($repo === $platformRepo) {
@@ -202,7 +209,9 @@ EOT
             }
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
                 foreach ($repo->getProviderNames() as $name) {
-                    $packages[$type][$name] = $name;
+                    if (preg_match($packageFilter, $name)) {
+                        $packages[$type][$name] = $name;
+                    }
                 }
             } else {
                 foreach ($repo->getPackages() as $package) {
@@ -210,7 +219,9 @@ EOT
                         || !is_object($packages[$type][$package->getName()])
                         || version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '<')
                     ) {
-                        $packages[$type][$package->getName()] = $package;
+                        if (preg_match($packageFilter, $package->getName())) {
+                            $packages[$type][$package->getName()] = $package;
+                        }
                     }
                 }
             }

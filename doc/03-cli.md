@@ -274,6 +274,14 @@ To list all of the available packages, you can use the `show` command.
 php composer.phar show
 ```
 
+To filter the list you can pass a package mask using wildcards.
+
+```sh
+php composer.phar show monolog/*
+
+monolog/monolog 1.19.0 Sends your logs to files, sockets, inboxes, databases and various web services
+```
+
 If you want to see the details of a certain package, you can pass the package
 name.
 
@@ -305,10 +313,13 @@ php composer.phar show monolog/monolog 1.0.2
 
 ### Options
 
-* **--installed (-i):** List the packages that are installed.
+* **--all (-a):** List all packages available in all your repositories.
+* **--installed (-i):** List the packages that are installed (this is enabled by default, and deprecated).
 * **--platform (-p):** List only platform packages (php & extensions).
 * **--self (-s):** List the root package info.
-* **--tree (-t):** List the dependencies as a tree. Only usable when giving a single package name or combined with `-i`.
+* **--tree (-t):** List your dependencies as a tree. If you pass a package name it will show the dependency tree for that package.
+* **--name-only (-N):** List package names only.
+* **--path (-P):** List package paths.
 
 ## browse / home
 
