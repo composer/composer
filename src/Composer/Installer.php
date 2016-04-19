@@ -1003,6 +1003,8 @@ class Installer
 
     private function updatePackageUrl(PackageInterface $package, $sourceUrl, $sourceType, $sourceReference, $distUrl)
     {
+        $oldSourceRef = $package->getSourceReference();
+
         if ($package->getSourceUrl() !== $sourceUrl) {
             $package->setSourceType($sourceType);
             $package->setSourceUrl($sourceUrl);
@@ -1014,6 +1016,10 @@ class Installer
         if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}i', $distUrl)) {
             $package->setDistUrl($distUrl);
             $this->updateInstallReferences($package, $sourceReference);
+        }
+
+        if ($this->updateWhitelist && !$this->isUpdateable($package)) {
+            $this->updateInstallReferences($package, $oldSourceRef);
         }
     }
 
