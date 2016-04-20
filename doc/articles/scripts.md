@@ -71,7 +71,7 @@ Composer fires the following named events during its execution process:
 
 The root JSON object in `composer.json` should have a property called
 `"scripts"`, which contains pairs of named events and each event's
-corresponding scripts. An event's scripts can be defined as either as a string
+corresponding scripts. An event's scripts can be defined as either a string
 (only for a single script) or an array (for single or multiple scripts.)
 
 For any given event:
@@ -149,7 +149,7 @@ class MyClass
 }
 ```
 
-When an event is fired, your PHP callback receives as first argument an
+When an event is fired, your PHP callback receives as first argument a
 `Composer\EventDispatcher\Event` object. This object has a `getName()` method
 that lets you retrieve event name.
 
