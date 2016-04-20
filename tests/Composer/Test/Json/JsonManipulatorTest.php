@@ -2045,6 +2045,31 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddMainKeyWithContentHavingDollarSignFollowedByDigit()
+    {
+        $manipulator = new JsonManipulator('{
+    "foo": "bar"
+}');
+        
+        $this->assertTrue($manipulator->addMainKey('bar', '$1baz'));
+        $this->assertEquals('{
+    "foo": "bar",
+    "bar": "$1baz"
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddMainKeyWithContentHavingDollarSignFollowedByDigit2()
+    {
+        $manipulator = new JsonManipulator('{}');
+
+        $this->assertTrue($manipulator->addMainKey('foo', '$1bar'));
+        $this->assertEquals('{
+    "foo": "$1bar"
+}
+', $manipulator->getContents());
+    }
+    
     public function testUpdateMainKey()
     {
         $manipulator = new JsonManipulator('{
@@ -2105,6 +2130,19 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 ', $manipulator->getContents());
     }
 
+    public function testUpdateMainKeyWithContentHavingDollarSignFollowedByDigit()
+    {
+        $manipulator = new JsonManipulator('{
+    "foo": "bar"
+}');
+
+        $this->assertTrue($manipulator->addMainKey('foo', '$1bar'));
+        $this->assertEquals('{
+    "foo": "$1bar"
+}
+', $manipulator->getContents());
+    }
+    
     public function testIndentDetection()
     {
         $manipulator = new JsonManipulator('{
