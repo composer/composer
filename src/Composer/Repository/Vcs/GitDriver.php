@@ -38,6 +38,7 @@ class GitDriver extends VcsDriver
     public function initialize()
     {
         if (Filesystem::isLocalPath($this->url)) {
+            $this->url = preg_replace('{[\\/]\.git/?$}', '', $this->url);
             $this->repoDir = $this->url;
             $cacheUrl = realpath($this->url);
         } else {
@@ -219,7 +220,7 @@ class GitDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (preg_match('#(^git://|\.git$|git(?:olite)?@|//git\.|//github.com/)#i', $url)) {
+        if (preg_match('#(^git://|\.git/?$|git(?:olite)?@|//git\.|//github.com/)#i', $url)) {
             return true;
         }
 
