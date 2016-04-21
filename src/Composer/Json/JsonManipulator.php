@@ -74,14 +74,16 @@ class JsonManipulator
         if (isset($decoded[$type][$package])) {
             // update existing link
             $packageRegex = str_replace('/', '\\\\?/', preg_quote($package));
-            // addcslashes is used to double up backslashes since preg_replace resolves them as back references otherwise, see #1588
-            $links = preg_replace('{"'.$packageRegex.'"(\s*:\s*)'.self::$JSON_STRING.'}i', addcslashes(JsonFile::encode($package).'${1}"'.$constraint.'"', '\\'), $links);
+            $links = preg_replace_callback('{"'.$packageRegex.'"(\s*:\s*)'.self::$JSON_STRING.'}i', function ($m) use ($package, $constraint) {
+                return JsonFile::encode($package) . $m[1] . '"' . $constraint . '"';
+            }, $links);
         } else {
             if ($this->pregMatch('#^\s*\{\s*\S+.*?(\s*\}\s*)$#s', $links, $match)) {
                 // link missing but non empty links
                 $links = preg_replace(
                     '{'.preg_quote($match[1]).'$}',
-                    addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $match[1], '\\'),
+                    // addcslashes is used to double up backslashes/$ since preg_replace resolves them as back references otherwise, see #1588
+                    addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $match[1], '\\$'),
                     $links
                 );
             } else {
@@ -223,7 +225,7 @@ class JsonManipulator
             // child missing but non empty children
             $children = preg_replace(
                 '#'.$match[1].'$#',
-                addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $match[1], '\\'),
+                addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $match[1], '\\$'),
                 $children
             );
         } else {
@@ -235,7 +237,9 @@ class JsonManipulator
             $children = $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $children;
         }
 
-        $this->contents = preg_replace($nodeRegex, addcslashes('${1}${2}'.$children.'${4}${5}', '\\'), $this->contents);
+        $this->contents = preg_replace_callback($nodeRegex, function ($m) use ($children) {
+            return $m[1] . $m[2] . $children . $m[4] . $m[5];
+        }, $this->contents);
 
         return true;
     }
