@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\Package\RootPackageInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Package\Link;
 
 /**
  * Common ancestor class for generic repository functionality.
@@ -44,6 +45,15 @@ abstract class BaseRepository implements RepositoryInterface
         // initialize the array with the needles before any recursion occurs
         if (null === $packagesFound) {
             $packagesFound = $needles;
+        }
+
+        // locate root package for use below
+        $rootPackage = null;
+        foreach ($this->getPackages() as $package) {
+            if ($package instanceof RootPackageInterface) {
+                $rootPackage = $package;
+                break;
+            }
         }
 
         // Loop over all currently installed packages.
@@ -88,8 +98,41 @@ abstract class BaseRepository implements RepositoryInterface
                     foreach ($this->findPackages($link->getTarget()) as $pkg) {
                         $version = new Constraint('=', $pkg->getVersion());
                         if ($link->getConstraint()->matches($version) === $invert) {
-                            $results[$package->getName()] = array($package, $link, false);
+                            $results[] = array($package, $link, false);
                         }
+                    }
+                }
+            }
+
+            // When inverting, we need to check for conflicts of the needles' requirements against installed packages
+            if ($invert && $constraint && in_array($package->getName(), $needles) && $constraint->matches(new Constraint('=', $package->getVersion()))) {
+                foreach ($package->getRequires() as $link) {
+                    foreach ($this->getPackages() as $pkg) {
+                        if (!in_array($link->getTarget(), $pkg->getNames())) {
+                            continue;
+                        }
+
+                        $version = new Constraint('=', $pkg->getVersion());
+                        if (!$link->getConstraint()->matches($version)) {
+                            // if we have a root package (we should but can not guarantee..) we show
+                            // the root requires as well to perhaps allow to find an issue there
+                            if ($rootPackage) {
+                                foreach (array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()) as $rootReq) {
+                                    if (in_array($rootReq->getTarget(), $pkg->getNames()) && !$rootReq->getConstraint()->matches($link->getConstraint())) {
+                                        $results[] = array($package, $link, false);
+                                        $results[] = array($rootPackage, $rootReq, false);
+                                        break 2;
+                                    }
+                                }
+                                $results[] = array($package, $link, false);
+                                $results[] = array($rootPackage, new Link($rootPackage->getName(), $link->getTarget(), null, 'does not require', 'but ' . $pkg->getPrettyVersion() . ' is installed'), false);
+                            } else {
+                                // no root so let's just print whatever we found
+                                $results[] = array($package, $link, false);
+                            }
+                        }
+
+                        break;
                     }
                 }
             }
