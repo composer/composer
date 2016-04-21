@@ -353,7 +353,7 @@ class JsonManipulator
         if ($this->pregMatch('#[^{\s](\s*)\}$#', $this->contents, $match)) {
             $this->contents = preg_replace(
                 '#'.$match[1].'\}$#',
-                addcslashes(',' . $this->newline . $this->indent . JsonFile::encode($key). ': '. $content . $this->newline . '}', '\\'),
+                addcslashes(',' . $this->newline . $this->indent . JsonFile::encode($key). ': '. $content . $this->newline . '}', '\\$'),
                 $this->contents
             );
 
@@ -363,7 +363,7 @@ class JsonManipulator
         // append at the end of the file
         $this->contents = preg_replace(
             '#\}$#',
-            addcslashes($this->indent . JsonFile::encode($key). ': '.$content . $this->newline . '}', '\\'),
+            addcslashes($this->indent . JsonFile::encode($key). ': '.$content . $this->newline . '}', '\\$'),
             $this->contents
         );
 
