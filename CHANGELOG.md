@@ -1,3 +1,11 @@
+### [1.0.2] - 2016-04-21
+
+  * Fixed regression in 1.0.1 on systems with mbstring.func_overload enabled
+  * Fixed regression in 1.0.1 that made dev packages update to the latest reference even if not whitelisted in a partial update
+  * Fixed init command ignoring the COMPOSER env var for choosing the json file name
+  * Fixed error reporting bug when the dependency resolution fails
+  * Fixed handling of `$` sign in composer config command in some cases it could corrupt the json file
+
 ### [1.0.1] - 2016-04-18
 
   * Fixed URL updating when a package's URL changes, composer.lock now contains the right URL including correct reference
@@ -335,6 +343,7 @@
 
   * Initial release
 
+[1.0.2]: https://github.com/composer/composer/compare/1.0.2...1.0.2
 [1.0.1]: https://github.com/composer/composer/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/composer/composer/compare/1.0.0-beta2...1.0.0
 [1.0.0-beta2]: https://github.com/composer/composer/compare/1.0.0-beta1...1.0.0-beta2
