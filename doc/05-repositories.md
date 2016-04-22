@@ -609,8 +609,8 @@ update to the latest version.
 ### Path
 
 In addition to the artifact repository, you can use the path one, which allows
-you to depend on a relative directory. This can be especially useful when dealing
-with monolith repositories.
+you to depend on a local directory, either absolute or relative. This can be
+especially useful when dealing with monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
 ```
@@ -649,8 +649,8 @@ the console will read `Symlinked from ../../packages/my-package`. If symlinking
 is _not_ possible the package will be copied. In that case, the console will
 output `Mirrored from ../../packages/my-package`.
 
-Instead of default fallback strategy you can force to use symlink with `"symlink": true` or
-mirroring with `"symlink": false` option.
+Instead of default fallback strategy you can force to use symlink with `"symlink": true`
+or mirroring with `"symlink": false` option.
 Forcing mirroring can be useful when deploying or generating package from a monolithic repository.
 
 ```json
@@ -667,9 +667,11 @@ Forcing mirroring can be useful when deploying or generating package from a mono
 }
 ```
 
-
-
-Instead of using a relative path, an absolute path can also be used.
+Leading tildes are expanded to the current user's home folder, and environment
+variables are parsed in both Windows and Linux/Mac notations. For example
+`~/git/mypackage` will automatically load the mypackage clone from
+`/home/<username>/git/mypackage`, equivalent to `$HOME/git/mypackage` or
+`%USERPROFILE%/git/mypackage`.
 
 > **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
 > For details, see the [PHP glob function](http://php.net/glob).
