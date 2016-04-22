@@ -116,7 +116,7 @@ class Application extends BaseApplication
             }
         }
 
-        if ($commandName !== 'global') {
+        if ($commandName !== 'global' && $commandName !== 'outdated') {
             $io->writeError(sprintf(
                 'Running %s (%s) with %s on %s',
                 Composer::VERSION,
@@ -339,6 +339,7 @@ class Application extends BaseApplication
             new Command\RemoveCommand(),
             new Command\HomeCommand(),
             new Command\ExecCommand(),
+            new Command\OutdatedCommand(),
         ));
 
         if ('phar:' === substr(__FILE__, 0, 5)) {

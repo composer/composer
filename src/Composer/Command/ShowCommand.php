@@ -16,6 +16,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
+use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionSelector;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -34,6 +35,8 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryFactory;
 use Composer\Spdx\SpdxLicenses;
+use Composer\Composer;
+use Composer\Semver\Semver;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -45,9 +48,6 @@ class ShowCommand extends BaseCommand
     /** @var VersionParser */
     protected $versionParser;
     protected $colors;
-
-    /** @var CompositeRepository */
-    protected $repos;
 
     /** @var Pool */
     private $pool;
@@ -106,6 +106,7 @@ EOT
             $platformOverrides = $composer->getConfig()->get('platform') ?: array();
         }
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
+        $phpVersion = $platformRepo->findPackage('php', '*')->getVersion();
 
         if ($input->getOption('self')) {
             $package = $this->getComposer()->getPackage();
@@ -139,6 +140,11 @@ EOT
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
         }
 
+        if ($input->getOption('latest') && null === $composer) {
+            $io->writeError('No composer.json found in the current directory, disabling "latest" option');
+            $input->setOption('latest', false);
+        }
+
         $packageFilter = $input->getArgument('package');
 
         // show single package or single version
@@ -157,8 +163,8 @@ EOT
                 $this->displayPackageTree($package, $installedRepo, $repos);
             } else {
                 $latestVersion = null;
-                if ($input->getOption('latest')) {
-                    $latestVersion = $this->findBestVersionForPackage($package->getName(), null);
+                if ($input->getOption('latest') && $composer) {
+                    $latestVersion = $this->findBestVersionForPackage($package->getName(), $composer, $phpVersion);
                 }
                 $this->printMeta($package, $versions, $installedRepo, $latestVersion);
                 $this->printLinks($package, 'requires');
@@ -285,9 +291,9 @@ EOT
                         }
 
                         if ($writeLatest) {
-                            $latestVersion = $this->findBestVersionForPackage($package->getName());
-                            $type = $latestVersion == $package->getFullPrettyVersion() ? 'info' : 'comment';
-                            $io->write(' <'.$type.'>' . str_pad($latestVersion, $latestLength, ' ') . '</'.$type.'>', false);
+                            $latestVersion = $this->findBestVersionForPackage($package->getName(), $composer, $phpVersion);
+                            $style = $this->getVersionStyle($latestVersion, $package);
+                            $io->write(' <'.$style.'>' . str_pad($latestVersion, $latestLength, ' ') . '</'.$style.'>', false);
                         }
 
                         if ($writeDescription) {
@@ -313,6 +319,22 @@ EOT
                 }
             }
         }
+    }
+
+    protected function getVersionStyle($latestVersion, $package)
+    {
+        if ($latestVersion === $package->getFullPrettyVersion()) {
+            // print green as it's up to date
+            return 'info';
+        }
+
+        if ($latestVersion && Semver::satisfies($latestVersion, '^'.$package->getVersion())) {
+            // print red as it needs an immediate semver-compliant upgrade
+            return 'highlight';
+        }
+
+        // print yellow as it needs an upgrade but has potential BC breaks so is not urgent
+        return 'comment';
     }
 
     /**
@@ -376,7 +398,8 @@ EOT
         $io->write('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
         $this->printVersions($package, $versions, $installedRepo);
         if ($latestVersion) {
-            $io->write('<info>latest</info>   : ' . $latestVersion);
+            $style = $this->getVersionStyle($latestVersion, $package);
+            $io->write('<info>latest</info>   : <'.$style.'>' . $latestVersion . '</'.$style.'>');
         }
         $io->write('<info>type</info>     : ' . $package->getType());
         $this->printLicenses($package);
@@ -621,41 +644,30 @@ EOT
      * @throws \InvalidArgumentException
      * @return string|null
      */
-    private function findBestVersionForPackage($name)
+    private function findBestVersionForPackage($name, Composer $composer, $phpVersion)
     {
         // find the latest version allowed in this pool
-        $versionSelector = new VersionSelector($this->getPool());
-        $package = $versionSelector->findBestCandidate($name);
+        $versionSelector = new VersionSelector($this->getPool($composer));
+        $stability = $composer->getPackage()->getMinimumStability();
+        $flags = $composer->getPackage()->getStabilityFlags();
+        if (isset($flags[$name])) {
+            $stability = array_search($flags[$name], BasePackage::$stabilities, true);
+        }
+
+        $package = $versionSelector->findBestCandidate($name, null, $phpVersion, $stability);
 
         if ($package) {
             return $package->getPrettyVersion();
         }
     }
 
-    protected function getRepos()
-    {
-        if (!$this->repos) {
-            $this->repos = new CompositeRepository(array_merge(
-                array(new PlatformRepository),
-                RepositoryFactory::defaultRepos($this->getIO())
-            ));
-        }
-
-        return $this->repos;
-    }
-
-    private function getPool()
+    private function getPool(Composer $composer)
     {
         if (!$this->pool) {
-            $this->pool = new Pool($this->getMinimumStability());
-            $this->pool->addRepository($this->getRepos());
+            $this->pool = new Pool($composer->getPackage()->getMinimumStability(), $composer->getPackage()->getStabilityFlags());
+            $this->pool->addRepository(new CompositeRepository($composer->getRepositoryManager()->getRepositories()));
         }
 
         return $this->pool;
-    }
-
-    private function getMinimumStability()
-    {
-        return 'stable';
     }
 }

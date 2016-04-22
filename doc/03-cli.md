@@ -313,6 +313,7 @@ php composer.phar show monolog/monolog 1.0.2
 
 ### Options
 
+* **--latest (-l):** List all installed packages including their latest version.
 * **--all (-a):** List all packages available in all your repositories.
 * **--installed (-i):** List the packages that are installed (this is enabled by default, and deprecated).
 * **--platform (-p):** List only platform packages (php & extensions).
@@ -320,6 +321,18 @@ php composer.phar show monolog/monolog 1.0.2
 * **--tree (-t):** List your dependencies as a tree. If you pass a package name it will show the dependency tree for that package.
 * **--name-only (-N):** List package names only.
 * **--path (-P):** List package paths.
+
+## outdated
+
+The `outdated` command shows a list of installed packages including their
+current and latest versions. This is basically an alias for `composer show -l`.
+
+The color coding is as such:
+
+- **green**: Dependency is in the latest version and is up to date.
+- **yellow**: Dependency has a new version available that includes backwards compatibility breaks according to semver, so upgrade when
+  you can but it may involve work.
+- **red**: Dependency has a new version that is semver-compatible and you should upgrade it.
 
 ## browse / home
 
