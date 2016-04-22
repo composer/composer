@@ -188,7 +188,7 @@ class GitHubDriver extends VcsDriver
                 }
             }
 
-            if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
+            if ($composer && preg_match('{[a-f0-9]{40}}i', $identifier)) {
                 $this->cache->write($identifier, json_encode($composer));
             }
 
