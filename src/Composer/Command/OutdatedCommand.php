@@ -50,8 +50,8 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // create new input without "global" command prefix
-        $input = new StringInput('show --latest '.ProcessExecutor::escape($input->getArgument('package')));
+        $pkg = $input->getArgument('package') ? ProcessExecutor::escape($input->getArgument('package')) : '';
+        $input = new StringInput('show --latest '.$pkg);
 
         return $this->getApplication()->run($input, $output);
     }
