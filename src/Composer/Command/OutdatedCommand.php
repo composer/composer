@@ -36,11 +36,11 @@ The outdated command is just a proxy for `composer show -l`
 
 The color coding for dependency versions is as such:
 
-- green: Dependency is in the latest version and is up to date.
-- yellow: Dependency has a new version available that includes backwards
+- <info>green</info>: Dependency is in the latest version and is up to date.
+- <comment>yellow</comment>: Dependency has a new version available that includes backwards
   compatibility breaks according to semver, so upgrade when you can but it
   may involve work.
-- red: Dependency has a new version that is semver-compatible and you should upgrade it.
+- <highlight>red</highlight>: Dependency has a new version that is semver-compatible and you should upgrade it.
 
 
 EOT
