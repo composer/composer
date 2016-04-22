@@ -27,15 +27,15 @@ class Platform
      */
     public static function expandPath($path)
     {
-        if (preg_match('#^~[/\\\\]#', $path)) {
+        if (preg_match('#^~[\\/]#', $path)) {
             return self::getUserDirectory() . substr($path, 1);
         }
-        return preg_replace_callback('#^([\\$%])(\\w+)\\1?(([/\\\\].*)?)#', function($matches) {
+        return preg_replace_callback('#^(\$|(?P<percent>%))(?P<var>\w++)(?(percent)%)(?P<path>.*)#', function($matches) {
             // Treat HOME as an alias for USERPROFILE on Windows for legacy reasons
-            if (Platform::isWindows() && $matches[2] == 'HOME') {
-                return (getenv('HOME') ?: getenv('USERPROFILE')) . $matches[3];
+            if (Platform::isWindows() && $matches['var'] == 'HOME') {
+                return (getenv('HOME') ?: getenv('USERPROFILE')) . $matches['path'];
             }
-            return getenv($matches[2]) . $matches[3];
+            return getenv($matches['var']) . $matches['path'];
         }, $path);
     }
 
