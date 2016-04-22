@@ -1090,6 +1090,10 @@ class Installer
                 $newSourceUrl = $newPackage->getSourceUrl();
 
                 $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newPackage->getSourceReference(), $newPackage->getDistUrl());
+
+                if ($package instanceof CompletePackage && $newPackage instanceof CompletePackage) {
+                    $package->setAbandoned($newPackage->getReplacementPackage() ?: $newPackage->isAbandoned());
+                }
             }
         }
     }
