@@ -25,6 +25,8 @@ use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\Silencer;
+use Composer\Plugin\PluginEvents;
+use Composer\EventDispatcher\Event;
 use Seld\JsonLint\DuplicateKeyException;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
@@ -353,12 +355,6 @@ class Factory
             $composer->setPluginManager($pm);
 
             $pm->loadInstalledPlugins();
-
-            // once we have plugins and custom installers we can
-            // purge packages from local repos if they have been deleted on the filesystem
-            if ($rm->getLocalRepository()) {
-                $this->purgePackages($rm->getLocalRepository(), $im);
-            }
         }
 
         // init locker if possible
@@ -369,6 +365,17 @@ class Factory
 
             $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($composerFile));
             $composer->setLocker($locker);
+        }
+
+        if ($fullLoad) {
+            $initEvent = new Event(PluginEvents::INIT);
+            $composer->getEventDispatcher()->dispatch($initEvent->getName(), $initEvent);
+
+            // once everything is initialized we can
+            // purge packages from local repos if they have been deleted on the filesystem
+            if ($rm->getLocalRepository()) {
+                $this->purgePackages($rm->getLocalRepository(), $im);
+            }
         }
 
         return $composer;

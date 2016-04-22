@@ -20,6 +20,16 @@ namespace Composer\Plugin;
 class PluginEvents
 {
     /**
+     * The INIT event occurs after a Composer instance is done being initialized
+     *
+     * The event listener method receives a
+     * Composer\EventDispatcher\Event instance.
+     *
+     * @var string
+     */
+    const INIT = 'init';
+
+    /**
      * The COMMAND event occurs as a command begins
      *
      * The event listener method receives a
