@@ -26,7 +26,6 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\Silencer;
 use Composer\Plugin\PluginEvents;
-use Composer\EventDispatcher\Event;
 use Seld\JsonLint\DuplicateKeyException;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
@@ -368,7 +367,7 @@ class Factory
         }
 
         if ($fullLoad) {
-            $initEvent = new Event(PluginEvents::INIT);
+            $initEvent = new Script\Event(PluginEvents::INIT, $composer, $io);
             $composer->getEventDispatcher()->dispatch($initEvent->getName(), $initEvent);
 
             // once everything is initialized we can
