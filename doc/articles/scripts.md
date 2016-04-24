@@ -150,11 +150,13 @@ class MyClass
 }
 ```
 
+## Event classes
+
 When an event is fired, your PHP callback receives as first argument a
 `Composer\EventDispatcher\Event` object. This object has a `getName()` method
-that lets you retrieve event name.
+that lets you retrieve the event name.
 
-Depending on the script types (see list above) you will get various event
+Depending on the [script types](#event-names) you will get various event
 subclasses containing various getters with relevant data and associated
 objects:
 
