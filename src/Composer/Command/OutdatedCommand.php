@@ -16,6 +16,7 @@ use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -30,6 +31,8 @@ class OutdatedCommand extends ShowCommand
             ->setDescription('Shows a list of installed packages including their latest version.')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.'),
+                new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show only packages that are outdated'),
+                new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
             ))
             ->setHelp(<<<EOT
 The outdated command is just a proxy for `composer show -l`
@@ -50,8 +53,10 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $pkg = $input->getArgument('package') ? ProcessExecutor::escape($input->getArgument('package')) : '';
-        $input = new StringInput('show --latest '.$pkg);
+        $args = array($input->getArgument('package') ? ProcessExecutor::escape($input->getArgument('package')) : '');
+        $args[] = $input->getOption('outdated') ? ProcessExecutor::escape('--outdated') : '';
+        $args[] = $input->getOption('direct') ? ProcessExecutor::escape('--direct') : '';
+        $input = new StringInput('show --latest '.implode(' ', $args));
 
         return $this->getApplication()->run($input, $output);
     }

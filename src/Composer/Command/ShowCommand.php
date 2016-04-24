@@ -70,6 +70,8 @@ class ShowCommand extends BaseCommand
                 new InputOption('path', 'P', InputOption::VALUE_NONE, 'Show package paths'),
                 new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
                 new InputOption('latest', 'l', InputOption::VALUE_NONE, 'Show the latest version'),
+                new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show the latest version but only for packages that are outdated'),
+                new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -94,10 +96,20 @@ EOT
             $io->writeError('<warning>You are using the deprecated option "installed". Only installed packages are shown by default now. The --all option can be used to show all packages.</warning>');
         }
 
+        if ($input->getOption('outdated')) {
+            $input->setOption('latest', true);
+        }
+
+        if ($input->getOption('direct') && ($input->getOption('all') || $input->getOption('available') || $input->getOption('platform'))) {
+            $io->writeError('The --direct (-D) option is not usable in combination with --all, --platform (-p) or --available (-a)');
+
+            return 1;
+        }
+
         if ($input->getOption('tree') && ($input->getOption('all') || $input->getOption('available'))) {
             $io->writeError('The --tree (-t) option is not usable in combination with --all or --available (-a)');
 
-            return 0;
+            return 1;
         }
 
         // init repos
@@ -185,12 +197,7 @@ EOT
 
         // show tree view if requested
         if ($input->getOption('tree')) {
-            $rootPackage = $this->getComposer()->getPackage();
-            $rootRequires = array_map(
-                'strtolower',
-                array_keys(array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()))
-            );
-
+            $rootRequires = $this->getRootRequires();
             foreach ($installedRepo->getPackages() as $package) {
                 if (in_array($package->getName(), $rootRequires, true)) {
                     $this->displayPackageTree($package, $installedRepo, $repos);
@@ -210,6 +217,11 @@ EOT
         $packages = array();
         if (null !== $packageFilter) {
             $packageFilter = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
+        }
+
+        $packageListFilter = array();
+        if ($input->getOption('direct')) {
+            $packageListFilter = $this->getRootRequires();
         }
 
         foreach ($repos as $repo) {
@@ -236,7 +248,9 @@ EOT
                         || version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '<')
                     ) {
                         if (!$packageFilter || preg_match($packageFilter, $package->getName())) {
-                            $packages[$type][$package->getName()] = $package;
+                            if (!$packageListFilter || in_array($package->getName(), $packageListFilter, true)) {
+                                $packages[$type][$package->getName()] = $package;
+                            }
                         }
                     }
                 }
@@ -291,15 +305,18 @@ EOT
                 $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + $versionLength + $latestLength + 24 <= $width);
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
+                        $latestPackackage = null;
+                        if ($showLatest && isset($latestPackages[$package->getPrettyName()])) {
+                            $latestPackackage = $latestPackages[$package->getPrettyName()];
+                        }
+                        if ($input->getOption('outdated') && $latestPackackage && $latestPackackage->getFullPrettyVersion() === $package->getFullPrettyVersion()) {
+                            continue;
+                        }
+
                         $io->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
 
                         if ($writeVersion) {
                             $io->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
-                        }
-
-                        $latestPackackage = null;
-                        if ($showLatest && isset($latestPackages[$package->getPrettyName()])) {
-                            $latestPackackage = $latestPackages[$package->getPrettyName()];
                         }
 
                         if ($writeLatest && $latestPackackage) {
@@ -350,6 +367,15 @@ EOT
                 }
             }
         }
+    }
+
+    protected function getRootRequires()
+    {
+        $rootPackage = $this->getComposer()->getPackage();
+        return array_map(
+            'strtolower',
+            array_keys(array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()))
+        );
     }
 
     protected function getVersionStyle($latestVersion, $package)

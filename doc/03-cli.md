@@ -321,6 +321,8 @@ php composer.phar show monolog/monolog 1.0.2
 * **--tree (-t):** List your dependencies as a tree. If you pass a package name it will show the dependency tree for that package.
 * **--name-only (-N):** List package names only.
 * **--path (-P):** List package paths.
+* **--outdated (-o):** Implies --latest, but this lists *only* packages that have a newer version available.
+* **--direct (-D):** Restricts the list of packages to your direct dependencies.
 
 ## outdated
 
@@ -333,6 +335,11 @@ The color coding is as such:
 - **yellow**: Dependency has a new version available that includes backwards compatibility breaks according to semver, so upgrade when
   you can but it may involve work.
 - **red**: Dependency has a new version that is semver-compatible and you should upgrade it.
+
+### Options
+
+* **--outdated (-o):** Lists *only* packages that have a newer version available.
+* **--direct (-D):** Restricts the list of packages to your direct dependencies.
 
 ## browse / home
 
