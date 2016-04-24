@@ -330,8 +330,8 @@ EOT
                                 ? 'Use ' . $latestPackackage->getReplacementPackage() . ' instead'
                                 : 'No replacement was suggested';
 
-                            $io->write('');
-                            $io->write(
+                            $io->writeError('');
+                            $io->writeError(
                                 sprintf(
                                     "<warning>Package %s is abandoned, you should avoid using it. %s.</warning>",
                                     $package->getPrettyName(),
