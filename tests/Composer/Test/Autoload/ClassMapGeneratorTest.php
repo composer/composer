@@ -87,6 +87,11 @@ class ClassMapGeneratorTest extends TestCase
                 'Foo\\CBar' => __DIR__.'/Fixtures/php5.4/traits.php',
             ));
         }
+        if (PHP_VERSION_ID >= 70000) {
+            $data[] = array(__DIR__.'/Fixtures/php7.0', array(
+                'Dummy\Test\AnonClassHolder' => __DIR__.'/Fixtures/php7.0/anonclass.php',
+            ));
+        }
         if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>=')) {
             $data[] = array(__DIR__.'/Fixtures/hhvm3.3', array(
                 'FooEnum' => __DIR__.'/Fixtures/hhvm3.3/HackEnum.php',

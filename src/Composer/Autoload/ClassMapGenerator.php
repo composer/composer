@@ -188,6 +188,10 @@ class ClassMapGenerator
                 $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
             } else {
                 $name = $matches['name'][$i];
+                // skip anon classes extending/implementing
+                if ($name === 'extends' || $name === 'implements') {
+                    continue;
+                }
                 if ($name[0] === ':') {
                     // This is an XHP class, https://github.com/facebook/xhp
                     $name = 'xhp'.substr(str_replace(array('-', ':'), array('_', '__'), $name), 1);
