@@ -51,7 +51,7 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException PHPUnit_Framework_Error_Deprecated
      */
     public function testDispatcherCanConvertScriptEventToCommandEventForListener()
     {
