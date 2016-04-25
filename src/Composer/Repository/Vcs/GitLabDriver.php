@@ -326,7 +326,7 @@ class GitLabDriver extends VcsDriver
                         return $this->attemptCloneFallback();
                     }
                     $this->io->writeError('<warning>Failed to download ' . $this->owner . '/' . $this->repository . ':' . $e->getMessage() . '</warning>');
-                    $gitLabUtil->authorizeOAuthInteractively($this->originUrl, 'Your credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
+                    $gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, 'Your credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
 
                     return parent::getContents($url);
 
