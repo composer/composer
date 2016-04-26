@@ -24,6 +24,7 @@ use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
 use Composer\DependencyResolver\Pool;
 use Composer\Plugin\Capability\Capability;
+use Composer\Semver\Semver;
 
 /**
  * Plugin manager
@@ -225,6 +226,23 @@ class PluginManager
      */
     private function addPlugin(PluginInterface $plugin)
     {
+        if ($plugin instanceof Compatible) {
+            try {
+                if (!Semver::satisfies(Composer::VERSION, sprintf('>=%s', $plugin->getMinimumComposerVersion()))) {
+                    $this->io->writeError(
+                        '<error>Composer v'.Composer::VERSION.' is not supported by plugin '.get_class($plugin)
+                        .', please upgrade to v'.$plugin->getMinimumComposerVersion().' or higher</error>'
+                    );
+                    return;
+                }
+            } catch (\UnexpectedValueException $e) {
+                $this->io->write(
+                    '<warning>Can\'t determine composer version.'
+                    .' Plugin '.get_class($plugin).' might not works as expected.</warning>'
+                );
+            }
+        }
+
         $this->io->writeError('Loading plugin '.get_class($plugin), true, IOInterface::DEBUG);
         $this->plugins[] =  $plugin;
         $plugin->activate($this->composer, $this->io);
