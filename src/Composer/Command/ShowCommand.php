@@ -384,10 +384,13 @@ EOT
             // print green as it's up to date
             return 'info';
         }
-
-        if ($latestVersion && Semver::satisfies($latestVersion, '^'.$package->getVersion())) {
-            // print red as it needs an immediate semver-compliant upgrade
-            return 'highlight';
+        
+        try {
+            if ($latestVersion && Semver::satisfies($latestVersion, '^'.$package->getVersion())) {
+                // print red as it needs an immediate semver-compliant upgrade
+                return 'highlight';
+            }
+        } catch (\UnexpectedValueException $e) {
         }
 
         // print yellow as it needs an upgrade but has potential BC breaks so is not urgent
