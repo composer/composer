@@ -321,7 +321,7 @@ EOT
 
                         if ($writeLatest && $latestPackackage) {
                             $latestVersion = $latestPackackage->getFullPrettyVersion();
-                            $style = $this->getVersionStyle($latestVersion, $package);
+                            $style = $this->getVersionStyle($latestPackackage, $package);
                             $io->write(' <'.$style.'>' . str_pad($latestVersion, $latestLength, ' ') . '</'.$style.'>', false);
                         }
 
@@ -378,14 +378,14 @@ EOT
         );
     }
 
-    protected function getVersionStyle($latestVersion, $package)
+    protected function getVersionStyle(PackageInterface $latestPackage, PackageInterface $package)
     {
-        if ($latestVersion === $package->getFullPrettyVersion()) {
+        if ($latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion()) {
             // print green as it's up to date
             return 'info';
         }
 
-        if ($latestVersion && Semver::satisfies($latestVersion, '^'.$package->getVersion())) {
+        if ($latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), '^'.$package->getVersion())) {
             // print red as it needs an immediate semver-compliant upgrade
             return 'highlight';
         }
@@ -455,7 +455,7 @@ EOT
         $io->write('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
         $this->printVersions($package, $versions, $installedRepo);
         if ($latestPackage) {
-            $style = $this->getVersionStyle($latestPackage->getPrettyVersion(), $package);
+            $style = $this->getVersionStyle($latestPackage, $package);
             $io->write('<info>latest</info>   : <'.$style.'>' . $latestPackage->getPrettyVersion() . '</'.$style.'>');
         } else {
             $latestPackage = $package;
