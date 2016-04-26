@@ -146,7 +146,7 @@ class Application extends BaseApplication
                     if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                         $io->writeError('<warning>Running composer as root/super user is highly discouraged as packages, plugins and scripts cannot always be trusted</warning>');
                     }
-                    if ($uid = getenv('SUDO_UID')) {
+                    if ($uid = (int) getenv('SUDO_UID')) {
                         // Silently clobber any sudo credentials on the invoking user to avoid privilege escalations later on
                         // ref. https://github.com/composer/composer/issues/5119
                         Silencer::call('exec', "sudo -u \\#{$uid} sudo -K > /dev/null 2>&1");
