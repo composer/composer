@@ -234,17 +234,21 @@ directory.
 This is merely a helper to manage a project stored in a central location that
 can hold CLI tools or Composer plugins that you want to have available everywhere.
 
-This can be used to install CLI utilities globally and if you add
-`$COMPOSER_HOME/vendor/bin` to your `$PATH` environment variable. Here is an
-example:
+This can be used to install CLI utilities globally. Here is an example:
 
 ```sh
-php composer.phar global require fabpot/php-cs-fixer:dev-master
+php composer.phar global require fabpot/php-cs-fixer
 ```
 
-Now the `php-cs-fixer` binary is available globally (assuming you adjusted
-your PATH). If you wish to update the binary later on you can just run a
-global update:
+Now the `php-cs-fixer` binary is available globally. Just make sure your global
+[vendor binaries](articles/vendor-binaries.md) directory is in your `$PATH`
+environment variable, you can get its location with the following command :
+
+```sh
+php composer.phar global config bin-dir --absolute
+```
+
+If you wish to update the binary later on you can just run a global update:
 
 ```sh
 php composer.phar global update
