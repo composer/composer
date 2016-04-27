@@ -54,6 +54,7 @@ class Config
         'capath' => null,
         'github-expose-hostname' => true,
         'gitlab-domains' => array('gitlab.com'),
+        'gitlab-unsecure-domains' => array(),
         'store-auths' => 'prompt',
         'platform' => array(),
         'archive-format' => 'tar',

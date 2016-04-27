@@ -81,6 +81,10 @@ class GitLabDriver extends VcsDriver
         $this->owner = $match['owner'];
         $this->repository = preg_replace('#(\.git)$#', '', $match['repo']);
 
+        if (in_array($this->originUrl, (array) $this->config->get('gitlab-unsecure-domains'))) {
+            $this->scheme = 'http';
+        }
+        
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
         $this->fetchProject();
@@ -364,6 +368,10 @@ class GitLabDriver extends VcsDriver
 
         if (!in_array($originUrl, (array) $config->get('gitlab-domains'))) {
             return false;
+        }
+        
+        if (in_array($originUrl, (array) $config->get('gitlab-unsecure-domains'))) {
+            $scheme = 'http';
         }
 
         if ('https' === $scheme && !extension_loaded('openssl')) {

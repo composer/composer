@@ -253,6 +253,13 @@
                         "type": "string"
                     }
                 },
+                "gitlab-unsecure-domains": {
+                    "type": "array",
+                    "description": "A list of domains used in gitlab mode that doesn't have support for HTTPS protocol. Defaults to [].",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "archive-format": {
                     "type": "string",
                     "description": "The default archiving format when not provided on cli, defaults to \"tar\"."
