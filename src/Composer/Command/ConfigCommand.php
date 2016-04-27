@@ -22,6 +22,8 @@ use Composer\Config;
 use Composer\Config\JsonConfigSource;
 use Composer\Factory;
 use Composer\Json\JsonFile;
+use Composer\Semver\VersionParser;
+use Composer\Package\BasePackage;
 
 /**
  * @author Joshua Estes <Joshua.Estes@iostudio.com>
@@ -74,8 +76,10 @@ class ConfigCommand extends BaseCommand
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
             ->setHelp(<<<EOT
-This command allows you to edit some basic composer settings in either the
-local composer.json file or the global config.json file.
+This command allows you to edit composer config settings and repositories
+in either the local composer.json file or the global config.json file.
+
+Additionally it lets you edit most properties in the local composer.json.
 
 To set a config setting:
 
@@ -227,6 +231,8 @@ EOT
 
         // show the value if no value is provided
         if (array() === $input->getArgument('setting-value') && !$input->getOption('unset')) {
+            $properties = array('name', 'type', 'description', 'homepage', 'version', 'minimum-stability', 'prefer-stable', 'keywords', 'license', 'extra');
+            $rawData = $this->configFile->read();
             $data = $this->config->all();
             if (preg_match('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
                 if (empty($matches[1])) {
@@ -240,7 +246,11 @@ EOT
                 }
             } elseif (strpos($settingKey, '.')) {
                 $bits = explode('.', $settingKey);
-                $data = $data['config'];
+                if ($bits[0] === 'extra') {
+                    $data = $rawData;
+                } else {
+                    $data = $data['config'];
+                }
                 $match = false;
                 foreach ($bits as $bit) {
                     $key = isset($key) ? $key.'.'.$bit : $bit;
@@ -259,6 +269,8 @@ EOT
                 $value = $data;
             } elseif (isset($data['config'][$settingKey])) {
                 $value = $this->config->get($settingKey, $input->getOption('absolute') ? 0 : Config::RELATIVE_PATHS);
+            } elseif (in_array($settingKey, $properties, true) && isset($rawData[$settingKey])) {
+                $value = $rawData[$settingKey];
             } else {
                 throw new \RuntimeException($settingKey.' is not defined');
             }
@@ -387,44 +399,67 @@ EOT
             ),
         );
 
-        foreach ($uniqueConfigValues as $name => $callbacks) {
-            if ($settingKey === $name) {
-                if ($input->getOption('unset')) {
-                    return $this->configSource->removeConfigSetting($settingKey);
-                }
-
-                list($validator, $normalizer) = $callbacks;
-                if (1 !== count($values)) {
-                    throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
-                }
-
-                if (true !== $validation = $validator($values[0])) {
-                    throw new \RuntimeException(sprintf(
-                        '"%s" is an invalid value'.($validation ? ' ('.$validation.')' : ''),
-                        $values[0]
-                    ));
-                }
-
-                return $this->configSource->addConfigSetting($settingKey, $normalizer($values[0]));
-            }
+        if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {
+            return $this->configSource->removeConfigSetting($settingKey);
+        }
+        if (isset($uniqueConfigValues[$settingKey])) {
+            return $this->handleSingleValue($settingKey, $uniqueConfigValues[$settingKey], $values, 'addConfigSetting');
+        }
+        if (isset($multiConfigValues[$settingKey])) {
+            return $this->handleMultiValue($settingKey, $multiConfigValues[$settingKey], $values, 'addConfigSetting');
         }
 
-        foreach ($multiConfigValues as $name => $callbacks) {
-            if ($settingKey === $name) {
-                if ($input->getOption('unset')) {
-                    return $this->configSource->removeConfigSetting($settingKey);
-                }
+        // handle properties
+        $uniqueProps = array(
+            'name' => array('is_string', function ($val) { return $val; }),
+            'type' => array('is_string', function ($val) { return $val; }),
+            'description' => array('is_string', function ($val) { return $val; }),
+            'homepage' => array('is_string', function ($val) { return $val; }),
+            'version' => array('is_string', function ($val) { return $val; }),
+            'minimum-stability' => array(
+                function ($val) { return isset(BasePackage::$stabilities[VersionParser::normalizeStability($val)]); },
+                function ($val) { return VersionParser::normalizeStability($val); }
+            ),
+            'prefer-stable' => array($booleanValidator, $booleanNormalizer),
+        );
+        $multiProps = array(
+            'keywords' => array(
+                function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
 
-                list($validator, $normalizer) = $callbacks;
-                if (true !== $validation = $validator($values)) {
-                    throw new \RuntimeException(sprintf(
-                        '%s is an invalid value'.($validation ? ' ('.$validation.')' : ''),
-                        json_encode($values)
-                    ));
-                }
+                    return true;
+                },
+                function ($vals) {
+                    return $vals;
+                },
+            ),
+            'license' => array(
+                function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
 
-                return $this->configSource->addConfigSetting($settingKey, $normalizer($values));
-            }
+                    return true;
+                },
+                function ($vals) {
+                    return $vals;
+                },
+            ),
+        );
+
+        if ($input->getOption('global') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]) || substr($settingKey, 0, 6) === 'extra.')) {
+            throw new \InvalidArgumentException('The '.$settingKey.' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global composer.json');
+        }
+        if ($input->getOption('unset') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]))) {
+            return $this->configSource->removeProperty($settingKey);
+        }
+        if (isset($uniqueProps[$settingKey])) {
+            return $this->handleSingleValue($settingKey, $uniqueProps[$settingKey], $values, 'addProperty');
+        }
+        if (isset($multiProps[$settingKey])) {
+            return $this->handleMultiValue($settingKey, $multiProps[$settingKey], $values, 'addProperty');
         }
 
         // handle repositories
@@ -454,6 +489,15 @@ EOT
             }
 
             throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs https://bar.com');
+        }
+
+        // handle extra
+        if (preg_match('/^extra\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                return $this->configSource->removeProperty($settingKey);
+            }
+
+            return $this->configSource->addProperty($settingKey, $values[0]);
         }
 
         // handle platform
@@ -498,6 +542,36 @@ EOT
         }
 
         throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
+    }
+
+    protected function handleSingleValue($key, array $callbacks, array $values, $method)
+    {
+        list($validator, $normalizer) = $callbacks;
+        if (1 !== count($values)) {
+            throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
+        }
+
+        if (true !== $validation = $validator($values[0])) {
+            throw new \RuntimeException(sprintf(
+                '"%s" is an invalid value'.($validation ? ' ('.$validation.')' : ''),
+                $values[0]
+            ));
+        }
+
+        return call_user_func(array($this->configSource, $method), $key, $normalizer($values[0]));
+    }
+
+    protected function handleMultiValue($key, array $callbacks, array $values, $method)
+    {
+        list($validator, $normalizer) = $callbacks;
+        if (true !== $validation = $validator($values)) {
+            throw new \RuntimeException(sprintf(
+                '%s is an invalid value'.($validation ? ' ('.$validation.')' : ''),
+                json_encode($values)
+            ));
+        }
+
+        return call_user_func(array($this->configSource, $method), $key, $normalizer($values));
     }
 
     /**

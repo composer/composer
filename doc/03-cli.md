@@ -499,8 +499,10 @@ sudo -H composer self-update
 
 ## config
 
-The `config` command allows you to edit some basic Composer settings in either
-the local `composer.json` file or the global `config.json` file.
+The `config` command allows you to edit composer config settings and repositories
+in either the local `composer.json` file or the global `config.json` file.
+
+Additionally it lets you edit most properties in the local `composer.json`.
 
 ```sh
 php composer.phar config --list
@@ -513,6 +515,11 @@ php composer.phar config --list
 `setting-key` is a configuration option name and `setting-value1` is a
 configuration value.  For settings that can take an array of values (like
 `github-protocols`), more than one setting-value arguments are allowed.
+
+You can also edit the values of the following properties:
+
+`description`, `homepage`, `keywords`, `license`, `minimum-stability`,
+`name`, `prefer-stable`, `type` and `version`.
 
 See the [Config](06-config.md) chapter for valid configuration options.
 
@@ -546,6 +553,18 @@ If your repository requires more configuration options, you can instead pass its
 ```sh
 php composer.phar config repositories.foo '{"type": "vcs", "url": "http://svn.example.org/my-project/", "trunk-path": "master"}'
 ```
+
+### Modifying Extra Values
+
+In addition to modifying the config section, the `config` command also supports making
+changes to the extra section by using it the following way:
+
+```sh
+php composer.phar config extra.foo.bar value
+```
+
+The dots indicate array nesting, a max depth of 3 levels is allowed though. The above
+would set `"extra": { "foo": { "bar": "value" } }`.
 
 ## create-project
 

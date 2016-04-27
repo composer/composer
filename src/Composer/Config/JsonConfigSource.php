@@ -117,6 +117,53 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * {@inheritdoc}
      */
+    public function addProperty($name, $value)
+    {
+        $this->manipulateJson('addProperty', $name, $value, function (&$config, $key, $val) {
+            if (substr($key, 0, 6) === 'extra.') {
+                $bits = explode('.', $key);
+                $last = array_pop($bits);
+                $arr =& $config['extra'];
+                foreach ($bits as $bit) {
+                    if (!isset($arr[$bit])) {
+                        $arr[$bit] = array();
+                    }
+                    $arr =& $arr[$bit];
+                }
+                $arr[$last] = $val;
+            } else {
+                $config[$key] = $val;
+            }
+        });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function removeProperty($name)
+    {
+        $authConfig = $this->authConfig;
+        $this->manipulateJson('removeProperty', $name, function (&$config, $key) {
+            if (substr($key, 0, 6) === 'extra.') {
+                $bits = explode('.', $key);
+                $last = array_pop($bits);
+                $arr =& $config['extra'];
+                foreach ($bits as $bit) {
+                    if (!isset($arr[$bit])) {
+                        return;
+                    }
+                    $arr =& $arr[$bit];
+                }
+                unset($arr[$last]);
+            } else {
+                unset($config[$key]);
+            }
+        });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function addLink($type, $name, $value)
     {
         $this->manipulateJson('addLink', $type, $name, $value, function (&$config, $type, $name, $value) {

@@ -51,6 +51,21 @@ interface ConfigSourceInterface
     public function removeConfigSetting($name);
 
     /**
+     * Add a property
+     *
+     * @param string $name  Name
+     * @param string $value Value
+     */
+    public function addProperty($name, $value);
+
+    /**
+     * Remove a property
+     *
+     * @param string $name
+     */
+    public function removeProperty($name);
+
+    /**
      * Add a package link
      *
      * @param string $type  Type (require, require-dev, provide, suggest, replace, conflict)

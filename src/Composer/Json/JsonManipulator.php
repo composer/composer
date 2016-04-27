@@ -163,12 +163,30 @@ class JsonManipulator
         return $this->removeSubNode('config', $name);
     }
 
+    public function addProperty($name, $value)
+    {
+        if (substr($name, 0, 6) === 'extra.') {
+            return $this->addSubNode('extra', substr($name, 6), $value);
+        }
+
+        return $this->addMainKey($name, $value);
+    }
+
+    public function removeProperty($name)
+    {
+        if (substr($name, 0, 6) === 'extra.') {
+            return $this->removeSubNode('extra', substr($name, 6));
+        }
+
+        return $this->removeMainKey($name);
+    }
+
     public function addSubNode($mainNode, $name, $value)
     {
         $decoded = JsonFile::parseJson($this->contents);
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'repositories')) && false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'repositories', 'extra')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
@@ -211,6 +229,9 @@ class JsonManipulator
             $children = preg_replace_callback('{("'.preg_quote($name).'"\s*:\s*)('.self::$JSON_VALUE.')(,?)}', function ($matches) use ($name, $subName, $value, $that) {
                 if ($subName !== null) {
                     $curVal = json_decode($matches[2], true);
+                    if (!is_array($curVal)) {
+                        $curVal = array();
+                    }
                     $curVal[$subName] = $value;
                     $value = $curVal;
                 }
@@ -275,7 +296,7 @@ class JsonManipulator
         }
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'repositories')) && false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'repositories', 'extra')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
@@ -372,6 +393,34 @@ class JsonManipulator
         );
 
         return true;
+    }
+
+    public function removeMainKey($key)
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+
+        if (!isset($decoded[$key])) {
+            return true;
+        }
+
+        // key exists already
+        $regex = '{^(\s*\{\s*(?:'.self::$JSON_STRING.'\s*:\s*'.self::$JSON_VALUE.'\s*,\s*)*?)'.
+            '('.preg_quote(JsonFile::encode($key)).'\s*:\s*'.self::$JSON_VALUE.')\s*,?\s*(.*)}s';
+        if ($this->pregMatch($regex, $this->contents, $matches)) {
+            // invalid match due to un-regexable content, abort
+            if (!@json_decode('{'.$matches[2].'}')) {
+                return false;
+            }
+
+            $this->contents = $matches[1] . $matches[3];
+            if (preg_match('#^\{\s*\}\s*$#', $this->contents)) {
+                $this->contents = "{\n}";
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public function format($data, $depth = 0)
