@@ -326,8 +326,9 @@ php composer.phar show monolog/monolog 1.0.2
 
 ## outdated
 
-The `outdated` command shows a list of installed packages including their
-current and latest versions. This is basically an alias for `composer show -l`.
+The `outdated` command shows a list of installed packages that have updates available,
+including their current and latest versions. This is basically an alias for
+`composer show -lo`.
 
 The color coding is as such:
 
@@ -338,7 +339,7 @@ The color coding is as such:
 
 ### Options
 
-* **--outdated (-o):** Lists *only* packages that have a newer version available.
+* **--all (-a):** Show all packages, not just outdated (alias for `composer show -l`).
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 
 ## browse / home

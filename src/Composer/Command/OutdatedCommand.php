@@ -27,10 +27,11 @@ class OutdatedCommand extends ShowCommand
     {
         $this
             ->setName('outdated')
-            ->setDescription('Shows a list of installed packages including their latest version.')
+            ->setDescription('Shows a list of installed packages that have updates available, including their latest version.')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.'),
-                new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show only packages that are outdated'),
+                new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show only packages that are outdated (this is the default, but present here for compat with `show`'),
+                new InputOption('all', 'a', InputOption::VALUE_NONE, 'Show all installed packages with their latest versions'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
             ))
             ->setHelp(<<<EOT
@@ -56,7 +57,7 @@ EOT
             'show',
             '--latest' => true,
         );
-        if ($input->getOption('outdated')) {
+        if (!$input->getOption('all')) {
             $args['--outdated'] = true;
         }
         if ($input->getOption('direct')) {
