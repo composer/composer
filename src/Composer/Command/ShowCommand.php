@@ -176,7 +176,7 @@ EOT
             } else {
                 $latestPackage = null;
                 if ($input->getOption('latest')) {
-                    $latestPackage = $this->findLatestPackage($package->getName(), $composer, $phpVersion);
+                    $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion);
                 }
                 $this->printMeta($package, $versions, $installedRepo, $latestPackage);
                 $this->printLinks($package, 'requires');
@@ -275,7 +275,7 @@ EOT
                         if ($showVersion) {
                             $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
                             if ($showLatest) {
-                                $latestPackage = $this->findLatestPackage($package->getName(), $composer, $phpVersion);
+                                $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion);
                                 $latestPackages[$package->getPrettyName()] = $latestPackage;
                                 $latestLength =  max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
                             }
@@ -701,17 +701,18 @@ EOT
     }
 
     /**
-     * Given a package name, this finds the latest package matching it
+     * Given a package, this finds the latest package matching it
      *
-     * @param  string   $name
-     * @param  Composer $composer
-     * @param  string   $phpVersion
+     * @param  PackageInterface $package
+     * @param  Composer         $composer
+     * @param  string           $phpVersion
      *
      * @return PackageInterface|null
      */
-    private function findLatestPackage($name, Composer $composer, $phpVersion)
+    private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion)
     {
         // find the latest version allowed in this pool
+        $name = $package->getName();
         $versionSelector = new VersionSelector($this->getPool($composer));
         $stability = $composer->getPackage()->getMinimumStability();
         $flags = $composer->getPackage()->getStabilityFlags();
@@ -719,7 +720,17 @@ EOT
             $stability = array_search($flags[$name], BasePackage::$stabilities, true);
         }
 
-        return $versionSelector->findBestCandidate($name, null, $phpVersion, $stability);
+        $bestStability = $stability;
+        if ($composer->getPackage()->getPreferStable()) {
+            $bestStability = $package->getStability();
+        }
+
+        $targetVersion = null;
+        if (0 === strpos($package->getVersion(), 'dev-')) {
+            $targetVersion = $package->getVersion();
+        }
+
+        return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability);
     }
 
     private function getPool(Composer $composer)
