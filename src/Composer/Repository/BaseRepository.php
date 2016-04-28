@@ -107,6 +107,18 @@ abstract class BaseRepository implements RepositoryInterface
             // When inverting, we need to check for conflicts of the needles' requirements against installed packages
             if ($invert && $constraint && in_array($package->getName(), $needles) && $constraint->matches(new Constraint('=', $package->getVersion()))) {
                 foreach ($package->getRequires() as $link) {
+                    if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+                        if ($this->findPackage($link->getTarget(), $link->getConstraint())) {
+                            continue;
+                        }
+
+                        $platformPkg = $this->findPackage($link->getTarget(), '*');
+                        $description = $platformPkg ? 'but '.$platformPkg->getPrettyVersion().' is installed' : 'but it is missing';
+                        $results[] = array($package, new Link($package->getName(), $link->getTarget(), null, 'requires', $link->getPrettyConstraint().' '.$description), false);
+
+                        continue;
+                    }
+
                     foreach ($this->getPackages() as $pkg) {
                         if (!in_array($link->getTarget(), $pkg->getNames())) {
                             continue;
@@ -133,10 +145,6 @@ abstract class BaseRepository implements RepositoryInterface
                         }
 
                         continue 2;
-                    }
-
-                    if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
-                        $results[] = array($package, new Link($package->getName(), $link->getTarget(), null, 'requires', $link->getPrettyConstraint().' but it is missing'), false);
                     }
                 }
             }
