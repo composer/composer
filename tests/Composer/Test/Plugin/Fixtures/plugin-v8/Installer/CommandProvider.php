@@ -2,12 +2,12 @@
 
 namespace Installer;
 
-use Composer\Plugin\Capability\CommandProvider;
+use Composer\Plugin\Capability\CommandProvider as CommandProviderCapability;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Command\BaseCommand;
 
-class CommandProvider implements CommandProvider
+class CommandProvider implements CommandProviderCapability
 {
     public function __construct(array $args)
     {
