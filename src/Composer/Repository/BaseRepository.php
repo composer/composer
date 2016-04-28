@@ -121,7 +121,7 @@ abstract class BaseRepository implements RepositoryInterface
                                     if (in_array($rootReq->getTarget(), $pkg->getNames()) && !$rootReq->getConstraint()->matches($link->getConstraint())) {
                                         $results[] = array($package, $link, false);
                                         $results[] = array($rootPackage, $rootReq, false);
-                                        break 2;
+                                        continue 3;
                                     }
                                 }
                                 $results[] = array($package, $link, false);
@@ -132,7 +132,11 @@ abstract class BaseRepository implements RepositoryInterface
                             }
                         }
 
-                        break;
+                        continue 2;
+                    }
+
+                    if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+                        $results[] = array($package, new Link($package->getName(), $link->getTarget(), null, 'requires', $link->getPrettyConstraint().' but it is missing'), false);
                     }
                 }
             }
