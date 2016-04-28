@@ -15,6 +15,7 @@ The following options are available with every command:
 * **--help (-h):** Display help information.
 * **--quiet (-q):** Do not output any message.
 * **--no-interaction (-n):** Do not ask any interactive question.
+* **--no-plugins:** Disables plugins.
 * **--working-dir (-d):** If specified, use the given directory as working directory.
 * **--profile:** Display timing and memory usage information
 * **--ansi:** Force ANSI output.
@@ -96,7 +97,6 @@ resolution.
   generation skips the `autoload-dev` rules.
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
-* **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
@@ -141,7 +141,6 @@ php composer.phar update vendor/*
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
-* **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
@@ -611,7 +610,6 @@ By default the command checks for the packages on packagist.org.
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--dev:** Install packages listed in `require-dev`.
 * **--no-install:** Disables installation of the vendors.
-* **--no-plugins:** Disables plugins.
 * **--no-scripts:** Disables the execution of the scripts defined in the root
   package.
 * **--no-progress:** Removes the progress display that can mess with some
