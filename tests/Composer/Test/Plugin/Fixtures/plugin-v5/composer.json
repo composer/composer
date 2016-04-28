@@ -1,5 +1,6 @@
 {
     "name": "plugin-v5",
+<<<<<<< HEAD
     "version": "1.0.0",
     "type": "composer-plugin",
     "autoload": { "psr-0": { "Installer": "" } },
@@ -8,5 +9,17 @@
     },
     "require": {
         "composer-plugin-api": "*"
+=======
+    "version": "5.0.0",
+    "type": "composer-plugin",
+    "autoload": { "psr-0": { "Installer": "" } },
+    "extra": {
+        "class": [
+            "Installer\\Plugin"
+        ]
+    },
+    "require": {
+        "composer-plugin-api": "1.0.0"
+>>>>>>> jderusse/plugin-with-commands
     }
 }

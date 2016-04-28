@@ -350,7 +350,11 @@ class Factory
         $this->createDefaultInstallers($im, $composer, $io);
 
         if ($fullLoad) {
-            $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
+            $globalComposer = null;
+            if (realpath($config->get('home')) !== $cwd) {
+                $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
+            }
+
             $pm = $this->createPluginManager($io, $composer, $globalComposer, $disablePlugins);
             $composer->setPluginManager($pm);
 
@@ -382,6 +386,18 @@ class Factory
     }
 
     /**
+     * @param  IOInterface $io             IO instance
+     * @param  bool        $disablePlugins Whether plugins should not be loaded
+     * @return Composer
+     */
+    public static function createGlobal(IOInterface $io, $disablePlugins = false)
+    {
+        $factory = new static();
+
+        return $factory->createGlobalComposer($io, static::createConfig($io), $disablePlugins, true);
+    }
+
+    /**
      * @param Repository\RepositoryManager $rm
      * @param string                       $vendorDir
      */
@@ -394,15 +410,11 @@ class Factory
      * @param  Config        $config
      * @return Composer|null
      */
-    protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins)
+    protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins, $fullLoad = false)
     {
-        if (realpath($config->get('home')) === getcwd()) {
-            return;
-        }
-
         $composer = null;
         try {
-            $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), false);
+            $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), $fullLoad);
         } catch (\Exception $e) {
             $io->writeError('Failed to initialize global composer: '.$e->getMessage(), true, IOInterface::DEBUG);
         }

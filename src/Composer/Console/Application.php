@@ -27,6 +27,7 @@ use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
 use Composer\Util\ErrorHandler;
+use Composer\Plugin\CommandsProviderInterface;
 
 /**
  * The console application that handles the commands
@@ -192,6 +193,10 @@ class Application extends BaseApplication
             if ($input->hasParameterOption('--profile')) {
                 $startTime = microtime(true);
                 $this->io->enableDebugging($startTime);
+            }
+
+            if (!$input->hasParameterOption('--no-plugins')) {
+                $this->addCommands($this->getPluginCommands());
             }
 
             $result = parent::doRun($input, $output);
@@ -374,8 +379,29 @@ class Application extends BaseApplication
     {
         $definition = parent::getDefaultInputDefinition();
         $definition->addOption(new InputOption('--profile', null, InputOption::VALUE_NONE, 'Display timing and memory usage information'));
+        $definition->addOption(new InputOption('--no-plugins', null, InputOption::VALUE_NONE, 'Whether to disable plugins.'));
         $definition->addOption(new InputOption('--working-dir', '-d', InputOption::VALUE_REQUIRED, 'If specified, use the given directory as working directory.'));
 
         return $definition;
+    }
+
+    private function getPluginCommands()
+    {
+        $commands = array();
+
+        $composer = $this->getComposer(false, false);
+        if (null === $composer) {
+            $composer = Factory::createGlobal($this->io, false);
+        }
+
+        if (null !== $composer) {
+            foreach ($composer->getPluginManager()->getPlugins() as $plugin) {
+                if ($plugin instanceof CommandsProviderInterface) {
+                    $commands = array_merge($commands, $plugin->getCommands());
+                }
+            }
+        }
+
+        return $commands;
     }
 }
