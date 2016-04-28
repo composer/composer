@@ -15,6 +15,11 @@ namespace Composer\Plugin\Capability;
 /**
  * Commands Provider Interface
  *
+ * This capability will receive an array with 'composer' and 'io' keys as
+ * constructor argument. Those contain Composer\Composer and Composer\IO\IOInterface
+ * instances. It also contains a 'plugin' key containing the plugin instance that
+ * created the capability.
+ *
  * @author Jérémy Derussé <jeremy@derusse.com>
  */
 interface CommandProvider extends Capability

@@ -11,6 +11,15 @@ class CommandProvider implements CommandProvider
 {
     public function __construct(array $args)
     {
+        if (!$args['composer'] instanceof \Composer\Composer) {
+            throw new \RuntimeException('Expected a "composer" key');
+        }
+        if (!$args['io'] instanceof \Composer\IO\IOInterface) {
+            throw new \RuntimeException('Expected an "io" key');
+        }
+        if (!$args['plugin'] instanceof Plugin8) {
+            throw new \RuntimeException('Expected a "plugin" key with my own plugin');
+        }
     }
 
     public function getCommands()
@@ -28,6 +37,8 @@ class Command extends BaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $output->writeln('Executing');
+
         return 5;
     }
 }

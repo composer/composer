@@ -306,7 +306,7 @@ class PluginInstallerTest extends TestCase
         $installer = new PluginInstaller($this->io, $this->composer);
         $this->pm->loadInstalledPlugins();
 
-        $caps = $this->pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider');
+        $caps = $this->pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', array('composer' => $this->composer, 'io' => $this->io));
         $this->assertCount(1, $caps);
         $this->assertInstanceOf('Composer\Plugin\Capability\CommandProvider', $caps[0]);
 
@@ -341,7 +341,7 @@ class PluginInstallerTest extends TestCase
 
         $this->assertInstanceOf($capabilityApi, $capability);
         $this->assertInstanceOf($capabilityImplementation, $capability);
-        $this->assertSame(array('a' => 1, 'b' => 2), $capability->args);
+        $this->assertSame(array('a' => 1, 'b' => 2, 'plugin' => $plugin), $capability->args);
     }
 
     public function invalidImplementationClassNames()

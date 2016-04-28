@@ -362,6 +362,7 @@ class PluginManager
                 throw new \RuntimeException("Cannot instantiate Capability, as class $capabilityClass from plugin ".get_class($plugin)." does not exist.");
             }
 
+            $ctorArgs['plugin'] = $plugin;
             $capabilityObj = new $capabilityClass($ctorArgs);
 
             // FIXME these could use is_a and do the check *before* instantiating once drop support for php<5.3.9

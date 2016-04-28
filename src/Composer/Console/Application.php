@@ -178,7 +178,7 @@ class Application extends BaseApplication
                     foreach ($composer['scripts'] as $script => $dummy) {
                         if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                             if ($this->has($script)) {
-                                $io->writeError('<warning>A script named '.$script.' would override a native Composer function and has been skipped</warning>');
+                                $io->writeError('<warning>A script named '.$script.' would override a Composer command and has been skipped</warning>');
                             } else {
                                 $this->add(new Command\ScriptAliasCommand($script));
                             }
@@ -195,7 +195,13 @@ class Application extends BaseApplication
             }
 
             if (!$input->hasParameterOption('--no-plugins')) {
-                $this->addCommands($this->getPluginCommands());
+                foreach ($this->getPluginCommands() as $command) {
+                    if ($this->has($command->getName())) {
+                        $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
+                    } else {
+                        $this->add($command);
+                    }
+                }
             }
 
             $result = parent::doRun($input, $output);
@@ -395,7 +401,7 @@ class Application extends BaseApplication
 
         if (null !== $composer) {
             $pm = $composer->getPluginManager();
-            foreach ($pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider') as $capability) {
+            foreach ($pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', array('composer' => $composer, 'io' => $this->io)) as $capability) {
                 $newCommands = $capability->getCommands();
                 if (!is_array($newCommands)) {
                     throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' failed to return an array from getCommands');
