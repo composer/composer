@@ -297,6 +297,24 @@ class PluginInstallerTest extends TestCase
         $this->assertCount(0, $this->pm->getPlugins());
     }
 
+    public function testCommandProviderCapability()
+    {
+        $this->repository
+            ->expects($this->exactly(2))
+            ->method('getPackages')
+            ->will($this->returnValue(array($this->packages[7])));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
+
+        $caps = $this->pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider');
+        $this->assertCount(1, $caps);
+        $this->assertInstanceOf('Composer\Plugin\Capability\CommandProvider', $caps[0]);
+
+        $commands = $caps[0]->getCommands();
+        $this->assertCount(1, $commands);
+        $this->assertInstanceOf('Composer\Command\BaseCommand', $commands[0]);
+    }
+
     public function testIncapablePluginIsCorrectlyDetected()
     {
         $plugin = $this->getMockBuilder('Composer\Plugin\PluginInterface')

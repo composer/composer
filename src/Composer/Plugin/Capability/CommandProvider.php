@@ -10,23 +10,19 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Plugin;
-
-use Composer\Composer;
-use Composer\IO\IOInterface;
+namespace Composer\Plugin\Capability;
 
 /**
  * Commands Provider Interface
  *
  * @author Jérémy Derussé <jeremy@derusse.com>
  */
-interface CommandsProviderInterface
+interface CommandProvider extends Capability
 {
-
     /**
-     * Retreives list of commands
+     * Retreives an array of commands
      *
-     * @return array
+     * @return Composer\Command\BaseCommand[]
      */
     public function getCommands();
 }

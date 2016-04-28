@@ -5,9 +5,9 @@ namespace Installer;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
-use Composer\Plugin\CommandsProviderInterface;
+use Composer\Plugin\Capable;
 
-class Plugin8 implements PluginInterface, CommandsProviderInterface
+class Plugin8 implements PluginInterface, Capable
 {
     public $version = 'installer-v8';
 
@@ -15,8 +15,10 @@ class Plugin8 implements PluginInterface, CommandsProviderInterface
     {
     }
 
-    public function getCommands()
+    public function getCapabilities()
     {
-        return null;
+        return array(
+            'Composer\Plugin\Capability\CommandProvider' => 'Installer\CommandProvider',
+        );
     }
 }

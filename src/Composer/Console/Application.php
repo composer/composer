@@ -27,7 +27,6 @@ use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
 use Composer\Util\ErrorHandler;
-use Composer\Plugin\CommandsProviderInterface;
 
 /**
  * The console application that handles the commands
@@ -395,10 +394,18 @@ class Application extends BaseApplication
         }
 
         if (null !== $composer) {
-            foreach ($composer->getPluginManager()->getPlugins() as $plugin) {
-                if ($plugin instanceof CommandsProviderInterface) {
-                    $commands = array_merge($commands, $plugin->getCommands());
+            $pm = $composer->getPluginManager();
+            foreach ($pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider') as $capability) {
+                $newCommands = $capability->getCommands();
+                if (!is_array($newCommands)) {
+                    throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' failed to return an array from getCommands');
                 }
+                foreach ($newCommands as $command) {
+                    if (!$command instanceof Command\BaseCommand) {
+                        throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' returned an invalid value, we expected an array of Composer\Command\BaseCommand objects');
+                    }
+                }
+                $commands = array_merge($commands, $newCommands);
             }
         }
 
