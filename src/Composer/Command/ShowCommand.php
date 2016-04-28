@@ -385,7 +385,11 @@ EOT
             return 'info';
         }
 
-        if ($latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), '^'.$package->getVersion())) {
+        $constraint = $package->getVersion();
+        if (0 !== strpos($constraint, 'dev-')) {
+            $constraint = '^'.$constraint;
+        }
+        if ($latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), $constraint)) {
             // print red as it needs an immediate semver-compliant upgrade
             return 'highlight';
         }
