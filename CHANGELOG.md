@@ -1,3 +1,27 @@
+### [1.1.0-RC] - 2016-04-29
+
+  * Added ability for plugins to register their own composer commands
+  * Optimized the autoloader initialization using static loading on PHP 5.6 and above, this reduces the load time for large classmaps to almost nothing
+  * Added `--latest` to `show` command to show the latest version available of your dependencies
+  * Added `--outdated` to `show` command an `composer outdated` alias for it, to show only packages in need of update
+  * Added `--direct` to `show` and `outdated` commands to show only your direct dependencies in the listing
+  * Added support for editing all top-level properties (name, minimum-stability, ...) as well as extra values via the `config` command
+  * Added abandoned state warning to the `show` and `outdated` commands when listing latest packages
+  * Added support for `~/` and `$HOME/` in the path repository paths
+  * Added support for wildcards in the `show` command package filter, e.g. `composer show seld/*`
+  * Added ability to call composer itself from scripts via `@composer ...`
+  * Added untracked files detection to the `status` command
+  * Added warning to `validate` command when using exact-version requires
+  * Added warning once per domain when accessing insecure URLs with secure-http disabled
+  * Added a dependency on composer/ca-bundle (extracted CA bundle management to a standalone lib)
+  * Added support for empty directories when archiving to tar
+  * Added an `init` event for plugins to react to, which occurs right after a Composer instance is fully initialized
+  * Added many new detections of problems in the `why-not`/`prohibits` command to figure out why something does not get installed in the expected version
+  * Added a deprecation notice for script event listeners that use legacy script classes
+  * Fixed abandoned state not showing up if you had a package installed before it was marked abandoned
+  * Fixed --no-dev updates creating an incomplete lock file, everything is now always resolved on update
+  * Fixed partial updates in case the vendor dir was not up to date with the lock file
+
 ### [1.0.3] - 2016-04-29
 
   * Security: Fixed possible command injection from the env vars into our sudo detection
@@ -352,6 +376,7 @@
 
   * Initial release
 
+[1.1.0-RC]: https://github.com/composer/composer/compare/1.0.3...1.1.0-RC
 [1.0.3]: https://github.com/composer/composer/compare/1.0.2...1.0.3
 [1.0.2]: https://github.com/composer/composer/compare/1.0.1...1.0.2
 [1.0.1]: https://github.com/composer/composer/compare/1.0.0...1.0.1
