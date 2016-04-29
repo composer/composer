@@ -1,3 +1,12 @@
+### [1.0.3] - 2016-04-29
+
+  * Security: Fixed possible command injection from the env vars into our sudo detection
+  * Fixed interactive authentication with gitlab
+  * Fixed class name replacement in plugins
+  * Fixed classmap generation mistakenly detecting anonymous classes
+  * Fixed auto-detection of stability flags in complex constraints like `2.0-dev || ^1.5`
+  * Fixed content-length handling when redirecting to very small responses
+
 ### [1.0.2] - 2016-04-21
 
   * Fixed regression in 1.0.1 on systems with mbstring.func_overload enabled
@@ -343,7 +352,8 @@
 
   * Initial release
 
-[1.0.2]: https://github.com/composer/composer/compare/1.0.2...1.0.2
+[1.0.3]: https://github.com/composer/composer/compare/1.0.2...1.0.3
+[1.0.2]: https://github.com/composer/composer/compare/1.0.1...1.0.2
 [1.0.1]: https://github.com/composer/composer/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/composer/composer/compare/1.0.0-beta2...1.0.0
 [1.0.0-beta2]: https://github.com/composer/composer/compare/1.0.0-beta1...1.0.0-beta2
