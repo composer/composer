@@ -116,7 +116,9 @@ class Application extends BaseApplication
             }
         }
 
-        if ($commandName !== 'global' && $commandName !== 'outdated') {
+        $isProxyCommand = $commandName === 'global' || $commandName === 'outdated';
+
+        if (!$isProxyCommand) {
             $io->writeError(sprintf(
                 'Running %s (%s) with %s on %s',
                 Composer::VERSION,
@@ -194,7 +196,7 @@ class Application extends BaseApplication
                 $this->io->enableDebugging($startTime);
             }
 
-            if (!$input->hasParameterOption('--no-plugins')) {
+            if (!$input->hasParameterOption('--no-plugins') && !$isProxyCommand) {
                 foreach ($this->getPluginCommands() as $command) {
                     if ($this->has($command->getName())) {
                         $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
