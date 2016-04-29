@@ -314,7 +314,7 @@ EOT
                         if ($showLatest && isset($latestPackages[$package->getPrettyName()])) {
                             $latestPackackage = $latestPackages[$package->getPrettyName()];
                         }
-                        if ($input->getOption('outdated') && $latestPackackage && $latestPackackage->getFullPrettyVersion() === $package->getFullPrettyVersion()) {
+                        if ($input->getOption('outdated') && $latestPackackage && $latestPackackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && !$latestPackackage->isAbandoned()) {
                             continue;
                         }
 
