@@ -279,7 +279,8 @@ class RemoteFilesystem
         try {
             $result = file_get_contents($fileUrl, false, $ctx);
 
-            if ($this->bytesMax && Platform::strlen($result) < $this->bytesMax) {
+            $contentLength = !empty($http_response_header[0]) ? $this->findHeaderValue($http_response_header, 'content-length') : null;
+            if ($contentLength && Platform::strlen($result) < $contentLength) {
                 // alas, this is not possible via the stream callback because STREAM_NOTIFY_COMPLETED is documented, but not implemented anywhere in PHP
                 throw new TransportException('Content-Length mismatch');
             }
@@ -527,14 +528,12 @@ class RemoteFilesystem
                 break;
 
             case STREAM_NOTIFY_FILE_SIZE_IS:
-                if ($this->bytesMax < $bytesMax) {
-                    $this->bytesMax = $bytesMax;
-                }
+                $this->bytesMax = $bytesMax;
                 break;
 
             case STREAM_NOTIFY_PROGRESS:
                 if ($this->bytesMax > 0 && $this->progress) {
-                    $progression = round($bytesTransferred / $this->bytesMax * 100);
+                    $progression = min(100, round($bytesTransferred / $this->bytesMax * 100));
 
                     if ((0 === $progression % 5) && 100 !== $progression && $progression !== $this->lastProgress) {
                         $this->lastProgress = $progression;
