@@ -275,7 +275,12 @@ EOT
                         if ($showVersion) {
                             $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
                             if ($showLatest) {
+
                                 $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion);
+                                if ($latestPackage === false) {
+                                    continue;
+                                }
+
                                 $latestPackages[$package->getPrettyName()] = $latestPackage;
                                 $latestLength =  max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
                             }
