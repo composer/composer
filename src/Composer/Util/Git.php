@@ -112,7 +112,7 @@ class Git
                         return;
                     }
                 }
-            } elseif (preg_match('{^https://(bitbucket.org)/(.*)}', $url, $match)) { //bitbucket oauth
+            } elseif (preg_match('{^https://(bitbucket\.org)/(.*)(\.git)?$}U', $url, $match)) { //bitbucket oauth
                 $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process);
 
                 if (!$this->io->hasAuthentication($match[1])) {
