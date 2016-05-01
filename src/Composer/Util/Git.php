@@ -141,6 +141,13 @@ class Git
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
                     }
+                } else { // Falling back to ssh
+                    $sshUrl = 'git@bitbucket.org:' . $match[2] . '.git';
+                    $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
+                    $command = call_user_func($commandCallable, $sshUrl);
+                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                        return;
+                    }
                 }
             } elseif ($this->isAuthenticationFailure($url, $match)) { // private non-github repo that failed to authenticate
                 if (strpos($match[2], '@')) {
