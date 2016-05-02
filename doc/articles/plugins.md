@@ -237,8 +237,9 @@ namespace My\Composer;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
+use Composer\Plugin\Capable;
 
-class Plugin implements PluginInterface
+class Plugin implements PluginInterface, Capable
 {
     public function activate(Composer $composer, IOInterface $io)
     {
