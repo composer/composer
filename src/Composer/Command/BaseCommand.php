@@ -80,6 +80,18 @@ abstract class BaseCommand extends Command
     }
 
     /**
+     * Whether or not this command is meant to call another command.
+     *
+     * This is mainly needed to avoid duplicated warnings messages.
+     *
+     * @return bool
+     */
+    public function isProxyCommand()
+    {
+        return false;
+    }
+
+    /**
      * @return IOInterface
      */
     public function getIO()
