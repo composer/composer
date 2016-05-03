@@ -183,11 +183,42 @@ class AwsPlugin implements PluginInterface, EventSubscriberInterface
 }
 ```
 
-
 ## Plugin capabilities
 
-Composer defines a standard set of capabilities which may be implemented by plugins
-through the [`Composer\Plugin\Capable`][8] interface.
+Composer defines a standard set of capabilities which may be implemented by plugins.
+Their goal is to make the plugin ecosystem more stable as it reduces the need to mess
+with [`Composer\Composer`][4]'s internal state, by providing explicit extension points
+for common plugin requirements.
+
+Capable Plugins classes must implement the [`Composer\Plugin\Capable`][8] interface
+and declare their capabilities in the `getCapabilities()` method. 
+This method must return an array, with the _key_ as a Composer Capability class name, 
+and the _value_ as the Plugin's own implementation class name of said Capability:
+
+```php
+<?php
+
+namespace My\Composer;
+
+use Composer\Composer;
+use Composer\IO\IOInterface;
+use Composer\Plugin\PluginInterface;
+use Composer\Plugin\Capable;
+
+class Plugin implements PluginInterface, Capable
+{
+    public function activate(Composer $composer, IOInterface $io)
+    {
+    }
+
+    public function getCapabilities()
+    {
+        return array(
+            'Composer\Plugin\Capability\CommandProvider' => 'My\Composer\CommandProvider',
+        );
+    }
+}
+```
 
 ### Command provider
 
@@ -226,33 +257,9 @@ class Command extends BaseCommand
 }
 ```
 
-Once the plugin exposes this capability, `custom-plugin-command` is
-available alongside Composer commands :
+Now the `custom-plugin-command` is available alongside Composer commands.
 
-```php
-<?php
-
-namespace My\Composer;
-
-use Composer\Composer;
-use Composer\IO\IOInterface;
-use Composer\Plugin\PluginInterface;
-use Composer\Plugin\Capable;
-
-class Plugin implements PluginInterface, Capable
-{
-    public function activate(Composer $composer, IOInterface $io)
-    {
-    }
-
-    public function getCapabilities()
-    {
-        return array(
-            'Composer\Plugin\Capability\CommandProvider' => 'My\Composer\CommandProvider',
-        );
-    }
-}
-```
+> _Composer commands are based on the [Symfony Console Component][10]._
 
 ## Using Plugins
 
@@ -275,3 +282,4 @@ local project plugins are loaded.
 [7]: ../01-basic-usage.md#package-versions
 [8]: https://github.com/composer/composer/blob/master/src/Composer/Plugin/Capable.php
 [9]: https://github.com/composer/composer/blob/master/src/Composer/Plugin/Capability/CommandProvider.php
+[10]: http://symfony.com/doc/current/components/console/introduction.html
