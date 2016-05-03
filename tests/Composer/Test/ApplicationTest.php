@@ -26,6 +26,11 @@ class ApplicationTest extends TestCase
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
 
         $inputMock->expects($this->once())
+            ->method('hasParameterOption')
+            ->with($this->equalTo('--no-plugins'))
+            ->will($this->returnValue(true));
+
+        $inputMock->expects($this->once())
             ->method('getFirstArgument')
             ->will($this->returnValue('list'));
 
