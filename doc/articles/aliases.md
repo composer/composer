@@ -19,6 +19,9 @@ If anyone wants to require the latest `dev-master`, they have a problem: Other
 packages may require `1.0.*`, so requiring that dev version will lead to
 conflicts, since `dev-master` does not match the `1.0.*` constraint.
 
+You can also put `@dev` in your version requirement if you want to get the latest
+version from source control.
+
 Enter aliases.
 
 ## Branch alias
