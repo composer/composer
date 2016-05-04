@@ -112,7 +112,7 @@ class Git
                         return;
                     }
                 }
-            } elseif (preg_match('{^https://(bitbucket.org)/(.*)}', $url, $match)) { //bitbucket oauth
+            } elseif (preg_match('{^https://(bitbucket\.org)/(.*)(\.git)?$}U', $url, $match)) { //bitbucket oauth
                 $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process);
 
                 if (!$this->io->hasAuthentication($match[1])) {
@@ -138,6 +138,13 @@ class Git
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
 
                     $command = call_user_func($commandCallable, $authUrl);
+                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                        return;
+                    }
+                } else { // Falling back to ssh
+                    $sshUrl = 'git@bitbucket.org:' . $match[2] . '.git';
+                    $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
+                    $command = call_user_func($commandCallable, $sshUrl);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
                     }
