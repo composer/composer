@@ -109,7 +109,16 @@ class Application extends BaseApplication
         $io = $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
         ErrorHandler::register($io);
 
-        if (!$input->hasParameterOption('--no-plugins') && !$this->hasPluginCommands) {
+        // determine command name to be executed without including plugin commands
+        $commandName = '';
+        if ($name = $this->getCommandName($input)) {
+            try {
+                $commandName = $this->find($name)->getName();
+            } catch (\InvalidArgumentException $e) {
+            }
+        }
+
+        if (!$input->hasParameterOption('--no-plugins') && !$this->hasPluginCommands && 'global' !== $commandName) {
             foreach ($this->getPluginCommands() as $command) {
                 if ($this->has($command->getName())) {
                     $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
@@ -120,8 +129,7 @@ class Application extends BaseApplication
             $this->hasPluginCommands = true;
         }
 
-        // determine command name to be executed, and if it's a proxy command
-        $commandName = '';
+        // determine command name to be executed incl plugin commands, and check if it's a proxy command
         $isProxyCommand = false;
         if ($name = $this->getCommandName($input)) {
             try {
