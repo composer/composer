@@ -110,6 +110,13 @@ class Application extends BaseApplication
         $io = $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
         ErrorHandler::register($io);
 
+        // switch working dir
+        if ($newWorkDir = $this->getNewWorkingDir($input)) {
+            $oldWorkingDir = getcwd();
+            chdir($newWorkDir);
+            $io->writeError('Changed CWD to ' . getcwd(), true, IOInterface::DEBUG);
+        }
+
         // determine command name to be executed without including plugin commands
         $commandName = '';
         if ($name = $this->getCommandName($input)) {
@@ -188,13 +195,6 @@ class Application extends BaseApplication
                     $io->writeError(sprintf('<error>PHP temp directory (%s) does not exist or is not writable to Composer. Set sys_temp_dir in your php.ini</error>', sys_get_temp_dir()));
                 }
             });
-
-            // switch working dir
-            if ($newWorkDir = $this->getNewWorkingDir($input)) {
-                $oldWorkingDir = getcwd();
-                chdir($newWorkDir);
-                $io->writeError('Changed CWD to ' . getcwd(), true, IOInterface::DEBUG);
-            }
 
             // add non-standard scripts as own commands
             $file = Factory::getComposerFile();
