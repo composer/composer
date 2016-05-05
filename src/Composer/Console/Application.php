@@ -56,6 +56,8 @@ class Application extends BaseApplication
                     /_/
 ';
 
+    private $hasPluginCommands = false;
+
     public function __construct()
     {
         static $shutdownRegistered = false;
@@ -108,7 +110,7 @@ class Application extends BaseApplication
         $io = $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
         ErrorHandler::register($io);
 
-        // determine command name to be executed
+        // determine command name to be executed without including plugin commands
         $commandName = '';
         if ($name = $this->getCommandName($input)) {
             try {
@@ -117,7 +119,27 @@ class Application extends BaseApplication
             }
         }
 
-        $isProxyCommand = $commandName === 'global' || $commandName === 'outdated';
+        if (!$input->hasParameterOption('--no-plugins') && !$this->hasPluginCommands && 'global' !== $commandName) {
+            foreach ($this->getPluginCommands() as $command) {
+                if ($this->has($command->getName())) {
+                    $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
+                } else {
+                    $this->add($command);
+                }
+            }
+            $this->hasPluginCommands = true;
+        }
+
+        // determine command name to be executed incl plugin commands, and check if it's a proxy command
+        $isProxyCommand = false;
+        if ($name = $this->getCommandName($input)) {
+            try {
+                $command = $this->find($name);
+                $commandName = $command->getName();
+                $isProxyCommand = ($command instanceof Command\BaseCommand && $command->isProxyCommand());
+            } catch (\InvalidArgumentException $e) {
+            }
+        }
 
         if (!$isProxyCommand) {
             $io->writeError(sprintf(
@@ -195,16 +217,6 @@ class Application extends BaseApplication
             if ($input->hasParameterOption('--profile')) {
                 $startTime = microtime(true);
                 $this->io->enableDebugging($startTime);
-            }
-
-            if (!$input->hasParameterOption('--no-plugins') && !$isProxyCommand) {
-                foreach ($this->getPluginCommands() as $command) {
-                    if ($this->has($command->getName())) {
-                        $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
-                    } else {
-                        $this->add($command);
-                    }
-                }
             }
 
             $result = parent::doRun($input, $output);

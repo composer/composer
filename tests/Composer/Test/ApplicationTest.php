@@ -25,7 +25,12 @@ class ApplicationTest extends TestCase
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
 
-        $inputMock->expects($this->once())
+        $inputMock->expects($this->any())
+            ->method('hasParameterOption')
+            ->with($this->equalTo('--no-plugins'))
+            ->will($this->returnValue(true));
+
+        $inputMock->expects($this->any())
             ->method('getFirstArgument')
             ->will($this->returnValue('list'));
 
@@ -68,7 +73,7 @@ class ApplicationTest extends TestCase
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
 
-        $inputMock->expects($this->once())
+        $inputMock->expects($this->any())
             ->method('getFirstArgument')
             ->will($this->returnValue($command));
 
