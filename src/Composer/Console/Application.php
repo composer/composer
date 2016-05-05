@@ -56,6 +56,8 @@ class Application extends BaseApplication
                     /_/
 ';
 
+    private $hasPluginCommands = false;
+
     public function __construct()
     {
         static $shutdownRegistered = false;
@@ -108,16 +110,28 @@ class Application extends BaseApplication
         $io = $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
         ErrorHandler::register($io);
 
-        // determine command name to be executed
+        if (!$input->hasParameterOption('--no-plugins') && !$this->hasPluginCommands) {
+            foreach ($this->getPluginCommands() as $command) {
+                if ($this->has($command->getName())) {
+                    $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
+                } else {
+                    $this->add($command);
+                }
+            }
+            $this->hasPluginCommands = true;
+        }
+
+        // determine command name to be executed, and if it's a proxy command
         $commandName = '';
+        $isProxyCommand = false;
         if ($name = $this->getCommandName($input)) {
             try {
-                $commandName = $this->find($name)->getName();
+                $command = $this->find($name);
+                $commandName = $command->getName();
+                $isProxyCommand = ($command instanceof Command\BaseCommand && $command->isProxyCommand());
             } catch (\InvalidArgumentException $e) {
             }
         }
-
-        $isProxyCommand = $commandName === 'global' || $commandName === 'outdated';
 
         if (!$isProxyCommand) {
             $io->writeError(sprintf(
@@ -195,16 +209,6 @@ class Application extends BaseApplication
             if ($input->hasParameterOption('--profile')) {
                 $startTime = microtime(true);
                 $this->io->enableDebugging($startTime);
-            }
-
-            if (!$input->hasParameterOption('--no-plugins') && !$isProxyCommand) {
-                foreach ($this->getPluginCommands() as $command) {
-                    if ($this->has($command->getName())) {
-                        $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
-                    } else {
-                        $this->add($command);
-                    }
-                }
             }
 
             $result = parent::doRun($input, $output);
