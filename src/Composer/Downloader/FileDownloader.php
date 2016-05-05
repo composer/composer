@@ -241,7 +241,7 @@ class FileDownloader implements DownloaderInterface
         return $url;
     }
 
-    private function getCacheKey(PackageInterface $package, $processedUrl)
+    public static function getCacheKey(PackageInterface $package, $processedUrl)
     {
         // we use the complete download url here to avoid conflicting entries
         // from different packages, which would potentially allow a given package

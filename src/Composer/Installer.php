@@ -25,6 +25,7 @@ use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
+use Composer\Downloader\Prefetcher;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\InstallerEvents;
@@ -484,6 +485,11 @@ class Installer
             }
         } else {
             $devPackages = null;
+        }
+
+        if (extension_loaded('curl')) {
+            $prefetcher = new Prefetcher\Prefetcher;
+            $prefetcher->fetchAllFromOperations($this->io, $this->config, $operations);
         }
 
         foreach ($operations as $operation) {

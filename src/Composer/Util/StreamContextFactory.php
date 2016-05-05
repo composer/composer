@@ -129,23 +129,32 @@ final class StreamContextFactory
             $options['http']['header'] = self::fixHttpHeaderField($options['http']['header']);
         }
 
+        if (!isset($options['http']['header']) || false === strpos(strtolower(implode('', $options['http']['header'])), 'user-agent')) {
+            $options['http']['header'][] = self::generateUserAgent();
+        }
+
+        return stream_context_create($options, $defaultParams);
+    }
+
+    public static function generateUserAgent()
+    {
+        static $ua;
+        if ($ua) {
+            return $ua;
+        }
         if (defined('HHVM_VERSION')) {
             $phpVersion = 'HHVM ' . HHVM_VERSION;
         } else {
             $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
         }
 
-        if (!isset($options['http']['header']) || false === strpos(strtolower(implode('', $options['http']['header'])), 'user-agent')) {
-            $options['http']['header'][] = sprintf(
-                'User-Agent: Composer/%s (%s; %s; %s)',
-                Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
-                php_uname('s'),
-                php_uname('r'),
-                $phpVersion
-            );
-        }
-
-        return stream_context_create($options, $defaultParams);
+        return $ua = sprintf(
+            'User-Agent: Composer/%s (%s; %s; %s)',
+            Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
+            php_uname('s'),
+            php_uname('r'),
+            $phpVersion
+        );
     }
 
     /**
