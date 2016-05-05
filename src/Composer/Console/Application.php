@@ -27,6 +27,7 @@ use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
 use Composer\Util\ErrorHandler;
+use Composer\EventDispatcher\ScriptExecutionException;
 
 /**
  * The console application that handles the commands
@@ -217,6 +218,8 @@ class Application extends BaseApplication
             }
 
             return $result;
+        } catch (ScriptExecutionException $e) {
+            return $e->getCode();
         } catch (\Exception $e) {
             $this->hintCommonErrors($e);
             throw $e;
