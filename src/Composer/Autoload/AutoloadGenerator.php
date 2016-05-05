@@ -725,11 +725,11 @@ HEADER;
 
         $filesystem = new Filesystem();
 
-        $vendorPathCode = ' ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true) . " . '";
-        $appBaseDirCode = ' ' . $filesystem->findShortestPathCode(realpath($targetDir), $basePath, true, true) . " . '";
+        $vendorPathCode = ' ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true) . " . '/";
+        $appBaseDirCode = ' ' . $filesystem->findShortestPathCode(realpath($targetDir), $basePath, true, true) . " . '/";
 
-        $absoluteVendorPathCode = ' ' . substr(var_export($vendorDir, true), 0, -1);
-        $absoluteAppBaseDirCode = ' ' . substr(var_export($baseDir, true), 0, -1);
+        $absoluteVendorPathCode = ' ' . substr(var_export(rtrim($vendorDir, '\\/') . '/', true), 0, -1);
+        $absoluteAppBaseDirCode = ' ' . substr(var_export(rtrim($baseDir, '\\/') . '/', true), 0, -1);
 
         $initializer = '';
         $prefix = "\0Composer\Autoload\ClassLoader\0";
