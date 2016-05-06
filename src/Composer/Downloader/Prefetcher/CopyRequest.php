@@ -7,24 +7,24 @@ use Composer\Config;
 
 class CopyRequest
 {
-    protected $scheme;
-    protected $user;
-    protected $pass;
-    protected $host;
-    protected $port;
-    protected $path;
-    protected $query = array();
+    private $scheme;
+    private $user;
+    private $pass;
+    private $host;
+    private $port;
+    private $path;
+    private $query = array();
 
     /** @var [string => string] */
-    protected $headers = array();
+    private $headers = array();
 
     /** @var string */
-    protected $destination;
+    private $destination;
 
     /** @var resource<stream<plainfile>> */
-    protected $fp;
+    private $fp;
 
-    protected $success = false;
+    private $success = false;
 
     private static $defaultCurlOptions = array(
         CURLOPT_HTTPGET => true,
@@ -33,8 +33,8 @@ class CopyRequest
         CURLOPT_ENCODING => '',
     );
 
-    protected $githubDomains = array();
-    protected $gitlabDomains = array();
+    private $githubDomains = array();
+    private $gitlabDomains = array();
 
     /**
      * @param string $url
@@ -268,7 +268,7 @@ class CopyRequest
         }
     }
 
-    protected function createDir($fileName)
+    private function createDir($fileName)
     {
         $targetdir = dirname($fileName);
         if (!file_exists($targetdir)) {
