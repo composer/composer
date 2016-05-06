@@ -140,7 +140,7 @@ class CopyRequest
     {
         $headers = array();
         foreach ($this->headers as $key => $val) {
-            $headers[] = ucwords($key, '-') . ': ' . $val;
+            $headers[] = strtr(ucwords(strtr($key, '-', ' ')), ' ', '-') . ': ' . $val;
         }
 
         $url = $this->getURL();

@@ -26,6 +26,8 @@ class CurlMulti
     /** @var bool */
     private $permanent = true;
 
+    private $blackhole;
+
     /**
      * @param bool $permanent
      */
@@ -56,6 +58,9 @@ class CurlMulti
         $this->sh = $sh_cache;
         $this->unused = $ch_cache;
         $this->permanent = $permanent;
+
+        // for PHP<5.5 @see getFinishedResults()
+        $this->blackhole = fopen('php://memory', 'wb');
     }
 
     /**
@@ -133,7 +138,7 @@ class CurlMulti
                 $errno = curl_errno($ch);
                 $error = curl_error($ch);
                 $info = curl_getinfo($ch);
-                curl_setopt($ch, CURLOPT_FILE, null); //release file pointer
+                curl_setopt($ch, CURLOPT_FILE, $this->blackhole); //release file pointer
                 $index = (int)$ch;
                 $request = $this->runningRequests[$index];
                 if (CURLE_OK === $errno && !$error && (!preg_match('/^http/', $info['url']) || 200 === $info['http_code'])) {
