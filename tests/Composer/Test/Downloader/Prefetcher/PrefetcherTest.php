@@ -85,7 +85,7 @@ class PrefetcherTest extends \PHPUnit_Framework_TestCase
     public function testFetchAllWithInstallButFileExists()
     {
         list($opp, $pp) = $this->createProphecies();
-        $pp->getName()->willReturn('acme/acme');
+        $pp->getName()->willReturn('');
         $pp->getDistType()->willReturn('html');
         $pp->getDistUrl()->willReturn('http://example.com/');
         $pp->getDistMirrors()->willReturn(array());
