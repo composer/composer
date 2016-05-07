@@ -269,14 +269,21 @@ class CopyRequest
             }
         }
 
-        foreach (array('http', 'https') as $scheme) {
-            if ($this->scheme === $scheme) {
-                $label = $scheme . '_proxy';
-                foreach (array($label, strtoupper($label)) as $l) {
-                    if (isset($_SERVER[$l])) {
-                        return $_SERVER[$l];
-                    }
-                }
+        if ($this->scheme === 'https') {
+            if (isset($_SERVER['HTTPS_PROXY'])) {
+                return $_SERVER['HTTPS_PROXY'];
+            }
+            if (isset($_SERVER['https_proxy'])) {
+                return $_SERVER['https_proxy'];
+            }
+        }
+
+        if ($this->scheme === 'http') {
+            if (isset($_SERVER['HTTP_PROXY'])) {
+                return $_SERVER['HTTP_PROXY'];
+            }
+            if (isset($_SERVER['http_proxy'])) {
+                return $_SERVER['http_proxy'];
             }
         }
         return null;
