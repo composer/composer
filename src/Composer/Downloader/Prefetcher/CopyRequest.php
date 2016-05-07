@@ -126,7 +126,7 @@ class CopyRequest
         if ($this->user) {
             $user = $this->user;
             $user .= self::ifOr($this->pass, ':');
-            $url .= "$user@";
+            $url .= $user . '@';
         }
         $url .= self::ifOr($this->host);
         $url .= self::ifOr($this->port, ':');
