@@ -47,6 +47,47 @@ class CopyRequest
     private $githubDomains = array();
     private $gitlabDomains = array();
 
+    private static $NSS_CIPHERS = array(
+        'rsa_3des_sha',
+        'rsa_des_sha',
+        'rsa_null_md5',
+        'rsa_null_sha',
+        'rsa_rc2_40_md5',
+        'rsa_rc4_128_md5',
+        'rsa_rc4_128_sha',
+        'rsa_rc4_40_md5',
+        'fips_des_sha',
+        'fips_3des_sha',
+        'rsa_des_56_sha',
+        'rsa_rc4_56_sha',
+        'rsa_aes_128_sha',
+        'rsa_aes_256_sha',
+        'rsa_aes_128_gcm_sha_256',
+        'dhe_rsa_aes_128_gcm_sha_256',
+        'ecdh_ecdsa_null_sha',
+        'ecdh_ecdsa_rc4_128_sha',
+        'ecdh_ecdsa_3des_sha',
+        'ecdh_ecdsa_aes_128_sha',
+        'ecdh_ecdsa_aes_256_sha',
+        'ecdhe_ecdsa_null_sha',
+        'ecdhe_ecdsa_rc4_128_sha',
+        'ecdhe_ecdsa_3des_sha',
+        'ecdhe_ecdsa_aes_128_sha',
+        'ecdhe_ecdsa_aes_256_sha',
+        'ecdh_rsa_null_sha',
+        'ecdh_rsa_128_sha',
+        'ecdh_rsa_3des_sha',
+        'ecdh_rsa_aes_128_sha',
+        'ecdh_rsa_aes_256_sha',
+        'echde_rsa_null',
+        'ecdhe_rsa_rc4_128_sha',
+        'ecdhe_rsa_3des_sha',
+        'ecdhe_rsa_aes_128_sha',
+        'ecdhe_rsa_aes_256_sha',
+        'ecdhe_ecdsa_aes_128_gcm_sha_256',
+        'ecdhe_rsa_aes_128_gcm_sha_256',
+    );
+
     /**
      * @param string $url
      * @param string $destination
@@ -109,7 +150,7 @@ class CopyRequest
     private static function ifOr($str, $pre = '', $post = '')
     {
         if ($str) {
-            return "$pre$str$post";
+            return $pre . $str . $post;
         }
         return '';
     }
@@ -290,45 +331,4 @@ class CopyRequest
             }
         }
     }
-
-    private static $NSS_CIPHERS = array(
-        'rsa_3des_sha',
-        'rsa_des_sha',
-        'rsa_null_md5',
-        'rsa_null_sha',
-        'rsa_rc2_40_md5',
-        'rsa_rc4_128_md5',
-        'rsa_rc4_128_sha',
-        'rsa_rc4_40_md5',
-        'fips_des_sha',
-        'fips_3des_sha',
-        'rsa_des_56_sha',
-        'rsa_rc4_56_sha',
-        'rsa_aes_128_sha',
-        'rsa_aes_256_sha',
-        'rsa_aes_128_gcm_sha_256',
-        'dhe_rsa_aes_128_gcm_sha_256',
-        'ecdh_ecdsa_null_sha',
-        'ecdh_ecdsa_rc4_128_sha',
-        'ecdh_ecdsa_3des_sha',
-        'ecdh_ecdsa_aes_128_sha',
-        'ecdh_ecdsa_aes_256_sha',
-        'ecdhe_ecdsa_null_sha',
-        'ecdhe_ecdsa_rc4_128_sha',
-        'ecdhe_ecdsa_3des_sha',
-        'ecdhe_ecdsa_aes_128_sha',
-        'ecdhe_ecdsa_aes_256_sha',
-        'ecdh_rsa_null_sha',
-        'ecdh_rsa_128_sha',
-        'ecdh_rsa_3des_sha',
-        'ecdh_rsa_aes_128_sha',
-        'ecdh_rsa_aes_256_sha',
-        'echde_rsa_null',
-        'ecdhe_rsa_rc4_128_sha',
-        'ecdhe_rsa_3des_sha',
-        'ecdhe_rsa_aes_128_sha',
-        'ecdhe_rsa_aes_256_sha',
-        'ecdhe_ecdsa_aes_128_gcm_sha_256',
-        'ecdhe_rsa_aes_128_gcm_sha_256',
-    );
 }
