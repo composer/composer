@@ -41,8 +41,7 @@ class PrefetcherTest extends \PHPUnit_Framework_TestCase
         ));
         $reqp->makeSuccess()->willReturn(null);
         $reqp->getMaskedURL()->willReturn('file://' . __DIR__ . '/test.txt');
-        $this->iop->writeError(arg::containingString('<comment>1/1</comment>'))->shouldBeCalledTimes(1);
-        $this->iop->writeError("    Finished: <comment>success:1, skipped:0, failure:0, total: 1</comment>")->shouldBeCalledTimes(1);
+        $this->iop->writeError(arg::type('string'))->shouldBeCalled();
 
         $fetcher = new Prefetcher;
         $fetcher->fetchAll($this->iop->reveal(), array($reqp->reveal()));
