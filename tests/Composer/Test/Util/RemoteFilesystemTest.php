@@ -136,14 +136,14 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $io = $this->getMock('Composer\IO\IOInterface');
         $io->expects($this->once())
             ->method('setAuthentication')
-            ->with($this->equalTo('example.com'), $this->equalTo('user'), $this->equalTo('pass'));
+            ->with($this->equalTo('github.com'), $this->equalTo('user'), $this->equalTo('pass'));
 
         $fs = new RemoteFilesystem($io);
         try {
-            $fs->getContents('example.com', 'http://user:pass@www.example.com/something');
+            $fs->getContents('github.com', 'https://user:pass@github.com/composer/composer/404');
         } catch (\Exception $e) {
             $this->assertInstanceOf('Composer\Downloader\TransportException', $e);
-            $this->assertEquals(404, $e->getCode());
+            $this->assertNotEquals(200, $e->getCode());
         }
     }
 
