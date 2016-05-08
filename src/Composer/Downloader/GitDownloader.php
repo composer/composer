@@ -366,7 +366,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $this->io->writeError('    <warning>'.$reference.' is gone (history was rewritten?)</warning>');
         }
 
-        throw new \RuntimeException('Failed to execute ' . GitUtil::sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput());
+        throw new \RuntimeException(GitUtil::sanitizeUrl('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()));
     }
 
     protected function updateOriginUrl($path, $url)
