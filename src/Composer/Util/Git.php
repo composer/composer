@@ -251,7 +251,13 @@ class Git
 
     public static function sanitizeUrl($message)
     {
-        return preg_replace('{://([^@]+?):.+?@}', '://$1:***@', $message);
+        return preg_replace_callback('{://(?P<user>[^@]+?):(?P<password>.+?)@}', function ($m) {
+            if (preg_match('{^[a-f0-9]{12,}$}', $m[1])) {
+                return '://***:***@';
+            }
+
+            return '://'.$m[1].':***@';
+        }, $message);
     }
 
     private function throwException($message, $url)
