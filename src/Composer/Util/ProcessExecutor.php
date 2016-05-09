@@ -44,7 +44,13 @@ class ProcessExecutor
     public function execute($command, &$output = null, $cwd = null)
     {
         if ($this->io && $this->io->isDebug()) {
-            $safeCommand = preg_replace('{(://[^:/\s]+:)[^@\s/]+}i', '$1****', $command);
+            $safeCommand = preg_replace('{(://)(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)}i', function ($m) {
+                if (preg_match('{^[a-f0-9]{12,}$}', $m[1])) {
+                    return '://***:***';
+                }
+
+                return '://'.$m[1].':***';
+            }, $command);
             $this->io->writeError('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
         }
 

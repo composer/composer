@@ -83,7 +83,7 @@ class Git
             }
 
             // failed to checkout, first check git accessibility
-            $this->throwException('Failed to clone ' . self::sanitizeUrl($url) .' via '.implode(', ', $protocols).' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
+            $this->throwException('Failed to clone ' . $url .' via '.implode(', ', $protocols).' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
         }
 
         // if we have a private github url and the ssh protocol is disabled then we skip it and directly fallback to https
@@ -192,7 +192,7 @@ class Git
             if ($initialClone) {
                 $this->filesystem->removeDirectory($origCwd);
             }
-            $this->throwException('Failed to execute ' . self::sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput(), $url);
+            $this->throwException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput(), $url);
         }
     }
 
@@ -251,7 +251,13 @@ class Git
 
     public static function sanitizeUrl($message)
     {
-        return preg_replace('{://([^@]+?):.+?@}', '://$1:***@', $message);
+        return preg_replace_callback('{://(?P<user>[^@]+?):(?P<password>.+?)@}', function ($m) {
+            if (preg_match('{^[a-f0-9]{12,}$}', $m[1])) {
+                return '://***:***@';
+            }
+
+            return '://'.$m[1].':***@';
+        }, $message);
     }
 
     private function throwException($message, $url)
@@ -260,9 +266,9 @@ class Git
         clearstatcache();
 
         if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
-            throw new \RuntimeException('Failed to clone '.self::sanitizeUrl($url).', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
+            throw new \RuntimeException(self::sanitizeUrl('Failed to clone '.$url.', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
         }
 
-        throw new \RuntimeException($message);
+        throw new \RuntimeException(self::sanitizeUrl($message));
     }
 }
