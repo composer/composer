@@ -6,8 +6,7 @@ This chapter will explain all of the fields available in `composer.json`.
 
 We have a [JSON schema](http://json-schema.org) that documents the format and
 can also be used to validate your `composer.json`. In fact, it is used by the
-`validate` command. You can find it at:
-[`res/composer-schema.json`](https://github.com/composer/composer/blob/master/res/composer-schema.json).
+`validate` command. You can find it at: https://getcomposer.org/schema.json
 
 ## Root Package
 
