@@ -970,6 +970,8 @@ class Installer
                         )
                     )) {
                         $operations[] = new UpdateOperation($package, $newPackage);
+
+                        continue;
                     }
                 }
 
@@ -978,7 +980,7 @@ class Installer
                     $references = $this->package->getReferences();
 
                     if (isset($references[$package->getName()]) && $references[$package->getName()] !== $package->getSourceReference()) {
-                        // changing the source ref to update to will be handled in the operations loop below
+                        // changing the source ref to update to will be handled in the operations loop
                         $operations[] = new UpdateOperation($package, clone $package);
                     }
                 }
@@ -1062,6 +1064,8 @@ class Installer
             return;
         }
 
+        $rootRefs = $this->package->getReferences();
+
         foreach ($localRepo->getCanonicalPackages() as $package) {
             // find similar packages (name/version) in all repositories
             $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()));
@@ -1088,8 +1092,13 @@ class Installer
                 // update the dist and source URLs
                 $sourceUrl = $package->getSourceUrl();
                 $newSourceUrl = $newPackage->getSourceUrl();
+                $newReference = $newPackage->getSourceReference();
 
-                $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newPackage->getSourceReference(), $newPackage->getDistUrl());
+                if ($package->isDev() && isset($rootRefs[$package->getName()]) && $package->getSourceReference() === $rootRefs[$package->getName()]) {
+                    $newReference = $rootRefs[$package->getName()];
+                }
+
+                $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newReference, $newPackage->getDistUrl());
 
                 if ($package instanceof CompletePackage && $newPackage instanceof CompletePackage) {
                     $package->setAbandoned($newPackage->getReplacementPackage() ?: $newPackage->isAbandoned());
