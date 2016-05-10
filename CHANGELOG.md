@@ -1,3 +1,9 @@
+### [1.1.0] - 2016-05-10
+
+  * Added fallback to SSH for https bitbucket URLs
+  * Added BaseCommand::isProxyCommand that can be overriden to mark a command as being a mere proxy, which helps avoid duplicate warnings etc on composer startup
+  * Fixed archiving generating long paths in zip files on Windows
+
 ### [1.1.0-RC] - 2016-04-29
 
   * Added ability for plugins to register their own composer commands
