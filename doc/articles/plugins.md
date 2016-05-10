@@ -104,10 +104,10 @@ public static function getSubscribedEvents()
 }
 ```
 
-By default, the priority of an event handler is set to 0. The priorty can be
+By default, the priority of an event handler is set to 0. The priority can be
 changed by attaching a tuple where the first value is the method name, as
 before, and the second value is an integer representing the priority.
-Higher integers represent higher priorities. Priortity 2 is called before
+Higher integers represent higher priorities. Priority 2 is called before
 priority 1, etc.
 
 ```php
