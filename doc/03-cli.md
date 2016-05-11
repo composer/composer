@@ -195,6 +195,9 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
   can take a bit of time to run so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
+* **--prefer-stable:** Prefer stable versions of dependencies.
+* **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
+  versions of requirements, generally used with `--prefer-stable`.
 
 ## remove
 
