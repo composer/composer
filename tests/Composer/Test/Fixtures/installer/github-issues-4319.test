@@ -37,7 +37,7 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - Installation request for a ~1.0 -> satisfiable by a[1.0.0].
-    - a 1.0.0 requires php 5.5 -> your PHP version (%s) overriden by "config.platform.php" version (5.3) does not satisfy that requirement.
+    - a 1.0.0 requires php 5.5 -> your PHP version (%s) overridden by "config.platform.php" version (5.3) does not satisfy that requirement.
 
 --EXPECT--
 
