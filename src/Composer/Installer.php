@@ -440,7 +440,7 @@ class Installer
                 $request->install($package->getName(), $constraint);
             }
 
-            foreach ($this->locker->getPlatformRequirements(true) as $link) {
+            foreach ($this->locker->getPlatformRequirements($this->devMode) as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         }
