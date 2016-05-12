@@ -142,7 +142,7 @@ Close your current terminal. Test usage with a new terminal:
 
 ```sh
 C:\Users\username>composer -V
-Composer version 1.0.0 2016-01-10 20:34:53
+Composer version 1.1.0 2016-05-10 15:21:19
 ```
 
 ## Using Composer
