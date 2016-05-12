@@ -27,7 +27,7 @@ class ZipArchiver implements ArchiverInterface
     /**
      * {@inheritdoc}
      */
-    public function archive($sources, $target, $format, array $excludes = array())
+    public function archive($sources, $target, $format, $excludes = array())
     {
         $fs = new Filesystem();
         $sources = $fs->normalizePath($sources);

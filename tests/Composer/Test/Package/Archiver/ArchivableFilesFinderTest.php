@@ -92,6 +92,61 @@ class ArchivableFilesFinderTest extends TestCase
         $fs->removeDirectory($this->sources);
     }
 
+    public function testFileExcludes()
+    {
+        file_put_contents($this->sources.'/.dockerignore', implode("\n", array(
+            'prefixB.foo',
+            '!/prefixB.foo',
+            '/prefixA.foo',
+            'prefixC.*',
+            '!*/*/*/prefixC.foo',
+            '.dockerignore'
+        )));
+
+        $excludes = $this->sources.'/.dockerignore';
+
+        $this->finder = new ArchivableFilesFinder($this->sources, $excludes);
+
+        $this->assertArchivableFiles(array(
+            '/!important!.txt',
+            '/!important_too!.txt',
+            '/#weirdfile',
+            '/A/prefixA.foo',
+            '/A/prefixD.foo',
+            '/A/prefixE.foo',
+            '/A/prefixF.foo',
+            '/B/sub/prefixA.foo',
+            '/B/sub/prefixC.foo',
+            '/B/sub/prefixD.foo',
+            '/B/sub/prefixE.foo',
+            '/B/sub/prefixF.foo',
+            '/C/prefixA.foo',
+            '/C/prefixD.foo',
+            '/C/prefixE.foo',
+            '/C/prefixF.foo',
+            '/D/prefixA',
+            '/D/prefixB',
+            '/D/prefixC',
+            '/D/prefixD',
+            '/D/prefixE',
+            '/D/prefixF',
+            '/E/subtestA.foo',
+            '/F/subtestA.foo',
+            '/G/subtestA.foo',
+            '/H/subtestA.foo',
+            '/I/J/subtestA.foo',
+            '/K/dirJ/subtestA.foo',
+            '/parameters.yml',
+            '/parameters.yml.dist',
+            '/prefixB.foo',
+            '/prefixD.foo',
+            '/prefixE.foo',
+            '/prefixF.foo',
+            '/toplevelA.foo',
+            '/toplevelB.foo',
+        ));
+    }
+
     public function testManualExcludes()
     {
         $excludes = array(

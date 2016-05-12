@@ -325,7 +325,7 @@
             "description": "Options for creating package archives for distribution.",
             "properties": {
                 "exclude": {
-                    "type": "array",
+                    "type": ["array", "string"],
                     "description": "A list of patterns for paths to exclude or include if prefixed with an exclamation mark."
                 }
             }
