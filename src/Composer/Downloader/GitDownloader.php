@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use Composer\Package\Version\VersionParser;
 use Composer\Package\PackageInterface;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\Platform;
@@ -120,17 +121,72 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             return;
         }
 
+        $currentVersion = $this->getCurrentVersion($package, $path);
+
+        $previousHash = $package->getSourceReference();
+
+        if ($currentVersion['hash'] !== $previousHash) {
+            return sprintf('Version changed from <comment>%s</comment> to <comment>%s</comment>', $package->getFullPrettyVersion(), $currentVersion['version']);
+        }
+
+        return;
+    }
+
+    protected function getCurrentVersion(PackageInterface $package, $path)
+    {
+        GitUtil::cleanEnv();
+        $path = $this->normalizePath($path);
+        if (!is_dir($path.'/.git')) {
+            return;
+        }
+
         $command = 'git log --pretty="%H" -n1 HEAD';
-        if (0 !== $this->process->execute($command, $output, $path)) {
+        if (0 !== $this->process->execute($command, $refOutput, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
-        $current = trim($output);
-        if ($current !== $package->getSourceReference()) {
-            return '<comment>Current Version:</comment> '.$current;
+        $currentHash = trim($refOutput);
+
+        $versionParser = new VersionParser;
+
+        $version = null;
+
+        // Prefer a tag
+        $command = 'git describe --exact-match --tags';
+        if (0 === $this->process->execute($command, $tag, $path)) {
+            try {
+                $versionParser->normalize($tag);
+                $version = $tag;
+            } catch (\Exception $e) {
+            }
         }
-        
-        return;
+
+        $command = 'git rev-parse --abbrev-ref HEAD';
+        if (!$version && 0 === $this->process->execute($command, $branch, $path)) {
+            $version = $currentHash;
+            $branch = trim($branch);
+            if ('HEAD' !== $branch) {
+                try {
+                    $version = $versionParser->normalizeBranch($branch);
+                    var_dump($version);
+
+                    if ('dev-' === substr($version, 0, 4) || '9999999-dev' === $version) {
+                        $version = 'dev-' . $branch;
+                    } else {
+                        $prefix = substr($branch, 0, 1) === 'v' ? 'v' : '';
+                        $version = $prefix . preg_replace('{(\.9{7})+}', '.x', $version);
+                    }
+
+                    $version .= '#' . $currentHash;
+                } catch (\Exception $e) {
+                }
+            }
+        }
+
+        return [
+            'hash' => $currentHash,
+            'version' => $version,
+        ];
     }
 
     /**
