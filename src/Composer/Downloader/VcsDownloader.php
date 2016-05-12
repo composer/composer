@@ -199,10 +199,10 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     public function getLocalChanges(PackageInterface $package, $path)
     {
         $output = $this->getVersionDifference($package, $path)."\n".$this->getWorkingTreeState($package, $path);
-        
+
         return trim($output) ?: null;
     }
-    
+
     /**
      * Prompt the user to check if changes should be stashed/removed or the operation aborted
      *
@@ -230,6 +230,28 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     abstract protected function getWorkingTreeState(PackageInterface $package, $path);
 
     /**
+     * Gets the parsed version of the repository
+     *
+     * @param  PackageInterface $package package instance
+     * @param  string           $path    package directory
+     * @return string|null      parsed version or null
+     */
+    protected function getCurrentVersion(PackageInterface $package, $path)
+    {
+    }
+
+    /**
+     * Gets the current reference of the repository
+     *
+     * @param  PackageInterface $package package instance
+     * @param  string           $path    package directory
+     * @return string|null      reference or null
+     */
+    protected function getCurrentReference(PackageInterface $package, $path)
+    {
+    }
+
+    /**
      * Compare the package version to the local version
      *
      * @param  PackageInterface $package package instance
@@ -238,10 +260,22 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      */
     protected function getVersionDifference(PackageInterface $package, $path)
     {
-        $driver = ltrim(substr(get_class($this), strlen(__NAMESPACE__), -10), '\\');
-        $this->io->writeError(sprintf('<info>%s driver does not check for version changes before overriding</info>', $driver), true);
+        if (!$currentRef = $this->getCurrentReference($package, $path)) {
+            $driver = ltrim(substr(get_class($this), strlen(__NAMESPACE__), -10), '\\');
+            $this->io->writeError(sprintf('<info>%s driver does not check for version changes before overriding</info>', $driver), true);
 
-        return;
+            return;
+        }
+
+        $previousRef = $package->getSourceReference();
+
+        if ($currentRef !== $previousRef) {
+            if (!$currentVersion = $this->getCurrentVersion($package, $path)) {
+                $currentVersion = $currentRef;
+            }
+
+            return sprintf('Version changed from <comment>%s</comment> to <comment>%s</comment>', $package->getFullPrettyVersion(), $currentVersion);
+        }
     }
 
     /**
