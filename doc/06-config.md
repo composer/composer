@@ -102,7 +102,7 @@ capath must be a correctly hashed certificate directory.
 ## http-basic
 
 A list of domain names and username/passwords to authenticate against them. For
-example using `{"example.org": {"username": "alice", "password": "foo"}` as the
+example using `{"example.org": {"username": "alice", "password": "foo"}}` as the
 value of this option will let Composer authenticate against example.org.
 
 > **Note:** Authentication-related config options like `http-basic` and

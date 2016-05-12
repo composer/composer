@@ -27,6 +27,7 @@ use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
 use Composer\Util\ErrorHandler;
+use Composer\EventDispatcher\ScriptExecutionException;
 
 /**
  * The console application that handles the commands
@@ -188,7 +189,7 @@ class Application extends BaseApplication
             }
 
             // Check system temp folder for usability as it can cause weird runtime issues otherwise
-            Silencer::call(function() {
+            Silencer::call(function () {
                 $tempfile = sys_get_temp_dir() . '/temp-' . md5(microtime());
                 if (!(file_put_contents($tempfile, __FILE__) && (file_get_contents($tempfile) == __FILE__) && unlink($tempfile) && !file_exists($tempfile))) {
                     $io->writeError(sprintf('<error>PHP temp directory (%s) does not exist or is not writable to Composer. Set sys_temp_dir in your php.ini</error>', sys_get_temp_dir()));
@@ -229,6 +230,8 @@ class Application extends BaseApplication
             }
 
             return $result;
+        } catch (ScriptExecutionException $e) {
+            return $e->getCode();
         } catch (\Exception $e) {
             $this->hintCommonErrors($e);
             throw $e;

@@ -110,6 +110,12 @@ Examples:
  `~1.3`             | `>=1.3.0.0-dev <2.0.0.0-dev`
  `1.4.*`            | `>=1.4.0.0-dev <1.5.0.0-dev`
 
+To allow various stabilities without enforcing them at the constraint level
+however, you may use [stability-flags](../04-schema.md#package-links) like
+`@<stability>` (e.g. `@dev`) to let composer know that a given package
+can be installed in a different stability than your default
+[minimum-stability](../04-schema.md#minimum-stability) setting.
+
 ## Test version constraints
 
 You can test version constraints using [semver.mwl.be](http://semver.mwl.be).

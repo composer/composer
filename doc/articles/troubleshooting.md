@@ -190,6 +190,18 @@ composer update
 php /usr/local/bin/composer update
 ```
 
+Or, you can add aliases for composer to run with an xdebug-disabled `php.ini` file.
+Running php without a `php.ini` file should also do the trick in most cases.
+
+Example:
+
+```sh
+# Without php.ini
+alias comp='php -n /path/to/composer.phar'
+# Or with an xdebug-disabled php.ini
+alias comp='php -c /path/to/xdebug-disabled-php.ini /path/to/composer.phar'
+```
+
 As a workaround in bash (and other shells) you can create a function which is named `composer`,
 which disables xdebug before it executes composer, and then enables it afterwards.
 

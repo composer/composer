@@ -181,9 +181,9 @@ class EventDispatcher
                     }
                     $exec = $phpPath . '  ' . realpath($_SERVER['argv'][0]) . substr($callable, 9);
                     if (0 !== ($exitCode = $this->process->execute($exec))) {
-                        $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
+                        $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()));
 
-                        throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
+                        throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                     }
                 } else {
                     if (!$this->getListeners(new Event($scriptName))) {
@@ -221,9 +221,9 @@ class EventDispatcher
                     $this->io->writeError(sprintf('> %s', $exec));
                 }
                 if (0 !== ($exitCode = $this->process->execute($exec))) {
-                    $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
+                    $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()));
 
-                    throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
+                    throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                 }
             }
 

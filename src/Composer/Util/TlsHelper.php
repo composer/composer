@@ -12,7 +12,6 @@
 
 namespace Composer\Util;
 
-use Symfony\Component\Process\PhpProcess;
 use Composer\CaBundle\CaBundle;
 
 /**

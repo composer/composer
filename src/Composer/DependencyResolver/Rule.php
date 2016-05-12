@@ -221,7 +221,7 @@ class Rule
                             $extra = $package->getExtra();
 
                             if (!empty($extra['config.platform'])) {
-                                $text .= ' -> your PHP version ('.phpversion().') overriden by "config.platform.php" version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
+                                $text .= ' -> your PHP version ('.phpversion().') overridden by "config.platform.php" version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
                             } else {
                                 $text .= ' -> your PHP version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
                             }
