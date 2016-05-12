@@ -82,6 +82,22 @@ class SvnDownloader extends VcsDownloader
     }
 
     /**
+     * {@inheritDoc}
+     */
+    protected function getCurrentReference(PackageInterface $package, $path)
+    {
+        if (!$this->hasMetadataRepository($path)) {
+            return;
+        }
+
+        if (0 !== $this->process->execute('svnversion', $output, $path)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return trim($output) ?: null;
+    }
+
+    /**
      * Execute an SVN command and try to fix up the process with credentials
      * if necessary.
      *
