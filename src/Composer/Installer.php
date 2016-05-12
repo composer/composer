@@ -317,7 +317,7 @@ class Installer
      * @param  RepositoryInterface $installedRepo
      * @param  PlatformRepository  $platformRepo
      * @param  array               $aliases
-     * @return array [int, PackageInterfaces[]|null] with the exit code and an array of dev packages on update, or null on install
+     * @return array               [int, PackageInterfaces[]|null] with the exit code and an array of dev packages on update, or null on install
      */
     protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases)
     {
@@ -1138,7 +1138,6 @@ class Installer
             $package->setDistUrl(preg_replace('{(?<=/)[a-f0-9]{40}(?=/|$)}i', $reference, $package->getDistUrl()));
         }
     }
-
 
     /**
      * @param PlatformRepository $platformRepo

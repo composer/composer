@@ -275,7 +275,6 @@ EOT
                         if ($showVersion) {
                             $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
                             if ($showLatest) {
-
                                 $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion);
                                 if ($latestPackage === false) {
                                     continue;
@@ -377,6 +376,7 @@ EOT
     protected function getRootRequires()
     {
         $rootPackage = $this->getComposer()->getPackage();
+
         return array_map(
             'strtolower',
             array_keys(array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()))
@@ -708,9 +708,9 @@ EOT
     /**
      * Given a package, this finds the latest package matching it
      *
-     * @param  PackageInterface $package
-     * @param  Composer         $composer
-     * @param  string           $phpVersion
+     * @param PackageInterface $package
+     * @param Composer         $composer
+     * @param string           $phpVersion
      *
      * @return PackageInterface|null
      */
