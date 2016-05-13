@@ -80,23 +80,6 @@ class HgDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function getVcsReference(PackageInterface $package, $path)
-    {
-        if (!$this->hasMetadataRepository($path)) {
-            return;
-        }
-
-        $command = 'hg parent --template ' . escapeshellarg('{node}');
-        if (0 !== $this->process->execute($command, $output, $path)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
-        }
-
-        return trim($output) ?: null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
         $command = sprintf('hg log -r %s:%s --style compact', $fromReference, $toReference);
