@@ -175,10 +175,12 @@ EOT
 
             foreach ($vcsVersionChanges as $path => $changes) {
                 if ($input->getOption('verbose')) {
-                    $currentVersion = $changes['current']['version'];
-                    $previousVersion = $changes['previous']['version'];
+                    // If we don't can't find a version, use the ref instead.
+                    $currentVersion = $changes['current']['version'] ?: $changes['current']['ref'];
+                    $previousVersion = $changes['previous']['version'] ?: $changes['previous']['ref'];
 
                     if ($io->isVeryVerbose()) {
+                        // Output the ref regardless of whether or not it's being used as the version
                         $currentVersion .= sprintf(' (%s)', $changes['current']['ref']);
                         $previousVersion .= sprintf(' (%s)', $changes['previous']['ref']);
                     }
