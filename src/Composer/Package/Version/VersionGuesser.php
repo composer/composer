@@ -125,6 +125,13 @@ class VersionGuesser
             $version = $this->versionFromGitTags($path);
         }
 
+        if (!$commit) {
+            $command = 'git log --pretty="%H" -n1 HEAD';
+            if (0 === $this->process->execute($command, $output, $path)) {
+                $commit = trim($output) ?: null;
+            }
+        }
+
         return array('version' => $version, 'commit' => $commit);
     }
 

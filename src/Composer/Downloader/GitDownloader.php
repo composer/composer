@@ -23,7 +23,7 @@ use Composer\Config;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
+class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface, VcsCapableDownloaderInterface
 {
     private $hasStashedChanges = false;
     private $hasDiscardedChanges = false;
@@ -194,6 +194,25 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         return $unpushedChanges;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getVcsReference(PackageInterface $package, $path)
+    {
+        if (!$this->hasMetadataRepository($path)) {
+            return;
+        }
+
+        GitUtil::cleanEnv();
+
+        $command = 'git log --pretty="%H" -n1 HEAD';
+        if (0 !== $this->process->execute($command, $output, $path)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return trim($output) ?: null;
     }
 
     /**
