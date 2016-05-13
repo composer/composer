@@ -82,10 +82,9 @@ EOT
         // list packages
         foreach ($installedRepo->getCanonicalPackages() as $package) {
             $downloader = $dm->getDownloaderForInstalledPackage($package);
+            $targetDir = $im->getInstallPath($package);
 
             if ($downloader instanceof ChangeReportInterface) {
-                $targetDir = $im->getInstallPath($package);
-
                 if (is_link($targetDir)) {
                     $errors[$targetDir] = $targetDir . ' is a symbolic link.';
                 }
@@ -111,6 +110,7 @@ EOT
                     $currentVersion = $guesser->guessVersion($dumper->dump($package), $targetDir);
 
                     if ($previousRef && $currentVersion['commit'] !== $previousRef) {
+                        var_dump($previousRef, $currentVersion['commit'], $package->getName(), $package->getInstallationSource());
                         $vcsVersionChanges[$targetDir] = array(
                             'previous' => array(
                                 'version' => $package->getVersion(),
