@@ -122,6 +122,7 @@ class Bitbucket
         $url = 'https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html';
         $this->io->writeError(sprintf('Follow the instructions on %s', $url));
         $this->io->writeError(sprintf('to create a consumer. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
+        $this->io->writeError('Ensure you enter a "Callback URL" or it will not be possible to create an Access Token (this callback url will not be used by composer)');
 
         $consumerKey = trim($this->io->askAndHideAnswer('Consumer Key (hidden): '));
 
