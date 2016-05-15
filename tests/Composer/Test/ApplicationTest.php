@@ -113,6 +113,9 @@ class ApplicationTest extends TestCase
         $this->ensureNoDevWarning('self-up');
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testNoFatalErrorOnInvalidSysTempDir()
     {
         $inputMock = $this->getMock('\Symfony\Component\Console\Input\InputInterface');
