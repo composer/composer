@@ -26,7 +26,7 @@ class ArchivableFilesFilter extends FilterIterator
     {
         $file = $this->getInnerIterator()->current();
         if ($file->isDir()) {
-            $this->dirs[] = (string)$file;
+            $this->dirs[] = (string) $file;
 
             return false;
         }

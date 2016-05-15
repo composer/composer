@@ -418,7 +418,7 @@ EOT
             'version' => array('is_string', function ($val) { return $val; }),
             'minimum-stability' => array(
                 function ($val) { return isset(BasePackage::$stabilities[VersionParser::normalizeStability($val)]); },
-                function ($val) { return VersionParser::normalizeStability($val); }
+                function ($val) { return VersionParser::normalizeStability($val); },
             ),
             'prefer-stable' => array($booleanValidator, $booleanNormalizer),
         );

@@ -343,6 +343,7 @@ origin https://github.com/old/url (push)
 composer https://github.com/old/url (fetch)
 composer https://github.com/old/url (push)
 ';
+
                 return 0;
             }));
         $processExecutor->expects($this->at(3))
