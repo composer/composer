@@ -152,7 +152,7 @@ class CurlMulti
                 curl_setopt($ch, CURLOPT_FILE, $this->blackhole); //release file pointer
                 $index = (int)$ch;
                 $request = $this->runningRequests[$index];
-                if (CURLE_OK === $errno && !$error && (!preg_match('/^http/', $info['url']) || 200 === $info['http_code'])) {
+                if (CURLE_OK === $errno && !$error && ('http' !== substr($info['url'], 0, 4) || 200 === $info['http_code'])) {
                     ++$successCnt;
                     $request->makeSuccess();
                     $urls[] = $request->getMaskedURL();
