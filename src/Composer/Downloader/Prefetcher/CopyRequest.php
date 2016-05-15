@@ -227,7 +227,7 @@ class CopyRequest
             if ($useRedirector) {
                 if ($this->host === 'api.github.com' && preg_match('%^/repos(/[^/]+/[^/]+/)zipball(.+)$%', $this->path, $_)) {
                     $this->host = 'codeload.github.com';
-                    $this->path = "$_[1]legacy.zip$_[2]";
+                    $this->path = $_[1] . 'legacy.zip' . $_[2];
                 }
             }
         } else {
@@ -251,7 +251,7 @@ class CopyRequest
         }
         // is gitlab
         if (in_array($authKey, $this->gitlabDomains) && 'oauth2' === $auth['password']) {
-            $this->addHeader('authorization', "Bearer $auth[username]");
+            $this->addHeader('authorization', 'Bearer ' . $auth['username']);
             $this->user = $this->pass = null;
             return;
         }
@@ -313,7 +313,7 @@ class CopyRequest
         $this->destination = $destination;
         if (is_dir($destination)) {
             throw new FetchException(
-                "The file could not be written to $destination. Directory exists."
+                'The file could not be written to ' . $destination . '. Directory exists.'
             );
         }
 
@@ -322,7 +322,7 @@ class CopyRequest
         $this->fp = fopen($destination, 'wb');
         if (!$this->fp) {
             throw new FetchException(
-                "The file could not be written to $destination."
+                'The file could not be written to ' . $destination
             );
         }
     }
@@ -333,7 +333,7 @@ class CopyRequest
         if (!file_exists($targetdir)) {
             if (!mkdir($targetdir, 0766, true)) {
                 throw new FetchException(
-                    "The file could not be written to $fileName."
+                    'The file could not be written to ' . $fileName
                 );
             }
         }
