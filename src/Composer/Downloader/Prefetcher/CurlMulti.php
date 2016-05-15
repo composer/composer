@@ -71,7 +71,7 @@ class CurlMulti
         $this->permanent = $permanent;
 
         // for PHP<5.5 @see getFinishedResults()
-        $this->blackhole = fopen('php://memory', 'wb');
+        $this->blackhole = fopen('php://temp', 'wb');
     }
 
     /**
