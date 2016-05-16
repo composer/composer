@@ -14,8 +14,10 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
 use Composer\Config;
+use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
+use Composer\Util\Bitbucket;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
@@ -49,7 +51,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     {
         if (null === $this->rootIdentifier) {
             $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository;
-            $repoData = JsonFile::parseJson($this->getContents($resource), $resource);
+            $repoData = JsonFile::parseJson($this->getContents($resource, true), $resource);
             $this->rootIdentifier = !empty($repoData['main_branch']) ? $repoData['main_branch'] : 'master';
         }
 
@@ -92,13 +94,13 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
         }
 
         if (!isset($this->infoCache[$identifier])) {
-            $resource = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/raw/'.$identifier.'/composer.json';
-            $composer = $this->getContents($resource);
-            if (!$composer) {
+            $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/src/'.$identifier.'/composer.json';
+            $file = JsonFile::parseJson($this->getContents($resource), $resource);
+            if (!is_array($file) || ! array_key_exists('data', $file)) {
                 return;
             }
 
-            $composer = JsonFile::parseJson($composer, $resource);
+            $composer = JsonFile::parseJson($file['data'], $resource);
 
             if (empty($composer['time'])) {
                 $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/changesets/'.$identifier;
