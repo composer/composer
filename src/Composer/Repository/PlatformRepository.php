@@ -94,19 +94,25 @@ class PlatformRepository extends ArrayRepository
             if (in_array($name, array('standard', 'Core'))) {
                 continue;
             }
+            $extraDescription = null;
 
             $reflExt = new \ReflectionExtension($name);
             try {
                 $prettyVersion = $reflExt->getVersion();
                 $version = $versionParser->normalize($prettyVersion);
             } catch (\UnexpectedValueException $e) {
-                $prettyVersion = '0';
+                $extraDescription = ' (actual version: '.$prettyVersion.')';
+                if (preg_match('{^(\d+\.\d+\.\d+(?:\.\d+)?)}', $prettyVersion, $match)) {
+                    $prettyVersion = $match[1];
+                } else {
+                    $prettyVersion = '0';
+                }
                 $version = $versionParser->normalize($prettyVersion);
             }
 
             $packageName = $this->buildPackageName($name);
             $ext = new CompletePackage($packageName, $version, $prettyVersion);
-            $ext->setDescription('The '.$name.' PHP extension');
+            $ext->setDescription('The '.$name.' PHP extension' . $extraDescription);
             $this->addPackage($ext);
         }
 
