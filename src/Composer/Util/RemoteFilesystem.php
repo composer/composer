@@ -569,6 +569,25 @@ class RemoteFilesystem
             ) {
                 throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
+        } elseif ($this->config && $this->originUrl === 'bitbucket.org') {
+            if (! $this->io->hasAuthentication($this->originUrl)) {
+                $message = "\n".'Could not fetch ' . $this->fileUrl . ', please create a bitbucket OAuth token to access private repos';
+                $bitBucketUtil = new Bitbucket($this->io, $this->config);
+                if (! $bitBucketUtil->authorizeOAuth($this->originUrl)
+                    && (! $this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($this->originUrl, $message))
+                ) {
+                    throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
+                }
+            } else {
+                $auth = $this->io->getAuthentication($this->originUrl);
+                if ($auth['username'] !== 'x-token-auth') {
+                    $bitbucketUtil = new Bitbucket($this->io, $this->config);
+                    $token = $bitbucketUtil->requestToken($this->originUrl, $auth['username'], $auth['password']);
+                    $this->io->setAuthentication($this->originUrl, 'x-token-auth', $token['access_token']);
+                } else {
+                    throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
+                }
+            }
         } else {
             // 404s are only handled for github
             if ($httpStatus === 404) {
@@ -670,6 +689,10 @@ class RemoteFilesystem
             } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
+                }
+            } elseif ('bitbucket.org' === $originUrl && $this->fileUrl !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL) {
+                if ('x-token-auth' === $auth['username']) {
+                    $headers[] = 'Authorization: Bearer ' . $auth['password'];
                 }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
