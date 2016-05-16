@@ -28,6 +28,8 @@ class Bitbucket
     private $remoteFilesystem;
     private $token = array();
 
+    const OAUTH2_ACCESS_TOKEN_URL = 'https://bitbucket.org/site/oauth2/access_token';
+
     /**
      * Constructor.
      *
@@ -81,9 +83,7 @@ class Bitbucket
     private function requestAccessToken($originUrl)
     {
         try {
-            $apiUrl = 'https://bitbucket.org/site/oauth2/access_token';
-
-            $json = $this->remoteFilesystem->getContents($originUrl, $apiUrl, false, array(
+            $json = $this->remoteFilesystem->getContents($originUrl, self::OAUTH2_ACCESS_TOKEN_URL, false, array(
                 'retry-auth-failure' => false,
                 'http' => array(
                     'method' => 'POST',
