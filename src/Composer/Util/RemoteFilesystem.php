@@ -249,6 +249,7 @@ class RemoteFilesystem
         if ($this->degradedMode && substr($fileUrl, 0, 21) === 'http://packagist.org/') {
             // access packagist using the resolved IPv4 instead of the hostname to force IPv4 protocol
             $fileUrl = 'http://' . gethostbyname('packagist.org') . substr($fileUrl, 20);
+            $degradedPackagist = true;
         }
 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
@@ -259,7 +260,7 @@ class RemoteFilesystem
         unset($origFileUrl, $actualContextOptions);
 
         // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
-        if ((substr($fileUrl, 0, 23) !== 'http://packagist.org/p/' || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && $this->config) {
+        if ((substr($fileUrl, 0, 23) !== 'http://packagist.org/p/' || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && empty($degradedPackagist) && $this->config) {
             $this->config->prohibitUrlByConfig($fileUrl, $this->io);
         }
 
