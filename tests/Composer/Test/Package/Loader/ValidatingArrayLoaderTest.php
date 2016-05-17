@@ -69,6 +69,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         'wiki' => 'http://example.org/',
                         'source' => 'http://example.org/',
                         'irc' => 'irc://example.org/example',
+                        'rss' => 'http://example.org/rss',
                     ),
                     'require' => array(
                         'a/b' => '1.*',
