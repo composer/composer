@@ -151,6 +151,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         $unboundConstraint = new Constraint('=', $this->versionParser->normalize('dev-master'));
+        $stableConstraint = new Constraint('=', '1.0.0');
 
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
             if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
@@ -183,6 +184,7 @@ class ValidatingArrayLoader implements LoaderInterface
                             ($this->flags & self::CHECK_STRICT_CONSTRAINTS)
                             && 'require' === $linkType
                             && substr($linkConstraint, 0, 1) === '='
+                            && $stableConstraint->versionCompare($stableConstraint, $linkConstraint, '<=')
                         ) {
                             $this->warnings[] = $linkType.'.'.$package.' : exact version constraints ('.$constraint.') should be avoided if the package follows semantic versioning';
                         }

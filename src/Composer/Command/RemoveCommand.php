@@ -97,6 +97,7 @@ EOT
         }
 
         // Update packages
+        $this->resetComposer();
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
 
