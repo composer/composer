@@ -161,9 +161,13 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnCallback(function (Event $event) {
                 if ($event->getName() === 'root') {
                     return array('@group');
-                } elseif ($event->getName() === 'group') {
+                }
+
+                if ($event->getName() === 'group') {
                     return array('echo -n foo', '@subgroup', 'echo -n bar');
-                } elseif ($event->getName() === 'subgroup') {
+                }
+
+                if ($event->getName() === 'subgroup') {
                     return array('echo -n baz');
                 }
 
@@ -201,7 +205,9 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnCallback(function (Event $event) {
                 if ($event->getName() === 'root') {
                     return array('@recurse');
-                } elseif ($event->getName() === 'recurse') {
+                }
+
+                if ($event->getName() === 'recurse') {
                     return array('@root');
                 }
 

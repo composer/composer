@@ -97,7 +97,9 @@ class Problem
 
                     if (defined('HHVM_VERSION')) {
                         return $msg . 'your HHVM version does not satisfy that requirement.';
-                    } elseif ($job['packageName'] === 'hhvm') {
+                    }
+
+                    if ($job['packageName'] === 'hhvm') {
                         return $msg . 'you are running this with PHP and not HHVM.';
                     }
 

@@ -47,12 +47,17 @@ class Platform
     {
         if (false !== ($home = getenv('HOME'))) {
             return $home;
-        } elseif (self::isWindows() && false !== ($home = getenv('USERPROFILE'))) {
+        }
+
+        if (self::isWindows() && false !== ($home = getenv('USERPROFILE'))) {
             return $home;
-        } elseif (function_exists('posix_getuid') && function_exists('posix_getpwuid')) {
+        }
+
+        if (function_exists('posix_getuid') && function_exists('posix_getpwuid')) {
             $info = posix_getpwuid(posix_getuid());
             return $info['dir'];
         }
+
         throw new \RuntimeException('Could not determine user directory');
     }
 
