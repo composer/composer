@@ -17,6 +17,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginInterface;
+use Composer\Util\Silencer;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -88,9 +89,9 @@ class PlatformRepository extends ArrayRepository
         }
 
         // The AF_INET6 constant is only defined if ext-sockets is available but IPv6 support might still be available.
-        if (defined('AF_INET6') || @inet_pton('::') !== false) {
+        if (defined('AF_INET6') || (function_exists('inet_pton') && Silencer::call('inet_pton', '::') !== false)) {
             $phpIpv6 = new CompletePackage('ext-network-ipv6', $version, $prettyVersion);
-            $phpIpv6->setDescription('The network IPv6 PHP extension');
+            $phpIpv6->setDescription('PHP IPv6 support');
             $this->addPackage($phpIpv6);
         }
 
