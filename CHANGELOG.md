@@ -1,3 +1,11 @@
+### [1.1.1] - 2016-05-17
+
+  * Fixed regression in handling of #reference which made it update every time
+  * Fixed dev platform requirements being required even in --no-dev install from a lock file
+  * Fixed parsing of extension versions that do not follow valid numbers, we now try to parse x.y.z and ignore the rest
+  * Fixed exact constraints warnings appearing for 0.x versions
+  * Fixed regression in the `remove` command
+
 ### [1.1.0] - 2016-05-10
 
   * Added fallback to SSH for https bitbucket URLs
@@ -382,6 +390,8 @@
 
   * Initial release
 
+[1.1.1]: https://github.com/composer/composer/compare/1.1.0...1.1.1
+[1.1.0]: https://github.com/composer/composer/compare/1.0.3...1.1.0
 [1.1.0-RC]: https://github.com/composer/composer/compare/1.0.3...1.1.0-RC
 [1.0.3]: https://github.com/composer/composer/compare/1.0.2...1.0.3
 [1.0.2]: https://github.com/composer/composer/compare/1.0.1...1.0.2
