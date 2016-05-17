@@ -329,6 +329,18 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
             array(
                 array(
                     'name' => 'foo/bar',
+                    'require' => array(
+                        'bar/unstable' => '0.3.0',
+                    ),
+                ),
+                array(
+                    // using an exact version constraint for an unstable version should not trigger a warning
+                ),
+                false,
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
                     'extra' => array(
                         'branch-alias' => array(
                             '5.x-dev' => '3.1.x-dev',
