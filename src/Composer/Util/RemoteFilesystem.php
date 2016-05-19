@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\Config;
+use Composer\Downloader\Download;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
@@ -28,13 +29,11 @@ class RemoteFilesystem
     private $io;
     private $config;
     private $scheme;
-    private $bytesMax;
     private $originUrl;
     private $fileUrl;
     private $fileName;
     private $retry;
     private $progress;
-    private $lastProgress;
     private $options = array();
     private $peerCertificateMap = array();
     private $disableTls = false;
@@ -44,6 +43,9 @@ class RemoteFilesystem
     private $degradedMode = false;
     private $redirects;
     private $maxRedirects = 20;
+
+    /** @var Download */
+    private $download;
 
     /**
      * Constructor.
@@ -196,12 +198,10 @@ class RemoteFilesystem
         }
 
         $this->scheme = parse_url($fileUrl, PHP_URL_SCHEME);
-        $this->bytesMax = 0;
         $this->originUrl = $originUrl;
         $this->fileUrl = $fileUrl;
         $this->fileName = $fileName;
         $this->progress = $progress;
-        $this->lastProgress = null;
         $this->retryAuthFailure = true;
         $this->lastHeaders = array();
         $this->redirects = 1; // The first request counts.
@@ -277,7 +277,11 @@ class RemoteFilesystem
             }
             $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
         });
+
         try {
+            // Avoiding reuse of Download instance if retry
+            $this->download = null;
+
             $result = file_get_contents($fileUrl, false, $ctx);
 
             $contentLength = !empty($http_response_header[0]) ? $this->findHeaderValue($http_response_header, 'content-length') : null;
@@ -499,6 +503,7 @@ class RemoteFilesystem
         switch ($notificationCode) {
             case STREAM_NOTIFY_FAILURE:
                 if (400 === $messageCode) {
+                    $this->getActiveDownload()->fail($messageCode, $message);
                     // This might happen if your host is secured by ssl client certificate authentication
                     // but you do not send an appropriate certificate
                     throw new TransportException("The '" . $this->fileUrl . "' URL could not be accessed: " . $message, $messageCode);
@@ -529,17 +534,17 @@ class RemoteFilesystem
                 break;
 
             case STREAM_NOTIFY_FILE_SIZE_IS:
-                $this->bytesMax = $bytesMax;
+                $this->getActiveDownload()->start($bytesMax);
                 break;
 
             case STREAM_NOTIFY_PROGRESS:
-                if ($this->bytesMax > 0 && $this->progress) {
-                    $progression = min(100, round($bytesTransferred / $this->bytesMax * 100));
+                if ($this->getActiveDownload()->isStarted() > 0 && $this->progress) {
+                    $this->getActiveDownload()->progress($bytesTransferred);
 
-                    if ((0 === $progression % 5) && 100 !== $progression && $progression !== $this->lastProgress) {
-                        $this->lastProgress = $progression;
-                        $this->io->overwriteError("    Downloading: <comment>$progression%</comment>", false);
-                    }
+                    $progression = $this->getActiveDownload()->getProgressPercentage();
+                    $speed = $this->getActiveDownload()->getSpeedFormatted();
+                    $eta = $this->getActiveDownload()->getETAFormatted();
+                    $this->io->overwriteError("    Downloading: <comment>$progression%</comment> [$speed ETA: $eta]", false);
                 }
                 break;
 
@@ -923,5 +928,15 @@ class RemoteFilesystem
         $port = parse_url($url, PHP_URL_PORT) ?: $defaultPort;
 
         return parse_url($url, PHP_URL_HOST).':'.$port;
+    }
+
+    /**
+     * @return Download
+     */
+    private function getActiveDownload() {
+        if(is_null($this->download)) {
+            $this->download = new Download(new DownloadUnitsFormatter());
+        }
+        return $this->download;
     }
 }
