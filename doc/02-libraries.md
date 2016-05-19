@@ -204,9 +204,10 @@ can depend on it without having to specify any additional repositories.
 If we wanted to share `hello-world` with the world, we would publish it on
 Packagist as well. Doing so is really easy.
 
-You simply visit [Packagist](https://packagist.org) and hit the "Submit". This
-will prompt you to sign up if you haven't already, and then allows you to
-submit the URL to your VCS repository, at which point Packagist will start
-crawling it. Once it is done, your package will be available to anyone!
+You simply visit [Packagist](https://packagist.org) and hit the "Submit"
+button. This will prompt you to sign up if you haven't already, and then
+allows you to submit the URL to your VCS repository, at which point Packagist
+will start crawling it. Once it is done, your package will be available to
+anyone!
 
 &larr; [Basic usage](01-basic-usage.md) |  [Command-line interface](03-cli.md) &rarr;
