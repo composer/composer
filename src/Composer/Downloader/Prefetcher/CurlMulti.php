@@ -165,7 +165,11 @@ class CurlMulti
             }
         } while ($remains > 0);
 
-        return compact('successCnt', 'failureCnt', 'urls');
+        return array(
+            'successCnt' => $successCnt,
+            'failureCnt' => $failureCnt,
+            'urls' => $urls,
+        );
     }
 
     public function remain()
