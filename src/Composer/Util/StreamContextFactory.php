@@ -130,7 +130,7 @@ final class StreamContextFactory
         }
 
         if (!isset($options['http']['header']) || false === strpos(strtolower(implode('', $options['http']['header'])), 'user-agent')) {
-            $options['http']['header'][] = self::generateUserAgent();
+            $options['http']['header'][] = 'User-Agent: ' . self::generateUserAgent();
         }
 
         return stream_context_create($options, $defaultParams);
@@ -149,7 +149,7 @@ final class StreamContextFactory
         }
 
         return $ua = sprintf(
-            'User-Agent: Composer/%s (%s; %s; %s)',
+            'Composer/%s (%s; %s; %s)',
             Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
             php_uname('s'),
             php_uname('r'),
