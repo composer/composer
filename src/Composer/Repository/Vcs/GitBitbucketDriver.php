@@ -31,6 +31,10 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     protected $branches;
     protected $rootIdentifier;
     protected $infoCache = array();
+    /**
+     * @var GitDriver
+     */
+    protected $gitDriver;
 
     /**
      * {@inheritDoc}
@@ -49,6 +53,10 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public function getRootIdentifier()
     {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getRootIdentifier();
+        }
+
         if (null === $this->rootIdentifier) {
             $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository;
             $repoData = JsonFile::parseJson($this->getContents($resource, true), $resource);
@@ -63,7 +71,11 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public function getUrl()
     {
-        return $this->url;
+        if ($this->gitDriver) {
+            return $this->gitDriver->getUrl();
+        }
+
+        return 'https://' . $this->originUrl . '/'.$this->owner.'/'.$this->repository.'.git';
     }
 
     /**
@@ -71,6 +83,10 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public function getSource($identifier)
     {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getSource($identifier);
+        }
+
         return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $identifier);
     }
 
@@ -89,6 +105,10 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public function getComposerInformation($identifier)
     {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getComposerInformation($identifier);
+        }
+
         if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier)) {
             $this->infoCache[$identifier] = JsonFile::parseJson($res);
         }
@@ -123,6 +143,10 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public function getTags()
     {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getTags();
+        }
+
         if (null === $this->tags) {
             $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
             $tagsData = JsonFile::parseJson($this->getContents($resource), $resource);
@@ -140,6 +164,10 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public function getBranches()
     {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getBranches();
+        }
+
         if (null === $this->branches) {
             $resource =  $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/branches';
             $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
@@ -168,5 +196,77 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
         }
 
         return true;
+    }
+
+    protected function attemptCloneFallback()
+    {
+        try {
+            $this->setupGitDriver($this->generateSshUrl());
+
+            return;
+        } catch (\RuntimeException $e) {
+            $this->gitDriver = null;
+
+            $this->io->writeError('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your Bitbucket OAuth consumer credentials</error>');
+            throw $e;
+        }
+    }
+
+    /**
+     * Generate an SSH URL
+     *
+     * @return string
+     */
+    protected function generateSshUrl()
+    {
+        return 'git@' . $this->originUrl . ':' . $this->owner.'/'.$this->repository.'.git';
+    }
+
+    /**
+     * Get the remote content.
+     *
+     * @param string $url The URL of content
+     * @param bool $fetchingRepoData
+     *
+     * @return mixed The result
+     */
+    protected function getContents($url, $fetchingRepoData = false)
+    {
+        try {
+            return parent::getContents($url);
+        } catch (TransportException $e) {
+            $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process, $this->remoteFilesystem);
+
+            switch ($e->getCode()) {
+                case 403:
+                    if (!$this->io->hasAuthentication($this->originUrl) && $bitbucketUtil->authorizeOAuth($this->originUrl)) {
+                        return parent::getContents($url);
+                    }
+
+                    if (!$this->io->isInteractive() && $fetchingRepoData) {
+                        return $this->attemptCloneFallback();
+                    }
+
+                    throw $e;
+
+                default:
+                    throw $e;
+            }
+        }
+    }
+
+    /**
+     * @param string $url
+     */
+    protected function setupGitDriver($url)
+    {
+        $this->gitDriver = new GitDriver(
+            array('url' => $url),
+            $this->io,
+            $this->config,
+            $this->process,
+            $this->remoteFilesystem
+        );
+        $this->gitDriver->initialize();
     }
 }
