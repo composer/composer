@@ -483,6 +483,10 @@
         "abandoned": {
             "type": ["boolean", "string"],
             "description": "Indicates whether this package has been abandoned, it can be boolean or a package name/URL pointing to a recommended alternative. Defaults to false."
+        },
+        "_comment": {
+            "type": ["array", "string"],
+            "description": "A key to store comments in"
         }
     }
 }
