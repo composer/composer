@@ -24,6 +24,9 @@ use Composer\Util\Bitbucket;
  */
 class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
 {
+    /**
+     * @var Cache
+     */
     protected $cache;
     protected $owner;
     protected $repository;
@@ -34,7 +37,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     /**
      * @var GitDriver
      */
-    protected $gitDriver;
+    private $gitDriver;
 
     /**
      * {@inheritDoc}
@@ -59,7 +62,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
 
         if (null === $this->rootIdentifier) {
             $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository;
-            $repoData = JsonFile::parseJson($this->getContents($resource, true), $resource);
+            $repoData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource, true), $resource);
             $this->rootIdentifier = !empty($repoData['main_branch']) ? $repoData['main_branch'] : 'master';
         }
 
@@ -115,16 +118,16 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
 
         if (!isset($this->infoCache[$identifier])) {
             $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/src/'.$identifier.'/composer.json';
-            $file = JsonFile::parseJson($this->getContents($resource), $resource);
+            $file = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
             if (!is_array($file) || ! array_key_exists('data', $file)) {
-                return;
+                return array();
             }
 
             $composer = JsonFile::parseJson($file['data'], $resource);
 
             if (empty($composer['time'])) {
                 $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/changesets/'.$identifier;
-                $changeset = JsonFile::parseJson($this->getContents($resource), $resource);
+                $changeset = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
                 $composer['time'] = $changeset['timestamp'];
             }
 
@@ -149,7 +152,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
 
         if (null === $this->tags) {
             $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
-            $tagsData = JsonFile::parseJson($this->getContents($resource), $resource);
+            $tagsData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
             $this->tags = array();
             foreach ($tagsData as $tag => $data) {
                 $this->tags[$tag] = $data['raw_node'];
@@ -170,7 +173,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
 
         if (null === $this->branches) {
             $resource =  $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/branches';
-            $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
+            $branchData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
             $this->branches = array();
             foreach ($branchData as $branch => $data) {
                 $this->branches[$branch] = $data['raw_node'];
@@ -217,7 +220,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      *
      * @return string
      */
-    protected function generateSshUrl()
+    private function generateSshUrl()
     {
         return 'git@' . $this->originUrl . ':' . $this->owner.'/'.$this->repository.'.git';
     }
@@ -230,7 +233,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      *
      * @return mixed The result
      */
-    protected function getContents($url, $fetchingRepoData = false)
+    protected function getContentsWithOAuthCredentials($url, $fetchingRepoData = false)
     {
         try {
             return parent::getContents($url);
@@ -258,7 +261,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     /**
      * @param string $url
      */
-    protected function setupGitDriver($url)
+    private function setupGitDriver($url)
     {
         $this->gitDriver = new GitDriver(
             array('url' => $url),
