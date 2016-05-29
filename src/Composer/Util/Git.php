@@ -271,4 +271,20 @@ class Git
 
         throw new \RuntimeException(self::sanitizeUrl($message));
     }
+
+    /**
+     * Retrieves the current git version.
+     *
+     * @return string
+     *   The git version number.
+     */
+    public function getVersion() {
+        if (0 !== $this->process->execute('git --version', $output)) {
+            throw new \RuntimeException(self::sanitizeUrl('Failed retrieve git version, git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
+        }
+        if (strpos($output, 'git version ') === FALSE) {
+            throw new \RuntimeException('git --version output seems to have changed, expected "git version x.y.z".');
+        }
+        return substr($output, 12);
+    }
 }
