@@ -86,6 +86,8 @@ class ClassMapGenerator
             if (!$filesystem->isAbsolutePath($filePath)) {
                 $filePath = $cwd . '/' . $filePath;
                 $filePath = $filesystem->normalizePath($filePath);
+            } else {
+                $filePath = preg_replace('{[\\\\/]{2,}}', '/', $filePath);
             }
 
             if ($blacklist && preg_match($blacklist, strtr($filePath, '\\', '/'))) {
