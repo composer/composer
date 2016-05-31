@@ -137,9 +137,14 @@ class InstallationManager
     {
         try {
             $installer = $this->getInstaller($package->getType());
-            $installer->installBinary($package);
         } catch (\InvalidArgumentException $e) {
-            // the given installer doesn't support installing binaries
+            // no installer found for the current package type (@see `getInstaller()`)
+            return;
+        }
+
+        // if the given installer support installing binaries
+        if ($installer instanceof InstallerBinaryInterface) {
+            $installer->installBinary($package);
         }
     }
 

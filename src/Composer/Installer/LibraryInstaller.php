@@ -25,7 +25,7 @@ use Composer\Util\Silencer;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class LibraryInstaller implements InstallerInterface
+class LibraryInstaller implements InstallerInterface, InstallerBinaryInterface
 {
     protected $composer;
     protected $vendorDir;

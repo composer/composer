@@ -340,7 +340,7 @@ class Installer
             // force binaries re-generation
             $this->io->writeError('<info>Installing binaries files</info>');
             foreach ($localRepo->getPackages() as $package) {
-               $this->installationManager->installBinary($package);
+                $this->installationManager->installBinary($package);
             }
 
             $vendorDir = $this->config->get('vendor-dir');
