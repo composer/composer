@@ -569,7 +569,7 @@ class Factory
             $warned = true;
             $disableTls = true;
         } elseif (!extension_loaded('openssl')) {
-            throw new \RuntimeException('The openssl extension is required for SSL/TLS protection but is not available. '
+            throw new Exception\NoSslException('The openssl extension is required for SSL/TLS protection but is not available. '
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
         }
         $remoteFilesystemOptions = array();

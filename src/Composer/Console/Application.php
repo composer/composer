@@ -27,6 +27,7 @@ use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
 use Composer\Util\ErrorHandler;
+use Composer\Exception\NoSslException;
 
 /**
  * The console application that handles the commands
@@ -126,13 +127,18 @@ class Application extends BaseApplication
         }
 
         if (!$input->hasParameterOption('--no-plugins') && !$this->hasPluginCommands && 'global' !== $commandName) {
-            foreach ($this->getPluginCommands() as $command) {
-                if ($this->has($command->getName())) {
-                    $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
-                } else {
-                    $this->add($command);
+            try {
+                foreach ($this->getPluginCommands() as $command) {
+                    if ($this->has($command->getName())) {
+                        $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
+                    } else {
+                        $this->add($command);
+                    }
                 }
+            } catch (NoSslException $e) {
+                // suppress these as they are not relevant at this point
             }
+
             $this->hasPluginCommands = true;
         }
 
