@@ -1,3 +1,10 @@
+### [1.1.2] - 2016-05-31
+
+  * Fixed degraded mode issue when accessing packagist.org
+  * Fixed GitHub access_token being added on subsequent requests in case of redirections
+  * Fixed exclude-from-classmap not working in some circumstances
+  * Fixed openssl warning preventing the use of config command for disabling tls
+
 ### [1.1.1] - 2016-05-17
 
   * Fixed regression in handling of #reference which made it update every time
@@ -390,6 +397,7 @@
 
   * Initial release
 
+[1.1.2]: https://github.com/composer/composer/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/composer/composer/compare/1.1.0...1.1.1
 [1.1.0]: https://github.com/composer/composer/compare/1.0.3...1.1.0
 [1.1.0-RC]: https://github.com/composer/composer/compare/1.0.3...1.1.0-RC
