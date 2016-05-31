@@ -810,7 +810,7 @@ INITIALIZER;
 
                     if ($type === 'exclude-from-classmap') {
                         // first escape user input
-                        $path = preg_quote(trim(strtr($path, '\\', '/'), '/'));
+                        $path = preg_replace('{/+}', '/', preg_quote(trim(strtr($path, '\\', '/'), '/')));
 
                         // add support for wildcards * and **
                         $path = str_replace('\\*\\*', '.+?', $path);
