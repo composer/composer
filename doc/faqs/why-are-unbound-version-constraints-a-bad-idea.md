@@ -13,7 +13,7 @@ which you can increase in a new release after testing that your package is
 compatible with the new major version of your dependency.
 
 For example instead of using `>=3.4` you should use `~3.4` which allows all
-versions up to `3.999` but does not include `4.0` and above. The `~` operator
+versions up to `3.999` but does not include `4.0` and above. The `^` operator
 works very well with libraries following [semantic versioning](http://semver.org).
 
 **Note:** As a package maintainer, you can make the life of your users easier
