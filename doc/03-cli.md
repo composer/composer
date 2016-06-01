@@ -186,6 +186,7 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
 * **--update-with-dependencies:** Also update dependencies of the newly
   required packages.
@@ -219,6 +220,7 @@ uninstalled.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies:** Also update dependencies of the removed packages.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
