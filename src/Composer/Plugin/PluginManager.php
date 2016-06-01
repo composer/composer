@@ -190,6 +190,7 @@ class PluginManager
                 $code = str_replace('__FILE__', var_export($path, true), $code);
                 $code = str_replace('__DIR__', var_export(dirname($path), true), $code);
                 $code = str_replace('__CLASS__', var_export($class, true), $code);
+                $code = preg_replace('/^(\s*<\?(?:php)?\s+)declare\s*\(\s*strict_types\s*=\s*\d+\s*\)\s*;/', '$1', $code);
                 eval('?>'.$code);
                 $class .= '_composer_tmp'.self::$classCounter;
                 self::$classCounter++;
