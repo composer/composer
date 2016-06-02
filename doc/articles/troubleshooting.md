@@ -377,6 +377,6 @@ See also https://github.com/composer/composer/issues/4180 for more information.
 ## Zip archives are not unpacked correctly.
 
 Composer can unpack zipballs using either a system-provided `unzip` utility or PHP's
-native `ZipArchiver` class. The `ZipArchiver` class is preferred on Windows. On other
+native `ZipArchive` class. The `ZipArchive` class is preferred on Windows. On other
 OSes where ZIP files can contain permissions and symlinks, the `unzip` utility is
 preferred. You're advised to install it if you need these features.
