@@ -86,7 +86,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
      *
      * @param array $config
      */
-    public function setConfig($config)
+    public function setConfig(array $config)
     {
         $this->config = $config;
     }
@@ -104,7 +104,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
      *
      * @param array $scripts
      */
-    public function setScripts($scripts)
+    public function setScripts(array $scripts)
     {
         $this->scripts = $scripts;
     }
