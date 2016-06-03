@@ -112,11 +112,11 @@ EOT
                     if ($previousRef && $currentVersion['commit'] !== $previousRef) {
                         $vcsVersionChanges[$targetDir] = array(
                             'previous' => array(
-                                'version' => $package->getVersion(),
+                                'version' => $package->getPrettyVersion(),
                                 'ref'     => $previousRef
                             ),
                             'current'  => array(
-                                'version' => $parser->normalize($currentVersion['version']),
+                                'version' => $currentVersion['version'],
                                 'ref'     => $currentVersion['commit'],
                             ),
                         );
