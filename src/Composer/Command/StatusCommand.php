@@ -116,7 +116,7 @@ EOT
                                 'ref'     => $previousRef
                             ),
                             'current'  => array(
-                                'version' => $currentVersion['version'],
+                                'version' => $parser->normalize($currentVersion['version']),
                                 'ref'     => $currentVersion['commit'],
                             ),
                         );
