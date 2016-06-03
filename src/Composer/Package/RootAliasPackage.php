@@ -67,7 +67,7 @@ class RootAliasPackage extends AliasPackage implements RootPackageInterface
      */
     public function getConfig()
     {
-        return $this->aliasOf->config;
+        return $this->aliasOf->getConfig();
     }
 
     /**
@@ -75,7 +75,7 @@ class RootAliasPackage extends AliasPackage implements RootPackageInterface
      */
     public function getScripts()
     {
-        return $this->aliasOf->scripts;
+        return $this->aliasOf->getScripts();
     }
 
     /**
