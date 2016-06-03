@@ -307,11 +307,6 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         return $this->aliasOf->getDistMirrors();
     }
 
-    public function getScripts()
-    {
-        return $this->aliasOf->getScripts();
-    }
-
     public function getLicense()
     {
         return $this->aliasOf->getLicense();

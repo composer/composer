@@ -20,13 +20,6 @@ namespace Composer\Package;
 interface CompletePackageInterface extends PackageInterface
 {
     /**
-     * Returns the scripts of this package
-     *
-     * @return array array('script name' => array('listeners'))
-     */
-    public function getScripts();
-
-    /**
      * Returns an array of repositories
      *
      * {"<type>": {<config key/values>}}

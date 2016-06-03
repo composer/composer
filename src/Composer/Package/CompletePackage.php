@@ -25,25 +25,8 @@ class CompletePackage extends Package implements CompletePackageInterface
     protected $authors;
     protected $description;
     protected $homepage;
-    protected $scripts = array();
     protected $support = array();
     protected $abandoned = false;
-
-    /**
-     * @param array $scripts
-     */
-    public function setScripts(array $scripts)
-    {
-        $this->scripts = $scripts;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getScripts()
-    {
-        return $this->scripts;
-    }
 
     /**
      * Set the repositories

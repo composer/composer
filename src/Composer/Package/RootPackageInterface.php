@@ -66,9 +66,9 @@ interface RootPackageInterface extends CompletePackageInterface
     public function getConfig();
 
     /**
-     * Returns the root package's scripts
+     * Returns the scripts of this package
      *
-     * @return array
+     * @return array array('script name' => array('listeners'))
      */
     public function getScripts();
 
