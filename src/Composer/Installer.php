@@ -1607,7 +1607,7 @@ class Installer
      * @param  bool      $skipSuggest
      * @return Installer
      */
-    public function setSkipSuggest($skipSuggest = false)
+    public function setSkipSuggest($skipSuggest = true)
     {
         $this->skipSuggest = (boolean) $skipSuggest;
 
