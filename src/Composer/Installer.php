@@ -114,6 +114,7 @@ class Installer
     protected $ignorePlatformReqs = false;
     protected $preferStable = false;
     protected $preferLowest = false;
+    protected $skipSuggest = false;
     /**
      * Array of package names/globs flagged for update
      *
@@ -228,7 +229,7 @@ class Installer
         }
 
         // output suggestions if we're in dev mode
-        if ($this->devMode) {
+        if ($this->devMode && !$this->skipSuggest) {
             $this->suggestedPackagesReporter->output($installedRepo);
         }
 
@@ -1596,6 +1597,19 @@ class Installer
     public function setPreferLowest($preferLowest = true)
     {
         $this->preferLowest = (boolean) $preferLowest;
+
+        return $this;
+    }
+
+    /**
+     * Should suggestions be skipped?
+     *
+     * @param  bool      $skipSuggest
+     * @return Installer
+     */
+    public function setSkipSuggest($skipSuggest = false)
+    {
+        $this->skipSuggest = (boolean) $skipSuggest;
 
         return $this;
     }
