@@ -93,8 +93,15 @@ class Bitbucket
 
             $this->token = json_decode($json, true);
         } catch (TransportException $e) {
-            if (in_array($e->getCode(), array(403, 401))) {
-                $this->io->writeError('<error>Invalid consumer provided.</error>');
+            if ($e->getCode() === 400) {
+                $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
+                $this->io->writeError('This can have two reasons:');
+                $this->io->writeError('1. You are authenticating with a bitbucket username/password combination');
+                $this->io->writeError('2. You are using an OAuth consumer, but didn\'t configure a (dummy) callback url');
+
+                return false;
+            } elseif (in_array($e->getCode(), array(403, 401))) {
+                $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
                 $this->io->writeError('You can also add it manually later by using "composer config bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
 
                 return false;
