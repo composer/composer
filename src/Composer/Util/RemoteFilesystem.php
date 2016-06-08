@@ -245,6 +245,11 @@ class RemoteFilesystem
             unset($options['gitlab-token']);
         }
 
+        if (isset($options['bitbucket-token'])) {
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['bitbucket-token'];
+            unset($options['bitbucket-token']);
+        }
+
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
@@ -692,7 +697,7 @@ class RemoteFilesystem
                 }
             } elseif ('bitbucket.org' === $originUrl && $this->fileUrl !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL) {
                 if ('x-token-auth' === $auth['username']) {
-                    $headers[] = 'Authorization: Bearer ' . $auth['password'];
+                    $options['bitbucket-token'] = $auth['password'];
                 }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
