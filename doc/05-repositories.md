@@ -676,6 +676,10 @@ variables are parsed in both Windows and Linux/Mac notations. For example
 > **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
 > For details, see the [PHP glob function](http://php.net/glob).
 
+> **Note:** For Windows, if the package is on a separate drive (and so has
+> an absolute `url`, a symlinked package will not work correctly. Use the
+> mirroring strategy with the `"symlink": false` option.
+
 ## Disabling Packagist
 
 You can disable the default Packagist repository by adding this to your
