@@ -16,6 +16,9 @@ use Composer\Config;
 use Composer\TestCase;
 use Composer\Util\Filesystem;
 
+/**
+ * @group bitbucket
+ */
 class GitBitbucketDriverTest extends TestCase
 {
     /** @type \Composer\IO\IOInterface|\PHPUnit_Framework_MockObject_MockObject */
@@ -124,11 +127,15 @@ class GitBitbucketDriverTest extends TestCase
             ->method('getContents')
             ->withConsecutive(
                 array('bitbucket.org', 'https://api.bitbucket.org/1.0/repositories/user/repo/src/master/composer.json', false),
-                array('bitbucket.org', 'https://api.bitbucket.org/1.0/repositories/user/repo/changesets/master', false)
+                array('bitbucket.org', 'https://api.bitbucket.org/1.0/repositories/user/repo/changesets/master', false),
+                array('bitbucket.org', 'https://api.bitbucket.org/1.0/repositories/user/repo/tags', false),
+                array('bitbucket.org', 'https://api.bitbucket.org/1.0/repositories/user/repo/branches', false)
             )
             ->willReturnOnConsecutiveCalls(
                 '{"node": "937992d19d72", "path": "composer.json", "data": "{\n  \"name\": \"user/repo\",\n  \"description\": \"test repo\",\n  \"license\": \"GPL\",\n  \"authors\": [\n    {\n      \"name\": \"Name\",\n      \"email\": \"local@domain.tld\"\n    }\n  ],\n  \"require\": {\n    \"creator/package\": \"^1.0\"\n  },\n  \"require-dev\": {\n    \"phpunit/phpunit\": \"~4.8\"\n  }\n}\n", "size": 269}',
-                '{"node": "937992d19d72", "files": [{"type": "modified", "file": "path/to/file"}], "raw_author": "User <local@domain.tld>", "utctimestamp": "2016-05-17 11:19:52+00:00", "author": "user", "timestamp": "2016-05-17 13:19:52", "raw_node": "937992d19d72b5116c3e8c4a04f960e5fa270b22", "parents": ["71e195a33361"], "branch": "master", "message": "Commit message\n", "revision": null, "size": -1}'
+                '{"node": "937992d19d72", "files": [{"type": "modified", "file": "path/to/file"}], "raw_author": "User <local@domain.tld>", "utctimestamp": "2016-05-17 11:19:52+00:00", "author": "user", "timestamp": "2016-05-17 13:19:52", "raw_node": "937992d19d72b5116c3e8c4a04f960e5fa270b22", "parents": ["71e195a33361"], "branch": "master", "message": "Commit message\n", "revision": null, "size": -1}',
+                '{}',
+                '{"master": {"node": "937992d19d72", "files": [{"type": "modified", "file": "path/to/file"}], "raw_author": "User <local@domain.tld>", "utctimestamp": "2016-05-17 11:19:52+00:00", "author": "user", "timestamp": "2016-05-17 13:19:52", "raw_node": "937992d19d72b5116c3e8c4a04f960e5fa270b22", "parents": ["71e195a33361"], "branch": "master", "message": "Commit message\n", "revision": null, "size": -1}}'
             );
 
         $this->assertEquals(
@@ -149,6 +156,9 @@ class GitBitbucketDriverTest extends TestCase
                     'phpunit/phpunit' => '~4.8'
                 ),
                 'time' => '2016-05-17 13:19:52',
+                'support' => array(
+                    'source' => 'https://bitbucket.org/user/repo/src/937992d19d72b5116c3e8c4a04f960e5fa270b22/?at=master'
+                )
             ),
             $driver->getComposerInformation('master')
         );

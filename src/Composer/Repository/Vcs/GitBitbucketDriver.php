@@ -34,6 +34,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     protected $branches;
     protected $rootIdentifier;
     protected $infoCache = array();
+    private $hasIssues;
     /**
      * @var GitDriver
      */
@@ -63,6 +64,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
         if (null === $this->rootIdentifier) {
             $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository;
             $repoData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource, true), $resource);
+            $this->hasIssues = !empty($repoData['has_issues']);
             $this->rootIdentifier = !empty($repoData['main_branch']) ? $repoData['main_branch'] : 'master';
         }
 
@@ -129,6 +131,31 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
                 $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/changesets/'.$identifier;
                 $changeset = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
                 $composer['time'] = $changeset['timestamp'];
+            }
+            if (!isset($composer['support']['source'])) {
+                $label = array_search($identifier, $this->getTags()) ?: array_search($identifier, $this->getBranches()) ?: $identifier;
+
+                if (array_key_exists($label, $tags = $this->getTags())) {
+                    $hash = $tags[$label];
+                } elseif (array_key_exists($label, $branches = $this->getBranches())) {
+                    $hash = $branches[$label];
+                }
+
+                if (! isset($hash)) {
+                    $composer['support']['source'] = sprintf('https://%s/%s/%s/src', $this->originUrl, $this->owner, $this->repository);
+                } else {
+                    $composer['support']['source'] = sprintf(
+                        'https://%s/%s/%s/src/%s/?at=%s',
+                        $this->originUrl,
+                        $this->owner,
+                        $this->repository,
+                        $hash,
+                        $label
+                    );
+                }
+            }
+            if (!isset($composer['support']['issues']) && $this->hasIssues) {
+                $composer['support']['issues'] = sprintf('https://%s/%s/%s/issues', $this->originUrl, $this->owner, $this->repository);
             }
 
             if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
