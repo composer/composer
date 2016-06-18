@@ -43,6 +43,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
         $cachePath = $this->config->get('cache-vcs-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $url).'/';
+        $cacheOptions = '';
         $ref = $package->getSourceReference();
         $flag = Platform::isWindows() ? '/D ' : '';
 
@@ -56,8 +57,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                 };
                 $this->gitUtil->runCommand($mirrorCommandCallable, $url, $path, true);
             }
+            $cacheOptions = sprintf('--dissociate --reference %s ', ProcessExecutor::escape($cachePath));
         }
-        $cacheOptions = file_exists($cachePath) ? '--dissociate --reference '.ProcessExecutor::escape($cachePath).' ' : '';
         $command = 'git clone --no-checkout %s %s '.$cacheOptions.'&& cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->writeError("    Cloning ".$ref);
 
