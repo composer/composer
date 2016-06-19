@@ -38,11 +38,7 @@ class GitDownloaderTest extends TestCase
         }
     }
 
-    protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
-    {
-        $io = $io ?: $this->getMock('Composer\IO\IOInterface');
-        $executor = $executor ?: $this->getMock('Composer\Util\ProcessExecutor');
-        $filesystem = $filesystem ?: $this->getMock('Composer\Util\Filesystem');
+    protected function setupConfig($config = null) {
         if (!$config) {
             $config = new Config();
         }
@@ -50,6 +46,15 @@ class GitDownloaderTest extends TestCase
             $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
             $config->merge(array('config' => array('home' => $tmpDir)));
         }
+        return $config;
+    }
+
+    protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
+    {
+        $io = $io ?: $this->getMock('Composer\IO\IOInterface');
+        $executor = $executor ?: $this->getMock('Composer\Util\ProcessExecutor');
+        $filesystem = $filesystem ?: $this->getMock('Composer\Util\Filesystem');
+        $config = $this->setupConfig($config);
 
         return new GitDownloader($io, $config, $executor, $filesystem);
     }
