@@ -325,25 +325,18 @@ class GitHubDriver extends VcsDriver
                         return $this->attemptCloneFallback();
                     }
 
-                    $scopes_issued = array();
-                    $scopes_needed = array();
-                    if (!is_null($headers = $e->getHeaders())) {
-                        // Check if X-OAuth-Scopes and X-Accepted-OAuth-Scopes should let us in...
-                        foreach ($headers as $header) {
-                            $k = substr($header, 0, strpos($header, ":"));
-                            $v = trim(substr($header, strpos($header, ":")+1));
-                            switch ($k) {
-                            case 'X-OAuth-Scopes':
-                                $scopes_issued = explode(" ", $v);
-                                break;
-                            case 'X-Accepted-OAuth-Scopes':
-                                $scopes_needed = explode(" ", $v);
-                                break;
-                            }
+                    $scopesIssued = array();
+                    $scopesNeeded = array();
+                    if ($headers = $e->getHeaders()) {
+                        if ($scopes = $this->remoteFilesystem->findHeaderValue($headers, 'X-OAuth-Scopes')) {
+                            $scopesIssued = explode(' ', $scopes);
+                        }
+                        if ($scopes = $this->remoteFilesystem->findHeaderValue($headers, 'X-Accepted-OAuth-Scopes')) {
+                            $scopesNeeded = explode(' ', $scopes);
                         }
                     }
-                    $scopes_failed = array_diff($scopes_needed, $scopes_issued);
-                    if (is_null($headers) || count($scopes_failed)) {
+                    $scopesFailed = array_diff($scopesNeeded, $scopesIssued);
+                    if (!$headers || count($scopesFailed)) {
                         $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
                     }
 
