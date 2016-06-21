@@ -129,7 +129,9 @@ class Git
                     //We already have an access_token from a previous request.
                     if ($auth['username'] !== 'x-token-auth') {
                         $token = $bitbucketUtil->requestToken($match[1], $auth['username'], $auth['password']);
-                        $this->io->setAuthentication($match[1], 'x-token-auth', $token['access_token']);
+                        if (! empty($token)) {
+                            $this->io->setAuthentication($match[1], 'x-token-auth', $token['access_token']);
+                        }
                     }
                 }
 
