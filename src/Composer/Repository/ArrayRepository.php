@@ -89,7 +89,7 @@ class ArrayRepository extends BaseRepository
     /**
      * {@inheritDoc}
      */
-    public function search($query, $mode = 0)
+    public function search($query, $mode = 0, $type = null)
     {
         $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
 
@@ -102,9 +102,13 @@ class ArrayRepository extends BaseRepository
             if (preg_match($regex, $name)
                 || ($mode === self::SEARCH_FULLTEXT && $package instanceof CompletePackageInterface && preg_match($regex, implode(' ', (array) $package->getKeywords()) . ' ' . $package->getDescription()))
             ) {
+                if (null !== $type && $package->getType() !== $type) {
+                    continue;
+                }
+
                 $matches[$name] = array(
                     'name' => $package->getPrettyName(),
-                    'description' => $package->getDescription(),
+                    'description' => $package instanceof CompletePackageInterface ? $package->getDescription() : null,
                 );
             }
         }

@@ -65,9 +65,11 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches the repository for packages containing the query
      *
-     * @param  string  $query search query
-     * @param  int     $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only
-     * @return array[] an array of array('name' => '...', 'description' => '...')
+     * @param  string $query search query
+     * @param  int    $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only
+     * @param  string $type  The type of package to search for. Defaults to all types of packages
+     *
+     * @return \array[] an array of array('name' => '...', 'description' => '...')
      */
-    public function search($query, $mode = 0);
+    public function search($query, $mode = 0, $type = null);
 }
