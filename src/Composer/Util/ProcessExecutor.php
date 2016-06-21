@@ -45,11 +45,11 @@ class ProcessExecutor
     {
         if ($this->io && $this->io->isDebug()) {
             $safeCommand = preg_replace_callback('{(://)(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)}i', function ($m) {
-                if (preg_match('{^[a-f0-9]{12,}$}', $m[1])) {
+                if (preg_match('{^[a-f0-9]{12,}$}', $m['user'])) {
                     return '://***:***';
                 }
 
-                return '://'.$m[1].':***';
+                return '://'.$m['user'].':***';
             }, $command);
             $this->io->writeError('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
         }
