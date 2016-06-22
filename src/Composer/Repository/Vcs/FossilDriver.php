@@ -38,15 +38,14 @@ class FossilDriver extends VcsDriver
         if (Filesystem::isLocalPath($this->url)) {
             $this->checkoutDir = $this->url;
         } else {
-            $cacheDir = $this->config->get('cache-vcs-dir');
-            $this->repoFile = $cacheDir . '/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '.fossil';
-            $this->checkoutDir = $cacheDir . '/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
+            $this->repoFile = $this->config->get('cache-repo-dir') . '/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '.fossil';
+            $this->checkoutDir = $this->config->get('cache-vcs-dir') . '/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
 
             $fs = new Filesystem();
-            $fs->ensureDirectoryExists($cacheDir);
+            $fs->ensureDirectoryExists($this->checkoutDir);
 
             if (!is_writable(dirname($this->checkoutDir))) {
-                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$cacheDir.'" directory is not writable by the current user.');
+                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$this->checkoutDir.'" directory is not writable by the current user.');
             }
 
             // Ensure we are allowed to use this URL by config
