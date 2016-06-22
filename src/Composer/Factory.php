@@ -460,6 +460,7 @@ class Factory
 
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config, $executor, $fs));
+        $dm->setDownloader('fossil', new Downloader\FossilDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config));
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
