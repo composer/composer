@@ -37,7 +37,7 @@ flags are also required, but when using the installer you will be warned about
 any incompatibilities.
 
 To install packages from sources instead of simple zip archives, you will need
-git, svn or hg depending on how the package is version-controlled.
+git, svn, fossil or hg depending on how the package is version-controlled.
 
 Composer is multi-platform and we strive to make it run equally well on Windows,
 Linux and OSX.

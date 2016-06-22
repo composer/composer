@@ -702,7 +702,7 @@ The following repository types are supported:
   file is loaded using a PHP stream. You can set extra options on that stream
   using the `options` parameter.
 * **vcs:** The version control system repository can fetch packages from git,
-  svn and hg repositories.
+  svn, fossil and hg repositories.
 * **pear:** With this you can import any pear repository into your Composer
   project.
 * **package:** If you depend on a project that does not have any support for
