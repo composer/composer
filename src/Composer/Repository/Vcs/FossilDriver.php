@@ -63,7 +63,7 @@ class FossilDriver extends VcsDriver
 
                 $fs->ensureDirectoryExists($this->checkoutDir);
 
-                if (0 !== $this->process->execute(sprintf('fossil clone %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoFile)), $output, $cacheDir)) {
+                if (0 !== $this->process->execute(sprintf('fossil clone %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoFile)), $output)) {
                     $output = $this->process->getErrorOutput();
 
                     if (0 !== $this->process->execute('fossil version', $ignoredOutput)) {
@@ -127,16 +127,17 @@ class FossilDriver extends VcsDriver
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            $this->process->execute(sprintf('fossil -r %s composer.json', ProcessExecutor::escape($identifier)), $composer, $this->checkoutDir);
+            $command = sprintf('fossil cat -r %s composer.json', ProcessExecutor::escape($identifier));
+            $this->process->execute($command, $composer, $this->checkoutDir);
 
-            if (!trim($composer)) {
+            if (trim($composer) === '') {
                 return;
             }
 
-            $composer = JsonFile::parseJson($composer, $identifier);
+            $composer = JsonFile::parseJson(trim($composer), $identifier);
 
             if (empty($composer['time'])) {
-                $this->process->execute(sprintf('fossil finfo -r %s | head -n 2 | tail -n 1 | awk \'{print $1}\'', ProcessExecutor::escape($identifier)), $output, $this->checkoutDir);
+                $this->process->execute(sprintf('fossil finfo composer.json | head -n 2 | tail -n 1 | awk \'{print $1}\''), $output, $this->checkoutDir);
                 $date = new \DateTime(trim($output), new \DateTimeZone('UTC'));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
@@ -176,6 +177,7 @@ class FossilDriver extends VcsDriver
 
             $this->process->execute('fossil branch list', $output, $this->checkoutDir);
             foreach ($this->process->splitLines($output) as $branch) {
+                $branch = trim(preg_replace('/^\*/', '', trim($branch)));
                 $branches[$branch] = $branch;
             }
 
@@ -190,7 +192,12 @@ class FossilDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (preg_match('#(^(?:https?|ssh)://(?:[^@]@)?chiselapp\.com)#i', $url)) {
+        if (preg_match('#(^(?:https?|ssh)://(?:[^@]@)?(?:chiselapp\.com|fossil\.))#i', $url)) {
+            return true;
+        }
+
+        if (preg_match('!/fossil/|\.fossil!', $url))
+        {
             return true;
         }
 
