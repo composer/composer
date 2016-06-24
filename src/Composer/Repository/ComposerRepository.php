@@ -644,6 +644,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $rfs = $preFileDownloadEvent->getRemoteFilesystem();
                 $json = $rfs->getContents($hostname, $filename, false);
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
+                    // undo downgrade before trying again if http seems to be hijacked or modifying content somehow
+                    if ($this->allowSslDowngrade) {
+                        $this->url = str_replace('http://', 'https://', $this->url);
+                        $this->baseUrl = str_replace('http://', 'https://', $this->baseUrl);
+                        $filename = str_replace('http://', 'https://', $filename);
+                    }
+
                     if ($retries) {
                         usleep(100000);
 
