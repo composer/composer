@@ -62,7 +62,7 @@ class FossilDownloader extends VcsDownloader
             throw new \RuntimeException('The .fslckout file is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
-        $command = sprintf('fossil pull && fossil up', $url, $ref);
+        $command = sprintf('fossil pull && fossil up %s', $ref);
         if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
