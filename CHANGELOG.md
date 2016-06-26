@@ -1,3 +1,9 @@
+### [1.1.3] - 2016-06-26
+
+  * Fixed bitbucket oauth instructions
+  * Fixed version parsing issue
+  * Fixed handling of bad proxies that modify JSON content on the fly
+
 ### [1.1.2] - 2016-05-31
 
   * Fixed degraded mode issue when accessing packagist.org
@@ -397,6 +403,7 @@
 
   * Initial release
 
+[1.1.3]: https://github.com/composer/composer/compare/1.1.2...1.1.3
 [1.1.2]: https://github.com/composer/composer/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/composer/composer/compare/1.1.0...1.1.1
 [1.1.0]: https://github.com/composer/composer/compare/1.0.3...1.1.0
