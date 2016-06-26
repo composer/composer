@@ -74,6 +74,11 @@ class VersionGuesser
                 return $versionData;
             }
 
+            $versionData = $this->guessFossilVersion($packageConfig, $path);
+            if (null !== $versionData) {
+                return $versionData;
+            }
+
             return $this->guessSvnVersion($packageConfig, $path);
         }
     }
@@ -210,6 +215,31 @@ class VersionGuesser
         }
 
         return $version;
+    }
+
+    private function guessFossilVersion(array $packageConfig, $path)
+    {
+        $version = null;
+
+        // try to fetch current version from fossil
+        if (0 === $this->process->execute('fossil branch list', $output, $path)) {
+            $branch = trim($output);
+            $version = $this->versionParser->normalizeBranch($branch);
+
+            if ('9999999-dev' === $version) {
+                $version = 'dev-' . $branch;
+            }
+        }
+
+        // try to fetch current version from fossil tags
+        if (0 === $this->process->execute('fossil tag list', $output, $path)) {
+            try {
+                return $this->versionParser->normalize(trim($output));
+            } catch (\Exception $e) {
+            }
+        }
+
+        return array('version' => $version, 'commit' => '');
     }
 
     private function guessSvnVersion(array $packageConfig, $path)

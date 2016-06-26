@@ -149,7 +149,7 @@ Defaults to `$cache-dir/files`. Stores the zip archives of packages.
 ## cache-repo-dir
 
 Defaults to `$cache-dir/repo`. Stores repository metadata for the `composer`
-type and the VCS repos of type `svn`, `github` and `bitbucket`.
+type and the VCS repos of type `svn`, `fossil`, `github` and `bitbucket`.
 
 ## cache-vcs-dir
 

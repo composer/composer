@@ -53,6 +53,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             'hg-bitbucket'  => 'Composer\Repository\Vcs\HgBitbucketDriver',
             'hg'            => 'Composer\Repository\Vcs\HgDriver',
             'perforce'      => 'Composer\Repository\Vcs\PerforceDriver',
+            'fossil'        => 'Composer\Repository\Vcs\FossilDriver',
             // svn must be last because identifying a subversion server for sure is practically impossible
             'svn'           => 'Composer\Repository\Vcs\SvnDriver',
         );
