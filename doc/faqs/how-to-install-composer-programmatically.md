@@ -28,3 +28,15 @@ fi
 
 The script will exit with 1 in case of failure, or 0 on success, and is quiet
 if no error occurs.
+
+Alternatively if you want to rely on an exact copy of the installer you can fetch
+a specific version from github's history. The commit hash should be enough to
+give it uniqueness and authenticity as long as you can trust the GitHub servers.
+For example:
+
+```bash
+wget https://raw.githubusercontent.com/composer/getcomposer.org/1b137f8bf6db3e79a38a5bc45324414a6b1f9df2/web/installer -O - -q | php -- --quiet
+```
+
+You may replace the commit hash by whatever the last commit hash is on
+https://github.com/composer/getcomposer.org/commits/master
