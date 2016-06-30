@@ -38,6 +38,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $config;
     protected $repoConfig;
     protected $options;
+    protected $rootServerFileUrl;
     protected $url;
     protected $baseUrl;
     protected $io;
@@ -88,6 +89,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->config = $config;
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
+        $this->rootServerFileUrl = isset($repoConfig['root-server-file-url']) ? $repoConfig['root-server-file-url'] : null;
         $this->baseUrl = rtrim(preg_replace('{^(.*)(?:/[^/\\]+.json)?(?:[?#].*)?$}', '$1', $this->url), '/');
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
@@ -447,16 +449,18 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $this->rootData;
         }
 
-        if (!extension_loaded('openssl') && 'https' === substr($this->url, 0, 5)) {
-            throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
+        $url = $this->rootServerFileUrl ?: $this->url;
+
+        if (!extension_loaded('openssl') && 'https' === substr($url, 0, 5)) {
+            throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$url);
         }
 
-        $jsonUrlParts = parse_url($this->url);
+        $jsonUrlParts = parse_url($url);
 
         if (isset($jsonUrlParts['path']) && false !== strpos($jsonUrlParts['path'], '.json')) {
-            $jsonUrl = $this->url;
+            $jsonUrl = $url;
         } else {
-            $jsonUrl = $this->url . '/packages.json';
+            $jsonUrl = $url . '/packages.json';
         }
 
         $data = $this->fetchFile($jsonUrl, 'packages.json');
