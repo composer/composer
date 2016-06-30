@@ -758,8 +758,9 @@ class Solver
                 $systemLevel = $level;
             }
 
-            for ($i = 0, $n = 0; $n < count($this->rules); $i++, $n++) {
-                if ($i == count($this->rules)) {
+            $rulesCount = count($this->rules);
+            for ($i = 0, $n = 0; $n < $rulesCount; $i++, $n++) {
+                if ($i == $rulesCount) {
                     $i = 0;
                 }
 
