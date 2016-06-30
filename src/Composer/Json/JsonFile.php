@@ -141,6 +141,17 @@ class JsonFile
     }
 
     /**
+     * Removes comments from a json string.
+     *
+     * @param string                   $content a json string
+     * @return string                  a json string without comments
+     */
+    protected static function removeComments($content)
+    {
+        return preg_replace("#(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|([\s\t](//).*)#", '', $content);
+    }
+
+    /**
      * Validates the schema of the current json file according to composer-schema.json rules
      *
      * @param  int                     $schema a JsonFile::*_SCHEMA constant
@@ -150,6 +161,7 @@ class JsonFile
     public function validateSchema($schema = self::STRICT_SCHEMA)
     {
         $content = file_get_contents($this->path);
+        $content = self::removeComments($content);
         $data = json_decode($content);
 
         if (null === $data && 'null' !== $content) {
@@ -157,6 +169,7 @@ class JsonFile
         }
 
         $schemaFile = __DIR__ . '/../../../res/composer-schema.json';
+        $schemaFile = self::removeComments($schemaFile);
         $schemaData = json_decode(file_get_contents($schemaFile));
 
         if ($schema === self::LAX_SCHEMA) {
@@ -263,6 +276,7 @@ class JsonFile
         if (null === $json) {
             return;
         }
+        $json = self::removeComments($json);
         $data = json_decode($json, true);
         if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
             self::validateSyntax($json, $file);
