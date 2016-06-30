@@ -157,13 +157,13 @@ class ConsoleIO extends BaseIO
         }
 
         if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
-            $this->output->getErrorOutput()->write($messages, $newline, $sfVerbosity);
+            $this->output->getErrorOutput()->write($messages, $newline);
             $this->lastMessageErr = join($newline ? "\n" : '', (array) $messages);
 
             return;
         }
 
-        $this->output->write($messages, $newline, $sfVerbosity);
+        $this->output->write($messages, $newline);
         $this->lastMessage = join($newline ? "\n" : '', (array) $messages);
     }
 
