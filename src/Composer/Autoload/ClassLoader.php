@@ -53,11 +53,20 @@ class ClassLoader
 
     private $useIncludePath = false;
     private $classMap = array();
+    public $extensions = array('.php');
 
     private $classMapAuthoritative = false;
 
+    public function __construct()
+    {
+        if (defined('HHVM_VERSION')) {
+            $this->extensions[] = '.hh';
+        }
+    }
+
     public function getPrefixes()
     {
+        // Search for Hack files if we are running on HHVM
         if (!empty($this->prefixesPsr0)) {
             return call_user_func_array('array_merge', $this->prefixesPsr0);
         }
@@ -307,11 +316,12 @@ class ClassLoader
     /**
      * Finds the path to the file where the class is defined.
      *
-     * @param string $class The name of the class
+     * @param string     $class      The name of the class
+     * @param array|null $extensions File extensions will be tried
      *
      * @return string|false The path if found, false otherwise
      */
-    public function findFile($class)
+    public function findFile($class, $extensions = null)
     {
         // work around for PHP 5.3.0 - 5.3.2 https://bugs.php.net/50731
         if ('\\' == $class[0]) {
@@ -326,19 +336,18 @@ class ClassLoader
             return false;
         }
 
-        $file = $this->findFileWithExtension($class, '.php');
-
-        // Search for Hack files if we are running on HHVM
-        if ($file === null && defined('HHVM_VERSION')) {
-            $file = $this->findFileWithExtension($class, '.hh');
+        if ($extensions === null) {
+            $extensions = $this->extensions;
         }
 
-        if ($file === null) {
-            // Remember that this class does not exist.
-            return $this->classMap[$class] = false;
+        foreach ((array)$extensions as $extension) {
+            if (($file = $this->findFileWithExtension($class, $extension)) !== null) {
+                return $file;
+            }
         }
 
-        return $file;
+        // Remember that this class does not exist.
+        return $this->classMap[$class] = false;
     }
 
     private function findFileWithExtension($class, $ext)

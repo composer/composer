@@ -66,6 +66,53 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    // /**
+    //  * Tests path resolving for regular PSR-0 and PSR-4 class names.
+    //  *
+    //  * @dataProvider getFindFileTests
+    //  *
+    //  * @param string $class             The fully-qualified class name to test, without preceding namespace separator.
+    //  * @param bool   $prependSeparator  Whether to call ->findFile() with a class name with preceding
+    //  *                                  namespace separator, as it happens in PHP 5.3.0 - 5.3.2. See https://bugs.php.net/50731
+    //  * @param string $expectedExtension Expected filename extension for resolved file.
+    //  */
+    // public function testFindFile($class, $prependSeparator = false, $expectedExtension = 'php')
+    // {
+    //     $loader = new ClassLoader();
+    //     $loader->add('Namespaced\\', __DIR__ . '/Fixtures');
+    //     $loader->add('Pearlike_', __DIR__ . '/Fixtures');
+    //     $loader->addPsr4('ShinyVendor\\ShinyPackage\\', __DIR__ . '/Fixtures');
+    //
+    //     if ($prependSeparator) {
+    //         $prepend = '\\';
+    //         $message = "->findFile() resolves '$class'.";
+    //     } else {
+    //         $prepend = '';
+    //         $message = "->findFile() resolves '\\$class', as required in PHP 5.3.0 - 5.3.2.";
+    //     }
+    //
+    //     $path = $loader->findFile($prepend . $class, array('.php', '.inc'));
+    //     $this->assertTrue(pathinfo($path, PATHINFO_EXTENSION) === $expectedExtension, $message);
+    // }
+    //
+    // /**
+    //  * Provides arguments for ->testFindFile().
+    //  *
+    //  * @return array Array of parameter sets to test with.
+    //  */
+    // public function getFindFileTests()
+    // {
+    //     return array(
+    //         array('Namespaced\\Foo'),
+    //         array('Pearlike_Foo'),
+    //         array('ShinyVendor\\ShinyPackage\\SubNamespace\\Foo'),
+    //         array('Namespaced\\Bar', true, 'inc'),
+    //         array('Namespaced\\Baz', true),
+    //         array('Pearlike_Bar', true),
+    //         array('ShinyVendor\\ShinyPackage\\SubNamespace\\Bar', true),
+    //     );
+    // }
+
     /**
      * getPrefixes method should return empty array if ClassLoader does not have any psr-0 configuration
      */
