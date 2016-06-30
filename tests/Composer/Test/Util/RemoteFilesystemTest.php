@@ -217,4 +217,30 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $attr->setAccessible(true);
         $attr->setValue($object, $value);
     }
+
+    /**
+     * @dataProvider provideGithubArchiveUrls
+     */
+    public function testDirectGithubUrls($url, $expected)
+    {
+        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
+        $ref = new \ReflectionMethod($fs, 'getDirectGithubUrl');
+        $ref->setAccessible(true);
+
+        $this->assertEquals($expected, $ref->invoke($fs, $url));
+    }
+
+    public function provideGithubArchiveUrls()
+    {
+        return array(
+            array('https://api.github.com/repos/composer/composer/zipball/master', 'https://github.com/composer/composer/archive/master.zip'),
+            array('https://api.github.com/repos/composer/composer/tarball/master', 'https://github.com/composer/composer/archive/master.tar.gz'),
+            array('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', 'https://github.com/composer/packagist/archive/SOMESHA.zip'),
+            array('https://api.github.com/repos/composer/packagist/zipball', null),
+            array('https://github.com/composer/composer/zipball/master', null),
+            array('https://www.github.com/composer/composer/tarball/master', null),
+            array('https://github.com/composer/composer/archive/master.zip', null),
+            array('https://github.com/composer/composer/archive/master.tar.gz', null),
+        );
+    }
 }
