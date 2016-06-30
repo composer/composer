@@ -34,6 +34,21 @@ Global installation of Composer (manual)
 
 Follow instructions [in the documentation](https://getcomposer.org/doc/00-intro.md#globally)
 
+
+Installation as a Node Module (requires npm)
+--------------------------------------------
+
+Download composer using npm
+
+````shell
+#global
+npm install -g getcomposer
+
+#local
+npm install getcomposer
+````
+
+
 Updating Composer
 -----------------
 
