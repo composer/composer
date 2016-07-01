@@ -414,8 +414,9 @@ Autoload mapping for a PHP autoloader.
 
 Currently [`PSR-0`](http://www.php-fig.org/psr/psr-0/) autoloading,
 [`PSR-4`](http://www.php-fig.org/psr/psr-4/) autoloading, `classmap` generation and
-`files` includes are supported. PSR-4 is the recommended way though since it offers
-greater ease of use (no need to regenerate the autoloader when you add classes).
+`files` includes are supported. PSR-0 and PSR-4 are the recommended ways though,
+since they offer greater ease of use (no need to regenerate the autoloader when 
+you add classes).
 
 #### PSR-4
 
