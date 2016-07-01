@@ -390,7 +390,7 @@ class Installer
             $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
 
             foreach ($links as $link) {
-                $request->install($link->getTarget(), $link->getConstraint());
+                $request->update($link->getTarget(), $link->getConstraint());
             }
 
             // if the updateWhitelist is enabled, packages not in it are also fixed
