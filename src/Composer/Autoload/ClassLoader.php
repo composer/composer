@@ -320,7 +320,7 @@ class ClassLoader
 
         // class map lookup
         if (isset($this->classMap[$class])) {
-            return $this->classMap[$class];
+            return $this->classMap[$class] ?: null;
         }
         if ($this->classMapAuthoritative) {
             return false;
