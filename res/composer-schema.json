@@ -9,6 +9,10 @@
             "type": "string",
             "description": "Package name, including 'vendor-name/' prefix."
         },
+        "title": {
+            "type": "string",
+            "description": "Package title, a concise human-readable title for the package.",
+        },
         "type": {
             "description": "Package type, either 'library' for common packages, 'composer-plugin' for plugins, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
             "type": "string"
