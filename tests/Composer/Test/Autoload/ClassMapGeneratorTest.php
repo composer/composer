@@ -57,6 +57,8 @@ class ClassMapGeneratorTest extends TestCase
             array(__DIR__.'/Fixtures/classmap', array(
                 'Foo\\Bar\\A'             => realpath(__DIR__).'/Fixtures/classmap/sameNsMultipleClasses.php',
                 'Foo\\Bar\\B'             => realpath(__DIR__).'/Fixtures/classmap/sameNsMultipleClasses.php',
+                'Foo\\Bar\\Document'      => realpath(__DIR__).'/Fixtures/classmap/sameNsMultipleClassesShortTags.php',
+                'Foo\\Bar\\User'          => realpath(__DIR__).'/Fixtures/classmap/sameNsMultipleClassesShortTags.php',
                 'Alpha\\A'                => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
                 'Alpha\\B'                => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
                 'A'                       => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
