@@ -12,8 +12,12 @@
 
 namespace Composer\Downloader;
 
+use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionGuesser;
+use Composer\Package\Version\VersionParser;
 use Composer\Util\Platform;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -23,7 +27,7 @@ use Symfony\Component\Filesystem\Filesystem;
  * @author Samuel Roze <samuel.roze@gmail.com>
  * @author Johann Reinke <johann.reinke@gmail.com>
  */
-class PathDownloader extends FileDownloader
+class PathDownloader extends FileDownloader implements VcsCapableDownloaderInterface
 {
     const STRATEGY_SYMLINK = 10;
     const STRATEGY_MIRROR  = 20;
@@ -125,6 +129,21 @@ class PathDownloader extends FileDownloader
             }
         } else {
             parent::remove($package, $path);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getVcsReference(PackageInterface $package, $path)
+    {
+        $parser = new VersionParser;
+        $guesser = new VersionGuesser($this->config, new ProcessExecutor($this->io), $parser);
+        $dumper = new ArrayDumper;
+
+        $packageConfig = $dumper->dump($package);
+        if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {
+            return $packageVersion['commit'];
         }
     }
 }

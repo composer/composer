@@ -13,7 +13,10 @@
 namespace Composer\Downloader;
 
 use Composer\Config;
+use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionGuesser;
+use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -21,7 +24,7 @@ use Composer\Util\Filesystem;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterface
+abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterface, VcsCapableDownloaderInterface
 {
     /** @var IOInterface */
     protected $io;
@@ -191,6 +194,21 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     public function setOutputProgress($outputProgress)
     {
         return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getVcsReference(PackageInterface $package, $path)
+    {
+        $parser = new VersionParser;
+        $guesser = new VersionGuesser($this->config, $this->process, $parser);
+        $dumper = new ArrayDumper;
+
+        $packageConfig = $dumper->dump($package);
+        if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {
+            return $packageVersion['commit'];
+        }
     }
 
     /**
