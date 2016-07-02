@@ -263,10 +263,10 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
 
         $installer
             ->expects($this->once())
-            ->method('installBinary')
+            ->method('ensureBinariesPresence')
             ->with($package);
 
-        $manager->installBinary($package);
+        $manager->ensureBinariesPresence($package);
     }
 
     private function createInstallerMock()

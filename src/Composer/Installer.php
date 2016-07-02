@@ -297,10 +297,9 @@ class Installer
                 $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
             }
 
-            // force binaries re-generation
-            $this->io->writeError('<info>Installing binaries files</info>');
+            // force binaries re-generation in case they are missing
             foreach ($localRepo->getPackages() as $package) {
-                $this->installationManager->installBinary($package);
+                $this->installationManager->ensureBinariesPresence($package);
             }
 
             $vendorDir = $this->config->get('vendor-dir');

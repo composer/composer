@@ -17,15 +17,14 @@ use Composer\Package\PackageInterface;
 /**
  * Interface for the package installation manager that handle binary installation.
  *
- * @author Konstantin Kudryashov <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-interface InstallerBinaryInterface
+interface BinaryPresenceInterface
 {
     /**
-     * Installs binary file for a specific package.
+     * Make sure binaries are installed for a given package.
      *
      * @param PackageInterface $package package instance
      */
-    public function installBinary(PackageInterface $package);
+    public function ensureBinariesPresence(PackageInterface $package);
 }

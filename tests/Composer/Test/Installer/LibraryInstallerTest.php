@@ -259,7 +259,7 @@ class LibraryInstallerTest extends TestCase
      * @depends testInstallerCreationShouldNotCreateVendorDirectory
      * @depends testInstallerCreationShouldNotCreateBinDirectory
      */
-    public function testInstallBinary()
+    public function testEnsureBinariesInstalled()
     {
         $binaryInstallerMock = $this->getMockBuilder('Composer\Installer\BinaryInstaller')
             ->disableOriginalConstructor()
@@ -269,16 +269,16 @@ class LibraryInstallerTest extends TestCase
         $package = $this->createPackageMock();
 
         $binaryInstallerMock
-            ->expects($this->once())
+            ->expects($this->never())
             ->method('removeBinaries')
             ->with($package);
 
         $binaryInstallerMock
             ->expects($this->once())
             ->method('installBinaries')
-            ->with($package, $library->getInstallPath($package));
+            ->with($package, $library->getInstallPath($package), false);
 
-        $library->installBinary($package);
+        $library->ensureBinariesPresence($package);
     }
 
     protected function createPackageMock()

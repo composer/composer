@@ -133,7 +133,7 @@ class InstallationManager
      *
      * @param PackageInterface $package Package instance
      */
-    public function installBinary(PackageInterface $package)
+    public function ensureBinariesPresence(PackageInterface $package)
     {
         try {
             $installer = $this->getInstaller($package->getType());
@@ -143,8 +143,8 @@ class InstallationManager
         }
 
         // if the given installer support installing binaries
-        if ($installer instanceof InstallerBinaryInterface) {
-            $installer->installBinary($package);
+        if ($installer instanceof BinaryPresenceInterface) {
+            $installer->ensureBinariesPresence($package);
         }
     }
 

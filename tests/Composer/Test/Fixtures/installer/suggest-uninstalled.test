@@ -22,7 +22,6 @@ Updating dependencies (including require-dev)
 a/a suggests installing b/b (an obscure reason)
 Writing lock file
 Generating autoload files
-Installing binaries files
 
 --EXPECT--
 Installing a/a (1.0.0)
