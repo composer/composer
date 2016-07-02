@@ -297,7 +297,6 @@ class Factory
         }
 
         $vendorDir = $config->get('vendor-dir');
-        $binDir = $config->get('bin-dir');
 
         // initialize composer
         $composer = new Composer();

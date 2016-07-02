@@ -40,5 +40,6 @@ Updating dependencies (including require-dev)
 Nothing to install or update
 Writing lock file
 Generating autoload files
+Installing binaries files
 
 --EXPECT--

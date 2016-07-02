@@ -30,6 +30,7 @@ Updating dependencies (including require-dev)
 <warning>Package c/c is abandoned, you should avoid using it. Use b/b instead.</warning>
 Writing lock file
 Generating autoload files
+Installing binaries files
 
 --EXPECT--
 Installing a/a (1.0.0)

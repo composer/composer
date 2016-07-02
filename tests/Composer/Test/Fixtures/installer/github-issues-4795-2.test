@@ -38,6 +38,7 @@ Loading composer repositories with package information
 Updating dependencies (including require-dev)
 Writing lock file
 Generating autoload files
+Installing binaries files
 
 --EXPECT--
 Updating a (1.0.0) to a (1.1.0)

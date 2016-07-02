@@ -297,6 +297,12 @@ class Installer
                 $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
             }
 
+            // force binaries re-generation
+            $this->io->writeError('<info>Installing binaries files</info>');
+            foreach ($localRepo->getPackages() as $package) {
+                $this->installationManager->installBinary($package);
+            }
+
             $vendorDir = $this->config->get('vendor-dir');
             if (is_dir($vendorDir)) {
                 // suppress errors as this fails sometimes on OSX for no apparent reason
