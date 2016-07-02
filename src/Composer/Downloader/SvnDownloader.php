@@ -70,7 +70,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges(PackageInterface $package, $path)
+    protected function getWorkingTreeState(PackageInterface $package, $path)
     {
         if (!$this->hasMetadataRepository($path)) {
             return null;
@@ -79,6 +79,22 @@ class SvnDownloader extends VcsDownloader
         $this->process->execute('svn status --ignore-externals', $output, $path);
 
         return preg_match('{^ *[^X ] +}m', $output) ? $output : null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getCurrentReference(PackageInterface $package, $path)
+    {
+        if (!$this->hasMetadataRepository($path)) {
+            return;
+        }
+
+        if (0 !== $this->process->execute('svnversion', $output, $path)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return trim($output) ?: null;
     }
 
     /**
@@ -111,7 +127,7 @@ class SvnDownloader extends VcsDownloader
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)
     {
-        if (!$changes = $this->getLocalChanges($package, $path)) {
+        if (!$changes = $this->getWorkingTreeState($package, $path)) {
             return;
         }
 

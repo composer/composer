@@ -84,7 +84,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges(PackageInterface $package, $path)
+    protected function getWorkingTreeState(PackageInterface $package, $path)
     {
         $this->io->writeError('Perforce driver does not check for local changes before overriding', true);
 

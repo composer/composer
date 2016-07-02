@@ -66,13 +66,30 @@ class HgDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges(PackageInterface $package, $path)
+    protected function getWorkingTreeState(PackageInterface $package, $path)
     {
         if (!is_dir($path.'/.hg')) {
             return null;
         }
 
         $this->process->execute('hg st', $output, realpath($path));
+
+        return trim($output) ?: null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getCurrentReference(PackageInterface $package, $path)
+    {
+        if (!is_dir($path.'/.hg')) {
+            return;
+        }
+
+        $command = sprintf('hg parent --template %s', escapeshellarg('{node}'));
+        if (0 !== $this->process->execute($command, $output, $path)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
 
         return trim($output) ?: null;
     }

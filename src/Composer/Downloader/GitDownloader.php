@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use Composer\Package\Version\VersionParser;
 use Composer\Package\PackageInterface;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\Platform;
@@ -112,7 +113,83 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges(PackageInterface $package, $path)
+    protected function getVersionDifference(PackageInterface $package, $path)
+    {
+        GitUtil::cleanEnv();
+        $path = $this->normalizePath($path);
+        if (!is_dir($path.'/.git')) {
+            return;
+        }
+
+        return parent::getVersionDifference($package, $path);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getCurrentReference(PackageInterface $package, $path)
+    {
+        GitUtil::cleanEnv();
+        $path = $this->normalizePath($path);
+        if (!is_dir($path.'/.git')) {
+            return;
+        }
+
+        $command = 'git log --pretty="%H" -n1 HEAD';
+        if (0 !== $this->process->execute($command, $output, $path)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return trim($output) ?: null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getCurrentVersion(PackageInterface $package, $path)
+    {
+        $versionParser = new VersionParser;
+
+        // Prefer a tag
+        $command = 'git describe --exact-match --tags';
+        if (0 === $this->process->execute($command, $tag, $path)) {
+            try {
+                $versionParser->normalize($tag);
+                return trim($tag);
+            } catch (\Exception $e) {
+            }
+        }
+
+        // Try to find a branch
+        $command = 'git rev-parse --abbrev-ref HEAD';
+        if (0 === $this->process->execute($command, $branch, $path)) {
+            $branch = trim($branch);
+            if ('HEAD' !== $branch) {
+                try {
+                    $normalizedBranch = $versionParser->normalizeBranch($branch);
+
+                    if ('dev-' === substr($normalizedBranch, 0, 4) || '9999999-dev' === $normalizedBranch) {
+                        $normalizedBranch = 'dev-' . $branch;
+                    } else {
+                        $prefix = substr($branch, 0, 1) === 'v' ? 'v' : '';
+                        $normalizedBranch = $prefix . preg_replace('{(\.9{7})+}', '.x', $normalizedBranch);
+                    }
+
+                    if ($ref = $this->getCurrentReference($package, $path)) {
+                        $normalizedBranch .= '#' . $ref;
+                    }
+
+                    return $normalizedBranch;
+                } catch (\Exception $e) {
+                }
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getWorkingTreeState(PackageInterface $package, $path)
     {
         GitUtil::cleanEnv();
         if (!$this->hasMetadataRepository($path)) {
@@ -209,7 +286,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             throw new \RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch: '."\n".$unpushed);
         }
 
-        if (!$changes = $this->getLocalChanges($package, $path)) {
+        if (!$changes = $this->getWorkingTreeState($package, $path)) {
             return;
         }
 
