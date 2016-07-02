@@ -176,6 +176,24 @@ class RemoteFilesystem
     }
 
     /**
+     * @param  array       $headers array of returned headers
+     * @return string|null
+     */
+    public function findContentType(array $headers)
+    {
+        $value = null;
+        foreach ($headers as $header) {
+            if (preg_match('/^Content-type:\s*([^;]+)/i', $header, $match)) {
+                // In case of redirects, http_response_headers contains the headers of all responses
+                // so we can not return directly and need to keep iterating
+                $value = $match[1];
+            }
+        }
+
+        return $value;
+    }
+
+    /**
      * Get file content or copy action.
      *
      * @param string $originUrl         The origin URL
@@ -334,8 +352,21 @@ class RemoteFilesystem
         }
 
         $statusCode = null;
+        $contentType = null;
         if (!empty($http_response_header[0])) {
             $statusCode = $this->findStatusCode($http_response_header);
+            $contentType = $this->findContentType($http_response_header);
+        }
+
+        if ($originUrl === 'bitbucket.org' &&
+            preg_match('/\.zip$/', $fileUrl) &&
+            $contentType === 'text/html'
+        ) {
+            // The received content is a login page asking to authenticate
+            $result = false;
+            if ($this->retryAuthFailure) {
+                $this->promptAuthAndRetry(401);
+            }
         }
 
         // handle 3xx redirects for php<5.6, 304 Not Modified is excluded
@@ -575,21 +606,27 @@ class RemoteFilesystem
                 throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
         } elseif ($this->config && $this->originUrl === 'bitbucket.org') {
-            if (! $this->io->hasAuthentication($this->originUrl)) {
-                $message = "\n".'Could not fetch ' . $this->fileUrl . ', please create a bitbucket OAuth token to access private repos';
-                $bitBucketUtil = new Bitbucket($this->io, $this->config);
-                if (! $bitBucketUtil->authorizeOAuth($this->originUrl)
-                    && (! $this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($this->originUrl, $message))
-                ) {
-                    throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
-                }
-            } else {
+            $askForOAuthToken = true;
+            if ($this->io->hasAuthentication($this->originUrl)) {
                 $auth = $this->io->getAuthentication($this->originUrl);
                 if ($auth['username'] !== 'x-token-auth') {
                     $bitbucketUtil = new Bitbucket($this->io, $this->config);
                     $token = $bitbucketUtil->requestToken($this->originUrl, $auth['username'], $auth['password']);
-                    $this->io->setAuthentication($this->originUrl, 'x-token-auth', $token['access_token']);
+                    if (! empty($token)) {
+                        $this->io->setAuthentication($this->originUrl, 'x-token-auth', $token['access_token']);
+                        $askForOAuthToken = false;
+                    }
                 } else {
+                    throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
+                }
+            }
+
+            if ($askForOAuthToken) {
+                $message = "\n".'Could not fetch ' . $this->fileUrl . ', please create a bitbucket OAuth token to ' . ($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
+                $bitBucketUtil = new Bitbucket($this->io, $this->config);
+                if (! $bitBucketUtil->authorizeOAuth($this->originUrl)
+                    && (! $this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($this->originUrl, $message))
+                ) {
                     throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
                 }
             }

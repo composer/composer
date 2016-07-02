@@ -161,6 +161,8 @@ class Bitbucket
             "consumer-secret" => $consumerSecret,
         );
         $this->config->getAuthConfigSource()->addConfigSetting('bitbucket-oauth.'.$originUrl, $consumer);
+        // Remove conflicting basic auth credentials (if available)
+        $this->config->getAuthConfigSource()->removeConfigSetting('http-basic.' . $originUrl);
 
         $this->io->writeError('<info>Consumer stored successfully.</info>');
 

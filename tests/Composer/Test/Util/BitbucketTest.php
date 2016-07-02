@@ -164,16 +164,31 @@ class BitbucketTest extends \PHPUnit_Framework_TestCase
             ->willReturn(sprintf('{}', $this->token))
         ;
 
+        $authJson = $this->getAuthJsonMock();
         $this->config
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(3))
             ->method('getAuthConfigSource')
-            ->willReturn($this->getAuthJsonMock())
+            ->willReturn($authJson)
         ;
         $this->config
             ->expects($this->once())
             ->method('getConfigSource')
             ->willReturn($this->getConfJsonMock())
         ;
+
+        $authJson->expects($this->once())
+            ->method('addConfigSetting')
+            ->with(
+                'bitbucket-oauth.'.$this->origin,
+                array(
+                    'consumer-key' => $this->consumer_key,
+                    'consumer-secret' => $this->consumer_secret
+                )
+            );
+
+        $authJson->expects($this->once())
+            ->method('removeConfigSetting')
+            ->with('http-basic.'.$this->origin);
 
         $this->assertTrue($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
