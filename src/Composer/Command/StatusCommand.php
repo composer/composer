@@ -109,14 +109,14 @@ EOT
 
                     $currentVersion = $guesser->guessVersion($dumper->dump($package), $targetDir);
 
-                    if ($previousRef && $currentVersion['commit'] !== $previousRef) {
+                    if ($previousRef && $currentVersion && $currentVersion['commit'] !== $previousRef) {
                         $vcsVersionChanges[$targetDir] = array(
                             'previous' => array(
                                 'version' => $package->getPrettyVersion(),
                                 'ref'     => $previousRef
                             ),
                             'current'  => array(
-                                'version' => $currentVersion['version'],
+                                'version' => $currentVersion['pretty_version'],
                                 'ref'     => $currentVersion['commit'],
                             ),
                         );
