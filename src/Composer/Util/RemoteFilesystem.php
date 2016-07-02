@@ -176,24 +176,6 @@ class RemoteFilesystem
     }
 
     /**
-     * @param  array       $headers array of returned headers
-     * @return string|null
-     */
-    public function findContentType(array $headers)
-    {
-        $value = null;
-        foreach ($headers as $header) {
-            if (preg_match('/^Content-type:\s*([^;]+)/i', $header, $match)) {
-                // In case of redirects, http_response_headers contains the headers of all responses
-                // so we can not return directly and need to keep iterating
-                $value = $match[1];
-            }
-        }
-
-        return $value;
-    }
-
-    /**
      * Get file content or copy action.
      *
      * @param string $originUrl         The origin URL
@@ -355,14 +337,14 @@ class RemoteFilesystem
         $contentType = null;
         if (!empty($http_response_header[0])) {
             $statusCode = $this->findStatusCode($http_response_header);
-            $contentType = $this->findContentType($http_response_header);
+            $contentType = $this->findHeaderValue($http_response_header, 'content-type');
         }
 
-        if ($originUrl === 'bitbucket.org' &&
-            preg_match('/\.zip$/', $fileUrl) &&
-            $contentType === 'text/html'
+        // check for bitbucket login page asking to authenticate
+        if ($originUrl === 'bitbucket.org'
+            && substr($fileUrl, -4) === '.zip'
+            && preg_match('{^text/html\b}i', $contentType)
         ) {
-            // The received content is a login page asking to authenticate
             $result = false;
             if ($this->retryAuthFailure) {
                 $this->promptAuthAndRetry(401);
