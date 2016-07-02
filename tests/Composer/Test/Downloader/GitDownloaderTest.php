@@ -156,11 +156,16 @@ class GitDownloaderTest extends TestCase
         $config = new Config;
         $this->setupConfig($config);
         $cachePath = $config->get('cache-vcs-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', 'https://example.com/composer/composer').'/';
+
         $expectedGitCommand = $this->winCompat(sprintf("git clone --mirror 'https://example.com/composer/composer' '%s'", $cachePath));
         $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
-            ->will($this->returnValue(0));
+            ->will($this->returnCallback(function () use ($cachePath) {
+                @mkdir($cachePath, 0777, true);
+
+                return 0;
+            }));
 
         $expectedGitCommand = $this->winCompat(sprintf("git clone --no-checkout 'https://example.com/composer/composer' 'composerPath' --dissociate --reference '%s' && cd 'composerPath' && git remote add composer 'https://example.com/composer/composer' && git fetch composer", $cachePath));
         $processExecutor->expects($this->at(2))
@@ -185,6 +190,7 @@ class GitDownloaderTest extends TestCase
 
         $downloader = $this->getDownloaderMock(null, $config, $processExecutor);
         $downloader->download($packageMock, 'composerPath');
+        @rmdir($cachePath);
     }
 
     public function testDownloadUsesVariousProtocolsAndSetsPushUrlForGithub()

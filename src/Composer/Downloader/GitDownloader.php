@@ -51,8 +51,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $gitVersion = $this->gitUtil->getVersion();
         if ($gitVersion && version_compare($gitVersion, '2.3.0-rc0', '>=')) {
             $this->io->writeError(sprintf('    Cloning to cache at %s', ProcessExecutor::escape($cachePath)), true, IOInterface::DEBUG);
-            $this->gitUtil->syncMirror($url, $cachePath);
-            $cacheOptions = sprintf('--dissociate --reference %s ', ProcessExecutor::escape($cachePath));
+            try {
+                $this->gitUtil->syncMirror($url, $cachePath);
+                if (is_dir($cachePath)) {
+                    $cacheOptions = sprintf('--dissociate --reference %s ', ProcessExecutor::escape($cachePath));
+                }
+            } catch (\RuntimeException $e) {}
         }
         $command = 'git clone --no-checkout %s %s '.$cacheOptions.'&& cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->writeError("    Cloning ".$ref);
