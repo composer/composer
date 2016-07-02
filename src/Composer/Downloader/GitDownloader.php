@@ -48,15 +48,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $flag = Platform::isWindows() ? '/D ' : '';
 
         // --dissociate option is only available since git 2.3.0-rc0
-        if (version_compare($this->gitUtil->getVersion(), '2.3.0-rc0', '>=')) {
-            if (!file_exists($cachePath)) {
-                $this->io->writeError(sprintf('    Cloning to cache at %s', ProcessExecutor::escape($cachePath)));
-                $mirrorCommand = 'git clone --mirror %s %s';
-                $mirrorCommandCallable = function ($url) use ($cachePath, $mirrorCommand) {
-                    return sprintf($mirrorCommand, ProcessExecutor::escape($url), ProcessExecutor::escape($cachePath));
-                };
-                $this->gitUtil->runCommand($mirrorCommandCallable, $url, $path, true);
-            }
+        $gitVersion = $this->gitUtil->getVersion();
+        if ($gitVersion && version_compare($gitVersion, '2.3.0-rc0', '>=')) {
+            $this->io->writeError(sprintf('    Cloning to cache at %s', ProcessExecutor::escape($cachePath)), true, IOInterface::DEBUG);
+            $this->gitUtil->syncMirror($url, $cachePath);
             $cacheOptions = sprintf('--dissociate --reference %s ', ProcessExecutor::escape($cachePath));
         }
         $command = 'git clone --no-checkout %s %s '.$cacheOptions.'&& cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';

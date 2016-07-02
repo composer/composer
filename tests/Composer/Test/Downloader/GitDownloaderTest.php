@@ -36,6 +36,11 @@ class GitDownloaderTest extends TestCase
         if (is_dir($this->workingDir)) {
             $this->fs->removeDirectory($this->workingDir);
         }
+
+        // reset the static version cache
+        $refl = new \ReflectionProperty('Composer\Util\Git', 'version');
+        $refl->setAccessible(true);
+        $refl->setValue(null, null);
     }
 
     protected function setupConfig($config = null) {

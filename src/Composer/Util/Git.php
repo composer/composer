@@ -20,6 +20,8 @@ use Composer\IO\IOInterface;
  */
 class Git
 {
+    private static $version;
+
     /** @var IOInterface */
     protected $io;
     /** @var Config */
@@ -198,6 +200,34 @@ class Git
         }
     }
 
+    public function syncMirror($url, $dir)
+    {
+        // update the repo if it is a valid git repository
+        if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
+            try {
+                $commandCallable = function ($url) {
+                    return sprintf('git remote set-url origin %s && git remote update --prune origin', ProcessExecutor::escape($url));
+                };
+                $this->runCommand($commandCallable, $url, $dir);
+            } catch (\Exception $e) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // clean up directory and do a fresh clone into it
+        $this->filesystem->removeDirectory($dir);
+
+        $commandCallable = function ($url) use ($dir) {
+            return sprintf('git clone --mirror %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
+        };
+
+        $this->runCommand($commandCallable, $url, $dir, true);
+
+        return true;
+    }
+
     private function isAuthenticationFailure($url, &$match)
     {
         if (!preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match)) {
@@ -277,16 +307,18 @@ class Git
     /**
      * Retrieves the current git version.
      *
-     * @return string
-     *   The git version number.
+     * @return string|null The git version number.
      */
-    public function getVersion() {
+    public function getVersion()
+    {
+        if (isset(self::$version)) {
+            return self::$version;
+        }
         if (0 !== $this->process->execute('git --version', $output)) {
-            throw new \RuntimeException(self::sanitizeUrl('Failed retrieve git version, git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
+            return;
         }
-        if (preg_match('/^git version (.*)/', $output, $matches) !== 1) {
-            throw new \RuntimeException('git --version output seems to have changed, expected "git version x.y.z".');
+        if (preg_match('/^git version (\d+(?:\.\d+)+)/m', $output, $matches)) {
+            return self::$version = $matches[1];
         }
-        return $matches[1];
     }
 }
