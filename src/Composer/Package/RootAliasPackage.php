@@ -73,14 +73,6 @@ class RootAliasPackage extends AliasPackage implements RootPackageInterface
     /**
      * {@inheritDoc}
      */
-    public function getScripts()
-    {
-        return $this->aliasOf->getScripts();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function setRequires(array $require)
     {
         $this->requires = $this->replaceSelfVersionDependencies($require, 'requires');
