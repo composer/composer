@@ -59,6 +59,20 @@ interface RootPackageInterface extends CompletePackageInterface
     public function getPreferStable();
 
     /**
+     * Returns the root package's configuration
+     *
+     * @return array
+     */
+    public function getConfig();
+
+    /**
+     * Returns the root package's scripts
+     *
+     * @return array
+     */
+    public function getScripts();
+
+    /**
      * Set the required packages
      *
      * @param Link[] $requires A set of package links

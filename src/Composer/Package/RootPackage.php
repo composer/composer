@@ -22,6 +22,8 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     protected $minimumStability = 'stable';
     protected $preferStable = false;
     protected $stabilityFlags = array();
+    protected $config = array();
+    protected $scripts = array();
     protected $references = array();
     protected $aliases = array();
 
@@ -77,6 +79,42 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     public function getPreferStable()
     {
         return $this->preferStable;
+    }
+
+    /**
+     * Set the config
+     *
+     * @param array $config
+     */
+    public function setConfig(array $config)
+    {
+        $this->config = $config;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    /**
+     * Set the scripts
+     *
+     * @param array $scripts
+     */
+    public function setScripts(array $scripts)
+    {
+        $this->scripts = $scripts;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getScripts()
+    {
+        return $this->scripts;
     }
 
     /**
