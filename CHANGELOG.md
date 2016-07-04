@@ -9,7 +9,7 @@
   * Improved BitBucket OAuth support
   * Added support for blocking cache operations using COMPOSER_CACHE_DIR=/dev/null (or NUL on windows)
   * Added support for using declare(strict_types=1) in plugins
-  * Added `--prefer-stable` and --prefer-lowest` to the `require` command
+  * Added `--prefer-stable` and `--prefer-lowest` to the `require` command
   * Added `--no-scripts` to the `require` and `remove` commands
   * Added `_comment` top level key to the schema to endorse using it as a place to store comments (it can be a string or array of strings)
   * Added support for justinrainbow/json-schema 2.0
