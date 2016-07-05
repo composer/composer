@@ -284,6 +284,8 @@ To enable the swap you can use for example:
 /sbin/swapon /var/swap.1
 ```
 
+This also can be caused by an using an older PHP version. In this case an update of PHP will solve it.
+
 ## Degraded Mode
 
 Due to some intermittent issues on Travis and other systems, we introduced a
