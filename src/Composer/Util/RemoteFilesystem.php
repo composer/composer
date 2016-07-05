@@ -714,6 +714,9 @@ class RemoteFilesystem
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
                 }
+                else if ($auth['password'] === 'private-token') {
+                    $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
+                }
             } elseif ('bitbucket.org' === $originUrl
                 && $this->fileUrl !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL && 'x-token-auth' === $auth['username']
             ) {
