@@ -76,29 +76,22 @@ class PlatformRepository extends ArrayRepository
             $version = $versionParser->normalize($prettyVersion);
         }
 
-        // The AF_INET6 constant is only defined if ext-sockets is available but IPv6 support might still be available.
-        $ipv6Support = defined('AF_INET6') || @inet_pton('::') !== false;
-
         $php = new CompletePackage('php', $version, $prettyVersion);
         $php->setDescription('The PHP interpreter');
         $this->addPackage($php);
-
-        if ($ipv6Support) {
-            $phpIpv6 = new CompletePackage('php-ipv6', $version, $prettyVersion);
-            $phpIpv6->setDescription('The PHP interpreter with IPv6 support');
-            $this->addPackage($phpIpv6);
-        }
 
         if (PHP_INT_SIZE === 8) {
             $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
             $php64->setDescription('The PHP interpreter, 64bit');
             $this->addPackage($php64);
+        }
 
-            if ($ipv6Support) {
-                $php64Ipv6 = new CompletePackage('php-64bit-ipv6', $version, $prettyVersion);
-                $php64Ipv6->setDescription('The PHP interpreter with IPV6 support, 64bit');
-                $this->addPackage($php64Ipv6);
-            }
+        // The AF_INET6 constant is only defined if ext-sockets is available but
+        // IPv6 support might still be available.
+        if (defined('AF_INET6') || @inet_pton('::') !== false) {
+            $phpIpv6 = new CompletePackage('php-ipv6', $version, $prettyVersion);
+            $phpIpv6->setDescription('The PHP interpreter with IPv6 support');
+            $this->addPackage($phpIpv6);
         }
 
         $loadedExtensions = get_loaded_extensions();
