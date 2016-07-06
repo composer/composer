@@ -67,6 +67,12 @@ A list of domain names and oauth keys. For example using `{"gitlab.com":
 "oauthtoken"}` as the value of this option will use `oauthtoken` to access
 private repositories on gitlab.
 
+## gitlab-token
+
+A list of domain names and private tokens. For example using `{"gitlab.com":
+"privatetoken"}` as the value of this option will use `privatetoken` to access
+private repositories on gitlab.
+
 ## disable-tls
 
 Defaults to `false`. If set to true all HTTPS URLs will be tried with HTTP
