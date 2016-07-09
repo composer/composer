@@ -1,4 +1,4 @@
-# How to I install untrusted packages safely? Is it safe to run Composer as superuser or root?
+# How do I install untrusted packages safely? Is it safe to run Composer as superuser or root?
 
 Certain Composer commands, including `exec`, `install`, and `update` allow third party code to 
 execute on your system. This is from its "plugins" and "scripts" features. Plugins and scripts have
