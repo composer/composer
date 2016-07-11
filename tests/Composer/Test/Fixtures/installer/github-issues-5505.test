@@ -11,21 +11,19 @@ See Github issue #5505 ( github.com/composer/composer/issues/5505 ).
                 {
                     "name": "a",
                     "version": "dev-master",
-                    "require-dev": { "b": "^3.0 || ^4.0@dev" },
-                    "conflict": { "b": "<3.0 || >=5.0" },
-                    "extra": { "branch-alias": { "dev-master": "4.x-dev" } }
+                    "conflict": { "b": "<1.0 || >=3.0" },
+                    "extra": { "branch-alias": { "dev-master": "2.x-dev" } }
                 }, {
                     "name": "b",
                     "version": "dev-master",
-                    "require": { "a": "^3.0 || ^4.0@dev" },
-                    "extra": { "branch-alias": { "dev-master": "4.x-dev" } }
+                    "extra": { "branch-alias": { "dev-master": "2.x-dev" } }
                 }
             ]
         }
     ],
     "require": {
-        "a": "^4.0@dev",
-        "b": "^4.0@dev"
+        "a": "^2.0@dev",
+        "b": "^2.0@dev"
     }
 }
 
@@ -33,8 +31,8 @@ See Github issue #5505 ( github.com/composer/composer/issues/5505 ).
 install
 
 --EXPECT--
-Installing a (4.x-dev)
-Installing b (4.x-dev)
+Installing a (2.x-dev)
+Installing b (2.x-dev)
 
 --EXPECT-EXIT-CODE--
 0
