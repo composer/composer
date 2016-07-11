@@ -1,0 +1,40 @@
+--TEST--
+
+See Github issue #5505 ( github.com/composer/composer/issues/5505 ).
+
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a",
+                    "version": "dev-master",
+                    "require-dev": { "b": "^3.0 || ^4.0@dev" },
+                    "conflict": { "b": "<3.0 || >=5.0" },
+                    "extra": { "branch-alias": { "dev-master": "4.x-dev" } }
+                }, {
+                    "name": "b",
+                    "version": "dev-master",
+                    "require": { "a": "^3.0 || ^4.0@dev" },
+                    "extra": { "branch-alias": { "dev-master": "4.x-dev" } }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a": "^4.0@dev",
+        "b": "^4.0@dev"
+    }
+}
+
+--RUN--
+install
+
+--EXPECT--
+Installing a (4.x-dev)
+Installing b (4.x-dev)
+
+--EXPECT-EXIT-CODE--
+0
