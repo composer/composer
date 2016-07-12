@@ -58,6 +58,7 @@ class Application extends BaseApplication
 ';
 
     private $hasPluginCommands = false;
+    private $disablePluginsByDefault = false;
 
     public function __construct()
     {
@@ -108,6 +109,8 @@ class Application extends BaseApplication
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
+        $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
+
         $io = $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
         ErrorHandler::register($io);
 
@@ -127,7 +130,7 @@ class Application extends BaseApplication
             }
         }
 
-        if (!$input->hasParameterOption('--no-plugins') && !$this->hasPluginCommands && 'global' !== $commandName) {
+        if (!$this->disablePluginsByDefault && !$this->hasPluginCommands && 'global' !== $commandName) {
             try {
                 foreach ($this->getPluginCommands() as $command) {
                     if ($this->has($command->getName())) {
@@ -300,12 +303,16 @@ class Application extends BaseApplication
 
     /**
      * @param  bool                    $required
-     * @param  bool                    $disablePlugins
+     * @param  bool|null               $disablePlugins
      * @throws JsonValidationException
      * @return \Composer\Composer
      */
-    public function getComposer($required = true, $disablePlugins = false)
+    public function getComposer($required = true, $disablePlugins = null)
     {
+        if (null === $disablePlugins) {
+            $disablePlugins = $this->disablePluginsByDefault;
+        }
+
         if (null === $this->composer) {
             try {
                 $this->composer = Factory::create($this->io, null, $disablePlugins);
