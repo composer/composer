@@ -526,9 +526,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         if ('/' === $url[0]) {
             return preg_replace('{(https?://[^/]+).*}i', '$1' . $url, $this->url);
+        } elseif (strpos($url, "http://") === 0 || strpos($url, "https://") === 0) {
+            return $url;
         }
 
-        return $url;
+        return $this->url . "/" . $url;
     }
 
     protected function loadDataFromServer()
@@ -605,6 +607,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         try {
             if (!isset($data['notification-url'])) {
                 $data['notification-url'] = $this->notifyUrl;
+            }
+
+            if (isset($data['dist']['url'])) {
+                $data['dist']['url'] = $this->canonicalizeUrl($data['dist']['url']);
             }
 
             $package = $this->loader->load($data, $class);
