@@ -39,10 +39,14 @@ final class StreamContextFactory
             'max_redirects' => 20,
         ));
 
-        // Handle system proxy
-        if (!empty($_SERVER['HTTP_PROXY']) || !empty($_SERVER['http_proxy'])) {
-            // Some systems seem to rely on a lowercased version instead...
+        // Handle HTTP_PROXY/http_proxy on CLI only for security reasons
+        if (PHP_SAPI === 'cli' && (!empty($_SERVER['HTTP_PROXY']) || !empty($_SERVER['http_proxy']))) {
             $proxy = parse_url(!empty($_SERVER['http_proxy']) ? $_SERVER['http_proxy'] : $_SERVER['HTTP_PROXY']);
+        }
+
+        // Prefer CGI_HTTP_PROXY if available
+        if (!empty($_SERVER['CGI_HTTP_PROXY'])) {
+            $proxy = parse_url($_SERVER['CGI_HTTP_PROXY']);
         }
 
         // Override with HTTPS proxy if present and URL is https
