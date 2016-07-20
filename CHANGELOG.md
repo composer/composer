@@ -1,8 +1,15 @@
+### [1.2.0] - 2016-07-19
+
+  * Security: Fixed [httpoxy](https://httpoxy.org/) vulnerability
+  * Fixed `home` command to avoid rogue output on unix
+  * Fixed output of git clones to clearly state when clones are from cache
+  * (from 1.2 RC) Fixed ext-network-ipv6 to be php-ipv6
+
 ### [1.2.0-RC] - 2016-07-04
 
   * Added caching of git repositories if you have git 2.3+ installed. Repositories will now be cached once and then cloned from local cache so subsequent installs should be faster
   * Added detection of HEAD changes to the `status` command. If you `git checkout X` in a vendor directory for example it will tell you that it is not at the version that was installed
-  * Added a virtual `ext-network-ipv6` extension to require PHP compiled with IPv6 support
+  * Added a virtual `php-ipv6` extension to require PHP compiled with IPv6 support
   * Added `--no-suggest` to `install` and `update` commands to skip output of suggestions at the end
   * Added `--type` to the `search` command to restrict to a given package type
   * Added fossil support as alternative to git/svn/.. for package downloads
@@ -421,6 +428,7 @@
 
   * Initial release
 
+[1.2.0]: https://github.com/composer/composer/compare/1.2.0-RC...1.2.0
 [1.2.0-RC]: https://github.com/composer/composer/compare/1.1.3...1.2.0-RC
 [1.1.3]: https://github.com/composer/composer/compare/1.1.2...1.1.3
 [1.1.2]: https://github.com/composer/composer/compare/1.1.1...1.1.2
