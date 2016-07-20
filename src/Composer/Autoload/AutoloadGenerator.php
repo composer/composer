@@ -100,7 +100,7 @@ class AutoloadGenerator
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
         $basePath = $filesystem->normalizePath(realpath(getcwd()));
-        $vendorPath = $filesystem->normalizePath(realpath($config->get('vendor-dir')));
+        $vendorPath = $filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
         $targetDir = $vendorPath.'/'.$targetDir;
