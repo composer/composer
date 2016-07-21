@@ -220,16 +220,19 @@ class ClassMapGeneratorTest extends TestCase
 
     public function testDump()
     {
-        $dir = self::getUniqueTmpDirectory();
+        $tempDir = self::getUniqueTmpDirectory();
 
-        $resultFile = 'result.txt';
-        $fileInDirectory = $dir . '/TestClass.php';
+        $resultFile = $tempDir . '/result.txt';
+        $fileInDirectory = $tempDir . '/TestClass.php';
 
         file_put_contents($fileInDirectory, "<?php class TestClass {} ?>");
 
-        ClassMapGenerator::dump(array($dir), $resultFile);
+        ClassMapGenerator::dump(array($tempDir), $resultFile);
 
         $this->assertEquals("<?php return array (\n  'TestClass' => '$fileInDirectory',\n);", file_get_contents($resultFile));
+
+        $fs = new Filesystem();
+        $fs->removeDirectory($tempDir);
     }
 
     protected function assertEqualsNormalized($expected, $actual, $message = null)
