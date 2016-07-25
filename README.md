@@ -50,7 +50,7 @@ For support, Stack Overflow also offers a good collection of
 [Composer related questions](https://stackoverflow.com/questions/tagged/composer-php).
 
 Please note that this project is released with a
-[Contributor Code of Conduct](http://contributor-covenant.org/version/1/2/0/).
+[Contributor Code of Conduct](http://contributor-covenant.org/version/1/4/).
 By participating in this project and its community you agree to abide by those terms.
 
 Requirements
