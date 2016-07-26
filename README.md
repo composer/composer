@@ -1,7 +1,7 @@
 Composer - Dependency Management for PHP
 ========================================
 
-Composer helps you declare, manage and install dependencies of PHP projects, ensuring you have the right stack everywhere.
+Composer helps you declare, manage and install dependencies of PHP projects.
 
 See [https://getcomposer.org/](https://getcomposer.org/) for more information and documentation.
 
@@ -12,33 +12,12 @@ See [https://getcomposer.org/](https://getcomposer.org/) for more information an
 Installation / Usage
 --------------------
 
-1. Download and install Composer by following the [official instructions](https://getcomposer.org/download/).
-2. Create a composer.json defining your dependencies. Note that this example is
-a short version for applications that are not meant to be published as packages
-themselves. To create libraries/packages please read the
-[documentation](https://getcomposer.org/doc/02-libraries.md).
+Download and install Composer by following the [official instructions](https://getcomposer.org/download/).
 
-    ``` json
-    {
-        "require": {
-            "monolog/monolog": ">=1.0.0"
-        }
-    }
-    ```
+Packages
+--------
 
-3. Run Composer: `php composer.phar install`
-4. Browse for more packages on [Packagist](https://packagist.org).
-
-Global installation of Composer (manual)
-----------------------------------------
-
-Follow instructions [in the documentation](https://getcomposer.org/doc/00-intro.md#globally)
-
-Updating Composer
------------------
-
-Running `php composer.phar self-update` or equivalent will update a phar
-install to the latest version.
+Find packages on [Packagist](https://packagist.org).
 
 Community
 ---------
@@ -50,7 +29,7 @@ For support, Stack Overflow also offers a good collection of
 [Composer related questions](https://stackoverflow.com/questions/tagged/composer-php).
 
 Please note that this project is released with a
-[Contributor Code of Conduct](http://contributor-covenant.org/version/1/2/0/).
+[Contributor Code of Conduct](http://contributor-covenant.org/version/1/4/).
 By participating in this project and its community you agree to abide by those terms.
 
 Requirements
