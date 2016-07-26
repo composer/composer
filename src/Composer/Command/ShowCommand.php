@@ -71,6 +71,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
                 new InputOption('latest', 'l', InputOption::VALUE_NONE, 'Show the latest version'),
                 new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show the latest version but only for packages that are outdated'),
+                new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages which have minor updates. Use in combination with --outdated'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
             ))
             ->setHelp(<<<EOT
@@ -314,6 +315,11 @@ EOT
                         if ($showLatest && isset($latestPackages[$package->getPrettyName()])) {
                             $latestPackackage = $latestPackages[$package->getPrettyName()];
                         }
+
+                        if ($input->getOption('outdated') && $input->getOption('minor-only') && $latestPackackage && (!$this->isImmediateSemverCompliantUpgradeNeeded($package, $latestPackackage) || $latestPackackage->isAbandoned())) {
+                            continue;
+                        }
+
                         if ($input->getOption('outdated') && $latestPackackage && $latestPackackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && !$latestPackackage->isAbandoned()) {
                             continue;
                         }
@@ -390,17 +396,23 @@ EOT
             return 'info';
         }
 
-        $constraint = $package->getVersion();
-        if (0 !== strpos($constraint, 'dev-')) {
-            $constraint = '^'.$constraint;
-        }
-        if ($latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), $constraint)) {
+        if ($this->isImmediateSemverCompliantUpgradeNeeded($package, $latestPackage)) {
             // print red as it needs an immediate semver-compliant upgrade
             return 'highlight';
         }
 
         // print yellow as it needs an upgrade but has potential BC breaks so is not urgent
         return 'comment';
+    }
+
+    protected function isImmediateSemverCompliantUpgradeNeeded(PackageInterface $package, PackageInterface $latestPackage)
+    {
+        $constraint = $package->getVersion();
+        if (0 !== strpos($constraint, 'dev-')) {
+            $constraint = '^'.$constraint;
+        }
+
+        return $latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), $constraint);
     }
 
     /**
