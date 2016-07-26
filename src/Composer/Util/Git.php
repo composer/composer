@@ -234,7 +234,12 @@ class Git
             return false;
         }
 
-        $authFailures = array('fatal: Authentication failed', 'remote error: Invalid username or password.');
+        $authFailures = array(
+            'fatal: Authentication failed',
+            'remote error: Invalid username or password.',
+            'error: 401 Unauthorized'
+        );
+
         foreach ($authFailures as $authFailure) {
             if (strpos($this->process->getErrorOutput(), $authFailure) !== false) {
                 return true;
