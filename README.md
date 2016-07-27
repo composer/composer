@@ -40,8 +40,8 @@ PHP 5.3.2 or above (at least 5.3.4 recommended to avoid potential bugs)
 Authors
 -------
 
-Nils Adermann - <naderman@naderman.de> - <https://twitter.com/naderman> - <http://www.naderman.de><br />
-Jordi Boggiano - <j.boggiano@seld.be> - <https://twitter.com/seldaek> - <http://seld.be><br />
+- Nils Adermann  | [GitHub](https://github.com/naderman)  | [Twitter](https://twitter.com/naderman) | <naderman@naderman.de> | [naderman.de](http://naderman.de)
+- Jordi Boggiano | [GitHub](https://github.com/Seldaek) | [Twitter](https://twitter.com/seldaek) | <j.boggiano@seld.be> | [seld.be](http://seld.be)
 
 See also the list of [contributors](https://github.com/composer/composer/contributors) who participated in this project.
 
