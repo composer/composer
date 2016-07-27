@@ -48,7 +48,7 @@ See also the list of [contributors](https://github.com/composer/composer/contrib
 License
 -------
 
-Composer is licensed under the MIT License - see the LICENSE file for details
+Composer is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
 Acknowledgments
 ---------------
