@@ -46,6 +46,7 @@ class Config
         'sort-packages' => false,
         'optimize-autoloader' => false,
         'classmap-authoritative' => false,
+        'apcu-autoloader' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
         'bitbucket-expose-hostname' => true,

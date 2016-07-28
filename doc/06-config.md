@@ -210,6 +210,11 @@ by name in `composer.json` when adding a new package.
 Defaults to `false`. If `true`, the Composer autoloader will only load classes
 from the classmap. Implies `optimize-autoloader`.
 
+## apcu-autoloader
+
+Defaults to `false`. If `true`, the Composer autoloader will check for APCu and
+use it to cache found/not-found classes when the extension is enabled.
+
 ## github-domains
 
 Defaults to `["github.com"]`. A list of domains to use in github mode. This is
