@@ -102,6 +102,8 @@ mv composer.phar /usr/local/bin/composer
 > directory" then you must create the directory manually before proceeding:
 > `mkdir -p /usr/local/bin`.
 
+>**Note:** The `/usr` directory may also be hidden on some versions on OSX. Use the following commands to unhide the directory `sudo chflags nohidden /usr` and move the composer file to `/usr/local/bin/composer`. If you wish to hide the directory again, use this command `sudo chflags hidden /usr`.
+
 > **Note:** For information on changing your PATH, please read the
 > [Wikipedia article](https://en.wikipedia.org/wiki/PATH_(variable)) and/or use Google.
 
