@@ -175,7 +175,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $res = $this->callGetOptionsForUrl($io, array('example.org', array('ssl' => array('cafile' => '/some/path/file.crt'))), array(), 'http://www.example.org');
 
         $this->assertTrue(isset($res['ssl']['ciphers']));
-        $this->assertRegExp("|!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK|", $res['ssl']['ciphers']);
+        $this->assertRegExp("|!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA|", $res['ssl']['ciphers']);
         $this->assertTrue($res['ssl']['verify_peer']);
         $this->assertTrue($res['ssl']['SNI_enabled']);
         $this->assertEquals(7, $res['ssl']['verify_depth']);

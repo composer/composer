@@ -186,6 +186,7 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
 * **--update-with-dependencies:** Also update dependencies of the newly
   required packages.
@@ -195,6 +196,9 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
   can take a bit of time to run so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
+* **--prefer-stable:** Prefer stable versions of dependencies.
+* **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
+  versions of requirements, generally used with `--prefer-stable`.
 
 ## remove
 
@@ -216,6 +220,7 @@ uninstalled.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies:** Also update dependencies of the removed packages.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
@@ -762,6 +767,11 @@ Using `http_proxy` (lowercased) or even defining both might be preferable since
 some tools like git or curl will only use the lower-cased `http_proxy` version.
 Alternatively you can also define the git proxy using
 `git config --global http.proxy <proxy url>`.
+
+If you are using Composer in a non-CLI context (i.e. integration into a CMS or
+similar use case), and need to support proxies, please provide the `CGI_HTTP_PROXY`
+environment variable instead. See [httpoxy.org](https://httpoxy.org/) for further
+details.
 
 ### no_proxy
 

@@ -190,12 +190,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * {@inheritDoc}
      */
-    public function search($query, $mode = 0)
+    public function search($query, $mode = 0, $type = null)
     {
         $this->loadRootServerFile();
 
         if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
-            $url = str_replace('%query%', $query, $this->searchUrl);
+            $url = str_replace(array('%query%', '%type%'), array($query, $type), $this->searchUrl);
 
             $hostname = parse_url($url, PHP_URL_HOST) ?: $url;
             $json = $this->rfs->getContents($hostname, $url, false);
@@ -642,6 +642,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
                 $rfs = $preFileDownloadEvent->getRemoteFilesystem();
+
                 $json = $rfs->getContents($hostname, $filename, false);
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     // undo downgrade before trying again if http seems to be hijacked or modifying content somehow

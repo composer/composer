@@ -40,11 +40,11 @@ abstract class BaseCommand extends Command
 
     /**
      * @param  bool              $required
-     * @param  bool              $disablePlugins
+     * @param  bool|null         $disablePlugins
      * @throws \RuntimeException
      * @return Composer
      */
-    public function getComposer($required = true, $disablePlugins = false)
+    public function getComposer($required = true, $disablePlugins = null)
     {
         if (null === $this->composer) {
             $application = $this->getApplication();

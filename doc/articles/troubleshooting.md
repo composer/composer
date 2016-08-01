@@ -190,6 +190,18 @@ composer update
 php /usr/local/bin/composer update
 ```
 
+Or, you can add aliases for composer to run with an xdebug-disabled `php.ini` file.
+Running php without a `php.ini` file should also do the trick in most cases.
+
+Example:
+
+```sh
+# Without php.ini
+alias comp='php -n /path/to/composer.phar'
+# Or with an xdebug-disabled php.ini
+alias comp='php -c /path/to/xdebug-disabled-php.ini /path/to/composer.phar'
+```
+
 As a workaround in bash (and other shells) you can create a function which is named `composer`,
 which disables xdebug before it executes composer, and then enables it afterwards.
 
@@ -348,8 +360,8 @@ for everyone.
 ## Composer hangs with SSH ControlMaster
 
 When you try to install packages from a Git repository and you use the `ControlMaster`
-setting for you SSH connection  Composer might just hang endlessly and you see a `sh`
-process in the `defunct` state in your process list
+setting for your SSH connection, Composer might just hang endlessly and you see a `sh`
+process in the `defunct` state in your process list.
 
 The reason for this is a SSH Bug: https://bugzilla.mindrot.org/show_bug.cgi?id=1988
 
@@ -365,6 +377,6 @@ See also https://github.com/composer/composer/issues/4180 for more information.
 ## Zip archives are not unpacked correctly.
 
 Composer can unpack zipballs using either a system-provided `unzip` utility or PHP's
-native `ZipArchiver` class. The `ZipArchiver` class is preferred on Windows. On other
+native `ZipArchive` class. The `ZipArchive` class is preferred on Windows. On other
 OSes where ZIP files can contain permissions and symlinks, the `unzip` utility is
 preferred. You're advised to install it if you need these features.

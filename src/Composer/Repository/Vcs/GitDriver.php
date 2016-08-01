@@ -58,27 +58,8 @@ class GitDriver extends VcsDriver
             }
 
             $gitUtil = new GitUtil($this->io, $this->config, $this->process, $fs);
-
-            // update the repo if it is a valid git repository
-            if (is_dir($this->repoDir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $this->repoDir) && trim($output) === '.') {
-                try {
-                    $commandCallable = function ($url) {
-                        return sprintf('git remote set-url origin %s && git remote update --prune origin', ProcessExecutor::escape($url));
-                    };
-                    $gitUtil->runCommand($commandCallable, $this->url, $this->repoDir);
-                } catch (\Exception $e) {
-                    $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$e->getMessage().')</error>');
-                }
-            } else {
-                // clean up directory and do a fresh clone into it
-                $fs->removeDirectory($this->repoDir);
-
-                $repoDir = $this->repoDir;
-                $commandCallable = function ($url) use ($repoDir) {
-                    return sprintf('git clone --mirror %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($repoDir));
-                };
-
-                $gitUtil->runCommand($commandCallable, $this->url, $this->repoDir, true);
+            if (!$gitUtil->syncMirror($this->url, $this->repoDir)) {
+                $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated</error>');
             }
 
             $cacheUrl = $this->url;

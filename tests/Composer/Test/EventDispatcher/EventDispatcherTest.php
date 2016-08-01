@@ -161,9 +161,13 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnCallback(function (Event $event) {
                 if ($event->getName() === 'root') {
                     return array('@group');
-                } elseif ($event->getName() === 'group') {
+                }
+
+                if ($event->getName() === 'group') {
                     return array('echo -n foo', '@subgroup', 'echo -n bar');
-                } elseif ($event->getName() === 'subgroup') {
+                }
+
+                if ($event->getName() === 'subgroup') {
                     return array('echo -n baz');
                 }
 
@@ -201,7 +205,9 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnCallback(function (Event $event) {
                 if ($event->getName() === 'root') {
                     return array('@recurse');
-                } elseif ($event->getName() === 'recurse') {
+                }
+
+                if ($event->getName() === 'recurse') {
                     return array('@root');
                 }
 
@@ -289,7 +295,7 @@ class EventDispatcherTest extends TestCase
 
         $io->expects($this->at(2))
             ->method('writeError')
-            ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with an error</error>'));
+            ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with error code 1</error>'));
 
         $this->setExpectedException('RuntimeException');
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);

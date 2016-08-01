@@ -286,7 +286,9 @@ class Factory
         $config->merge($localConfig);
         if (isset($composerFile)) {
             $io->writeError('Loading config file ' . $composerFile, true, IOInterface::DEBUG);
-            $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json');
+            $config->setConfigSource(new JsonConfigSource(new JsonFile(realpath($composerFile), null, $io)));
+
+            $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json', null, $io);
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 $config->merge(array('config' => $localAuthFile->read()));
@@ -295,7 +297,6 @@ class Factory
         }
 
         $vendorDir = $config->get('vendor-dir');
-        $binDir = $config->get('bin-dir');
 
         // initialize composer
         $composer = new Composer();
@@ -458,6 +459,7 @@ class Factory
 
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config, $executor, $fs));
+        $dm->setDownloader('fossil', new Downloader\FossilDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config));
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));

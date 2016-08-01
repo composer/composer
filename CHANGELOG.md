@@ -1,3 +1,28 @@
+### [1.2.0] - 2016-07-19
+
+  * Security: Fixed [httpoxy](https://httpoxy.org/) vulnerability
+  * Fixed `home` command to avoid rogue output on unix
+  * Fixed output of git clones to clearly state when clones are from cache
+  * (from 1.2 RC) Fixed ext-network-ipv6 to be php-ipv6
+
+### [1.2.0-RC] - 2016-07-04
+
+  * Added caching of git repositories if you have git 2.3+ installed. Repositories will now be cached once and then cloned from local cache so subsequent installs should be faster
+  * Added detection of HEAD changes to the `status` command. If you `git checkout X` in a vendor directory for example it will tell you that it is not at the version that was installed
+  * Added a virtual `php-ipv6` extension to require PHP compiled with IPv6 support
+  * Added `--no-suggest` to `install` and `update` commands to skip output of suggestions at the end
+  * Added `--type` to the `search` command to restrict to a given package type
+  * Added fossil support as alternative to git/svn/.. for package downloads
+  * Improved BitBucket OAuth support
+  * Added support for blocking cache operations using COMPOSER_CACHE_DIR=/dev/null (or NUL on windows)
+  * Added support for using declare(strict_types=1) in plugins
+  * Added `--prefer-stable` and `--prefer-lowest` to the `require` command
+  * Added `--no-scripts` to the `require` and `remove` commands
+  * Added `_comment` top level key to the schema to endorse using it as a place to store comments (it can be a string or array of strings)
+  * Added support for justinrainbow/json-schema 2.0
+  * Fixed binaries not being re-installed if deleted by users or the bin-dir changes. `update` and `install` will now re-install them
+  * Many minor UX and docs improvements
+
 ### [1.1.3] - 2016-06-26
 
   * Fixed bitbucket oauth instructions
@@ -22,7 +47,7 @@
 ### [1.1.0] - 2016-05-10
 
   * Added fallback to SSH for https bitbucket URLs
-  * Added BaseCommand::isProxyCommand that can be overriden to mark a command as being a mere proxy, which helps avoid duplicate warnings etc on composer startup
+  * Added BaseCommand::isProxyCommand that can be overridden to mark a command as being a mere proxy, which helps avoid duplicate warnings etc on composer startup
   * Fixed archiving generating long paths in zip files on Windows
 
 ### [1.1.0-RC] - 2016-04-29
@@ -403,6 +428,8 @@
 
   * Initial release
 
+[1.2.0]: https://github.com/composer/composer/compare/1.2.0-RC...1.2.0
+[1.2.0-RC]: https://github.com/composer/composer/compare/1.1.3...1.2.0-RC
 [1.1.3]: https://github.com/composer/composer/compare/1.1.2...1.1.3
 [1.1.2]: https://github.com/composer/composer/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/composer/composer/compare/1.1.0...1.1.1

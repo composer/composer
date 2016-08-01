@@ -12,11 +12,11 @@
 
 namespace Composer\Repository;
 
-use Composer\Config;
-use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackage;
+use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginInterface;
+use Composer\Util\Silencer;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -85,6 +85,14 @@ class PlatformRepository extends ArrayRepository
             $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
             $php64->setDescription('The PHP interpreter, 64bit');
             $this->addPackage($php64);
+        }
+
+        // The AF_INET6 constant is only defined if ext-sockets is available but
+        // IPv6 support might still be available.
+        if (defined('AF_INET6') || Silencer::call('inet_pton', '::') !== false) {
+            $phpIpv6 = new CompletePackage('php-ipv6', $version, $prettyVersion);
+            $phpIpv6->setDescription('The PHP interpreter with IPv6 support');
+            $this->addPackage($phpIpv6);
         }
 
         $loadedExtensions = get_loaded_extensions();

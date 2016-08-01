@@ -27,6 +27,7 @@ use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
 use Composer\Util\ErrorHandler;
+use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Exception\NoSslException;
 
 /**
@@ -57,6 +58,7 @@ class Application extends BaseApplication
 ';
 
     private $hasPluginCommands = false;
+    private $disablePluginsByDefault = false;
 
     public function __construct()
     {
@@ -107,6 +109,8 @@ class Application extends BaseApplication
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
+        $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
+
         $io = $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
         ErrorHandler::register($io);
 
@@ -126,7 +130,7 @@ class Application extends BaseApplication
             }
         }
 
-        if (!$input->hasParameterOption('--no-plugins') && !$this->hasPluginCommands && 'global' !== $commandName) {
+        if (!$this->disablePluginsByDefault && !$this->hasPluginCommands && 'global' !== $commandName) {
             try {
                 foreach ($this->getPluginCommands() as $command) {
                     if ($this->has($command->getName())) {
@@ -181,7 +185,7 @@ class Application extends BaseApplication
             if (!Platform::isWindows() && function_exists('exec') && !getenv('COMPOSER_ALLOW_SUPERUSER')) {
                 if (function_exists('posix_getuid') && posix_getuid() === 0) {
                     if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
-                        $io->writeError('<warning>Running composer as root/super user is highly discouraged as packages, plugins and scripts cannot always be trusted</warning>');
+                        $io->writeError('<warning>Do not run Composer as root/super user! See https://getcomposer.org/root for details</warning>');
                     }
                     if ($uid = (int) getenv('SUDO_UID')) {
                         // Silently clobber any sudo credentials on the invoking user to avoid privilege escalations later on
@@ -237,6 +241,8 @@ class Application extends BaseApplication
             restore_error_handler();
 
             return $result;
+        } catch (ScriptExecutionException $e) {
+            return $e->getCode();
         } catch (\Exception $e) {
             $this->hintCommonErrors($e);
             restore_error_handler();
@@ -297,12 +303,16 @@ class Application extends BaseApplication
 
     /**
      * @param  bool                    $required
-     * @param  bool                    $disablePlugins
+     * @param  bool|null               $disablePlugins
      * @throws JsonValidationException
      * @return \Composer\Composer
      */
-    public function getComposer($required = true, $disablePlugins = false)
+    public function getComposer($required = true, $disablePlugins = null)
     {
+        if (null === $disablePlugins) {
+            $disablePlugins = $this->disablePluginsByDefault;
+        }
+
         if (null === $this->composer) {
             try {
                 $this->composer = Factory::create($this->io, null, $disablePlugins);

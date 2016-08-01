@@ -245,6 +245,11 @@ class RemoteFilesystem
             unset($options['gitlab-token']);
         }
 
+        if (isset($options['bitbucket-token'])) {
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['bitbucket-token'];
+            unset($options['bitbucket-token']);
+        }
+
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
@@ -329,8 +334,21 @@ class RemoteFilesystem
         }
 
         $statusCode = null;
+        $contentType = null;
         if (!empty($http_response_header[0])) {
             $statusCode = $this->findStatusCode($http_response_header);
+            $contentType = $this->findHeaderValue($http_response_header, 'content-type');
+        }
+
+        // check for bitbucket login page asking to authenticate
+        if ($originUrl === 'bitbucket.org'
+            && substr($fileUrl, -4) === '.zip'
+            && preg_match('{^text/html\b}i', $contentType)
+        ) {
+            $result = false;
+            if ($this->retryAuthFailure) {
+                $this->promptAuthAndRetry(401);
+            }
         }
 
         // handle 3xx redirects for php<5.6, 304 Not Modified is excluded
@@ -569,6 +587,31 @@ class RemoteFilesystem
             ) {
                 throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
+        } elseif ($this->config && $this->originUrl === 'bitbucket.org') {
+            $askForOAuthToken = true;
+            if ($this->io->hasAuthentication($this->originUrl)) {
+                $auth = $this->io->getAuthentication($this->originUrl);
+                if ($auth['username'] !== 'x-token-auth') {
+                    $bitbucketUtil = new Bitbucket($this->io, $this->config);
+                    $token = $bitbucketUtil->requestToken($this->originUrl, $auth['username'], $auth['password']);
+                    if (! empty($token)) {
+                        $this->io->setAuthentication($this->originUrl, 'x-token-auth', $token['access_token']);
+                        $askForOAuthToken = false;
+                    }
+                } else {
+                    throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
+                }
+            }
+
+            if ($askForOAuthToken) {
+                $message = "\n".'Could not fetch ' . $this->fileUrl . ', please create a bitbucket OAuth token to ' . ($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
+                $bitBucketUtil = new Bitbucket($this->io, $this->config);
+                if (! $bitBucketUtil->authorizeOAuth($this->originUrl)
+                    && (! $this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($this->originUrl, $message))
+                ) {
+                    throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
+                }
+            }
         } else {
             // 404s are only handled for github
             if ($httpStatus === 404) {
@@ -671,6 +714,10 @@ class RemoteFilesystem
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
                 }
+            } elseif ('bitbucket.org' === $originUrl
+                && $this->fileUrl !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL && 'x-token-auth' === $auth['username']
+            ) {
+                $options['bitbucket-token'] = $auth['password'];
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
@@ -761,19 +808,24 @@ class RemoteFilesystem
             'DHE-RSA-AES256-SHA',
             'AES128-GCM-SHA256',
             'AES256-GCM-SHA384',
-            'ECDHE-RSA-RC4-SHA',
-            'ECDHE-ECDSA-RC4-SHA',
-            'AES128',
-            'AES256',
-            'RC4-SHA',
-            'HIGH',
+            'AES128-SHA256',
+            'AES256-SHA256',
+            'AES128-SHA',
+            'AES256-SHA',
+            'AES',
+            'CAMELLIA',
+            'DES-CBC3-SHA',
             '!aNULL',
             '!eNULL',
             '!EXPORT',
             '!DES',
-            '!3DES',
+            '!RC4',
             '!MD5',
             '!PSK',
+            '!aECDH',
+            '!EDH-DSS-DES-CBC3-SHA',
+            '!EDH-RSA-DES-CBC3-SHA',
+            '!KRB5-DES-CBC3-SHA',
         ));
 
         /**

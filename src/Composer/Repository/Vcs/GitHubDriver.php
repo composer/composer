@@ -30,6 +30,7 @@ class GitHubDriver extends VcsDriver
     protected $tags;
     protected $branches;
     protected $rootIdentifier;
+    protected $repoData;
     protected $hasIssues;
     protected $infoCache = array();
     protected $isPrivate = false;
@@ -277,6 +278,18 @@ class GitHubDriver extends VcsDriver
     }
 
     /**
+     * Gives back the loaded <github-api>/repos/<owner>/<repo> result
+     *
+     * @return array|null
+     */
+    public function getRepoData()
+    {
+        $this->fetchRootIdentifier();
+
+        return $this->repoData;
+    }
+
+    /**
      * Generate an SSH URL
      *
      * @return string
@@ -312,7 +325,20 @@ class GitHubDriver extends VcsDriver
                         return $this->attemptCloneFallback();
                     }
 
-                    $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
+                    $scopesIssued = array();
+                    $scopesNeeded = array();
+                    if ($headers = $e->getHeaders()) {
+                        if ($scopes = $this->remoteFilesystem->findHeaderValue($headers, 'X-OAuth-Scopes')) {
+                            $scopesIssued = explode(' ', $scopes);
+                        }
+                        if ($scopes = $this->remoteFilesystem->findHeaderValue($headers, 'X-Accepted-OAuth-Scopes')) {
+                            $scopesNeeded = explode(' ', $scopes);
+                        }
+                    }
+                    $scopesFailed = array_diff($scopesNeeded, $scopesIssued);
+                    if (!$headers || count($scopesFailed)) {
+                        $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
+                    }
 
                     return parent::getContents($url);
 
@@ -400,25 +426,29 @@ class GitHubDriver extends VcsDriver
      */
     protected function fetchRootIdentifier()
     {
-        $repoDataUrl = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository;
-
-        $repoData = JsonFile::parseJson($this->getContents($repoDataUrl, true), $repoDataUrl);
-        if (null === $repoData && null !== $this->gitDriver) {
+        if ($this->repoData) {
             return;
         }
 
-        $this->owner = $repoData['owner']['login'];
-        $this->repository = $repoData['name'];
+        $repoDataUrl = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository;
 
-        $this->isPrivate = !empty($repoData['private']);
-        if (isset($repoData['default_branch'])) {
-            $this->rootIdentifier = $repoData['default_branch'];
-        } elseif (isset($repoData['master_branch'])) {
-            $this->rootIdentifier = $repoData['master_branch'];
+        $this->repoData = JsonFile::parseJson($this->getContents($repoDataUrl, true), $repoDataUrl);
+        if (null === $this->repoData && null !== $this->gitDriver) {
+            return;
+        }
+
+        $this->owner = $this->repoData['owner']['login'];
+        $this->repository = $this->repoData['name'];
+
+        $this->isPrivate = !empty($this->repoData['private']);
+        if (isset($this->repoData['default_branch'])) {
+            $this->rootIdentifier = $this->repoData['default_branch'];
+        } elseif (isset($this->repoData['master_branch'])) {
+            $this->rootIdentifier = $this->repoData['master_branch'];
         } else {
             $this->rootIdentifier = 'master';
         }
-        $this->hasIssues = !empty($repoData['has_issues']);
+        $this->hasIssues = !empty($this->repoData['has_issues']);
     }
 
     protected function attemptCloneFallback()

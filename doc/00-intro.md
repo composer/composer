@@ -37,7 +37,7 @@ flags are also required, but when using the installer you will be warned about
 any incompatibilities.
 
 To install packages from sources instead of simple zip archives, you will need
-git, svn or hg depending on how the package is version-controlled.
+git, svn, fossil or hg depending on how the package is version-controlled.
 
 Composer is multi-platform and we strive to make it run equally well on Windows,
 Linux and OSX.
@@ -101,6 +101,8 @@ mv composer.phar /usr/local/bin/composer
 > default. If you receive the error "/usr/local/bin/composer: No such file or
 > directory" then you must create the directory manually before proceeding:
 > `mkdir -p /usr/local/bin`.
+
+>**Note:** The `/usr` directory may also be hidden on some versions on OSX. Use the following commands to unhide the directory `sudo chflags nohidden /usr` and move the composer file to `/usr/local/bin/composer`. If you wish to hide the directory again, use this command `sudo chflags hidden /usr`.
 
 > **Note:** For information on changing your PATH, please read the
 > [Wikipedia article](https://en.wikipedia.org/wiki/PATH_(variable)) and/or use Google.

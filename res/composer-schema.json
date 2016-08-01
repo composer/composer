@@ -274,7 +274,7 @@
             "properties": {
                 "psr-0": {
                     "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
+                    "description": "This is a hash of namespaces (keys) and the directories they can be found in (values, can be arrays of paths) by the autoloader.",
                     "additionalProperties": true
                 },
                 "psr-4": {
@@ -483,6 +483,10 @@
         "abandoned": {
             "type": ["boolean", "string"],
             "description": "Indicates whether this package has been abandoned, it can be boolean or a package name/URL pointing to a recommended alternative. Defaults to false."
+        },
+        "_comment": {
+            "type": ["array", "string"],
+            "description": "A key to store comments in"
         }
     }
 }

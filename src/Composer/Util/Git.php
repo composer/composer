@@ -20,6 +20,8 @@ use Composer\IO\IOInterface;
  */
 class Git
 {
+    private static $version;
+
     /** @var IOInterface */
     protected $io;
     /** @var Config */
@@ -129,7 +131,9 @@ class Git
                     //We already have an access_token from a previous request.
                     if ($auth['username'] !== 'x-token-auth') {
                         $token = $bitbucketUtil->requestToken($match[1], $auth['username'], $auth['password']);
-                        $this->io->setAuthentication($match[1], 'x-token-auth', $token['access_token']);
+                        if (! empty($token)) {
+                            $this->io->setAuthentication($match[1], 'x-token-auth', $token['access_token']);
+                        }
                     }
                 }
 
@@ -196,13 +200,46 @@ class Git
         }
     }
 
+    public function syncMirror($url, $dir)
+    {
+        // update the repo if it is a valid git repository
+        if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
+            try {
+                $commandCallable = function ($url) {
+                    return sprintf('git remote set-url origin %s && git remote update --prune origin', ProcessExecutor::escape($url));
+                };
+                $this->runCommand($commandCallable, $url, $dir);
+            } catch (\Exception $e) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // clean up directory and do a fresh clone into it
+        $this->filesystem->removeDirectory($dir);
+
+        $commandCallable = function ($url) use ($dir) {
+            return sprintf('git clone --mirror %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
+        };
+
+        $this->runCommand($commandCallable, $url, $dir, true);
+
+        return true;
+    }
+
     private function isAuthenticationFailure($url, &$match)
     {
         if (!preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match)) {
             return false;
         }
 
-        $authFailures = array('fatal: Authentication failed', 'remote error: Invalid username or password.');
+        $authFailures = array(
+            'fatal: Authentication failed',
+            'remote error: Invalid username or password.',
+            'error: 401 Unauthorized'
+        );
+
         foreach ($authFailures as $authFailure) {
             if (strpos($this->process->getErrorOutput(), $authFailure) !== false) {
                 return true;
@@ -270,5 +307,23 @@ class Git
         }
 
         throw new \RuntimeException(self::sanitizeUrl($message));
+    }
+
+    /**
+     * Retrieves the current git version.
+     *
+     * @return string|null The git version number.
+     */
+    public function getVersion()
+    {
+        if (isset(self::$version)) {
+            return self::$version;
+        }
+        if (0 !== $this->process->execute('git --version', $output)) {
+            return;
+        }
+        if (preg_match('/^git version (\d+(?:\.\d+)+)/m', $output, $matches)) {
+            return self::$version = $matches[1];
+        }
     }
 }

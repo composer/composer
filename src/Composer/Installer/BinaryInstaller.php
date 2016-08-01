@@ -47,7 +47,7 @@ class BinaryInstaller
         $this->filesystem = $filesystem ?: new Filesystem();
     }
 
-    public function installBinaries(PackageInterface $package, $installPath)
+    public function installBinaries(PackageInterface $package, $installPath, $warnOnOverwrite = true)
     {
         $binaries = $this->getBinaries($package);
         if (!$binaries) {
@@ -75,7 +75,9 @@ class BinaryInstaller
                     // is a fresh install of the vendor.
                     Silencer::call('chmod', $link, 0777 & ~umask());
                 }
-                $this->io->writeError('    Skipped installation of bin '.$bin.' for package '.$package->getName().': name conflicts with an existing file');
+                if ($warnOnOverwrite) {
+                    $this->io->writeError('    Skipped installation of bin '.$bin.' for package '.$package->getName().': name conflicts with an existing file');
+                }
                 continue;
             }
 
