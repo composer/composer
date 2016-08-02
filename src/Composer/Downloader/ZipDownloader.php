@@ -70,7 +70,7 @@ class ZipDownloader extends ArchiveDownloader
         $processError = null;
 
         if (self::$hasSystemUnzip && !(class_exists('ZipArchive') && Platform::isWindows())) {
-            $command = 'unzip '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path);
+            $command = 'unzip -qq '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path);
             if (!Platform::isWindows()) {
                 $command .= ' && chmod -R u+w ' . ProcessExecutor::escape($path);
             }
