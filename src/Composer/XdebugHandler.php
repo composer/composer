@@ -112,7 +112,9 @@ class XdebugHandler
     /**
      * Writes the temporary ini file, or clears its name if no ini
      *
-     * If there are no ini files, the tmp ini name is
+     * If there are no ini files, the tmp ini name is cleared so that
+     * an empty value is passed with the -c option.
+     *
      * @param array $iniFiles The php.ini locations
      * @param bool $replace Whether we need to modify the files
      *
@@ -205,9 +207,55 @@ class XdebugHandler
         }
 
         $phpArgs = array(PHP_BINARY, '-c', $this->tmpIni);
-        $params = array_merge($phpArgs, $this->argv);
+        $params = array_merge($phpArgs, $this->getScriptArgs($this->argv));
 
         return implode(' ', array_map(array($this, 'escape'), $params));
+    }
+
+    /**
+     * Returns the restart script arguments, adding --ansi if required
+     *
+     * @param array $args The argv array
+     *
+     * @return array
+     */
+    private function getScriptArgs(array $args)
+    {
+        if (in_array('--no-ansi', $args) || in_array('--ansi', $args)) {
+            return $args;
+        }
+
+        if ($this->isColorTerminal()) {
+            $offset = count($args) > 1 ? 2: 1;
+            array_splice($args, $offset, 0, '--ansi');
+        }
+
+        return $args;
+    }
+
+    /**
+     * Returns whether we are a terminal and have colour capabilities
+     *
+     * @return bool
+     */
+    private function isColorTerminal()
+    {
+        if (function_exists('posix_isatty')) {
+            $result = posix_isatty(STDOUT);
+        } else {
+            // See if STDOUT is a character device (S_IFCHR)
+            $stat = fstat(STDOUT);
+            $result = ($stat['mode'] & 0170000) === 0020000;
+        }
+
+        if ($result && defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $result = 0 >= version_compare('10.0.10586', PHP_WINDOWS_VERSION_MAJOR.'.'.PHP_WINDOWS_VERSION_MINOR.'.'.PHP_WINDOWS_VERSION_BUILD)
+            || false !== getenv('ANSICON')
+            || 'ON' === getenv('ConEmuANSI')
+            || 'xterm' === getenv('TERM');
+        }
+
+        return $result;
     }
 
     /**
