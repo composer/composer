@@ -29,7 +29,7 @@ class ArrayLoader implements LoaderInterface
     protected $versionParser;
     protected $loadOptions;
 
-    public function __construct(SemverVersionParser $parser = null, $loadOptions = false)
+    public function __construct(SemverVersionParser $parser = null, $loadOptions = true)
     {
         if (!$parser) {
             $parser = new VersionParser;
