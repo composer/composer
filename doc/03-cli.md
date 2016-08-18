@@ -188,6 +188,7 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-suggest:** Skips suggested packages in the output.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
 * **--update-with-dependencies:** Also update dependencies of the newly
