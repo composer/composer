@@ -220,6 +220,17 @@ class EventDispatcher
                 } else {
                     $this->io->writeError(sprintf('> %s', $exec));
                 }
+
+                $possibleLocalBinaries = $this->composer->getPackage()->getBinaries();
+                if ( $possibleLocalBinaries ) {
+                    foreach ( $possibleLocalBinaries as $localExec ) {
+                        if ( preg_match("/\b${callable}$/", $localExec)) {
+                            $exec = str_replace($callable, $localExec, $exec);
+                            break;
+                        }
+                    }
+                }
+
                 if (0 !== ($exitCode = $this->process->execute($exec))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()));
 
