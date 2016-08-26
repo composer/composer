@@ -71,6 +71,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
                 new InputOption('latest', 'l', InputOption::VALUE_NONE, 'Show the latest version'),
                 new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show the latest version but only for packages that are outdated'),
+                new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show the latest version but only for packages that have minor SemVer-compatible updates'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
             ))
             ->setHelp(<<<EOT
@@ -259,6 +260,7 @@ EOT
 
         $showAllTypes = $input->getOption('all');
         $showLatest = $input->getOption('latest');
+        $showMinorOnly = $input->getOption('minor-only');
         $indent = $showAllTypes ? '  ' : '';
         $latestPackages = array();
         foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
@@ -276,7 +278,7 @@ EOT
                             $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
                             if ($showLatest) {
 
-                                $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion);
+                                $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly);
                                 if ($latestPackage === false) {
                                     continue;
                                 }
@@ -711,10 +713,11 @@ EOT
      * @param  PackageInterface $package
      * @param  Composer         $composer
      * @param  string           $phpVersion
+     * @param  bool             $minorOnly
      *
      * @return PackageInterface|null
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion)
+    private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false)
     {
         // find the latest version allowed in this pool
         $name = $package->getName();
@@ -733,6 +736,10 @@ EOT
         $targetVersion = null;
         if (0 === strpos($package->getVersion(), 'dev-')) {
             $targetVersion = $package->getVersion();
+        }
+
+        if ($targetVersion === null && $minorOnly) {
+            $targetVersion = '^' . $package->getVersion();
         }
 
         return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability);
