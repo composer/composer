@@ -24,7 +24,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->loader = new ArrayLoader(null, true);
+        $this->loader = new ArrayLoader(null);
     }
 
     public function testSelfVersion()
@@ -82,9 +82,9 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('1.2.3.4', $package->getVersion());
     }
 
-    public function testParseDump()
+    public function testParseDumpProvider()
     {
-        $config = array(
+        $validConfig = array(
             'name' => 'A/B',
             'version' => '1.2.3',
             'version_normalized' => '1.2.3.0',
@@ -126,9 +126,55 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
             'abandoned' => 'foo/bar',
         );
 
+        $validTestArguments = array($validConfig);
+        $argumentsToProvide = array($validTestArguments);
+
+        return $argumentsToProvide;
+    }
+
+    protected function fixConfigWhenLoadConfigIsFalse($config)
+    {
+        $expectedConfig = $config;
+        unset($expectedConfig['transport-options']);
+        return $expectedConfig;
+    }
+
+    /**
+     * The default parser should default to loading the config as this
+     * allows require-dev libraries to have transport options included.
+     *
+     * @dataProvider testParseDumpProvider
+     */
+    public function testParseDumpDefaultLoadConfig($config)
+    {
         $package = $this->loader->load($config);
         $dumper = new ArrayDumper;
-        $this->assertEquals($config, $dumper->dump($package));
+        $expectedConfig = $config;
+        $this->assertEquals($expectedConfig, $dumper->dump($package));
+    }
+
+    /**
+     * @dataProvider testParseDumpProvider
+     */
+    public function testParseDumpTrueLoadConfig($config)
+    {
+        $loader = new ArrayLoader(null, true);
+        $package = $loader->load($config);
+        $dumper = new ArrayDumper;
+        $expectedConfig = $config;
+        $this->assertEquals($expectedConfig, $dumper->dump($package));
+    }
+
+    /**
+     * @dataProvider testParseDumpProvider
+     */
+    public function testParseDumpFalseLoadConfig($config)
+    {
+        $loader = new ArrayLoader(null, false);
+        $package = $loader->load($config);
+        $dumper = new ArrayDumper;
+        $expectedConfig = $this->fixConfigWhenLoadConfigIsFalse($config);
+        $this->assertEquals($expectedConfig, $dumper->dump($package));
     }
 
     public function testPackageWithBranchAlias()
