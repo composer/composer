@@ -183,6 +183,7 @@ class AllFunctionalTest extends TestCase
 
                 case 'EXPECT-EXIT-CODE':
                     $sectionData = (integer) $sectionData;
+                    break;
 
                 case 'EXPECT':
                 case 'EXPECT-REGEX':
