@@ -197,7 +197,7 @@ Example:
 
 ```sh
 # Without php.ini
-alias comp='php -n /path/to/composer.phar'
+alias comp='php -n -dextension=curl.so /path/to/composer.phar'
 # Or with an xdebug-disabled php.ini
 alias comp='php -c /path/to/xdebug-disabled-php.ini /path/to/composer.phar'
 ```
