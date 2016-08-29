@@ -333,6 +333,7 @@ php composer.phar show monolog/monolog 1.0.2
 * **--name-only (-N):** List package names only.
 * **--path (-P):** List package paths.
 * **--outdated (-o):** Implies --latest, but this lists *only* packages that have a newer version available.
+* **--minor-only (-m):** Use with --latest. Only shows packages that have minor SemVer-compatible updates.
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 
 ## outdated
@@ -352,6 +353,7 @@ The color coding is as such:
 
 * **--all (-a):** Show all packages, not just outdated (alias for `composer show -l`).
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
+* **--minor-only (-m):** Only shows packages that have minor SemVer-compatible updates.
 
 ## browse / home
 
