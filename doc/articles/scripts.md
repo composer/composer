@@ -232,7 +232,7 @@ resolve to whatever composer.phar is currently being used:
         "test": [
             "@composer install",
             "phpunit"
-        ],
+        ]
     }
 }
 ```
