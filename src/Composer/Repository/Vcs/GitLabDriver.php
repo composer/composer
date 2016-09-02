@@ -148,7 +148,7 @@ class GitLabDriver extends VcsDriver
      */
     public function getRepositoryUrl()
     {
-        return $this->project['ssh_url_to_repo'];
+        return $this->project['public'] ? $this->project['http_url_to_repo'] : $this->project['ssh_url_to_repo'];
     }
 
     /**
