@@ -1137,6 +1137,10 @@ class Installer
 
     private function updateInstallReferences(PackageInterface $package, $reference)
     {
+        if (!$reference) {
+            return;
+        }
+
         $package->setSourceReference($reference);
         $package->setDistReference($reference);
 
