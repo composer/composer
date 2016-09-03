@@ -19,19 +19,16 @@ class XdebugHandler
 {
     const ENV_ALLOW = 'COMPOSER_ALLOW_XDEBUG';
 
-    private $argv;
     private $loaded;
     private $tmpIni;
     private $scanDir;
 
     /**
-     * @param array $argv The global argv passed to script
+     * Constructor
      */
-    public function __construct(array $argv)
+    public function __construct()
     {
-        $this->argv = $argv;
         $this->loaded = extension_loaded('xdebug');
-
         $tmp = sys_get_temp_dir();
         $this->tmpIni = $tmp.DIRECTORY_SEPARATOR.'composer-php.ini';
         $this->scanDir = $tmp.DIRECTORY_SEPARATOR.'composer-php-empty';
@@ -207,7 +204,7 @@ class XdebugHandler
         }
 
         $phpArgs = array(PHP_BINARY, '-c', $this->tmpIni);
-        $params = array_merge($phpArgs, $this->getScriptArgs($this->argv));
+        $params = array_merge($phpArgs, $this->getScriptArgs($_SERVER['argv']));
 
         return implode(' ', array_map(array($this, 'escape'), $params));
     }

@@ -19,18 +19,11 @@ use Composer\Test\Mock\XdebugHandlerMock as XdebugHandler;
  */
 class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
 {
-    protected $argv;
-
-    public function setup()
-    {
-        $this->argv = $GLOBALS['argv'];
-    }
-
     public function testRestartWhenLoaded()
     {
         $loaded = true;
 
-        $xdebug = new XdebugHandler($this->argv, $loaded);
+        $xdebug = new XdebugHandler($loaded);
         $xdebug->check();
         $this->assertTrue($xdebug->restarted || !defined('PHP_BINARY'));
     }
@@ -39,7 +32,7 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $loaded = false;
 
-        $xdebug = new XdebugHandler($this->argv, $loaded);
+        $xdebug = new XdebugHandler($loaded);
         $xdebug->check();
         $this->assertFalse($xdebug->restarted);
     }
@@ -49,7 +42,7 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
         $loaded = true;
         putenv(XdebugHandler::ENV_ALLOW.'=1');
 
-        $xdebug = new XdebugHandler($this->argv, $loaded);
+        $xdebug = new XdebugHandler($loaded);
         $xdebug->check();
         $this->assertFalse($xdebug->restarted);
     }

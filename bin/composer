@@ -12,7 +12,7 @@ use Composer\Console\Application;
 
 error_reporting(-1);
 
-$xdebug = new XdebugHandler($argv);
+$xdebug = new XdebugHandler();
 $xdebug->check();
 unset($xdebug);
 

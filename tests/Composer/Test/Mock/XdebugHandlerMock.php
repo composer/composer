@@ -18,9 +18,9 @@ class XdebugHandlerMock extends XdebugHandler
     public $command;
     public $restarted;
 
-    public function __construct(array $argv, $loaded)
+    public function __construct($loaded)
     {
-        parent::__construct($argv);
+        parent::__construct();
 
         $class = new \ReflectionClass(get_parent_class($this));
         $prop = $class->getProperty('loaded');
