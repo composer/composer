@@ -175,7 +175,7 @@ class XdebugHandler
      */
     private function getIniData($iniFile, $replace)
     {
-        $data = str_repeat("\n", 3);
+        $data = str_repeat(PHP_EOL, 3);
         $data .= sprintf('; %s%s', $iniFile, PHP_EOL);
         $contents = file_get_contents($iniFile);
 
@@ -318,7 +318,7 @@ class XdebugHandler
 ; Make any changes there because this data will not be used again.
 EOD;
 
-        $header .= str_repeat("\n", 50);
+        $header .= str_repeat(PHP_EOL, 50);
         return $header;
     }
 }
