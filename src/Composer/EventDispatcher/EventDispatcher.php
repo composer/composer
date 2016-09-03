@@ -20,9 +20,8 @@ use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\CompositeRepository;
-use Composer\Script;
-use Composer\Script\CommandEvent;
-use Composer\Script\PackageEvent;
+use Composer\Script AS Script;
+use Composer\Installer\PackageEvent AS PackageEvent;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Process\PhpExecutableFinder;
 
@@ -287,13 +286,13 @@ class EventDispatcher
         // BC support
         if (!$event instanceof $expected && $expected === 'Composer\Script\CommandEvent') {
             trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
-            $event = new \Composer\Script\CommandEvent(
+            $event = new Script\Event(
                 $event->getName(), $event->getComposer(), $event->getIO(), $event->isDevMode(), $event->getArguments()
             );
         }
         if (!$event instanceof $expected && $expected === 'Composer\Script\PackageEvent') {
             trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
-            $event = new \Composer\Script\PackageEvent(
+            $event = new PackageEvent(
                 $event->getName(), $event->getComposer(), $event->getIO(), $event->isDevMode(),
                 $event->getPolicy(), $event->getPool(), $event->getInstalledRepo(), $event->getRequest(),
                 $event->getOperations(), $event->getOperation()
@@ -301,7 +300,7 @@ class EventDispatcher
         }
         if (!$event instanceof $expected && $expected === 'Composer\Script\Event') {
             trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
-            $event = new \Composer\Script\Event(
+            $event = new Script\Event(
                 $event->getName(), $event->getComposer(), $event->getIO(), $event->isDevMode(),
                 $event->getArguments(), $event->getFlags()
             );
