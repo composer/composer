@@ -248,9 +248,8 @@ class XdebugHandler
             $result = ($stat['mode'] & 0170000) === 0020000;
         }
 
-        if ($result && defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $result = 0 >= version_compare('10.0.10586', PHP_WINDOWS_VERSION_MAJOR.'.'.PHP_WINDOWS_VERSION_MINOR.'.'.PHP_WINDOWS_VERSION_BUILD)
-            || false !== getenv('ANSICON')
+        if (defined('PHP_WINDOWS_VERSION_BUILD') && $result) {
+            $result = false !== getenv('ANSICON')
             || 'ON' === getenv('ConEmuANSI')
             || 'xterm' === getenv('TERM');
         }
