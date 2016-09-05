@@ -30,8 +30,8 @@ class XdebugHandler
     {
         $this->loaded = extension_loaded('xdebug');
         $tmp = sys_get_temp_dir();
-        $this->tmpIni = $tmp.DIRECTORY_SEPARATOR.'composer-php.ini';
-        $this->scanDir = $tmp.DIRECTORY_SEPARATOR.'composer-php-empty';
+        $this->tmpIni = $tmp.'/composer-php.ini';
+        $this->scanDir = $tmp.'/composer-php-empty';
     }
 
     /**
@@ -134,14 +134,14 @@ class XdebugHandler
     }
 
     /**
-     * Return true if additional inis were loaded
+     * Returns true if additional inis were loaded
      *
      * @param array $iniFiles Populated by method
      * @param bool $replace Whether we need to modify the files
      *
      * @return bool
      */
-    private function getAdditionalInis(array &$iniFiles , &$replace)
+    private function getAdditionalInis(array &$iniFiles, &$replace)
     {
         $replace = true;
 
@@ -188,11 +188,11 @@ class XdebugHandler
     }
 
     /**
-     * Returns the command line to restart composer
+     * Creates the required environment and returns the restart command line
      *
      * @param bool $additional Whether additional inis were loaded
      *
-     * @return string The command line
+     * @return string|null The command line or null on failure
      */
     private function getCommand($additional)
     {
@@ -200,7 +200,9 @@ class XdebugHandler
             if (!file_exists($this->scanDir) && !@mkdir($this->scanDir, 0777)) {
                 return;
             }
-            putenv('PHP_INI_SCAN_DIR='.$this->scanDir);
+            if (!putenv('PHP_INI_SCAN_DIR='.$this->scanDir)) {
+                return;
+            }
         }
 
         $phpArgs = array(PHP_BINARY, '-c', $this->tmpIni);
