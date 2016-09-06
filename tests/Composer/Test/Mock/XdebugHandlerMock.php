@@ -11,17 +11,21 @@
 
 namespace Composer\Test\Mock;
 
+use Composer\Factory;
 use Composer\XdebugHandler;
 
 class XdebugHandlerMock extends XdebugHandler
 {
     public $command;
     public $restarted;
+    public $output;
 
-    public function __construct($loaded)
+    public function __construct($loaded = null)
     {
-        parent::__construct();
+        $this->output = Factory::createOutput();
+        parent::__construct($this->output);
 
+        $loaded = $loaded === null ? true: $loaded;
         $class = new \ReflectionClass(get_parent_class($this));
         $prop = $class->getProperty('loaded');
         $prop->setAccessible(true);

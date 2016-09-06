@@ -12,10 +12,13 @@
 
 namespace Composer\Test;
 
-use Composer\Test\Mock\XdebugHandlerMock as XdebugHandler;
+use Composer\Test\Mock\XdebugHandlerMock;
 
 /**
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
+ *
+ * @backupGlobals disabled
+ * @runTestsInSeparateProcesses
  */
 class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
 {
@@ -23,7 +26,7 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $loaded = true;
 
-        $xdebug = new XdebugHandler($loaded);
+        $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
         $this->assertTrue($xdebug->restarted || !defined('PHP_BINARY'));
     }
@@ -32,7 +35,7 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $loaded = false;
 
-        $xdebug = new XdebugHandler($loaded);
+        $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
         $this->assertFalse($xdebug->restarted);
     }
@@ -40,10 +43,31 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
     public function testNoRestartWhenLoadedAndAllowed()
     {
         $loaded = true;
-        putenv(XdebugHandler::ENV_ALLOW.'=1');
+        putenv(XdebugHandlerMock::ENV_ALLOW.'=1');
 
-        $xdebug = new XdebugHandler($loaded);
+        $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
         $this->assertFalse($xdebug->restarted);
+    }
+
+    public function testForceColorSupport()
+    {
+        $xdebug = new XdebugHandlerMock();
+        $xdebug->output->setDecorated(true);
+        $xdebug->check();
+
+        $args = explode(' ', $xdebug->command);
+        $this->assertTrue(in_array('--ansi', $args) || !defined('PHP_BINARY'));
+    }
+
+    public function testIgnoreColorSupportIfNoAnsi()
+    {
+        $xdebug = new XdebugHandlerMock();
+        $xdebug->output->setDecorated(true);
+        $_SERVER['argv'][] = '--no-ansi';
+        $xdebug->check();
+
+        $args = explode(' ', $xdebug->command);
+        $this->assertTrue(!in_array('--ansi', $args) || !defined('PHP_BINARY'));
     }
 }

@@ -12,6 +12,8 @@
 
 namespace Composer;
 
+use Symfony\Component\Console\Output\OutputInterface;
+
 /**
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
  */
@@ -19,6 +21,7 @@ class XdebugHandler
 {
     const ENV_ALLOW = 'COMPOSER_ALLOW_XDEBUG';
 
+    private $output;
     private $loaded;
     private $tmpIni;
     private $scanDir;
@@ -26,8 +29,9 @@ class XdebugHandler
     /**
      * Constructor
      */
-    public function __construct()
+    public function __construct(OutputInterface $output)
     {
+        $this->output = $output;
         $this->loaded = extension_loaded('xdebug');
         $tmp = sys_get_temp_dir();
         $this->tmpIni = $tmp.'/composer-php.ini';
@@ -214,6 +218,9 @@ class XdebugHandler
     /**
      * Returns the restart script arguments, adding --ansi if required
      *
+     * If we are a terminal with color support we must ensure that the --ansi
+     * option is set, because the restarted output is piped.
+     *
      * @param array $args The argv array
      *
      * @return array
@@ -224,36 +231,12 @@ class XdebugHandler
             return $args;
         }
 
-        if ($this->isColorTerminal()) {
+        if ($this->output->isDecorated()) {
             $offset = count($args) > 1 ? 2: 1;
             array_splice($args, $offset, 0, '--ansi');
         }
 
         return $args;
-    }
-
-    /**
-     * Returns whether we are a terminal and have colour capabilities
-     *
-     * @return bool
-     */
-    private function isColorTerminal()
-    {
-        if (function_exists('posix_isatty')) {
-            $result = posix_isatty(STDOUT);
-        } else {
-            // See if STDOUT is a character device (S_IFCHR)
-            $stat = fstat(STDOUT);
-            $result = ($stat['mode'] & 0170000) === 0020000;
-        }
-
-        if (defined('PHP_WINDOWS_VERSION_BUILD') && $result) {
-            $result = false !== getenv('ANSICON')
-            || 'ON' === getenv('ConEmuANSI')
-            || 'xterm' === getenv('TERM');
-        }
-
-        return $result;
     }
 
     /**
