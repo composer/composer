@@ -16,9 +16,6 @@ use Composer\Test\Mock\XdebugHandlerMock;
 
 /**
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
- *
- * @backupGlobals disabled
- * @runTestsInSeparateProcesses
  */
 class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
 {
@@ -48,6 +45,9 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
         $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
         $this->assertFalse($xdebug->restarted);
+
+        // Clear env for subsequent tests
+        putenv(XdebugHandlerMock::ENV_ALLOW.'=0');
     }
 
     public function testForceColorSupport()
