@@ -16,7 +16,6 @@ use Composer\XdebugHandler;
 
 class XdebugHandlerMock extends XdebugHandler
 {
-    public $command;
     public $restarted;
     public $output;
 
@@ -25,19 +24,17 @@ class XdebugHandlerMock extends XdebugHandler
         $this->output = Factory::createOutput();
         parent::__construct($this->output);
 
-        $loaded = $loaded === null ? true: $loaded;
+        $loaded = null === $loaded ? true: $loaded;
         $class = new \ReflectionClass(get_parent_class($this));
         $prop = $class->getProperty('loaded');
         $prop->setAccessible(true);
         $prop->setValue($this, $loaded);
 
-        $this->command = '';
         $this->restarted = false;
     }
 
     protected function restart($command)
     {
-        $this->command = $command;
         $this->restarted = true;
     }
 }

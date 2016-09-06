@@ -19,6 +19,8 @@ use Composer\Test\Mock\XdebugHandlerMock;
  */
 class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
 {
+    public static $envAllow;
+
     public function testRestartWhenLoaded()
     {
         $loaded = true;
@@ -45,29 +47,24 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
         $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
         $this->assertFalse($xdebug->restarted);
+    }
 
-        // Clear env for subsequent tests
+    public static function setUpBeforeClass()
+    {
+        self::$envAllow = (bool) getenv(XdebugHandlerMock::ENV_ALLOW);
+    }
+
+    public static function tearDownAfterClass()
+    {
+        if (self::$envAllow) {
+            putenv(XdebugHandlerMock::ENV_ALLOW.'=1');
+        } else {
+            putenv(XdebugHandlerMock::ENV_ALLOW.'=0');
+        }
+    }
+
+    protected function setUp()
+    {
         putenv(XdebugHandlerMock::ENV_ALLOW.'=0');
-    }
-
-    public function testForceColorSupport()
-    {
-        $xdebug = new XdebugHandlerMock();
-        $xdebug->output->setDecorated(true);
-        $xdebug->check();
-
-        $args = explode(' ', $xdebug->command);
-        $this->assertTrue(in_array('--ansi', $args) || !defined('PHP_BINARY'));
-    }
-
-    public function testIgnoreColorSupportIfNoAnsi()
-    {
-        $xdebug = new XdebugHandlerMock();
-        $xdebug->output->setDecorated(true);
-        $_SERVER['argv'][] = '--no-ansi';
-        $xdebug->check();
-
-        $args = explode(' ', $xdebug->command);
-        $this->assertTrue(!in_array('--ansi', $args) || !defined('PHP_BINARY'));
     }
 }
