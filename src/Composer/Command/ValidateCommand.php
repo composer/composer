@@ -91,7 +91,7 @@ EOT
         $composer = Factory::create($io, $file);
         $locker = $composer->getLocker();
         if ($locker->isLocked() && !$locker->isFresh()) {
-            $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update`.';
+            $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update --lock`.';
         }
 
         $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true);
