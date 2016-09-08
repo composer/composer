@@ -51,6 +51,11 @@ class AutoloadGenerator
     /**
      * @var bool
      */
+    private $staticAutoloader = true;
+
+    /**
+     * @var bool
+     */
     private $runScripts = false;
 
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
@@ -83,6 +88,15 @@ class AutoloadGenerator
     public function setRunScripts($runScripts = true)
     {
         $this->runScripts = (boolean) $runScripts;
+    }
+
+    /**
+     * Set whether to generate a static autoloader or not
+     *
+     * @param bool $staticAutoloader
+     */
+    public function setStaticAutoloader($staticAutoloader) {
+        $this->staticAutoloader = (boolean) $staticAutoloader;
     }
 
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
@@ -283,7 +297,13 @@ EOF;
         } elseif (file_exists($includeFilesFilePath)) {
             unlink($includeFilesFilePath);
         }
-        file_put_contents($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
+        $staticPhpVersion = 70000;
+        $autoloadStaticPath = $targetDir.'/autoload_static.php';
+        if ($this->staticAutoloader) {
+            file_put_contents($autoloadStaticPath, $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
+        } elseif (file_exists($autoloadStaticPath)) {
+            unlink($autoloadStaticPath);
+        }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
         file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion));
 
@@ -579,7 +599,8 @@ HEADER;
 INCLUDE_PATH;
         }
 
-        $file .= <<<STATIC_INIT
+        if ($this->staticAutoloader) {
+            $file .= <<<STATIC_INIT
         \$useStaticLoader = PHP_VERSION_ID >= $staticPhpVersion && !defined('HHVM_VERSION');
         if (\$useStaticLoader) {
             require_once __DIR__ . '/autoload_static.php';
@@ -588,34 +609,52 @@ INCLUDE_PATH;
         } else {
 
 STATIC_INIT;
+        }
 
+        // These might or might not be in an else block
+        $possiblyElse = '';
         if (!$this->classMapAuthoritative) {
-            $file .= <<<'PSR04'
-            $map = require __DIR__ . '/autoload_namespaces.php';
-            foreach ($map as $namespace => $path) {
-                $loader->set($namespace, $path);
-            }
+            $possiblyElse .= <<<'PSR04'
+        $map = require __DIR__ . '/autoload_namespaces.php';
+        foreach ($map as $namespace => $path) {
+            $loader->set($namespace, $path);
+        }
 
-            $map = require __DIR__ . '/autoload_psr4.php';
-            foreach ($map as $namespace => $path) {
-                $loader->setPsr4($namespace, $path);
-            }
+        $map = require __DIR__ . '/autoload_psr4.php';
+        foreach ($map as $namespace => $path) {
+            $loader->setPsr4($namespace, $path);
+        }
 
 
 PSR04;
         }
 
         if ($useClassMap) {
-            $file .= <<<'CLASSMAP'
-            $classMap = require __DIR__ . '/autoload_classmap.php';
-            if ($classMap) {
-                $loader->addClassMap($classMap);
-            }
-
+            $possiblyElse .= <<<'CLASSMAP'
+        $classMap = require __DIR__ . '/autoload_classmap.php';
+        if ($classMap) {
+            $loader->addClassMap($classMap);
+        }
 CLASSMAP;
         }
 
-        $file .= "        }\n\n";
+        // If we're using the static autoloader, need to indent all
+        // of the above lines
+        if ($this->staticAutoloader) {
+            foreach ( explode( "\n", $possiblyElse) as $line ) {
+                if (strlen($line)) {
+                    $file .= "    $line\n";
+                } else {
+                    // Don't indent blank lines
+                    $file .= "\n";
+                }
+            }
+
+            // Also add the brace to close the else block
+            $file .= "        }\n\n";
+        } else {
+            $file .= $possiblyElse;
+        }
 
         if ($this->classMapAuthoritative) {
             $file .= <<<'CLASSMAPAUTHORITATIVE'
@@ -646,18 +685,25 @@ REGISTER_TARGET_DIR_AUTOLOAD;
 REGISTER_LOADER;
 
         if ($useIncludeFiles) {
-            $file .= <<<INCLUDE_FILES
+            if ($this->staticAutoloader) {
+                $file .= <<<INCLUDE_FILES
         if (\$useStaticLoader) {
             \$includeFiles = Composer\Autoload\ComposerStaticInit$suffix::\$files;
         } else {
             \$includeFiles = require __DIR__ . '/autoload_files.php';
         }
+
+INCLUDE_FILES;
+            } else {
+                $file .= "        \$includeFiles = require __DIR__ . '/autoload_files.php';\n";
+            }
+            $file .= <<<INCLUDE_FILES_REQUIRE
         foreach (\$includeFiles as \$fileIdentifier => \$file) {
             composerRequire$suffix(\$fileIdentifier, \$file);
         }
 
 
-INCLUDE_FILES;
+INCLUDE_FILES_REQUIRE;
         }
 
         $file .= <<<METHOD_FOOTER
