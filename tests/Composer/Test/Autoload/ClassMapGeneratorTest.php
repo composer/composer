@@ -223,12 +223,13 @@ class ClassMapGeneratorTest extends TestCase
         $tempDir = self::getUniqueTmpDirectory();
 
         $resultFile = $tempDir . '/result.txt';
-        $fileInDirectory = $tempDir . '/TestClass.php';
+        $fileInDirectory = $tempDir . DIRECTORY_SEPARATOR . 'TestClass.php';
 
         file_put_contents($fileInDirectory, "<?php class TestClass {} ?>");
 
         ClassMapGenerator::dump(array($tempDir), $resultFile);
 
+        $fileInDirectory = str_replace('\\', '\\\\', $fileInDirectory);
         $this->assertEquals("<?php return array (\n  'TestClass' => '$fileInDirectory',\n);", file_get_contents($resultFile));
 
         $fs = new Filesystem();
