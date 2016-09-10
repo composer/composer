@@ -23,6 +23,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Script;
 use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
+use Composer\Installer\BinaryInstaller;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Process\PhpExecutableFinder;
 
@@ -222,10 +223,11 @@ class EventDispatcher
                 }
 
                 $possibleLocalBinaries = $this->composer->getPackage()->getBinaries();
-                if ( $possibleLocalBinaries ) {
-                    foreach ( $possibleLocalBinaries as $localExec ) {
-                        if ( preg_match("/\b${callable}$/", $localExec)) {
-                            $exec = str_replace($callable, $localExec, $exec);
+                if ($possibleLocalBinaries) {
+                    foreach ($possibleLocalBinaries as $localExec) {
+                        if (preg_match("/\b${callable}$/", $localExec)) {
+                            $caller = BinaryInstaller::determineBinaryCaller($localExec);
+                            $exec = preg_replace('{^'.preg_quote($callable).'}', $caller . ' ' . $localExec, $exec);
                             break;
                         }
                     }
