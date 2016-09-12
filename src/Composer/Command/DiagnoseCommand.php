@@ -24,6 +24,7 @@ use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
 use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
+use Composer\IO\NullIO;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -77,6 +78,7 @@ EOT
         }
 
         $config->merge(array('config' => array('secure-http' => false)));
+        $config->prohibitUrlByConfig('http://packagist.org', new NullIO);
 
         $this->rfs = Factory::createRemoteFilesystem($io, $config);
         $this->process = new ProcessExecutor($io);
