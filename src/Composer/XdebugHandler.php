@@ -20,6 +20,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class XdebugHandler
 {
     const ENV_ALLOW = 'COMPOSER_ALLOW_XDEBUG';
+    const ENV_INI_SCAN_DIR = 'PHP_INI_SCAN_DIR';
+    const ENV_INI_SCAN_DIR_OLD = 'COMPOSER_PHP_INI_SCAN_DIR_OLD';
 
     private $output;
     private $loaded;
@@ -49,12 +51,13 @@ class XdebugHandler
     public function check()
     {
         if (!$this->needsRestart()) {
-            $iniScanDir = getenv('PHP_INI_SCAN_DIR_OLD');
+            $iniScanDir = getenv(self::ENV_INI_SCAN_DIR_OLD);
 
             if ($iniScanDir) {
-                putenv('PHP_INI_SCAN_DIR=' . $iniScanDir);
+                putenv(self::ENV_INI_SCAN_DIR_OLD);
+                putenv(self::ENV_INI_SCAN_DIR.'=' . $iniScanDir);
             } else {
-                putenv('PHP_INI_SCAN_DIR');
+                putenv(self::ENV_INI_SCAN_DIR);
             }
 
             return;
@@ -213,12 +216,12 @@ class XdebugHandler
                 return;
             }
 
-            $iniScanDirEnv = getenv('PHP_INI_SCAN_DIR');
+            $iniScanDirEnv = getenv(self::ENV_INI_SCAN_DIR);
             if ($iniScanDirEnv) {
-                putenv('PHP_INI_SCAN_DIR_OLD='.$iniScanDirEnv);
+                putenv(self::ENV_INI_SCAN_DIR_OLD.'='.$iniScanDirEnv);
             }
 
-            if (!putenv('PHP_INI_SCAN_DIR='.$this->scanDir)) {
+            if (!putenv(self::ENV_INI_SCAN_DIR.'='.$this->scanDir)) {
                 return;
             }
         }
