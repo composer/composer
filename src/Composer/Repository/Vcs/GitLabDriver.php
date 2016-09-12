@@ -232,8 +232,8 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * Urlencode all non alphanumeric characters.
-     * 
+     * Urlencode all non alphanumeric characters. rawurlencode() can not be used as it does not encode `.`
+     *
      * @param string $string
      * @return string
      */
