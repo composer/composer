@@ -25,6 +25,7 @@ use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
 use Composer\Installer\BinaryInstaller;
 use Composer\Util\ProcessExecutor;
+use Composer\Script\Event as ScriptEvent;
 use Symfony\Component\Process\PhpExecutableFinder;
 
 /**
@@ -428,6 +429,10 @@ class EventDispatcher
         }
 
         $generator = $this->composer->getAutoloadGenerator();
+        if ($event instanceof ScriptEvent) {
+            $generator->setDevMode($event->isDevMode());
+        }
+
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
         $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
         $map = $generator->parseAutoloads($packageMap, $package);
