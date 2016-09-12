@@ -219,6 +219,10 @@ class XdebugHandler
             $currentIniScanDir = getenv(self::ENV_INI_SCAN_DIR);
             if ($currentIniScanDir) {
                 putenv(self::ENV_INI_SCAN_DIR_OLD.'='.$currentIniScanDir);
+            } else {
+                // make sure the env var does not exist if none is to be set
+                // otherwise the child process will reset it incorrectly
+                putenv(self::ENV_INI_SCAN_DIR_OLD);
             }
 
             if (!putenv(self::ENV_INI_SCAN_DIR.'='.$this->scanDir)) {
