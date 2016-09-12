@@ -228,7 +228,24 @@ class GitLabDriver extends VcsDriver
      */
     public function getApiUrl()
     {
-        return $this->scheme.'://'.$this->originUrl.'/api/v3/projects/'.$this->owner.'%2F'.$this->repository;
+        return $this->scheme.'://'.$this->originUrl.'/api/v3/projects/'.$this->urlEncodeAll($this->owner).'%2F'.$this->urlEncodeAll($this->repository);
+    }
+
+    /**
+     * Urlencode all non alphanumeric characters. rawurlencode() can not be used as it does not encode `.`
+     *
+     * @param string $string
+     * @return string
+     */
+    private function urlEncodeAll($string)
+    {
+        $encoded = '';
+        for ($i = 0; isset($string[$i]); $i++) {
+            $character = $string[$i];
+            if (!ctype_alnum($character)) $character = '%' . sprintf('%02X', ord($character));
+            $encoded .= $character;
+        }
+        return $encoded;
     }
 
     /**
