@@ -51,11 +51,11 @@ class XdebugHandler
     public function check()
     {
         if (!$this->needsRestart()) {
-            $iniScanDir = getenv(self::ENV_INI_SCAN_DIR_OLD);
+            $originalIniScanDir = getenv(self::ENV_INI_SCAN_DIR_OLD);
 
-            if ($iniScanDir) {
+            if ($originalIniScanDir) {
                 putenv(self::ENV_INI_SCAN_DIR_OLD);
-                putenv(self::ENV_INI_SCAN_DIR.'=' . $iniScanDir);
+                putenv(self::ENV_INI_SCAN_DIR.'=' . $originalIniScanDir);
             } else {
                 putenv(self::ENV_INI_SCAN_DIR);
             }
@@ -216,9 +216,9 @@ class XdebugHandler
                 return;
             }
 
-            $iniScanDirEnv = getenv(self::ENV_INI_SCAN_DIR);
-            if ($iniScanDirEnv) {
-                putenv(self::ENV_INI_SCAN_DIR_OLD.'='.$iniScanDirEnv);
+            $currentIniScanDir = getenv(self::ENV_INI_SCAN_DIR);
+            if ($currentIniScanDir) {
+                putenv(self::ENV_INI_SCAN_DIR_OLD.'='.$currentIniScanDir);
             }
 
             if (!putenv(self::ENV_INI_SCAN_DIR.'='.$this->scanDir)) {
