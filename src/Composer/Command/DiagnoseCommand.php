@@ -24,6 +24,7 @@ use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
 use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
+use Composer\IO\NullIO;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -39,7 +40,7 @@ class DiagnoseCommand extends BaseCommand
     protected $process;
 
     /** @var int */
-    protected $failures = 0;
+    protected $exitCode = 0;
 
     protected function configure()
     {
@@ -48,6 +49,8 @@ class DiagnoseCommand extends BaseCommand
             ->setDescription('Diagnoses the system to identify common errors.')
             ->setHelp(<<<EOT
 The <info>diagnose</info> command checks common errors to help debugging problems.
+
+The process exit code will be 1 in case of warnings and 2 for errors.
 
 EOT
             )
@@ -77,6 +80,7 @@ EOT
         }
 
         $config->merge(array('config' => array('secure-http' => false)));
+        $config->prohibitUrlByConfig('http://packagist.org', new NullIO);
 
         $this->rfs = Factory::createRemoteFilesystem($io, $config);
         $this->process = new ProcessExecutor($io);
@@ -145,7 +149,7 @@ EOT
             $this->outputResult($this->checkVersion($config));
         }
 
-        return $this->failures;
+        return $this->exitCode;
     }
 
     private function checkComposerSchema()
@@ -385,19 +389,39 @@ EOT
         $io = $this->getIO();
         if (true === $result) {
             $io->write('<info>OK</info>');
+            return;
+        }
+
+        $hadError = false;
+        if ($result instanceof \Exception) {
+            $result = '<error>['.get_class($result).'] '.$result->getMessage().'</error>';
+        }
+
+        if (!$result) {
+            // falsey results should be considered as an error, even if there is nothing to output
+            $hadError = true;
         } else {
-            $this->failures++;
-            $io->write('<error>FAIL</error>');
-            if ($result instanceof \Exception) {
-                $io->write('['.get_class($result).'] '.$result->getMessage());
-            } elseif ($result) {
-                if (is_array($result)) {
-                    foreach ($result as $message) {
-                        $io->write($message);
-                    }
-                } else {
-                    $io->write($result);
+            if (!is_array($result)) {
+                $result = array($result);
+            }
+            foreach ($result as $message) {
+                if (false !== strpos($message, '<error>')) {
+                    $hadError = true;
                 }
+            }
+        }
+
+        if ($hadError) {
+            $io->write('<error>FAIL</error>');
+            $this->exitCode = 2;
+        } else {
+            $io->write('<warning>WARNING</warning>');
+            $this->exitCode = 1;
+        }
+
+        if ($result) {
+            foreach ($result as $message) {
+                $io->write($message);
             }
         }
     }

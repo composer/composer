@@ -1,3 +1,8 @@
+### [1.2.1] - 2016-09-12
+
+  * Fixed edge case issues with the static autoloader
+  * Minor fixes
+
 ### [1.2.0] - 2016-07-19
 
   * Security: Fixed [httpoxy](https://httpoxy.org/) vulnerability
