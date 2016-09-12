@@ -20,6 +20,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class XdebugHandler
 {
     const ENV_ALLOW = 'COMPOSER_ALLOW_XDEBUG';
+    const ENV_INI_SCAN_DIR = 'PHP_INI_SCAN_DIR';
+    const ENV_INI_SCAN_DIR_OLD = 'COMPOSER_PHP_INI_SCAN_DIR_OLD';
 
     private $output;
     private $loaded;
@@ -49,6 +51,15 @@ class XdebugHandler
     public function check()
     {
         if (!$this->needsRestart()) {
+            $originalIniScanDir = getenv(self::ENV_INI_SCAN_DIR_OLD);
+
+            if ($originalIniScanDir) {
+                putenv(self::ENV_INI_SCAN_DIR_OLD);
+                putenv(self::ENV_INI_SCAN_DIR.'=' . $originalIniScanDir);
+            } else {
+                putenv(self::ENV_INI_SCAN_DIR);
+            }
+
             return;
         }
 
@@ -204,7 +215,13 @@ class XdebugHandler
             if (!file_exists($this->scanDir) && !@mkdir($this->scanDir, 0777)) {
                 return;
             }
-            if (!putenv('PHP_INI_SCAN_DIR='.$this->scanDir)) {
+
+            $currentIniScanDir = getenv(self::ENV_INI_SCAN_DIR);
+            if ($currentIniScanDir) {
+                putenv(self::ENV_INI_SCAN_DIR_OLD.'='.$currentIniScanDir);
+            }
+
+            if (!putenv(self::ENV_INI_SCAN_DIR.'='.$this->scanDir)) {
                 return;
             }
         }
