@@ -49,6 +49,14 @@ class XdebugHandler
     public function check()
     {
         if (!$this->needsRestart()) {
+            $iniScanDir = getenv('PHP_INI_SCAN_DIR_OLD');
+
+            if ($iniScanDir) {
+                putenv('PHP_INI_SCAN_DIR=' . $iniScanDir);
+            } else {
+                putenv('PHP_INI_SCAN_DIR');
+            }
+
             return;
         }
 
@@ -204,6 +212,12 @@ class XdebugHandler
             if (!file_exists($this->scanDir) && !@mkdir($this->scanDir, 0777)) {
                 return;
             }
+
+            $iniScanDirEnv = getenv('PHP_INI_SCAN_DIR');
+            if ($iniScanDirEnv) {
+                putenv('PHP_INI_SCAN_DIR_OLD='.$iniScanDirEnv);
+            }
+
             if (!putenv('PHP_INI_SCAN_DIR='.$this->scanDir)) {
                 return;
             }
