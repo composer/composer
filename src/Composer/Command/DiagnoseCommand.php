@@ -40,7 +40,7 @@ class DiagnoseCommand extends BaseCommand
     protected $process;
 
     /** @var int */
-    protected $failures = 0;
+    protected $exitCode = 0;
 
     protected function configure()
     {
@@ -49,6 +49,8 @@ class DiagnoseCommand extends BaseCommand
             ->setDescription('Diagnoses the system to identify common errors.')
             ->setHelp(<<<EOT
 The <info>diagnose</info> command checks common errors to help debugging problems.
+
+The process exit code will be 1 in case of warnings and 2 for errors.
 
 EOT
             )
@@ -147,7 +149,7 @@ EOT
             $this->outputResult($this->checkVersion($config));
         }
 
-        return $this->failures;
+        return $this->exitCode;
     }
 
     private function checkComposerSchema()
@@ -385,12 +387,12 @@ EOT
     private function outputResult($result)
     {
         $io = $this->getIO();
-        $hadError = false;
         if (true === $result) {
             $io->write('<info>OK</info>');
             return;
         }
 
+        $hadError = false;
         if ($result instanceof \Exception) {
             $result = '<error>['.get_class($result).'] '.$result->getMessage().'</error>';
         }
@@ -411,9 +413,10 @@ EOT
 
         if ($hadError) {
             $io->write('<error>FAIL</error>');
-            $this->failures++;
+            $this->exitCode = 2;
         } else {
             $io->write('<warning>WARNING</warning>');
+            $this->exitCode = 1;
         }
 
         if ($result) {
