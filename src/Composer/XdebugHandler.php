@@ -50,21 +50,18 @@ class XdebugHandler
      */
     public function check()
     {
-        if (!$this->needsRestart()) {
-            $originalIniScanDir = getenv(self::ENV_INI_SCAN_DIR_OLD);
-
-            if ($originalIniScanDir) {
-                putenv(self::ENV_INI_SCAN_DIR_OLD);
-                putenv(self::ENV_INI_SCAN_DIR.'=' . $originalIniScanDir);
-            } else {
-                putenv(self::ENV_INI_SCAN_DIR);
-            }
-
+        if ($this->needsRestart()) {
+            $this->prepareRestart($command) && $this->restart($command);
             return;
         }
 
-        if ($this->prepareRestart($command)) {
-            $this->restart($command);
+        $originalIniScanDir = getenv(self::ENV_INI_SCAN_DIR_OLD);
+
+        if ($originalIniScanDir) {
+            putenv(self::ENV_INI_SCAN_DIR_OLD);
+            putenv(self::ENV_INI_SCAN_DIR . '=' . $originalIniScanDir);
+        } else {
+            putenv(self::ENV_INI_SCAN_DIR);
         }
     }
 
