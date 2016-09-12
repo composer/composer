@@ -385,21 +385,40 @@ EOT
     private function outputResult($result)
     {
         $io = $this->getIO();
+        $hadError = false;
         if (true === $result) {
             $io->write('<info>OK</info>');
+            return;
+        }
+
+        if ($result instanceof \Exception) {
+            $result = '<error>['.get_class($result).'] '.$result->getMessage().'</error>';
+        }
+
+        if (!$result) {
+            // falsey results should be considered as an error, even if there is nothing to output
+            $hadError = true;
         } else {
-            $this->failures++;
-            $io->write('<error>FAIL</error>');
-            if ($result instanceof \Exception) {
-                $io->write('['.get_class($result).'] '.$result->getMessage());
-            } elseif ($result) {
-                if (is_array($result)) {
-                    foreach ($result as $message) {
-                        $io->write($message);
-                    }
-                } else {
-                    $io->write($result);
+            if (!is_array($result)) {
+                $result = array($result);
+            }
+            foreach ($result as $message) {
+                if (false !== strpos($message, '<error>')) {
+                    $hadError = true;
                 }
+            }
+        }
+
+        if ($hadError) {
+            $io->write('<error>FAIL</error>');
+            $this->failures++;
+        } else {
+            $io->write('<warning>WARNING</warning>');
+        }
+
+        if ($result) {
+            foreach ($result as $message) {
+                $io->write($message);
             }
         }
     }
