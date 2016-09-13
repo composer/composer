@@ -226,7 +226,7 @@ class EventDispatcher
                 $possibleLocalBinaries = $this->composer->getPackage()->getBinaries();
                 if ($possibleLocalBinaries) {
                     foreach ($possibleLocalBinaries as $localExec) {
-                        if (preg_match("/\b${callable}$/", $localExec)) {
+                        if (preg_match('{\b'.preg_quote($callable).'$}', $localExec)) {
                             $caller = BinaryInstaller::determineBinaryCaller($localExec);
                             $exec = preg_replace('{^'.preg_quote($callable).'}', $caller . ' ' . $localExec, $exec);
                             break;
