@@ -23,7 +23,7 @@
     },
     "require": {
         "php": "^5.3.2 || ^7.0",
-        "justinrainbow/json-schema": "^1.6 || ^2.0",
+        "justinrainbow/json-schema": "^1.6 || ^2.0 || ^3.0",
         "composer/ca-bundle": "^1.0",
         "composer/semver": "^1.0",
         "composer/spdx-licenses": "^1.0",
