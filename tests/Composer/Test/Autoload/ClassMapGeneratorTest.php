@@ -218,6 +218,24 @@ class ClassMapGeneratorTest extends TestCase
         ClassMapGenerator::createMap(__DIR__.'/no-file.no-foler');
     }
 
+    public function testDump()
+    {
+        $tempDir = self::getUniqueTmpDirectory();
+
+        $resultFile = $tempDir . '/result.txt';
+        $fileInDirectory = $tempDir . DIRECTORY_SEPARATOR . 'TestClass.php';
+
+        file_put_contents($fileInDirectory, "<?php class TestClass {} ?>");
+
+        ClassMapGenerator::dump(array($tempDir), $resultFile);
+
+        $fileInDirectory = str_replace('\\', '\\\\', $fileInDirectory);
+        $this->assertEquals("<?php return array (\n  'TestClass' => '$fileInDirectory',\n);", file_get_contents($resultFile));
+
+        $fs = new Filesystem();
+        $fs->removeDirectory($tempDir);
+    }
+
     protected function assertEqualsNormalized($expected, $actual, $message = null)
     {
         foreach ($expected as $ns => $path) {

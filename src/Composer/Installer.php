@@ -625,7 +625,7 @@ class Installer
         // but as it is not persisted on disk we use a loader/dumper
         // to reload it in memory
         $localRepo = new InstalledArrayRepository(array());
-        $loader = new ArrayLoader();
+        $loader = new ArrayLoader(null, true);
         $dumper = new ArrayDumper();
         foreach ($tempLocalRepo->getCanonicalPackages() as $pkg) {
             $localRepo->addPackage($loader->load($dumper->dump($pkg)));
@@ -1137,6 +1137,10 @@ class Installer
 
     private function updateInstallReferences(PackageInterface $package, $reference)
     {
+        if (!$reference) {
+            return;
+        }
+
         $package->setSourceReference($reference);
         $package->setDistReference($reference);
 

@@ -72,12 +72,7 @@ class XzDownloaderTest extends TestCase
             $downloader->download($packageMock, $this->getUniqueTmpDirectory());
             $this->fail('Download of invalid tarball should throw an exception');
         } catch (\RuntimeException $e) {
-            // Mac OS tar has own errors
-            if (php_uname('s') == "Darwin") {
-                $this->assertContains('Unrecognized archive format', $e->getMessage());
-            } else {
-                $this->assertContains('File format not recognized', $e->getMessage());
-            }
+            $this->assertRegexp('/(File format not recognized|Unrecognized archive format)/i', $e->getMessage());
         }
     }
 }

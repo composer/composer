@@ -45,9 +45,10 @@ class ExecCommand extends BaseCommand
         $binDir = $composer->getConfig()->get('bin-dir');
         if ($input->getOption('list') || !$input->getArgument('binary')) {
             $bins = glob($binDir . '/*');
+            $bins = array_merge($bins, array_map(function($e) { return "$e (local)"; }, $composer->getPackage()->getBinaries()));
 
             if (!$bins) {
-                throw new \RuntimeException("No binaries found in bin-dir ($binDir)");
+                throw new \RuntimeException("No binaries found in composer.json or in bin-dir ($binDir)");
             }
 
             $this->getIO()->write(<<<EOT
