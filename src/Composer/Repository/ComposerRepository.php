@@ -531,15 +531,19 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         $jsonUrlParts = parse_url($url);
 
-        return isset($jsonUrlParts['path'])
-            && (mb_strlen($jsonUrlParts['path']) - 5) === strpos($jsonUrlParts['path'], '.json');
+        return
+            isset($jsonUrlParts['query'])
+            || (
+                isset($jsonUrlParts['path'])
+                && (mb_strlen($jsonUrlParts['path']) - 5) === strpos($jsonUrlParts['path'], '.json')
+            );
     }
 
     protected function canonicalizeUrl($url)
     {
         if ('/' === $url[0]) {
             return preg_replace('{(https?://[^/]+).*}i', '$1' . $url, $this->url);
-        } elseif (strpos($url, "http://") === 0 || strpos($url, "https://") === 0) {
+        } elseif (0 !== preg_match('{^(?>https?://)}', $url)) {
             return $url;
         } else {
             return $this->baseUrl . "/" . $url;

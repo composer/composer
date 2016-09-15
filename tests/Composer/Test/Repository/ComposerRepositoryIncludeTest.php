@@ -478,12 +478,23 @@ class ComposerRepositoryIncludeTest extends TestCase
         $this->makeTest($repoConfig, $urlMock, $url);
     }
 
+    public function testQueryString(){
+
+        $path = "http://example.com/index.php?path=/my/repo.json";
+
+        $this->makeTest(
+            array('url' => $path),
+            [$path => json_encode(array('packages' => $this->packageDist))],
+            $this->url
+        );
+
+    }
+
+
     public function makeTest($repoConfig, $urlMock, $url)
     {
         $rfs = new RemoteFilesystemMock($urlMock);
-        $cache = new Cache(new NullIO(), 'NUL');
-
-        $repo = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), null, $rfs, $cache);
+        $repo = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), null, $rfs);
 
         $package = $repo->findPackage($this->packageName, '1.0');
         $this->assertEquals($package->getName(), $this->packageName);
