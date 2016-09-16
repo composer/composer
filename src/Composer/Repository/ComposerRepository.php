@@ -60,7 +60,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $degradedMode = false;
     private $rootData;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null, Cache $cache = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
         parent::__construct();
         if (!preg_match('{^[\w.]+\??://}', $repoConfig['url'])) {
@@ -97,7 +97,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         $this->io = $io;
-        $this->cache = $cache ?: new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->baseUrl), 'a-z0-9.$');
+        $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
         if ($rfs && $this->options) {
             $rfs = clone $rfs;
