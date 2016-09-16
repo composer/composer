@@ -532,11 +532,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $jsonUrlParts = parse_url($url);
 
         return
-            isset($jsonUrlParts['query'])
+               isset($jsonUrlParts['query'])
+            || isset($jsonUrlParts['fragment'])
             || (
                 isset($jsonUrlParts['path'])
                 && (mb_strlen($jsonUrlParts['path']) - 5) === strpos($jsonUrlParts['path'], '.json')
-            );
+               );
     }
 
     protected function canonicalizeUrl($url)
