@@ -88,7 +88,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->config = $config;
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
-        $this->baseUrl = rtrim(preg_replace('{^(.*)(?:/[^/\\]+.json)?(?:[?#].*)?$}', '$1', $this->url), '/');
+        if ($this->urlIsJsonFile($this->url)) {
+            $urlParts = parse_url($this->url);
+            $baseUrlLength = mb_strlen($this->url) - mb_strlen(basename($urlParts['path'])) - 1;
+            $this->baseUrl = mb_strcut($this->url, 0, $baseUrlLength);
+        } else {
+            $this->baseUrl = rtrim($this->url, "/");
+        }
+
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
@@ -451,9 +458,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
 
-        $jsonUrlParts = parse_url($this->url);
-
-        if (isset($jsonUrlParts['path']) && false !== strpos($jsonUrlParts['path'], '.json')) {
+        if ($this->urlIsJsonFile($this->url)) {
             $jsonUrl = $this->url;
         } else {
             $jsonUrl = $this->url . '/packages.json';
@@ -522,13 +527,28 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return $this->rootData = $data;
     }
 
+    protected function urlIsJsonFile($url)
+    {
+        $jsonUrlParts = parse_url($url);
+
+        return
+               isset($jsonUrlParts['query'])
+            || isset($jsonUrlParts['fragment'])
+            || (
+                isset($jsonUrlParts['path'])
+                && (mb_strlen($jsonUrlParts['path']) - 5) === strpos($jsonUrlParts['path'], '.json')
+               );
+    }
+
     protected function canonicalizeUrl($url)
     {
         if ('/' === $url[0]) {
             return preg_replace('{(https?://[^/]+).*}i', '$1' . $url, $this->url);
+        } elseif (0 !== preg_match('{^(?>https?://)}', $url)) {
+            return $url;
+        } else {
+            return $this->baseUrl . "/" . $url;
         }
-
-        return $url;
     }
 
     protected function loadDataFromServer()
@@ -550,7 +570,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if ($this->providersUrl && isset($data['provider-includes'])) {
             $includes = $data['provider-includes'];
             foreach ($includes as $include => $metadata) {
-                $url = $this->baseUrl . '/' . str_replace('%hash%', $metadata['sha256'], $include);
+                $url = $this->canonicalizeUrl(str_replace('%hash%', $metadata['sha256'], $include));
                 $cacheKey = str_replace(array('%hash%','$'), '', $include);
                 if ($this->cache->sha256($cacheKey) === $metadata['sha256']) {
                     $includedData = json_decode($this->cache->read($cacheKey), true);
@@ -607,6 +627,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $data['notification-url'] = $this->notifyUrl;
             }
 
+            if (isset($data['dist']['url'])) {
+                $data['dist']['url'] = $this->canonicalizeUrl($data['dist']['url']);
+            }
+
             $package = $this->loader->load($data, $class);
             if (isset($this->sourceMirrors[$package->getSourceType()])) {
                 $package->setSourceMirrors($this->sourceMirrors[$package->getSourceType()]);
@@ -624,7 +648,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         if (null === $cacheKey) {
             $cacheKey = $filename;
-            $filename = $this->baseUrl.'/'.$filename;
+            $filename = $this->canonicalizeUrl($filename);
         }
 
         // url-encode $ signs in URLs as bad proxies choke on them
