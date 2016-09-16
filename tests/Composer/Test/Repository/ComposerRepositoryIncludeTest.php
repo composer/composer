@@ -417,7 +417,7 @@ class ComposerRepositoryIncludeTest extends TestCase
         $path = "http://example.com/index.php?path=/my/repo.json";
         $out[] = array(
             array('url' => $path),
-            [$path => json_encode(array('packages' => $this->packageDist))],
+            array($path => json_encode(array('packages' => $this->packageDist))),
             $this->url
         );
 
