@@ -58,10 +58,11 @@ class ComposerRepositoryIncludeTest extends TestCase
         $packageDist = $this->packageDist;
         $url = $this->url;
         $packageName = $this->packageName;
+        $baseUrl = $this->baseUrl;
 
         $root = array(
             "providers-url" =>"%package%.json",
-            "providers" => array($this->packageName => array('sha256' => ""))
+            "providers" => array($packageName => array('sha256' => ""))
         );
 
         /// test root package
@@ -126,20 +127,20 @@ class ComposerRepositoryIncludeTest extends TestCase
         );
 
         $package = $packageDist;
-        $package[$packageName]['1.0.0']['dist']['url']  =  $this->baseUrl;
+        $package[$packageName]['1.0.0']['dist']['url']  =  $baseUrl;
 
         #8
         $out[] = array(
-            array('url' => $this->domain),
+            array('url' => $domain),
             array($domain . 'packages.json' => json_encode(array('packages' => $package))),
-            $domain . $this->baseUrl
+            $domain . $baseUrl
         );
 
         #9
         $out[] = array(
             array('url' => $domain . 'repo.json'),
             array($domain . 'repo.json' => json_encode(array('packages' => $package))),
-            $domain . $this->baseUrl
+            $domain . $baseUrl
         );
 
         #10
@@ -198,7 +199,7 @@ class ComposerRepositoryIncludeTest extends TestCase
 
         $root = array(
             "providers-url" =>"/%package%.json",
-            "providers" => array($this->packageName => array('sha256' => ""))
+            "providers" => array($packageName => array('sha256' => ""))
         );
 
         #16
@@ -318,7 +319,7 @@ class ComposerRepositoryIncludeTest extends TestCase
         /// test includes data providers
 
         $provider = array(
-            "providers" => array($this->packageName => array('sha256' => ""))
+            "providers" => array($packageName => array('sha256' => ""))
         );
 
         $root = array(
@@ -417,8 +418,8 @@ class ComposerRepositoryIncludeTest extends TestCase
         $path = "http://example.com/index.php?path=/my/repo.json";
         $out[] = array(
             array('url' => $path),
-            array($path => json_encode(array('packages' => $this->packageDist))),
-            $this->url
+            array($path => json_encode(array('packages' => $packageDist))),
+            $url
         );
 
 
@@ -426,8 +427,8 @@ class ComposerRepositoryIncludeTest extends TestCase
         $path = "http://example.com/index.php#repo.json";
         $out[] = array(
             array('url' => $path),
-            array($path => json_encode(array('packages' => $this->packageDist))),
-            $this->url
+            array($path => json_encode(array('packages' => $packageDist))),
+            $url
         );
 
         return $out;
