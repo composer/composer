@@ -88,7 +88,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->config = $config;
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
-        $this->baseUrl = rtrim(preg_replace('{^(.*)(?:/[^/\\]+.json)?(?:[?#].*)?$}', '$1', $this->url), '/');
+        $this->baseUrl = rtrim(preg_replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
