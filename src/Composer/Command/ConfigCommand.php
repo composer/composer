@@ -235,7 +235,7 @@ EOT
             $rawData = $this->configFile->read();
             $data = $this->config->all();
             if (preg_match('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
-                if (empty($matches[1])) {
+                if ('' === $matches[1]) {
                     $value = isset($data['repositories']) ? $data['repositories'] : array();
                 } else {
                     if (!isset($data['repositories'][$matches[1]])) {
