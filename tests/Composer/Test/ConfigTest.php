@@ -297,5 +297,6 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         putenv('COMPOSER_PROCESS_TIMEOUT=0');
         $config = new Config(true);
         $this->assertEquals(0, $config->get('process-timeout'));
+        putenv('COMPOSER_PROCESS_TIMEOUT');
     }
 }
