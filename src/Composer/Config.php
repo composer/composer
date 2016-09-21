@@ -211,7 +211,8 @@ class Config
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
-                $val = rtrim($this->process($this->getComposerEnv($env) ?: $this->config[$key], $flags), '/\\');
+                $val = $this->getComposerEnv($env);
+                $val = rtrim($this->process(false !== $val ? $val : $this->config[$key], $flags), '/\\');
                 $val = Platform::expandPath($val);
 
                 if (substr($key, -4) !== '-dir') {
