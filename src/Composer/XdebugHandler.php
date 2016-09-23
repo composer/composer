@@ -20,13 +20,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 class XdebugHandler
 {
     const ENV_ALLOW = 'COMPOSER_ALLOW_XDEBUG';
-    const ENV_INI_SCAN_DIR = 'PHP_INI_SCAN_DIR';
-    const ENV_INI_SCAN_DIR_OLD = 'COMPOSER_PHP_INI_SCAN_DIR_OLD';
+    const RESTART_ID = 'internal';
 
     private $output;
     private $loaded;
-    private $tmpIni;
-    private $scanDir;
+    private $envScanDir;
 
     /**
      * Constructor
@@ -35,9 +33,7 @@ class XdebugHandler
     {
         $this->output = $output;
         $this->loaded = extension_loaded('xdebug');
-        $tmp = sys_get_temp_dir();
-        $this->tmpIni = $tmp.'/composer-php.ini';
-        $this->scanDir = $tmp.'/composer-php-empty';
+        $this->envScanDir = getenv('PHP_INI_SCAN_DIR');
     }
 
     /**
@@ -45,23 +41,34 @@ class XdebugHandler
      *
      * If so, then a tmp ini is created with the xdebug ini entry commented out.
      * If additional inis have been loaded, these are combined into the tmp ini
-     * and PHP_INI_SCAN_DIR is set to an empty directory. An environment
-     * variable is set so that the new process is created only once.
+     * and PHP_INI_SCAN_DIR is set to an empty value.
+     *
+     * This behaviour can be disabled by setting the COMPOSER_ALLOW_XDEBUG
+     * environment variable to 1. This variable is used internally so that the
+     * restarted process is created only once and PHP_INI_SCAN_DIR can be
+     * restored to its original value.
      */
     public function check()
     {
-        if ($this->needsRestart()) {
+        $args = explode('|', strval(getenv(self::ENV_ALLOW)), 2);
+
+        if ($this->needsRestart($args[0])) {
             $this->prepareRestart($command) && $this->restart($command);
             return;
         }
 
-        $originalIniScanDir = getenv(self::ENV_INI_SCAN_DIR_OLD);
+        // Restore environment variables if we are restarting
+        if (self::RESTART_ID === $args[0]) {
+            putenv(self::ENV_ALLOW);
 
-        if ($originalIniScanDir) {
-            putenv(self::ENV_INI_SCAN_DIR_OLD);
-            putenv(self::ENV_INI_SCAN_DIR . '=' . $originalIniScanDir);
-        } else {
-            putenv(self::ENV_INI_SCAN_DIR);
+            if (false !== $this->envScanDir) {
+                // $args[1] contains the original value
+                if (isset($args[1])) {
+                    putenv('PHP_INI_SCAN_DIR='.$args[1]);
+                } else {
+                    putenv('PHP_INI_SCAN_DIR');
+                }
+            }
         }
     }
 
@@ -79,15 +86,17 @@ class XdebugHandler
     /**
      * Returns true if a restart is needed
      *
+     * @param string $allow Environment value
+     *
      * @return bool
      */
-    private function needsRestart()
+    private function needsRestart($allow)
     {
         if (PHP_SAPI !== 'cli' || !defined('PHP_BINARY')) {
             return false;
         }
 
-        return !getenv(self::ENV_ALLOW) && $this->loaded;
+        return empty($allow) && $this->loaded;
     }
 
     /**
@@ -97,7 +106,6 @@ class XdebugHandler
      * stop potential recursion:
      *   - tmp ini file creation
      *   - environment variable creation
-     *   - tmp scan dir creation
      *
      * @param null|string $command The command to run, set by method
      *
@@ -111,38 +119,47 @@ class XdebugHandler
         }
 
         $additional = $this->getAdditionalInis($iniFiles, $replace);
-        if ($this->writeTmpIni($iniFiles, $replace)) {
-            $command = $this->getCommand($additional);
+        $tmpIni = $this->writeTmpIni($iniFiles, $replace);
+
+        if (false !== $tmpIni) {
+            $command = $this->getCommand($tmpIni);
+            return $this->setEnvironment($additional);
         }
 
-        return !empty($command) && putenv(self::ENV_ALLOW.'=1');
+        return false;
     }
 
     /**
-     * Writes the temporary ini file, or clears its name if no ini
+     * Writes the tmp ini file and returns its filename
      *
-     * If there are no ini files, the tmp ini name is cleared so that
-     * an empty value is passed with the -c option.
+     * The filename is passed as the -c option when the process restarts. On
+     * non-Windows platforms the filename is prefixed with the username to
+     * avoid any multi-user conflict. Windows always uses the user temp dir.
      *
      * @param array $iniFiles The php.ini locations
      * @param bool $replace Whether we need to modify the files
      *
-     * @return bool False if the tmp ini could not be created
+     * @return bool|string False if the tmp ini could not be created
      */
     private function writeTmpIni(array $iniFiles, $replace)
     {
         if (empty($iniFiles)) {
-            // Unlikely, maybe xdebug was loaded through the -d option.
-            $this->tmpIni = '';
-            return true;
+            // Unlikely, maybe xdebug was loaded through a command line option.
+            return '';
         }
+
+        if (function_exists('posix_getpwuid')) {
+            $user = posix_getpwuid(posix_getuid());
+        }
+        $prefix = !empty($user) ? $user['name'].'-' : '';
+        $tmpIni = sys_get_temp_dir().'/'.$prefix.'composer-php.ini';
 
         $content = $this->getIniHeader($iniFiles);
         foreach ($iniFiles as $file) {
             $content .= $this->getIniData($file, $replace);
         }
 
-        return @file_put_contents($this->tmpIni, $content);
+        return @file_put_contents($tmpIni, $content) ? $tmpIni : false;
     }
 
     /**
@@ -200,37 +217,41 @@ class XdebugHandler
     }
 
     /**
-     * Creates the required environment and returns the restart command line
+     * Returns the restart command line
      *
-     * @param bool $additional Whether additional inis were loaded
+     * @param string $tmpIni The temporary ini file location
      *
-     * @return string|null The command line or null on failure
+     * @return string
      */
-    private function getCommand($additional)
+    private function getCommand($tmpIni)
     {
-        if ($additional) {
-            if (!file_exists($this->scanDir) && !@mkdir($this->scanDir, 0777)) {
-                return;
-            }
-
-            $currentIniScanDir = getenv(self::ENV_INI_SCAN_DIR);
-            if ($currentIniScanDir) {
-                putenv(self::ENV_INI_SCAN_DIR_OLD.'='.$currentIniScanDir);
-            } else {
-                // make sure the env var does not exist if none is to be set
-                // otherwise the child process will reset it incorrectly
-                putenv(self::ENV_INI_SCAN_DIR_OLD);
-            }
-
-            if (!putenv(self::ENV_INI_SCAN_DIR.'='.$this->scanDir)) {
-                return;
-            }
-        }
-
-        $phpArgs = array(PHP_BINARY, '-c', $this->tmpIni);
+        $phpArgs = array(PHP_BINARY, '-c', $tmpIni);
         $params = array_merge($phpArgs, $this->getScriptArgs($_SERVER['argv']));
 
         return implode(' ', array_map(array($this, 'escape'), $params));
+    }
+
+    /**
+     * Returns true if the restart environment variables were set
+     *
+     * @param bool $additional Whether additional inis were loaded
+     *
+     * @return bool
+     */
+    private function setEnvironment($additional)
+    {
+        $args = array(self::RESTART_ID);
+
+        if (false !== $this->envScanDir) {
+            // Save current PHP_INI_SCAN_DIR
+            $args[] = $this->envScanDir;
+        }
+
+        if ($additional && !putenv('PHP_INI_SCAN_DIR=')) {
+            return false;
+        }
+
+        return putenv(self::ENV_ALLOW.'='.implode('|', $args));
     }
 
     /**
