@@ -344,6 +344,7 @@ class RemoteFilesystem
         if ($originUrl === 'bitbucket.org'
             && substr($fileUrl, -4) === '.zip'
             && preg_match('{^text/html\b}i', $contentType)
+            && $statusCode != 302
         ) {
             $result = false;
             if ($this->retryAuthFailure) {
