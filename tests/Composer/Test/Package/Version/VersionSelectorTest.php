@@ -88,6 +88,46 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($package1, $best, 'Latest most stable version should be returned (1.0.0)');
     }
 
+    public function testMostStableVersionIsReturned2()
+    {
+        $packageName = 'foobar';
+
+        $package1 = $this->createPackage('2.x-dev');
+        $package2 = $this->createPackage('2.0.0-beta3');
+        $packages = array($package1, $package2);
+
+        $pool = $this->createMockPool();
+        $pool->expects($this->once())
+            ->method('whatProvides')
+            ->with($packageName, null, true)
+            ->will($this->returnValue($packages));
+
+        $versionSelector = new VersionSelector($pool);
+        $best = $versionSelector->findBestCandidate($packageName, null, null);
+
+        $this->assertSame($package2, $best, 'Latest version should be returned (2.0.0-beta3)');
+    }
+
+    public function testMostStableVersionIsReturned3()
+    {
+        $packageName = 'foobar';
+
+        $package1 = $this->createPackage('2.0.0-beta3');
+        $package2 = $this->createPackage('2.x-dev');
+        $packages = array($package1, $package2);
+
+        $pool = $this->createMockPool();
+        $pool->expects($this->once())
+            ->method('whatProvides')
+            ->with($packageName, null, true)
+            ->will($this->returnValue($packages));
+
+        $versionSelector = new VersionSelector($pool);
+        $best = $versionSelector->findBestCandidate($packageName, null, null);
+
+        $this->assertSame($package1, $best, 'Latest version should be returned (2.0.0-beta3)');
+    }
+
     public function testHighestVersionIsReturned()
     {
         $packageName = 'foobar';
