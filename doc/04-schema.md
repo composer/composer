@@ -328,7 +328,8 @@ a constraint that it otherwise would not. For more information [see the
 aliases article](articles/aliases.md).
 
 `require` and `require-dev` also support references to specific PHP versions
-and PHP extensions your project needs to run successfully.
+and PHP extensions your project needs to run successfully. Package `logics/extcheck`
+may be used to find optional PHP extensions used by your project.
 
 Example:
 
