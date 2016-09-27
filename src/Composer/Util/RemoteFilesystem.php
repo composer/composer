@@ -176,6 +176,27 @@ class RemoteFilesystem
     }
 
     /**
+     * @link https://github.com/composer/composer/issues/5584
+     *
+     * @param string $urlToBitBucketFile URL to a file at bitbucket.org.
+     *
+     * @return bool Whether the given URL is a public BitBucket download which requires no authentication.
+     */
+    public static function urlIsPublicBitBucketDownload($urlToBitBucketFile)
+    {
+        $path = parse_url($urlToBitBucketFile, PHP_URL_PATH);
+
+        // Path for a public download follows this pattern /{user}/{repo}/downloads/{whatever}
+        // {@link https://blog.bitbucket.org/2009/04/12/new-feature-downloads/}
+        $pathParts = explode('/', $path);
+        if (count($pathParts) >= 4 && $pathParts[2] != 'downloads') {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Get file content or copy action.
      *
      * @param string $originUrl         The origin URL
@@ -342,9 +363,9 @@ class RemoteFilesystem
 
         // check for bitbucket login page asking to authenticate
         if ($originUrl === 'bitbucket.org'
+            && !self::urlIsPublicBitBucketDownload($fileUrl)
             && substr($fileUrl, -4) === '.zip'
             && preg_match('{^text/html\b}i', $contentType)
-            && $statusCode != 302
         ) {
             $result = false;
             if ($this->retryAuthFailure) {
