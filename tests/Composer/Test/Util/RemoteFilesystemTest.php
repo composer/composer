@@ -191,6 +191,84 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * Provides URLs to public downloads at BitBucket.
+     *
+     * @return string[][]
+     */
+    public function provideBitbucketPublicDownloadUrls()
+    {
+        return array(
+            array('https://bitbucket.org/berlinger-rarents/my-public-repo-with-downloads/downloads/composer-unit-test-download-me.txt', '1234'),
+        );
+    }
+
+    /**
+     * Tests that a BitBucket public download is correctly retrieved.
+     *
+     * @param string $url
+     * @param string $contents
+     * @dataProvider provideBitbucketPublicDownloadUrls
+     */
+    public function testBitBucketPublicDownload($url, $contents)
+    {
+        $io = $this
+            ->getMockBuilder('Composer\IO\ConsoleIO')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $rfs = new RemoteFilesystem($io);
+        $hostname = parse_url($url, PHP_URL_HOST);
+
+        $result = $rfs->getContents($hostname, $url, false);
+
+        $this->assertEquals($contents, $result);
+    }
+
+    /**
+     * Tests that a BitBucket public download is correctly retrieved when `bitbucket-oauth` is configured.
+     *
+     * @param string $url
+     * @param string $contents
+     * @dataProvider provideBitbucketPublicDownloadUrls
+     */
+    public function testBitBucketPublicDownloadWithAuthConfigured($url, $contents)
+    {
+        $io = $this
+            ->getMockBuilder('Composer\IO\ConsoleIO')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $config = $this
+            ->getMockBuilder('Composer\Config')
+            ->getMock();
+        $config
+            ->method('get')
+            ->withAnyParameters()
+            ->willReturn(array());
+
+        $io
+            ->method('hasAuthentication')
+            ->with('bitbucket.org')
+            ->willReturn(true);
+        $io
+            ->method('getAuthentication')
+            ->with('bitbucket.org')
+            ->willReturn(array(
+                'username' => 'x-token-auth',
+                // This token is fake, but it matches a valid token's pattern.
+                'password' => '1A0yeK5Po3ZEeiiRiMWLivS0jirLdoGuaSGq9NvESFx1Fsdn493wUDXC8rz_1iKVRTl1GINHEUCsDxGh5lZ='
+            ));
+
+
+        $rfs = new RemoteFilesystem($io, $config);
+        $hostname = parse_url($url, PHP_URL_HOST);
+
+        $result = $rfs->getContents($hostname, $url, false);
+
+        $this->assertEquals($contents, $result);
+    }
+
     protected function callGetOptionsForUrl($io, array $args = array(), array $options = array(), $fileUrl = '')
     {
         $fs = new RemoteFilesystem($io, null, $options);

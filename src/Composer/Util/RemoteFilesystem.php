@@ -44,6 +44,7 @@ class RemoteFilesystem
     private $degradedMode = false;
     private $redirects;
     private $maxRedirects = 20;
+    private $bitBucketUrlsTriedWithoutAuth = array();
 
     /**
      * Constructor.
@@ -176,27 +177,6 @@ class RemoteFilesystem
     }
 
     /**
-     * @link https://github.com/composer/composer/issues/5584
-     *
-     * @param string $urlToBitBucketFile URL to a file at bitbucket.org.
-     *
-     * @return bool Whether the given URL is a public BitBucket download which requires no authentication.
-     */
-    public static function urlIsPublicBitBucketDownload($urlToBitBucketFile)
-    {
-        $path = parse_url($urlToBitBucketFile, PHP_URL_PATH);
-
-        // Path for a public download follows this pattern /{user}/{repo}/downloads/{whatever}
-        // {@link https://blog.bitbucket.org/2009/04/12/new-feature-downloads/}
-        $pathParts = explode('/', $path);
-        if (count($pathParts) >= 4 && $pathParts[2] != 'downloads') {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Get file content or copy action.
      *
      * @param string $originUrl         The origin URL
@@ -267,7 +247,12 @@ class RemoteFilesystem
         }
 
         if (isset($options['bitbucket-token'])) {
-            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['bitbucket-token'];
+            // First time be optimistic and do not use the token for a BitBucket download.
+            if (isset($this->bitBucketUrlsTriedWithoutAuth[$origFileUrl]) && $this->bitBucketUrlsTriedWithoutAuth[$origFileUrl]) {
+                $fileUrl .= (false === strpos($fileUrl,'?') ? '?' : '&') . 'access_token=' . $options['bitbucket-token'];
+            } else {
+                $this->bitBucketUrlsTriedWithoutAuth[$origFileUrl] = true;
+            }
             unset($options['bitbucket-token']);
         }
 
@@ -363,9 +348,7 @@ class RemoteFilesystem
 
         // check for bitbucket login page asking to authenticate
         if ($originUrl === 'bitbucket.org'
-            && !self::urlIsPublicBitBucketDownload($fileUrl)
-            && substr($fileUrl, -4) === '.zip'
-            && preg_match('{^text/html\b}i', $contentType)
+            && substr($fileUrl, 0, 37) === 'https://bitbucket.org/account/signin/'
         ) {
             $result = false;
             if ($this->retryAuthFailure) {
