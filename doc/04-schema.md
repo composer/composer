@@ -328,7 +328,9 @@ a constraint that it otherwise would not. For more information [see the
 aliases article](articles/aliases.md).
 
 `require` and `require-dev` also support references to specific PHP versions
-and PHP extensions your project needs to run successfully.
+and PHP extensions your project needs to run successfully. If PHP extension
+is not strictly required by your project but may improve its performance/functionality
+it is recommended to list such PHP extension in `suggest`.
 
 Example:
 
@@ -337,9 +339,25 @@ Example:
     "require" : {
         "php" : "^5.5 || ^7.0",
         "ext-mbstring": "*"
+    },
+    "suggest" : {
+        "ext-XCache": "Opcode cache to improve performance"
     }
 }
 ```
+
+> **Note:** It is important to list PHP extensions your project uses,
+> especially when your project targeted at wider audience. Not all PHP
+> installations are created equal: some may miss extensions you may consider
+> as standard (such as `ext-mysqli` which is not installed by default in
+> Fedora/CentOS minimal installation systems). Failure to list used PHP
+> extension may lead to bad user experience: composer will install your
+> project without any errors just for your project to fail at run-time.
+> `composer show --platform` command lists all PHP extensions available on
+> your system. You may use it to help you to compile the list of extensions to
+> be included in composer.json. Alternatively you may use third party tools
+> to analyze your project for the list of extensions used.
+
 
 #### require
 
