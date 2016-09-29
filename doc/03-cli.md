@@ -868,4 +868,10 @@ If set to 1, this env disables the warning about running commands as root/super 
 It also disables automatic clearing of sudo sessions, so you should really only set this
 if you use Composer as super user at all times like in docker containers.
 
+### COMPOSER_MIRROR_PATH_REPOS
+
+If set to 1, this env changes the default path repository strategy to `mirror` instead
+of `symlink`. As it is the default strategy being set it can still be overwritten by
+repository options.
+
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
