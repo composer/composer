@@ -248,7 +248,7 @@ class RemoteFilesystem
 
         if (isset($options['bitbucket-token'])) {
             // First time be optimistic and do not use the token for a BitBucket download.
-            if (isset($this->bitBucketUrlsTriedWithoutAuth[$origFileUrl]) && $this->bitBucketUrlsTriedWithoutAuth[$origFileUrl]) {
+            if (isset($this->bitBucketUrlsTriedWithoutAuth[$origFileUrl])) {
                 $fileUrl .= (false === strpos($fileUrl,'?') ? '?' : '&') . 'access_token=' . $options['bitbucket-token'];
             } else {
                 $this->bitBucketUrlsTriedWithoutAuth[$origFileUrl] = true;
