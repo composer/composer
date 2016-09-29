@@ -60,7 +60,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         $allowedStrategies = array(self::STRATEGY_SYMLINK, self::STRATEGY_MIRROR);
 
         $mirrorPathRepos = getenv('COMPOSER_MIRROR_PATH_REPOS');
-        if (true === (bool)$mirrorPathRepos) {
+        if ($mirrorPathRepos) {
             $currentStrategy = self::STRATEGY_MIRROR;
         }
 
