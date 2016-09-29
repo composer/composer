@@ -199,7 +199,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     public function provideBitbucketPublicDownloadUrls()
     {
         return array(
-            array('https://bitbucket.org/berlinger-rarents/my-public-repo-with-downloads/downloads/composer-unit-test-download-me.txt', '1234'),
+            array('https://bitbucket.org/seldaek/composer-live-test-repo/downloads/composer-unit-test-download-me.txt', '1234'),
         );
     }
 
