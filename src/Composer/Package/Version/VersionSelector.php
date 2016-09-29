@@ -71,11 +71,21 @@ class VersionSelector
             $candidatePriority = $candidate->getStabilityPriority();
             $currentPriority = $package->getStabilityPriority();
 
-            // candidate is less stable than our preferred stability, and we have a package that is more stable than it, so we skip it
+            // candidate is less stable than our preferred stability,
+            // and current package is more stable than candidate, skip it
             if ($minPriority < $candidatePriority && $currentPriority < $candidatePriority) {
                 continue;
             }
-            // candidate is more stable than our preferred stability, and current package is less stable than preferred stability, then we select the candidate always
+
+            // candidate is less stable than our preferred stability,
+            // and current package is less stable than candidate, select candidate
+            if ($minPriority < $candidatePriority && $candidatePriority < $currentPriority) {
+                $package = $candidate;
+                continue;
+            }
+
+            // candidate is more stable than our preferred stability,
+            // and current package is less stable than preferred stability, select candidate
             if ($minPriority >= $candidatePriority && $minPriority < $currentPriority) {
                 $package = $candidate;
                 continue;
