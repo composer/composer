@@ -14,6 +14,8 @@ Installation / Usage
 
 Download and install Composer by following the [official instructions](https://getcomposer.org/download/).
 
+For usage, see [the documentation](https://getcomposer.org/doc/).
+
 Packages
 --------
 
