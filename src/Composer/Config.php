@@ -82,6 +82,7 @@ class Config
     private $authConfigSource;
     private $useEnvironment;
     private $warnedHosts = array();
+    private $enableAutoloadDevForChild;
 
     /**
      * @param bool   $useEnvironment Use COMPOSER_ environment variables to replace config settings
@@ -94,6 +95,7 @@ class Config
         $this->repositories = static::$defaultRepositories;
         $this->useEnvironment = (bool) $useEnvironment;
         $this->baseDir = $baseDir;
+        $this->enableAutoloadDevForChild = [];
     }
 
     public function setConfigSource(ConfigSourceInterface $source)
@@ -152,6 +154,12 @@ class Config
             }
         }
 
+        if(!empty($config["enable-autoload-dev-for-child"]) && is_array($config['enable-autoload-dev-for-child'])) {
+            $repoNames = array_reverse($config['enable-autoload-dev-for-child'], true);
+            foreach ($repoNames as $key =>$repoName) {
+                $this->enableAutoloadDevForChild[] = $repoName;
+            }
+        }
         if (!empty($config['repositories']) && is_array($config['repositories'])) {
             $this->repositories = array_reverse($this->repositories, true);
             $newRepos = array_reverse($config['repositories'], true);
@@ -187,6 +195,13 @@ class Config
         return $this->repositories;
     }
 
+    /**
+     * @return array
+     */
+    public function getEnableAutoloadDevForChild()
+    {
+        return $this->enableAutoloadDevForChild;
+    }
     /**
      * Returns a setting
      *
