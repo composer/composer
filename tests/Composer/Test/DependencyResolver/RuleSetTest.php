@@ -32,8 +32,8 @@ class RuleSetTest extends TestCase
         $rules = array(
             RuleSet::TYPE_PACKAGE => array(),
             RuleSet::TYPE_JOB => array(
-                new Rule(array(), Rule::RULE_JOB_INSTALL, null),
-                new Rule(array(), Rule::RULE_JOB_INSTALL, null),
+                new Rule(array(1), Rule::RULE_JOB_INSTALL, null),
+                new Rule(array(2), Rule::RULE_JOB_INSTALL, null),
             ),
             RuleSet::TYPE_LEARNED => array(
                 new Rule(array(), Rule::RULE_INTERNAL_ALLOW_UPDATE, null),
@@ -47,6 +47,25 @@ class RuleSetTest extends TestCase
         $ruleSet->add($rules[RuleSet::TYPE_JOB][1], RuleSet::TYPE_JOB);
 
         $this->assertEquals($rules, $ruleSet->getRules());
+    }
+
+    public function testAddIgnoresDuplicates()
+    {
+        $rules = array(
+            RuleSet::TYPE_JOB => array(
+                new Rule(array(), Rule::RULE_JOB_INSTALL, null),
+                new Rule(array(), Rule::RULE_JOB_INSTALL, null),
+                new Rule(array(), Rule::RULE_JOB_INSTALL, null),
+            )
+        );
+
+        $ruleSet = new RuleSet;
+
+        $ruleSet->add($rules[RuleSet::TYPE_JOB][0], RuleSet::TYPE_JOB);
+        $ruleSet->add($rules[RuleSet::TYPE_JOB][1], RuleSet::TYPE_JOB);
+        $ruleSet->add($rules[RuleSet::TYPE_JOB][2], RuleSet::TYPE_JOB);
+
+        $this->assertCount(1, $ruleSet->getIteratorFor(array(RuleSet::TYPE_JOB)));
     }
 
     /**
@@ -63,8 +82,8 @@ class RuleSetTest extends TestCase
     {
         $ruleSet = new RuleSet;
 
-        $ruleSet->add(new Rule(array(), Rule::RULE_JOB_INSTALL, null), RuleSet::TYPE_JOB);
-        $ruleSet->add(new Rule(array(), Rule::RULE_JOB_INSTALL, null), RuleSet::TYPE_JOB);
+        $ruleSet->add(new Rule(array(1), Rule::RULE_JOB_INSTALL, null), RuleSet::TYPE_JOB);
+        $ruleSet->add(new Rule(array(2), Rule::RULE_JOB_INSTALL, null), RuleSet::TYPE_JOB);
 
         $this->assertEquals(2, $ruleSet->count());
     }
@@ -83,8 +102,8 @@ class RuleSetTest extends TestCase
     {
         $ruleSet = new RuleSet;
 
-        $rule1 = new Rule(array(), Rule::RULE_JOB_INSTALL, null);
-        $rule2 = new Rule(array(), Rule::RULE_JOB_INSTALL, null);
+        $rule1 = new Rule(array(1), Rule::RULE_JOB_INSTALL, null);
+        $rule2 = new Rule(array(2), Rule::RULE_JOB_INSTALL, null);
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
 
@@ -98,8 +117,8 @@ class RuleSetTest extends TestCase
     public function testGetIteratorFor()
     {
         $ruleSet = new RuleSet;
-        $rule1 = new Rule(array(), Rule::RULE_JOB_INSTALL, null);
-        $rule2 = new Rule(array(), Rule::RULE_JOB_INSTALL, null);
+        $rule1 = new Rule(array(1), Rule::RULE_JOB_INSTALL, null);
+        $rule2 = new Rule(array(2), Rule::RULE_JOB_INSTALL, null);
 
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
@@ -112,8 +131,8 @@ class RuleSetTest extends TestCase
     public function testGetIteratorWithout()
     {
         $ruleSet = new RuleSet;
-        $rule1 = new Rule(array(), Rule::RULE_JOB_INSTALL, null);
-        $rule2 = new Rule(array(), Rule::RULE_JOB_INSTALL, null);
+        $rule1 = new Rule(array(1), Rule::RULE_JOB_INSTALL, null);
+        $rule2 = new Rule(array(2), Rule::RULE_JOB_INSTALL, null);
 
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
@@ -121,38 +140,6 @@ class RuleSetTest extends TestCase
         $iterator = $ruleSet->getIteratorWithout(RuleSet::TYPE_JOB);
 
         $this->assertSame($rule2, $iterator->current());
-    }
-
-    public function testContainsEqual()
-    {
-        $ruleSet = new RuleSet;
-
-        $rule = $this->getRuleMock();
-        $rule->expects($this->any())
-            ->method('getHash')
-            ->will($this->returnValue('rule_1_hash'));
-        $rule->expects($this->any())
-            ->method('equals')
-            ->will($this->returnValue(true));
-
-        $rule2 = $this->getRuleMock();
-        $rule2->expects($this->any())
-            ->method('getHash')
-            ->will($this->returnValue('rule_2_hash'));
-
-        $rule3 = $this->getRuleMock();
-        $rule3->expects($this->any())
-            ->method('getHash')
-            ->will($this->returnValue('rule_1_hash'));
-        $rule3->expects($this->any())
-            ->method('equals')
-            ->will($this->returnValue(false));
-
-        $ruleSet->add($rule, RuleSet::TYPE_LEARNED);
-
-        $this->assertTrue($ruleSet->containsEqual($rule));
-        $this->assertFalse($ruleSet->containsEqual($rule2));
-        $this->assertFalse($ruleSet->containsEqual($rule3));
     }
 
     public function testPrettyString()

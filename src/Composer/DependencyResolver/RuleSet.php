@@ -62,13 +62,24 @@ class RuleSet implements \IteratorAggregate, \Countable
             $this->rules[$type] = array();
         }
 
+        $hash = $rule->getHash();
+
+        // Do not add if rule already exists
+        if (isset($this->rulesByHash[$hash])) {
+            $potentialDuplicates = $this->rulesByHash[$hash];
+            foreach ($potentialDuplicates as $potentialDuplicate) {
+                if ($rule->equals($potentialDuplicate)) {
+                    return;
+                }
+            }
+        }
+
         $this->rules[$type][] = $rule;
         $this->ruleById[$this->nextRuleId] = $rule;
         $rule->setType($type);
 
         $this->nextRuleId++;
 
-        $hash = $rule->getHash();
         if (!isset($this->rulesByHash[$hash])) {
             $this->rulesByHash[$hash] = array($rule);
         } else {
@@ -133,20 +144,6 @@ class RuleSet implements \IteratorAggregate, \Countable
         unset($types[255]);
 
         return array_keys($types);
-    }
-
-    public function containsEqual($rule)
-    {
-        if (isset($this->rulesByHash[$rule->getHash()])) {
-            $potentialDuplicates = $this->rulesByHash[$rule->getHash()];
-            foreach ($potentialDuplicates as $potentialDuplicate) {
-                if ($rule->equals($potentialDuplicate)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     public function getPrettyString(Pool $pool = null)
