@@ -103,7 +103,7 @@ class PlatformRepository extends ArrayRepository
         // IPv6 support might still be available.
         if (defined('AF_INET6') || Silencer::call('inet_pton', '::') !== false) {
             $phpIpv6 = new CompletePackage('php-ipv6', $version, $prettyVersion);
-            $phpIpv6->setDescription('The PHP interpreter with IPv6 support');
+            $phpIpv6->setDescription('The PHP interpreter, with IPv6 support');
             $this->addPackage($phpIpv6);
         }
 
