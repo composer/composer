@@ -87,6 +87,12 @@ class PlatformRepository extends ArrayRepository
             $this->addPackage($phpdebug);
         }
 
+        if (PHP_ZTS) {
+            $phpzts = new CompletePackage('php-zts', $version, $prettyVersion);
+            $phpzts->setDescription('The PHP interpreter, with Zend Thread Safety');
+            $this->addPackage($phpzts);
+        }
+
         if (PHP_INT_SIZE === 8) {
             $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
             $php64->setDescription('The PHP interpreter, 64bit');
