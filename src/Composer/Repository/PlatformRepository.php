@@ -81,6 +81,12 @@ class PlatformRepository extends ArrayRepository
         $php->setDescription('The PHP interpreter');
         $this->addPackage($php);
 
+        if (PHP_DEBUG) {
+            $phpdebug = new CompletePackage('php-debug', $version, $prettyVersion);
+            $phpdebug->setDescription('The PHP interpreter, with debugging symbols');
+            $this->addPackage($phpdebug);
+        }
+
         if (PHP_INT_SIZE === 8) {
             $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
             $php64->setDescription('The PHP interpreter, 64bit');
