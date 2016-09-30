@@ -58,11 +58,11 @@ class RuleSet implements \IteratorAggregate, \Countable
             throw new \OutOfBoundsException('Unknown rule type: ' . $type);
         }
 
+        $hash = $rule->getHash();
+
         if (!isset($this->rules[$type])) {
             $this->rules[$type] = array();
         }
-
-        $hash = $rule->getHash();
 
         // Do not add if rule already exists
         if (isset($this->rulesByHash[$hash])) {
