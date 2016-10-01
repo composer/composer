@@ -23,7 +23,7 @@ use Composer\Util\Silencer;
  */
 class PlatformRepository extends ArrayRepository
 {
-    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6)?|hhvm|(?:ext|lib)-[^/]+)$}i';
+    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[^/]+)$}i';
 
     /**
      * Defines overrides so that the platform can be mocked
@@ -81,6 +81,18 @@ class PlatformRepository extends ArrayRepository
         $php->setDescription('The PHP interpreter');
         $this->addPackage($php);
 
+        if (PHP_DEBUG) {
+            $phpdebug = new CompletePackage('php-debug', $version, $prettyVersion);
+            $phpdebug->setDescription('The PHP interpreter, with debugging symbols');
+            $this->addPackage($phpdebug);
+        }
+
+        if (defined('PHP_ZTS') && PHP_ZTS) {
+            $phpzts = new CompletePackage('php-zts', $version, $prettyVersion);
+            $phpzts->setDescription('The PHP interpreter, with Zend Thread Safety');
+            $this->addPackage($phpzts);
+        }
+
         if (PHP_INT_SIZE === 8) {
             $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
             $php64->setDescription('The PHP interpreter, 64bit');
@@ -91,7 +103,7 @@ class PlatformRepository extends ArrayRepository
         // IPv6 support might still be available.
         if (defined('AF_INET6') || Silencer::call('inet_pton', '::') !== false) {
             $phpIpv6 = new CompletePackage('php-ipv6', $version, $prettyVersion);
-            $phpIpv6->setDescription('The PHP interpreter with IPv6 support');
+            $phpIpv6->setDescription('The PHP interpreter, with IPv6 support');
             $this->addPackage($phpIpv6);
         }
 
