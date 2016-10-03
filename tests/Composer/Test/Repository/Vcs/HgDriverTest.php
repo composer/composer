@@ -22,7 +22,7 @@ class HgDriverTest extends TestCase
 
     /** @type \Composer\IO\IOInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $io;
-    /** @type \Composer\Config */
+    /** @type Config */
     private $config;
     /** @type string */
     private $home;
@@ -45,18 +45,24 @@ class HgDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    public function testSupports()
+    /**
+     * @dataProvider supportsDataProvider
+     */
+    public function testSupports($repositoryUrl)
     {
         $this->assertTrue(
-            HgDriver::supports($this->io, $this->config, 'ssh://bitbucket.org/user/repo')
+            HgDriver::supports($this->io, $this->config, $repositoryUrl)
         );
+    }
 
-        $this->assertTrue(
-            HgDriver::supports($this->io, $this->config, 'ssh://hg@bitbucket.org/user/repo')
-        );
-
-        $this->assertTrue(
-            HgDriver::supports($this->io, $this->config, 'ssh://user@bitbucket.org/user/repo')
+    public function supportsDataProvider()
+    {
+        return array(
+            array('ssh://bitbucket.org/user/repo'),
+            array('ssh://hg@bitbucket.org/user/repo'),
+            array('ssh://user@bitbucket.org/user/repo'),
+            array('https://bitbucket.org/user/repo'),
+            array('https://user@bitbucket.org/user/repo'),
         );
     }
 
