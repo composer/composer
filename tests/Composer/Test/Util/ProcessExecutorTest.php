@@ -54,8 +54,14 @@ class ProcessExecutorTest extends TestCase
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
         $process->execute('echo https://foo:bar@example.org/ && echo http://foo@example.org && echo http://abcdef1234567890234578:x-oauth-token@github.com/', $output);
-
         $this->assertEquals('Executing command (CWD): echo https://foo:***@example.org/ && echo http://foo@example.org && echo http://***:***@github.com/', trim($buffer->getOutput()));
+    }
+
+    public function testDoesntHidePorts()
+    {
+        $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
+        $process->execute('echo https://localhost:1234/', $output);
+        $this->assertEquals('Executing command (CWD): echo https://localhost:1234/', trim($buffer->getOutput()));
     }
 
     public function testSplitLines()

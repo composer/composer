@@ -131,7 +131,13 @@ class Locker
             return $this->contentHash === $lock['content-hash'];
         }
 
-        return $this->hash === $lock['hash'];
+        // BC support for old lock files without content-hash
+        if (!empty($lock['hash'])) {
+            return $this->hash === $lock['hash'];
+        }
+
+        // should not be reached unless the lock file is corrupted, so assume it's out of date
+        return false;
     }
 
     /**
@@ -285,7 +291,6 @@ class Locker
             '_readme' => array('This file locks the dependencies of your project to a known state',
                                'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
                                'This file is @gener'.'ated automatically', ),
-            'hash' => $this->hash,
             'content-hash' => $this->contentHash,
             'packages' => null,
             'packages-dev' => null,

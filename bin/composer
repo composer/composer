@@ -7,9 +7,18 @@ if (PHP_SAPI !== 'cli') {
 
 require __DIR__.'/../src/bootstrap.php';
 
+use Composer\Factory;
+use Composer\XdebugHandler;
 use Composer\Console\Application;
 
 error_reporting(-1);
+
+// Create output for XdebugHandler and Application
+$output = Factory::createOutput();
+
+$xdebug = new XdebugHandler($output);
+$xdebug->check();
+unset($xdebug);
 
 if (function_exists('ini_set')) {
     @ini_set('display_errors', 1);
@@ -41,4 +50,4 @@ if (function_exists('ini_set')) {
 
 // run the command application
 $application = new Application();
-$application->run();
+$application->run(null, $output);

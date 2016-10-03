@@ -99,6 +99,7 @@ resolution.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-suggest:** Skips suggested packages in the output.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -143,6 +144,7 @@ php composer.phar update vendor/*
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-suggest:** Skips suggested packages in the output.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -186,6 +188,7 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-suggest:** Skips suggested packages in the output.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
 * **--update-with-dependencies:** Also update dependencies of the newly
@@ -330,6 +333,7 @@ php composer.phar show monolog/monolog 1.0.2
 * **--name-only (-N):** List package names only.
 * **--path (-P):** List package paths.
 * **--outdated (-o):** Implies --latest, but this lists *only* packages that have a newer version available.
+* **--minor-only (-m):** Use with --latest. Only shows packages that have minor SemVer-compatible updates.
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 
 ## outdated
@@ -349,6 +353,7 @@ The color coding is as such:
 
 * **--all (-a):** Show all packages, not just outdated (alias for `composer show -l`).
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
+* **--minor-only (-m):** Only shows packages that have minor SemVer-compatible updates.
 
 ## browse / home
 
@@ -862,5 +867,11 @@ If set to 1, this env disables the warning about having xdebug enabled.
 If set to 1, this env disables the warning about running commands as root/super user.
 It also disables automatic clearing of sudo sessions, so you should really only set this
 if you use Composer as super user at all times like in docker containers.
+
+### COMPOSER_MIRROR_PATH_REPOS
+
+If set to 1, this env changes the default path repository strategy to `mirror` instead
+of `symlink`. As it is the default strategy being set it can still be overwritten by
+repository options.
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

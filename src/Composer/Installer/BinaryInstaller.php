@@ -118,6 +118,22 @@ class BinaryInstaller
         }
     }
 
+    public static function determineBinaryCaller($bin)
+    {
+        if ('.bat' === substr($bin, -4) || '.exe' === substr($bin, -4)) {
+            return 'call';
+        }
+
+        $handle = fopen($bin, 'r');
+        $line = fgets($handle);
+        fclose($handle);
+        if (preg_match('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
+            return trim($match[1]);
+        }
+
+        return 'php';
+    }
+
     protected function getBinaries(PackageInterface $package)
     {
         return $package->getBinaries();
@@ -160,18 +176,7 @@ class BinaryInstaller
     protected function generateWindowsProxyCode($bin, $link)
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
-        if ('.bat' === substr($bin, -4) || '.exe' === substr($bin, -4)) {
-            $caller = 'call';
-        } else {
-            $handle = fopen($bin, 'r');
-            $line = fgets($handle);
-            fclose($handle);
-            if (preg_match('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
-                $caller = trim($match[1]);
-            } else {
-                $caller = 'php';
-            }
-        }
+        $caller = self::determineBinaryCaller($bin);
 
         return "@ECHO OFF\r\n".
             "setlocal DISABLEDELAYEDEXPANSION\r\n".
