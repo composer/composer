@@ -74,6 +74,12 @@
         "package": {
             "allOf": [
                 { "$ref": "#/definitions/package-base" },
+                {
+                    "properties": {
+                        "dist": { "type": "object" },
+                        "source": { "type": "object" }
+                    }
+                },
                 { "oneOf": [
                     { "required": [ "name", "version", "source" ] },
                     { "required": [ "name", "version", "dist" ] }
