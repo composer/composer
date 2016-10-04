@@ -137,7 +137,7 @@ class RuleSetGenerator
      */
     private function addRule($type, Rule $newRule = null)
     {
-        if (!$newRule || $this->rules->containsEqual($newRule)) {
+        if (!$newRule) {
             return;
         }
 
