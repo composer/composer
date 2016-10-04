@@ -60,10 +60,6 @@ class RuleSet implements \IteratorAggregate, \Countable
 
         $hash = $rule->getHash();
 
-        if (!isset($this->rules[$type])) {
-            $this->rules[$type] = array();
-        }
-
         // Do not add if rule already exists
         if (isset($this->rulesByHash[$hash])) {
             $potentialDuplicates = $this->rulesByHash[$hash];
@@ -74,6 +70,10 @@ class RuleSet implements \IteratorAggregate, \Countable
             }
         }
 
+        if (!isset($this->rules[$type])) {
+            $this->rules[$type] = array();
+        }
+        
         $this->rules[$type][] = $rule;
         $this->ruleById[$this->nextRuleId] = $rule;
         $rule->setType($type);
