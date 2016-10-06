@@ -99,8 +99,13 @@ class AutoloadGenerator
 
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
-        $basePath = $filesystem->normalizePath(realpath(getcwd()));
-        $vendorPath = $filesystem->normalizePath(realpath($config->get('vendor-dir')));
+        // Do not remove double realpath() calls.
+        // Fixes failing Windows realpath() implementation.
+        // PHP bugs
+        //  https://bugs.php.net/bug.php?id=72642
+        //  https://bugs.php.net/bug.php?id=72738
+        $basePath = $filesystem->normalizePath(realpath(realpath(getcwd())));
+        $vendorPath = $filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
         $targetDir = $vendorPath.'/'.$targetDir;
