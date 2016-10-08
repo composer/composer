@@ -10,9 +10,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Repository\Vcs;
+namespace Composer\Test\Repository\Vcs;
 
 use Composer\Config;
+use Composer\Repository\Vcs\GitBitbucketDriver;
 use Composer\TestCase;
 use Composer\Util\Filesystem;
 
