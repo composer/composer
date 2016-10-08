@@ -313,11 +313,6 @@ class ClassLoader
      */
     public function findFile($class)
     {
-        // work around for PHP 5.3.0 - 5.3.2 https://bugs.php.net/50731
-        if ('\\' == $class[0]) {
-            $class = substr($class, 1);
-        }
-
         // class map lookup
         if (isset($this->classMap[$class])) {
             return $this->classMap[$class];
