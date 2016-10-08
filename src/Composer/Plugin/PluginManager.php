@@ -183,6 +183,7 @@ class PluginManager
                 $path = $classLoader->findFile($class);
                 $code = file_get_contents($path);
                 $separatorPos = strrpos($class, '\\');
+                $className = $class;
                 if ($separatorPos) {
                     $className = substr($class, $separatorPos + 1);
                 }
