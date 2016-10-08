@@ -12,6 +12,8 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Downloader\Download;
+use Composer\Util\DownloadUnitsFormatter;
 use Composer\Util\RemoteFilesystem;
 
 class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
@@ -101,8 +103,12 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     public function testCallbackGetFileSize()
     {
         $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
+
+        $downloadGetActive = new \ReflectionMethod($fs, 'getActiveDownload');
+        $downloadGetActive->setAccessible(true);
+
         $this->callCallbackGet($fs, STREAM_NOTIFY_FILE_SIZE_IS, 0, '', 0, 0, 20);
-        $this->assertAttributeEquals(20, 'bytesMax', $fs);
+        $this->assertEquals(20, $downloadGetActive->invoke($fs)->getFileSizeInBytes());
     }
 
     public function testCallbackGetNotifyProgress()
@@ -114,11 +120,13 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         ;
 
         $fs = new RemoteFilesystem($io);
-        $this->setAttribute($fs, 'bytesMax', 20);
+        $download = new Download(new DownloadUnitsFormatter());
+        $download->start(20);
         $this->setAttribute($fs, 'progress', true);
+        $this->setAttribute($fs, 'download', $download);
 
         $this->callCallbackGet($fs, STREAM_NOTIFY_PROGRESS, 0, '', 0, 10, 20);
-        $this->assertAttributeEquals(50, 'lastProgress', $fs);
+        $this->assertEquals(50, $download->getProgressPercentage());
     }
 
     public function testCallbackGetPassesThrough404()
