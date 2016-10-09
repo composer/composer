@@ -775,6 +775,19 @@ will look from the first to the last repository, and pick the first match.
 By default Packagist is added last which means that custom repositories can
 override packages from it.
 
+Using JSON object is also allowed. However, it is discouraged because there is no explicit order of keys in JSON object.
+
+ ```json
+{
+    "repositories": {
+         "composer": {
+             "type": "composer",
+             "url": "http://packages.example.com"
+         }
+    }
+}
+ ```
+
 ### config <span>([root-only](04-schema.md#root-package))</span>
 
 A set of configuration options. It is only used for projects. See
