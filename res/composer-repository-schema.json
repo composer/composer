@@ -49,11 +49,11 @@
         "version": {
             "type": "object",
             "oneOf": [
-                { "$ref": "#/definitions/package-generic" },
-                { "$ref": "#/definitions/package-metapackage" }
+                { "$ref": "#/definitions/package" },
+                { "$ref": "#/definitions/metapackage" }
             ]
         },
-        "package-generic": {
+        "package-base": {
             "properties": {
                 "name": { "type": "string" },
                 "type": { "type": "string" },
@@ -62,29 +62,40 @@
                     "type": "string",
                     "description": "Normalized version, optional but can save computational time on client side."
                 },
-                "source": { "type": "object" },
-                "dist": { "type": "object" },
+                "autoload": { "type": "object" },
+                "require": { "type": "object" },
+                "replace": { "type": "object" },
+                "conflict": { "type": "object" },
+                "provide": { "type": "object" },
                 "time": { "type": "string" }
             },
-            "oneOf": [
-                { "required": [ "name", "version", "source" ] },
-                { "required": [ "name", "version", "dist" ] }
-            ],
             "additionalProperties": true
         },
-        "package-metapackage": {
-            "properties": {
-                "name": { "type": "string" },
-                "type": { "type": "string", "enum": [ "metapackage" ] },
-                "version": { "type": "string" },
-                "version_normalized": {
-                    "type": "string",
-                    "description": "Normalized version, optional but can save computational time on client side."
+        "package": {
+            "allOf": [
+                { "$ref": "#/definitions/package-base" },
+                {
+                    "properties": {
+                        "dist": { "type": "object" },
+                        "source": { "type": "object" }
+                    }
                 },
-                "time": { "type": "string" }
-            },
-            "required": [ "name", "version" ],
-            "additionalProperties": true
+                { "oneOf": [
+                    { "required": [ "name", "version", "source" ] },
+                    { "required": [ "name", "version", "dist" ] }
+                ] }
+            ]
+        },
+        "metapackage": {
+            "allOf": [
+                { "$ref": "#/definitions/package-base" },
+                {
+                    "properties": {
+                        "type": { "type": "string", "enum": [ "metapackage" ] }
+                    },
+                    "required": [ "name", "version", "type" ]
+                }
+            ]
         },
         "provider": {
             "type": "object",
