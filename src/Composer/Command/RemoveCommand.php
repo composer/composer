@@ -61,6 +61,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $packages = $input->getArgument('packages');
+        $packages = array_map('strtolower', $packages);
 
         $file = Factory::getComposerFile();
 
@@ -76,6 +77,15 @@ EOT
 
         if ($input->getOption('update-with-dependencies')) {
             $io->writeError('<warning>You are using the deprecated option "update-with-dependencies". This is now default behaviour. The --no-update-with-dependencies option can be used to remove a package without its dependencies.</warning>');
+        }
+
+        // make sure name checks are done case insensitively
+        foreach (array('require', 'require-dev') as $linkType) {
+            if (isset($composer[$linkType])) {
+                foreach ($composer[$linkType] as $name => $version) {
+                    $composer[$linkType][strtolower($name)] = $version;
+                }
+            }
         }
 
         foreach ($packages as $package) {
