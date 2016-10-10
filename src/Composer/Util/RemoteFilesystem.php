@@ -176,27 +176,6 @@ class RemoteFilesystem
     }
 
     /**
-     * @link https://github.com/composer/composer/issues/5584
-     *
-     * @param string $urlToBitBucketFile URL to a file at bitbucket.org.
-     *
-     * @return bool Whether the given URL is a public BitBucket download which requires no authentication.
-     */
-    public static function urlIsPublicBitBucketDownload($urlToBitBucketFile)
-    {
-        $path = parse_url($urlToBitBucketFile, PHP_URL_PATH);
-
-        // Path for a public download follows this pattern /{user}/{repo}/downloads/{whatever}
-        // {@link https://blog.bitbucket.org/2009/04/12/new-feature-downloads/}
-        $pathParts = explode('/', $path);
-        if (count($pathParts) >= 4 && $pathParts[2] != 'downloads') {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Get file content or copy action.
      *
      * @param string $originUrl         The origin URL
@@ -267,8 +246,8 @@ class RemoteFilesystem
         }
 
         if (isset($options['bitbucket-token'])) {
-            // First time be optimistic and do not use the token for a BitBucket download.
-            if (!static::urlIsPublicBitBucketDownload($origFileUrl)) {
+            // skip using the token for BitBucket downloads as these are not working with auth
+            if (!$this->isPublicBitBucketDownload($origFileUrl)) {
                 $fileUrl .= (false === strpos($fileUrl,'?') ? '?' : '&') . 'access_token=' . $options['bitbucket-token'];
             }
             unset($options['bitbucket-token']);
@@ -366,7 +345,7 @@ class RemoteFilesystem
 
         // check for bitbucket login page asking to authenticate
         if ($originUrl === 'bitbucket.org'
-            && !static::urlIsPublicBitBucketDownload($fileUrl)
+            && !$this->isPublicBitBucketDownload($fileUrl)
             && substr($fileUrl, -4) === '.zip'
             && preg_match('{^text/html\b}i', $contentType)
         ) {
@@ -1006,5 +985,26 @@ class RemoteFilesystem
         $port = parse_url($url, PHP_URL_PORT) ?: $defaultPort;
 
         return parse_url($url, PHP_URL_HOST).':'.$port;
+    }
+
+    /**
+     * @link https://github.com/composer/composer/issues/5584
+     *
+     * @param string $urlToBitBucketFile URL to a file at bitbucket.org.
+     *
+     * @return bool Whether the given URL is a public BitBucket download which requires no authentication.
+     */
+    private function isPublicBitBucketDownload($urlToBitBucketFile)
+    {
+        $path = parse_url($urlToBitBucketFile, PHP_URL_PATH);
+
+        // Path for a public download follows this pattern /{user}/{repo}/downloads/{whatever}
+        // {@link https://blog.bitbucket.org/2009/04/12/new-feature-downloads/}
+        $pathParts = explode('/', $path);
+        if (count($pathParts) >= 4 && $pathParts[2] != 'downloads') {
+            return true;
+        }
+
+        return false;
     }
 }
