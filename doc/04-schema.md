@@ -775,14 +775,15 @@ will look from the first to the last repository, and pick the first match.
 By default Packagist is added last which means that custom repositories can
 override packages from it.
 
-Using JSON object is also allowed. However, it is discouraged because there is no explicit order of keys in JSON object.
+Using JSON object notation is also possible. However, JSON key/value pairs
+are to be considered unordered so consistent behaviour cannot be guaranteed.
 
  ```json
 {
     "repositories": {
-         "composer": {
+         "foo": {
              "type": "composer",
-             "url": "http://packages.example.com"
+             "url": "http://packages.foo.com"
          }
     }
 }
