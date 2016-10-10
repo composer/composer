@@ -1691,6 +1691,47 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddExtraWithPackage()
+    {
+        //$this->markTestSkipped();
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "authors": [],
+                "extra": {
+                    "package-xml": "package.xml"
+                }
+            }
+        }
+    ],
+    "extra": {
+        "auto-append-gitignore": true
+    }
+}');
+
+        $this->assertTrue($manipulator->addProperty('extra.foo-bar', true));
+        $this->assertEquals('{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "authors": [],
+                "extra": {
+                    "package-xml": "package.xml"
+                }
+            }
+        }
+    ],
+    "extra": {
+        "auto-append-gitignore": true,
+        "foo-bar": true
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testAddRepositoryCanInitializeEmptyRepositories()
     {
         $manipulator = new JsonManipulator('{
