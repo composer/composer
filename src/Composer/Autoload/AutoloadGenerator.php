@@ -234,7 +234,6 @@ EOF;
 
             foreach ($namespacesToScan as $namespace => $groups) {
                 foreach ($groups as $group) {
-                    $psrType = $group['type'];
                     foreach ($group['paths'] as $dir) {
                         $dir = $filesystem->normalizePath($filesystem->isAbsolutePath($dir) ? $dir : $basePath.'/'.$dir);
                         if (!is_dir($dir)) {
