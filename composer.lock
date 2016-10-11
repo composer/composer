@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "91ea799425e3f97a7ba5c7ac5e0e72e5",
+    "content-hash": "f16383587ea8facae044abbad436e2a7",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -189,16 +189,16 @@
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "3.0.1",
+            "version": "4.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/justinrainbow/json-schema.git",
-                "reference": "2128f9de8be4600c3394d94c3918faf67157b76b"
+                "reference": "31b29546f49524cb0123fb5619107a9306444b60"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/2128f9de8be4600c3394d94c3918faf67157b76b",
-                "reference": "2128f9de8be4600c3394d94c3918faf67157b76b",
+                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/31b29546f49524cb0123fb5619107a9306444b60",
+                "reference": "31b29546f49524cb0123fb5619107a9306444b60",
                 "shasum": ""
             },
             "require": {
@@ -251,7 +251,7 @@
                 "json",
                 "schema"
             ],
-            "time": "2016-08-26 12:45:49"
+            "time": "2016-10-10 12:37:37"
         },
         {
             "name": "psr/log",
