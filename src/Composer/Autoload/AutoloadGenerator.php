@@ -582,7 +582,7 @@ HEADER;
             $file .= <<<'INCLUDE_PATH'
         $includePaths = require __DIR__ . '/include_paths.php';
         array_push($includePaths, get_include_path());
-        set_include_path(join(PATH_SEPARATOR, $includePaths));
+        set_include_path(implode(PATH_SEPARATOR, $includePaths));
 
 
 INCLUDE_PATH;

@@ -158,13 +158,13 @@ class ConsoleIO extends BaseIO
 
         if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
             $this->output->getErrorOutput()->write($messages, $newline, $sfVerbosity);
-            $this->lastMessageErr = join($newline ? "\n" : '', (array) $messages);
+            $this->lastMessageErr = implode($newline ? "\n" : '', (array) $messages);
 
             return;
         }
 
         $this->output->write($messages, $newline, $sfVerbosity);
-        $this->lastMessage = join($newline ? "\n" : '', (array) $messages);
+        $this->lastMessage = implode($newline ? "\n" : '', (array) $messages);
     }
 
     /**
@@ -193,7 +193,7 @@ class ConsoleIO extends BaseIO
     private function doOverwrite($messages, $newline, $size, $stderr, $verbosity)
     {
         // messages can be an array, let's convert it to string anyway
-        $messages = join($newline ? "\n" : '', (array) $messages);
+        $messages = implode($newline ? "\n" : '', (array) $messages);
 
         // since overwrite is supposed to overwrite last message...
         if (!isset($size)) {
