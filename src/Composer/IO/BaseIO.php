@@ -100,7 +100,7 @@ abstract class BaseIO implements IOInterface, LoggerInterface
         }
 
         foreach ($githubOauth as $domain => $token) {
-            if (!preg_match('{^[a-z0-9]+$}', $token)) {
+            if (!preg_match('{^[.a-z0-9]+$}', $token)) {
                 throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
             }
             $this->checkAndSetAuthentication($domain, $token, 'x-oauth-basic');
