@@ -104,9 +104,9 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 'time',
-                new \DateTime('2012-02-01'),
+                $datetime = new \DateTime('2012-02-01'),
                 'ReleaseDate',
-                '2012-02-01 00:00:00',
+                $datetime->format(DATE_RFC3339),
             ),
             array(
                 'authors',
