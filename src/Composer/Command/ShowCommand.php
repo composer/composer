@@ -288,7 +288,7 @@ EOT
                             }
                         }
                     } else {
-                        $nameLength = max($nameLength, $package);
+                        $nameLength = max($nameLength, strlen($package));
                     }
                 }
                 list($width) = $this->getApplication()->getTerminalDimensions();
