@@ -109,6 +109,7 @@ class Installer
     protected $dryRun = false;
     protected $verbose = false;
     protected $update = false;
+    protected $writeLock = true;
     protected $dumpAutoloader = true;
     protected $runScripts = true;
     protected $ignorePlatformReqs = false;
@@ -179,13 +180,6 @@ class Installer
             $this->update = true;
         }
 
-        if ($this->dryRun) {
-            $this->verbose = true;
-            $this->runScripts = false;
-            $this->installationManager->addInstaller(new NoopInstaller);
-            $this->mockLocalRepositories($this->repositoryManager);
-        }
-
         if ($this->runScripts) {
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
@@ -252,54 +246,54 @@ class Installer
             );
         }
 
+        // write lock
+        if ($this->update && $this->writeLock) {
+            $localRepo->reload();
+
+            $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
+            $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
+
+            $updatedLock = $this->locker->setLockData(
+                array_diff($localRepo->getCanonicalPackages(), $devPackages),
+                $devPackages,
+                $platformReqs,
+                $platformDevReqs,
+                $aliases,
+                $this->package->getMinimumStability(),
+                $this->package->getStabilityFlags(),
+                $this->preferStable || $this->package->getPreferStable(),
+                $this->preferLowest,
+                $this->config->get('platform') ?: array()
+            );
+            if ($updatedLock) {
+                $this->io->writeError('<info>Writing lock file</info>');
+            }
+        }
+
+        if ($this->dumpAutoloader) {
+            // write autoloader
+            if ($this->optimizeAutoloader) {
+                $this->io->writeError('<info>Generating optimized autoload files</info>');
+            } else {
+                $this->io->writeError('<info>Generating autoload files</info>');
+            }
+            
+            $this->autoloadGenerator->setDevMode($this->devMode);
+            $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
+            $this->autoloadGenerator->setRunScripts($this->runScripts);
+            $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+        }
+
+        if ($this->runScripts) {
+            $devMode = (int) $this->devMode;
+            putenv("COMPOSER_DEV_MODE=$devMode");
+
+            // dispatch post event
+            $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
+            $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
+        }
+
         if (!$this->dryRun) {
-            // write lock
-            if ($this->update) {
-                $localRepo->reload();
-
-                $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
-                $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
-
-                $updatedLock = $this->locker->setLockData(
-                    array_diff($localRepo->getCanonicalPackages(), $devPackages),
-                    $devPackages,
-                    $platformReqs,
-                    $platformDevReqs,
-                    $aliases,
-                    $this->package->getMinimumStability(),
-                    $this->package->getStabilityFlags(),
-                    $this->preferStable || $this->package->getPreferStable(),
-                    $this->preferLowest,
-                    $this->config->get('platform') ?: array()
-                );
-                if ($updatedLock) {
-                    $this->io->writeError('<info>Writing lock file</info>');
-                }
-            }
-
-            if ($this->dumpAutoloader) {
-                // write autoloader
-                if ($this->optimizeAutoloader) {
-                    $this->io->writeError('<info>Generating optimized autoload files</info>');
-                } else {
-                    $this->io->writeError('<info>Generating autoload files</info>');
-                }
-
-                $this->autoloadGenerator->setDevMode($this->devMode);
-                $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
-                $this->autoloadGenerator->setRunScripts($this->runScripts);
-                $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
-            }
-
-            if ($this->runScripts) {
-                $devMode = (int) $this->devMode;
-                putenv("COMPOSER_DEV_MODE=$devMode");
-
-                // dispatch post event
-                $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-                $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
-            }
-
             // force binaries re-generation in case they are missing
             foreach ($localRepo->getPackages() as $package) {
                 $this->installationManager->ensureBinariesPresence($package);
@@ -1417,6 +1411,15 @@ class Installer
     {
         $this->dryRun = (boolean) $dryRun;
 
+        if (true === $dryRun) {
+            $this->writeLock = false;
+            $this->dumpAutoloader = false;
+            $this->verbose = true;
+            $this->runScripts = false;
+            $this->installationManager->addInstaller(new NoopInstaller);
+            $this->mockLocalRepositories($this->repositoryManager);
+        }
+
         return $this;
     }
 
@@ -1642,6 +1645,18 @@ class Installer
     public function setPreferLowest($preferLowest = true)
     {
         $this->preferLowest = (boolean) $preferLowest;
+
+        return $this;
+    }
+
+    /**
+     * Should composer.lock file be written?
+     *
+     * @return Installer
+     */
+    public function setWriteLock($writeLock = true)
+    {
+        $this->writeLock = (boolean) $writeLock;
 
         return $this;
     }
