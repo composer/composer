@@ -285,7 +285,9 @@ EOF;
         } elseif (file_exists($includeFilesFilePath)) {
             unlink($includeFilesFilePath);
         }
-        file_put_contents($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
+        if ($config->get('autoloade-static')) {
+            file_put_contents($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
+        }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
         file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion));
 
@@ -589,7 +591,7 @@ INCLUDE_PATH;
         }
 
         $file .= <<<STATIC_INIT
-        \$useStaticLoader = PHP_VERSION_ID >= $staticPhpVersion && !defined('HHVM_VERSION');
+        \$useStaticLoader = PHP_VERSION_ID >= $staticPhpVersion && !defined('HHVM_VERSION') && $config->get('autoloade-static');
         if (\$useStaticLoader) {
             require_once __DIR__ . '/autoload_static.php';
 
@@ -656,7 +658,7 @@ REGISTER_LOADER;
 
         if ($useIncludeFiles) {
             $file .= <<<INCLUDE_FILES
-        if (\$useStaticLoader) {
+        if (\$useStaticLoader && $config->get('autoloade-static')) {
             \$includeFiles = Composer\Autoload\ComposerStaticInit$suffix::\$files;
         } else {
             \$includeFiles = require __DIR__ . '/autoload_files.php';
