@@ -150,6 +150,8 @@ class MyClass
 }
 ```
 
+**Note:** During composer install / update, a `COMPOSER_DEV_MODE` php environment variable is set. If composer install / update was run with the `--no-dev option`, this variable will be set to 0, otherwise it will be set to 1. This exposes the mode in which the install / update was run, to any post-install / update commands.
+
 ## Event classes
 
 When an event is fired, your PHP callback receives as first argument a
