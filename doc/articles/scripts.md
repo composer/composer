@@ -22,15 +22,19 @@ Composer fires the following named events during its execution process:
 
 ### Command Events
 
-- **pre-install-cmd**: occurs before the `install` command is executed with a lock file present.
-- **post-install-cmd**: occurs after the `install` command has been executed with a lock file present.
-- **pre-update-cmd**: occurs before the `update` command is executed, or before the `install` command is executed without a lock file present.
-- **post-update-cmd**: occurs after the `update` command has been executed, or after the `install` command has been executed without a lock file present.
+- **pre-install-cmd**: occurs before the `install` command is executed with a
+  lock file present.
+- **post-install-cmd**: occurs after the `install` command has been executed
+  with a lock file present.
+- **pre-update-cmd**: occurs before the `update` command is executed, or before
+  the `install` command is executed without a lock file present.
+- **post-update-cmd**: occurs after the `update` command has been executed, or
+  after the `install` command has been executed without a lock file present.
 - **post-status-cmd**: occurs after the `status` command has been executed.
 - **pre-archive-cmd**: occurs before the `archive` command is executed.
 - **post-archive-cmd**: occurs after the `archive` command has been executed.
-- **pre-autoload-dump**: occurs before the autoloader is dumped, either
-  during `install`/`update`, or via the `dump-autoload` command.
+- **pre-autoload-dump**: occurs before the autoloader is dumped, either during
+  `install`/`update`, or via the `dump-autoload` command.
 - **post-autoload-dump**: occurs after the autoloader has been dumped, either
   during `install`/`update`, or via the `dump-autoload` command.
 - **post-root-package-install**: occurs after the root package has been
@@ -150,7 +154,10 @@ class MyClass
 }
 ```
 
-**Note:** During composer install / update, a `COMPOSER_DEV_MODE` php environment variable is set. If composer install / update was run with the `--no-dev option`, this variable will be set to 0, otherwise it will be set to 1. This exposes the mode in which the install / update was run, to any post-install / update commands.
+**Note:** During a composer install or update process, a variable named
+`COMPOSER_DEV_MODE` will be added to the environment. If the command was run
+with the `--no-dev` flag, this variable will be set to 0, otherwise it will be
+set to 1.
 
 ## Event classes
 
