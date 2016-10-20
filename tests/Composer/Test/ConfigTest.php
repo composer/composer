@@ -219,6 +219,32 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('https', 'git'), $config->get('github-protocols'));
     }
 
+    public function testNamedRepositorySourceWillBeOverruledByLast()
+    {
+        $config = new Config(false);
+
+        $namedRepository = array('named-repository' => array('type' => 'git', 'url' => 'https://127.0.0.1'));
+        $config->merge(array('repositories' => $namedRepository + array("packagist" => false)));
+        $this->assertEquals($namedRepository, $config->getRepositories());
+
+        $namedRepositoryVersionTwo = array('named-repository' => array('type' => 'git', 'url' => 'https://localhost'));
+        $config->merge(array('repositories' => $namedRepositoryVersionTwo));
+        $this->assertEquals($namedRepositoryVersionTwo, $config->getRepositories());
+    }
+
+    public function testNamedRepositorySourceFlaggedWithImmutableWillLast()
+    {
+        $config = new Config(false);
+
+        $namedRepository = array('named-repository' => array('type' => 'git', 'url' => 'https://127.0.0.1', 'immutable' => true));
+        $config->merge(array('repositories' => $namedRepository + array("packagist" => false)));
+        $this->assertEquals($namedRepository, $config->getRepositories());
+
+        $namedRepositoryVersionTwo = array('named-repository' => array('type' => 'git', 'url' => 'https://localhost'));
+        $config->merge(array('repositories' => $namedRepositoryVersionTwo));
+        $this->assertEquals($namedRepository, $config->getRepositories());
+    }
+
     /**
      * @dataProvider allowedUrlProvider
      *
