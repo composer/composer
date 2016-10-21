@@ -316,11 +316,13 @@ EOT
         );
         $input->setOption('type', $type);
 
-        $license = $input->getOption('license') ?: (! empty($defaults['license']) ? $defaults['license'] : false);
+        $license = $input->getOption('license') ?: (! empty($defaults['license']) ? implode(', ', $defaults['license']) : false);
         $license = $io->ask(
             'License [<comment>'.$license.'</comment>]: ',
             $license
         );
+        $license = preg_split('/, ?/', $license);
+        $license = count($license) > 1 ? $license : implode($license);
         $input->setOption('license', $license);
 
         $io->writeError(array('', 'Define your dependencies.', ''));
