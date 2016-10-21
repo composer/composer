@@ -151,6 +151,9 @@ EOT
      */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
+        $composer = $this->getComposer();
+        $config = $composer->getConfig();
+        $defaults = $config->get('defaults');
         $git = $this->getGitConfig();
         $io = $this->getIO();
         $formatter = $this->getHelperSet()->get('formatter');
@@ -191,7 +194,9 @@ EOT
             $name = basename($cwd);
             $name = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
             $name = strtolower($name);
-            if (isset($git['github.user'])) {
+            if (! empty($defaults['vendor-prefix'])) {
+                $name = $defaults['vendor-prefix'] . '/' . $name;
+            } elseif (isset($git['github.user'])) {
                 $name = $git['github.user'] . '/' . $name;
             } elseif (!empty($_SERVER['USERNAME'])) {
                 $name = $_SERVER['USERNAME'] . '/' . $name;
@@ -230,7 +235,7 @@ EOT
         );
         $input->setOption('name', $name);
 
-        $description = $input->getOption('description') ?: false;
+        $description = $input->getOption('description') ?: (! empty($defaults['description']) ? $defaults['description'] : false);
         $description = $io->ask(
             'Description [<comment>'.$description.'</comment>]: ',
             $description
@@ -238,8 +243,30 @@ EOT
         $input->setOption('description', $description);
 
         if (null === $author = $input->getOption('author')) {
-            if (isset($git['user.name']) && isset($git['user.email'])) {
-                $author = sprintf('%s <%s>', $git['user.name'], $git['user.email']);
+            $author = array('name' => false, 'email' => false);
+
+            if (! empty($defaults['author'])) {
+                if (! empty($defaults['author']['name'])) {
+                    $author['name'] = $defaults['author']['name'];
+                }
+
+                if (! empty($defaults['author']['email'])) {
+                    $author['email'] = $defaults['author']['email'];
+                }
+            }
+
+            if (($author['name'] === false) && isset($git['user.name'])) {
+                $author['name'] = $git['user.name'];
+            }
+
+            if (($author['email'] === false) && isset($git['user.email'])) {
+                $author['email'] = $git['user.email'];
+            }
+
+            if ($author['name'] && $author['email']) {
+                $author = sprintf('%s <%s>', $author['name'], $author['email']);
+            } else {
+                $author = null;
             }
         }
 
@@ -260,7 +287,7 @@ EOT
         );
         $input->setOption('author', $author);
 
-        $minimumStability = $input->getOption('stability') ?: null;
+        $minimumStability = $input->getOption('stability') ?: (! empty($defaults['minimum-stability']) ? $defaults['minimum-stability'] : null);
         $minimumStability = $io->askAndValidate(
             'Minimum Stability [<comment>'.$minimumStability.'</comment>]: ',
             function ($value) use ($self, $minimumStability) {
@@ -282,14 +309,14 @@ EOT
         );
         $input->setOption('stability', $minimumStability);
 
-        $type = $input->getOption('type') ?: false;
+        $type = $input->getOption('type') ?: (! empty($defaults['type']) ? $defaults['type'] : false);
         $type = $io->ask(
             'Package Type (e.g. library, project, metapackage, composer-plugin) [<comment>'.$type.'</comment>]: ',
             $type
         );
         $input->setOption('type', $type);
 
-        $license = $input->getOption('license') ?: false;
+        $license = $input->getOption('license') ?: (! empty($defaults['license']) ? $defaults['license'] : false);
         $license = $io->ask(
             'License [<comment>'.$license.'</comment>]: ',
             $license
