@@ -23,6 +23,9 @@ class VersionParser extends SemverVersionParser
      */
     public function parseConstraints($constraints)
     {
+        if (!is_string($constraints)) {
+            throw new \UnexpectedValueException('Version constraint must be string.');
+        }
         if (!isset(self::$constraints[$constraints])) {
             self::$constraints[$constraints] = parent::parseConstraints($constraints);
         }
