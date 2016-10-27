@@ -164,7 +164,7 @@ class ArchiveManager
         $filesystem->ensureDirectoryExists(dirname($tempTarget));
 
         $archivePath = $usableArchiver->archive($sourcePath, $tempTarget, $format, $package->getArchiveExcludes());
-        rename($archivePath, $target);
+        $filesystem->rename($archivePath, $target);
 
         // cleanup temporary download
         if (!$package instanceof RootPackageInterface) {
