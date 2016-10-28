@@ -94,7 +94,6 @@ EOT
         }
 
         $json = new JsonFile($file);
-        $composerDefinition = $json->read();
         $composerBackup = file_get_contents($json->getPath());
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
@@ -112,7 +111,6 @@ EOT
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
-        $baseRequirements = array_key_exists($requireKey, $composerDefinition) ? $composerDefinition[$requireKey] : array();
         $requirements = $this->formatRequirements($requirements);
 
         // validate requirements format
@@ -123,16 +121,12 @@ EOT
 
         $sortPackages = $input->getOption('sort-packages') || $composer->getConfig()->get('sort-packages');
 
-        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey, $removeKey, $sortPackages)) {
+        if (!$this->updateFileCleanly($json, $requirements, $requireKey, $removeKey, $sortPackages)) {
+            $composerDefinition = $json->read();
             foreach ($requirements as $package => $version) {
-                $baseRequirements[$package] = $version;
-
-                if (isset($composerDefinition[$removeKey][$package])) {
-                    unset($composerDefinition[$removeKey][$package]);
-                }
+                $composerDefinition[$requireKey][$package] = $version;
+                unset($composerDefinition[$removeKey][$package]);
             }
-
-            $composerDefinition[$requireKey] = $baseRequirements;
             $json->write($composerDefinition);
         }
 
@@ -194,7 +188,7 @@ EOT
         return $status;
     }
 
-    private function updateFileCleanly($json, array $base, array $new, $requireKey, $removeKey, $sortPackages)
+    private function updateFileCleanly($json, array $new, $requireKey, $removeKey, $sortPackages)
     {
         $contents = file_get_contents($json->getPath());
 
