@@ -21,8 +21,7 @@ use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Script;
-use Composer\Script\CommandEvent;
-use Composer\Script\PackageEvent;
+use Composer\Installer\PackageEvent;
 use Composer\Installer\BinaryInstaller;
 use Composer\Util\ProcessExecutor;
 use Composer\Script\Event as ScriptEvent;
@@ -270,9 +269,9 @@ class EventDispatcher
     }
 
     /**
-     * @param  mixed              $target
-     * @param  Event              $event
-     * @return Event|CommandEvent
+     * @param  mixed $target
+     * @param  Event $event
+     * @return Event
      */
     protected function checkListenerExpectedEvent($target, Event $event)
     {
