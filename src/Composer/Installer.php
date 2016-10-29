@@ -492,6 +492,38 @@ class Installer
             $devPackages = null;
         }
 
+        if ($operations) {
+            $installs = $updates = $uninstalls = array();
+            foreach ($operations as $operation) {
+                if ($operation instanceof InstallOperation) {
+                    $installs[] = $operation->getPackage()->getPrettyName().':'.$operation->getPackage()->getFullPrettyVersion();
+                } elseif ($operation instanceof UpdateOperation) {
+                    $updates[] = $operation->getTargetPackage()->getPrettyName().':'.$operation->getTargetPackage()->getFullPrettyVersion();
+                } elseif ($operation instanceof UninstallOperation) {
+                    $uninstalls[] = $operation->getPackage()->getPrettyName();
+                }
+            }
+
+            $this->io->writeError(
+                sprintf("<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
+                count($installs),
+                1 === count($installs) ? '' : 's',
+                count($updates),
+                1 === count($updates) ? '' : 's',
+                count($uninstalls),
+                1 === count($uninstalls) ? '' : 's')
+            );
+            if ($installs) {
+                $this->io->writeError("Installs: ".implode(', ', $installs), true, IOInterface::VERBOSE);
+            }
+            if ($updates) {
+                $this->io->writeError("Updates: ".implode(', ', $updates), true, IOInterface::VERBOSE);
+            }
+            if ($uninstalls) {
+                $this->io->writeError("Removals: ".implode(', ', $uninstalls), true, IOInterface::VERBOSE);
+            }
+        }
+
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {

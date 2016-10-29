@@ -36,6 +36,7 @@ update a b --with-dependencies
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
 Updating dependencies (including require-dev)
+Package operations: 0 installs, 2 updates, 0 removals
 Writing lock file
 Generating autoload files
 

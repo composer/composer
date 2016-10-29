@@ -19,6 +19,7 @@ install --no-dev
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
 Updating dependencies
+Package operations: 1 install, 0 updates, 0 removals
 Writing lock file
 Generating autoload files
 
