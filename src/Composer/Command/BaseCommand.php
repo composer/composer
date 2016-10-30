@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\Config;
 use Composer\Console\Application;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
@@ -127,5 +128,40 @@ abstract class BaseCommand extends Command
         }
 
         parent::initialize($input, $output);
+    }
+
+    /**
+     * Returns preferSource and preferDist values based on the configuration.
+     *
+     * @param Config         $config
+     * @param InputInterface $input
+     * @param bool           $keepVcsRequiresPreferSource
+     *
+     * @return bool[] An array composed of the preferSource and preferDist values
+     */
+    protected function getPreferredInstallOptions(Config $config, InputInterface $input, $keepVcsRequiresPreferSource = false)
+    {
+        $preferSource = false;
+        $preferDist = false;
+
+        switch ($config->get('preferred-install')) {
+            case 'source':
+                $preferSource = true;
+                break;
+            case 'dist':
+                $preferDist = true;
+                break;
+            case 'auto':
+            default:
+                // noop
+                break;
+        }
+
+        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist') || ($keepVcsRequiresPreferSource && $input->hasOption('keep-vcs') && $input->getOption('keep-vcs'))) {
+            $preferSource = $input->getOption('prefer-source') || ($keepVcsRequiresPreferSource && $input->hasOption('keep-vcs') && $input->getOption('keep-vcs'));
+            $preferDist = $input->getOption('prefer-dist');
+        }
+
+        return array($preferSource, $preferDist);
     }
 }
