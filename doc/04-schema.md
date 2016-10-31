@@ -316,12 +316,12 @@ Example:
 }
 ```
 
-> **Note:** While this is convenient at times, it should not be how you use
-> packages in the long term because it comes with a technical limitation. The
+> **Note:** This feature has severe technical limitations, as the 
 > composer.json metadata will still be read from the branch name you specify
-> before the hash. Because of that in some cases it will not be a practical
-> workaround, and you should always try to switch to tagged releases as soon
-> as you can.
+> before the hash. You should therefore only use this as a temporary solution
+> during development to remediate transient issues, until you can switch to
+> tagged releases. The Composer team does not actively support this feature
+> and will not accept bug reports related to it. 
 
 It is also possible to inline-alias a package constraint so that it matches
 a constraint that it otherwise would not. For more information [see the
