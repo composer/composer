@@ -113,22 +113,10 @@ class ConsoleIOTest extends TestCase
             ->with($this->equalTo('something (<question>strlen = 23</question>)'));
         $outputMock->expects($this->at(3))
             ->method('write')
-            ->with($this->equalTo(str_repeat("\x08", 23)), $this->equalTo(false));
+            ->with($this->equalTo("\x0D\x1B[Kshorter (<comment>12</comment>)"), $this->equalTo(false));
         $outputMock->expects($this->at(5))
             ->method('write')
-            ->with($this->equalTo('shorter (<comment>12</comment>)'), $this->equalTo(false));
-        $outputMock->expects($this->at(7))
-            ->method('write')
-            ->with($this->equalTo(str_repeat(' ', 11)), $this->equalTo(false));
-        $outputMock->expects($this->at(9))
-            ->method('write')
-            ->with($this->equalTo(str_repeat("\x08", 11)), $this->equalTo(false));
-        $outputMock->expects($this->at(11))
-            ->method('write')
-            ->with($this->equalTo(str_repeat("\x08", 12)), $this->equalTo(false));
-        $outputMock->expects($this->at(13))
-            ->method('write')
-            ->with($this->equalTo('something longer than initial (<info>34</info>)'));
+            ->with($this->equalTo("\x0D\x1B[Ksomething longer than initial (<info>34</info>)"), $this->equalTo(true));
 
         $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
 

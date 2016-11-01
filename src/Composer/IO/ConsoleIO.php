@@ -33,10 +33,6 @@ class ConsoleIO extends BaseIO
     protected $output;
     /** @var HelperSet */
     protected $helperSet;
-    /** @var string */
-    protected $lastMessage;
-    /** @var string */
-    protected $lastMessageErr;
 
     /** @var float */
     private $startTime;
@@ -158,13 +154,11 @@ class ConsoleIO extends BaseIO
 
         if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
             $this->output->getErrorOutput()->write($messages, $newline, $sfVerbosity);
-            $this->lastMessageErr = implode($newline ? "\n" : '', (array) $messages);
 
             return;
         }
 
         $this->output->write($messages, $newline, $sfVerbosity);
-        $this->lastMessage = implode($newline ? "\n" : '', (array) $messages);
     }
 
     /**
@@ -172,7 +166,7 @@ class ConsoleIO extends BaseIO
      */
     public function overwrite($messages, $newline = true, $size = null, $verbosity = self::NORMAL)
     {
-        $this->doOverwrite($messages, $newline, $size, false, $verbosity);
+        $this->doOverwrite($messages, $newline, false, $verbosity);
     }
 
     /**
@@ -180,49 +174,25 @@ class ConsoleIO extends BaseIO
      */
     public function overwriteError($messages, $newline = true, $size = null, $verbosity = self::NORMAL)
     {
-        $this->doOverwrite($messages, $newline, $size, true, $verbosity);
+        $this->doOverwrite($messages, $newline, true, $verbosity);
     }
 
     /**
      * @param array|string $messages
      * @param bool         $newline
-     * @param int|null     $size
      * @param bool         $stderr
      * @param int          $verbosity
      */
-    private function doOverwrite($messages, $newline, $size, $stderr, $verbosity)
+    private function doOverwrite($messages, $newline, $stderr, $verbosity)
     {
-        // messages can be an array, let's convert it to string anyway
-        $messages = implode($newline ? "\n" : '', (array) $messages);
-
-        // since overwrite is supposed to overwrite last message...
-        if (!isset($size)) {
-            // removing possible formatting of lastMessage with strip_tags
-            $size = strlen(strip_tags($stderr ? $this->lastMessageErr : $this->lastMessage));
-        }
-        // ...let's fill its length with backspaces
-        $this->doWrite(str_repeat("\x08", $size), false, $stderr, $verbosity);
-
-        // write the new message
-        $this->doWrite($messages, false, $stderr, $verbosity);
-
-        $fill = $size - strlen(strip_tags($messages));
-        if ($fill > 0) {
-            // whitespace whatever has left
-            $this->doWrite(str_repeat(' ', $fill), false, $stderr, $verbosity);
-            // move the cursor back
-            $this->doWrite(str_repeat("\x08", $fill), false, $stderr, $verbosity);
-        }
-
-        if ($newline) {
-            $this->doWrite('', true, $stderr, $verbosity);
-        }
-
-        if ($stderr) {
-            $this->lastMessageErr = $messages;
+        // add an ANSI sequence to erase the line
+        if (is_array($messages)) {
+            array_unshift($messages, "\x0D\x1B[K");
         } else {
-            $this->lastMessage = $messages;
+            $messages = "\x0D\x1B[K".$messages;
         }
+
+        $this->doWrite($messages, $newline, $stderr, $verbosity);
     }
 
     /**
