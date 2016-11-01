@@ -97,7 +97,8 @@ class JsonFile
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
         }
-
+        
+        $json = $this->replaceEnvironmentVariables($json);
         return static::parseJson($json, $this->path);
     }
 
@@ -294,5 +295,26 @@ class JsonFile
         }
 
         throw new ParsingException('"'.$file.'" does not contain valid JSON'."\n".$result->getMessage(), $result->getDetails());
+    }
+    
+    /**
+     * Finds and replaces environment variables
+     *
+     * @param string $json
+     *
+     * @return string
+     */
+    public function replaceEnvironmentVariables($json)
+    {
+        preg_match_all('@\{\$env:([A-Za-z0-9_]*)\}@i', $json, $matches);
+        if (!empty($matches[1])) {
+            foreach ($matches[1] as $var) {
+                if (!getenv($var))
+                    throw new \RuntimeException( 'Environment variable "'.$var.'" does not exist.' );
+                $json = str_replace( '{$env:' . $var . '}', getenv($var), $json );
+            }
+        }
+        
+        return $json;
     }
 }
