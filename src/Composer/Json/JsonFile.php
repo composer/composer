@@ -311,15 +311,15 @@ class JsonFile
             preg_match_all($pattern, $key, $key_matches);
             
             if (!empty($item_matches[1]))
-                $item = $this->replaceItemEnvironmentVariables($item, $item_matches[1]);
+                $item = static::replaceItemEnvironmentVariables($item, $item_matches[1]);
             if (!empty($key_matches[1]))
-                $key = $this->replaceItemEnvironmentVariables($key, $key_matches[1]);
+                $key = static::replaceItemEnvironmentVariables($key, $key_matches[1]);
         });
         
         return $data;
     }
     
-    private function replaceItemEnvironmentVariables($item, $matches)
+    private static function replaceItemEnvironmentVariables($item, $matches)
     {       
         foreach ($matches as $var) {
             $value = getenv($var);
