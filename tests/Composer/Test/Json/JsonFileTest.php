@@ -217,9 +217,9 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         putenv("PHP_VERSION=$platformVersion");
         
         $file = new JsonFile(__DIR__.'/Fixtures/composer.json');
-        $json = $file->read();
-        $this->assertEquals($license, $json['license']);
-        $this->assertEquals($platformVersion, $json['config']['platform']['php']);
+        $data = $file->replaceEnvironmentVariables($file->read());
+        $this->assertEquals($license, $data['license']);
+        $this->assertEquals($platformVersion, $data['config']['platform']['php']);
     }
 
     private function expectParseException($text, $json)

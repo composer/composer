@@ -98,7 +98,6 @@ class JsonFile
             throw new \RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
         }
         
-        $json = $this->replaceEnvironmentVariables($json);
         return static::parseJson($json, $this->path);
     }
 
@@ -300,21 +299,35 @@ class JsonFile
     /**
      * Finds and replaces environment variables
      *
-     * @param string $json
+     * @param mixed $data
      *
-     * @return string
+     * @return mixed
      */
-    public function replaceEnvironmentVariables($json)
+    public function replaceEnvironmentVariables($data)
     {
-        preg_match_all('@\{\$env:([A-Za-z0-9_]*)\}@i', $json, $matches);
-        if (!empty($matches[1])) {
-            foreach ($matches[1] as $var) {
-                if (!getenv($var))
-                    throw new \RuntimeException( 'Environment variable "'.$var.'" does not exist.' );
-                $json = str_replace( '{$env:' . $var . '}', getenv($var), $json );
-            }
+        array_walk_recursive($data, function(&$item, &$key) {
+            $pattern = '@\{\$env:([A-Za-z0-9_]*)\}@i';
+            preg_match_all($pattern, $item, $item_matches);
+            preg_match_all($pattern, $key, $key_matches);
+            
+            if (!empty($item_matches[1]))
+                $item = $this->replaceItemEnvironmentVariables($item, $item_matches[1]);
+            if (!empty($key_matches[1]))
+                $key = $this->replaceItemEnvironmentVariables($key, $key_matches[1]);
+        });
+        
+        return $data;
+    }
+    
+    private function replaceItemEnvironmentVariables($item, $matches)
+    {       
+        foreach ($matches as $var) {
+            $value = getenv($var);
+            if (!$value)
+                $value = '';
+            $item = str_replace( '{$env:' . $var . '}', $value, $item );
         }
         
-        return $json;
+        return $item;
     }
 }
