@@ -297,7 +297,7 @@ class JsonFile
     }
     
     /**
-     * Finds and replaces environment variables
+     * Walk decoded JSON, searching and replacing environmment variables.
      *
      * @param mixed $data
      *
@@ -305,21 +305,38 @@ class JsonFile
      */
     public function replaceEnvironmentVariables($data)
     {
-        array_walk_recursive($data, function(&$item, &$key) {
-            $pattern = '@\{\$env:([A-Za-z0-9_]*)\}@i';
-            preg_match_all($pattern, $item, $item_matches);
-            preg_match_all($pattern, $key, $key_matches);
-            
-            if (!empty($item_matches[1]))
-                $item = static::replaceItemEnvironmentVariables($item, $item_matches[1]);
-            if (!empty($key_matches[1]))
-                $key = static::replaceItemEnvironmentVariables($key, $key_matches[1]);
-        });
-        
+        array_walk_recursive($data, array($this, 'findEnvironmentVariables'));
         return $data;
     }
     
-    private static function replaceItemEnvironmentVariables($item, $matches)
+    /**
+     * Identify and replace environment variables in a key pair
+     * 
+     * @param string $item
+     * @param string $key
+     * 
+     * @return null
+     */        
+    private function findEnvironmentVariables(&$item, &$key) {
+        $pattern = '@\{\$env:([A-Za-z0-9_]*)\}@i';
+        preg_match_all($pattern, $item, $item_matches);
+        preg_match_all($pattern, $key, $key_matches);
+        
+        if (!empty($item_matches[1]))
+            $item = $this->replaceItemEnvironmentVariables($item, $item_matches[1]);
+        if (!empty($key_matches[1]))
+            $key = $this->replaceItemEnvironmentVariables($key, $key_matches[1]);
+    }
+    
+    /**
+     * Replace environment variables in a string
+     * 
+     * @param string $item
+     * @param array $matches
+     * 
+     * @return string
+     */
+    private function replaceItemEnvironmentVariables($item, $matches)
     {       
         foreach ($matches as $var) {
             $value = getenv($var);
