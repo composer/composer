@@ -73,6 +73,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     if (0 === strpos($url, $needle)) {
                         $url = substr($url, strlen($needle));
                     }
+                    // realpath() will also not understand %20 etc
+                    $url = rawurldecode($url);
                     $url = realpath($url);
                 }
                 $this->doDownload($package, $path, $url);
