@@ -292,7 +292,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     },
     "repositories": [
         {
-            "packagist": false
+            "packagist.org": false
         },
         {
             "type": "package",
@@ -773,7 +773,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     },
     "repositories": [
         {
-            "packagist": false
+            "packagist.org": false
         },
         {
             "type": "package",
