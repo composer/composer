@@ -1,3 +1,15 @@
+### [1.3.0-RC] - 2016-11-XX
+
+  * Added `--minor-only` to the `outdated` command to only show updates to minor versions and ignore new major versions
+  * Added workaround for xdebug performance impact by restarting PHP without xdebug automatically in case it is enabled
+  * Added `COMPOSER_ALLOW_XDEBUG` env var to circumvent the xdebug-disabling behavior
+  * Added `COMPOSER_MIRROR_PATH_REPOS` env var to force mirroring of path repositories vs symlinking
+  * Added `php-debug` and `php-zts` virtual platform packages
+  * Added `gitlab-token` auth config for GitLab private tokens
+  * Fixed output from zip and rar leaking out when an error occured
+  * Removed `hash` from composer.lock, only `content-hash` is now used which should reduce conflicts
+  * Minor fixes and performance improvements
+
 ### [1.2.2] - 2016-11-03
 
   * Fixed selection of packages based on stability to be independent from package repository order
@@ -441,6 +453,7 @@
 
   * Initial release
 
+[1.3.0-RC]: https://github.com/composer/composer/compare/1.2.2...1.3.0-RC
 [1.2.2]: https://github.com/composer/composer/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/composer/composer/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/composer/composer/compare/1.2.0-RC...1.2.0
