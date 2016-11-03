@@ -67,15 +67,25 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         while ($url = array_shift($urls)) {
             try {
                 if (Filesystem::isLocalPath($url)) {
-                    # realpath() below will not understand
-                    # url that starts with "file://"
+                    // realpath() below will not understand
+                    // url that starts with "file://"
                     $needle = 'file://';
+                    $is_file_protocol = false;
                     if (0 === strpos($url, $needle)) {
                         $url = substr($url, strlen($needle));
+                        $is_file_protocol = true;
                     }
-                    // realpath() will also not understand %20 etc
-                    $url = rawurldecode($url);
+
+                    // realpath() below will not understand %20 spaces etc.
+                    if (false !== strpos($url, '%')) {
+                        $url = rawurldecode($url);
+                    }
+
                     $url = realpath($url);
+
+					if ($is_file_protocol) {
+						$url = $needle . $url;
+					}
                 }
                 $this->doDownload($package, $path, $url);
                 break;
