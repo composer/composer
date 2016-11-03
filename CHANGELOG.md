@@ -1,3 +1,11 @@
+### [1.2.2] - 2016-11-03
+
+  * Fixed selection of packages based on stability to be independent from package repository order
+  * Fixed POST_DEPENDENCIES_SOLVING not containing some operations in edge cases
+  * Fixed issue handling GitLab URLs containing dots and other special characters
+  * Fixed issue on Windows when running composer at the root of a drive
+  * Minor fixes
+
 ### [1.2.1] - 2016-09-12
 
   * Fixed edge case issues with the static autoloader
@@ -433,6 +441,8 @@
 
   * Initial release
 
+[1.2.2]: https://github.com/composer/composer/compare/1.2.1...1.2.2
+[1.2.1]: https://github.com/composer/composer/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/composer/composer/compare/1.2.0-RC...1.2.0
 [1.2.0-RC]: https://github.com/composer/composer/compare/1.1.3...1.2.0-RC
 [1.1.3]: https://github.com/composer/composer/compare/1.1.2...1.1.3
