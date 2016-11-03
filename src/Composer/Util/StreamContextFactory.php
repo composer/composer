@@ -141,11 +141,12 @@ final class StreamContextFactory
 
         if (!isset($options['http']['header']) || false === strpos(strtolower(implode('', $options['http']['header'])), 'user-agent')) {
             $options['http']['header'][] = sprintf(
-                'User-Agent: Composer/%s (%s; %s; %s)',
+                'User-Agent: Composer/%s (%s; %s; %s%s)',
                 Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
                 php_uname('s'),
                 php_uname('r'),
-                $phpVersion
+                $phpVersion,
+                getenv('CI') ? '; CI' : ''
             );
         }
 
