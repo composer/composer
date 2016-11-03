@@ -105,10 +105,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $ref = $target->getSourceReference();
         $this->io->writeError("    Checking out ".$ref);
-        $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
+        $command = 'git remote set-url composer %s && git rev-parse --quiet --verify %s^{commit} || (git fetch composer && git fetch --tags composer)';
 
-        $commandCallable = function ($url) use ($command) {
-            return sprintf($command, ProcessExecutor::escape($url));
+        $commandCallable = function ($url) use ($command, $ref) {
+            return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($ref));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
