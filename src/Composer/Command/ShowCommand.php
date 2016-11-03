@@ -179,7 +179,7 @@ EOT
                 if ($input->getOption('latest')) {
                     $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion);
                 }
-                $this->printMeta($package, $versions, $installedRepo, $latestPackage);
+                $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null);
                 $this->printLinks($package, 'requires');
                 $this->printLinks($package, 'devRequires', 'requires (dev)');
                 if ($package->getSuggests()) {
