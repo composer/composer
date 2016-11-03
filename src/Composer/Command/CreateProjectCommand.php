@@ -111,7 +111,7 @@ EOT
         $config = Factory::createConfig();
         $io = $this->getIO();
 
-        $this->updatePreferredOptions($config, $input, $preferSource, $preferDist, true);
+        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input, true);
 
         if ($input->getOption('dev')) {
             $io->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
@@ -168,8 +168,7 @@ EOT
             $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
         }
 
-        $rootPackageConfig = $composer->getConfig();
-        $this->updatePreferredOptions($rootPackageConfig, $input, $preferSource, $preferDist);
+        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($composer->getConfig(), $input);
 
         // install dependencies of the created project
         if ($noInstall === false) {
@@ -370,37 +369,5 @@ EOT
     protected function createInstallationManager()
     {
         return new InstallationManager();
-    }
-
-    /**
-     * Updated preferSource or preferDist based on the preferredInstall config option
-     * @param Config         $config
-     * @param InputInterface $input
-     * @param bool           $preferSource
-     * @param bool           $preferDist
-     * @param bool           $keepVcsRequiresPreferSource
-     */
-    protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist, $keepVcsRequiresPreferSource = false)
-    {
-        $preferSource = false;
-        $preferDist = false;
-
-        switch ($config->get('preferred-install')) {
-            case 'source':
-                $preferSource = true;
-                break;
-            case 'dist':
-                $preferDist = true;
-                break;
-            case 'auto':
-            default:
-                // noop
-                break;
-        }
-
-        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist') || ($keepVcsRequiresPreferSource && $input->getOption('keep-vcs'))) {
-            $preferSource = $input->getOption('prefer-source') || ($keepVcsRequiresPreferSource && $input->getOption('keep-vcs'));
-            $preferDist = $input->getOption('prefer-dist');
-        }
     }
 }

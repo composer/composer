@@ -123,27 +123,8 @@ EOT
 
         $install = Installer::create($io, $composer);
 
-        $preferSource = false;
-        $preferDist = false;
-
         $config = $composer->getConfig();
-
-        switch ($config->get('preferred-install')) {
-            case 'source':
-                $preferSource = true;
-                break;
-            case 'dist':
-                $preferDist = true;
-                break;
-            case 'auto':
-            default:
-                // noop
-                break;
-        }
-        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist')) {
-            $preferSource = $input->getOption('prefer-source');
-            $preferDist = $input->getOption('prefer-dist');
-        }
+        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
 
         $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
