@@ -284,7 +284,7 @@ VCS repository provides `dist`s for them that fetch the packages as zips.
 * **BitBucket:** [bitbucket.org](https://bitbucket.org) (Git and Mercurial)
 
 The VCS driver to be used is detected automatically based on the URL. However,
-should you need to specify one for whatever reason, you can use `fossil`, 
+should you need to specify one for whatever reason, you can use `fossil`,
 `git`, `svn` or `hg` as the repository type instead of `vcs`.
 
 If you set the `no-api` key to `true` on a github repository it will clone the
@@ -662,7 +662,7 @@ You can disable the default Packagist repository by adding this to your
 {
     "repositories": [
         {
-            "packagist": false
+            "packagist.org": false
         }
     ]
 }

@@ -68,7 +68,7 @@ class Config
     );
 
     public static $defaultRepositories = array(
-        'packagist' => array(
+        'packagist.org' => array(
             'type' => 'composer',
             'url' => 'https?://packagist.org',
             'allow_ssl_downgrade' => true,
@@ -158,13 +158,13 @@ class Config
             foreach ($newRepos as $name => $repository) {
                 // disable a repository by name
                 if (false === $repository) {
-                    unset($this->repositories[$name]);
+                    $this->disableRepoByName($name);
                     continue;
                 }
 
                 // disable a repository with an anonymous {"name": false} repo
                 if (is_array($repository) && 1 === count($repository) && false === current($repository)) {
-                    unset($this->repositories[key($repository)]);
+                    $this->disableRepoByName(key($repository));
                     continue;
                 }
 
@@ -172,7 +172,11 @@ class Config
                 if (is_int($name)) {
                     $this->repositories[] = $repository;
                 } else {
-                    $this->repositories[$name] = $repository;
+                    if ($name === 'packagist') { // BC support for default "packagist" named repo
+                        $this->repositories[$name . '.org'] = $repository;
+                    } else {
+                        $this->repositories[$name] = $repository;
+                    }
                 }
             }
             $this->repositories = array_reverse($this->repositories, true);
@@ -403,6 +407,15 @@ class Config
         }
 
         return false;
+    }
+
+    private function disableRepoByName($name)
+    {
+        if (isset($this->repositories[$name])) {
+            unset($this->repositories[$name]);
+        } else if ($name === 'packagist') { // BC support for default "packagist" named repo
+            unset($this->repositories['packagist.org']);
+        }
     }
 
     /**
