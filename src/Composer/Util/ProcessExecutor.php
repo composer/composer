@@ -99,7 +99,17 @@ class ProcessExecutor
             return;
         }
 
-        echo $buffer;
+        if (null === $this->io) {
+            echo $buffer;
+
+            return;
+        }
+
+        if (Process::ERR === $type) {
+            $this->io->writeError($buffer);
+        } else {
+            $this->io->write($buffer);
+        }
     }
 
     public static function getTimeout()

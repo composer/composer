@@ -35,6 +35,17 @@ class ProcessExecutorTest extends TestCase
         $this->assertEquals("foo".PHP_EOL, $output);
     }
 
+    public function testUseIOIsNotNullAndIfNotCaptured()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $io->expects($this->once())
+            ->method('write')
+            ->with($this->equalTo('foo'.PHP_EOL));
+
+        $process = new ProcessExecutor($io);
+        $process->execute('echo foo');
+    }
+
     public function testExecuteCapturesStderr()
     {
         $process = new ProcessExecutor;
