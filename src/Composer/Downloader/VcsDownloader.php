@@ -70,10 +70,10 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     // realpath() below will not understand
                     // url that starts with "file://"
                     $needle = 'file://';
-                    $is_file_protocol = false;
+                    $isFileProtocol = false;
                     if (0 === strpos($url, $needle)) {
                         $url = substr($url, strlen($needle));
-                        $is_file_protocol = true;
+                        $isFileProtocol = true;
                     }
 
                     // realpath() below will not understand %20 spaces etc.
@@ -83,9 +83,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
 
                     $url = realpath($url);
 
-					if ($is_file_protocol) {
-						$url = $needle . $url;
-					}
+                    if ($isFileProtocol) {
+                        $url = $needle . $url;
+                    }
                 }
                 $this->doDownload($package, $path, $url);
                 break;
