@@ -44,6 +44,14 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->check($json));
     }
 
+    public function testRequireTypes()
+    {
+        $json = '{"name": "name", "description": "description", "require": {"a": ["b"]} }';
+        $this->assertEquals(array(
+            array('property' => 'require.a', 'message' => 'Array value found, but a string is required', 'constraint' => 'type'),
+        ), $this->check($json));
+    }
+
     public function testMinimumStabilityValues()
     {
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "" }';

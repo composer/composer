@@ -9,21 +9,21 @@ An alternative is to use this script which only works with unix utils:
 ```bash
 #!/bin/sh
 
-EXPECTED_SIGNATURE=$(wget https://composer.github.io/installer.sig -O - -q)
+EXPECTED_SIGNATURE=$(wget -q -O - https://composer.github.io/installer.sig)
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 ACTUAL_SIGNATURE=$(php -r "echo hash_file('SHA384', 'composer-setup.php');")
 
-if [ "$EXPECTED_SIGNATURE" = "$ACTUAL_SIGNATURE" ]
+if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]
 then
-    php composer-setup.php --quiet
-    RESULT=$?
-    rm composer-setup.php
-    exit $RESULT
-else
     >&2 echo 'ERROR: Invalid installer signature'
     rm composer-setup.php
     exit 1
 fi
+
+php composer-setup.php --quiet
+RESULT=$?
+rm composer-setup.php
+exit $RESULT
 ```
 
 The script will exit with 1 in case of failure, or 0 on success, and is quiet

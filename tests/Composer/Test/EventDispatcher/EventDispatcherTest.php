@@ -340,7 +340,7 @@ class EventDispatcherTest extends TestCase
             ->setConstructorArgs(array(
                 $this->createComposerInstance(),
                 $io = $this->getMock('Composer\IO\IOInterface'),
-                new ProcessExecutor,
+                new ProcessExecutor($io),
             ))
             ->setMethods(array('getListeners'))
             ->getMock();
@@ -354,9 +354,11 @@ class EventDispatcherTest extends TestCase
             ->method('writeError')
             ->with($this->equalTo('> echo foo'));
 
-        ob_start();
+        $io->expects($this->once())
+            ->method('write')
+            ->with($this->equalTo('foo'.PHP_EOL));
+
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
-        $this->assertEquals('foo', trim(ob_get_clean()));
     }
 
     public function testDispatcherOutputsErrorOnFailedCommand()
