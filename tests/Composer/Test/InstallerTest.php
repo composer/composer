@@ -96,6 +96,37 @@ class InstallerTest extends TestCase
         $this->assertSame($expectedUninstalled, $uninstalled);
     }
 
+    public function testDisableImplicitOperations()
+    {
+        $locker = $this->getMockBuilder('Composer\Package\Locker')->disableOriginalConstructor()->getMock();
+        $locker->expects($this->once())
+            ->method('setLockData');
+
+        $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
+        $eventDispatcher->expects($this->exactly(2))
+            ->method('dispatchScript');
+
+        $io = new BufferIO('', OutputInterface::VERBOSITY_NORMAL, new OutputFormatter(false));
+        $config = $this->getMock('Composer\Config');
+
+        $repositoryManager = new RepositoryManager($io, $config);
+        $repositoryManager->setLocalRepository(new InstalledArrayRepository());
+
+        $composer = FactoryMock::create($io, []);
+        $composer->setLocker($locker);
+        $composer->setEventDispatcher($eventDispatcher);
+        $composer->setRepositoryManager($repositoryManager);
+
+
+        $installer = Installer::create($io, $composer);
+        $installer->setDryRun(true)
+            ->setRunScripts(true)
+            ->setWriteLock(true)
+            ->setDisableImplicitOperations(true);
+
+        $installer->run();
+    }
+
     public function provideInstaller()
     {
         $cases = array();
