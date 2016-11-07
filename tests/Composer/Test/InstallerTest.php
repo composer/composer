@@ -112,7 +112,7 @@ class InstallerTest extends TestCase
         $repositoryManager = new RepositoryManager($io, $config);
         $repositoryManager->setLocalRepository(new InstalledArrayRepository());
 
-        $composer = FactoryMock::create($io, []);
+        $composer = FactoryMock::create($io, array());
         $composer->setLocker($locker);
         $composer->setEventDispatcher($eventDispatcher);
         $composer->setRepositoryManager($repositoryManager);
