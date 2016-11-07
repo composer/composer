@@ -116,6 +116,7 @@ class Installer
     protected $preferStable = false;
     protected $preferLowest = false;
     protected $skipSuggest = false;
+    protected $disableImplicitOperations = false;
     /**
      * Array of package names/globs flagged for update
      *
@@ -178,6 +179,14 @@ class Installer
         // Force update if there is no lock file present
         if (!$this->update && !$this->locker->isLocked()) {
             $this->update = true;
+        }
+
+        if ($this->dryRun && !$this->disableImplicitOperations) {
+            $this->writeLock = false;
+            $this->verbose = true;
+            $this->runScripts = false;
+            $this->installationManager->addInstaller(new NoopInstaller);
+            $this->mockLocalRepositories($this->repositoryManager);
         }
 
         if ($this->runScripts) {
@@ -277,7 +286,7 @@ class Installer
             } else {
                 $this->io->writeError('<info>Generating autoload files</info>');
             }
-            
+
             $this->autoloadGenerator->setDevMode($this->devMode);
             $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
             $this->autoloadGenerator->setRunScripts($this->runScripts);
@@ -1411,15 +1420,6 @@ class Installer
     {
         $this->dryRun = (boolean) $dryRun;
 
-        if (true === $dryRun) {
-            $this->writeLock = false;
-            $this->dumpAutoloader = false;
-            $this->verbose = true;
-            $this->runScripts = false;
-            $this->installationManager->addInstaller(new NoopInstaller);
-            $this->mockLocalRepositories($this->repositoryManager);
-        }
-
         return $this;
     }
 
@@ -1657,6 +1657,27 @@ class Installer
     public function setWriteLock($writeLock = true)
     {
         $this->writeLock = (boolean) $writeLock;
+
+        return $this;
+    }
+
+    /**
+     * If set to true, the installer disables implicit operations such as skipping
+     * the creation of the composer.lock file, the dump of the autoload file or
+     * skipping the execution of scripts during run() when in dry-run mode.
+     * You can use this e.g. to force writing the autoload file even if in dry-run
+     * mode.
+     *
+     * @see Installer::run()
+     *
+     * @param boolean $disableImplicitOperations
+     *
+     * @return Installer
+     *
+     */
+    public function setDisableImplicitOperations($disableImplicitOperations = true)
+    {
+        $this->disableImplicitOperations = (boolean) $disableImplicitOperations;
 
         return $this;
     }
