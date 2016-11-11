@@ -122,29 +122,27 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
-    public function getComposerInformation($identifier)
+    public function getFileContent($file, $identifier)
     {
-        if (!isset($this->infoCache[$identifier])) {
-            $command = sprintf('fossil cat -r %s composer.json', ProcessExecutor::escape($identifier));
-            $this->process->execute($command, $composer, $this->checkoutDir);
+        $command = sprintf('fossil cat -r %s %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
+        $this->process->execute($command, $content, $this->checkoutDir);
 
-            if (trim($composer) === '') {
-                return;
-            }
-
-            $composer = JsonFile::parseJson(trim($composer), $identifier);
-
-            if (empty($composer['time'])) {
-                $this->process->execute(sprintf('fossil finfo composer.json | head -n 2 | tail -n 1 | awk \'{print $1}\''), $output, $this->checkoutDir);
-                $date = new \DateTime(trim($output), new \DateTimeZone('UTC'));
-                $composer['time'] = $date->format('Y-m-d H:i:s');
-            }
-            $this->infoCache[$identifier] = $composer;
+        if (!trim($content)) {
+            return null;
         }
 
-        return $this->infoCache[$identifier];
+        return $content;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChangeDate($identifier)
+    {
+        $this->process->execute(sprintf('fossil finfo composer.json | head -n 2 | tail -n 1 | awk \'{print $1}\''), $output, $this->checkoutDir);
+        return new \DateTime(trim($output), new \DateTimeZone('UTC'));
     }
 
     /**

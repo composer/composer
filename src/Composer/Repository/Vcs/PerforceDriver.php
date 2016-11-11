@@ -24,6 +24,7 @@ class PerforceDriver extends VcsDriver
 {
     protected $depot;
     protected $branch;
+    /** @var Perforce */
     protected $perforce;
     protected $composerInfo;
     protected $composerInfoIdentifier;
@@ -72,6 +73,21 @@ class PerforceDriver extends VcsDriver
         $composer_info = $this->perforce->getComposerInformation($identifier);
 
         return $composer_info;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFileContent($file, $identifier)
+    {
+        return $this->perforce->getFileContent($file, $identifier);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChangeDate($identifier) {
+        return new \DateTime();
     }
 
     /**

@@ -407,6 +407,48 @@ class Perforce
         return $this->getComposerInformationFromLabel($identifier, $index);
     }
 
+    public function getFileContent($file, $identifier) {
+        $path = $this->getFilePath($file, $identifier);
+
+        $command = $this->generateP4Command(' print ' . $path);
+        $this->executeCommand($command);
+        $result = $this->commandResult;
+
+        if (!trim($result)) {
+            return null;
+        }
+
+        return $result;
+    }
+
+    public function getFilePath($file, $identifier) {
+        $index = strpos($identifier, '@');
+        if ($index === false) {
+            $path = $identifier. '/' . $file;
+
+            return $path;
+        } else {
+            $path = substr($identifier, 0, $index) . '/' . $file . substr($identifier, $index);
+            $command = $this->generateP4Command(' files ' . $path, false);
+            $this->executeCommand($command);
+            $result = $this->commandResult;
+            $index2 = strpos($result, 'no such file(s).');
+            if ($index2 === false) {
+                $index3 = strpos($result, 'change');
+                if (!($index3 === false)) {
+                    $phrase = trim(substr($result, $index3));
+                    $fields = explode(' ', $phrase);
+                    $id = $fields[1];
+                    $path = substr($identifier, 0, $index) . '/' . $file . '@' . $id;
+
+                    return $path;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public function getComposerInformationFromPath($composerJson)
     {
         $command = $this->generateP4Command(' print ' . $composerJson);

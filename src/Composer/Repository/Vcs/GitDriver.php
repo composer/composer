@@ -120,38 +120,34 @@ class GitDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
-    public function getComposerInformation($identifier)
+    public function getFileContent($file, $identifier)
     {
-        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier)) {
-            $this->infoCache[$identifier] = JsonFile::parseJson($res);
+        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier . ':' . $file)) {
+            return $res;
         }
 
-        if (!isset($this->infoCache[$identifier])) {
-            $resource = sprintf('%s:composer.json', ProcessExecutor::escape($identifier));
-            $this->process->execute(sprintf('git show %s', $resource), $composer, $this->repoDir);
+        $resource = sprintf('%s:%s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
+        $this->process->execute(sprintf('git show %s', $resource), $content, $this->repoDir);
 
-            if (!trim($composer)) {
-                return;
-            }
-
-            $composer = JsonFile::parseJson($composer, $resource);
-
-            if (empty($composer['time'])) {
-                $this->process->execute(sprintf('git log -1 --format=%%at %s', ProcessExecutor::escape($identifier)), $output, $this->repoDir);
-                $date = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
-                $composer['time'] = $date->format('Y-m-d H:i:s');
-            }
-
-            if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
-                $this->cache->write($identifier, json_encode($composer));
-            }
-
-            $this->infoCache[$identifier] = $composer;
+        if (!trim($content)) {
+            return null;
         }
 
-        return $this->infoCache[$identifier];
+        if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
+            $this->cache->write($identifier . ':' . $file, $content);
+        }
+
+        return $content;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChangeDate($identifier) {
+        $this->process->execute(sprintf('git log -1 --format=%%at %s', ProcessExecutor::escape($identifier)), $output, $this->repoDir);
+        return new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
     }
 
     /**

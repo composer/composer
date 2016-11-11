@@ -33,7 +33,6 @@ class GitLabDriver extends VcsDriver
     private $repository;
 
     private $cache;
-    private $infoCache = array();
 
     /**
      * @var array Project data returned by GitLab API
@@ -142,6 +141,54 @@ class GitLabDriver extends VcsDriver
 
         return $this->infoCache[$identifier] = $composer;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFileContent($file, $identifier)
+    {
+        // Convert the root identifier to a cachable commit id
+        if (!preg_match('{[a-f0-9]{40}}i', $identifier)) {
+            $branches = $this->getBranches();
+            if (isset($branches[$identifier])) {
+                $identifier = $branches[$identifier];
+            }
+        }
+
+        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier . ':' . $file)) {
+            return $res;
+        }
+
+        $resource = $this->getApiUrl().'/repository/blobs/'.$identifier.'?filepath=' . $file;
+
+        try {
+            $content = $this->getContents($resource);
+        } catch (TransportException $e) {
+            if ($e->getCode() !== 404) {
+                throw $e;
+            }
+            return null;
+        }
+
+        if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
+            $this->cache->write($identifier . ':' . $file, $content);
+        }
+
+        return $content;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChangeDate($identifier)
+    {
+        if (isset($this->commits[$identifier])) {
+            return new \DateTime($this->commits[$identifier]['committed_date']);
+        }
+
+        return new \DateTime();
+    }
+
 
     /**
      * {@inheritDoc}

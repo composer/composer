@@ -167,6 +167,65 @@ class SvnDriver extends VcsDriver
     }
 
     /**
+     * @param string $file
+     * @param string $identifier
+     */
+    public function getFileContent($file, $identifier)
+    {
+        $identifier = '/' . trim($identifier, '/') . '/';
+
+        if ($res = $this->cache->read($identifier . ':' . $file)) {
+            return $res;
+        }
+
+        preg_match('{^(.+?)(@\d+)?/$}', $identifier, $match);
+        if (!empty($match[2])) {
+            $path = $match[1];
+            $rev = $match[2];
+        } else {
+            $path = $identifier;
+            $rev = '';
+        }
+
+        try {
+            $resource = $path.$file;
+            $output = $this->execute('svn cat', $this->baseUrl . $resource . $rev);
+            if (!trim($output)) {
+                return null;
+            }
+        } catch (\RuntimeException $e) {
+            throw new TransportException($e->getMessage());
+        }
+
+        $this->cache->write($identifier . ':' . $file, $output);
+
+        return $output;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChangeDate($identifier) {
+        $identifier = '/' . trim($identifier, '/') . '/';
+
+        preg_match('{^(.+?)(@\d+)?/$}', $identifier, $match);
+        if (!empty($match[2])) {
+            $path = $match[1];
+            $rev = $match[2];
+        } else {
+            $path = $identifier;
+            $rev = '';
+        }
+
+        $output = $this->execute('svn info', $this->baseUrl . $path . $rev);
+        foreach ($this->process->splitLines($output) as $line) {
+            if ($line && preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {
+                return new \DateTime($match[1], new \DateTimeZone('UTC'));
+            }
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function getTags()

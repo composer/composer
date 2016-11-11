@@ -16,6 +16,7 @@ use Composer\Downloader\TransportException;
 use Composer\Config;
 use Composer\Factory;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\Filesystem;
@@ -41,6 +42,8 @@ abstract class VcsDriver implements VcsDriverInterface
     protected $process;
     /** @var RemoteFilesystem */
     protected $remoteFilesystem;
+    /** @var array */
+    protected $infoCache = array();
 
     /**
      * Constructor.
@@ -64,6 +67,31 @@ abstract class VcsDriver implements VcsDriverInterface
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor($io);
         $this->remoteFilesystem = $remoteFilesystem ?: Factory::createRemoteFilesystem($this->io, $config);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getComposerInformation($identifier)
+    {
+        if (!isset($this->infoCache[$identifier])) {
+            $composerFileContent = $this->getFileContent('composer.json', $identifier);
+
+            if (!$composerFileContent) {
+                return null;
+            }
+
+            $composer = JsonFile::parseJson($composerFileContent, $identifier . ':composer.json');
+
+            if (empty($composer['time'])) {
+                $composer['time'] = $this->getChangeDate($identifier)->format('Y-m-d H:i:s');
+            }
+
+            $this->infoCache[$identifier] = $composer;
+        }
+
+
+        return $this->infoCache[$identifier];
     }
 
     /**
