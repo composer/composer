@@ -37,8 +37,7 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
         }
 
         if (null === $this->rootIdentifier) {
-            $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'
-                        . $this->owner . '/' . $this->repository;
+            $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository;
             $repoData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource, true), $resource);
             $this->hasIssues = !empty($repoData['has_issues']);
             $this->rootIdentifier = !empty($repoData['main_branch']) ? $repoData['main_branch'] : 'master';
@@ -92,8 +91,7 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
         }
 
         if (null === $this->tags) {
-            $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'
-                        . $this->owner . '/' . $this->repository . '/tags';
+            $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
             $tagsData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
             $this->tags = array();
             foreach ($tagsData as $tag => $data) {
@@ -114,8 +112,7 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
         }
 
         if (null === $this->branches) {
-            $resource =  $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'
-                         . $this->owner . '/' . $this->repository . '/branches';
+            $resource =  $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/branches';
             $branchData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
             $this->branches = array();
             foreach ($branchData as $branch => $data) {
@@ -136,11 +133,7 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
         }
 
         if (!extension_loaded('openssl')) {
-            $io->writeError(
-                'Skipping Bitbucket git driver for '.$url.' because the OpenSSL PHP extension is missing.',
-                true,
-                IOInterface::VERBOSE
-            );
+            $io->writeError('Skipping Bitbucket git driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
 
             return false;
         }
