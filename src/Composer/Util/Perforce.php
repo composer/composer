@@ -304,7 +304,9 @@ class Perforce
 
     public function connectClient()
     {
-        $p4CreateClientCommand = $this->generateP4Command('client -i < ' . str_replace(" ", "\\ ", $this->getP4ClientSpec()));
+        $p4CreateClientCommand = $this->generateP4Command(
+            'client -i < ' . str_replace(" ", "\\ ", $this->getP4ClientSpec())
+        );
         $this->executeCommand($p4CreateClientCommand);
     }
 
@@ -407,7 +409,8 @@ class Perforce
         return $this->getComposerInformationFromLabel($identifier, $index);
     }
 
-    public function getFileContent($file, $identifier) {
+    public function getFileContent($file, $identifier)
+    {
         $path = $this->getFilePath($file, $identifier);
 
         $command = $this->generateP4Command(' print ' . $path);
@@ -421,7 +424,8 @@ class Perforce
         return $result;
     }
 
-    public function getFilePath($file, $identifier) {
+    public function getFilePath($file, $identifier)
+    {
         $index = strpos($identifier, '@');
         if ($index === false) {
             $path = $identifier. '/' . $file;

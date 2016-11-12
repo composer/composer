@@ -29,10 +29,14 @@ class HgBitbucketDriver extends BitbucketDriver
     public function getRootIdentifier()
     {
         if (null === $this->rootIdentifier) {
-            $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
+            $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'
+                        . $this->owner . '/' . $this->repository . '/tags';
             $repoData = JsonFile::parseJson($this->getContents($resource), $resource);
             if (array() === $repoData || !isset($repoData['tip'])) {
-                throw new \RuntimeException($this->url.' does not appear to be a mercurial repository, use '.$this->url.'.git if this is a git bitbucket repository');
+                throw new \RuntimeException(
+                    $this->url . ' does not appear to be a mercurial repository, use '
+                    . $this->url . '.git if this is a git bitbucket repository'
+                );
             }
             $this->hasIssues = !empty($repoData['has_issues']);
             $this->rootIdentifier = $repoData['tip']['raw_node'];
@@ -73,7 +77,8 @@ class HgBitbucketDriver extends BitbucketDriver
     public function getTags()
     {
         if (null === $this->tags) {
-            $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
+            $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'
+                        . $this->owner . '/' . $this->repository . '/tags';
             $tagsData = JsonFile::parseJson($this->getContents($resource), $resource);
             $this->tags = array();
             foreach ($tagsData as $tag => $data) {
@@ -91,7 +96,8 @@ class HgBitbucketDriver extends BitbucketDriver
     public function getBranches()
     {
         if (null === $this->branches) {
-            $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'.$this->owner.'/'.$this->repository.'/branches';
+            $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'
+                        . $this->owner . '/' . $this->repository . '/branches';
             $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
             $this->branches = array();
             foreach ($branchData as $branch => $data) {
@@ -112,7 +118,11 @@ class HgBitbucketDriver extends BitbucketDriver
         }
 
         if (!extension_loaded('openssl')) {
-            $io->writeError('Skipping Bitbucket hg driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
+            $io->writeError(
+                'Skipping Bitbucket hg driver for ' . $url . ' because the OpenSSL PHP extension is missing.',
+                true,
+                IOInterface::VERBOSE
+            );
 
             return false;
         }
@@ -120,7 +130,8 @@ class HgBitbucketDriver extends BitbucketDriver
         return true;
     }
 
-    protected function setupSshDriver($url) {
+    protected function setupSshDriver($url)
+    {
         $this->sshDriver = new HgDriver(
             array('url' => $url),
             $this->io,

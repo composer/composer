@@ -86,7 +86,8 @@ class PerforceDriver extends VcsDriver
     /**
      * {@inheritdoc}
      */
-    public function getChangeDate($identifier) {
+    public function getChangeDate($identifier)
+    {
         return new \DateTime();
     }
 

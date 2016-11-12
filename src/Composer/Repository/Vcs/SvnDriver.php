@@ -77,7 +77,10 @@ class SvnDriver extends VcsDriver
             $this->baseUrl = substr($this->url, 0, $pos);
         }
 
-        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->baseUrl));
+        $this->cache = new Cache(
+            $this->io,
+            $this->config->get('cache-repo-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $this->baseUrl)
+        );
 
         $this->getBranches();
         $this->getTags();
@@ -205,7 +208,8 @@ class SvnDriver extends VcsDriver
     /**
      * {@inheritdoc}
      */
-    public function getChangeDate($identifier) {
+    public function getChangeDate($identifier)
+    {
         $identifier = '/' . trim($identifier, '/') . '/';
 
         preg_match('{^(.+?)(@\d+)?/$}', $identifier, $match);
@@ -380,7 +384,10 @@ class SvnDriver extends VcsDriver
             return $this->util->execute($command, $url);
         } catch (\RuntimeException $e) {
             if (0 !== $this->process->execute('svn --version', $ignoredOutput)) {
-                throw new \RuntimeException('Failed to load '.$this->url.', svn was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
+                throw new \RuntimeException(
+                    'Failed to load ' . $this->url . ', svn was not found, check that it is installed and in your'
+                        . ' PATH env.' . "\n\n" . $this->process->getErrorOutput()
+                );
             }
 
             throw new \RuntimeException(

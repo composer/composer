@@ -54,8 +54,13 @@ abstract class VcsDriver implements VcsDriverInterface
      * @param ProcessExecutor  $process          Process instance, injectable for mocking
      * @param RemoteFilesystem $remoteFilesystem Remote Filesystem, injectable for mocking
      */
-    final public function __construct(array $repoConfig, IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
-    {
+    final public function __construct(
+        array $repoConfig,
+        IOInterface $io,
+        Config $config,
+        ProcessExecutor $process = null,
+        RemoteFilesystem $remoteFilesystem = null
+    ) {
         if (Filesystem::isLocalPath($repoConfig['url'])) {
             $repoConfig['url'] = Filesystem::getPlatformPath($repoConfig['url']);
         }

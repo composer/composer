@@ -42,7 +42,8 @@ class GitDriver extends VcsDriver
             $this->repoDir = $this->url;
             $cacheUrl = realpath($this->url);
         } else {
-            $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
+            $this->repoDir = $this->config->get('cache-vcs-dir') . '/'
+                             . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
 
             GitUtil::cleanEnv();
 
@@ -50,16 +51,26 @@ class GitDriver extends VcsDriver
             $fs->ensureDirectoryExists(dirname($this->repoDir));
 
             if (!is_writable(dirname($this->repoDir))) {
-                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.dirname($this->repoDir).'" directory is not writable by the current user.');
+                throw new \RuntimeException(
+                    'Can not clone ' . $this->url . ' to access package information. The "' . dirname($this->repoDir)
+                        . '" directory is not writable by the current user.'
+                );
             }
 
             if (preg_match('{^ssh://[^@]+@[^:]+:[^0-9]+}', $this->url)) {
-                throw new \InvalidArgumentException('The source URL '.$this->url.' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
+                throw new \InvalidArgumentException(
+                    'The source URL ' . $this->url . ' is invalid, ssh URLs should have a port number after ":".'
+                        . "\n" . 'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want'
+                        . ' to provide a password or custom port.'
+                );
             }
 
             $gitUtil = new GitUtil($this->io, $this->config, $this->process, $fs);
             if (!$gitUtil->syncMirror($this->url, $this->repoDir)) {
-                $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated</error>');
+                $this->io->writeError(
+                    '<error>Failed to update ' . $this->url . ', package information from this repository'
+                        . ' may be outdated</error>'
+                );
             }
 
             $cacheUrl = $this->url;
@@ -68,7 +79,10 @@ class GitDriver extends VcsDriver
         $this->getTags();
         $this->getBranches();
 
-        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $cacheUrl));
+        $this->cache = new Cache(
+            $this->io,
+            $this->config->get('cache-repo-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $cacheUrl)
+        );
     }
 
     /**
@@ -145,8 +159,12 @@ class GitDriver extends VcsDriver
     /**
      * {@inheritdoc}
      */
-    public function getChangeDate($identifier) {
-        $this->process->execute(sprintf('git log -1 --format=%%at %s', ProcessExecutor::escape($identifier)), $output, $this->repoDir);
+    public function getChangeDate($identifier)
+    {
+        $this->process->execute(sprintf(
+            'git log -1 --format=%%at %s',
+            ProcessExecutor::escape($identifier)
+        ), $output, $this->repoDir);
         return new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
     }
 

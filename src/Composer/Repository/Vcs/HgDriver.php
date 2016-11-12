@@ -45,7 +45,10 @@ class HgDriver extends VcsDriver
             $fs->ensureDirectoryExists($cacheDir);
 
             if (!is_writable(dirname($this->repoDir))) {
-                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$cacheDir.'" directory is not writable by the current user.');
+                throw new \RuntimeException(
+                    'Can not clone ' . $this->url . ' to access package information. The "' . $cacheDir
+                        . '" directory is not writable by the current user.'
+                );
             }
 
             // Ensure we are allowed to use this URL by config
@@ -54,20 +57,36 @@ class HgDriver extends VcsDriver
             // update the repo if it is a valid hg repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {
                 if (0 !== $this->process->execute('hg pull', $output, $this->repoDir)) {
-                    $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
+                    $this->io->writeError(
+                        '<error>Failed to update ' . $this->url . ', package information from this repository may be'
+                            . ' outdated ('.$this->process->getErrorOutput().')</error>'
+                    );
                 }
             } else {
                 // clean up directory and do a fresh clone into it
                 $fs->removeDirectory($this->repoDir);
 
-                if (0 !== $this->process->execute(sprintf('hg clone --noupdate %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoDir)), $output, $cacheDir)) {
+                if (0 !== $this->process->execute(
+                    sprintf(
+                        'hg clone --noupdate %s %s',
+                        ProcessExecutor::escape($this->url),
+                        ProcessExecutor::escape($this->repoDir)
+                    ),
+                    $output,
+                    $cacheDir
+                )) {
                     $output = $this->process->getErrorOutput();
 
                     if (0 !== $this->process->execute('hg --version', $ignoredOutput)) {
-                        throw new \RuntimeException('Failed to clone '.$this->url.', hg was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
+                        throw new \RuntimeException(
+                            'Failed to clone ' . $this->url . ', hg was not found, check that it is installed and in'
+                                . ' your PATH env.' . "\n\n" . $this->process->getErrorOutput()
+                        );
                     }
 
-                    throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it' . "\n\n" .$output);
+                    throw new \RuntimeException(
+                        'Failed to clone ' . $this->url . ', could not read packages from it' . "\n\n" .$output
+                    );
                 }
             }
         }
@@ -134,7 +153,14 @@ class HgDriver extends VcsDriver
      */
     public function getChangeDate($identifier)
     {
-        $this->process->execute(sprintf('hg log --template "{date|rfc3339date}" -r %s', ProcessExecutor::escape($identifier)), $output, $this->repoDir);
+        $this->process->execute(
+            sprintf(
+                'hg log --template "{date|rfc3339date}" -r %s',
+                ProcessExecutor::escape($identifier)
+            ),
+            $output,
+            $this->repoDir
+        );
         return new \DateTime(trim($output), new \DateTimeZone('UTC'));
     }
 

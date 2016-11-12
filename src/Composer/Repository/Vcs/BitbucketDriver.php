@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Composer\Repository\Vcs;
-
 
 use Composer\Cache;
 use Composer\Downloader\TransportException;
@@ -35,7 +33,15 @@ abstract class BitbucketDriver extends VcsDriver
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'bitbucket.org';
-        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
+        $this->cache = new Cache(
+            $this->io,
+            implode('/', array(
+                $this->config->get('cache-repo-dir'),
+                $this->originUrl,
+                $this->owner,
+                $this->repository
+            ))
+        );
     }
 
     /**
@@ -48,12 +54,17 @@ abstract class BitbucketDriver extends VcsDriver
         }
 
         if (!isset($this->infoCache[$identifier])) {
-
             $composer = parent::getComposerInformation($identifier);
 
             // specials for bitbucket
             if (!isset($composer['support']['source'])) {
-                $label = array_search($identifier, $this->getTags()) ?: array_search($identifier, $this->getBranches()) ?: $identifier;
+                $label = array_search(
+                    $identifier,
+                    $this->getTags()
+                ) ?: array_search(
+                    $identifier,
+                    $this->getBranches()
+                ) ?: $identifier;
 
                 if (array_key_exists($label, $tags = $this->getTags())) {
                     $hash = $tags[$label];
@@ -62,7 +73,12 @@ abstract class BitbucketDriver extends VcsDriver
                 }
 
                 if (! isset($hash)) {
-                    $composer['support']['source'] = sprintf('https://%s/%s/%s/src', $this->originUrl, $this->owner, $this->repository);
+                    $composer['support']['source'] = sprintf(
+                        'https://%s/%s/%s/src',
+                        $this->originUrl,
+                        $this->owner,
+                        $this->repository
+                    );
                 } else {
                     $composer['support']['source'] = sprintf(
                         'https://%s/%s/%s/src/%s/?at=%s',
@@ -75,7 +91,12 @@ abstract class BitbucketDriver extends VcsDriver
                 }
             }
             if (!isset($composer['support']['issues']) && $this->hasIssues) {
-                $composer['support']['issues'] = sprintf('https://%s/%s/%s/issues', $this->originUrl, $this->owner, $this->repository);
+                $composer['support']['issues'] = sprintf(
+                    'https://%s/%s/%s/issues',
+                    $this->originUrl,
+                    $this->owner,
+                    $this->repository
+                );
             }
 
             $this->infoCache[$identifier] = $composer;
@@ -87,7 +108,8 @@ abstract class BitbucketDriver extends VcsDriver
     /**
      * {@inheritdoc}
      */
-    public function getFileContent($file, $identifier) {
+    public function getFileContent($file, $identifier)
+    {
         if ($this->sshDriver) {
             return $this->sshDriver->getFileContent($file, $identifier);
         }
@@ -96,7 +118,8 @@ abstract class BitbucketDriver extends VcsDriver
             return $res;
         }
 
-        $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/src/'.$identifier.'/' . $file;
+        $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'
+                    . $this->owner . '/' . $this->repository . '/src/' . $identifier . '/' . $file;
         $fileData = JsonFile::parseJson($this->getContents($resource), $resource);
         if (!is_array($fileData) || ! array_key_exists('data', $fileData)) {
             return null;
@@ -112,12 +135,14 @@ abstract class BitbucketDriver extends VcsDriver
     /**
      * {@inheritdoc}
      */
-    public function getChangeDate($identifier) {
+    public function getChangeDate($identifier)
+    {
         if ($this->sshDriver) {
             return $this->sshDriver->getChangeDate($identifier);
         }
 
-        $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/changesets/'.$identifier;
+        $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'
+                    . $this->owner . '/' . $this->repository . '/changesets/' . $identifier;
         $changeset = JsonFile::parseJson($this->getContents($resource), $resource);
 
         return new \DateTime($changeset['timestamp']);
@@ -140,7 +165,8 @@ abstract class BitbucketDriver extends VcsDriver
 
             switch ($e->getCode()) {
                 case 403:
-                    if (!$this->io->hasAuthentication($this->originUrl) && $bitbucketUtil->authorizeOAuth($this->originUrl)) {
+                    if (!$this->io->hasAuthentication($this->originUrl)
+                        && $bitbucketUtil->authorizeOAuth($this->originUrl)) {
                         return parent::getContents($url);
                     }
 
@@ -175,7 +201,10 @@ abstract class BitbucketDriver extends VcsDriver
         } catch (\RuntimeException $e) {
             $this->sshDriver = null;
 
-            $this->io->writeError('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your Bitbucket OAuth consumer credentials</error>');
+            $this->io->writeError(
+                '<error>Failed to clone the ' . $this->generateSshUrl() . ' repository, try running in interactive mode'
+                    . ' so that you can enter your Bitbucket OAuth consumer credentials</error>'
+            );
             throw $e;
         }
     }
