@@ -88,7 +88,7 @@ class PerforceDriver extends VcsDriver
      */
     public function getChangeDate($identifier)
     {
-        return new \DateTime();
+        return null;
     }
 
     /**

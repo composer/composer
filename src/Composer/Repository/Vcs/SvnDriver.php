@@ -224,6 +224,8 @@ class SvnDriver extends VcsDriver
                 return new \DateTime($match[1], new \DateTimeZone('UTC'));
             }
         }
+
+        return null;
     }
 
     /**

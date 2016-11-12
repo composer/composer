@@ -32,8 +32,8 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
      */
     public function getRootIdentifier()
     {
-        if ($this->sshDriver) {
-            return $this->sshDriver->getRootIdentifier();
+        if ($this->fallbackDriver) {
+            return $this->fallbackDriver->getRootIdentifier();
         }
 
         if (null === $this->rootIdentifier) {
@@ -51,8 +51,8 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
      */
     public function getUrl()
     {
-        if ($this->sshDriver) {
-            return $this->sshDriver->getUrl();
+        if ($this->fallbackDriver) {
+            return $this->fallbackDriver->getUrl();
         }
 
         return 'https://' . $this->originUrl . '/'.$this->owner.'/'.$this->repository.'.git';
@@ -63,8 +63,8 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
      */
     public function getSource($identifier)
     {
-        if ($this->sshDriver) {
-            return $this->sshDriver->getSource($identifier);
+        if ($this->fallbackDriver) {
+            return $this->fallbackDriver->getSource($identifier);
         }
 
         return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $identifier);
@@ -86,8 +86,8 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
      */
     public function getTags()
     {
-        if ($this->sshDriver) {
-            return $this->sshDriver->getTags();
+        if ($this->fallbackDriver) {
+            return $this->fallbackDriver->getTags();
         }
 
         if (null === $this->tags) {
@@ -107,8 +107,8 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
      */
     public function getBranches()
     {
-        if ($this->sshDriver) {
-            return $this->sshDriver->getBranches();
+        if ($this->fallbackDriver) {
+            return $this->fallbackDriver->getBranches();
         }
 
         if (null === $this->branches) {
@@ -144,15 +144,23 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
     /**
      * @param string $url
      */
-    protected function setupSshDriver($url)
+    protected function setupFallbackDriver($url)
     {
-        $this->sshDriver = new GitDriver(
+        $this->fallbackDriver = new GitDriver(
             array('url' => $url),
             $this->io,
             $this->config,
             $this->process,
             $this->remoteFilesystem
         );
-        $this->sshDriver->initialize();
+        $this->fallbackDriver->initialize();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function generateSshUrl()
+    {
+        return 'git@' . $this->originUrl . ':' . $this->owner.'/'.$this->repository.'.git';
     }
 }

@@ -20,16 +20,16 @@ abstract class BitbucketDriver extends VcsDriver
     protected $infoCache = array();
 
     /**
-     * @var GitDriver
+     * @var VcsDriver
      */
-    protected $sshDriver;
+    protected $fallbackDriver;
 
     /**
      * {@inheritDoc}
      */
     public function initialize()
     {
-        preg_match('#^https?://bitbucket\.org/([^/]+)/(.+?)(\.git|/?)$#', $this->url, $match);
+        preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)$#', $this->url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'bitbucket.org';
@@ -49,8 +49,8 @@ abstract class BitbucketDriver extends VcsDriver
      */
     public function getComposerInformation($identifier)
     {
-        if ($this->sshDriver) {
-            return $this->sshDriver->getComposerInformation($identifier);
+        if ($this->fallbackDriver) {
+            return $this->fallbackDriver->getComposerInformation($identifier);
         }
 
         if (!isset($this->infoCache[$identifier])) {
@@ -110,8 +110,8 @@ abstract class BitbucketDriver extends VcsDriver
      */
     public function getFileContent($file, $identifier)
     {
-        if ($this->sshDriver) {
-            return $this->sshDriver->getFileContent($file, $identifier);
+        if ($this->fallbackDriver) {
+            return $this->fallbackDriver->getFileContent($file, $identifier);
         }
 
         if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier . ':' . $file)) {
@@ -137,8 +137,8 @@ abstract class BitbucketDriver extends VcsDriver
      */
     public function getChangeDate($identifier)
     {
-        if ($this->sshDriver) {
-            return $this->sshDriver->getChangeDate($identifier);
+        if ($this->fallbackDriver) {
+            return $this->fallbackDriver->getChangeDate($identifier);
         }
 
         $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'
@@ -163,22 +163,19 @@ abstract class BitbucketDriver extends VcsDriver
         } catch (TransportException $e) {
             $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process, $this->remoteFilesystem);
 
-            switch ($e->getCode()) {
-                case 403:
-                    if (!$this->io->hasAuthentication($this->originUrl)
-                        && $bitbucketUtil->authorizeOAuth($this->originUrl)) {
-                        return parent::getContents($url);
-                    }
+            if (403 === $e->getCode()) {
+                if (!$this->io->hasAuthentication($this->originUrl)
+                    && $bitbucketUtil->authorizeOAuth($this->originUrl)
+                ) {
+                    return parent::getContents($url);
+                }
 
-                    if (!$this->io->isInteractive() && $fetchingRepoData) {
-                        return $this->attemptCloneFallback();
-                    }
-
-                    throw $e;
-
-                default:
-                    throw $e;
+                if (!$this->io->isInteractive() && $fetchingRepoData) {
+                    return $this->attemptCloneFallback();
+                }
             }
+
+            throw $e;
         }
     }
 
@@ -187,19 +184,14 @@ abstract class BitbucketDriver extends VcsDriver
      *
      * @return string
      */
-    protected function generateSshUrl()
-    {
-        return 'git@' . $this->originUrl . ':' . $this->owner.'/'.$this->repository.'.git';
-    }
+    abstract protected function generateSshUrl();
 
     protected function attemptCloneFallback()
     {
         try {
-            $this->setupSshDriver($this->generateSshUrl());
-
-            return;
+            $this->setupFallbackDriver($this->generateSshUrl());
         } catch (\RuntimeException $e) {
-            $this->sshDriver = null;
+            $this->fallbackDriver = null;
 
             $this->io->writeError(
                 '<error>Failed to clone the ' . $this->generateSshUrl() . ' repository, try running in interactive mode'
@@ -209,5 +201,5 @@ abstract class BitbucketDriver extends VcsDriver
         }
     }
 
-    abstract protected function setupSshDriver($url);
+    abstract protected function setupFallbackDriver($url);
 }

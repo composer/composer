@@ -83,8 +83,8 @@ abstract class VcsDriver implements VcsDriverInterface
 
             $composer = JsonFile::parseJson($composerFileContent, $identifier . ':composer.json');
 
-            if (empty($composer['time'])) {
-                $composer['time'] = $this->getChangeDate($identifier)->format('Y-m-d H:i:s');
+            if (empty($composer['time']) && $changeDate = $this->getChangeDate($identifier)) {
+                $composer['time'] = $changeDate->format('Y-m-d H:i:s');
             }
 
             $this->infoCache[$identifier] = $composer;

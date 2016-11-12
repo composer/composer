@@ -120,15 +120,23 @@ class HgBitbucketDriver extends BitbucketDriver
         return true;
     }
 
-    protected function setupSshDriver($url)
+    protected function setupFallbackDriver($url)
     {
-        $this->sshDriver = new HgDriver(
+        $this->fallbackDriver = new HgDriver(
             array('url' => $url),
             $this->io,
             $this->config,
             $this->process,
             $this->remoteFilesystem
         );
-        $this->sshDriver->initialize();
+        $this->fallbackDriver->initialize();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function generateSshUrl()
+    {
+        return 'hg@' . $this->originUrl . '/' . $this->owner.'/'.$this->repository;
     }
 }

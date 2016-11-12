@@ -439,13 +439,10 @@ class Perforce
             $index2 = strpos($result, 'no such file(s).');
             if ($index2 === false) {
                 $index3 = strpos($result, 'change');
-                if (!($index3 === false)) {
+                if ($index3 !== false) {
                     $phrase = trim(substr($result, $index3));
                     $fields = explode(' ', $phrase);
-                    $id = $fields[1];
-                    $path = substr($identifier, 0, $index) . '/' . $file . '@' . $id;
-
-                    return $path;
+                    return substr($identifier, 0, $index) . '/' . $file . '@' . $fields[1];
                 }
             }
         }

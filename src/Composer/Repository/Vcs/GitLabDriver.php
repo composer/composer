@@ -155,7 +155,7 @@ class GitLabDriver extends VcsDriver
             }
         }
 
-        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier . ':' . $file)) {
+        if ($isHash = preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier . ':' . $file)) {
             return $res;
         }
 
@@ -170,7 +170,7 @@ class GitLabDriver extends VcsDriver
             return null;
         }
 
-        if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
+        if ($isHash) {
             $this->cache->write($identifier . ':' . $file, $content);
         }
 
