@@ -124,19 +124,11 @@ class GitDriver extends VcsDriver
      */
     public function getFileContent($file, $identifier)
     {
-        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier . ':' . $file)) {
-            return $res;
-        }
-
         $resource = sprintf('%s:%s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
         $this->process->execute(sprintf('git show %s', $resource), $content, $this->repoDir);
 
         if (!trim($content)) {
             return null;
-        }
-
-        if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
-            $this->cache->write($identifier . ':' . $file, $content);
         }
 
         return $content;

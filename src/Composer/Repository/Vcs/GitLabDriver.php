@@ -32,8 +32,6 @@ class GitLabDriver extends VcsDriver
     private $owner;
     private $repository;
 
-    private $cache;
-
     /**
      * @var array Project data returned by GitLab API
      */
@@ -98,51 +96,6 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * Fetches the composer.json file from the project by a identifier.
-     *
-     * if specific keys arent present it will try and infer them by default values.
-     *
-     * {@inheritDoc}
-     */
-    public function getComposerInformation($identifier)
-    {
-        // Convert the root identifier to a cachable commit id
-        if (!preg_match('{[a-f0-9]{40}}i', $identifier)) {
-            $branches = $this->getBranches();
-            if (isset($branches[$identifier])) {
-                $identifier = $branches[$identifier];
-            }
-        }
-
-        if (isset($this->infoCache[$identifier])) {
-            return $this->infoCache[$identifier];
-        }
-
-        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier)) {
-            return $this->infoCache[$identifier] = JsonFile::parseJson($res, $res);
-        }
-
-        try {
-            $composer = $this->fetchComposerFile($identifier);
-        } catch (TransportException $e) {
-            if ($e->getCode() !== 404) {
-                throw $e;
-            }
-            $composer = false;
-        }
-
-        if ($composer && !isset($composer['time']) && isset($this->commits[$identifier])) {
-            $composer['time'] = $this->commits[$identifier]['committed_date'];
-        }
-
-        if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
-            $this->cache->write($identifier, json_encode($composer));
-        }
-
-        return $this->infoCache[$identifier] = $composer;
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function getFileContent($file, $identifier)
@@ -155,10 +108,6 @@ class GitLabDriver extends VcsDriver
             }
         }
 
-        if ($isHash = preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier . ':' . $file)) {
-            return $res;
-        }
-
         $resource = $this->getApiUrl().'/repository/blobs/'.$identifier.'?filepath=' . $file;
 
         try {
@@ -168,10 +117,6 @@ class GitLabDriver extends VcsDriver
                 throw $e;
             }
             return null;
-        }
-
-        if ($isHash) {
-            $this->cache->write($identifier . ':' . $file, $content);
         }
 
         return $content;
@@ -254,20 +199,6 @@ class GitLabDriver extends VcsDriver
         }
 
         return $this->tags;
-    }
-
-    /**
-     * Fetches composer.json file from the repository through api.
-     *
-     * @param string $identifier
-     *
-     * @return array
-     */
-    protected function fetchComposerFile($identifier)
-    {
-        $resource = $this->getApiUrl().'/repository/blobs/'.$identifier.'?filepath=composer.json';
-
-        return JsonFile::parseJson($this->getContents($resource), $resource);
     }
 
     /**

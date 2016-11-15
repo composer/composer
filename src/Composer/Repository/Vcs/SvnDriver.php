@@ -116,52 +116,22 @@ class SvnDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getComposerInformation($identifier)
     {
-        $identifier = '/' . trim($identifier, '/') . '/';
-
-        if ($res = $this->cache->read($identifier.'.json')) {
-            $this->infoCache[$identifier] = JsonFile::parseJson($res);
-        }
-
         if (!isset($this->infoCache[$identifier])) {
-            preg_match('{^(.+?)(@\d+)?/$}', $identifier, $match);
-            if (!empty($match[2])) {
-                $path = $match[1];
-                $rev = $match[2];
-            } else {
-                $path = $identifier;
-                $rev = '';
+            if ($res = $this->cache->read($identifier.'.json')) {
+                return $this->infoCache[$identifier] = JsonFile::parseJson($res);
             }
 
-            try {
-                $resource = $path.'composer.json';
-                $output = $this->execute('svn cat', $this->baseUrl . $resource . $rev);
-                if (!trim($output)) {
-                    return;
-                }
-            } catch (\RuntimeException $e) {
-                throw new TransportException($e->getMessage());
-            }
-
-            $composer = JsonFile::parseJson($output, $this->baseUrl . $resource . $rev);
-
-            if (empty($composer['time'])) {
-                $output = $this->execute('svn info', $this->baseUrl . $path . $rev);
-                foreach ($this->process->splitLines($output) as $line) {
-                    if ($line && preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {
-                        $date = new \DateTime($match[1], new \DateTimeZone('UTC'));
-                        $composer['time'] = $date->format('Y-m-d H:i:s');
-                        break;
-                    }
-                }
-            }
+            $composer = $this->getBaseComposerInformation($identifier);
 
             $this->cache->write($identifier.'.json', json_encode($composer));
+
             $this->infoCache[$identifier] = $composer;
         }
+
 
         return $this->infoCache[$identifier];
     }
@@ -173,10 +143,6 @@ class SvnDriver extends VcsDriver
     public function getFileContent($file, $identifier)
     {
         $identifier = '/' . trim($identifier, '/') . '/';
-
-        if ($res = $this->cache->read($identifier . ':' . $file)) {
-            return $res;
-        }
 
         preg_match('{^(.+?)(@\d+)?/$}', $identifier, $match);
         if (!empty($match[2])) {
@@ -196,8 +162,6 @@ class SvnDriver extends VcsDriver
         } catch (\RuntimeException $e) {
             throw new TransportException($e->getMessage());
         }
-
-        $this->cache->write($identifier . ':' . $file, $output);
 
         return $output;
     }

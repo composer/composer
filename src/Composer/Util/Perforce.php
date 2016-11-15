@@ -399,14 +399,13 @@ class Perforce
 
     public function getComposerInformation($identifier)
     {
-        $index = strpos($identifier, '@');
-        if ($index === false) {
-            $composerJson = $identifier. '/composer.json';
+        $composerFileContent = $this->getFileContent('composer.json', $identifier);
 
-            return $this->getComposerInformationFromPath($composerJson);
+        if (!$composerFileContent) {
+            return;
         }
 
-        return $this->getComposerInformationFromLabel($identifier, $index);
+        return json_decode($composerFileContent, true);
     }
 
     public function getFileContent($file, $identifier)
@@ -448,47 +447,6 @@ class Perforce
         }
 
         return null;
-    }
-
-    public function getComposerInformationFromPath($composerJson)
-    {
-        $command = $this->generateP4Command(' print ' . $composerJson);
-        $this->executeCommand($command);
-        $result = $this->commandResult;
-        $index = strpos($result, '{');
-        if ($index === false) {
-            return '';
-        }
-        if ($index >= 0) {
-            $rawData = substr($result, $index);
-            $composer_info = json_decode($rawData, true);
-
-            return $composer_info;
-        }
-
-        return '';
-    }
-
-    public function getComposerInformationFromLabel($identifier, $index)
-    {
-        $composerJsonPath = substr($identifier, 0, $index) . '/composer.json' . substr($identifier, $index);
-        $command = $this->generateP4Command(' files ' . $composerJsonPath, false);
-        $this->executeCommand($command);
-        $result = $this->commandResult;
-        $index2 = strpos($result, 'no such file(s).');
-        if ($index2 === false) {
-            $index3 = strpos($result, 'change');
-            if (!($index3 === false)) {
-                $phrase = trim(substr($result, $index3));
-                $fields = explode(' ', $phrase);
-                $id = $fields[1];
-                $composerJson = substr($identifier, 0, $index) . '/composer.json@' . $id;
-
-                return $this->getComposerInformationFromPath($composerJson);
-            }
-        }
-
-        return "";
     }
 
     public function getBranches()

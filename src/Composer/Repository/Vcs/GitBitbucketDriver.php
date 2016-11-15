@@ -12,12 +12,9 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Cache;
 use Composer\Config;
-use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
-use Composer\Util\Bitbucket;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>

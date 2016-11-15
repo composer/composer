@@ -26,9 +26,6 @@ class PerforceDriver extends VcsDriver
     protected $branch;
     /** @var Perforce */
     protected $perforce;
-    protected $composerInfo;
-    protected $composerInfoIdentifier;
-
     /**
      * {@inheritDoc}
      */
@@ -60,20 +57,6 @@ class PerforceDriver extends VcsDriver
         $this->perforce = Perforce::create($repoConfig, $this->getUrl(), $repoDir, $this->process, $this->io);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getComposerInformation($identifier)
-    {
-        if (!empty($this->composerInfoIdentifier)) {
-            if (strcmp($identifier, $this->composerInfoIdentifier) === 0) {
-                return $this->composerInfo;
-            }
-        }
-        $composer_info = $this->perforce->getComposerInformation($identifier);
-
-        return $composer_info;
-    }
 
     /**
      * {@inheritdoc}
@@ -155,10 +138,10 @@ class PerforceDriver extends VcsDriver
      */
     public function hasComposerFile($identifier)
     {
-        $this->composerInfo = $this->perforce->getComposerInformation('//' . $this->depot . '/' . $identifier);
-        $this->composerInfoIdentifier = $identifier;
+        $composerInfo = $this->perforce->getComposerInformation('//' . $this->depot . '/' . $identifier);
+        $composerInfoIdentifier = $identifier;
 
-        return !empty($this->composerInfo);
+        return !empty($composerInfo);
     }
 
     /**

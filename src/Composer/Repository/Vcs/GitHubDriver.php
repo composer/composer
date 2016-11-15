@@ -147,8 +147,11 @@ class GitHubDriver extends VcsDriver
         }
 
         if (!isset($this->infoCache[$identifier])) {
+            if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
+                return $this->infoCache[$identifier] = JsonFile::parseJson($res);
+            }
 
-            $composer = parent::getComposerInformation($identifier);
+            $composer = $this->getBaseComposerInformation($identifier);
 
             // specials for github
             if (!isset($composer['support']['source'])) {
@@ -157,6 +160,10 @@ class GitHubDriver extends VcsDriver
             }
             if (!isset($composer['support']['issues']) && $this->hasIssues) {
                 $composer['support']['issues'] = sprintf('https://%s/%s/%s/issues', $this->originUrl, $this->owner, $this->repository);
+            }
+
+            if ($this->shouldCache($identifier)) {
+                $this->cache->write($identifier, json_encode($composer));
             }
 
             $this->infoCache[$identifier] = $composer;
@@ -174,10 +181,6 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getFileContent($file, $identifier);
         }
 
-        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier . ':' . $file)) {
-            return $res;
-        }
-
         $notFoundRetries = 2;
         while ($notFoundRetries) {
             try {
@@ -186,10 +189,6 @@ class GitHubDriver extends VcsDriver
                 $resource = JsonFile::parseJson($this->getContents($resource));
                 if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($content = base64_decode($resource['content']))) {
                     throw new \RuntimeException('Could not retrieve ' . $file . ' for '.$identifier);
-                }
-
-                if ($content && preg_match('{[a-f0-9]{40}}i', $identifier)) {
-                    $this->cache->write($identifier . ':' . $file, $content);
                 }
 
                 return $content;

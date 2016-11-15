@@ -54,7 +54,11 @@ abstract class BitbucketDriver extends VcsDriver
         }
 
         if (!isset($this->infoCache[$identifier])) {
-            $composer = parent::getComposerInformation($identifier);
+            if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
+                return $this->infoCache[$identifier] = JsonFile::parseJson($res);
+            }
+
+            $composer = $this->getBaseComposerInformation($identifier);
 
             // specials for bitbucket
             if (!isset($composer['support']['source'])) {
@@ -100,6 +104,10 @@ abstract class BitbucketDriver extends VcsDriver
             }
 
             $this->infoCache[$identifier] = $composer;
+
+            if ($this->shouldCache($identifier)) {
+                $this->cache->write($identifier, json_encode($composer));
+            }
         }
 
         return $this->infoCache[$identifier];
@@ -114,19 +122,11 @@ abstract class BitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getFileContent($file, $identifier);
         }
 
-        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier . ':' . $file)) {
-            return $res;
-        }
-
         $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'
                     . $this->owner . '/' . $this->repository . '/src/' . $identifier . '/' . $file;
         $fileData = JsonFile::parseJson($this->getContents($resource), $resource);
         if (!is_array($fileData) || ! array_key_exists('data', $fileData)) {
             return null;
-        }
-
-        if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
-            $this->cache->write($identifier . ':' . $file, $fileData['data']);
         }
 
         return $fileData['data'];

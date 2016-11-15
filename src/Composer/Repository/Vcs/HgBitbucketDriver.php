@@ -12,7 +12,6 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Cache;
 use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;

@@ -12,6 +12,7 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Cache;
 use Composer\Downloader\TransportException;
 use Composer\Config;
 use Composer\Factory;
@@ -44,6 +45,8 @@ abstract class VcsDriver implements VcsDriverInterface
     protected $remoteFilesystem;
     /** @var array */
     protected $infoCache = array();
+    /** @var Cache */
+    protected $cache;
 
     /**
      * Constructor.
@@ -70,21 +73,30 @@ abstract class VcsDriver implements VcsDriverInterface
     }
 
     /**
+     * Returns whether or not the given $identifier should be cached or not.
+     *
+     * @param string $identifier
+     * @return boolean
+     */
+    protected function shouldCache($identifier)
+    {
+        return $this->cache && preg_match('{[a-f0-9]{40}}i', $identifier);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            $composerFileContent = $this->getFileContent('composer.json', $identifier);
-
-            if (!$composerFileContent) {
-                return null;
+            if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
+                return $this->infoCache[$identifier] = JsonFile::parseJson($res);
             }
 
-            $composer = JsonFile::parseJson($composerFileContent, $identifier . ':composer.json');
+            $composer = $this->getBaseComposerInformation($identifier);
 
-            if (empty($composer['time']) && $changeDate = $this->getChangeDate($identifier)) {
-                $composer['time'] = $changeDate->format('Y-m-d H:i:s');
+            if ($this->shouldCache($identifier)) {
+                $this->cache->write($identifier, json_encode($composer));
             }
 
             $this->infoCache[$identifier] = $composer;
@@ -92,6 +104,23 @@ abstract class VcsDriver implements VcsDriverInterface
 
 
         return $this->infoCache[$identifier];
+    }
+
+    protected function getBaseComposerInformation($identifier)
+    {
+        $composerFileContent = $this->getFileContent('composer.json', $identifier);
+
+        if (!$composerFileContent) {
+            return null;
+        }
+
+        $composer = JsonFile::parseJson($composerFileContent, $identifier . ':composer.json');
+
+        if (empty($composer['time']) && $changeDate = $this->getChangeDate($identifier)) {
+            $composer['time'] = $changeDate->format('Y-m-d H:i:s');
+        }
+
+        return $composer;
     }
 
     /**
