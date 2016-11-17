@@ -332,6 +332,16 @@
                     "type": "array",
                     "description": "This is an array of directories that contain classes to be included in the class-map generation process."
                 },
+                "aliases": {
+                    "type": "object",
+                    "description": "This is a hash of aliases (key) and the class they are refering to (values must be a string), which will be loaded by the autoloader.",
+                    "additionalProperties": {
+                        "type": "string",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "files": {
                     "type": "array",
                     "description": "This is an array of files that are always required on every request."
@@ -361,6 +371,16 @@
                     "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
                     "additionalProperties": {
                         "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "aliases": {
+                    "type": "object",
+                    "description": "This is a hash of aliases (key) and the class they are refering to (values must be a string), which will be loaded by the autoloader.",
+                    "additionalProperties": {
+                        "type": "string",
                         "items": {
                             "type": "string"
                         }

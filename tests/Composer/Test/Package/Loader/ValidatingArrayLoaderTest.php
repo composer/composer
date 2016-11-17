@@ -109,6 +109,9 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         'files' => array(
                             'functions.php',
                         ),
+                        'aliases' => array(
+                            'FooBar' => 'Foo\\Bar'
+                        )
                     ),
                     'include-path' => array(
                         'lib/',
@@ -263,7 +266,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     ),
                 ),
                 array(
-                    'autoload : invalid value (psr0), must be one of psr-0, psr-4, classmap, files, exclude-from-classmap',
+                    'autoload : invalid value (psr0), must be one of psr-0, psr-4, classmap, files, exclude-from-classmap, aliases',
                 ),
             ),
             array(
