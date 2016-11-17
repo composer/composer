@@ -47,6 +47,11 @@ Authors
 
 See also the list of [contributors](https://github.com/composer/composer/contributors) who participated in this project.
 
+Security Reports
+----------------
+
+Please send any sensitive issue to [security@packagist.org](mailto:security@packagist.org). Thanks!
+
 License
 -------
 

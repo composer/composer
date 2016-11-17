@@ -21,6 +21,11 @@ If your issue involves installing, updating or resolving dependencies, the
 chance of us being able to reproduce your issue will be much higher if you
 share your `composer.json` with us.
 
+Security Reports
+----------------
+
+Please send any sensitive issue to [security@packagist.org](mailto:security@packagist.org). Thanks!
+
 Installation from Source
 ------------------------
 
