@@ -437,6 +437,34 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertAutoloadFiles('classmap4', $this->vendorDir.'/composer', 'classmap');
     }
 
+    public function testVendorsAliasesAutoloading()
+    {
+        $package = new Package('a', '1.0', '1.0');
+
+        $packages = array();
+        $packages[] = $a = new Package('a/a', '1.0', '1.0');
+        $a->setAutoload(
+            array(
+                'aliases' => array('AliasClass' => 'RealClass')
+            )
+        );
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($packages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_6');
+        $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_aliases.php'), "Aliases file needs to be generated.");
+        $this->assertEquals(
+            array(
+                'AliasClass' => 'RealClass',
+            ),
+            include $this->vendorDir.'/composer/autoload_aliases.php'
+        );
+    }
+
     public function testVendorsClassMapAutoloadingWithTargetDir()
     {
         $package = new Package('a', '1.0', '1.0');
