@@ -305,6 +305,7 @@ Dev dependencies are packaged only if the `require-dev-dependencies` parameter i
 
 ### Other options
 
+ * `providers`: optional, `false` by default, when enabled (`true`) each package will be dumped into a separate include file which will be only loaded by composer when the package is really required. Speeds up composer handling for repositories with huge number of packages like f.i. packagist.
  * `output-dir`: optional, defines where to output the repository files
    if not provided as an argument when calling the `build` command.
  * `config`: optional, lets you define all config options from composer, except `archive-format` and `archive-dir` as the configuration is done through [archive](#downloads) instead. See
