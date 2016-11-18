@@ -146,50 +146,23 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getComposerInformation($identifier);
         }
 
-        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier)) {
-            $this->infoCache[$identifier] = JsonFile::parseJson($res);
-        }
-
         if (!isset($this->infoCache[$identifier])) {
-            $notFoundRetries = 2;
-            while ($notFoundRetries) {
-                try {
-                    $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/composer.json?ref='.urlencode($identifier);
-                    $resource = JsonFile::parseJson($this->getContents($resource));
-                    if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($composer = base64_decode($resource['content']))) {
-                        throw new \RuntimeException('Could not retrieve composer.json for '.$identifier);
-                    }
-                    break;
-                } catch (TransportException $e) {
-                    if (404 !== $e->getCode()) {
-                        throw $e;
-                    }
-
-                    // TODO should be removed when possible
-                    // retry fetching if github returns a 404 since they happen randomly
-                    $notFoundRetries--;
-                    $composer = null;
-                }
+            if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
+                return $this->infoCache[$identifier] = JsonFile::parseJson($res);
             }
 
-            if ($composer) {
-                $composer = JsonFile::parseJson($composer, $resource);
+            $composer = $this->getBaseComposerInformation($identifier);
 
-                if (empty($composer['time'])) {
-                    $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/commits/'.urlencode($identifier);
-                    $commit = JsonFile::parseJson($this->getContents($resource), $resource);
-                    $composer['time'] = $commit['commit']['committer']['date'];
-                }
-                if (!isset($composer['support']['source'])) {
-                    $label = array_search($identifier, $this->getTags()) ?: array_search($identifier, $this->getBranches()) ?: $identifier;
-                    $composer['support']['source'] = sprintf('https://%s/%s/%s/tree/%s', $this->originUrl, $this->owner, $this->repository, $label);
-                }
-                if (!isset($composer['support']['issues']) && $this->hasIssues) {
-                    $composer['support']['issues'] = sprintf('https://%s/%s/%s/issues', $this->originUrl, $this->owner, $this->repository);
-                }
+            // specials for github
+            if (!isset($composer['support']['source'])) {
+                $label = array_search($identifier, $this->getTags()) ?: array_search($identifier, $this->getBranches()) ?: $identifier;
+                $composer['support']['source'] = sprintf('https://%s/%s/%s/tree/%s', $this->originUrl, $this->owner, $this->repository, $label);
+            }
+            if (!isset($composer['support']['issues']) && $this->hasIssues) {
+                $composer['support']['issues'] = sprintf('https://%s/%s/%s/issues', $this->originUrl, $this->owner, $this->repository);
             }
 
-            if ($composer && preg_match('{[a-f0-9]{40}}i', $identifier)) {
+            if ($this->shouldCache($identifier)) {
                 $this->cache->write($identifier, json_encode($composer));
             }
 
@@ -197,6 +170,54 @@ class GitHubDriver extends VcsDriver
         }
 
         return $this->infoCache[$identifier];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFileContent($file, $identifier)
+    {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getFileContent($file, $identifier);
+        }
+
+        $notFoundRetries = 2;
+        while ($notFoundRetries) {
+            try {
+
+                $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/' . $file . '?ref='.urlencode($identifier);
+                $resource = JsonFile::parseJson($this->getContents($resource));
+                if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($content = base64_decode($resource['content']))) {
+                    throw new \RuntimeException('Could not retrieve ' . $file . ' for '.$identifier);
+                }
+
+                return $content;
+            } catch (TransportException $e) {
+                if (404 !== $e->getCode()) {
+                    throw $e;
+                }
+
+                // TODO should be removed when possible
+                // retry fetching if github returns a 404 since they happen randomly
+                $notFoundRetries--;
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChangeDate($identifier) {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getChangeDate($identifier);
+        }
+
+        $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/commits/'.urlencode($identifier);
+        $commit = JsonFile::parseJson($this->getContents($resource), $resource);
+        return new \DateTime($commit['commit']['committer']['date']);
     }
 
     /**

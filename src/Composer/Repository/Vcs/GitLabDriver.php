@@ -32,9 +32,6 @@ class GitLabDriver extends VcsDriver
     private $owner;
     private $repository;
 
-    private $cache;
-    private $infoCache = array();
-
     /**
      * @var array Project data returned by GitLab API
      */
@@ -99,13 +96,9 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * Fetches the composer.json file from the project by a identifier.
-     *
-     * if specific keys arent present it will try and infer them by default values.
-     *
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
-    public function getComposerInformation($identifier)
+    public function getFileContent($file, $identifier)
     {
         // Convert the root identifier to a cachable commit id
         if (!preg_match('{[a-f0-9]{40}}i', $identifier)) {
@@ -115,33 +108,32 @@ class GitLabDriver extends VcsDriver
             }
         }
 
-        if (isset($this->infoCache[$identifier])) {
-            return $this->infoCache[$identifier];
-        }
-
-        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier)) {
-            return $this->infoCache[$identifier] = JsonFile::parseJson($res, $res);
-        }
+        $resource = $this->getApiUrl().'/repository/blobs/'.$identifier.'?filepath=' . $file;
 
         try {
-            $composer = $this->fetchComposerFile($identifier);
+            $content = $this->getContents($resource);
         } catch (TransportException $e) {
             if ($e->getCode() !== 404) {
                 throw $e;
             }
-            $composer = false;
+            return null;
         }
 
-        if ($composer && !isset($composer['time']) && isset($this->commits[$identifier])) {
-            $composer['time'] = $this->commits[$identifier]['committed_date'];
-        }
-
-        if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
-            $this->cache->write($identifier, json_encode($composer));
-        }
-
-        return $this->infoCache[$identifier] = $composer;
+        return $content;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChangeDate($identifier)
+    {
+        if (isset($this->commits[$identifier])) {
+            return new \DateTime($this->commits[$identifier]['committed_date']);
+        }
+
+        return new \DateTime();
+    }
+
 
     /**
      * {@inheritDoc}
@@ -207,20 +199,6 @@ class GitLabDriver extends VcsDriver
         }
 
         return $this->tags;
-    }
-
-    /**
-     * Fetches composer.json file from the repository through api.
-     *
-     * @param string $identifier
-     *
-     * @return array
-     */
-    protected function fetchComposerFile($identifier)
-    {
-        $resource = $this->getApiUrl().'/repository/blobs/'.$identifier.'?filepath=composer.json';
-
-        return JsonFile::parseJson($this->getContents($resource), $resource);
     }
 
     /**
