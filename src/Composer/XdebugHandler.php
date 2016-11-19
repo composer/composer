@@ -12,6 +12,7 @@
 
 namespace Composer;
 
+use Composer\Util\IniHelper;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -25,6 +26,7 @@ class XdebugHandler
     private $output;
     private $loaded;
     private $envScanDir;
+    private $tmpIni;
 
     /**
      * Constructor
@@ -41,7 +43,8 @@ class XdebugHandler
      *
      * If so, then a tmp ini is created with the xdebug ini entry commented out.
      * If additional inis have been loaded, these are combined into the tmp ini
-     * and PHP_INI_SCAN_DIR is set to an empty value.
+     * and PHP_INI_SCAN_DIR is set to an empty value. Current ini locations are
+     * are stored in COMPOSER_ORIGINAL_INIS, for use in the restarted process.
      *
      * This behaviour can be disabled by setting the COMPOSER_ALLOW_XDEBUG
      * environment variable to 1. This variable is used internally so that the
@@ -73,13 +76,18 @@ class XdebugHandler
     }
 
     /**
-     * Executes the restarted command
+     * Executes the restarted command then deletes the tmp ini
      *
      * @param string $command
      */
     protected function restart($command)
     {
         passthru($command, $exitCode);
+
+        if (!empty($this->tmpIni)) {
+            @unlink($this->tmpIni);
+        }
+
         exit($exitCode);
     }
 
@@ -113,82 +121,75 @@ class XdebugHandler
      */
     private function prepareRestart(&$command)
     {
-        $iniFiles = array();
-        if ($loadedIni = php_ini_loaded_file()) {
-            $iniFiles[] = $loadedIni;
-        }
+        $this->tmpIni = '';
+        $iniPaths = IniHelper::getAll();
+        $files = $this->getWorkingSet($iniPaths, $replace);
 
-        $additional = $this->getAdditionalInis($iniFiles, $replace);
-        $tmpIni = $this->writeTmpIni($iniFiles, $replace);
-
-        if (false !== $tmpIni) {
-            $command = $this->getCommand($tmpIni);
-            return $this->setEnvironment($additional);
+        if ($this->writeTmpIni($files, $replace)) {
+            $command = $this->getCommand();
+            return $this->setEnvironment($iniPaths);
         }
 
         return false;
     }
 
     /**
-     * Writes the tmp ini file and returns its filename
+     * Returns true if the tmp ini file was written
      *
-     * The filename is passed as the -c option when the process restarts. On
-     * non-Windows platforms the filename is prefixed with the username to
-     * avoid any multi-user conflict. Windows always uses the user temp dir.
+     * The filename is passed as the -c option when the process restarts.
      *
      * @param array $iniFiles The php.ini locations
-     * @param bool $replace Whether we need to modify the files
+     * @param bool $replace Whether the files need modifying
      *
-     * @return bool|string False if the tmp ini could not be created
+     * @return bool
      */
     private function writeTmpIni(array $iniFiles, $replace)
     {
         if (empty($iniFiles)) {
             // Unlikely, maybe xdebug was loaded through a command line option.
-            return '';
+            return true;
         }
 
-        if (function_exists('posix_getpwuid')) {
-            $user = posix_getpwuid(posix_getuid());
+        if (!$this->tmpIni = tempnam(sys_get_temp_dir(), '')) {
+            return false;
         }
-        $prefix = !empty($user) ? $user['name'].'-' : '';
-        $tmpIni = sys_get_temp_dir().'/'.$prefix.'composer-php.ini';
 
-        $content = $this->getIniHeader($iniFiles);
+        $content = '';
         foreach ($iniFiles as $file) {
             $content .= $this->getIniData($file, $replace);
         }
 
-        return @file_put_contents($tmpIni, $content) ? $tmpIni : false;
+        return @file_put_contents($this->tmpIni, $content);
     }
 
     /**
-     * Returns true if additional inis were loaded
+     * Returns an array of ini files to use
      *
-     * @param array $iniFiles Populated by method
-     * @param bool $replace Whether we need to modify the files
+     * @param array $iniPaths Locations used by the current prcoess
+     * @param null|bool $replace Whether the files need modifying, set by method
      *
-     * @return bool
+     * @return array
      */
-    private function getAdditionalInis(array &$iniFiles, &$replace)
+    private function getWorkingSet(array $iniPaths, &$replace)
     {
         $replace = true;
+        $result = array();
 
-        if ($scanned = php_ini_scanned_files()) {
-            $list = explode(',', $scanned);
+        if (empty($iniPaths[0])) {
+            // There is no loaded ini
+            array_shift($iniPaths);
+        }
 
-            foreach ($list as $file) {
-                $file = trim($file);
-                if (preg_match('/xdebug.ini$/', $file)) {
-                    // Skip the file, no need for regex replacing
-                    $replace = false;
-                } else {
-                    $iniFiles[] = $file;
-                }
+        foreach ($iniPaths as $file) {
+            if (preg_match('/xdebug.ini$/', $file)) {
+                // Skip the file, no need for regex replacing
+                $replace = false;
+            } else {
+                $result[] = $file;
             }
         }
 
-        return !empty($scanned);
+        return $result;
     }
 
     /**
@@ -201,9 +202,8 @@ class XdebugHandler
      */
     private function getIniData($iniFile, $replace)
     {
-        $data = str_repeat(PHP_EOL, 3);
-        $data .= sprintf('; %s%s', $iniFile, PHP_EOL);
         $contents = file_get_contents($iniFile);
+        $data = PHP_EOL;
 
         if ($replace) {
             // Comment out xdebug config
@@ -219,13 +219,11 @@ class XdebugHandler
     /**
      * Returns the restart command line
      *
-     * @param string $tmpIni The temporary ini file location
-     *
      * @return string
      */
-    private function getCommand($tmpIni)
+    private function getCommand()
     {
-        $phpArgs = array(PHP_BINARY, '-c', $tmpIni);
+        $phpArgs = array(PHP_BINARY, '-c', $this->tmpIni);
         $params = array_merge($phpArgs, $this->getScriptArgs($_SERVER['argv']));
 
         return implode(' ', array_map(array($this, 'escape'), $params));
@@ -234,21 +232,30 @@ class XdebugHandler
     /**
      * Returns true if the restart environment variables were set
      *
-     * @param bool $additional Whether additional inis were loaded
+     * @param array $iniPaths Locations used by the current prcoess
      *
      * @return bool
      */
-    private function setEnvironment($additional)
+    private function setEnvironment(array $iniPaths)
     {
+        // Set scan dir to an empty value if additional ini files were used
+        $additional = count($iniPaths) > 1;
+
+        if ($additional && !putenv('PHP_INI_SCAN_DIR=')) {
+            return false;
+        }
+
+        // Make original inis available to restarted process
+        if (!putenv(IniHelper::ENV_ORIGINAL.'='.implode(PATH_SEPARATOR, $iniPaths))) {
+            return false;
+        }
+
+        // Flag restarted process and save env scan dir state
         $args = array(self::RESTART_ID);
 
         if (false !== $this->envScanDir) {
             // Save current PHP_INI_SCAN_DIR
             $args[] = $this->envScanDir;
-        }
-
-        if ($additional && !putenv('PHP_INI_SCAN_DIR=')) {
-            return false;
         }
 
         return putenv(self::ENV_ALLOW.'='.implode('|', $args));
@@ -316,30 +323,5 @@ class XdebugHandler
         }
 
         return $arg;
-    }
-
-    /**
-     * Returns the location of the original ini data used.
-     *
-     * @param array $iniFiles loaded php.ini locations
-     *
-     * @return string
-     */
-    private function getIniHeader($iniFiles)
-    {
-        $ini = implode(PHP_EOL.';  ', $iniFiles);
-        $header = <<<EOD
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; This file was automatically generated by Composer and can now be deleted.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-; It is a modified copy of your php.ini configuration, found at:
-;  {$ini}
-
-; Make any changes there because this data will not be used again.
-EOD;
-
-        $header .= str_repeat(PHP_EOL, 50);
-        return $header;
     }
 }

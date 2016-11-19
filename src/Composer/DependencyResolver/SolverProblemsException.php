@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Util\IniHelper;
+
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -58,21 +60,13 @@ class SolverProblemsException extends \RuntimeException
 
     private function createExtensionHint()
     {
-        $paths = array();
+        $paths = IniHelper::getAll();
 
-        if (($iniPath = php_ini_loaded_file()) !== false) {
-            $paths[] = $iniPath;
-        }
-
-        if (!defined('HHVM_VERSION') && $additionalIniPaths = php_ini_scanned_files()) {
-            $paths = array_merge($paths, array_map("trim", explode(",", $additionalIniPaths)));
-        }
-
-        if (count($paths) === 0) {
+        if (count($paths) === 1 && empty($paths[0])) {
             return '';
         }
 
-        $text = "\n  To enable extensions, verify that they are enabled in those .ini files:\n    - ";
+        $text = "\n  To enable extensions, verify that they are enabled in your .ini files:\n    - ";
         $text .= implode("\n    - ", $paths);
         $text .= "\n  You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.";
 
