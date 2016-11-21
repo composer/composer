@@ -6,16 +6,15 @@
 
 # Toran Proxy
 
-[Toran Proxy](https://toranproxy.com/) is a commercial alternative to Satis
-offering professional support as well as a web UI to manage everything and a
-better integration with Composer. It also provides proxying/mirroring for git
-repos and package zip files which makes installs faster and independent from
-third party systems.
+[Toran Proxy] is a commercial alternative to Satis offering professional
+support as well as a web UI to manage everything and a better integration with
+Composer. It also provides proxying/mirroring for git repos and package zip
+files which makes installs faster and independent from third party systems.
 
 Toran's revenue is also used to pay for Composer and Packagist development and
 hosting so using it is a good way to support open source financially. You can
-find more information about how to set it up and use it on the [Toran
-Proxy](https://toranproxy.com/) website.
+find more information about how to set it up and use it on the [Toran Proxy]
+website.
 
 # Satis
 
@@ -24,9 +23,8 @@ generator. It is a bit like an ultra-lightweight, static file-based version of
 packagist and can be used to host the metadata of your company's private
 packages, or your own. You can get it from
 [GitHub](https://github.com/composer/satis) or install via CLI:
-```
-php composer.phar create-project composer/satis --stability=dev --keep-vcs
-```
+
+    php composer.phar create-project composer/satis --stability=dev --keep-vcs
 
 ## Setup
 
@@ -75,9 +73,9 @@ or another constraint if you want really specific versions.
 }
 ```
 
-Once you've done this, you just run `php bin/satis build <configuration file>
-<build dir>`. For example `php bin/satis build satis.json web/` would read the
-`satis.json` file and build a static repository inside the `web/` directory.
+Once you've done this, you just run:
+
+    php bin/satis build <configuration file> <build dir>
 
 When you ironed out that process, what you would typically do is run this
 command as a cron job on a server. It would then update all your package info
@@ -103,9 +101,8 @@ rebuilds whenever code is pushed into one of your repositories.
 
 To rebuild only particular packages, pass the package names on the command line
 like so:
-```
-php bin/satis build satis.json web/ this/package that/other-package
-```
+
+    php bin/satis build satis.json web/ this/package that/other-package
 
 Note that this will still need to pull and scan all of your VCS repositories
 because any VCS repository might contain (on any branch) one of the selected
@@ -113,9 +110,8 @@ packages.
 
 If you want to scan only a single repository and update all packages found in
 it, pass the VCS repository URL as an optional argument:
-```
-php bin/satis build --repository-url https://only.my/repo.git satis.json web/
-```
+
+    php bin/satis build --repository-url https://only.my/repo.git satis.json web/
 
 ## Usage
 
@@ -160,7 +156,7 @@ Example using a custom repository using SSH (requires the SSH2 PECL extension):
 }
 ```
 
-> **Tip:** See [ssh2 context options](https://www.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options) for more information.
+> **Tip:** See [ssh2 context options] for more information.
 
 Example using HTTP over SSL using a client certificate:
 
@@ -178,7 +174,7 @@ Example using HTTP over SSL using a client certificate:
 }
 ```
 
-> **Tip:** See [ssl context options](https://www.php.net/manual/en/context.ssl.php) for more information.
+> **Tip:** See [ssl context options] for more information.
 
 Example using a custom HTTP Header field for token authentication:
 
@@ -278,9 +274,8 @@ Example: A `prefix-url` of `https://my-bucket.s3.amazonaws.com` (and
 
  * `output-html`: optional, `true` by default, when disabled (`false`) satis
    will not generate the `output-dir`/index.html page.
- * `twig-template`: optional, a path to a personalized
-   [Twig](http://twig.sensiolabs.org/) template for the `output-dir`/index.html
-   page.
+ * `twig-template`: optional, a path to a personalized [Twig] template for
+   the `output-dir`/index.html page.
 
 ### Abandoned packages
 
@@ -333,8 +328,14 @@ is set to true.
    provided as an argument when calling the `build` command.
  * `config`: optional, lets you define all config options from composer, except
    `archive-format` and `archive-dir` as the configuration is done through
-   [archive](#downloads) instead. See
-   (http://getcomposer.org/doc/04-schema.md#config)
+   [archive](#downloads) instead. See docs on [config schema] for more details.
  * `notify-batch`: optional, specify a URL that will be called every time a
-   user installs a package. See
-   (https://getcomposer.org/doc/05-repositories.md#notify-batch)
+   user installs a package. See [notify-batch].
+
+
+[Toran Proxy]: https://toranproxy.com/
+[ssh2 context options]: https://www.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options
+[ssl context options]: https://www.php.net/manual/en/context.ssl.php
+[Twig]: http://twig.sensiolabs.org/
+[config schema]: http://getcomposer.org/doc/04-schema.md#config
+[notify-batch]: https://getcomposer.org/doc/05-repositories.md#notify-batch
