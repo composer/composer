@@ -458,7 +458,7 @@ class Filesystem
      */
     public static function isLocalPath($path)
     {
-        return (bool) preg_match('{^(file://|/|[a-z]:[\\\\/]|\.\.[\\\\/]|[a-z0-9_.-]+[\\\\/])}i', $path);
+        return (bool) preg_match('{^(file://(?!//)|/(?!/)|[a-z]:[\\\\/]|\.\.[\\\\/]|[a-z0-9_.-]+[\\\\/])}i', $path);
     }
 
     public static function getPlatformPath($path)
