@@ -32,7 +32,7 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
         $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
         $this->assertTrue($xdebug->restarted);
-        $this->assertNotEquals(false, getenv(IniHelper::ENV_ORIGINAL));
+        $this->assertInternalType('string', getenv(IniHelper::ENV_ORIGINAL));
     }
 
     public function testNoRestartWhenNotLoaded()
@@ -42,7 +42,7 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
         $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
         $this->assertFalse($xdebug->restarted);
-        $this->assertEquals(false, getenv(IniHelper::ENV_ORIGINAL));
+        $this->assertFalse(getenv(IniHelper::ENV_ORIGINAL));
     }
 
     public function testNoRestartWhenLoadedAndAllowed()
