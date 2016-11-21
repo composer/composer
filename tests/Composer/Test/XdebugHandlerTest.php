@@ -13,6 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Test\Mock\XdebugHandlerMock;
+use Composer\Util\IniHelper;
 
 /**
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
@@ -22,8 +23,7 @@ use Composer\Test\Mock\XdebugHandlerMock;
  */
 class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
 {
-    public static $envAllow;
-    public static $envIniScanDir;
+    public static $env = array();
 
     public function testRestartWhenLoaded()
     {
@@ -32,6 +32,7 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
         $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
         $this->assertTrue($xdebug->restarted);
+        $this->assertInternalType('string', getenv(IniHelper::ENV_ORIGINAL));
     }
 
     public function testNoRestartWhenNotLoaded()
@@ -41,6 +42,7 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
         $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
         $this->assertFalse($xdebug->restarted);
+        $this->assertFalse(getenv(IniHelper::ENV_ORIGINAL));
     }
 
     public function testNoRestartWhenLoadedAndAllowed()
@@ -106,28 +108,35 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
 
     public static function setUpBeforeClass()
     {
-        self::$envAllow = getenv(XdebugHandlerMock::ENV_ALLOW);
-        self::$envIniScanDir = getenv('PHP_INI_SCAN_DIR');
+        // Save current state
+        $names = array(
+            XdebugHandlerMock::ENV_ALLOW,
+            'PHP_INI_SCAN_DIR',
+            IniHelper::ENV_ORIGINAL,
+        );
+
+        foreach ($names as $name) {
+            self::$env[$name] = getenv($name);
+        }
     }
 
     public static function tearDownAfterClass()
     {
-        if (false !== self::$envAllow) {
-            putenv(XdebugHandlerMock::ENV_ALLOW.'='.self::$envAllow);
-        } else {
-            putenv(XdebugHandlerMock::ENV_ALLOW);
-        }
-
-        if (false !== self::$envIniScanDir) {
-            putenv('PHP_INI_SCAN_DIR='.self::$envIniScanDir);
-        } else {
-            putenv('PHP_INI_SCAN_DIR');
+        // Restore original state
+        foreach (self::$env as $name => $value) {
+            if (false !== $value) {
+                putenv($name.'='.$value);
+            } else {
+                putenv($name);
+            }
         }
     }
 
     protected function setUp()
     {
+        // Ensure env is unset
         putenv(XdebugHandlerMock::ENV_ALLOW);
         putenv('PHP_INI_SCAN_DIR');
+        putenv(IniHelper::ENV_ORIGINAL);
     }
 }

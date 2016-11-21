@@ -15,6 +15,7 @@ namespace Composer\Downloader;
 use Composer\Config;
 use Composer\Cache;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
@@ -55,13 +56,7 @@ class RarDownloader extends ArchiveDownloader
 
         if (!class_exists('RarArchive')) {
             // php.ini path is added to the error message to help users find the correct file
-            $iniPath = php_ini_loaded_file();
-
-            if ($iniPath) {
-                $iniMessage = 'The php.ini used by your command-line PHP is: ' . $iniPath;
-            } else {
-                $iniMessage = 'A php.ini file does not exist. You will have to create one.';
-            }
+            $iniMessage = IniHelper::getMessage();
 
             $error = "Could not decompress the archive, enable the PHP rar extension or install unrar.\n"
                 . $iniMessage . "\n" . $processError;
