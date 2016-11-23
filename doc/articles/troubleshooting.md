@@ -283,6 +283,7 @@ To enable the swap you can use for example:
 /sbin/mkswap /var/swap.1
 /sbin/swapon /var/swap.1
 ```
+You can make a permanent swap file following this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04).
 
 ## Degraded Mode
 
