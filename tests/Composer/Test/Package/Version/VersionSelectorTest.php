@@ -198,18 +198,26 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
         $versionParser = new VersionParser();
 
         $package = $this->getMock('\Composer\Package\PackageInterface');
-        $package->expects($this->any())
+        $package
+            ->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue($prettyVersion));
-        $package->expects($this->any())
+        $package
+            ->expects($this->any())
             ->method('getVersion')
             ->will($this->returnValue($versionParser->normalize($prettyVersion)));
-        $package->expects($this->any())
+        $package
+            ->expects($this->any())
             ->method('isDev')
             ->will($this->returnValue($isDev));
-        $package->expects($this->any())
+        $package
+            ->expects($this->any())
             ->method('getStability')
             ->will($this->returnValue($stability));
+        $package
+            ->expects($this->any())
+            ->method('getTransportOptions')
+            ->will($this->returnValue(array()));
 
         $branchAlias = $branchAlias === null ? array() : array('branch-alias' => array($prettyVersion => $branchAlias));
         $package->expects($this->any())
