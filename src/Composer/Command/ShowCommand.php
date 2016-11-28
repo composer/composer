@@ -73,6 +73,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show the latest version but only for packages that are outdated'),
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
+                new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -310,6 +311,7 @@ EOT
                 $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
                 $writeLatest = $writeVersion && $showLatest && ($nameLength + $versionLength + $latestLength + 3 <= $width);
                 $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + $versionLength + $latestLength + 24 <= $width);
+                $hasOutdatedPackages = false;
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
                         $latestPackackage = null;
@@ -318,6 +320,8 @@ EOT
                         }
                         if ($input->getOption('outdated') && $latestPackackage && $latestPackackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && !$latestPackackage->isAbandoned()) {
                             continue;
+                        } elseif ($input->getOption('outdated')) {
+                            $hasOutdatedPackages = true;
                         }
 
                         $io->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
@@ -371,6 +375,9 @@ EOT
                 }
                 if ($showAllTypes) {
                     $io->write('');
+                }
+                if ($input->getOption('strict') && $hasOutdatedPackages) {
+                    return 1;
                 }
             }
         }
