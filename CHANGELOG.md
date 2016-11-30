@@ -1,3 +1,8 @@
+### [1.2.3] - 2016-12-01
+
+  * Fixed bug in HgDriver failing to identify BitBucket repositories
+  * Fixed support for loading partial provider repositories
+
 ### [1.2.2] - 2016-11-03
 
   * Fixed selection of packages based on stability to be independent from package repository order
