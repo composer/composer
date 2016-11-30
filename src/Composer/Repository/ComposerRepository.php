@@ -88,7 +88,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->config = $config;
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
-        $this->baseUrl = rtrim(preg_replace('{^(.*)(?:/[^/\\]+.json)?(?:[?#].*)?$}', '$1', $this->url), '/');
+        $this->baseUrl = rtrim(preg_replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
@@ -190,12 +190,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * {@inheritDoc}
      */
-    public function search($query, $mode = 0)
+    public function search($query, $mode = 0, $type = null)
     {
         $this->loadRootServerFile();
 
         if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
-            $url = str_replace('%query%', $query, $this->searchUrl);
+            $url = str_replace(array('%query%', '%type%'), array($query, $type), $this->searchUrl);
 
             $hostname = parse_url($url, PHP_URL_HOST) ?: $url;
             $json = $this->rfs->getContents($hostname, $url, false);
@@ -280,8 +280,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $this->providers[$name];
         }
 
-        // skip platform packages
-        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
+        // skip platform packages, root package and composer-plugin-api
+        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
             return array();
         }
 
@@ -642,8 +642,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
                 $rfs = $preFileDownloadEvent->getRemoteFilesystem();
+
                 $json = $rfs->getContents($hostname, $filename, false);
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
+                    // undo downgrade before trying again if http seems to be hijacked or modifying content somehow
+                    if ($this->allowSslDowngrade) {
+                        $this->url = str_replace('http://', 'https://', $this->url);
+                        $this->baseUrl = str_replace('http://', 'https://', $this->baseUrl);
+                        $filename = str_replace('http://', 'https://', $filename);
+                    }
+
                     if ($retries) {
                         usleep(100000);
 

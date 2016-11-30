@@ -179,13 +179,20 @@ class PluginManager
 
         foreach ($classes as $class) {
             if (class_exists($class, false)) {
+                $class = trim($class, '\\');
                 $path = $classLoader->findFile($class);
                 $code = file_get_contents($path);
-                $code = preg_replace('{^((?:final\s+)?(?:\s*))class\s+(\S+)}mi', '$1class $2_composer_tmp'.self::$classCounter, $code);
+                $separatorPos = strrpos($class, '\\');
+                $className = $class;
+                if ($separatorPos) {
+                    $className = substr($class, $separatorPos + 1);
+                }
+                $code = preg_replace('{^((?:final\s+)?(?:\s*))class\s+('.preg_quote($className).')}mi', '$1class $2_composer_tmp'.self::$classCounter, $code, 1);
                 $code = str_replace('__FILE__', var_export($path, true), $code);
                 $code = str_replace('__DIR__', var_export(dirname($path), true), $code);
                 $code = str_replace('__CLASS__', var_export($class, true), $code);
-                eval('?>'.$code);
+                $code = preg_replace('/^\s*<\?(php)?/i', '', $code, 1);
+                eval($code);
                 $class .= '_composer_tmp'.self::$classCounter;
                 self::$classCounter++;
             }
@@ -357,6 +364,7 @@ class PluginManager
                 throw new \RuntimeException("Cannot instantiate Capability, as class $capabilityClass from plugin ".get_class($plugin)." does not exist.");
             }
 
+            $ctorArgs['plugin'] = $plugin;
             $capabilityObj = new $capabilityClass($ctorArgs);
 
             // FIXME these could use is_a and do the check *before* instantiating once drop support for php<5.3.9
@@ -368,5 +376,24 @@ class PluginManager
 
             return $capabilityObj;
         }
+    }
+
+    /**
+     * @param  string          $capabilityClassName The fully qualified name of the API interface which the plugin may provide
+     *                                              an implementation of.
+     * @param  array           $ctorArgs            Arguments passed to Capability's constructor.
+     *                                              Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @return Capability[]
+     */
+    public function getPluginCapabilities($capabilityClassName, array $ctorArgs = array())
+    {
+        $capabilities = array();
+        foreach ($this->getPlugins() as $plugin) {
+            if ($capability = $this->getPluginCapability($plugin, $capabilityClassName, $ctorArgs)) {
+                $capabilities[] = $capability;
+            }
+        }
+
+        return $capabilities;
     }
 }

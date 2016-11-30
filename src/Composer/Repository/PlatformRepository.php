@@ -12,18 +12,18 @@
 
 namespace Composer\Repository;
 
-use Composer\Config;
-use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackage;
+use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginInterface;
+use Composer\Util\Silencer;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class PlatformRepository extends ArrayRepository
 {
-    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit)?|hhvm|(?:ext|lib)-[^/]+)$}i';
+    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[^/]+)$}i';
 
     /**
      * Defines overrides so that the platform can be mocked
@@ -81,10 +81,30 @@ class PlatformRepository extends ArrayRepository
         $php->setDescription('The PHP interpreter');
         $this->addPackage($php);
 
+        if (PHP_DEBUG) {
+            $phpdebug = new CompletePackage('php-debug', $version, $prettyVersion);
+            $phpdebug->setDescription('The PHP interpreter, with debugging symbols');
+            $this->addPackage($phpdebug);
+        }
+
+        if (defined('PHP_ZTS') && PHP_ZTS) {
+            $phpzts = new CompletePackage('php-zts', $version, $prettyVersion);
+            $phpzts->setDescription('The PHP interpreter, with Zend Thread Safety');
+            $this->addPackage($phpzts);
+        }
+
         if (PHP_INT_SIZE === 8) {
             $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
             $php64->setDescription('The PHP interpreter, 64bit');
             $this->addPackage($php64);
+        }
+
+        // The AF_INET6 constant is only defined if ext-sockets is available but
+        // IPv6 support might still be available.
+        if (defined('AF_INET6') || Silencer::call('inet_pton', '::') !== false) {
+            $phpIpv6 = new CompletePackage('php-ipv6', $version, $prettyVersion);
+            $phpIpv6->setDescription('The PHP interpreter, with IPv6 support');
+            $this->addPackage($phpIpv6);
         }
 
         $loadedExtensions = get_loaded_extensions();
@@ -94,19 +114,25 @@ class PlatformRepository extends ArrayRepository
             if (in_array($name, array('standard', 'Core'))) {
                 continue;
             }
+            $extraDescription = null;
 
             $reflExt = new \ReflectionExtension($name);
             try {
                 $prettyVersion = $reflExt->getVersion();
                 $version = $versionParser->normalize($prettyVersion);
             } catch (\UnexpectedValueException $e) {
-                $prettyVersion = '0';
+                $extraDescription = ' (actual version: '.$prettyVersion.')';
+                if (preg_match('{^(\d+\.\d+\.\d+(?:\.\d+)?)}', $prettyVersion, $match)) {
+                    $prettyVersion = $match[1];
+                } else {
+                    $prettyVersion = '0';
+                }
                 $version = $versionParser->normalize($prettyVersion);
             }
 
             $packageName = $this->buildPackageName($name);
             $ext = new CompletePackage($packageName, $version, $prettyVersion);
-            $ext->setDescription('The '.$name.' PHP extension');
+            $ext->setDescription('The '.$name.' PHP extension' . $extraDescription);
             $this->addPackage($ext);
         }
 

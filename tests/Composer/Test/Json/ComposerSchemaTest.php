@@ -44,6 +44,14 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->check($json));
     }
 
+    public function testRequireTypes()
+    {
+        $json = '{"name": "name", "description": "description", "require": {"a": ["b"]} }';
+        $this->assertEquals(array(
+            array('property' => 'require.a', 'message' => 'Array value found, but a string is required', 'constraint' => 'type'),
+        ), $this->check($json));
+    }
+
     public function testMinimumStabilityValues()
     {
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "" }';
@@ -92,7 +100,14 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
         $validator->check(json_decode($json), $schema);
 
         if (!$validator->isValid()) {
-            return $validator->getErrors();
+            $errors = $validator->getErrors();
+
+            // remove justinrainbow/json-schema 3.0 props so it works with all versions
+            foreach ($errors as &$err) {
+                unset($err['pointer']);
+            }
+
+            return $errors;
         }
 
         return true;

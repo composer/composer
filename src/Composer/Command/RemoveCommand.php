@@ -37,9 +37,9 @@ class RemoveCommand extends BaseCommand
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY, 'Packages that should be removed.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section.'),
-                new InputOption('no-plugins', null, InputOption::VALUE_NONE, 'Disables all plugins.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
+                new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies. (Deprecrated, is now default behavior)'),
                 new InputOption('no-update-with-dependencies', null, InputOption::VALUE_NONE, 'Does not allow inherited dependencies to be updated with explicit dependencies.'),
@@ -61,6 +61,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $packages = $input->getArgument('packages');
+        $packages = array_map('strtolower', $packages);
 
         $file = Factory::getComposerFile();
 
@@ -76,6 +77,15 @@ EOT
 
         if ($input->getOption('update-with-dependencies')) {
             $io->writeError('<warning>You are using the deprecated option "update-with-dependencies". This is now default behaviour. The --no-update-with-dependencies option can be used to remove a package without its dependencies.</warning>');
+        }
+
+        // make sure name checks are done case insensitively
+        foreach (array('require', 'require-dev') as $linkType) {
+            if (isset($composer[$linkType])) {
+                foreach ($composer[$linkType] as $name => $version) {
+                    $composer[$linkType][strtolower($name)] = $version;
+                }
+            }
         }
 
         foreach ($packages as $package) {
@@ -98,6 +108,7 @@ EOT
         }
 
         // Update packages
+        $this->resetComposer();
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
 
@@ -119,6 +130,7 @@ EOT
             ->setUpdateWhitelist($packages)
             ->setWhitelistDependencies(!$input->getOption('no-update-with-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
+            ->setRunScripts(!$input->getOption('no-scripts'))
         ;
 
         $exception = null;

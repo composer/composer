@@ -108,13 +108,18 @@ class RepositoryManager
      *
      * @param  string                    $type   repository type
      * @param  array                     $config repository configuration
+     * @param  string                    $name   repository name
      * @throws \InvalidArgumentException if repository for provided type is not registered
      * @return RepositoryInterface
      */
-    public function createRepository($type, $config)
+    public function createRepository($type, $config, $name = null)
     {
         if (!isset($this->repositoryClasses[$type])) {
             throw new \InvalidArgumentException('Repository type is not registered: '.$type);
+        }
+
+        if (isset($config['packagist']) && false === $config['packagist']) {
+            $this->io->writeError('<warning>Repository "'.$name.'" ('.json_encode($config).') has a packagist key which should be in its own repository definition</warning>');
         }
 
         $class = $this->repositoryClasses[$type];

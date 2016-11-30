@@ -10,7 +10,9 @@ Test the error output of solver problems.
                 { "name": "unstable/package", "version": "1.0.0" },
                 { "name": "requirer", "version": "1.0.0", "require": {"dependency": "1.0.0" } },
                 { "name": "dependency", "version": "2.0.0" },
-                { "name": "dependency", "version": "1.0.0" }
+                { "name": "dependency", "version": "1.0.0" },
+                { "name": "stable-requiree-excluded", "version": "1.0.1" },
+                { "name": "stable-requiree-excluded", "version": "1.0.0" }
             ]
         }
     ],
@@ -18,12 +20,18 @@ Test the error output of solver problems.
         "unstable/package": "2.*",
         "bogus": "1.*",
         "requirer": "1.*",
-        "dependency": "2.*"
+        "dependency": "2.*",
+        "stable-requiree-excluded": "1.0.1"
     }
 }
 
+--INSTALLED--
+[
+    { "name": "stable-requiree-excluded", "version": "1.0.0" }
+]
+
 --RUN--
-install
+update unstable/package requirer dependency
 
 --EXPECT-EXIT-CODE--
 2
@@ -34,12 +42,14 @@ Updating dependencies (including require-dev)
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - The requested package unstable/package 2.* exists as unstable/package[1.0.0] but those are rejected by your constraint.
+    - The requested package unstable/package 2.* exists as unstable/package[1.0.0] but these are rejected by your constraint.
   Problem 2
     - The requested package bogus could not be found in any version, there may be a typo in the package name.
   Problem 3
+    - The requested package stable-requiree-excluded (installed at 1.0.0, required as 1.0.1) is satisfiable by stable-requiree-excluded[1.0.0] but these conflict with your requirements or minimum-stability.
+  Problem 4
     - Installation request for requirer 1.* -> satisfiable by requirer[1.0.0].
-    - requirer 1.0.0 requires dependency 1.0.0 -> satisfiable by dependency[1.0.0] but these conflict with your requirements or minimum-stability
+    - requirer 1.0.0 requires dependency 1.0.0 -> satisfiable by dependency[1.0.0] but these conflict with your requirements or minimum-stability.
 
 Potential causes:
  - A typo in the package name

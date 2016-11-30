@@ -34,6 +34,23 @@ interface VcsDriverInterface
     public function getComposerInformation($identifier);
 
     /**
+     * Return the content of $file or null if the file does not exist.
+     *
+     * @param string $file
+     * @param string $identifier
+     * @return string
+     */
+    public function getFileContent($file, $identifier);
+
+    /**
+     * Get the changedate for $identifier.
+     *
+     * @param string $identifier
+     * @return \DateTime
+     */
+    public function getChangeDate($identifier);
+
+    /**
      * Return the root identifier (trunk, master, default/tip ..)
      *
      * @return string Identifier

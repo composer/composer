@@ -16,6 +16,8 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
+use Composer\Package\BasePackage;
+use Composer\Package\Version\VersionSelector;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
@@ -33,6 +35,8 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryFactory;
 use Composer\Spdx\SpdxLicenses;
+use Composer\Composer;
+use Composer\Semver\Semver;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -45,6 +49,9 @@ class ShowCommand extends BaseCommand
     protected $versionParser;
     protected $colors;
 
+    /** @var Pool */
+    private $pool;
+
     protected function configure()
     {
         $this
@@ -52,7 +59,7 @@ class ShowCommand extends BaseCommand
             ->setAliases(array('info'))
             ->setDescription('Show information about packages')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect'),
+                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),
                 new InputOption('all', null, InputOption::VALUE_NONE, 'List all packages'),
                 new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only (enabled by default, only present for BC).'),
@@ -62,6 +69,10 @@ class ShowCommand extends BaseCommand
                 new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
                 new InputOption('path', 'P', InputOption::VALUE_NONE, 'Show package paths'),
                 new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
+                new InputOption('latest', 'l', InputOption::VALUE_NONE, 'Show the latest version'),
+                new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show the latest version but only for packages that are outdated'),
+                new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.'),
+                new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -86,10 +97,20 @@ EOT
             $io->writeError('<warning>You are using the deprecated option "installed". Only installed packages are shown by default now. The --all option can be used to show all packages.</warning>');
         }
 
+        if ($input->getOption('outdated')) {
+            $input->setOption('latest', true);
+        }
+
+        if ($input->getOption('direct') && ($input->getOption('all') || $input->getOption('available') || $input->getOption('platform'))) {
+            $io->writeError('The --direct (-D) option is not usable in combination with --all, --platform (-p) or --available (-a)');
+
+            return 1;
+        }
+
         if ($input->getOption('tree') && ($input->getOption('all') || $input->getOption('available'))) {
             $io->writeError('The --tree (-t) option is not usable in combination with --all or --available (-a)');
 
-            return 0;
+            return 1;
         }
 
         // init repos
@@ -98,6 +119,7 @@ EOT
             $platformOverrides = $composer->getConfig()->get('platform') ?: array();
         }
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
+        $phpVersion = $platformRepo->findPackage('php', '*')->getVersion();
 
         if ($input->getOption('self')) {
             $package = $this->getComposer()->getPackage();
@@ -131,8 +153,15 @@ EOT
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
         }
 
+        if ($input->getOption('latest') && null === $composer) {
+            $io->writeError('No composer.json found in the current directory, disabling "latest" option');
+            $input->setOption('latest', false);
+        }
+
+        $packageFilter = $input->getArgument('package');
+
         // show single package or single version
-        if ($input->getArgument('package') || !empty($package)) {
+        if (($packageFilter && false === strpos($packageFilter, '*')) || !empty($package)) {
             if (empty($package)) {
                 list($package, $versions) = $this->getPackage($installedRepo, $repos, $input->getArgument('package'), $input->getArgument('version'));
 
@@ -146,7 +175,11 @@ EOT
             if ($input->getOption('tree')) {
                 $this->displayPackageTree($package, $installedRepo, $repos);
             } else {
-                $this->printMeta($package, $versions, $installedRepo);
+                $latestPackage = null;
+                if ($input->getOption('latest')) {
+                    $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion);
+                }
+                $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null);
                 $this->printLinks($package, 'requires');
                 $this->printLinks($package, 'devRequires', 'requires (dev)');
                 if ($package->getSuggests()) {
@@ -165,12 +198,7 @@ EOT
 
         // show tree view if requested
         if ($input->getOption('tree')) {
-            $rootPackage = $this->getComposer()->getPackage();
-            $rootRequires = array_map(
-                'strtolower',
-                array_keys(array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()))
-            );
-
+            $rootRequires = $this->getRootRequires();
             foreach ($installedRepo->getPackages() as $package) {
                 if (in_array($package->getName(), $rootRequires, true)) {
                     $this->displayPackageTree($package, $installedRepo, $repos);
@@ -188,6 +216,14 @@ EOT
 
         // list packages
         $packages = array();
+        if (null !== $packageFilter) {
+            $packageFilter = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
+        }
+
+        $packageListFilter = array();
+        if ($input->getOption('direct')) {
+            $packageListFilter = $this->getRootRequires();
+        }
 
         foreach ($repos as $repo) {
             if ($repo === $platformRepo) {
@@ -202,7 +238,9 @@ EOT
             }
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
                 foreach ($repo->getProviderNames() as $name) {
-                    $packages[$type][$name] = $name;
+                    if (!$packageFilter || preg_match($packageFilter, $name)) {
+                        $packages[$type][$name] = $name;
+                    }
                 }
             } else {
                 foreach ($repo->getPackages() as $package) {
@@ -210,14 +248,21 @@ EOT
                         || !is_object($packages[$type][$package->getName()])
                         || version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '<')
                     ) {
-                        $packages[$type][$package->getName()] = $package;
+                        if (!$packageFilter || preg_match($packageFilter, $package->getName())) {
+                            if (!$packageListFilter || in_array($package->getName(), $packageListFilter, true)) {
+                                $packages[$type][$package->getName()] = $package;
+                            }
+                        }
                     }
                 }
             }
         }
 
         $showAllTypes = $input->getOption('all');
+        $showLatest = $input->getOption('latest');
+        $showMinorOnly = $input->getOption('minor-only');
         $indent = $showAllTypes ? '  ' : '';
+        $latestPackages = array();
         foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
                 if ($showAllTypes) {
@@ -225,13 +270,25 @@ EOT
                 }
                 ksort($packages[$type]);
 
-                $nameLength = $versionLength = 0;
+                $nameLength = $versionLength = $latestLength = 0;
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
                         $nameLength = max($nameLength, strlen($package->getPrettyName()));
-                        $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
+                        if ($showVersion) {
+                            $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
+                            if ($showLatest) {
+
+                                $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly);
+                                if ($latestPackage === false) {
+                                    continue;
+                                }
+
+                                $latestPackages[$package->getPrettyName()] = $latestPackage;
+                                $latestLength =  max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
+                            }
+                        }
                     } else {
-                        $nameLength = max($nameLength, $package);
+                        $nameLength = max($nameLength, strlen($package));
                     }
                 }
                 list($width) = $this->getApplication()->getTerminalDimensions();
@@ -251,18 +308,36 @@ EOT
 
                 $writePath = !$input->getOption('name-only') && $input->getOption('path');
                 $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
-                $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
+                $writeLatest = $writeVersion && $showLatest && ($nameLength + $versionLength + $latestLength + 3 <= $width);
+                $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + $versionLength + $latestLength + 24 <= $width);
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
+                        $latestPackackage = null;
+                        if ($showLatest && isset($latestPackages[$package->getPrettyName()])) {
+                            $latestPackackage = $latestPackages[$package->getPrettyName()];
+                        }
+                        if ($input->getOption('outdated') && $latestPackackage && $latestPackackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && !$latestPackackage->isAbandoned()) {
+                            continue;
+                        }
+
                         $io->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
 
                         if ($writeVersion) {
                             $io->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
                         }
 
+                        if ($writeLatest && $latestPackackage) {
+                            $latestVersion = $latestPackackage->getFullPrettyVersion();
+                            $style = $this->getVersionStyle($latestPackackage, $package);
+                            $io->write(' <'.$style.'>' . str_pad($latestVersion, $latestLength, ' ') . '</'.$style.'>', false);
+                        }
+
                         if ($writeDescription) {
                             $description = strtok($package->getDescription(), "\r\n");
                             $remaining = $width - $nameLength - $versionLength - 4;
+                            if ($writeLatest) {
+                                $remaining -= $latestLength;
+                            }
                             if (strlen($description) > $remaining) {
                                 $description = substr($description, 0, $remaining - 3) . '...';
                             }
@@ -272,6 +347,22 @@ EOT
                         if ($writePath) {
                             $path = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
                             $io->write(' ' . $path, false);
+                        }
+
+                        if ($latestPackackage && $latestPackackage->isAbandoned()) {
+                            $replacement = (is_string($latestPackackage->getReplacementPackage()))
+                                ? 'Use ' . $latestPackackage->getReplacementPackage() . ' instead'
+                                : 'No replacement was suggested';
+
+                            $io->writeError('');
+                            $io->writeError(
+                                sprintf(
+                                    "<warning>Package %s is abandoned, you should avoid using it. %s.</warning>",
+                                    $package->getPrettyName(),
+                                    $replacement
+                                ),
+                                false
+                            );
                         }
                     } else {
                         $io->write($indent . $package, false);
@@ -283,6 +374,35 @@ EOT
                 }
             }
         }
+    }
+
+    protected function getRootRequires()
+    {
+        $rootPackage = $this->getComposer()->getPackage();
+        return array_map(
+            'strtolower',
+            array_keys(array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()))
+        );
+    }
+
+    protected function getVersionStyle(PackageInterface $latestPackage, PackageInterface $package)
+    {
+        if ($latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion()) {
+            // print green as it's up to date
+            return 'info';
+        }
+
+        $constraint = $package->getVersion();
+        if (0 !== strpos($constraint, 'dev-')) {
+            $constraint = '^'.$constraint;
+        }
+        if ($latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), $constraint)) {
+            // print red as it needs an immediate semver-compliant upgrade
+            return 'highlight';
+        }
+
+        // print yellow as it needs an upgrade but has potential BC breaks so is not urgent
+        return 'comment';
     }
 
     /**
@@ -338,22 +458,28 @@ EOT
      * @param array                    $versions
      * @param RepositoryInterface      $installedRepo
      */
-    protected function printMeta(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo)
+    protected function printMeta(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, PackageInterface $latestPackage = null)
     {
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
         $io->write('<info>descrip.</info> : ' . $package->getDescription());
-        $io->write('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
+        $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: array()));
         $this->printVersions($package, $versions, $installedRepo);
+        if ($latestPackage) {
+            $style = $this->getVersionStyle($latestPackage, $package);
+            $io->write('<info>latest</info>   : <'.$style.'>' . $latestPackage->getPrettyVersion() . '</'.$style.'>');
+        } else {
+            $latestPackage = $package;
+        }
         $io->write('<info>type</info>     : ' . $package->getType());
         $this->printLicenses($package);
         $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
         $io->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
         $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
 
-        if ($package->isAbandoned()) {
-            $replacement = ($package->getReplacementPackage() !== null)
-                ? ' The author suggests using the ' . $package->getReplacementPackage(). ' package instead.'
+        if ($latestPackage->isAbandoned()) {
+            $replacement = ($latestPackage->getReplacementPackage() !== null)
+                ? ' The author suggests using the ' . $latestPackage->getReplacementPackage(). ' package instead.'
                 : null;
 
             $io->writeError(
@@ -579,5 +705,53 @@ EOT
         }
 
         $io->write($line);
+    }
+
+    /**
+     * Given a package, this finds the latest package matching it
+     *
+     * @param  PackageInterface $package
+     * @param  Composer         $composer
+     * @param  string           $phpVersion
+     * @param  bool             $minorOnly
+     *
+     * @return PackageInterface|null
+     */
+    private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false)
+    {
+        // find the latest version allowed in this pool
+        $name = $package->getName();
+        $versionSelector = new VersionSelector($this->getPool($composer));
+        $stability = $composer->getPackage()->getMinimumStability();
+        $flags = $composer->getPackage()->getStabilityFlags();
+        if (isset($flags[$name])) {
+            $stability = array_search($flags[$name], BasePackage::$stabilities, true);
+        }
+
+        $bestStability = $stability;
+        if ($composer->getPackage()->getPreferStable()) {
+            $bestStability = $package->getStability();
+        }
+
+        $targetVersion = null;
+        if (0 === strpos($package->getVersion(), 'dev-')) {
+            $targetVersion = $package->getVersion();
+        }
+
+        if ($targetVersion === null && $minorOnly) {
+            $targetVersion = '^' . $package->getVersion();
+        }
+
+        return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability);
+    }
+
+    private function getPool(Composer $composer)
+    {
+        if (!$this->pool) {
+            $this->pool = new Pool($composer->getPackage()->getMinimumStability(), $composer->getPackage()->getStabilityFlags());
+            $this->pool->addRepository(new CompositeRepository($composer->getRepositoryManager()->getRepositories()));
+        }
+
+        return $this->pool;
     }
 }

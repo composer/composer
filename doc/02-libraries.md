@@ -57,7 +57,7 @@ available platform packages.
 ## Specifying the version
 
 When you publish your package on Packagist, it is able to infer the version
-from the VCS (git, svn, hg) information. This means you don't have to
+from the VCS (git, svn, hg, fossil) information. This means you don't have to
 explicitly declare it. Read [tags](#tags) and [branches](#branches) to see how
 version numbers are extracted from these.
 
@@ -183,8 +183,8 @@ available, see [Repositories](05-repositories.md).
 That's all. You can now install the dependencies by running Composer's
 [`install`](03-cli.md#install) command!
 
-**Recap:** Any git/svn/hg repository containing a `composer.json` can be added
-to your project by specifying the package repository and declaring the
+**Recap:** Any git/svn/hg/fossil repository containing a `composer.json` can be
+added to your project by specifying the package repository and declaring the
 dependency in the [`require`](04-schema.md#require) field.
 
 ## Publishing to packagist
@@ -204,9 +204,10 @@ can depend on it without having to specify any additional repositories.
 If we wanted to share `hello-world` with the world, we would publish it on
 Packagist as well. Doing so is really easy.
 
-You simply visit [Packagist](https://packagist.org) and hit the "Submit". This
-will prompt you to sign up if you haven't already, and then allows you to
-submit the URL to your VCS repository, at which point Packagist will start
-crawling it. Once it is done, your package will be available to anyone!
+You simply visit [Packagist](https://packagist.org) and hit the "Submit"
+button. This will prompt you to sign up if you haven't already, and then
+allows you to submit the URL to your VCS repository, at which point Packagist
+will start crawling it. Once it is done, your package will be available to
+anyone!
 
 &larr; [Basic usage](01-basic-usage.md) |  [Command-line interface](03-cli.md) &rarr;

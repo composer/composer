@@ -26,6 +26,7 @@ install
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
 Updating dependencies (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
 <warning>Package a/a is abandoned, you should avoid using it. No replacement was suggested.</warning>
 <warning>Package c/c is abandoned, you should avoid using it. Use b/b instead.</warning>
 Writing lock file

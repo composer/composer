@@ -77,32 +77,44 @@
         "require": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that are required to run this package.",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "replace": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that can be replaced by this package.",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "conflict": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that conflict with this package.",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "provide": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that this package provides in addition to this package's name.",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "require-dev": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that this package requires for developing it (testing tools and such).",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "suggest": {
             "type": "object",
             "description": "This is a hash of package name (keys) and descriptions (values) that this package suggests work well with it (this will be suggested to the user during installation).",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "config": {
             "type": "object",
@@ -134,11 +146,20 @@
                 "github-oauth": {
                     "type": "object",
                     "description": "A hash of domain name => github API oauth tokens, typically {\"github.com\":\"<token>\"}.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "gitlab-oauth": {
                     "type": "object",
                     "description": "A hash of domain name => gitlab API oauth tokens, typically {\"gitlab.com\":\"<token>\"}.",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "gitlab-token": {
+                    "type": "object",
+                    "description": "A hash of domain name => gitlab private tokens, typically {\"gitlab.com\":\"<token>\"}.",
                     "additionalProperties": true
                 },
                 "disable-tls": {
@@ -160,7 +181,20 @@
                 "http-basic": {
                     "type": "object",
                     "description": "A hash of domain name => {\"username\": \"...\", \"password\": \"...\"}.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "object",
+                        "required": ["username", "password"],
+                        "properties": {
+                            "username": {
+                                "type": "string",
+                                "description": "The username used for HTTP Basic authentication"
+                            },
+                            "password": {
+                                "type": "string",
+                                "description": "The password used for HTTP Basic authentication"
+                            }
+                        }
+                    }
                 },
                 "store-auths": {
                     "type": ["string", "boolean"],
@@ -169,7 +203,9 @@
                 "platform": {
                     "type": "object",
                     "description": "This is a hash of package name (keys) and version (values) that will be used to mock the platform packages on this machine.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "vendor-dir": {
                     "type": "string",
@@ -274,13 +310,23 @@
             "properties": {
                 "psr-0": {
                     "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
-                    "additionalProperties": true
+                    "description": "This is a hash of namespaces (keys) and the directories they can be found in (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "psr-4": {
                     "type": "object",
                     "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "classmap": {
                     "type": "array",
@@ -303,12 +349,22 @@
                 "psr-0": {
                     "type": "object",
                     "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "psr-4": {
                     "type": "object",
                     "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "classmap": {
                     "type": "array",
@@ -483,6 +539,10 @@
         "abandoned": {
             "type": ["boolean", "string"],
             "description": "Indicates whether this package has been abandoned, it can be boolean or a package name/URL pointing to a recommended alternative. Defaults to false."
+        },
+        "_comment": {
+            "type": ["array", "string"],
+            "description": "A key to store comments in"
         }
     }
 }

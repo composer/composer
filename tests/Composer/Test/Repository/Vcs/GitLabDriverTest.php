@@ -69,6 +69,7 @@ class GitLabDriverTest extends TestCase
 {
     "id": 17,
     "default_branch": "mymaster",
+    "public": false,
     "http_url_to_repo": "https://gitlab.com/mygroup/myproject.git",
     "ssh_url_to_repo": "git@gitlab.com:mygroup/myproject.git",
     "last_activity_at": "2014-12-01T09:17:51.000+01:00",
@@ -97,6 +98,45 @@ JSON;
         return $driver;
     }
 
+    /**
+     * @dataProvider getInitializeUrls
+     */
+    public function testInitializePublicProject($url, $apiUrl)
+    {
+        // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
+        $projectData = <<<JSON
+{
+    "id": 17,
+    "default_branch": "mymaster",
+    "public": true,
+    "http_url_to_repo": "https://gitlab.com/mygroup/myproject.git",
+    "ssh_url_to_repo": "git@gitlab.com:mygroup/myproject.git",
+    "last_activity_at": "2014-12-01T09:17:51.000+01:00",
+    "name": "My Project",
+    "name_with_namespace": "My Group / My Project",
+    "path": "myproject",
+    "path_with_namespace": "mygroup/myproject",
+    "web_url": "https://gitlab.com/mygroup/myproject"
+}
+JSON;
+
+        $this->remoteFilesystem
+            ->getContents('gitlab.com', $apiUrl, false)
+            ->willReturn($projectData)
+            ->shouldBeCalledTimes(1)
+        ;
+
+        $driver  = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver->initialize();
+
+        $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
+        $this->assertEquals('mymaster', $driver->getRootIdentifier(), 'Root identifier is the default branch in GitLab');
+        $this->assertEquals('https://gitlab.com/mygroup/myproject.git', $driver->getRepositoryUrl(), 'The repository URL is the SSH one by default');
+        $this->assertEquals('https://gitlab.com/mygroup/myproject', $driver->getUrl());
+
+        return $driver;
+    }
+
     public function testGetDist()
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject');
@@ -120,6 +160,20 @@ JSON;
         $expected = array(
             'type' => 'git',
             'url' => 'git@gitlab.com:mygroup/myproject.git',
+            'reference' => $reference,
+        );
+
+        $this->assertEquals($expected, $driver->getSource($reference));
+    }
+
+    public function testGetSource_GivenPublicProject()
+    {
+        $driver = $this->testInitializePublicProject('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject', true);
+
+        $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
+        $expected = array(
+            'type' => 'git',
+            'url' => 'https://gitlab.com/mygroup/myproject.git',
             'reference' => $reference,
         );
 

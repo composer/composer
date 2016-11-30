@@ -44,6 +44,11 @@ class Cache
         $this->whitelist = $whitelist;
         $this->filesystem = $filesystem ?: new Filesystem();
 
+        if (preg_match('{(^|[\\\\/])(\$null|NUL|/dev/null)([\\\\/]|$)}', $cacheDir)) {
+            $this->enabled = false;
+            return;
+        }
+
         if (
             (!is_dir($this->root) && !Silencer::call('mkdir', $this->root, 0777, true))
             || !is_writable($this->root)

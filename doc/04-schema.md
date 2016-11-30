@@ -6,8 +6,7 @@ This chapter will explain all of the fields available in `composer.json`.
 
 We have a [JSON schema](http://json-schema.org) that documents the format and
 can also be used to validate your `composer.json`. In fact, it is used by the
-`validate` command. You can find it at:
-[`res/composer-schema.json`](https://github.com/composer/composer/blob/master/res/composer-schema.json).
+`validate` command. You can find it at: https://getcomposer.org/schema.json
 
 ## Root Package
 
@@ -317,12 +316,12 @@ Example:
 }
 ```
 
-> **Note:** While this is convenient at times, it should not be how you use
-> packages in the long term because it comes with a technical limitation. The
+> **Note:** This feature has severe technical limitations, as the 
 > composer.json metadata will still be read from the branch name you specify
-> before the hash. Because of that in some cases it will not be a practical
-> workaround, and you should always try to switch to tagged releases as soon
-> as you can.
+> before the hash. You should therefore only use this as a temporary solution
+> during development to remediate transient issues, until you can switch to
+> tagged releases. The Composer team does not actively support this feature
+> and will not accept bug reports related to it. 
 
 It is also possible to inline-alias a package constraint so that it matches
 a constraint that it otherwise would not. For more information [see the
@@ -341,6 +340,18 @@ Example:
     }
 }
 ```
+
+> **Note:** It is important to list PHP extensions your project requires.
+> Not all PHP installations are created equal: some may miss extensions you
+> may consider as standard (such as `ext-mysqli` which is not installed by
+> default in Fedora/CentOS minimal installation systems). Failure to list
+> required PHP extensions may lead to a bad user experience: Composer will
+> install your package without any errors but it will then fail at run-time.
+> The `composer show --platform` command lists all PHP extensions available on
+> your system. You may use it to help you compile the list of extensions you
+> use and require. Alternatively you may use third party tools to analyze
+> your project for the list of extensions used.
+
 
 #### require
 
@@ -404,7 +415,8 @@ Example:
 ```json
 {
     "suggest": {
-        "monolog/monolog": "Allows more advanced logging of the application flow"
+        "monolog/monolog": "Allows more advanced logging of the application flow",
+        "ext-xml": "Needed to support XML format in class Foo"
     }
 }
 ```
@@ -703,7 +715,7 @@ The following repository types are supported:
   file is loaded using a PHP stream. You can set extra options on that stream
   using the `options` parameter.
 * **vcs:** The version control system repository can fetch packages from git,
-  svn and hg repositories.
+  svn, fossil and hg repositories.
 * **pear:** With this you can import any pear repository into your Composer
   project.
 * **package:** If you depend on a project that does not have any support for
@@ -762,6 +774,20 @@ Example:
 will look from the first to the last repository, and pick the first match.
 By default Packagist is added last which means that custom repositories can
 override packages from it.
+
+Using JSON object notation is also possible. However, JSON key/value pairs
+are to be considered unordered so consistent behaviour cannot be guaranteed.
+
+ ```json
+{
+    "repositories": {
+         "foo": {
+             "type": "composer",
+             "url": "http://packages.foo.com"
+         }
+    }
+}
+ ```
 
 ### config <span>([root-only](04-schema.md#root-package))</span>
 

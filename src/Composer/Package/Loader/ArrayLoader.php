@@ -232,6 +232,9 @@ class ArrayLoader implements LoaderInterface
     {
         $res = array();
         foreach ($links as $target => $constraint) {
+            if (!is_string($constraint)) {
+                throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.gettype($constraint) . ' (' . var_export($constraint, true) . ')');
+            }
             if ('self.version' === $constraint) {
                 $parsedConstraint = $this->versionParser->parseConstraints($sourceVersion);
             } else {

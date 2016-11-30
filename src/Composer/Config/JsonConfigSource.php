@@ -81,7 +81,7 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) use ($authConfig) {
-            if (preg_match('{^(bitbucket-oauth|github-oauth|gitlab-oauth|http-basic|platform)\.}', $key)) {
+            if (preg_match('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic|platform)\.}', $key)) {
                 list($key, $host) = explode('.', $key, 2);
                 if ($authConfig) {
                     $config[$key][$host] = $val;
@@ -101,7 +101,7 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) use ($authConfig) {
-            if (preg_match('{^(bitbucket-oauth|github-oauth|gitlab-oauth|http-basic|platform)\.}', $key)) {
+            if (preg_match('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic|platform)\.}', $key)) {
                 list($key, $host) = explode('.', $key, 2);
                 if ($authConfig) {
                     unset($config[$key][$host]);
@@ -110,6 +110,53 @@ class JsonConfigSource implements ConfigSourceInterface
                 }
             } else {
                 unset($config['config'][$key]);
+            }
+        });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addProperty($name, $value)
+    {
+        $this->manipulateJson('addProperty', $name, $value, function (&$config, $key, $val) {
+            if (substr($key, 0, 6) === 'extra.') {
+                $bits = explode('.', $key);
+                $last = array_pop($bits);
+                $arr =& $config['extra'];
+                foreach ($bits as $bit) {
+                    if (!isset($arr[$bit])) {
+                        $arr[$bit] = array();
+                    }
+                    $arr =& $arr[$bit];
+                }
+                $arr[$last] = $val;
+            } else {
+                $config[$key] = $val;
+            }
+        });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function removeProperty($name)
+    {
+        $authConfig = $this->authConfig;
+        $this->manipulateJson('removeProperty', $name, function (&$config, $key) {
+            if (substr($key, 0, 6) === 'extra.') {
+                $bits = explode('.', $key);
+                $last = array_pop($bits);
+                $arr =& $config['extra'];
+                foreach ($bits as $bit) {
+                    if (!isset($arr[$bit])) {
+                        return;
+                    }
+                    $arr =& $arr[$bit];
+                }
+                unset($arr[$last]);
+            } else {
+                unset($config[$key]);
             }
         });
     }

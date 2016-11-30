@@ -100,7 +100,7 @@ class Svn
     public function execute($command, $url, $cwd = null, $path = null, $verbose = false)
     {
         // Ensure we are allowed to use this URL by config
-        $this->config->prohibitUrlByConfig($url);
+        $this->config->prohibitUrlByConfig($url, $this->io);
 
         $svnCommand = $this->getCommand($command, $url, $path);
         $output = null;

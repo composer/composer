@@ -1,0 +1,68 @@
+--TEST--
+Updates with --no-dev but we still end up with a complete lock file including dev deps
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "a/a", "version": "1.0.1" },
+                { "name": "a/a", "version": "1.1.0" },
+
+                { "name": "a/b", "version": "1.0.0" },
+                { "name": "a/b", "version": "1.0.1" },
+                { "name": "a/b", "version": "2.0.0" },
+
+                { "name": "a/c", "version": "1.0.0" },
+                { "name": "a/c", "version": "2.0.0" },
+
+                { "name": "dev/pkg", "version": "dev-master", "extra": { "branch-alias": { "dev-master": "1.1.x-dev" } }, "source": {"type":"git", "url":"", "reference":"new"} },
+                { "name": "dev/pkg", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.*",
+        "a/c": "1.*",
+        "dev/pkg": "^1.0@dev"
+    },
+    "require-dev": {
+        "a/b": "*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "a/a", "version": "1.0.0" },
+    { "name": "a/b", "version": "1.0.0" },
+    { "name": "dev/pkg", "version": "dev-master", "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } }, "source": {"type":"git", "url":"", "reference":"old"} }
+]
+--EXPECT-LOCK--
+{
+    "packages": [
+        { "name": "a/a", "version": "1.0.1", "type": "library" },
+        { "name": "a/c", "version": "1.0.0", "type": "library" },
+        { "name": "dev/pkg", "version": "dev-master", "extra": { "branch-alias": { "dev-master": "1.1.x-dev" } }, "source": {"type":"git", "url":"", "reference":"new"}, "type": "library" }
+    ],
+    "packages-dev": [
+        { "name": "a/b", "version": "2.0.0", "type": "library" }
+    ],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "dev/pkg": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update --no-dev
+--EXPECT--
+Uninstalling a/b (1.0.0)
+Updating a/a (1.0.0) to a/a (1.0.1)
+Updating dev/pkg (dev-master old) to dev/pkg (dev-master new)
+Installing a/c (1.0.0)
+Marking dev/pkg (1.1.x-dev new) as installed, alias of dev/pkg (dev-master new)
+Marking dev/pkg (1.0.x-dev old) as uninstalled, alias of dev/pkg (dev-master old)

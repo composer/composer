@@ -42,6 +42,9 @@ is to add the COMPOSER_HOME/vendor/bin dir to your PATH env var.
 COMPOSER_HOME is c:\Users\<user>\AppData\Roaming\Composer on Windows
 and /home/<user>/.composer on unix systems.
 
+If your system uses freedesktop.org standards, then it will first check
+XDG_CONFIG_HOME or default to /home/<user>/.config/composer
+
 Note: This path may vary depending on customizations to bin-dir in
 composer.json or the environmental variable COMPOSER_BIN_DIR.
 
@@ -76,7 +79,16 @@ EOT
 
         // create new input without "global" command prefix
         $input = new StringInput(preg_replace('{\bg(?:l(?:o(?:b(?:a(?:l)?)?)?)?)?\b}', '', $input->__toString(), 1));
+        $this->getApplication()->resetComposer();
 
         return $this->getApplication()->run($input, $output);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isProxyCommand()
+    {
+        return true;
     }
 }

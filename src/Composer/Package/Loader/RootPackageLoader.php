@@ -141,6 +141,10 @@ class RootPackageLoader extends ArrayLoader
             $realPackage->setPreferStable((bool) $config['prefer-stable']);
         }
 
+        if (isset($config['config'])) {
+            $realPackage->setConfig($config['config']);
+        }
+
         $repos = RepositoryFactory::defaultRepos(null, $this->config, $this->manager);
         foreach ($repos as $repo) {
             $this->manager->addRepository($repo);
@@ -201,16 +205,18 @@ class RootPackageLoader extends ArrayLoader
                 continue;
             }
 
-            // infer flags for requirements that have an explicit -dev or -beta version specified but only
-            // for those that are more unstable than the minimumStability or existing flags
-            $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
-            if (preg_match('{^[^,\s@]+$}', $reqVersion) && 'stable' !== ($stabilityName = VersionParser::parseStability($reqVersion))) {
-                $name = strtolower($reqName);
-                $stability = $stabilities[$stabilityName];
-                if ((isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) || ($minimumStability > $stability)) {
-                    continue;
+            foreach ($constraints as $constraint) {
+                // infer flags for requirements that have an explicit -dev or -beta version specified but only
+                // for those that are more unstable than the minimumStability or existing flags
+                $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $constraint);
+                if (preg_match('{^[^,\s@]+$}', $reqVersion) && 'stable' !== ($stabilityName = VersionParser::parseStability($reqVersion))) {
+                    $name = strtolower($reqName);
+                    $stability = $stabilities[$stabilityName];
+                    if ((isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) || ($minimumStability > $stability)) {
+                        continue;
+                    }
+                    $stabilityFlags[$name] = $stability;
                 }
-                $stabilityFlags[$name] = $stability;
             }
         }
 

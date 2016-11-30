@@ -39,6 +39,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     protected $repoConfig;
     protected $branchErrorOccurred = false;
     private $drivers;
+    /** @var VcsDriverInterface */
+    private $driver;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, array $drivers = null)
     {
@@ -51,6 +53,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             'hg-bitbucket'  => 'Composer\Repository\Vcs\HgBitbucketDriver',
             'hg'            => 'Composer\Repository\Vcs\HgDriver',
             'perforce'      => 'Composer\Repository\Vcs\PerforceDriver',
+            'fossil'        => 'Composer\Repository\Vcs\FossilDriver',
             // svn must be last because identifying a subversion server for sure is practically impossible
             'svn'           => 'Composer\Repository\Vcs\SvnDriver',
         );
@@ -75,32 +78,33 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
     public function getDriver()
     {
+        if ($this->driver) {
+            return $this->driver;
+        }
+
         if (isset($this->drivers[$this->type])) {
             $class = $this->drivers[$this->type];
-            $driver = new $class($this->repoConfig, $this->io, $this->config);
-            /** @var VcsDriverInterface $driver */
-            $driver->initialize();
+            $this->driver = new $class($this->repoConfig, $this->io, $this->config);
+            $this->driver->initialize();
 
-            return $driver;
+            return $this->driver;
         }
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->config, $this->url)) {
-                $driver = new $driver($this->repoConfig, $this->io, $this->config);
-                /** @var VcsDriverInterface $driver */
-                $driver->initialize();
+                $this->driver = new $driver($this->repoConfig, $this->io, $this->config);
+                $this->driver->initialize();
 
-                return $driver;
+                return $this->driver;
             }
         }
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->config, $this->url, true)) {
-                $driver = new $driver($this->repoConfig, $this->io, $this->config);
-                /** @var VcsDriverInterface $driver */
-                $driver->initialize();
+                $this->driver = new $driver($this->repoConfig, $this->io, $this->config);
+                $this->driver->initialize();
 
-                return $driver;
+                return $this->driver;
             }
         }
     }

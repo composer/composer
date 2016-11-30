@@ -10,9 +10,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Repository;
+namespace Composer\Test\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Repository\PathRepository;
 use Composer\Semver\VersionParser;
 use Composer\TestCase;
 

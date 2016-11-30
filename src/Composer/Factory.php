@@ -25,8 +25,12 @@ use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\Silencer;
+use Composer\Plugin\PluginEvents;
+use Composer\EventDispatcher\Event;
 use Seld\JsonLint\DuplicateKeyException;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Version\VersionParser;
@@ -224,6 +228,19 @@ class Factory
     }
 
     /**
+     * Creates a ConsoleOutput instance
+     *
+     * @return ConsoleOutput
+     */
+    public static function createOutput()
+    {
+        $styles = self::createAdditionalStyles();
+        $formatter = new OutputFormatter(null, $styles);
+
+        return new ConsoleOutput(ConsoleOutput::VERBOSITY_NORMAL, null, $formatter);
+    }
+
+    /**
      * @deprecated Use Composer\Repository\RepositoryFactory::defaultRepos instead
      */
     public static function createDefaultRepositories(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
@@ -284,7 +301,9 @@ class Factory
         $config->merge($localConfig);
         if (isset($composerFile)) {
             $io->writeError('Loading config file ' . $composerFile, true, IOInterface::DEBUG);
-            $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json');
+            $config->setConfigSource(new JsonConfigSource(new JsonFile(realpath($composerFile), null, $io)));
+
+            $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json', null, $io);
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 $config->merge(array('config' => $localAuthFile->read()));
@@ -293,7 +312,6 @@ class Factory
         }
 
         $vendorDir = $config->get('vendor-dir');
-        $binDir = $config->get('bin-dir');
 
         // initialize composer
         $composer = new Composer();
@@ -348,17 +366,15 @@ class Factory
         $this->createDefaultInstallers($im, $composer, $io);
 
         if ($fullLoad) {
-            $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
+            $globalComposer = null;
+            if (realpath($config->get('home')) !== $cwd) {
+                $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
+            }
+
             $pm = $this->createPluginManager($io, $composer, $globalComposer, $disablePlugins);
             $composer->setPluginManager($pm);
 
             $pm->loadInstalledPlugins();
-
-            // once we have plugins and custom installers we can
-            // purge packages from local repos if they have been deleted on the filesystem
-            if ($rm->getLocalRepository()) {
-                $this->purgePackages($rm->getLocalRepository(), $im);
-            }
         }
 
         // init locker if possible
@@ -371,7 +387,30 @@ class Factory
             $composer->setLocker($locker);
         }
 
+        if ($fullLoad) {
+            $initEvent = new Event(PluginEvents::INIT);
+            $composer->getEventDispatcher()->dispatch($initEvent->getName(), $initEvent);
+
+            // once everything is initialized we can
+            // purge packages from local repos if they have been deleted on the filesystem
+            if ($rm->getLocalRepository()) {
+                $this->purgePackages($rm->getLocalRepository(), $im);
+            }
+        }
+
         return $composer;
+    }
+
+    /**
+     * @param  IOInterface $io             IO instance
+     * @param  bool        $disablePlugins Whether plugins should not be loaded
+     * @return Composer
+     */
+    public static function createGlobal(IOInterface $io, $disablePlugins = false)
+    {
+        $factory = new static();
+
+        return $factory->createGlobalComposer($io, static::createConfig($io), $disablePlugins, true);
     }
 
     /**
@@ -387,15 +426,11 @@ class Factory
      * @param  Config        $config
      * @return Composer|null
      */
-    protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins)
+    protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins, $fullLoad = false)
     {
-        if (realpath($config->get('home')) === getcwd()) {
-            return;
-        }
-
         $composer = null;
         try {
-            $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), false);
+            $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), $fullLoad);
         } catch (\Exception $e) {
             $io->writeError('Failed to initialize global composer: '.$e->getMessage(), true, IOInterface::DEBUG);
         }
@@ -439,6 +474,7 @@ class Factory
 
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config, $executor, $fs));
+        $dm->setDownloader('fossil', new Downloader\FossilDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config));
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
@@ -550,7 +586,7 @@ class Factory
             $warned = true;
             $disableTls = true;
         } elseif (!extension_loaded('openssl')) {
-            throw new \RuntimeException('The openssl extension is required for SSL/TLS protection but is not available. '
+            throw new Exception\NoSslException('The openssl extension is required for SSL/TLS protection but is not available. '
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
         }
         $remoteFilesystemOptions = array();

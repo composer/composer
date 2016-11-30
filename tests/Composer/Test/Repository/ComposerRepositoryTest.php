@@ -13,6 +13,8 @@
 namespace Composer\Test\Repository;
 
 use Composer\IO\NullIO;
+use Composer\Repository\ComposerRepository;
+use Composer\Repository\RepositoryInterface;
 use Composer\Test\Mock\FactoryMock;
 use Composer\TestCase;
 use Composer\Package\Loader\ArrayLoader;
@@ -164,5 +166,46 @@ class ComposerRepositoryTest extends TestCase
         $this->assertInstanceOf('Composer\Package\AliasPackage', $packages['2-root']);
         $this->assertSame($packages['2'], $packages['2-root']->getAliasOf());
         $this->assertSame($packages['2'], $packages['2-alias']->getAliasOf());
+    }
+
+    public function testSearchWithType()
+    {
+        $repoConfig = array(
+            'url' => 'http://example.org',
+        );
+
+        $result = array(
+            'results' => array(
+                array(
+                    'name' => 'foo',
+                    'description' => null
+                )
+            )
+        );
+
+        $rfs = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $rfs->expects($this->at(0))
+            ->method('getContents')
+            ->with('example.org', 'http://example.org/packages.json', false)
+            ->willReturn(json_encode(array('search' => '/search.json?q=%query%&type=%type%')));
+
+        $rfs->expects($this->at(1))
+            ->method('getContents')
+            ->with('example.org', 'http://example.org/search.json?q=foo&type=composer-plugin', false)
+            ->willReturn(json_encode($result));
+
+        $repository = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), null, $rfs);
+
+        $this->assertSame(
+            array(array('name' => 'foo', 'description' => null)),
+            $repository->search('foo', RepositoryInterface::SEARCH_FULLTEXT, 'composer-plugin')
+        );
+
+        $this->assertEmpty(
+            $repository->search('foo', RepositoryInterface::SEARCH_FULLTEXT, 'library')
+        );
     }
 }

@@ -20,10 +20,10 @@ In fact, internally Composer sees every version as a separate package. While
 this distinction does not matter when you are using Composer, it's quite
 important when you want to change it.
 
-In addition to the name and the version, there is useful metadata. The information
-most relevant for installation is the source definition, which describes where
-to get the package contents. The package data points to the contents of the
-package. And there are two options here: dist and source.
+In addition to the name and the version, there is useful metadata. The
+information most relevant for installation is the source definition, which
+describes where to get the package contents. The package data points to the
+contents of the package. And there are two options here: dist and source.
 
 **Dist:** The dist is a packaged version of the package data. Usually a
 released version, usually a stable release.
@@ -132,45 +132,15 @@ number.
 
 This field is optional.
 
-#### includes
-
-For larger repositories it is possible to split the `packages.json` into
-multiple files. The `includes` field allows you to reference these additional
-files.
-
-An example:
-
-```json
-{
-    "includes": {
-        "packages-2011.json": {
-            "sha1": "525a85fb37edd1ad71040d429928c2c0edec9d17"
-        },
-        "packages-2012-01.json": {
-            "sha1": "897cde726f8a3918faf27c803b336da223d400dd"
-        },
-        "packages-2012-02.json": {
-            "sha1": "26f911ad717da26bbcac3f8f435280d13917efa5"
-        }
-    }
-}
-```
-
-The SHA-1 sum of the file allows it to be cached and only re-requested if the
-hash changed.
-
-This field is optional. You probably don't need it for your own custom
-repository.
-
 #### provider-includes and providers-url
 
-For very large repositories like packagist.org using the so-called provider
-files is the preferred method. The `provider-includes` field allows you to
-list a set of files that list package names provided by this repository. The
-hash should be a sha256 of the files in this case.
+The `provider-includes` field allows you to list a set of files that list
+package names provided by this repository. The hash should be a sha256 of
+the files in this case.
 
 The `providers-url` describes how provider files are found on the server. It
-is an absolute path from the repository root.
+is an absolute path from the repository root. It must contain the placeholders
+`%package%` and `%hash%`.
 
 An example:
 
@@ -206,24 +176,25 @@ integrity, for example:
 
 The file above declares that acme/foo and acme/bar can be found in this
 repository, by loading the file referenced by `providers-url`, replacing
-`%package%` by the package name and `%hash%` by the sha256 field. Those files
-themselves just contain package definitions as described [above](#packages).
+`%package%` by the vendor namespaced package name and `%hash%` by the
+sha256 field. Those files themselves just contain package definitions as
+described [above](#packages).
 
-This field is optional. You probably don't need it for your own custom
+These fields are optional. You probably don't need them for your own custom
 repository.
 
 #### stream options
 
-The `packages.json` file is loaded using a PHP stream. You can set extra options
-on that stream using the `options` parameter. You can set any valid PHP stream
-context option. See [Context options and parameters](https://php.net/manual/en/context.php)
-for more information.
+The `packages.json` file is loaded using a PHP stream. You can set extra
+options on that stream using the `options` parameter. You can set any valid
+PHP stream context option. See [Context options and
+parameters](https://php.net/manual/en/context.php) for more information.
 
 ### VCS
 
 VCS stands for version control system. This includes versioning systems like
-git, svn or hg. Composer has a repository type for installing packages from
-these systems.
+git, svn, fossil or hg. Composer has a repository type for installing packages
+from these systems.
 
 #### Loading a package from a VCS repository
 
@@ -234,7 +205,8 @@ project to use the patched version. If the library is on GitHub (this is the
 case most of the time), you can simply fork it there and push your changes to
 your fork. After that you update the project's `composer.json`. All you have
 to do is add your fork as a repository and update the version constraint to
-point to your custom branch. Your custom branch name must be prefixed with `"dev-"`. For version constraint naming conventions see
+point to your custom branch. Your custom branch name must be prefixed with
+`"dev-"`. For version constraint naming conventions see
 [Libraries](02-libraries.md) for more information.
 
 Example assuming you patched monolog to fix a bug in the `bugfix` branch:
@@ -300,6 +272,7 @@ The following are supported:
 * **Git:** [git-scm.com](https://git-scm.com)
 * **Subversion:** [subversion.apache.org](https://subversion.apache.org)
 * **Mercurial:** [mercurial.selenic.com](http://mercurial.selenic.com)
+* **Fossil**: [fossil-scm.org](https://www.fossil-scm.org/)
 
 To get packages from these systems you need to have their respective clients
 installed. That can be inconvenient. And for this reason there is special
@@ -311,8 +284,8 @@ VCS repository provides `dist`s for them that fetch the packages as zips.
 * **BitBucket:** [bitbucket.org](https://bitbucket.org) (Git and Mercurial)
 
 The VCS driver to be used is detected automatically based on the URL. However,
-should you need to specify one for whatever reason, you can use `git`, `svn` or
-`hg` as the repository type instead of `vcs`.
+should you need to specify one for whatever reason, you can use `fossil`,
+`git`, `svn` or `hg` as the repository type instead of `vcs`.
 
 If you set the `no-api` key to `true` on a github repository it will clone the
 repository as it would with any other git repository instead of using the
@@ -383,8 +356,9 @@ for this server will be overwritten. To change this behavior by setting the
 ### PEAR
 
 It is possible to install packages from any PEAR channel by using the `pear`
-repository. Composer will prefix all package names with `pear-{channelName}/` to
-avoid conflicts. All packages are also aliased with prefix `pear-{channelAlias}/`
+repository. Composer will prefix all package names with `pear-{channelName}/`
+to avoid conflicts. All packages are also aliased with prefix
+`pear-{channelAlias}/`.
 
 Example using `pear2.php.net`:
 
@@ -421,7 +395,8 @@ following packages:
 
  * `BasePackage`
  * `IntermediatePackage`, which depends on `BasePackage`
- * `TopLevelPackage1` and `TopLevelPackage2` which both depend on `IntermediatePackage`
+ * `TopLevelPackage1` and `TopLevelPackage2` which both depend
+    on `IntermediatePackage`
 
 Without a vendor alias, Composer will use the PEAR channel name as the
 vendor portion of the package name:
@@ -518,8 +493,8 @@ Typically you would leave the source part off, as you don't really need it.
 
 ## Hosting your own
 
-While you will probably want to put your packages on packagist most of the time,
-there are some use cases for hosting your own repository.
+While you will probably want to put your packages on packagist most of the
+time, there are some use cases for hosting your own repository.
 
 * **Private company packages:** If you are part of a company that uses Composer
   for their packages internally, you might want to keep those packages private.
@@ -536,23 +511,24 @@ There are a few tools that can help you create a `composer` repository.
 
 ### Packagist
 
-The underlying application used by packagist is open source. This means that you
-can technically install your own copy of packagist. However it is not a
+The underlying application used by packagist is open source. This means that
+you can technically install your own copy of packagist. However it is not a
 supported use case and changes will happen without caring for third parties
 using the code.
 
 Packagist is a Symfony2 application, and it is [available on
 GitHub](https://github.com/composer/packagist). It uses Composer internally and
-acts as a proxy between VCS repositories and the Composer users. It holds a list
-of all VCS packages, periodically re-crawls them, and exposes them as a Composer
-repository.
+acts as a proxy between VCS repositories and the Composer users. It holds a
+list of all VCS packages, periodically re-crawls them, and exposes them as a
+Composer repository.
 
 ### Toran Proxy
 
 [Toran Proxy](https://toranproxy.com/) is a web app much like Packagist but
 providing private package hosting as well as mirroring/proxying of GitHub and
-packagist.org. Check its homepage and the [Satis/Toran Proxy article](articles/handling-private-packages-with-satis.md)
-for more information.
+packagist.org. Check its homepage and the [Satis/Toran Proxy
+article](articles/handling-private-packages-with-satis.md) for more
+information.
 
 ### Satis
 
@@ -609,8 +585,8 @@ update to the latest version.
 ### Path
 
 In addition to the artifact repository, you can use the path one, which allows
-you to depend on a relative directory. This can be especially useful when dealing
-with monolith repositories.
+you to depend on a local directory, either absolute or relative. This can be
+especially useful when dealing with monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
 ```
@@ -622,8 +598,8 @@ For instance, if you have the following directory structure in your repository:
   \_ composer.json
 ```
 
-Then, to add the package `my/package` as a dependency, in your `apps/my-app/composer.json`
-file, you can use the following configuration:
+Then, to add the package `my/package` as a dependency, in your
+`apps/my-app/composer.json` file, you can use the following configuration:
 
 ```json
 {
@@ -649,9 +625,10 @@ the console will read `Symlinked from ../../packages/my-package`. If symlinking
 is _not_ possible the package will be copied. In that case, the console will
 output `Mirrored from ../../packages/my-package`.
 
-Instead of default fallback strategy you can force to use symlink with `"symlink": true` or
-mirroring with `"symlink": false` option.
-Forcing mirroring can be useful when deploying or generating package from a monolithic repository.
+Instead of default fallback strategy you can force to use symlink with
+`"symlink": true` or mirroring with `"symlink": false` option. Forcing
+mirroring can be useful when deploying or generating package from a
+monolithic repository.
 
 ```json
 {
@@ -667,9 +644,11 @@ Forcing mirroring can be useful when deploying or generating package from a mono
 }
 ```
 
-
-
-Instead of using a relative path, an absolute path can also be used.
+Leading tildes are expanded to the current user's home folder, and environment
+variables are parsed in both Windows and Linux/Mac notations. For example
+`~/git/mypackage` will automatically load the mypackage clone from
+`/home/<username>/git/mypackage`, equivalent to `$HOME/git/mypackage` or
+`%USERPROFILE%/git/mypackage`.
 
 > **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
 > For details, see the [PHP glob function](http://php.net/glob).
@@ -683,7 +662,7 @@ You can disable the default Packagist repository by adding this to your
 {
     "repositories": [
         {
-            "packagist": false
+            "packagist.org": false
         }
     ]
 }

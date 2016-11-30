@@ -1,3 +1,133 @@
+### [1.3.0-RC] - 2016-11-XX
+
+  * Added `--minor-only` to the `outdated` command to only show updates to minor versions and ignore new major versions
+  * Added workaround for xdebug performance impact by restarting PHP without xdebug automatically in case it is enabled
+  * Added `COMPOSER_ALLOW_XDEBUG` env var to circumvent the xdebug-disabling behavior
+  * Added `COMPOSER_MIRROR_PATH_REPOS` env var to force mirroring of path repositories vs symlinking
+  * Added `php-debug` and `php-zts` virtual platform packages
+  * Added `gitlab-token` auth config for GitLab private tokens
+  * Fixed output from zip and rar leaking out when an error occured
+  * Removed `hash` from composer.lock, only `content-hash` is now used which should reduce conflicts
+  * Minor fixes and performance improvements
+
+### [1.2.2] - 2016-11-03
+
+  * Fixed selection of packages based on stability to be independent from package repository order
+  * Fixed POST_DEPENDENCIES_SOLVING not containing some operations in edge cases
+  * Fixed issue handling GitLab URLs containing dots and other special characters
+  * Fixed issue on Windows when running composer at the root of a drive
+  * Minor fixes
+
+### [1.2.1] - 2016-09-12
+
+  * Fixed edge case issues with the static autoloader
+  * Minor fixes
+
+### [1.2.0] - 2016-07-19
+
+  * Security: Fixed [httpoxy](https://httpoxy.org/) vulnerability
+  * Fixed `home` command to avoid rogue output on unix
+  * Fixed output of git clones to clearly state when clones are from cache
+  * (from 1.2 RC) Fixed ext-network-ipv6 to be php-ipv6
+
+### [1.2.0-RC] - 2016-07-04
+
+  * Added caching of git repositories if you have git 2.3+ installed. Repositories will now be cached once and then cloned from local cache so subsequent installs should be faster
+  * Added detection of HEAD changes to the `status` command. If you `git checkout X` in a vendor directory for example it will tell you that it is not at the version that was installed
+  * Added a virtual `php-ipv6` extension to require PHP compiled with IPv6 support
+  * Added `--no-suggest` to `install` and `update` commands to skip output of suggestions at the end
+  * Added `--type` to the `search` command to restrict to a given package type
+  * Added fossil support as alternative to git/svn/.. for package downloads
+  * Improved BitBucket OAuth support
+  * Added support for blocking cache operations using COMPOSER_CACHE_DIR=/dev/null (or NUL on windows)
+  * Added support for using declare(strict_types=1) in plugins
+  * Added `--prefer-stable` and `--prefer-lowest` to the `require` command
+  * Added `--no-scripts` to the `require` and `remove` commands
+  * Added `_comment` top level key to the schema to endorse using it as a place to store comments (it can be a string or array of strings)
+  * Added support for justinrainbow/json-schema 2.0
+  * Fixed binaries not being re-installed if deleted by users or the bin-dir changes. `update` and `install` will now re-install them
+  * Many minor UX and docs improvements
+
+### [1.1.3] - 2016-06-26
+
+  * Fixed bitbucket oauth instructions
+  * Fixed version parsing issue
+  * Fixed handling of bad proxies that modify JSON content on the fly
+
+### [1.1.2] - 2016-05-31
+
+  * Fixed degraded mode issue when accessing packagist.org
+  * Fixed GitHub access_token being added on subsequent requests in case of redirections
+  * Fixed exclude-from-classmap not working in some circumstances
+  * Fixed openssl warning preventing the use of config command for disabling tls
+
+### [1.1.1] - 2016-05-17
+
+  * Fixed regression in handling of #reference which made it update every time
+  * Fixed dev platform requirements being required even in --no-dev install from a lock file
+  * Fixed parsing of extension versions that do not follow valid numbers, we now try to parse x.y.z and ignore the rest
+  * Fixed exact constraints warnings appearing for 0.x versions
+  * Fixed regression in the `remove` command
+
+### [1.1.0] - 2016-05-10
+
+  * Added fallback to SSH for https bitbucket URLs
+  * Added BaseCommand::isProxyCommand that can be overridden to mark a command as being a mere proxy, which helps avoid duplicate warnings etc on composer startup
+  * Fixed archiving generating long paths in zip files on Windows
+
+### [1.1.0-RC] - 2016-04-29
+
+  * Added ability for plugins to register their own composer commands
+  * Optimized the autoloader initialization using static loading on PHP 5.6 and above, this reduces the load time for large classmaps to almost nothing
+  * Added `--latest` to `show` command to show the latest version available of your dependencies
+  * Added `--outdated` to `show` command an `composer outdated` alias for it, to show only packages in need of update
+  * Added `--direct` to `show` and `outdated` commands to show only your direct dependencies in the listing
+  * Added support for editing all top-level properties (name, minimum-stability, ...) as well as extra values via the `config` command
+  * Added abandoned state warning to the `show` and `outdated` commands when listing latest packages
+  * Added support for `~/` and `$HOME/` in the path repository paths
+  * Added support for wildcards in the `show` command package filter, e.g. `composer show seld/*`
+  * Added ability to call composer itself from scripts via `@composer ...`
+  * Added untracked files detection to the `status` command
+  * Added warning to `validate` command when using exact-version requires
+  * Added warning once per domain when accessing insecure URLs with secure-http disabled
+  * Added a dependency on composer/ca-bundle (extracted CA bundle management to a standalone lib)
+  * Added support for empty directories when archiving to tar
+  * Added an `init` event for plugins to react to, which occurs right after a Composer instance is fully initialized
+  * Added many new detections of problems in the `why-not`/`prohibits` command to figure out why something does not get installed in the expected version
+  * Added a deprecation notice for script event listeners that use legacy script classes
+  * Fixed abandoned state not showing up if you had a package installed before it was marked abandoned
+  * Fixed --no-dev updates creating an incomplete lock file, everything is now always resolved on update
+  * Fixed partial updates in case the vendor dir was not up to date with the lock file
+
+### [1.0.3] - 2016-04-29
+
+  * Security: Fixed possible command injection from the env vars into our sudo detection
+  * Fixed interactive authentication with gitlab
+  * Fixed class name replacement in plugins
+  * Fixed classmap generation mistakenly detecting anonymous classes
+  * Fixed auto-detection of stability flags in complex constraints like `2.0-dev || ^1.5`
+  * Fixed content-length handling when redirecting to very small responses
+
+### [1.0.2] - 2016-04-21
+
+  * Fixed regression in 1.0.1 on systems with mbstring.func_overload enabled
+  * Fixed regression in 1.0.1 that made dev packages update to the latest reference even if not whitelisted in a partial update
+  * Fixed init command ignoring the COMPOSER env var for choosing the json file name
+  * Fixed error reporting bug when the dependency resolution fails
+  * Fixed handling of `$` sign in composer config command in some cases it could corrupt the json file
+
+### [1.0.1] - 2016-04-18
+
+  * Fixed URL updating when a package's URL changes, composer.lock now contains the right URL including correct reference
+  * Fixed URL updating of the origin git remote as well for packages installed as git clone
+  * Fixed binary .bat files generated from linux being incompatible with windows cmd
+  * Fixed handling of paths with trailing slashes in path repository
+  * Fixed create-project not using platform config when selecting a package
+  * Fixed self-update not showing the channel it uses to perform the update
+  * Fixed file downloads not failing loudly when the content does not match the Content-Length header
+  * Fixed secure-http detecting some malformed URLs as insecure
+  * Updated CA bundle
+
 ### [1.0.0] - 2016-04-05
 
   * Added support for bitbucket-oauth configuration
@@ -323,6 +453,19 @@
 
   * Initial release
 
+[1.3.0-RC]: https://github.com/composer/composer/compare/1.2.2...1.3.0-RC
+[1.2.2]: https://github.com/composer/composer/compare/1.2.1...1.2.2
+[1.2.1]: https://github.com/composer/composer/compare/1.2.0...1.2.1
+[1.2.0]: https://github.com/composer/composer/compare/1.2.0-RC...1.2.0
+[1.2.0-RC]: https://github.com/composer/composer/compare/1.1.3...1.2.0-RC
+[1.1.3]: https://github.com/composer/composer/compare/1.1.2...1.1.3
+[1.1.2]: https://github.com/composer/composer/compare/1.1.1...1.1.2
+[1.1.1]: https://github.com/composer/composer/compare/1.1.0...1.1.1
+[1.1.0]: https://github.com/composer/composer/compare/1.0.3...1.1.0
+[1.1.0-RC]: https://github.com/composer/composer/compare/1.0.3...1.1.0-RC
+[1.0.3]: https://github.com/composer/composer/compare/1.0.2...1.0.3
+[1.0.2]: https://github.com/composer/composer/compare/1.0.1...1.0.2
+[1.0.1]: https://github.com/composer/composer/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/composer/composer/compare/1.0.0-beta2...1.0.0
 [1.0.0-beta2]: https://github.com/composer/composer/compare/1.0.0-beta1...1.0.0-beta2
 [1.0.0-beta1]: https://github.com/composer/composer/compare/1.0.0-alpha11...1.0.0-beta1

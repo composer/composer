@@ -86,6 +86,8 @@ class ClassMapGenerator
             if (!$filesystem->isAbsolutePath($filePath)) {
                 $filePath = $cwd . '/' . $filePath;
                 $filePath = $filesystem->normalizePath($filePath);
+            } else {
+                $filePath = preg_replace('{[\\\\/]{2,}}', '/', $filePath);
             }
 
             if ($blacklist && preg_match($blacklist, strtr($filePath, '\\', '/'))) {
@@ -188,6 +190,10 @@ class ClassMapGenerator
                 $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
             } else {
                 $name = $matches['name'][$i];
+                // skip anon classes extending/implementing
+                if ($name === 'extends' || $name === 'implements') {
+                    continue;
+                }
                 if ($name[0] === ':') {
                     // This is an XHP class, https://github.com/facebook/xhp
                     $name = 'xhp'.substr(str_replace(array('-', ':'), array('_', '__'), $name), 1);

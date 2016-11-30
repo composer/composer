@@ -22,15 +22,19 @@ Composer fires the following named events during its execution process:
 
 ### Command Events
 
-- **pre-install-cmd**: occurs before the `install` command is executed with a lock file present.
-- **post-install-cmd**: occurs after the `install` command has been executed with a lock file present.
-- **pre-update-cmd**: occurs before the `update` command is executed, or before the `install` command is executed without a lock file present.
-- **post-update-cmd**: occurs after the `update` command has been executed, or after the `install` command has been executed without a lock file present.
+- **pre-install-cmd**: occurs before the `install` command is executed with a
+  lock file present.
+- **post-install-cmd**: occurs after the `install` command has been executed
+  with a lock file present.
+- **pre-update-cmd**: occurs before the `update` command is executed, or before
+  the `install` command is executed without a lock file present.
+- **post-update-cmd**: occurs after the `update` command has been executed, or
+  after the `install` command has been executed without a lock file present.
 - **post-status-cmd**: occurs after the `status` command has been executed.
 - **pre-archive-cmd**: occurs before the `archive` command is executed.
 - **post-archive-cmd**: occurs after the `archive` command has been executed.
-- **pre-autoload-dump**: occurs before the autoloader is dumped, either
-  during `install`/`update`, or via the `dump-autoload` command.
+- **pre-autoload-dump**: occurs before the autoloader is dumped, either during
+  `install`/`update`, or via the `dump-autoload` command.
 - **post-autoload-dump**: occurs after the autoloader has been dumped, either
   during `install`/`update`, or via the `dump-autoload` command.
 - **post-root-package-install**: occurs after the root package has been
@@ -54,6 +58,7 @@ Composer fires the following named events during its execution process:
 
 ### Plugin Events
 
+- **init**: occurs after a Composer instance is done being initialized.
 - **command**: occurs before any Composer Command is executed on the CLI. It
   provides you with access to the input and output objects of the program.
 - **pre-file-download**: occurs before files are downloaded and allows
@@ -71,7 +76,7 @@ Composer fires the following named events during its execution process:
 
 The root JSON object in `composer.json` should have a property called
 `"scripts"`, which contains pairs of named events and each event's
-corresponding scripts. An event's scripts can be defined as either as a string
+corresponding scripts. An event's scripts can be defined as either a string
 (only for a single script) or an array (for single or multiple scripts.)
 
 For any given event:
@@ -149,11 +154,18 @@ class MyClass
 }
 ```
 
-When an event is fired, your PHP callback receives as first argument an
-`Composer\EventDispatcher\Event` object. This object has a `getName()` method
-that lets you retrieve event name.
+**Note:** During a composer install or update process, a variable named
+`COMPOSER_DEV_MODE` will be added to the environment. If the command was run
+with the `--no-dev` flag, this variable will be set to 0, otherwise it will be
+set to 1.
 
-Depending on the script types (see list above) you will get various event
+## Event classes
+
+When an event is fired, your PHP callback receives as first argument a
+`Composer\EventDispatcher\Event` object. This object has a `getName()` method
+that lets you retrieve the event name.
+
+Depending on the [script types](#event-names) you will get various event
 subclasses containing various getters with relevant data and associated
 objects:
 
@@ -162,6 +174,7 @@ objects:
 - Installer Events: [`Composer\Installer\InstallerEvent`](https://getcomposer.org/apidoc/master/Composer/Installer/InstallerEvent.html)
 - Package Events: [`Composer\Installer\PackageEvent`](https://getcomposer.org/apidoc/master/Composer/Installer/PackageEvent.html)
 - Plugin Events:
+  - init: [`Composer\EventDispatcher\Event`](https://getcomposer.org/apidoc/master/Composer/EventDispatcher/Event.html)
   - command: [`Composer\Plugin\CommandEvent`](https://getcomposer.org/apidoc/master/Composer/Plugin/CommandEvent.html)
   - pre-file-download: [`Composer\Plugin\PreFileDownloadEvent`](https://getcomposer.org/apidoc/master/Composer/Plugin/PreFileDownloadEvent.html)
 
@@ -228,7 +241,7 @@ resolve to whatever composer.phar is currently being used:
         "test": [
             "@composer install",
             "phpunit"
-        ],
+        ]
     }
 }
 ```

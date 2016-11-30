@@ -32,9 +32,6 @@ class GitLabDriver extends VcsDriver
     private $owner;
     private $repository;
 
-    private $cache;
-    private $infoCache = array();
-
     /**
      * @var array Project data returned by GitLab API
      */
@@ -66,7 +63,8 @@ class GitLabDriver extends VcsDriver
 
     /**
      * Extracts information from the repository url.
-     * SSH urls uses https by default.
+     *
+     * SSH urls use https by default. Set "secure-http": false on the repository config to use http instead.
      *
      * {@inheritDoc}
      */
@@ -76,7 +74,7 @@ class GitLabDriver extends VcsDriver
             throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
         }
 
-        $this->scheme = !empty($match['scheme']) ? $match['scheme'] : 'https';
+        $this->scheme = !empty($match['scheme']) ? $match['scheme'] : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https');
         $this->originUrl = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
         $this->owner = $match['owner'];
         $this->repository = preg_replace('#(\.git)$#', '', $match['repo']);
@@ -98,13 +96,9 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * Fetches the composer.json file from the project by a identifier.
-     *
-     * if specific keys arent present it will try and infer them by default values.
-     *
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
-    public function getComposerInformation($identifier)
+    public function getFileContent($file, $identifier)
     {
         // Convert the root identifier to a cachable commit id
         if (!preg_match('{[a-f0-9]{40}}i', $identifier)) {
@@ -114,40 +108,39 @@ class GitLabDriver extends VcsDriver
             }
         }
 
-        if (isset($this->infoCache[$identifier])) {
-            return $this->infoCache[$identifier];
-        }
-
-        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier)) {
-            return $this->infoCache[$identifier] = JsonFile::parseJson($res, $res);
-        }
+        $resource = $this->getApiUrl().'/repository/blobs/'.$identifier.'?filepath=' . $file;
 
         try {
-            $composer = $this->fetchComposerFile($identifier);
+            $content = $this->getContents($resource);
         } catch (TransportException $e) {
             if ($e->getCode() !== 404) {
                 throw $e;
             }
-            $composer = false;
+            return null;
         }
 
-        if ($composer && !isset($composer['time']) && isset($this->commits[$identifier])) {
-            $composer['time'] = $this->commits[$identifier]['committed_date'];
-        }
-
-        if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
-            $this->cache->write($identifier, json_encode($composer));
-        }
-
-        return $this->infoCache[$identifier] = $composer;
+        return $content;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChangeDate($identifier)
+    {
+        if (isset($this->commits[$identifier])) {
+            return new \DateTime($this->commits[$identifier]['committed_date']);
+        }
+
+        return new \DateTime();
+    }
+
 
     /**
      * {@inheritDoc}
      */
     public function getRepositoryUrl()
     {
-        return $this->project['ssh_url_to_repo'];
+        return $this->project['public'] ? $this->project['http_url_to_repo'] : $this->project['ssh_url_to_repo'];
     }
 
     /**
@@ -209,25 +202,28 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * Fetches composer.json file from the repository through api.
-     *
-     * @param string $identifier
-     *
-     * @return array
-     */
-    protected function fetchComposerFile($identifier)
-    {
-        $resource = $this->getApiUrl().'/repository/blobs/'.$identifier.'?filepath=composer.json';
-
-        return JsonFile::parseJson($this->getContents($resource), $resource);
-    }
-
-    /**
      * @return string Base URL for GitLab API v3
      */
     public function getApiUrl()
     {
-        return $this->scheme.'://'.$this->originUrl.'/api/v3/projects/'.$this->owner.'%2F'.$this->repository;
+        return $this->scheme.'://'.$this->originUrl.'/api/v3/projects/'.$this->urlEncodeAll($this->owner).'%2F'.$this->urlEncodeAll($this->repository);
+    }
+
+    /**
+     * Urlencode all non alphanumeric characters. rawurlencode() can not be used as it does not encode `.`
+     *
+     * @param string $string
+     * @return string
+     */
+    private function urlEncodeAll($string)
+    {
+        $encoded = '';
+        for ($i = 0; isset($string[$i]); $i++) {
+            $character = $string[$i];
+            if (!ctype_alnum($character)) $character = '%' . sprintf('%02X', ord($character));
+            $encoded .= $character;
+        }
+        return $encoded;
     }
 
     /**
@@ -326,7 +322,7 @@ class GitLabDriver extends VcsDriver
                         return $this->attemptCloneFallback();
                     }
                     $this->io->writeError('<warning>Failed to download ' . $this->owner . '/' . $this->repository . ':' . $e->getMessage() . '</warning>');
-                    $gitLabUtil->authorizeOAuthInteractively($this->originUrl, 'Your credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
+                    $gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, 'Your credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
 
                     return parent::getContents($url);
 
@@ -359,7 +355,7 @@ class GitLabDriver extends VcsDriver
             return false;
         }
 
-        $scheme = !empty($match['scheme']) ? $match['scheme'] : 'https';
+        $scheme = !empty($match['scheme']) ? $match['scheme'] : null;
         $originUrl = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
 
         if (!in_array($originUrl, (array) $config->get('gitlab-domains'))) {

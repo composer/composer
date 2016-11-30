@@ -1,0 +1,164 @@
+--TEST--
+Update updates URLs for updated packages if they have changed
+
+a/a is dev and gets everything updated as it updates to a new ref
+b/b is a tag and gets everything updated by updating the package URL directly
+c/c is a tag and not whitelisted and gets the new URL but keeps its old ref
+d/d is dev but with a #ref so it should get URL updated but not the reference
+e/e is dev and newly installed with a #ref so it should get the correct URL but with the #111 ref
+e/e is dev but not whitelisted and gets the new URL but keeps its old ref
+g/g is dev and installed in a different ref than the #ref, so it gets updated and gets the new URL but not the new ref
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/a/newa", "type": "git" },
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/a/newa/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                },
+                {
+                    "name": "b/b", "version": "2.0.3",
+                    "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/b/newb", "type": "git" },
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/b/newb/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                },
+                {
+                    "name": "c/c", "version": "1.0.0",
+                    "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/c/newc", "type": "git" },
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/c/newc/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                },
+                {
+                    "name": "d/d", "version": "dev-master",
+                    "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/d/newd", "type": "git" },
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/d/newd/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                },
+                {
+                    "name": "e/e", "version": "dev-master",
+                    "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/e/newe", "type": "git" },
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/e/newe/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                },
+                {
+                    "name": "f/f", "version": "dev-master",
+                    "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/f/newf", "type": "git" },
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/f/newf/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                },
+                {
+                    "name": "g/g", "version": "dev-master",
+                    "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/g/newg", "type": "git" },
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/g/newg/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "dev-master",
+        "b/b": "2.0.3",
+        "c/c": "1.0.0",
+        "d/d": "dev-master#1111111111111111111111111111111111111111",
+        "e/e": "dev-master#1111111111111111111111111111111111111111",
+        "f/f": "dev-master",
+        "g/g": "dev-master#1111111111111111111111111111111111111111"
+    }
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-master",
+        "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/a/a", "type": "git" },
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/a/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+    },
+    {
+        "name": "b/b", "version": "2.0.3",
+        "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/b/b", "type": "git" },
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/b/b/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+    },
+    {
+        "name": "c/c", "version": "1.0.0",
+        "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/c/c", "type": "git" },
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/c/c/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+    },
+    {
+        "name": "d/d", "version": "dev-master",
+        "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/d/d", "type": "git" },
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/d/d/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+    },
+    {
+        "name": "f/f", "version": "dev-master",
+        "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/f/f", "type": "git" },
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/f/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+    },
+    {
+        "name": "g/g", "version": "dev-master",
+        "source": { "reference": "0000000000000000000000000000000000000000", "url": "https://github.com/g/g", "type": "git" },
+        "dist": { "reference": "0000000000000000000000000000000000000000", "url": "https://api.github.com/repos/g/g/zipball/0000000000000000000000000000000000000000", "type": "zip" }
+    }
+]
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/a/newa", "type": "git" },
+            "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/a/newa/zipball/2222222222222222222222222222222222222222", "type": "zip", "shasum": null },
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "2.0.3",
+            "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/b/newb", "type": "git" },
+            "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/b/newb/zipball/2222222222222222222222222222222222222222", "type": "zip", "shasum": null },
+            "type": "library"
+        },
+        {
+            "name": "c/c", "version": "1.0.0",
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/c/newc", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/c/newc/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
+            "type": "library"
+        },
+        {
+            "name": "d/d", "version": "dev-master",
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/d/newd", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/d/newd/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
+            "type": "library"
+        },
+        {
+            "name": "e/e", "version": "dev-master",
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/e/newe", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/e/newe/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
+            "type": "library"
+        },
+        {
+            "name": "f/f", "version": "dev-master",
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/f/newf", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/newf/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
+            "type": "library"
+        },
+        {
+            "name": "g/g", "version": "dev-master",
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/g/newg", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/g/newg/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "a/a": 20,
+        "d/d": 20,
+        "e/e": 20,
+        "f/f": 20,
+        "g/g": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update a/a b/b d/d g/g
+--EXPECT--
+Installing e/e (dev-master 1111111)
+Updating a/a (dev-master 1111111) to a/a (dev-master 2222222)
+Updating g/g (dev-master 0000000) to g/g (dev-master 1111111)

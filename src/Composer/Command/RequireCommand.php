@@ -42,12 +42,15 @@ class RequireCommand extends InitCommand
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
-                new InputOption('no-plugins', null, InputOption::VALUE_NONE, 'Disables all plugins.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
+                new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'Do not show package suggestions.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
+                new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.'),
+                new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
                 new InputOption('sort-packages', null, InputOption::VALUE_NONE, 'Sorts packages when adding/updating a new dependency'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
@@ -91,7 +94,6 @@ EOT
         }
 
         $json = new JsonFile($file);
-        $composerDefinition = $json->read();
         $composerBackup = file_get_contents($json->getPath());
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
@@ -109,7 +111,6 @@ EOT
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
-        $baseRequirements = array_key_exists($requireKey, $composerDefinition) ? $composerDefinition[$requireKey] : array();
         $requirements = $this->formatRequirements($requirements);
 
         // validate requirements format
@@ -120,16 +121,12 @@ EOT
 
         $sortPackages = $input->getOption('sort-packages') || $composer->getConfig()->get('sort-packages');
 
-        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey, $removeKey, $sortPackages)) {
+        if (!$this->updateFileCleanly($json, $requirements, $requireKey, $removeKey, $sortPackages)) {
+            $composerDefinition = $json->read();
             foreach ($requirements as $package => $version) {
-                $baseRequirements[$package] = $version;
-
-                if (isset($composerDefinition[$removeKey][$package])) {
-                    unset($composerDefinition[$removeKey][$package]);
-                }
+                $composerDefinition[$requireKey][$package] = $version;
+                unset($composerDefinition[$removeKey][$package]);
             }
-
-            $composerDefinition[$requireKey] = $baseRequirements;
             $json->write($composerDefinition);
         }
 
@@ -157,12 +154,16 @@ EOT
             ->setPreferSource($input->getOption('prefer-source'))
             ->setPreferDist($input->getOption('prefer-dist'))
             ->setDevMode($updateDevMode)
+            ->setRunScripts(!$input->getOption('no-scripts'))
+            ->setSkipSuggest($input->getOption('no-suggest'))
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
             ->setUpdate(true)
             ->setUpdateWhitelist(array_keys($requirements))
             ->setWhitelistDependencies($input->getOption('update-with-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
+            ->setPreferStable($input->getOption('prefer-stable'))
+            ->setPreferLowest($input->getOption('prefer-lowest'))
         ;
 
         $exception = null;
@@ -187,7 +188,7 @@ EOT
         return $status;
     }
 
-    private function updateFileCleanly($json, array $base, array $new, $requireKey, $removeKey, $sortPackages)
+    private function updateFileCleanly($json, array $new, $requireKey, $removeKey, $sortPackages)
     {
         $contents = file_get_contents($json->getPath());
 

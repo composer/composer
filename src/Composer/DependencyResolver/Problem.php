@@ -97,7 +97,9 @@ class Problem
 
                     if (defined('HHVM_VERSION')) {
                         return $msg . 'your HHVM version does not satisfy that requirement.';
-                    } elseif ($job['packageName'] === 'hhvm') {
+                    }
+
+                    if ($job['packageName'] === 'hhvm') {
                         return $msg . 'you are running this with PHP and not HHVM.';
                     }
 
@@ -130,11 +132,11 @@ class Problem
                 }
 
                 if ($providers = $this->pool->whatProvides($job['packageName'], $job['constraint'], true, true)) {
-                    return "\n    - The requested package ".$job['packageName'].$this->constraintToText($job['constraint']).' is satisfiable by '.$this->getPackageList($providers).' but those are rejected by your minimum-stability.';
+                    return "\n    - The requested package ".$job['packageName'].$this->constraintToText($job['constraint']).' is satisfiable by '.$this->getPackageList($providers).' but these conflict with your requirements or minimum-stability.';
                 }
 
                 if ($providers = $this->pool->whatProvides($job['packageName'], null, true, true)) {
-                    return "\n    - The requested package ".$job['packageName'].$this->constraintToText($job['constraint']).' exists as '.$this->getPackageList($providers).' but those are rejected by your constraint.';
+                    return "\n    - The requested package ".$job['packageName'].$this->constraintToText($job['constraint']).' exists as '.$this->getPackageList($providers).' but these are rejected by your constraint.';
                 }
 
                 return "\n    - The requested package ".$job['packageName'].' could not be found in any version, there may be a typo in the package name.';

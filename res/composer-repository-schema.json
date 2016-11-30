@@ -1,0 +1,110 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "description": "A representation of packages metadata.",
+    "type": "object",
+    "oneOf": [
+        { "required": [ "packages" ] },
+        { "required": [ "providers" ] },
+        { "required": [ "provider-includes", "providers-url" ] }
+    ],
+    "properties": {
+        "packages": {
+            "type": ["object", "array"],
+            "description": "A hashmap of package names in the form of <vendor>/<name>.",
+            "additionalProperties": { "$ref": "#/definitions/versions" }
+        },
+        "providers-url": {
+            "type": "string",
+            "description": "Endpoint to retrieve provider data from, e.g. '/p/%package%$%hash%.json'."
+        },
+        "provider-includes": {
+            "type": "object",
+            "description": "A hashmap of provider listings.",
+            "additionalProperties": { "$ref": "#/definitions/provider" }
+        },
+        "providers": {
+            "type": "object",
+            "description": "A hashmap of package names in the form of <vendor>/<name>.",
+            "additionalProperties": { "$ref": "#/definitions/provider" }
+        },
+        "notify-batch": {
+            "type": "string",
+            "description": "Endpoint to call after multiple packages have been installed, e.g. '/downloads/'."
+        },
+        "search": {
+            "type": "string",
+            "description": "Endpoint that provides search capabilities, e.g. '/search.json?q=%query%&type=%type%'."
+        },
+        "warning": {
+            "type": "string",
+            "description": "A message that will be output by Composer as a warning when this source is consulted."
+        }
+    },
+    "definitions": {
+        "versions": {
+            "type": "object",
+            "description": "A hashmap of versions and their metadata.",
+            "additionalProperties": { "$ref": "#/definitions/version" }
+        },
+        "version": {
+            "type": "object",
+            "oneOf": [
+                { "$ref": "#/definitions/package" },
+                { "$ref": "#/definitions/metapackage" }
+            ]
+        },
+        "package-base": {
+            "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "version": { "type": "string" },
+                "version_normalized": {
+                    "type": "string",
+                    "description": "Normalized version, optional but can save computational time on client side."
+                },
+                "autoload": { "type": "object" },
+                "require": { "type": "object" },
+                "replace": { "type": "object" },
+                "conflict": { "type": "object" },
+                "provide": { "type": "object" },
+                "time": { "type": "string" }
+            },
+            "additionalProperties": true
+        },
+        "package": {
+            "allOf": [
+                { "$ref": "#/definitions/package-base" },
+                {
+                    "properties": {
+                        "dist": { "type": "object" },
+                        "source": { "type": "object" }
+                    }
+                },
+                { "oneOf": [
+                    { "required": [ "name", "version", "source" ] },
+                    { "required": [ "name", "version", "dist" ] }
+                ] }
+            ]
+        },
+        "metapackage": {
+            "allOf": [
+                { "$ref": "#/definitions/package-base" },
+                {
+                    "properties": {
+                        "type": { "type": "string", "enum": [ "metapackage" ] }
+                    },
+                    "required": [ "name", "version", "type" ]
+                }
+            ]
+        },
+        "provider": {
+            "type": "object",
+            "properties": {
+                "sha256": {
+                    "type": "string",
+                    "description": "Hash value that can be used to validate the resource."
+                }
+            }
+        }
+    }
+}

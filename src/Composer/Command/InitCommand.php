@@ -56,7 +56,7 @@ class InitCommand extends BaseCommand
                 new InputOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package'),
                 new InputOption('author', null, InputOption::VALUE_REQUIRED, 'Author name of package'),
                 // new InputOption('version', null, InputOption::VALUE_NONE, 'Version of package'),
-                new InputOption('type', null, InputOption::VALUE_OPTIONAL, 'Type of package'),
+                new InputOption('type', null, InputOption::VALUE_OPTIONAL, 'Type of package (e.g. library, project, metapackage, composer-plugin)'),
                 new InputOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
@@ -115,7 +115,7 @@ EOT
             }
         }
 
-        $file = new JsonFile('composer.json');
+        $file = new JsonFile(Factory::getComposerFile());
         $json = $file->encode($options);
 
         if ($input->isInteractive()) {
@@ -284,7 +284,7 @@ EOT
 
         $type = $input->getOption('type') ?: false;
         $type = $io->ask(
-            'Package Type [<comment>'.$type.'</comment>]: ',
+            'Package Type (e.g. library, project, metapackage, composer-plugin) [<comment>'.$type.'</comment>]: ',
             $type
         );
         $input->setOption('type', $type);
@@ -320,7 +320,7 @@ EOT
      */
     public function parseAuthorString($author)
     {
-        if (preg_match('/^(?P<name>[- \.,\p{L}\p{N}\'’]+) <(?P<email>.+?)>$/u', $author, $match)) {
+        if (preg_match('/^(?P<name>[- .,\p{L}\p{N}\'’"()]+) <(?P<email>.+?)>$/u', $author, $match)) {
             if ($this->isValidEmail($match['email'])) {
                 return array(
                     'name'  => trim($match['name']),
