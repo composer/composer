@@ -10,6 +10,11 @@
   * Removed `hash` from composer.lock, only `content-hash` is now used which should reduce conflicts
   * Minor fixes and performance improvements
 
+### [1.2.3] - 2016-12-01
+
+  * Fixed bug in HgDriver failing to identify BitBucket repositories
+  * Fixed support for loading partial provider repositories
+
 ### [1.2.2] - 2016-11-03
 
   * Fixed selection of packages based on stability to be independent from package repository order
@@ -453,7 +458,8 @@
 
   * Initial release
 
-[1.3.0-RC]: https://github.com/composer/composer/compare/1.2.2...1.3.0-RC
+[1.3.0-RC]: https://github.com/composer/composer/compare/1.2.3...1.3.0-RC
+[1.2.3]: https://github.com/composer/composer/compare/1.2.2...1.2.3
 [1.2.2]: https://github.com/composer/composer/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/composer/composer/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/composer/composer/compare/1.2.0-RC...1.2.0
