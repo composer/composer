@@ -118,6 +118,13 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->method('getVersion')
             ->will($this->returnValue('0.1.10.0'));
 
+        foreach (array($package1, $package2) as $package) {
+            $package
+                ->expects($this->atLeastOnce())
+                ->method('getTransportOptions')
+                ->will($this->returnValue(array()));
+        }
+
         $contentHash = md5(trim($jsonContent));
 
         $json

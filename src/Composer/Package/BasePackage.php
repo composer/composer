@@ -49,12 +49,14 @@ abstract class BasePackage implements PackageInterface
      * @var int
      */
     public $id;
-
+    /** @var string */
     protected $name;
+    /** @var string */
     protected $prettyName;
-
+    /** @var RepositoryInterface */
     protected $repository;
-    protected $transportOptions;
+    /** @var array */
+    protected $transportOptions = array();
 
     /**
      * All descendants' constructors should call this parent constructor
@@ -66,7 +68,6 @@ abstract class BasePackage implements PackageInterface
         $this->prettyName = $name;
         $this->name = strtolower($name);
         $this->id = -1;
-        $this->transportOptions = array();
     }
 
     /**
