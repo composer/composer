@@ -79,8 +79,8 @@ The type of the package. It defaults to `library`.
 
 Package types are used for custom installation logic. If you have a package
 that needs some special logic, you can define a custom type. This could be a
-`symfony-bundle`, a `wordpress-plugin` or a `typo3-module`. These types will
-all be specific to certain projects, and they will need to provide an
+`symfony-bundle`, a `wordpress-plugin` or a `typo3-cms-extension`. These types
+will all be specific to certain projects, and they will need to provide an
 installer capable of installing packages of that type.
 
 Out of the box, Composer supports four types:
