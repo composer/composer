@@ -39,4 +39,4 @@ wget https://raw.githubusercontent.com/composer/getcomposer.org/1b137f8bf6db3e79
 ```
 
 You may replace the commit hash by whatever the last commit hash is on
-https://github.com/composer/getcomposer.org/commits/master
+https://github.com/xaxadmin/composer/getcomposer.org/commits/master
