@@ -34,6 +34,7 @@ class DumpAutoloadCommand extends BaseCommand
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules.'),
+                new InputOption('no-static', null, InputOption::VALUE_NONE, 'Disables the static autoloader for environments where pre-PHP 5.6 syntax compatibility is required.'),
             ))
             ->setHelp(<<<EOT
 <info>php composer.phar dump-autoload</info>
@@ -67,6 +68,7 @@ EOT
         $generator->setDevMode(!$input->getOption('no-dev'));
         $generator->setClassMapAuthoritative($authoritative);
         $generator->setRunScripts(!$input->getOption('no-scripts'));
+        $generator->setStaticAutoloader(!$input->getOption('no-static'));
         $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
     }
 }
