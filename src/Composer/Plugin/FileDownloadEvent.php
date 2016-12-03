@@ -19,8 +19,9 @@ use Composer\Util\RemoteFilesystem;
  * The pre file download event.
  *
  * @author Nils Adermann <naderman@naderman.de>
+ * @author Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class PreFileDownloadEvent extends Event
+class FileDownloadEvent extends Event
 {
     /**
      * @var RemoteFilesystem
@@ -31,7 +32,6 @@ class PreFileDownloadEvent extends Event
      * @var string
      */
     private $processedUrl;
-
     /**
      * Constructor.
      *
