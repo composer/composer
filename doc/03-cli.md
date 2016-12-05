@@ -860,7 +860,11 @@ If set to 1, this env var will make Composer behave as if you passed the
 
 ### COMPOSER_DISABLE_XDEBUG_WARN
 
-If set to 1, this env disables the warning about having xdebug enabled.
+If set, this env disables the warning about having xdebug enabled.
+
+### COMPOSER_DISABLE_AMBIGUOUS_WARN
+
+If set, this env disables the warning about ambiguous class resolution during autoloader generation.
 
 ### COMPOSER_ALLOW_SUPERUSER
 
