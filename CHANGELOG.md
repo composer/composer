@@ -1,3 +1,10 @@
+### [1.2.4] - 2016-12-06
+
+  * Fixed regression in output handling of scripts from 1.2.3
+  * Fixed support for LibreSSL detection as lib-openssl
+  * Fixed issue with Zend Guard in the autoloader bootstrapping
+  * Fixed support for loading partial provider repositories
+
 ### [1.2.3] - 2016-12-01
 
   * Fixed bug in HgDriver failing to identify BitBucket repositories
@@ -446,6 +453,8 @@
 
   * Initial release
 
+[1.2.4]: https://github.com/composer/composer/compare/1.2.3...1.2.4
+[1.2.3]: https://github.com/composer/composer/compare/1.2.2...1.2.3
 [1.2.2]: https://github.com/composer/composer/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/composer/composer/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/composer/composer/compare/1.2.0-RC...1.2.0
