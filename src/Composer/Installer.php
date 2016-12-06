@@ -115,6 +115,9 @@ class Installer
     protected $preferStable = false;
     protected $preferLowest = false;
     protected $skipSuggest = false;
+    protected $writeLock = true;
+    protected $executeOperations = true;
+
     /**
      * Array of package names/globs flagged for update
      *
@@ -182,6 +185,9 @@ class Installer
         if ($this->dryRun) {
             $this->verbose = true;
             $this->runScripts = false;
+            $this->executeOperations = false;
+            $this->writeLock = false;
+            $this->dumpAutoloader = false;
             $this->installationManager->addInstaller(new NoopInstaller);
             $this->mockLocalRepositories($this->repositoryManager);
         }
@@ -218,13 +224,13 @@ class Installer
                 return $res;
             }
         } catch (\Exception $e) {
-            if (!$this->dryRun) {
+            if ($this->executeOperations) {
                 $this->installationManager->notifyInstalls($this->io);
             }
 
             throw $e;
         }
-        if (!$this->dryRun) {
+        if ($this->executeOperations) {
             $this->installationManager->notifyInstalls($this->io);
         }
 
@@ -252,54 +258,54 @@ class Installer
             );
         }
 
-        if (!$this->dryRun) {
-            // write lock
-            if ($this->update) {
-                $localRepo->reload();
+        // write lock
+        if ($this->update && $this->writeLock) {
+            $localRepo->reload();
 
-                $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
-                $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
+            $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
+            $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
 
-                $updatedLock = $this->locker->setLockData(
-                    array_diff($localRepo->getCanonicalPackages(), $devPackages),
-                    $devPackages,
-                    $platformReqs,
-                    $platformDevReqs,
-                    $aliases,
-                    $this->package->getMinimumStability(),
-                    $this->package->getStabilityFlags(),
-                    $this->preferStable || $this->package->getPreferStable(),
-                    $this->preferLowest,
-                    $this->config->get('platform') ?: array()
-                );
-                if ($updatedLock) {
-                    $this->io->writeError('<info>Writing lock file</info>');
-                }
+            $updatedLock = $this->locker->setLockData(
+                array_diff($localRepo->getCanonicalPackages(), $devPackages),
+                $devPackages,
+                $platformReqs,
+                $platformDevReqs,
+                $aliases,
+                $this->package->getMinimumStability(),
+                $this->package->getStabilityFlags(),
+                $this->preferStable || $this->package->getPreferStable(),
+                $this->preferLowest,
+                $this->config->get('platform') ?: array()
+            );
+            if ($updatedLock) {
+                $this->io->writeError('<info>Writing lock file</info>');
+            }
+        }
+
+        if ($this->dumpAutoloader) {
+            // write autoloader
+            if ($this->optimizeAutoloader) {
+                $this->io->writeError('<info>Generating optimized autoload files</info>');
+            } else {
+                $this->io->writeError('<info>Generating autoload files</info>');
             }
 
-            if ($this->dumpAutoloader) {
-                // write autoloader
-                if ($this->optimizeAutoloader) {
-                    $this->io->writeError('<info>Generating optimized autoload files</info>');
-                } else {
-                    $this->io->writeError('<info>Generating autoload files</info>');
-                }
+            $this->autoloadGenerator->setDevMode($this->devMode);
+            $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
+            $this->autoloadGenerator->setRunScripts($this->runScripts);
+            $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+        }
 
-                $this->autoloadGenerator->setDevMode($this->devMode);
-                $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
-                $this->autoloadGenerator->setRunScripts($this->runScripts);
-                $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
-            }
+        if ($this->runScripts) {
+            $devMode = (int) $this->devMode;
+            putenv("COMPOSER_DEV_MODE=$devMode");
 
-            if ($this->runScripts) {
-                $devMode = (int) $this->devMode;
-                putenv("COMPOSER_DEV_MODE=$devMode");
+            // dispatch post event
+            $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
+            $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
+        }
 
-                // dispatch post event
-                $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-                $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
-            }
-
+        if ($this->executeOperations) {
             // force binaries re-generation in case they are missing
             foreach ($localRepo->getPackages() as $package) {
                 $this->installationManager->ensureBinariesPresence($package);
@@ -566,8 +572,8 @@ class Installer
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
-            // output non-alias ops in dry run, output alias ops in debug verbosity
-            if ($this->dryRun && false === strpos($operation->getJobType(), 'Alias')) {
+            // output non-alias ops when not executing operations (i.e. dry run), output alias ops in debug verbosity
+            if (!$this->executeOperations && false === strpos($operation->getJobType(), 'Alias')) {
                 $this->io->writeError('  - ' . $operation);
                 $this->io->writeError('');
             } elseif ($this->io->isDebug() && false !== strpos($operation->getJobType(), 'Alias')) {
@@ -599,12 +605,12 @@ class Installer
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
-            if (!$this->dryRun) {
+            if ($this->executeOperations) {
                 $localRepo->write();
             }
         }
 
-        if (!$this->dryRun) {
+        if ($this->executeOperations) {
             // force source/dist urls to be updated for all packages
             $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
             $localRepo->write();
@@ -1521,6 +1527,8 @@ class Installer
     /**
      * set whether to run autoloader or not
      *
+     * This is disabled implicitly when enabling dryRun
+     *
      * @param  bool      $dumpAutoloader
      * @return Installer
      */
@@ -1533,6 +1541,8 @@ class Installer
 
     /**
      * set whether to run scripts or not
+     *
+     * This is disabled implicitly when enabling dryRun
      *
      * @param  bool      $runScripts
      * @return Installer
@@ -1642,6 +1652,36 @@ class Installer
     public function setPreferLowest($preferLowest = true)
     {
         $this->preferLowest = (boolean) $preferLowest;
+
+        return $this;
+    }
+
+    /**
+     * Should the lock file be updated when updating?
+     *
+     * This is disabled implicitly when enabling dryRun
+     *
+     * @param  bool      $writeLock
+     * @return Installer
+     */
+    public function setWriteLock($writeLock = true)
+    {
+        $this->writeLock = (boolean) $writeLock;
+
+        return $this;
+    }
+
+    /**
+     * Should the operations (packge install, update and removal) be executed on disk?
+     *
+     * This is disabled implicitly when enabling dryRun
+     *
+     * @param  bool      $executeOperations
+     * @return Installer
+     */
+    public function setExecuteOperations($executeOperations = true)
+    {
+        $this->executeOperations = (boolean) $executeOperations;
 
         return $this;
     }
