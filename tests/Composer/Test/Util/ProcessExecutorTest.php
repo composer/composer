@@ -40,7 +40,7 @@ class ProcessExecutorTest extends TestCase
         $io = $this->getMock('Composer\IO\IOInterface');
         $io->expects($this->once())
             ->method('write')
-            ->with($this->equalTo('foo'.PHP_EOL));
+            ->with($this->equalTo('foo'.PHP_EOL), false);
 
         $process = new ProcessExecutor($io);
         $process->execute('echo foo');

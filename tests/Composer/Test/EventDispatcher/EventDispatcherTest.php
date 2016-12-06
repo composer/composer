@@ -356,7 +356,7 @@ class EventDispatcherTest extends TestCase
 
         $io->expects($this->once())
             ->method('write')
-            ->with($this->equalTo('foo'.PHP_EOL));
+            ->with($this->equalTo('foo'.PHP_EOL), false);
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }

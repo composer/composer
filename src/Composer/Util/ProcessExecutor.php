@@ -108,7 +108,7 @@ class ProcessExecutor
         if (Process::ERR === $type) {
             $this->io->writeError($buffer);
         } else {
-            $this->io->write($buffer);
+            $this->io->write($buffer, false);
         }
     }
 
