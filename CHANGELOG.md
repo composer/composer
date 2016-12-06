@@ -1,4 +1,4 @@
-### [1.3.0-RC] - 2016-11-XX
+### [1.3.0-RC] - 2016-12-XX
 
   * Added `--minor-only` to the `outdated` command to only show updates to minor versions and ignore new major versions
   * Added workaround for xdebug performance impact by restarting PHP without xdebug automatically in case it is enabled
@@ -9,6 +9,13 @@
   * Fixed output from zip and rar leaking out when an error occured
   * Removed `hash` from composer.lock, only `content-hash` is now used which should reduce conflicts
   * Minor fixes and performance improvements
+
+### [1.2.4] - 2016-12-06
+
+  * Fixed regression in output handling of scripts from 1.2.3
+  * Fixed support for LibreSSL detection as lib-openssl
+  * Fixed issue with Zend Guard in the autoloader bootstrapping
+  * Fixed support for loading partial provider repositories
 
 ### [1.2.3] - 2016-12-01
 
@@ -458,7 +465,8 @@
 
   * Initial release
 
-[1.3.0-RC]: https://github.com/composer/composer/compare/1.2.3...1.3.0-RC
+[1.3.0-RC]: https://github.com/composer/composer/compare/1.2.4...1.3.0-RC
+[1.2.4]: https://github.com/composer/composer/compare/1.2.3...1.2.4
 [1.2.3]: https://github.com/composer/composer/compare/1.2.2...1.2.3
 [1.2.2]: https://github.com/composer/composer/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/composer/composer/compare/1.2.0...1.2.1

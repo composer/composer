@@ -785,7 +785,20 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $this->partialPackagesByName = array();
         foreach ($rootData['packages'] as $package => $versions) {
-            $this->partialPackagesByName[strtolower($package)] = $versions;
+            $package = strtolower($package);
+            foreach ($versions as $version) {
+                $this->partialPackagesByName[$package][] = $version;
+                if (!empty($version['provide']) && is_array($version['provide'])) {
+                    foreach ($version['provide'] as $provided => $providedVersion) {
+                        $this->partialPackagesByName[strtolower($provided)][] = $version;
+                    }
+                }
+                if (!empty($version['replace']) && is_array($version['replace'])) {
+                    foreach ($version['replace'] as $provided => $providedVersion) {
+                        $this->partialPackagesByName[strtolower($provided)][] = $version;
+                    }
+                }
+            }
         }
 
         // wipe rootData as it is fully consumed at this point and this saves some memory
