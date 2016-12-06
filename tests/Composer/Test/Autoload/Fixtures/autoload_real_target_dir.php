@@ -43,6 +43,11 @@ class ComposerAutoloaderInitTargetDir
             if ($classMap) {
                 $loader->addClassMap($classMap);
             }
+
+            $aliases = require __DIR__ . '/autoload_aliases.php';
+            if ($aliases) {
+                $loader->addAliases($aliases);
+            }
         }
 
         spl_autoload_register(array('ComposerAutoloaderInitTargetDir', 'autoload'), true, true);

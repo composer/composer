@@ -55,6 +55,7 @@ class ClassLoader
     private $classMap = array();
     private $classMapAuthoritative = false;
     private $missingClasses = array();
+    private $aliases = array();
 
     public function getPrefixes()
     {
@@ -85,6 +86,11 @@ class ClassLoader
         return $this->classMap;
     }
 
+    public function getAliases()
+    {
+        return $this->aliases;
+    }
+
     /**
      * @param array $classMap Class to filename map
      */
@@ -94,6 +100,15 @@ class ClassLoader
             $this->classMap = array_merge($this->classMap, $classMap);
         } else {
             $this->classMap = $classMap;
+        }
+    }
+
+    public function addAliases(array $aliases)
+    {
+        if ($this->aliases) {
+            $this->aliases = array_merge($this->aliases, $aliases);
+        } else {
+            $this->aliases = $aliases;
         }
     }
 
@@ -299,6 +314,12 @@ class ClassLoader
     {
         if ($file = $this->findFile($class)) {
             includeFile($file);
+
+            return true;
+        }
+
+        if (isset($this->aliases[$class])) {
+            class_alias($this->aliases[$class], $class);
 
             return true;
         }

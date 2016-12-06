@@ -32,6 +32,7 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
         $loader->add('Namespaced\\', __DIR__ . '/Fixtures');
         $loader->add('Pearlike_', __DIR__ . '/Fixtures');
         $loader->addPsr4('ShinyVendor\\ShinyPackage\\', __DIR__ . '/Fixtures');
+        $loader->addAliases(array('Aliased_Class' => 'ShinyVendor\\ShinyPackage\\SubNamespace\\Foo'));
         $loader->loadClass($class);
         $this->assertTrue(class_exists($class, false), "->loadClass() loads '$class'");
     }
@@ -47,6 +48,7 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
             array('Namespaced\\Foo'),
             array('Pearlike_Foo'),
             array('ShinyVendor\\ShinyPackage\\SubNamespace\\Foo'),
+            array('Aliased_Class'),
         );
     }
 

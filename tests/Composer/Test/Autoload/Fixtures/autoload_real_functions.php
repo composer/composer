@@ -43,6 +43,11 @@ class ComposerAutoloaderInitFilesAutoload
             if ($classMap) {
                 $loader->addClassMap($classMap);
             }
+
+            $aliases = require __DIR__ . '/autoload_aliases.php';
+            if ($aliases) {
+                $loader->addAliases($aliases);
+            }
         }
 
         $loader->register(true);
