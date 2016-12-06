@@ -35,7 +35,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * {@inheritdoc}
      */
-    public function download(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path, $output = true)
     {
         $url = $package->getDistUrl();
         $realUrl = realpath($url);
@@ -75,18 +75,21 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         $fileSystem = new Filesystem();
         $this->filesystem->removeDirectory($path);
 
-        $this->io->writeError(sprintf(
-            '  - Installing <info>%s</info> (<comment>%s</comment>)',
-            $package->getName(),
-            $package->getFullPrettyVersion()
-        ));
+        if ($output) {
+            $this->io->writeError(sprintf(
+                '  - Installing <info>%s</info> (<comment>%s</comment>)',
+                $package->getName(),
+                $package->getFullPrettyVersion()
+            ), false);
+        }
 
+        $isFallback = false;
         if (self::STRATEGY_SYMLINK == $currentStrategy) {
             try {
                 if (Platform::isWindows()) {
                     // Implement symlinks as NTFS junctions on Windows
                     $this->filesystem->junction($realUrl, $path);
-                    $this->io->writeError(sprintf('    Junctioned from %s', $url));
+                    $this->io->writeError(sprintf(' Junctioned from %s', $url), false);
                 } else {
                     $absolutePath = $path;
                     if (!$this->filesystem->isAbsolutePath($absolutePath)) {
@@ -95,12 +98,14 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
                     $path = rtrim($path, "/");
                     $fileSystem->symlink($shortestPath, $path);
-                    $this->io->writeError(sprintf('    Symlinked from %s', $url));
+                    $this->io->writeError(sprintf(' Symlinked from %s', $url), false);
                 }
             } catch (IOException $e) {
                 if (in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
+                    $this->io->writeError('');
                     $this->io->writeError('    <error>Symlink failed, fallback to use mirroring!</error>');
                     $currentStrategy = self::STRATEGY_MIRROR;
+                    $isFallback = true;
                 } else {
                     throw new \RuntimeException(sprintf('Symlink from "%s" to "%s" failed!', $realUrl, $path));
                 }
@@ -110,7 +115,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         // Fallback if symlink failed or if symlink is not allowed for the package
         if (self::STRATEGY_MIRROR == $currentStrategy) {
             $fileSystem->mirror($realUrl, $path);
-            $this->io->writeError(sprintf('    Mirrored from %s', $url));
+            $this->io->writeError(sprintf('%s Mirrored from %s', $isFallback ? '   ' : '', $url), false);
         }
 
         $this->io->writeError('');
@@ -119,7 +124,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * {@inheritDoc}
      */
-    public function remove(PackageInterface $package, $path)
+    public function remove(PackageInterface $package, $path, $output = true)
     {
         /**
          * For junctions don't blindly rely on Filesystem::removeDirectory as it may be overzealous. If a process
@@ -127,9 +132,11 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
          * is disastrous within a junction. So in that case we have no other real choice but to fail hard.
          */
         if (Platform::isWindows() && $this->filesystem->isJunction($path)) {
-            $this->io->writeError("  - Removing junction for <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+            if ($output) {
+                $this->io->writeError("  - Removing junction for <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+            }
             if (!$this->filesystem->removeJunction($path)) {
-                $this->io->writeError("<warn>Could not remove junction at " . $path . " - is another process locking it?</warn>");
+                $this->io->writeError("    <warn>Could not remove junction at " . $path . " - is another process locking it?</warn>");
                 throw new \RuntimeException('Could not reliably remove junction for package ' . $package->getName());
             }
         } else {

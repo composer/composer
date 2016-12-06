@@ -575,10 +575,8 @@ class Installer
             // output non-alias ops when not executing operations (i.e. dry run), output alias ops in debug verbosity
             if (!$this->executeOperations && false === strpos($operation->getJobType(), 'Alias')) {
                 $this->io->writeError('  - ' . $operation);
-                $this->io->writeError('');
             } elseif ($this->io->isDebug() && false !== strpos($operation->getJobType(), 'Alias')) {
                 $this->io->writeError('  - ' . $operation);
-                $this->io->writeError('');
             }
 
             $this->installationManager->execute($localRepo, $operation);

@@ -41,7 +41,7 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path, $output = true)
     {
         if (null === self::$hasSystemUnzip) {
             $finder = new ExecutableFinder;
@@ -56,7 +56,7 @@ class ZipDownloader extends ArchiveDownloader
             throw new \RuntimeException($error);
         }
 
-        return parent::download($package, $path);
+        return parent::download($package, $path, $output);
     }
 
     protected function extract($file, $path)
