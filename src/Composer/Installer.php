@@ -105,6 +105,7 @@ class Installer
     protected $preferDist = false;
     protected $optimizeAutoloader = false;
     protected $classMapAuthoritative = false;
+    protected $apcuAutoloader = false;
     protected $devMode = false;
     protected $dryRun = false;
     protected $verbose = false;
@@ -292,6 +293,7 @@ class Installer
 
             $this->autoloadGenerator->setDevMode($this->devMode);
             $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
+            $this->autoloadGenerator->setApcu($this->apcuAutoloader);
             $this->autoloadGenerator->setRunScripts($this->runScripts);
             $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
         }
@@ -1494,6 +1496,19 @@ class Installer
             // Force optimizeAutoloader when classmap is authoritative
             $this->setOptimizeAutoloader(true);
         }
+
+        return $this;
+    }
+
+    /**
+     * Whether or not generated autoloader considers APCu caching.
+     *
+     * @param  bool      $apcuAutoloader
+     * @return Installer
+     */
+    public function setApcuAutoloader($apcuAutoloader = false)
+    {
+        $this->apcuAutoloader = (boolean) $apcuAutoloader;
 
         return $this;
     }

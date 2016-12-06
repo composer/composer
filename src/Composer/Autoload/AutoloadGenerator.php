@@ -51,6 +51,11 @@ class AutoloadGenerator
     /**
      * @var bool
      */
+    private $apcu = false;
+
+    /**
+     * @var bool
+     */
     private $runScripts = false;
 
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
@@ -73,6 +78,16 @@ class AutoloadGenerator
     public function setClassMapAuthoritative($classMapAuthoritative)
     {
         $this->classMapAuthoritative = (boolean) $classMapAuthoritative;
+    }
+
+    /**
+     * Whether or not generated autoloader considers APCu caching.
+     *
+     * @param bool $apcu
+     */
+    public function setApcu($apcu)
+    {
+        $this->apcu = (boolean) $apcu;
     }
 
     /**
@@ -631,6 +646,14 @@ CLASSMAP;
         $loader->setClassMapAuthoritative(true);
 
 CLASSMAPAUTHORITATIVE;
+        }
+
+        if ($this->apcu) {
+            $apcuPrefix = substr(base64_encode(md5(uniqid('', true), true)), 0, -3);
+            $file .= <<<APCU
+        \$loader->setApcuPrefix('$apcuPrefix');
+
+APCU;
         }
 
         if ($useGlobalIncludePath) {
