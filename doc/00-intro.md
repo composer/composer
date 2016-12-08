@@ -130,7 +130,7 @@ to download `composer.phar`.
 Create a new `composer.bat` file alongside `composer.phar`:
 
 ```sh
-C:\bin>echo @php "%~dp0composer.phar" %*>composer.bat
+C:\bin>echo "@ECHO OFF" "php '%~dp0composer.phar' %*" > composer.bat
 ```
 
 Add the directory to your PATH environment variable if it isn't already.
