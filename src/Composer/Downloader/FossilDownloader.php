@@ -31,7 +31,7 @@ class FossilDownloader extends VcsDownloader
         $url = ProcessExecutor::escape($url);
         $ref = ProcessExecutor::escape($package->getSourceReference());
         $repoFile = $path . '.fossil';
-        $this->io->writeError("    Cloning ".$package->getSourceReference($repoFile));
+        $this->io->writeError("    Cloning ".$package->getSourceReference());
         $command = sprintf('fossil clone %s %s', $url, ProcessExecutor::escape($repoFile));
         if (0 !== $this->process->execute($command, $ignoredOutput)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());

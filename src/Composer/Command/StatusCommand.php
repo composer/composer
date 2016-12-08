@@ -89,7 +89,7 @@ EOT
                     $errors[$targetDir] = $targetDir . ' is a symbolic link.';
                 }
 
-                if ($changes = $downloader->getLocalChanges($package, $targetDir, true)) {
+                if ($changes = $downloader->getLocalChanges($package, $targetDir)) {
                     $errors[$targetDir] = $changes;
                 }
             }
