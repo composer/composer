@@ -163,7 +163,7 @@ abstract class BitbucketDriver extends VcsDriver
         } catch (TransportException $e) {
             $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process, $this->remoteFilesystem);
 
-            if (403 === $e->getCode()) {
+            if (403 === $e->getCode() || (401 === $e->getCode() && strpos($e->getMessage(), 'Could not authenticate against') === 0)) {
                 if (!$this->io->hasAuthentication($this->originUrl)
                     && $bitbucketUtil->authorizeOAuth($this->originUrl)
                 ) {
