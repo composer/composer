@@ -1,4 +1,4 @@
-### [1.3.0-RC] - 2016-12-XX
+### [1.3.0-RC] - 2016-12-11
 
   * Added workaround for xdebug performance impact by restarting PHP without xdebug automatically in case it is enabled
   * Added `--minor-only` to the `outdated` command to only show updates to minor versions and ignore new major versions
