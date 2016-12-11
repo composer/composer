@@ -1,11 +1,17 @@
 ### [1.3.0-RC] - 2016-12-XX
 
-  * Added `--minor-only` to the `outdated` command to only show updates to minor versions and ignore new major versions
   * Added workaround for xdebug performance impact by restarting PHP without xdebug automatically in case it is enabled
-  * Added `COMPOSER_ALLOW_XDEBUG` env var to circumvent the xdebug-disabling behavior
-  * Added `COMPOSER_MIRROR_PATH_REPOS` env var to force mirroring of path repositories vs symlinking
+  * Added `--minor-only` to the `outdated` command to only show updates to minor versions and ignore new major versions
+  * Added `--apcu-autoloader` to the `update`/`install` commands and `--apcu` to `dump-autoload` to enable an APCu-caching autoloader, which can be more efficient than --classmap-authoritative if you attempt to autoload many classes that do not exist, or if you can not use authoritative classmaps for some reason
+  * Added summary of operations to be executed before they run, and made execution output more compact
   * Added `php-debug` and `php-zts` virtual platform packages
   * Added `gitlab-token` auth config for GitLab private tokens
+  * Added `--strict` to the `outdated` command to return a non-zero exit code when there are outdated packages
+  * Added ability to call php scripts using the current php interpreter (instead of finding php in PATH by default) in script handlers via `@php ...`
+  * Added `COMPOSER_ALLOW_XDEBUG` env var to circumvent the xdebug-disabling behavior
+  * Added `COMPOSER_MIRROR_PATH_REPOS` env var to force mirroring of path repositories vs symlinking
+  * Added `COMPOSER_DEV_MODE` env var that is set by Composer to forward the dev mode to script handlers
+  * Fixed support for git 2.11
   * Fixed output from zip and rar leaking out when an error occured
   * Removed `hash` from composer.lock, only `content-hash` is now used which should reduce conflicts
   * Minor fixes and performance improvements
