@@ -496,7 +496,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     protected function getShortHash($reference)
     {
         if (!$this->io->isVerbose() && preg_match('{^[0-9a-f]{40}$}', $reference)) {
-            return substr($reference, 10);
+            return substr($reference, 0, 10);
         }
 
         return $reference;
