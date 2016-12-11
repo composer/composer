@@ -276,7 +276,7 @@ class RemoteFilesystem
         }
 
         if ($this->progress && !$isRedirect) {
-            $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
+            $this->io->writeError(" Downloading: <comment>Connecting...</comment>", false);
         }
 
         $errorMessage = '';
@@ -325,6 +325,7 @@ class RemoteFilesystem
         if (isset($e) && !$this->retry) {
             if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
                 $this->degradedMode = true;
+                $this->io->writeError('');
                 $this->io->writeError(array(
                     '<error>'.$e->getMessage().'</error>',
                     '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
@@ -366,7 +367,7 @@ class RemoteFilesystem
         if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
             if (!$this->retry) {
                 if ($this->progress && !$this->retry && !$isRedirect) {
-                    $this->io->overwriteError("    Downloading: <error>Failed</error>");
+                    $this->io->overwriteError(" Downloading: <error>Failed</error>", false);
                 }
 
                 $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
@@ -379,7 +380,7 @@ class RemoteFilesystem
         }
 
         if ($this->progress && !$this->retry && !$isRedirect) {
-            $this->io->overwriteError("    Downloading: ".($result === false ? '<error>Failed</error>' : '<comment>100%</comment>'));
+            $this->io->overwriteError(" Downloading: ".($result === false ? '<error>Failed</error>' : '<comment>100%</comment>'), false);
         }
 
         // decode gzip
@@ -405,6 +406,7 @@ class RemoteFilesystem
 
                     $this->degradedMode = true;
                     $this->io->writeError(array(
+                        '',
                         '<error>Failed to decode response: '.$e->getMessage().'</error>',
                         '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
                     ));
@@ -461,6 +463,7 @@ class RemoteFilesystem
                     $this->retry = true;
                 }
             } else {
+                $this->io->writeError('');
                 $this->io->writeError(sprintf(
                     '<error>Your version of PHP, %s, is affected by CVE-2013-6420 and cannot safely perform certificate validation, we strongly suggest you upgrade.</error>',
                     PHP_VERSION
@@ -490,6 +493,7 @@ class RemoteFilesystem
 
             if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
                 $this->degradedMode = true;
+                $this->io->writeError('');
                 $this->io->writeError(array(
                     '<error>'.$e->getMessage().'</error>',
                     '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
@@ -563,7 +567,7 @@ class RemoteFilesystem
 
                     if ((0 === $progression % 5) && 100 !== $progression && $progression !== $this->lastProgress) {
                         $this->lastProgress = $progression;
-                        $this->io->overwriteError("    Downloading: <comment>$progression%</comment>", false);
+                        $this->io->overwriteError(" Downloading: <comment>$progression%</comment>", false);
                     }
                 }
                 break;
@@ -638,7 +642,8 @@ class RemoteFilesystem
                 throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
             }
 
-            $this->io->overwriteError('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+            $this->io->overwriteError('');
+            $this->io->writeError('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');
             $this->io->setAuthentication($this->originUrl, $username, $password);
@@ -681,6 +686,7 @@ class RemoteFilesystem
                 // Handle subjectAltName on lesser PHP's.
                 $certMap = $this->peerCertificateMap[$urlAuthority];
 
+                $this->io->writeError('', true, IOInterface::DEBUG);
                 $this->io->writeError(sprintf(
                     'Using <info>%s</info> as CN for subjectAltName enabled host <info>%s</info>',
                     $certMap['cn'],
@@ -766,6 +772,7 @@ class RemoteFilesystem
         if (!empty($targetUrl)) {
             $this->redirects++;
 
+            $this->io->writeError('', true, IOInterface::DEBUG);
             $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $targetUrl), true, IOInterface::DEBUG);
 
             $additionalOptions['redirects'] = $this->redirects;
