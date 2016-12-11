@@ -49,7 +49,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         // --dissociate option is only available since git 2.3.0-rc0
         $gitVersion = $this->gitUtil->getVersion();
-        $msg = " Cloning ".$ref;
+        $msg = " Cloning ".$this->getShortHash($ref);
         if ($gitVersion && version_compare($gitVersion, '2.3.0-rc0', '>=')) {
             $this->io->writeError('', true, IOInterface::DEBUG);
             $this->io->writeError(sprintf('    Cloning to cache at %s', ProcessExecutor::escape($cachePath)), true, IOInterface::DEBUG);
@@ -57,7 +57,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                 $this->gitUtil->syncMirror($url, $cachePath);
                 if (is_dir($cachePath)) {
                     $cacheOptions = sprintf('--dissociate --reference %s ', ProcessExecutor::escape($cachePath));
-                    $msg = " Cloning ".$ref.' from cache';
+                    $msg = " Cloning ".$this->getShortHash($ref).' from cache';
                 }
             } catch (\RuntimeException $e) {}
         }
@@ -105,7 +105,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         $ref = $target->getSourceReference();
-        $this->io->writeError(" Checking out ".$ref);
+        $this->io->writeError(" Checking out ".$this->getShortHash($ref));
         $command = 'git remote set-url composer %s && git rev-parse --quiet --verify %s^{commit} || (git fetch composer && git fetch --tags composer)';
 
         $commandCallable = function ($url) use ($command, $ref) {
@@ -491,5 +491,14 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $path = $this->normalizePath($path);
 
         return is_dir($path.'/.git');
+    }
+
+    protected function getShortHash($reference)
+    {
+        if (!$this->io->isVerbose() && preg_match('{^[0-9a-f]{40}$}', $reference)) {
+            return substr($reference, 10);
+        }
+
+        return $reference;
     }
 }
