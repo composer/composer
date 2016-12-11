@@ -233,6 +233,15 @@ class EventDispatcher
                     }
                 }
 
+                if (substr($exec, 0, 5) === '@php ') {
+                    $finder = new PhpExecutableFinder();
+                    $phpPath = $finder->find();
+                    if (!$phpPath) {
+                        throw new \RuntimeException('Failed to locate PHP binary to execute "'.$exec.'"');
+                    }
+                    $exec = $phpPath . ' ' . substr($exec, 5);
+                }
+
                 if (0 !== ($exitCode = $this->process->execute($exec))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()));
 
@@ -460,7 +469,7 @@ class EventDispatcher
      */
     protected function isComposerScript($callable)
     {
-        return '@' === substr($callable, 0, 1);
+        return '@composer ' === substr($callable, 0, 10);
     }
 
     /**
