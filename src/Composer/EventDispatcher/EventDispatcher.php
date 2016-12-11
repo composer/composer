@@ -469,7 +469,7 @@ class EventDispatcher
      */
     protected function isComposerScript($callable)
     {
-        return '@composer ' === substr($callable, 0, 10);
+        return '@' === substr($callable, 0, 1) && '@php ' !== substr($callable, 0, 5);
     }
 
     /**
