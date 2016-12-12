@@ -224,7 +224,7 @@ To check where the PHP configuration is, and then use a similar script:
 
 ```sh
 mkdir /usr/local/etc/php/7.0/conf.dis
-echo 'function composer() { COMPOSER="$(which composer)" || { echo "Could not find composer in path" >&2 ; return 1 ; } && mv /usr/local/etc/php/7.0/conf.d/ext-xdebug.ini /usr/local/etc/php/7.0/conf.dis ; $COMPOSER "$@" ; STATUS=$? ; mv /usr/local/etc/php/7.0/conf.dis/ext-xdebug.ini /usr/local/etc/php/7.0/conf.d ; return $STATUS ; }' >> ~/.bash_aliases
+echo 'function composer() { COMPOSER="$(which composer)" || { echo "Could not find composer in path" >&2 ; return 1 ; } && mv /usr/local/etc/php/7.0/conf.d/ext-xdebug.ini /usr/local/etc/php/7.0/conf.dis/ ; $COMPOSER "$@" ; STATUS=$? ; mv /usr/local/etc/php/7.0/conf.dis/ext-xdebug.ini /usr/local/etc/php/7.0/conf.d/ ; return $STATUS ; }' >> ~/.bash_aliases
 . ~/.bash_aliases
 ```
 
