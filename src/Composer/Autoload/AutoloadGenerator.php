@@ -106,12 +106,12 @@ class AutoloadGenerator
         $vendorPath = $filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
-        $targetDir = $vendorPath.'/'.$targetDir;
+        $targetDir = $filesystem->normalizePath(realpath(realpath($vendorPath.'/'.$targetDir)));
         $filesystem->ensureDirectoryExists($targetDir);
 
-        $vendorPathCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
+        $vendorPathCode = $filesystem->findShortestPathCode($targetDir, $vendorPath, true);
         $vendorPathCode52 = str_replace('__DIR__', 'dirname(__FILE__)', $vendorPathCode);
-        $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, realpath($targetDir), true);
+        $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, $targetDir, true);
 
         $appBaseDirCode = $filesystem->findShortestPathCode($vendorPath, $basePath, true);
         $appBaseDirCode = str_replace('__DIR__', '$vendorDir', $appBaseDirCode);
@@ -148,7 +148,7 @@ EOF;
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
             $exportedPaths = array();
             foreach ($paths as $path) {
-                $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
+                $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $vendorPath, $filesystem->normalizePath($path));
             }
             $exportedPrefix = var_export($namespace, true);
             $namespacesFile .= "    $exportedPrefix => ";
@@ -160,7 +160,7 @@ EOF;
         foreach ($autoloads['psr-4'] as $namespace => $paths) {
             $exportedPaths = array();
             foreach ($paths as $path) {
-                $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
+                $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $vendorPath, $filesystem->normalizePath($path));
             }
             $exportedPrefix = var_export($namespace, true);
             $psr4File .= "    $exportedPrefix => ";
@@ -734,8 +734,8 @@ HEADER;
 
         $filesystem = new Filesystem();
 
-        $vendorPathCode = ' => ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true) . " . '/";
-        $appBaseDirCode = ' => ' . $filesystem->findShortestPathCode(realpath($targetDir), $basePath, true, true) . " . '/";
+        $vendorPathCode = ' => ' . $filesystem->findShortestPathCode($targetDir, $vendorPath, true, true) . " . '/";
+        $appBaseDirCode = ' => ' . $filesystem->findShortestPathCode($targetDir, $basePath, true, true) . " . '/";
 
         $absoluteVendorPathCode = ' => ' . substr(var_export(rtrim($vendorDir, '\\/') . '/', true), 0, -1);
         $absoluteAppBaseDirCode = ' => ' . substr(var_export(rtrim($baseDir, '\\/') . '/', true), 0, -1);
