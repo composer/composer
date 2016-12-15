@@ -91,6 +91,7 @@ class ClassLoader
      */
     public function addClassMap(array $classMap)
     {
+        $this->missingClasses = array();
         if ($this->classMap) {
             $this->classMap = array_merge($this->classMap, $classMap);
         } else {
@@ -108,6 +109,7 @@ class ClassLoader
      */
     public function add($prefix, $paths, $prepend = false)
     {
+        $this->missingClasses = array();
         if (!$prefix) {
             if ($prepend) {
                 $this->fallbackDirsPsr0 = array_merge(
@@ -155,6 +157,7 @@ class ClassLoader
      */
     public function addPsr4($prefix, $paths, $prepend = false)
     {
+        $this->missingClasses = array();
         if (!$prefix) {
             // Register directories for the root namespace.
             if ($prepend) {
@@ -200,6 +203,7 @@ class ClassLoader
      */
     public function set($prefix, $paths)
     {
+        $this->missingClasses = array();
         if (!$prefix) {
             $this->fallbackDirsPsr0 = (array) $paths;
         } else {
@@ -218,6 +222,7 @@ class ClassLoader
      */
     public function setPsr4($prefix, $paths)
     {
+        $this->missingClasses = array();
         if (!$prefix) {
             $this->fallbackDirsPsr4 = (array) $paths;
         } else {
@@ -237,6 +242,7 @@ class ClassLoader
      */
     public function setUseIncludePath($useIncludePath)
     {
+        $this->missingClasses = array();
         $this->useIncludePath = $useIncludePath;
     }
 

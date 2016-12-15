@@ -58,4 +58,39 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
         $loader = new ClassLoader();
         $this->assertEmpty($loader->getPrefixes());
     }
+
+    /**
+     * Tests that the missing classes cache is purged when the autoloader is modified.
+     *
+     * @dataProvider getMissingLoadClassTests
+     *
+     * @param string $class            The fully-qualified class name to test, without preceding namespace separator.
+     */
+    public function testMissingClassesCachePurge($class)
+    {
+        $loader = new ClassLoader();
+
+        $isLoaded = $loader->loadClass($class);
+        $this->assertNull($isLoaded, "->loadClass() does not load '$class'");
+
+        $loader->add('Namespaced\\', __DIR__ . '/Fixtures');
+        $loader->add('Pearlike_', __DIR__ . '/Fixtures');
+        $loader->addPsr4('ShinyVendor\\ShinyPackage\\', __DIR__ . '/Fixtures');
+        $isLoaded = $loader->loadClass($class);
+        $this->assertTrue($isLoaded, "->loadClass() loads '$class'");
+    }
+
+    /**
+     * Provides arguments for ->testMissingClassesCachePurge().
+     *
+     * @return array Array of parameter sets to test with.
+     */
+    public function getMissingLoadClassTests()
+    {
+        return array(
+            array('Namespaced\\Baz'),
+            array('Pearlike_Baz'),
+            array('ShinyVendor\\ShinyPackage\\SubNamespace\\Bar'),
+        );
+    }
 }
