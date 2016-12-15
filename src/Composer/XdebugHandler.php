@@ -21,11 +21,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 class XdebugHandler
 {
     const ENV_ALLOW = 'COMPOSER_ALLOW_XDEBUG';
+    const ENV_VERSION = 'COMPOSER_XDEBUG_VERSION';
     const RESTART_ID = 'internal';
 
     private $output;
     private $loaded;
     private $envScanDir;
+    private $version;
     private $tmpIni;
 
     /**
@@ -36,6 +38,11 @@ class XdebugHandler
         $this->output = $output;
         $this->loaded = extension_loaded('xdebug');
         $this->envScanDir = getenv('PHP_INI_SCAN_DIR');
+
+        if ($this->loaded) {
+            $ext = new \ReflectionExtension('xdebug');
+            $this->version = strval($ext->getVersion());
+        }
     }
 
     /**
@@ -247,6 +254,11 @@ class XdebugHandler
 
         // Make original inis available to restarted process
         if (!putenv(IniHelper::ENV_ORIGINAL.'='.implode(PATH_SEPARATOR, $iniPaths))) {
+            return false;
+        }
+
+        // Make xdebug version available to restarted process
+        if (!putenv(self::ENV_VERSION.'='.$this->version)) {
             return false;
         }
 
