@@ -445,7 +445,7 @@ class Filesystem
         $absolute = false;
 
         // extract a prefix being a protocol://host, protocol:, protocol://drive: or simply drive:
-        if (preg_match('{^( (?P<scheme> [a-z][0-9a-z]*: )? (?: // (?P<host>[^/]+) )? )}ix', $path, $match)) {
+        if (preg_match('{^( [0-9a-z]{2,}+: (?: // (?: [a-z]: )? )? | [a-z]: | //(?=[a-z0-9]) )}ix', $path, $match)) {
             $prefix = $match[1];
             $path = substr($path, strlen($prefix));
         }

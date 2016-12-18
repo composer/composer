@@ -106,8 +106,10 @@ class AutoloadGenerator
         $vendorPath = $filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
-        $targetDir = $filesystem->normalizePath(realpath(realpath($vendorPath.'/'.$targetDir)));
+
+        $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
+        $targetDir = $filesystem->normalizePath(realpath(realpath($targetDir)));
 
         $vendorPathCode = $filesystem->findShortestPathCode($targetDir, $vendorPath, true);
         $vendorPathCode52 = str_replace('__DIR__', 'dirname(__FILE__)', $vendorPathCode);
