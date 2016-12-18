@@ -18,6 +18,7 @@ class XdebugHandlerMock extends XdebugHandler
 {
     public $restarted;
     public $output;
+    public $testVersion = '2.5.0';
 
     public function __construct($loaded = null)
     {
@@ -26,9 +27,15 @@ class XdebugHandlerMock extends XdebugHandler
 
         $loaded = null === $loaded ? true: $loaded;
         $class = new \ReflectionClass(get_parent_class($this));
+
         $prop = $class->getProperty('loaded');
         $prop->setAccessible(true);
         $prop->setValue($this, $loaded);
+
+        $prop = $class->getProperty('version');
+        $prop->setAccessible(true);
+        $version = $loaded ? $this->testVersion : '';
+        $prop->setValue($this, $version);
 
         $this->restarted = false;
     }

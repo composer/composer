@@ -106,11 +106,30 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('', getenv('PHP_INI_SCAN_DIR'));
     }
 
+    public function testEnvVersionWhenLoaded()
+    {
+        $loaded = true;
+
+        $xdebug = new XdebugHandlerMock($loaded);
+        $xdebug->check();
+        $this->assertEquals($xdebug->testVersion, getenv(XdebugHandlerMock::ENV_VERSION));
+    }
+
+    public function testEnvVersionWhenNotLoaded()
+    {
+        $loaded = false;
+
+        $xdebug = new XdebugHandlerMock($loaded);
+        $xdebug->check();
+        $this->assertEquals(false, getenv(XdebugHandlerMock::ENV_VERSION));
+    }
+
     public static function setUpBeforeClass()
     {
         // Save current state
         $names = array(
             XdebugHandlerMock::ENV_ALLOW,
+            XdebugHandlerMock::ENV_VERSION,
             'PHP_INI_SCAN_DIR',
             IniHelper::ENV_ORIGINAL,
         );
@@ -136,6 +155,7 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
     {
         // Ensure env is unset
         putenv(XdebugHandlerMock::ENV_ALLOW);
+        putenv(XdebugHandlerMock::ENV_VERSION);
         putenv('PHP_INI_SCAN_DIR');
         putenv(IniHelper::ENV_ORIGINAL);
     }

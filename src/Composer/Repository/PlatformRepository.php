@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\XdebugHandler;
 use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -114,26 +115,15 @@ class PlatformRepository extends ArrayRepository
             if (in_array($name, array('standard', 'Core'))) {
                 continue;
             }
-            $extraDescription = null;
 
             $reflExt = new \ReflectionExtension($name);
-            try {
-                $prettyVersion = $reflExt->getVersion();
-                $version = $versionParser->normalize($prettyVersion);
-            } catch (\UnexpectedValueException $e) {
-                $extraDescription = ' (actual version: '.$prettyVersion.')';
-                if (preg_match('{^(\d+\.\d+\.\d+(?:\.\d+)?)}', $prettyVersion, $match)) {
-                    $prettyVersion = $match[1];
-                } else {
-                    $prettyVersion = '0';
-                }
-                $version = $versionParser->normalize($prettyVersion);
-            }
+            $prettyVersion = $reflExt->getVersion();
+            $this->addExtension($versionParser, $name, $prettyVersion);
+        }
 
-            $packageName = $this->buildPackageName($name);
-            $ext = new CompletePackage($packageName, $version, $prettyVersion);
-            $ext->setDescription('The '.$name.' PHP extension' . $extraDescription);
-            $this->addPackage($ext);
+        // Check for xdebug in a restarted process
+        if ($prettyVersion = strval(getenv(XdebugHandler::ENV_VERSION))) {
+            $this->addExtension($versionParser, 'xdebug', $prettyVersion);
         }
 
         // Another quick loop, just for possible libraries
@@ -253,6 +243,35 @@ class PlatformRepository extends ArrayRepository
             return;
         }
         parent::addPackage($package);
+    }
+
+    /**
+     * Parses the version and adds a new package to the repository
+     *
+     * @param VersionParser $versionParser
+     * @param string $name
+     * @param null|string $prettyVersion
+     */
+    private function addExtension(VersionParser $versionParser, $name, $prettyVersion)
+    {
+        $extraDescription = null;
+
+        try {
+            $version = $versionParser->normalize($prettyVersion);
+        } catch (\UnexpectedValueException $e) {
+            $extraDescription = ' (actual version: '.$prettyVersion.')';
+            if (preg_match('{^(\d+\.\d+\.\d+(?:\.\d+)?)}', $prettyVersion, $match)) {
+                $prettyVersion = $match[1];
+            } else {
+                $prettyVersion = '0';
+            }
+            $version = $versionParser->normalize($prettyVersion);
+        }
+
+        $packageName = $this->buildPackageName($name);
+        $ext = new CompletePackage($packageName, $version, $prettyVersion);
+        $ext->setDescription('The '.$name.' PHP extension'.$extraDescription);
+        $this->addPackage($ext);
     }
 
     private function buildPackageName($name)
