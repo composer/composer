@@ -210,8 +210,10 @@ simply running `composer test`:
 }
 ```
 
-> **Note:** Composer's bin-dir is pushed on top of the PATH so that binaries
-> of dependencies are easily accessible as CLI commands when writing scripts.
+> **Note:** Before executing scripts, Composer's bin-dir is temporarily pushed
+> on top of the PATH environment variable so that binaries of dependencies
+> are easily accessible. In this example no matter if the `phpunit` binary is
+> actually in `vendor/bin/phpunit` or `bin/phpunit` it will be found and executed.
 
 ## Referencing scripts
 
