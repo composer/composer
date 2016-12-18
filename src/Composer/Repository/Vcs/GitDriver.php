@@ -154,9 +154,9 @@ class GitDriver extends VcsDriver
         if (null === $this->tags) {
             $this->tags = array();
 
-            $this->process->execute('git show-ref --tags', $output, $this->repoDir);
+            $this->process->execute('git show-ref --tags --dereference', $output, $this->repoDir);
             foreach ($output = $this->process->splitLines($output) as $tag) {
-                if ($tag && preg_match('{^([a-f0-9]{40}) refs/tags/(\S+)$}', $tag, $match)) {
+                if ($tag && preg_match('{^([a-f0-9]{40}) refs/tags/(\S+?)(\^\{\})?$}', $tag, $match)) {
                     $this->tags[$match[2]] = $match[1];
                 }
             }
