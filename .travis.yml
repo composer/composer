@@ -11,26 +11,29 @@ addons:
     packages:
       - parallel
 
-php:
-  - 5.3
-  - 5.4
-  - 5.5
-  - 5.6
-  - 7.0
-  - 7.1
-  - hhvm
-  - nightly
-
 matrix:
   fast_finish: true
+  include:
+    - php: 5.3
+    - php: 5.4
+    - php: 5.5
+    - php: 5.6
+    - php: 7.0
+    - php: 7.1
+    - php: hhvm
+      env: HHVM_PHP7=0
+    - php: hhvm
+      env: HHVM_PHP7=1
+    - nightly
   allow_failures:
     - php: nightly
 
 before_script:
+    - if [[ $HHVM_PHP7 -eq 1 ]]; then echo hhvm.php7.all=1 | tee --append /etc/hhvm/php.ini; fi
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
-    - flags="--prefer-dist"
+    - flags="--prefer-dist --no-interaction"
     - composer install $flags
-    - bin/composer install $flags
+    - bin/composer install $flags --optimize-autoloader
     - git config --global user.name travis-ci
     - git config --global user.email travis@example.com
 
