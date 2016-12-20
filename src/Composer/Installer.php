@@ -1151,6 +1151,9 @@ class Installer
                 if ($package instanceof CompletePackage && $newPackage instanceof CompletePackage) {
                     $package->setAbandoned($newPackage->getReplacementPackage() ?: $newPackage->isAbandoned());
                 }
+
+                $package->setDistMirrors($newPackage->getDistMirrors());
+                $package->setSourceMirrors($newPackage->getSourceMirrors());
             }
         }
     }
