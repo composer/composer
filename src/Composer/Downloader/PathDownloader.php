@@ -45,6 +45,13 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             ));
         }
 
+        if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
+            throw new \RuntimeException(sprintf(
+                'Package %s cannot install to "%s" inside its source at "%s"',
+                $package->getName(), realpath($path), $realUrl
+            ));
+        }
+
         // Get the transport options with default values
         $transportOptions = $package->getTransportOptions() + array('symlink' => null);
 
@@ -63,13 +70,6 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         } elseif (false === $transportOptions['symlink']) {
             $currentStrategy = self::STRATEGY_MIRROR;
             $allowedStrategies = array(self::STRATEGY_MIRROR);
-        }
-
-        if ($currentStrategy != self::STRATEGY_MIRROR && strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
-            throw new \RuntimeException(sprintf(
-                'Package %s cannot install to "%s" inside its source at "%s"',
-                $package->getName(), realpath($path), $realUrl
-            ));
         }
 
         $fileSystem = new Filesystem();
