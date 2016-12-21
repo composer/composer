@@ -22,7 +22,37 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
     private static $parser;
 
-    public static function getUniqueTmpDirectory()
+    /** All temporary objects holding
+    * @var array
+    */
+    private $tmpobjects = array();
+
+    public function __destruct()
+    {
+        $fs = new Filesystem();
+        foreach ($this->tmpobjects as $object) {
+            if (is_dir($object)) {
+                $fs->removeDirectory($object);
+            }
+        }
+    }
+
+    public function __call($name, $arguments)
+    {
+        if ($name === 'getUniqueTmpDirectory') {
+            $this->tmpobjects[] = $result = call_user_func_array(__CLASS__ . "::$name", $arguments);
+            return $result;
+        } else {
+            return call_user_func_array(__CLASS__ . "::$name", $arguments);
+        }
+    }
+
+    public static function __callStatic($name, $arguments)
+    {
+        return call_user_func_array(__CLASS__ . "::$name", $arguments);
+    }
+
+    private static function getUniqueTmpDirectory()
     {
         $attempts = 5;
         $root = sys_get_temp_dir();

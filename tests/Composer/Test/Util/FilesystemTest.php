@@ -18,11 +18,6 @@ use Composer\TestCase;
 class FilesystemTest extends TestCase
 {
     /**
-     * @var Filesystem
-     */
-    private $fs;
-
-    /**
      * @var string
      */
     private $workingDir;
@@ -31,23 +26,6 @@ class FilesystemTest extends TestCase
      * @var string
      */
     private $testFile;
-
-    public function setUp()
-    {
-        $this->fs = new Filesystem;
-        $this->workingDir = $this->getUniqueTmpDirectory();
-        $this->testFile = $this->getUniqueTmpDirectory() . '/composer_test_file';
-    }
-
-    public function tearDown()
-    {
-        if (is_dir($this->workingDir)) {
-            $this->fs->removeDirectory($this->workingDir);
-        }
-        if (is_file($this->testFile)) {
-            $this->fs->removeDirectory(dirname($this->testFile));
-        }
-    }
 
     /**
      * @dataProvider providePathCouplesAsCode
@@ -163,6 +141,8 @@ class FilesystemTest extends TestCase
      */
     public function testRemoveDirectoryPhp()
     {
+        $this->workingDir = $this->getUniqueTmpDirectory();
+
         @mkdir($this->workingDir . "/level1/level2", 0777, true);
         file_put_contents($this->workingDir . "/level1/level2/hello.txt", "hello world");
 
@@ -173,6 +153,8 @@ class FilesystemTest extends TestCase
 
     public function testFileSize()
     {
+        $this->testFile = $this->getUniqueTmpDirectory() . '/composer_test_file';
+
         file_put_contents($this->testFile, 'Hello');
 
         $fs = new Filesystem;
@@ -181,6 +163,8 @@ class FilesystemTest extends TestCase
 
     public function testDirectorySize()
     {
+        $this->workingDir = $this->getUniqueTmpDirectory();
+
         @mkdir($this->workingDir, 0777, true);
         file_put_contents($this->workingDir."/file1.txt", 'Hello');
         file_put_contents($this->workingDir."/file2.txt", 'World');
@@ -216,6 +200,7 @@ class FilesystemTest extends TestCase
             array('/', '//'),
             array('/', '///'),
             array('/Foo', '///Foo'),
+            array('//windows/UNC/Name', '\\\\windows\\UNC\\Name'),
             array('c:/', 'c:\\'),
             array('../src', 'Foo/Bar/../../../src'),
             array('c:../b', 'c:.\\..\\a\\..\\b'),
@@ -229,6 +214,8 @@ class FilesystemTest extends TestCase
      */
     public function testUnlinkSymlinkedDirectory()
     {
+        $this->workingDir = $this->getUniqueTmpDirectory();
+
         $basepath  = $this->workingDir;
         $symlinked = $basepath . "/linked";
         @mkdir($basepath . "/real", 0777, true);
@@ -256,6 +243,8 @@ class FilesystemTest extends TestCase
      */
     public function testRemoveSymlinkedDirectoryWithTrailingSlash()
     {
+        $this->workingDir = $this->getUniqueTmpDirectory();
+
         @mkdir($this->workingDir . "/real", 0777, true);
         touch($this->workingDir . "/real/FILE");
         $symlinked              = $this->workingDir . "/linked";
@@ -285,6 +274,8 @@ class FilesystemTest extends TestCase
 
     public function testJunctions()
     {
+        $this->workingDir = $this->getUniqueTmpDirectory();
+
         @mkdir($this->workingDir . '/real/nesting/testing', 0777, true);
         $fs = new Filesystem();
 

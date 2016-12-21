@@ -15,6 +15,7 @@ namespace Composer\Test\Package\Archiver;
 use Composer\Factory;
 use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\PackageInterface;
+use Symfony\Component\Process\ExecutableFinder;
 
 class ArchiveManagerTest extends ArchiverTest
 {
@@ -45,6 +46,11 @@ class ArchiveManagerTest extends ArchiverTest
 
     public function testArchiveTar()
     {
+        // Ensure that git is available for testing.
+        if (!$this->isProcessAvailable('git')) {
+            return $this->markTestSkipped('git is not available.');
+        }
+
         $this->setupGitRepo();
 
         $package = $this->setupPackage();
@@ -62,6 +68,11 @@ class ArchiveManagerTest extends ArchiverTest
 
     public function testArchiveCustomFileName()
     {
+        // Ensure that git is available for testing.
+        if (!$this->isProcessAvailable('git')) {
+            return $this->markTestSkipped('git is not available.');
+        }
+
         $this->setupGitRepo();
 
         $package = $this->setupPackage();
@@ -133,5 +144,19 @@ class ArchiveManagerTest extends ArchiverTest
         }
 
         chdir($currentWorkDir);
+    }
+
+    /**
+     * Check whether or not the given process is available.
+     *
+     * @param string $process The name of the binary to test.
+     *
+     * @return bool True if the process is available, false otherwise.
+     */
+    protected function isProcessAvailable($process)
+    {
+        $finder = new ExecutableFinder();
+
+        return (bool) $finder->find($process);
     }
 }

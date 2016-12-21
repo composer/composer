@@ -17,6 +17,7 @@ use Composer\Config;
 use Composer\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
+use Symfony\Component\Process\ExecutableFinder;
 
 class GitDownloaderTest extends TestCase
 {
@@ -80,6 +81,11 @@ class GitDownloaderTest extends TestCase
 
     public function testDownload()
     {
+        // Ensure that git is available for testing.
+        if (!$this->isProcessAvailable('git')) {
+            return $this->markTestSkipped('git is not available.');
+        }
+
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -130,6 +136,11 @@ class GitDownloaderTest extends TestCase
 
     public function testDownloadWithCache()
     {
+        // Ensure that git is available for testing.
+        if (!$this->isProcessAvailable('git')) {
+            return $this->markTestSkipped('git is not available.');
+        }
+
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -195,6 +206,11 @@ class GitDownloaderTest extends TestCase
 
     public function testDownloadUsesVariousProtocolsAndSetsPushUrlForGithub()
     {
+        // Ensure that git is available for testing.
+        if (!$this->isProcessAvailable('git')) {
+            return $this->markTestSkipped('git is not available.');
+        }
+
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -278,6 +294,11 @@ class GitDownloaderTest extends TestCase
      */
     public function testDownloadAndSetPushUrlUseCustomVariousProtocolsForGithub($protocols, $url, $pushUrl)
     {
+        // Ensure that git is available for testing.
+        if (!$this->isProcessAvailable('git')) {
+            return $this->markTestSkipped('git is not available.');
+        }
+
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -329,6 +350,11 @@ class GitDownloaderTest extends TestCase
      */
     public function testDownloadThrowsRuntimeExceptionIfGitCommandFails()
     {
+        // Ensure that git is available for testing.
+        if (!$this->isProcessAvailable('git')) {
+            return $this->markTestSkipped('git is not available.');
+        }
+
         $expectedGitCommand = $this->winCompat("git clone --no-checkout 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer 'https://example.com/composer/composer' && git fetch composer");
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -623,5 +649,19 @@ composer https://github.com/old/url (push)
         }
 
         return $cmd;
+    }
+
+    /**
+     * Check whether or not the given process is available.
+     *
+     * @param string $process The name of the binary to test.
+     *
+     * @return bool True if the process is available, false otherwise.
+     */
+    protected function isProcessAvailable($process)
+    {
+        $finder = new ExecutableFinder();
+
+        return (bool) $finder->find($process);
     }
 }
