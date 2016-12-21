@@ -232,7 +232,7 @@ class ClassMapGeneratorTest extends TestCase
 
     public function testDump()
     {
-        $tempDir = self::getUniqueTmpDirectory();
+        $tempDir = $this->getUniqueTmpDirectory();
 
         $resultFile = $tempDir . '/result.txt';
         $fileInDirectory = $tempDir . DIRECTORY_SEPARATOR . 'TestClass.php';
@@ -243,9 +243,6 @@ class ClassMapGeneratorTest extends TestCase
 
         $fileInDirectory = str_replace('\\', '\\\\', $fileInDirectory);
         $this->assertEquals("<?php return array (\n  'TestClass' => '$fileInDirectory',\n);", file_get_contents($resultFile));
-
-        $fs = new Filesystem();
-        $fs->removeDirectory($tempDir);
     }
 
     protected function assertEqualsNormalized($expected, $actual, $message = null)
