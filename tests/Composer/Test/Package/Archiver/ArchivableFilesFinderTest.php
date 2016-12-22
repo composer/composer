@@ -16,7 +16,6 @@ use Composer\Package\Archiver\ArchivableFilesFinder;
 use Composer\TestCase;
 use Composer\Util\Filesystem;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\ExecutableFinder;
 
 class ArchivableFilesFinderTest extends TestCase
 {
@@ -146,10 +145,7 @@ class ArchivableFilesFinderTest extends TestCase
 
     public function testGitExcludes()
     {
-        // Ensure that git is available for testing.
-        if (!$this->isProcessAvailable('git')) {
-            return $this->markTestSkipped('git is not available.');
-        }
+        $this->skipIfNotExecutable('git');
 
         file_put_contents($this->sources.'/.gitignore', implode("\n", array(
             '# gitignore rules with comments and blank lines',
@@ -202,10 +198,7 @@ class ArchivableFilesFinderTest extends TestCase
 
     public function testHgExcludes()
     {
-        // Ensure that Mercurial is available for testing.
-        if (!$this->isProcessAvailable('hg')) {
-            return $this->markTestSkipped('Mercurial is not available.');
-        }
+        $this->skipIfNotExecutable('hg');
 
         file_put_contents($this->sources.'/.hgignore', implode("\n", array(
             '# hgignore rules with comments, blank lines and syntax changes',
@@ -280,19 +273,5 @@ class ArchivableFilesFinderTest extends TestCase
         $actualFiles = $this->getArchivableFiles();
 
         $this->assertEquals($expectedFiles, $actualFiles);
-    }
-
-    /**
-     * Check whether or not the given process is available.
-     *
-     * @param string $process The name of the binary to test.
-     *
-     * @return bool True if the process is available, false otherwise.
-     */
-    protected function isProcessAvailable($process)
-    {
-        $finder = new ExecutableFinder();
-
-        return (bool) $finder->find($process);
     }
 }

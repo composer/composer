@@ -17,6 +17,7 @@ use Composer\Package\AliasPackage;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
+use Symfony\Component\Process\ExecutableFinder;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
@@ -82,5 +83,20 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         }
 
         mkdir($directory, 0777, true);
+    }
+
+    /**
+     * Check whether or not the given name is an available executable.
+     *
+     * @param string $executableName The name of the binary to test.
+     *
+     * @throws PHPUnit_Framework_SkippedTestError
+     */
+    protected function skipIfNotExecutable($executableName)
+    {
+        $finder = new ExecutableFinder();
+
+        if (!$finder->find($executableName))
+            $this->markTestSkipped($executableName . ' is not found or not executable.');
     }
 }
