@@ -650,18 +650,4 @@ composer https://github.com/old/url (push)
 
         return $cmd;
     }
-
-    /**
-     * Check whether or not the given process is available.
-     *
-     * @param string $process The name of the binary to test.
-     *
-     * @return bool True if the process is available, false otherwise.
-     */
-    protected function isProcessAvailable($process)
-    {
-        $finder = new ExecutableFinder();
-
-        return (bool) $finder->find($process);
-    }
 }
