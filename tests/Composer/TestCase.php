@@ -22,6 +22,7 @@ use Symfony\Component\Process\ExecutableFinder;
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
     private static $parser;
+    private static $executableCache = array();
 
     public static function getUniqueTmpDirectory()
     {
@@ -94,9 +95,13 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      */
     protected function skipIfNotExecutable($executableName)
     {
-        $finder = new ExecutableFinder();
+        if (!isset(self::$executableCache[$executableName])) {
+            $finder = new ExecutableFinder();
+            self::$executableCache[$executableName] = (bool) $finder->find($executableName);
+        }
 
-        if (!$finder->find($executableName))
+        if (false === self::$executableCache[$executableName]) {
             $this->markTestSkipped($executableName . ' is not found or not executable.');
+        }
     }
 }
