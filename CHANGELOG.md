@@ -1,3 +1,9 @@
+### [1.3.0] - 2016-12-24
+
+  * Fixed handling of annotated git tags vs lightweight tags leading to useless updates sometimes
+  * Fixed ext-xdebug not being require-able anymore due to automatic xdebug disabling
+  * Fixed case insensitivity of remove command
+
 ### [1.3.0-RC] - 2016-12-11
 
   * Added workaround for xdebug performance impact by restarting PHP without xdebug automatically in case it is enabled
@@ -471,6 +477,7 @@
 
   * Initial release
 
+[1.3.0]: https://github.com/composer/composer/compare/1.3.0-RC...1.3.0
 [1.3.0-RC]: https://github.com/composer/composer/compare/1.2.4...1.3.0-RC
 [1.2.4]: https://github.com/composer/composer/compare/1.2.3...1.2.4
 [1.2.3]: https://github.com/composer/composer/compare/1.2.2...1.2.3
