@@ -25,6 +25,17 @@ class GitDownloaderTest extends TestCase
     /** @var string */
     private $workingDir;
 
+    private $skipped;
+
+    protected function initialize()
+    {
+        try {
+            $this->skipIfNotExecutable('git');
+        } catch (\PHPUnit_Framework_SkippedTestError $e) {
+            $this->skipped = 'This test needs a git binary in the PATH to be able to run';
+        }
+    }
+
     protected function setUp()
     {
         $this->fs = new Filesystem;
