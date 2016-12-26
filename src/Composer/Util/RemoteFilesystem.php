@@ -601,9 +601,9 @@ class RemoteFilesystem
                 $auth = $this->io->getAuthentication($this->originUrl);
                 if ($auth['username'] !== 'x-token-auth') {
                     $bitbucketUtil = new Bitbucket($this->io, $this->config);
-                    $token = $bitbucketUtil->requestToken($this->originUrl, $auth['username'], $auth['password']);
-                    if (! empty($token)) {
-                        $this->io->setAuthentication($this->originUrl, 'x-token-auth', $token['access_token']);
+                    $access_token = $bitbucketUtil->requestToken($this->originUrl, $auth['username'], $auth['password']);
+                    if (! empty($access_token)) {
+                        $this->io->setAuthentication($this->originUrl, 'x-token-auth', $access_token);
                         $askForOAuthToken = false;
                     }
                 } else {
