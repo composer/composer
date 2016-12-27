@@ -21,31 +21,31 @@ use Composer\IO\IOInterface;
  */
 class HgBitbucketDriver extends BitbucketDriver
 {
-
     /**
      * {@inheritDoc}
      */
     public function getRootIdentifier()
     {
         if (null === $this->rootIdentifier) {
-            $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
-            $repoData = JsonFile::parseJson($this->getContents($resource), $resource);
-            if (array() === $repoData || !isset($repoData['tip'])) {
-                throw new \RuntimeException($this->url.' does not appear to be a mercurial repository, use '.$this->url.'.git if this is a git bitbucket repository');
+            $repoData = $this->getRepoData();
+
+            if ($repoData['scm'] !== 'hg') {
+                throw new \RuntimeException(
+                    $this->url.' does not appear to be a mercurial repository, use '.
+                    $this->cloneHttpsUrl.' if this is a git bitbucket repository'
+                );
             }
-            $this->hasIssues = !empty($repoData['has_issues']);
-            $this->rootIdentifier = $repoData['tip']['raw_node'];
+
+            $resource = sprintf(
+                'https://api.bitbucket.org/1.0/repositories/%s/%s/main-branch',
+                $this->owner,
+                $this->repository
+            );
+            $main_branch_data = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource, true), $resource);
+            $this->rootIdentifier = !empty($main_branch_data['name']) ? $main_branch_data['name'] : 'default';
         }
 
         return $this->rootIdentifier;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getUrl()
-    {
-        return $this->url;
     }
 
     /**
@@ -59,46 +59,15 @@ class HgBitbucketDriver extends BitbucketDriver
     /**
      * {@inheritDoc}
      */
-    public function getDist($identifier)
-    {
-        $url = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/get/'.$identifier.'.zip';
-
-        return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function getTags()
     {
-        if (null === $this->tags) {
-            $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
-            $tagsData = JsonFile::parseJson($this->getContents($resource), $resource);
-            $this->tags = array();
-            foreach ($tagsData as $tag => $data) {
-                $this->tags[$tag] = $data['raw_node'];
-            }
+        parent::getTags();
+
+        if (isset($this->tags['tip'])) {
             unset($this->tags['tip']);
         }
 
         return $this->tags;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getBranches()
-    {
-        if (null === $this->branches) {
-            $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'.$this->owner.'/'.$this->repository.'/branches';
-            $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
-            $this->branches = array();
-            foreach ($branchData as $branch => $data) {
-                $this->branches[$branch] = $data['raw_node'];
-            }
-        }
-
-        return $this->branches;
     }
 
     /**
@@ -129,13 +98,5 @@ class HgBitbucketDriver extends BitbucketDriver
             $this->remoteFilesystem
         );
         $this->fallbackDriver->initialize();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function generateSshUrl()
-    {
-        return 'hg@' . $this->originUrl . '/' . $this->owner.'/'.$this->repository;
     }
 }

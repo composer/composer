@@ -21,9 +21,6 @@ use Composer\IO\IOInterface;
  */
 class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
 {
-
-
-
     /**
      * {@inheritDoc}
      */
@@ -34,10 +31,22 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
         }
 
         if (null === $this->rootIdentifier) {
-            $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository;
-            $repoData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource, true), $resource);
-            $this->hasIssues = !empty($repoData['has_issues']);
-            $this->rootIdentifier = !empty($repoData['main_branch']) ? $repoData['main_branch'] : 'master';
+            $repoData = $this->getRepoData();
+
+            if ($repoData['scm'] !== 'git') {
+                throw new \RuntimeException(
+                    $this->url.' does not appear to be a git repository, use '.
+                    $this->cloneHttpsUrl.' if this is a mercurial bitbucket repository'
+                );
+            }
+
+            $resource = sprintf(
+                'https://api.bitbucket.org/1.0/repositories/%s/%s/main-branch',
+                $this->owner,
+                $this->repository
+            );
+            $main_branch_data = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource, true), $resource);
+            $this->rootIdentifier = !empty($main_branch_data['name']) ? $main_branch_data['name'] : 'master';
         }
 
         return $this->rootIdentifier;
@@ -52,7 +61,7 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
             return $this->fallbackDriver->getUrl();
         }
 
-        return 'https://' . $this->originUrl . '/'.$this->owner.'/'.$this->repository.'.git';
+        return parent::getUrl();
     }
 
     /**
@@ -70,33 +79,13 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
     /**
      * {@inheritDoc}
      */
-    public function getDist($identifier)
-    {
-        $url = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/get/'.$identifier.'.zip';
-
-        return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
     public function getTags()
     {
         if ($this->fallbackDriver) {
             return $this->fallbackDriver->getTags();
         }
 
-        if (null === $this->tags) {
-            $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
-            $tagsData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
-            $this->tags = array();
-            foreach ($tagsData as $tag => $data) {
-                $this->tags[$tag] = $data['raw_node'];
-            }
-        }
-
-        return $this->tags;
+        return parent::getTags();
     }
 
     /**
@@ -108,16 +97,7 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
             return $this->fallbackDriver->getBranches();
         }
 
-        if (null === $this->branches) {
-            $resource =  $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/branches';
-            $branchData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
-            $this->branches = array();
-            foreach ($branchData as $branch => $data) {
-                $this->branches[$branch] = $data['raw_node'];
-            }
-        }
-
-        return $this->branches;
+        return parent::getBranches();
     }
 
     /**
@@ -151,13 +131,5 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
             $this->remoteFilesystem
         );
         $this->fallbackDriver->initialize();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function generateSshUrl()
-    {
-        return 'git@' . $this->originUrl . ':' . $this->owner.'/'.$this->repository.'.git';
     }
 }
