@@ -99,6 +99,77 @@ class BitbucketTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testRequestAccessTokenWithValidOAuthConsumerAndValidStoredAccessToken()
+    {
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('bitbucket-oauth')
+            ->willReturn(
+                array(
+                    $this->origin => array(
+                        'access-token' => $this->token,
+                        'access-token-expiration' => $this->time + 1800,
+                        'consumer-key' => $this->consumer_key,
+                        'consumer-secret' => $this->consumer_secret
+                    )
+                )
+            );
+
+        $this->assertEquals(
+            $this->token,
+            $this->bitbucket->requestToken($this->origin, $this->consumer_key, $this->consumer_secret)
+        );
+    }
+
+    public function testRequestAccessTokenWithValidOAuthConsumerAndExpiredAccessToken()
+    {
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('bitbucket-oauth')
+            ->willReturn(
+                array(
+                    $this->origin => array(
+                        'access-token' => 'randomExpiredToken',
+                        'access-token-expiration' => $this->time - 400,
+                        'consumer-key' => $this->consumer_key,
+                        'consumer-secret' => $this->consumer_secret
+                    )
+                )
+            );
+
+        $this->io->expects($this->once())
+            ->method('setAuthentication')
+            ->with($this->origin, $this->consumer_key, $this->consumer_secret);
+
+        $this->rfs->expects($this->once())
+            ->method('getContents')
+            ->with(
+                $this->origin,
+                Bitbucket::OAUTH2_ACCESS_TOKEN_URL,
+                false,
+                array(
+                    'retry-auth-failure' => false,
+                    'http' => array(
+                        'method' => 'POST',
+                        'content' => 'grant_type=client_credentials',
+                    )
+                )
+            )
+            ->willReturn(
+                sprintf(
+                    '{"access_token": "%s", "scopes": "repository", "expires_in": 3600, "refresh_token": "refreshtoken", "token_type": "bearer"}',
+                    $this->token
+                )
+            );
+
+        $this->setExpectationsForStoringAccessToken();
+
+        $this->assertEquals(
+            $this->token,
+            $this->bitbucket->requestToken($this->origin, $this->consumer_key, $this->consumer_secret)
+        );
+    }
+
     public function testRequestAccessTokenWithUsernameAndPassword()
     {
         $this->io->expects($this->once())
