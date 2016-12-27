@@ -997,6 +997,13 @@ class RemoteFilesystem
      */
     private function isPublicBitBucketDownload($urlToBitBucketFile)
     {
+        $domain = parse_url($urlToBitBucketFile, PHP_URL_HOST);
+        if (strpos($domain, 'bitbucket.org') === false) {
+            // Bitbucket downloads are hosted on amazonaws.
+            // We do not need to authenticate there at all
+            return true;
+        }
+
         $path = parse_url($urlToBitBucketFile, PHP_URL_PATH);
 
         // Path for a public download follows this pattern /{user}/{repo}/downloads/{whatever}
