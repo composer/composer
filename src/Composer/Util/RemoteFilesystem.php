@@ -245,14 +245,6 @@ class RemoteFilesystem
             unset($options['gitlab-token']);
         }
 
-        if (isset($options['bitbucket-token'])) {
-            // skip using the token for BitBucket downloads as these are not working with auth
-            if (!$this->isPublicBitBucketDownload($origFileUrl)) {
-                $fileUrl .= (false === strpos($fileUrl,'?') ? '?' : '&') . 'access_token=' . $options['bitbucket-token'];
-            }
-            unset($options['bitbucket-token']);
-        }
-
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
@@ -730,7 +722,9 @@ class RemoteFilesystem
             } elseif ('bitbucket.org' === $originUrl
                 && $this->fileUrl !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL && 'x-token-auth' === $auth['username']
             ) {
-                $options['bitbucket-token'] = $auth['password'];
+                if (!$this->isPublicBitBucketDownload($this->fileUrl)) {
+                    $headers[] = 'Authorization: Bearer ' . $auth['password'];
+                }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
