@@ -13,13 +13,12 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Config;
-use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
  */
-class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
+class GitBitbucketDriver extends BitbucketDriver
 {
     /**
      * {@inheritDoc}
@@ -31,73 +30,24 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
         }
 
         if (null === $this->rootIdentifier) {
-            $repoData = $this->getRepoData();
+            try {
+                $this->getRepoData();
+            } catch (BitbucketFallbackException $e) {
+                return $this->fallbackDriver->getRootIdentifier();
+            }
 
-            if ($repoData['scm'] !== 'git') {
+            if ($this->vcsType !== 'git') {
                 throw new \RuntimeException(
                     $this->url.' does not appear to be a git repository, use '.
                     $this->cloneHttpsUrl.' if this is a mercurial bitbucket repository'
                 );
             }
 
-            $resource = sprintf(
-                'https://api.bitbucket.org/1.0/repositories/%s/%s/main-branch',
-                $this->owner,
-                $this->repository
-            );
-            $main_branch_data = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource, true), $resource);
+            $main_branch_data = $this->getMainBranchData();
             $this->rootIdentifier = !empty($main_branch_data['name']) ? $main_branch_data['name'] : 'master';
         }
 
         return $this->rootIdentifier;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getUrl()
-    {
-        if ($this->fallbackDriver) {
-            return $this->fallbackDriver->getUrl();
-        }
-
-        return parent::getUrl();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getSource($identifier)
-    {
-        if ($this->fallbackDriver) {
-            return $this->fallbackDriver->getSource($identifier);
-        }
-
-        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $identifier);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getTags()
-    {
-        if ($this->fallbackDriver) {
-            return $this->fallbackDriver->getTags();
-        }
-
-        return parent::getTags();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getBranches()
-    {
-        if ($this->fallbackDriver) {
-            return $this->fallbackDriver->getBranches();
-        }
-
-        return parent::getBranches();
     }
 
     /**
@@ -119,7 +69,7 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
     }
 
     /**
-     * @param string $url
+     * {@inheritdoc}
      */
     protected function setupFallbackDriver($url)
     {
@@ -131,5 +81,13 @@ class GitBitbucketDriver extends BitbucketDriver implements VcsDriverInterface
             $this->remoteFilesystem
         );
         $this->fallbackDriver->initialize();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function generateSshUrl()
+    {
+        return 'git@' . $this->originUrl . ':' . $this->owner.'/'.$this->repository.'.git';
     }
 }

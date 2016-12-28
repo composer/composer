@@ -13,7 +13,6 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Config;
-use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 
 /**
@@ -26,48 +25,29 @@ class HgBitbucketDriver extends BitbucketDriver
      */
     public function getRootIdentifier()
     {
-        if (null === $this->rootIdentifier) {
-            $repoData = $this->getRepoData();
+        if ($this->fallbackDriver) {
+            return $this->fallbackDriver->getRootIdentifier();
+        }
 
-            if ($repoData['scm'] !== 'hg') {
+        if (null === $this->rootIdentifier) {
+            try {
+                $this->getRepoData();
+            } catch (BitbucketFallbackException $e) {
+                return $this->fallbackDriver->getRootIdentifier();
+            }
+
+            if ($this->vcsType !== 'hg') {
                 throw new \RuntimeException(
                     $this->url.' does not appear to be a mercurial repository, use '.
                     $this->cloneHttpsUrl.' if this is a git bitbucket repository'
                 );
             }
 
-            $resource = sprintf(
-                'https://api.bitbucket.org/1.0/repositories/%s/%s/main-branch',
-                $this->owner,
-                $this->repository
-            );
-            $main_branch_data = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource, true), $resource);
+            $main_branch_data = $this->getMainBranchData();
             $this->rootIdentifier = !empty($main_branch_data['name']) ? $main_branch_data['name'] : 'default';
         }
 
         return $this->rootIdentifier;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getSource($identifier)
-    {
-        return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $identifier);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getTags()
-    {
-        parent::getTags();
-
-        if (isset($this->tags['tip'])) {
-            unset($this->tags['tip']);
-        }
-
-        return $this->tags;
     }
 
     /**
@@ -88,6 +68,9 @@ class HgBitbucketDriver extends BitbucketDriver
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function setupFallbackDriver($url)
     {
         $this->fallbackDriver = new HgDriver(
@@ -98,5 +81,13 @@ class HgBitbucketDriver extends BitbucketDriver
             $this->remoteFilesystem
         );
         $this->fallbackDriver->initialize();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function generateSshUrl()
+    {
+        return 'ssh://hg@' . $this->originUrl . '/' . $this->owner.'/'.$this->repository;
     }
 }
