@@ -166,8 +166,19 @@ EOT
             if (empty($package)) {
                 list($package, $versions) = $this->getPackage($installedRepo, $repos, $input->getArgument('package'), $input->getArgument('version'));
 
-                if (!$package) {
-                    throw new \InvalidArgumentException('Package '.$input->getArgument('package').' not found');
+                if (empty($package)) {
+                    $options = $input->getOptions();
+                    if (isset($options['working-dir'])) {
+                        $composer_json = $options['working-dir'] . '/composer.json';
+                        if (file_exists($composer_json)) {
+                            $io->writeError('Package ' . $packageFilter . ' not found in ' . $composer_json);
+                            return;
+                        } else {
+                            throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found');
+                        }
+                    } else {
+                        throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found');
+                    }
                 }
             } else {
                 $versions = array($package->getPrettyVersion() => $package->getVersion());
