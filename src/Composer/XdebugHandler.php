@@ -230,7 +230,8 @@ class XdebugHandler
      */
     private function getCommand()
     {
-        $phpArgs = array(PHP_BINARY, '-c', $this->tmpIni);
+        $memoryLimit = ini_get('memory_limit');
+        $phpArgs = array(PHP_BINARY, '-d', 'memory_limit=' . $memoryLimit, '-c', $this->tmpIni);
         $params = array_merge($phpArgs, $this->getScriptArgs($_SERVER['argv']));
 
         return implode(' ', array_map(array($this, 'escape'), $params));
