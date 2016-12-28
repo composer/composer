@@ -166,18 +166,14 @@ abstract class BitbucketDriver extends VcsDriver
         }
 
         $resource = sprintf(
-            'https://api.bitbucket.org/1.0/repositories/%s/%s/src/%s/%s',
+            'https://api.bitbucket.org/1.0/repositories/%s/%s/raw/%s/%s',
             $this->owner,
             $this->repository,
             $identifier,
             $file
         );
-        $fileData = JsonFile::parseJson($this->getContents($resource), $resource);
-        if (!is_array($fileData) || ! array_key_exists('data', $fileData)) {
-            return null;
-        }
 
-        return $fileData['data'];
+        return $this->getContents($resource);
     }
 
     /**
