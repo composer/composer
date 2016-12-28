@@ -149,6 +149,13 @@ php -d memory_limit=-1 composer.phar <...>
 
 This issue can also happen on cPanel instances, when the shell fork bomb protection is activated. For more information, see the [documentation](https://documentation.cpanel.net/display/ALD/Shell+Fork+Bomb+Protection) of the fork bomb feature on the cPanel site.
 
+## Xdebug impact on Composer
+
+To improve performance when the xdebug extension is enabled, Composer automatically restarts PHP without it.
+You can override this behavior by using an environment variable: `COMPOSER_ALLOW_XDEBUG=1`.
+Composer will always show a warning if xdebug is being used. If you see this unexpectedly, then
+the restart process has failed: please report this [issue](https://github.com/composer/composer/issues).
+
 ## "The system cannot find the path specified" (Windows)
 
 1. Open regedit.
