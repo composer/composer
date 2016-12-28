@@ -79,6 +79,11 @@ class XdebugHandler
                     putenv('PHP_INI_SCAN_DIR');
                 }
             }
+
+            // Clear version if the restart failed to disable xdebug
+            if ($this->loaded) {
+                putenv(self::ENV_VERSION);
+            }
         }
     }
 

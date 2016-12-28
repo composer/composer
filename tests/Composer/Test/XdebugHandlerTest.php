@@ -113,12 +113,31 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
         $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
         $this->assertEquals($xdebug->testVersion, getenv(XdebugHandlerMock::ENV_VERSION));
+
+        // Mimic successful restart
+        $loaded = false;
+        $xdebug = new XdebugHandlerMock($loaded);
+        $xdebug->check();
+        $this->assertEquals($xdebug->testVersion, getenv(XdebugHandlerMock::ENV_VERSION));
     }
 
     public function testEnvVersionWhenNotLoaded()
     {
         $loaded = false;
 
+        $xdebug = new XdebugHandlerMock($loaded);
+        $xdebug->check();
+        $this->assertEquals(false, getenv(XdebugHandlerMock::ENV_VERSION));
+    }
+
+    public function testEnvVersionWhenRestartFails()
+    {
+        $loaded = true;
+
+        $xdebug = new XdebugHandlerMock($loaded);
+        $xdebug->check();
+
+        // Mimic failed restart
         $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
         $this->assertEquals(false, getenv(XdebugHandlerMock::ENV_VERSION));
