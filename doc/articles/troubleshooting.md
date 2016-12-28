@@ -119,16 +119,11 @@ See [aliases](aliases.md) for more information.
 
 ## Memory limit errors
 
-If composer shows memory errors on some commands:
+Composer may sometimes fail on some commands with this message:
 
 `PHP Fatal error:  Allowed memory size of XXXXXX bytes exhausted <...>`
 
-Check first that XDebug is not loaded in your `php.ini` by running
-`composer diagnose`. If XDebug is loaded, you should disable it by
-commenting the line `zend_extension=path/to/xdebug` in your `php.ini`.
-Don't forget to enable XDebug again after using Composer, if you need it.
-
-If composer still raises the error, the PHP `memory_limit` should be increased.
+In this case, the PHP `memory_limit` should be increased.
 
 > **Note:** Composer internally increases the `memory_limit` to `1G`.
 
@@ -152,90 +147,16 @@ Or, you can increase the limit with a command-line argument:
 php -d memory_limit=-1 composer.phar <...>
 ```
 
+This issue can also happen on cPanel instances, when the shell fork bomb protection is activated. For more information, see the [documentation](https://documentation.cpanel.net/display/ALD/Shell+Fork+Bomb+Protection) of the fork bomb feature on the cPanel site.
+
 ## Xdebug impact on Composer
 
-Running Composer console commands while the php extension "xdebug" is loaded reduces speed considerably.
-This is even the case when all "xdebug" related features are disabled per php.ini flags,
-but the php extension itself is loaded into the PHP engine.
-Compared to a cli command run with "xdebug" enabled a speed improvement by a factor of up to 3 is not uncommon.
+To improve performance when the xdebug extension is enabled, Composer automatically restarts PHP without it.
+You can override this behavior by using an environment variable: `COMPOSER_ALLOW_XDEBUG=1`.
 
-> **Note:** This is a general issue when running PHP with "xdebug" enabled. You shouldn't
-> load the extension in production like environments per se.
-
-Disable "xdebug" in your `php.ini` (ex. `/etc/php5/cli/php.ini` for Debian-like systems) by
-locating the related `zend_extension` directive and prepending it with `;` (semicolon):
-
-```sh
-;zend_extension = "/path/to/my/xdebug.so"
-```
-
-If you disable this extension and still want it to be added on `php` cli command, you can deal with aliases on *nix systems:
-
-```sh
-# Load xdebug Zend extension with php command
-alias php='php -dzend_extension=xdebug.so'
-# PHPUnit needs xdebug for coverage. In this case, just make an alias with php command prefix.
-alias phpunit='php $(which phpunit)'
-```
-
-With that, all php binaries called directly **will not** have xdebug enabled
-but you will still have it by prefixing them with php command.
-
-Example:
-
-```sh
-# Will NOT have xdebug enabled
-composer update
-# Will have xdebug enabled by alias
-php /usr/local/bin/composer update
-```
-
-Or, you can add aliases for composer to run with an xdebug-disabled `php.ini` file.
-Running php without a `php.ini` file should also do the trick in most cases.
-
-Example:
-
-```sh
-# Without php.ini
-alias comp='php -n /path/to/composer.phar'
-# Or with an xdebug-disabled php.ini
-alias comp='php -c /path/to/xdebug-disabled-php.ini /path/to/composer.phar'
-```
-
-As a workaround in bash (and other shells) you can create a function which is named `composer`,
-which disables xdebug before it executes composer, and then enables it afterwards.
-
-Create a function in a file read by bash, like `~/.bashrc` or `~/.bash_aliases` depending on
-your setup. This also assumes that you have sudo privileges and the `php5enmod` and `php5dismod`
-commands available. It also assumes that you have `composer` in your path.
-
-```sh
-echo 'function composer() { COMPOSER="$(which composer)" || { echo "Could not find composer in path" >&2 ; return 1 ; } && sudo php5dismod -s cli xdebug ; $COMPOSER "$@" ; STATUS=$? ; sudo php5enmod -s cli xdebug ; return $STATUS ; }' >> ~/.bash_aliases
-. ~/.bash_aliases
-```
-
-On platforms without `php5enmod` and `php5dismod` you can run:
-
-```sh
-php --ini
-```
-
-To check where the PHP configuration is, and then use a similar script:
-
-```sh
-mkdir /usr/local/etc/php/7.0/conf.dis
-echo 'function composer() { COMPOSER="$(which composer)" || { echo "Could not find composer in path" >&2 ; return 1 ; } && mv /usr/local/etc/php/7.0/conf.d/ext-xdebug.ini /usr/local/etc/php/7.0/conf.dis ; $COMPOSER "$@" ; STATUS=$? ; mv /usr/local/etc/php/7.0/conf.dis/ext-xdebug.ini /usr/local/etc/php/7.0/conf.d ; return $STATUS ; }' >> ~/.bash_aliases
-. ~/.bash_aliases
-```
-
-In the example above, we have PHP 7.0 installed on a Mac with Homebrew (which doesn't have the stated commands and places the configurations on a folder where there is no need for sudo permissions.
-
-When executing `composer` you will run it with xdebug **disabled** (**as long as the command is executing**),
-and if you execute composer using explicit path (like `./composer` or `/usr/local/bin/composer`)
-xdebug will be **enabled**.
-
-If you do not want to disable it and want to get rid of the warning you can also define the
-[COMPOSER_DISABLE_XDEBUG_WARN](../03-cli.md#composer-disable-xdebug-warn) environment variable.
+Composer will always show a warning if xdebug is being used, but you can override this with an environment variable:
+`COMPOSER_DISABLE_XDEBUG_WARN=1`. If you see this warning unexpectedly, then the restart process has failed:
+please report this [issue](https://github.com/composer/composer/issues).
 
 ## "The system cannot find the path specified" (Windows)
 
