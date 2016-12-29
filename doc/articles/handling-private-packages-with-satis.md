@@ -1,20 +1,24 @@
 <!--
-    tagline: Host your own composer repository
+    tagline: Hosting and installing private Composer packages
 -->
 
-# Handling private packages with Satis or Toran Proxy
+# Handling private packages
 
-# Toran Proxy
+# Private Packagist
 
-[Toran Proxy] is a commercial alternative to Satis offering professional
-support as well as a web UI to manage everything and a better integration with
-Composer. It also provides proxying/mirroring for git repos and package zip
-files which makes installs faster and independent from third party systems.
+[Private Packagist](https://packagist.com) is a commercial package hosting product
+offering professional support as well as a web UI to manage everything and a
+better integration with Composer. It also provides mirroring for packages' zip
+files which makes installs faster and independent from third party systems - e.g.
+you can still deploy if GitHub is down as we have your zip files mirrored.
 
-Toran's revenue is also used to pay for Composer and Packagist development and
-hosting so using it is a good way to support open source financially. You can
-find more information about how to set it up and use it on the [Toran Proxy]
-website.
+It is also provided as either a hosted solution or on-premise self-hosted
+solution, providing an easy set up experience to all.
+
+Private Packagist's revenue is also used to pay for Composer and Packagist.org
+development and hosting so using it is a good way to support the open source
+part of this project financially. You can find more information about how to
+set it up and use it on the [Packagist.com](https://packagist.com).
 
 # Satis
 
@@ -333,7 +337,6 @@ is set to true.
    user installs a package. See [notify-batch].
 
 
-[Toran Proxy]: https://toranproxy.com/
 [ssh2 context options]: https://www.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options
 [ssl context options]: https://www.php.net/manual/en/context.ssl.php
 [Twig]: http://twig.sensiolabs.org/
