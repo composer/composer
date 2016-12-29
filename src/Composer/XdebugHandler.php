@@ -63,7 +63,10 @@ class XdebugHandler
         $args = explode('|', strval(getenv(self::ENV_ALLOW)), 2);
 
         if ($this->needsRestart($args[0])) {
-            $this->prepareRestart($command) && $this->restart($command);
+            if ($this->prepareRestart()) {
+                $command = $this->getCommand();
+                $this->restart($command);
+            }
             return;
         }
 
@@ -127,18 +130,15 @@ class XdebugHandler
      *   - tmp ini file creation
      *   - environment variable creation
      *
-     * @param null|string $command The command to run, set by method
-     *
      * @return bool
      */
-    private function prepareRestart(&$command)
+    private function prepareRestart()
     {
         $this->tmpIni = '';
         $iniPaths = IniHelper::getAll();
         $files = $this->getWorkingSet($iniPaths, $replace);
 
         if ($this->writeTmpIni($files, $replace)) {
-            $command = $this->getCommand();
             return $this->setEnvironment($iniPaths);
         }
 
