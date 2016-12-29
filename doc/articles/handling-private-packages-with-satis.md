@@ -18,7 +18,7 @@ solution, providing an easy set up experience to all.
 Private Packagist's revenue is also used to pay for Composer and Packagist.org
 development and hosting so using it is a good way to support the open source
 part of this project financially. You can find more information about how to
-set it up and use it on the [Packagist.com](https://packagist.com).
+set it up and use it on [Packagist.com](https://packagist.com).
 
 # Satis
 
