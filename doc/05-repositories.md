@@ -509,26 +509,13 @@ recommended, which provides the best performance.
 
 There are a few tools that can help you create a `composer` repository.
 
-### Packagist
+### Private Packagist
 
-The underlying application used by packagist is open source. This means that
-you can technically install your own copy of packagist. However it is not a
-supported use case and changes will happen without caring for third parties
-using the code.
+[Private Packagist](https://packagist.com/) is a hosted or self-hosted
+application providing private package hosting as well as mirroring of
+GitHub, Packagist.org and other package repositories.
 
-Packagist is a Symfony2 application, and it is [available on
-GitHub](https://github.com/composer/packagist). It uses Composer internally and
-acts as a proxy between VCS repositories and the Composer users. It holds a
-list of all VCS packages, periodically re-crawls them, and exposes them as a
-Composer repository.
-
-### Toran Proxy
-
-[Toran Proxy](https://toranproxy.com/) is a web app much like Packagist but
-providing private package hosting as well as mirroring/proxying of GitHub and
-packagist.org. Check its homepage and the [Satis/Toran Proxy
-article](articles/handling-private-packages-with-satis.md) for more
-information.
+Check out [Packagist.com](https://packagist.com/) for more information.
 
 ### Satis
 
@@ -653,9 +640,9 @@ variables are parsed in both Windows and Linux/Mac notations. For example
 > **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
 > For details, see the [PHP glob function](http://php.net/glob).
 
-## Disabling Packagist
+## Disabling Packagist.org
 
-You can disable the default Packagist repository by adding this to your
+You can disable the default Packagist.org repository by adding this to your
 `composer.json`:
 
 ```json
