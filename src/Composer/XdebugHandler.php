@@ -171,6 +171,8 @@ class XdebugHandler
             $content .= $this->getIniData($file, $replace);
         }
 
+        $content .= PHP_EOL.'memory_limit='.ini_get('memory_limit').PHP_EOL;
+
         return @file_put_contents($this->tmpIni, $content);
     }
 
