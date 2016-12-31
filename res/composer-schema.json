@@ -393,7 +393,23 @@
         "repositories": {
             "type": ["object", "array"],
             "description": "A set of additional repositories where packages can be found.",
-            "additionalProperties": true
+            "additionalProperties": {
+                "oneOf": [
+                    { "$ref": "#/definitions/repository" },
+                    { "type": "boolean", "enum": [false] }
+                ]
+            },
+            "items": {
+                "oneOf": [
+                    { "$ref": "#/definitions/repository" },
+                    {
+                        "type": "object",
+                        "additionalProperties": { "type": "boolean", "enum": [false] },
+                        "minProperties": 1,
+                        "maxProperties": 1
+                    }
+                ]
+            }
         },
         "minimum-stability": {
             "type": ["string"],
@@ -547,6 +563,112 @@
         "_comment": {
             "type": ["array", "string"],
             "description": "A key to store comments in"
+        }
+    },
+    "definitions": {
+        "repository": {
+            "type": "object",
+            "oneOf": [
+                { "$ref": "#/definitions/composer-repository" },
+                { "$ref": "#/definitions/vcs-repository" },
+                { "$ref": "#/definitions/path-repository" },
+                { "$ref": "#/definitions/artifact-repository" },
+                { "$ref": "#/definitions/pear-repository" },
+                { "$ref": "#/definitions/package-repository" }
+            ]
+        },
+        "composer-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["composer"] },
+                "url": { "type": "string", "format": "uri" },
+                "options": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "allow_ssl_downgrade": { "type": "boolean" },
+                "force-lazy-providers": { "type": "boolean" }
+            }
+        },
+        "vcs-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "git-bitbucket", "hg", "hg-bitbucket", "fossil", "perforce", "svn"] },
+                "url": { "type": "string", "format": "uri" },
+                "no-api": { "type": "boolean" },
+                "secure-http": { "type": "boolean" },
+                "svn-cache-credentials": { "type": "boolean" },
+                "trunk-path": { "type": "string" },
+                "branches-path": { "type": "string" },
+                "tags-path": { "type": "string" },
+                "package-path": { "type": "string" },
+                "depot": { "type": "string" },
+                "branch": { "type": "string" },
+                "unique_perforce_client_name": { "type": "string" },
+                "p4user": { "type": "string" },
+                "p4password": { "type": "string" }
+            }
+        },
+        "path-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["path"] },
+                "url": { "type": "string" },
+                "options": {
+                    "type": "object",
+                    "properties": {
+                        "symlink": { "type": ["boolean", "null"] }
+                    },
+                    "additionalProperties": true
+                }
+            }
+        },
+        "artifact-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["artifact"] },
+                "url": { "type": "string" }
+            }
+        },
+        "pear-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["pear"] },
+                "url": { "type": "string", "format": "uri" },
+                "vendor-alias": { "type": "string" }
+            }
+        },
+        "package-repository": {
+            "type": "object",
+            "required": ["type", "package"],
+            "properties": {
+                "type": { "type": "string", "enum": ["package"] },
+                "package": {
+                    "oneOf": [
+                        { "$ref": "#/definitions/inline-package" },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": { "$ref": "#/definitions/inline-package" }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "inline-package": {
+            "type": "object",
+            "allOf": [
+                { "$ref": "#" },
+                {
+                    "required": ["name", "version"]
+                }
+            ]
         }
     }
 }

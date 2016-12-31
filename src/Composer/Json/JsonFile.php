@@ -157,7 +157,13 @@ class JsonFile
         }
 
         $schemaFile = __DIR__ . '/../../../res/composer-schema.json';
-        $schemaData = json_decode(file_get_contents($schemaFile));
+
+        // Prepend with file:// only when not using a special schema already (e.g. in the phar)
+        if (false === strpos($schemaFile, '://')) {
+            $schemaFile = 'file://' . $schemaFile;
+        }
+
+        $schemaData = (object) array('$ref' => $schemaFile);
 
         if ($schema === self::LAX_SCHEMA) {
             $schemaData->additionalProperties = true;
