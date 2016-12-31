@@ -28,7 +28,7 @@ class IniHelper
      *
      * The equivalent of calling php_ini_loaded_file then php_ini_scanned_files.
      * The loaded ini location is the first entry and may be empty.
-
+     *
      * @return array
      */
     public static function getAll()
