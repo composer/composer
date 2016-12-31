@@ -43,6 +43,7 @@ namespace Composer\Autoload;
 class ClassLoader
 {
     // PSR-4
+    private $prefixDepthPsr4 = 0;
     private $prefixLengthsPsr4 = array();
     private $prefixDirsPsr4 = array();
     private $fallbackDirsPsr4 = array();
@@ -174,6 +175,7 @@ class ClassLoader
             if ('\\' !== $prefix[$length - 1]) {
                 throw new \InvalidArgumentException("A non-empty PSR-4 prefix must end with a namespace separator.");
             }
+            $this->prefixDepthPsr4 = max($this->prefixDepthPsr4, count(explode('\\', $prefix)) - 1);
             $this->prefixLengthsPsr4[$prefix[0]][$prefix] = $length;
             $this->prefixDirsPsr4[$prefix] = (array) $paths;
         } elseif ($prepend) {
@@ -225,6 +227,7 @@ class ClassLoader
             if ('\\' !== $prefix[$length - 1]) {
                 throw new \InvalidArgumentException("A non-empty PSR-4 prefix must end with a namespace separator.");
             }
+            $this->prefixDepthPsr4 = max($this->prefixDepthPsr4, count(explode('\\', $prefix)) - 1);
             $this->prefixLengthsPsr4[$prefix[0]][$prefix] = $length;
             $this->prefixDirsPsr4[$prefix] = (array) $paths;
         }
@@ -374,6 +377,24 @@ class ClassLoader
 
         $first = $class[0];
         if (isset($this->prefixLengthsPsr4[$first])) {
+            // PSR-4 O(d) lookup
+            $nodes = explode('\\', $class);
+            array_pop($nodes);
+            $depth = min($this->prefixDepthPsr4, count($nodes));
+            for ($i = $depth; $i > 0; $i--) {
+                $lookup = implode('\\', $nodes) . '\\';
+                if (isset($this->prefixLengthsPsr4[$first][$lookup]) && isset($this->prefixDirsPsr4[$lookup])) {
+                    $length = $this->prefixLengthsPsr4[$first][$lookup];
+                    foreach ($this->prefixDirsPsr4[$lookup] as $dir) {
+                        if (file_exists($file = $dir . DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $length))) {
+                            return $file;
+                        }
+                    }
+                }
+                array_pop($nodes);
+            }
+
+            // PSR-4 O(n) lookup
             foreach ($this->prefixLengthsPsr4[$first] as $prefix => $length) {
                 if (0 === strpos($class, $prefix)) {
                     foreach ($this->prefixDirsPsr4[$prefix] as $dir) {
