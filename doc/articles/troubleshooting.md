@@ -125,7 +125,7 @@ Composer may sometimes fail on some commands with this message:
 
 In this case, the PHP `memory_limit` should be increased.
 
-> **Note:** Composer internally increases the `memory_limit` to `1G`.
+> **Note:** Composer internally increases the `memory_limit` to `1.5G`.
 
 To get the current `memory_limit` value, run:
 
