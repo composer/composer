@@ -662,13 +662,8 @@
             }
         },
         "inline-package": {
-            "type": "object",
-            "oneOf": [
-                { "$ref": "#" },
-                {
-                    "required": ["name", "version"]
-                }
-            ]
+            "$ref": "#",
+            "required": ["name", "version"]
         }
     }
 }
