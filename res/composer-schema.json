@@ -663,7 +663,7 @@
         },
         "inline-package": {
             "type": "object",
-            "allOf": [
+            "oneOf": [
                 { "$ref": "#" },
                 {
                     "required": ["name", "version"]
