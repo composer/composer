@@ -596,7 +596,7 @@
             "required": ["type", "url"],
             "properties": {
                 "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "git-bitbucket", "hg", "hg-bitbucket", "fossil", "perforce", "svn"] },
-                "url": { "type": "string", "format": "uri" },
+                "url": { "type": "string" },
                 "no-api": { "type": "boolean" },
                 "secure-http": { "type": "boolean" },
                 "svn-cache-credentials": { "type": "boolean" },
