@@ -95,9 +95,8 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
 
     private function check($json)
     {
-        $schema = json_decode(file_get_contents(__DIR__ . '/../../../../res/composer-schema.json'));
         $validator = new Validator();
-        $validator->check(json_decode($json), $schema);
+        $validator->check(json_decode($json), (object) array('$ref' => 'file://' . __DIR__ . '/../../../../res/composer-schema.json'));
 
         if (!$validator->isValid()) {
             $errors = $validator->getErrors();
