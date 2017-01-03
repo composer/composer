@@ -68,6 +68,10 @@ class ArrayDumper
             $data['archive']['exclude'] = $package->getArchiveExcludes();
         }
 
+        if (false === $package->getIgnoreVcs()) {
+            $data['archive']['ignore-vcs'] = $package->getIgnoreVcs();
+        }
+
         foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
             if ($links = $package->{'get'.ucfirst($opts['method'])}()) {
                 foreach ($links as $link) {

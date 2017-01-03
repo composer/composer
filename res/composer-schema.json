@@ -326,6 +326,10 @@
                 "exclude": {
                     "type": "array",
                     "description": "A list of patterns for paths to exclude or include if prefixed with an exclamation mark."
+                },
+                "ignore-vcs": {
+                    "type": "boolean",
+                    "description": "If false, will not ignore VCS directories. Defaults to true."
                 }
             }
         },

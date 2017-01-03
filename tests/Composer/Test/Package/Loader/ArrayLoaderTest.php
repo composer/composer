@@ -121,6 +121,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
             'bin' => array('bin1', 'bin/foo'),
             'archive' => array(
                 'exclude' => array('/foo/bar', 'baz', '!/foo/bar/baz'),
+                'ignore-vcs' => false,
             ),
             'transport-options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem')),
             'abandoned' => 'foo/bar',

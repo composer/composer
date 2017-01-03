@@ -24,8 +24,15 @@ use Composer\Json\JsonFile;
  */
 class ArchiveManager
 {
+    const IGNORE_VCS_KEY = 'ignoreVcs';
+
+    const IGNORE_VCS_DEFAULT = true;
+
     protected $downloadManager;
 
+    /**
+     * @var ArchiverInterface[]
+     */
     protected $archivers = array();
 
     /**
@@ -163,7 +170,9 @@ class ArchiveManager
         $tempTarget = sys_get_temp_dir().'/composer_archive'.uniqid().'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($tempTarget));
 
-        $archivePath = $usableArchiver->archive($sourcePath, $tempTarget, $format, $package->getArchiveExcludes());
+        $excludes = $package->getArchiveExcludes();
+        $excludes[self::IGNORE_VCS_KEY] = $package->getIgnoreVcs();
+        $archivePath = $usableArchiver->archive($sourcePath, $tempTarget, $format, $excludes);
         $filesystem->rename($archivePath, $target);
 
         // cleanup temporary download

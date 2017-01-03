@@ -358,4 +358,11 @@ interface PackageInterface
      * @return array
      */
     public function getTransportOptions();
+
+    /**
+     * If the package should include a VCS directory in the dist archive.
+     *
+     * @return bool
+     */
+    public function getIgnoreVcs();
 }

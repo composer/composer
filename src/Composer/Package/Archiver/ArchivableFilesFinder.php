@@ -40,6 +40,13 @@ class ArchivableFilesFinder extends \FilterIterator
      */
     public function __construct($sources, array $excludes)
     {
+        if (array_key_exists(ArchiveManager::IGNORE_VCS_KEY, $excludes)) {
+            $ignoreVcs = $excludes[ArchiveManager::IGNORE_VCS_KEY];
+            unset($excludes[ArchiveManager::IGNORE_VCS_KEY]);
+        } else {
+            $ignoreVcs = ArchiveManager::IGNORE_VCS_DEFAULT;
+        }
+
         $fs = new Filesystem();
 
         $sources = $fs->normalizePath($sources);
@@ -78,7 +85,7 @@ class ArchivableFilesFinder extends \FilterIterator
         $this->finder
             ->in($sources)
             ->filter($filter)
-            ->ignoreVCS(true)
+            ->ignoreVCS($ignoreVcs)
             ->ignoreDotFiles(false);
 
         parent::__construct($this->finder->getIterator());
