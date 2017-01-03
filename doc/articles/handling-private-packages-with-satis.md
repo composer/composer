@@ -7,18 +7,18 @@
 # Private Packagist
 
 [Private Packagist](https://packagist.com) is a commercial package hosting product
-offering professional support as well as a web UI to manage everything and a
-better integration with Composer. It also provides mirroring for packages' zip
+offering professional support and web based management of private and public packages,
+and granular access permissions. Private Packagist provides mirroring for packages' zip
 files which makes installs faster and independent from third party systems - e.g.
-you can still deploy if GitHub is down as we have your zip files mirrored.
+you can deploy even if GitHub is down because your zip files are mirrored.
 
-It is also provided as either a hosted solution or on-premise self-hosted
-solution, providing an easy set up experience to all.
+Private Packagist is available as a hosted SaaS solution or as an on-premise self-hosted
+package, providing an easy interactive set up experience.
 
-Private Packagist's revenue is also used to pay for Composer and Packagist.org
-development and hosting so using it is a good way to support the open source
-part of this project financially. You can find more information about how to
-set it up and use it on [Packagist.com](https://packagist.com).
+Some of Private Packagist's revenue is used to pay for Composer and Packagist.org
+development and hosting so using it is a good way to support the maitenance of
+these open source projects financially. You can find more information about how to
+set up your own package archive on [Packagist.com](https://packagist.com).
 
 # Satis
 
