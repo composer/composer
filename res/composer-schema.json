@@ -756,7 +756,7 @@
                     "type": ["object"],
                     "properties": {
                         "exclude": {
-                            "type": "array",
+                            "type": "array"
                         }
                     }
                 },
