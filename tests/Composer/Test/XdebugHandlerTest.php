@@ -143,6 +143,43 @@ class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(false, getenv(XdebugHandlerMock::ENV_VERSION));
     }
 
+    public function testIniSettings()
+    {
+        $xdebug = new XdebugHandlerMock();
+        $method = new \ReflectionMethod($xdebug, 'mergeLoadedConfig');
+        $method->setAccessible(true);
+
+        $loadedConfig = array(
+            'null_value' => null,
+            'same_value' => 'same',
+            'alnum_value' => '2G',
+            'mixed_value' => 'some-where-else?',
+            'wacky_value' => 'embedded "quotes"',
+        );
+
+        $iniConfig = array(
+            'same_value' => 'same',
+            'alnum_value' => '128M',
+            'mixed_value' => 'some-where',
+        );
+
+        $ini = $method->invoke($xdebug, $loadedConfig, $iniConfig);
+
+        $config = array();
+        foreach (explode(PHP_EOL, $ini) as $line) {
+            $parts = explode('=', $line);
+            if (count($parts) === 2) {
+                $config[$parts[0]] = $parts[1];
+            }
+        }
+
+        $this->assertArrayNotHasKey('null_value', $config);
+        $this->assertArrayNotHasKey('same_value', $config);
+        $this->assertEquals('2G', $config['alnum_value']);
+        $this->assertEquals('"some-where-else?"', $config['mixed_value']);
+        $this->assertEquals('"embedded \"quotes\""', $config['wacky_value']);
+    }
+
     public static function setUpBeforeClass()
     {
         // Save current state

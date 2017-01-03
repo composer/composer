@@ -165,16 +165,53 @@ class XdebugHandler
         }
 
         $content = '';
+        $config = array();
         $regex = '/^\s*(zend_extension\s*=.*xdebug.*)$/mi';
 
         foreach ($iniFiles as $file) {
             $data = preg_replace($regex, ';$1', file_get_contents($file));
+            $config = array_merge($config, parse_ini_string($data));
             $content .= $data.PHP_EOL;
         }
 
-        $content .= PHP_EOL.'memory_limit='.ini_get('memory_limit').PHP_EOL;
+        $loaded = ini_get_all(null, false);
+        $content .= $this->mergeLoadedConfig($loaded, $config);
 
         return @file_put_contents($this->tmpIni, $content);
+    }
+
+    /**
+     * Returns default or changed settings for the tmp ini
+     *
+     * Ini settings can be passed on the command line using the -d option. To
+     * preserve any of these, all loaded settings that are either not present or
+     * different from those in the ini files are added at the end of the tmp ini.
+     *
+     * @param array $loadedConfig All current settings
+     * @param array $iniConfig Settings from user ini files
+     *
+     * @return string
+     */
+    private function mergeLoadedConfig(array $loadedConfig, array $iniConfig)
+    {
+        $content = '';
+
+        foreach ($loadedConfig as $name => $value) {
+            // Values will either be null, string or array (HHVM only)
+            if (!is_string($value) || strpos($name, 'xdebug') === 0) {
+                continue;
+            }
+
+            if (!isset($iniConfig[$name]) || $iniConfig[$name] !== $value) {
+                // Based on main -d option handling in php-src/sapi/cli/php_cli.c
+                if ($value && !ctype_alnum($value)) {
+                    $value = '"'.str_replace('"', '\\"', $value).'"';
+                }
+                $content .= $name.'='.$value.PHP_EOL;
+            }
+        }
+
+        return $content;
     }
 
     /**
@@ -193,7 +230,7 @@ class XdebugHandler
     /**
      * Returns true if the restart environment variables were set
      *
-     * @param array $iniPaths Locations used by the current prcoess
+     * @param array $iniPaths Locations used by the current process
      *
      * @return bool
      */
