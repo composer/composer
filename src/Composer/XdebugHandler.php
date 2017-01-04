@@ -136,6 +136,7 @@ class XdebugHandler
     {
         $this->tmpIni = '';
         $iniPaths = IniHelper::getAll();
+        $additional = count($iniPaths) > 1;
 
         if (empty($iniPaths[0])) {
             // There is no loaded ini
@@ -143,7 +144,7 @@ class XdebugHandler
         }
 
         if ($this->writeTmpIni($iniPaths)) {
-            return $this->setEnvironment($iniPaths);
+            return $this->setEnvironment($additional, $iniPaths);
         }
 
         return false;
@@ -193,15 +194,14 @@ class XdebugHandler
     /**
      * Returns true if the restart environment variables were set
      *
+     * @param bool $additional Whether there were additional inis
      * @param array $iniPaths Locations used by the current prcoess
      *
      * @return bool
      */
-    private function setEnvironment(array $iniPaths)
+    private function setEnvironment($additional, array $iniPaths)
     {
         // Set scan dir to an empty value if additional ini files were used
-        $additional = count($iniPaths) > 1;
-
         if ($additional && !putenv('PHP_INI_SCAN_DIR=')) {
             return false;
         }
