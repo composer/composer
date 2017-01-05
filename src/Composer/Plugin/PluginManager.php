@@ -225,7 +225,7 @@ class PluginManager
      *
      * @param PluginInterface $plugin plugin instance
      */
-    private function addPlugin(PluginInterface $plugin)
+    public function addPlugin(PluginInterface $plugin)
     {
         $this->io->writeError('Loading plugin '.get_class($plugin), true, IOInterface::DEBUG);
         $this->plugins[] =  $plugin;
