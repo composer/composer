@@ -1,3 +1,10 @@
+### [1.3.1] - 2017-01-07
+
+  * Fixed dist downloads from Bitbucket
+  * Fixed some regressions related to xdebug disabling
+  * Fixed `--minor-only` flag in `outdated` command
+  * Fixed handling of config.platform.php which did not replace other php-* package's versions
+
 ### [1.3.0] - 2016-12-24
 
   * Fixed handling of annotated git tags vs lightweight tags leading to useless updates sometimes
@@ -477,6 +484,7 @@
 
   * Initial release
 
+[1.3.1]: https://github.com/composer/composer/compare/1.3.0...1.3.1
 [1.3.0]: https://github.com/composer/composer/compare/1.3.0-RC...1.3.0
 [1.3.0-RC]: https://github.com/composer/composer/compare/1.2.4...1.3.0-RC
 [1.2.4]: https://github.com/composer/composer/compare/1.2.3...1.2.4
