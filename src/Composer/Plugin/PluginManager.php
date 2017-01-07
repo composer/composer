@@ -223,6 +223,10 @@ class PluginManager
     /**
      * Adds a plugin, activates it and registers it with the event dispatcher
      *
+     * Ideally plugin packages should be registered via registerPackage, but if you use Composer
+     * programmatically and want to register a plugin class directly this is a valid way
+     * to do it.
+     *
      * @param PluginInterface $plugin plugin instance
      */
     public function addPlugin(PluginInterface $plugin)
