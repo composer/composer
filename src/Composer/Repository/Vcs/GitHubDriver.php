@@ -152,14 +152,16 @@ class GitHubDriver extends VcsDriver
             }
 
             $composer = $this->getBaseComposerInformation($identifier);
+            if ($composer) {
 
-            // specials for github
-            if (!isset($composer['support']['source'])) {
-                $label = array_search($identifier, $this->getTags()) ?: array_search($identifier, $this->getBranches()) ?: $identifier;
-                $composer['support']['source'] = sprintf('https://%s/%s/%s/tree/%s', $this->originUrl, $this->owner, $this->repository, $label);
-            }
-            if (!isset($composer['support']['issues']) && $this->hasIssues) {
-                $composer['support']['issues'] = sprintf('https://%s/%s/%s/issues', $this->originUrl, $this->owner, $this->repository);
+                // specials for github
+                if (!isset($composer['support']['source'])) {
+                    $label = array_search($identifier, $this->getTags()) ?: array_search($identifier, $this->getBranches()) ?: $identifier;
+                    $composer['support']['source'] = sprintf('https://%s/%s/%s/tree/%s', $this->originUrl, $this->owner, $this->repository, $label);
+                }
+                if (!isset($composer['support']['issues']) && $this->hasIssues) {
+                    $composer['support']['issues'] = sprintf('https://%s/%s/%s/issues', $this->originUrl, $this->owner, $this->repository);
+                }
             }
 
             if ($this->shouldCache($identifier)) {
