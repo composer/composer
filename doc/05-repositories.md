@@ -311,6 +311,7 @@ the requested credentials like this (more info [here](https://getcomposer.org/do
     }
 }
 ```
+* **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update composer cache and install the package from dist.
 
 #### Subversion Options
 
