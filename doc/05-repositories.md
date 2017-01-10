@@ -295,7 +295,8 @@ attempt to use github's zip files.
 Please note:
 * **To let Composer choose which driver to use** the repository type needs to be defined as "vcs"
 * **BitBucket driver** require the OAuth method to access to BitBucket REST APIs.
-If you want to know how to create a OAuth consumer using BitBucket, please refer to [this link](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html).
+If you want to know how to create a OAuth consumer using BitBucket, please refer to [this link](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). 
+**Remember** to fill the callback url (even with a casual address) to makes OAuth 2 work.
 After created an OAuth consumer, you need to setup your composer.json config section with 
 the requested credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
 ```json
