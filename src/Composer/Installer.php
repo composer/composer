@@ -605,7 +605,7 @@ class Installer
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
-            if ($this->executeOperations) {
+            if ($this->executeOperations || $this->writeLock) {
                 $localRepo->write();
             }
         }
