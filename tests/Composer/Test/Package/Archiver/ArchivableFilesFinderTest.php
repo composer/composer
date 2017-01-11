@@ -235,6 +235,61 @@ class ArchivableFilesFinderTest extends TestCase
         $this->assertArchivableFiles($expectedFiles);
     }
 
+    public function testSkipExcludes()
+    {
+        $excludes = array(
+            'prefixB.foo',
+        );
+
+        $this->finder = new ArchivableFilesFinder($this->sources, $excludes, true);
+
+        $this->assertArchivableFiles(array(
+            '/!important!.txt',
+            '/!important_too!.txt',
+            '/#weirdfile',
+            '/A/prefixA.foo',
+            '/A/prefixB.foo',
+            '/A/prefixC.foo',
+            '/A/prefixD.foo',
+            '/A/prefixE.foo',
+            '/A/prefixF.foo',
+            '/B/sub/prefixA.foo',
+            '/B/sub/prefixB.foo',
+            '/B/sub/prefixC.foo',
+            '/B/sub/prefixD.foo',
+            '/B/sub/prefixE.foo',
+            '/B/sub/prefixF.foo',
+            '/C/prefixA.foo',
+            '/C/prefixB.foo',
+            '/C/prefixC.foo',
+            '/C/prefixD.foo',
+            '/C/prefixE.foo',
+            '/C/prefixF.foo',
+            '/D/prefixA',
+            '/D/prefixB',
+            '/D/prefixC',
+            '/D/prefixD',
+            '/D/prefixE',
+            '/D/prefixF',
+            '/E/subtestA.foo',
+            '/F/subtestA.foo',
+            '/G/subtestA.foo',
+            '/H/subtestA.foo',
+            '/I/J/subtestA.foo',
+            '/K/dirJ/subtestA.foo',
+            '/parameters.yml',
+            '/parameters.yml.dist',
+            '/prefixA.foo',
+            '/prefixB.foo',
+            '/prefixC.foo',
+            '/prefixD.foo',
+            '/prefixE.foo',
+            '/prefixF.foo',
+            '/toplevelA.foo',
+            '/toplevelB.foo',
+        ));
+    }
+
     protected function getArchivableFiles()
     {
         $files = array();
