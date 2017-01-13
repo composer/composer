@@ -37,7 +37,7 @@ class ArchiveCommand extends BaseCommand
     {
         $this
             ->setName('archive')
-            ->setDescription('Create an archive of this composer package')
+            ->setDescription('Create an archive of this composer package.')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),

@@ -36,7 +36,7 @@ class RequireCommand extends InitCommand
     {
         $this
             ->setName('require')
-            ->setDescription('Adds required packages to your composer.json and installs them')
+            ->setDescription('Adds required packages to your composer.json and installs them.')
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Required package name optionally including a version constraint, e.g. foo/bar or foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),

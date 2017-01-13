@@ -28,7 +28,7 @@ class DumpAutoloadCommand extends BaseCommand
         $this
             ->setName('dump-autoload')
             ->setAliases(array('dumpautoload'))
-            ->setDescription('Dumps the autoloader')
+            ->setDescription('Dumps the autoloader.')
             ->setDefinition(array(
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.'),

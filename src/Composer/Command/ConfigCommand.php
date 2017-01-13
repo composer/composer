@@ -63,7 +63,7 @@ class ConfigCommand extends BaseCommand
     {
         $this
             ->setName('config')
-            ->setDescription('Set config options')
+            ->setDescription('Set config options.')
             ->setDefinition(array(
                 new InputOption('global', 'g', InputOption::VALUE_NONE, 'Apply command to the global config file'),
                 new InputOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor'),
