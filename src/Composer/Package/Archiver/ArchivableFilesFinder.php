@@ -38,7 +38,7 @@ class ArchivableFilesFinder extends \FilterIterator
      * @param string $sources  Path to source files to be archived
      * @param array  $excludes Composer's own exclude rules from composer.json
      */
-    public function __construct($sources, array $excludes)
+    public function __construct($sources, $excludes)
     {
         $fs = new Filesystem();
 

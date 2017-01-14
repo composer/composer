@@ -57,7 +57,7 @@ class Package extends BasePackage
     protected $autoload = array();
     protected $devAutoload = array();
     protected $includePaths = array();
-    protected $archiveExcludes = array();
+    protected $archiveExcludes;
 
     /**
      * Creates a new in memory package.
@@ -554,9 +554,9 @@ class Package extends BasePackage
     /**
      * Sets a list of patterns to be excluded from archives
      *
-     * @param array $excludes
+     * @param array|string $excludes
      */
-    public function setArchiveExcludes(array $excludes)
+    public function setArchiveExcludes($excludes)
     {
         $this->archiveExcludes = $excludes;
     }
