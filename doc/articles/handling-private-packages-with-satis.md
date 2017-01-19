@@ -220,7 +220,7 @@ available globally you can use the `--global` (`-g`) flag.
 
 ### Downloads
 
-When GitHub or BitBucket repositories are mirrored on your local satis, the
+When GitHub, GitLab or BitBucket repositories are mirrored on your local satis, the
 build process will include the location of the downloads these platforms make
 available. This means that the repository and your setup depend on the
 availability of these services.
