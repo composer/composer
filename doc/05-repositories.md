@@ -58,7 +58,7 @@ The main repository type is the `composer` repository. It uses a single
 
 This is also the repository type that packagist uses. To reference a
 `composer` repository, just supply the path before the `packages.json` file.
-In case of packagist, that file is located at `/packages.json`, so the URL of
+In the case of packagist, that file is located at `/packages.json`, so the URL of
 the repository would be `packagist.org`. For `example.org/packages.json` the
 repository URL would be `example.org`.
 
