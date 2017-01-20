@@ -33,18 +33,21 @@ As you can see, [`require`](04-schema.md#require) takes an object that maps
 **package names** (e.g. `monolog/monolog`) to **version constraints** (e.g.
 `1.0.*`).
 
+It uses this information to search for the right set of files in package
+"repositories" that you register using the [`repositories`](04-schema.md#repositories)
+key, or in Packagist, the default package respository. In the above example,
+since no other repository is registered in the file, it is assumed that the
+`monolog/monolog` package is registered on Packagist. (See more about Packagist
+[below](#packagist), or read more about repositories [here](05-repositories.md).
+
 ### Package Names
 
 The package name consists of a vendor name and the project's name. Often these
-will be identical - the vendor name just exists to prevent naming clashes. It
-allows two different people to create a library named `json`, which would then
-just be named `igorw/json` and `seldaek/json`.
+will be identical - the vendor name just exists to prevent naming clashes. For
+example, it would allow two different people to create a library named `json`.
+One might be named `igorw/json` while the other might be `seldaek/json`.
 
-Here we are requiring `monolog/monolog`, so the vendor name is the same as the
-project's name. For projects with a unique name this is recommended. It also
-allows adding more related projects under the same namespace later on. If you
-are maintaining a library, this would make it really easy to split it up into
-smaller decoupled parts.
+Read more about publishing packages and package naming [here](02-libraries.md)
 
 ### Package Versions
 
@@ -53,16 +56,30 @@ In the previous example we were requiring version
 Monolog. This means any version in the `1.0` development branch. It is the
 equivalent of saying versions that match `>=1.0 <1.1`.
 
-Version constraints can be specified in several ways, read
+Version constraints can be specified in several ways; please read
 [versions](articles/versions.md) for more in-depth information on this topic.
 
-### Stability
+> **How does Composer download the right files?** When you specify a dependency in
+> `composer.json`, Composer, first takes the name of the package that you've requested
+> and searches for it in any repositories that you've registered using the
+> [`repositories`](04-schema.md#repositories) key. If you haven't registered
+> any extra repositories, or it doesn't find a package with that name in the
+> repositories you've specified, it falls back to Packagist (more [below](#packagist)).
+>
+> When it finds the right package, either in Packagist or in a repo you've specified,
+> it then uses the versioning features of the package's VCS to attempt to find the
+> best match for the version you've specified. Read more on package resolution
+> [here](articles/versions.md).
 
-By default only stable releases are taken into consideration. If you would
-like to also get RC, beta, alpha or dev versions of your dependencies you can
-do so using [stability flags](04-schema.md#package-links). To change that for
-all packages instead of doing per dependency you can also use the
-[minimum-stability](04-schema.md#minimum-stability) setting.
+> **Note:** If you're trying to require a package but Composer throws an error
+> regarding package stability, the version you've specified may not meet the 
+> default minimum stability requirements that Composer establishes. By default
+> only stable releases are taken into consideration when searching for package
+> versions in your VCS.
+>
+> You might run into this if you're trying to require dev, alpha, beta, or RC
+> versions of a package. Read more about stability flags and the `minimum-stability`
+> key on the [schema page](04-schema.md).
 
 ## Installing Dependencies
 
@@ -76,7 +93,7 @@ php composer.phar install
 This will find the latest version of `monolog/monolog` that matches the
 supplied version constraint and download it into the `vendor` directory.
 It's a convention to put third party code into a directory named `vendor`.
-In case of Monolog it will put it into `vendor/monolog/monolog`.
+In the case of Monolog it will put it into `vendor/monolog/monolog`.
 
 > **Tip:** If you are using git for your project, you probably want to add
 > `vendor` in your `.gitignore`. You really don't want to add all of that
@@ -99,16 +116,16 @@ if a lock file is present, and if it is, it downloads the versions specified
 there (regardless of what `composer.json` says).
 
 This means that anyone who sets up the project will download the exact same
-version of the dependencies. Your CI server, production machines, other
-developers in your team, everything and everyone runs on the same dependencies,
-which mitigates the potential for bugs affecting only some parts of the
-deployments. Even if you develop alone, in six months when reinstalling the
-project you can feel confident the dependencies installed are still working even
-if your dependencies released many new versions since then.
+versions of the dependencies that you're using. Your CI server, production
+machines, other developers in your team, everything and everyone runs on the
+same dependencies, which mitigates the potential for bugs affecting only some
+parts of the deployments. Even if you develop alone, in six months when
+reinstalling the project you can feel confident the dependencies installed are
+still working even if your dependencies released many new versions since then.
+(See note below about using the `update` command.)
 
 If no `composer.lock` file exists, Composer will read the dependencies and
-versions from `composer.json` and  create the lock file after executing the
-[`update`](03-cli.md#update) or the [`install`](03-cli.md#install) command.
+versions from `composer.json` and  create the lock file after executing.
 
 This means that if any of the dependencies get a new version, you won't get the
 updates automatically. To update to the new version, use the
@@ -136,7 +153,8 @@ php composer.phar update monolog/monolog [...]
 [Packagist](https://packagist.org/) is the main Composer repository. A Composer
 repository is basically a package source: a place where you can get packages
 from. Packagist aims to be the central repository that everybody uses. This
-means that you can automatically `require` any package that is available there.
+means that you can automatically `require` any package that is available there,
+without further specifying where Composer should look for the package.
 
 If you go to the [Packagist website](https://packagist.org/) (packagist.org),
 you can browse and search for packages.
