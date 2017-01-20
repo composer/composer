@@ -36,9 +36,10 @@ As you can see, [`require`](04-schema.md#require) takes an object that maps
 It uses this information to search for the right set of files in package
 "repositories" that you register using the [`repositories`](04-schema.md#repositories)
 key, or in Packagist, the default package respository. In the above example,
-since no other repository is registered in the file, it is assumed that the
-`monolog/monolog` package is registered on Packagist. (See more about Packagist
-[below](#packagist), or read more about repositories [here](05-repositories.md).
+since no other repository has been registered in the `composer.json` file, it is
+assumed that the `monolog/monolog` package is registered on Packagist. (See more
+about Packagist [below](#packagist), or read more about repositories
+[here](05-repositories.md).
 
 ### Package Names
 
@@ -49,15 +50,15 @@ One might be named `igorw/json` while the other might be `seldaek/json`.
 
 Read more about publishing packages and package naming [here](02-libraries.md)
 
-### Package Versions
+### Package Version Constraints
 
-In the previous example we were requiring version
-[`1.0.*`](http://semver.mwl.be/#?package=monolog%2Fmonolog&version=1.0.*) of
-Monolog. This means any version in the `1.0` development branch. It is the
-equivalent of saying versions that match `>=1.0 <1.1`.
+In our example, we're requesting the Monolog package with the version constraint
+[`1.0.*`](http://semver.mwl.be/#?package=monolog%2Fmonolog&version=1.0.*).
+This means any version in the `1.0` development branch, or any version that is
+greater than or equal to 1.0 and less than 1.1 (`>=1.0 <1.1`).
 
-Version constraints can be specified in several ways; please read
-[versions](articles/versions.md) for more in-depth information on this topic.
+Version can be a little confusing in Composer, and version constraints can be specified
+in several ways. Please read [versions](articles/versions.md) for more in-depth information.
 
 > **How does Composer download the right files?** When you specify a dependency in
 > `composer.json`, Composer, first takes the name of the package that you've requested
@@ -67,15 +68,14 @@ Version constraints can be specified in several ways; please read
 > repositories you've specified, it falls back to Packagist (more [below](#packagist)).
 >
 > When it finds the right package, either in Packagist or in a repo you've specified,
-> it then uses the versioning features of the package's VCS to attempt to find the
-> best match for the version you've specified. Read more on package resolution
-> [here](articles/versions.md).
+> it then uses the versioning features of the package's VCS (i.e., branches and tags)
+> to attempt to find the best match for the version you've specified. Be sure to read
+> about versions and package resolution in the [versions article](articles/versions.md).
 
 > **Note:** If you're trying to require a package but Composer throws an error
-> regarding package stability, the version you've specified may not meet the 
-> default minimum stability requirements that Composer establishes. By default
-> only stable releases are taken into consideration when searching for package
-> versions in your VCS.
+> regarding package stability, the version you've specified may not meet your
+> default minimum stability requirements. By default only stable releases are taken
+> into consideration when searching for valid package versions in your VCS.
 >
 > You might run into this if you're trying to require dev, alpha, beta, or RC
 > versions of a package. Read more about stability flags and the `minimum-stability`
@@ -90,32 +90,46 @@ To install the defined dependencies for your project, just run the
 php composer.phar install
 ```
 
-This will find the latest version of `monolog/monolog` that matches the
-supplied version constraint and download it into the `vendor` directory.
-It's a convention to put third party code into a directory named `vendor`.
-In the case of Monolog it will put it into `vendor/monolog/monolog`.
+When you run this command, one of two things may happen:
+
+### Installing Without `composer.lock`
+
+If you've never run the command before and there is also no `composer.lock` file present,
+Composer simply resolves all dependencies listed in your `composer.json` file and downloads
+the latest version of their files into the `vendor` directory in your project. (The `vendor`
+directory is the conventional location for all third-party code in a project). In our
+example from above, you would end up with the Monolog source files in
+`vendor/monolog/monolog/`. If Monolog listed any dependencies, those would also be in
+folders under `vendor/`.
 
 > **Tip:** If you are using git for your project, you probably want to add
 > `vendor` in your `.gitignore`. You really don't want to add all of that
-> code to your repository.
+> third-party code to your versioned repository.
 
-You will notice the [`install`](03-cli.md#install) command also created a
-`composer.lock` file.
+When Composer has finished installing, it writes all of the packages and the exact versions
+of them that it downloaded to the `composer.lock` file, locking the project to those specific
+versions.
 
-## `composer.lock` - The Lock File
+### Installing With `composer.lock`
 
-After installing the dependencies, Composer writes the list of the exact
-versions it installed into a `composer.lock` file. This locks the project
-to those specific versions.
+This brings us to the second scenario. If there's already a `composer.lock` file as well as a
+`composer.json` file when you run `composer install`, it means that either you've run the
+`install` command before, or someone else on the project has run the `install` command and
+committed the `composer.lock` file to the project (which is good).
 
-**Commit your application's `composer.lock` (along with `composer.json`)
-into version control.**
+Either way, running `install` when a `composer.lock` file is present simply resolves and installs
+all dependencies that you've listed in `composer.json`, but it uses the version constraints
+that it finds in `composer.lock` to ensure that the package versions are consistent for everyone
+working on your project. The result is that you have all dependencies requested by your
+`composer.json` file, but that they may not all be at the very latest available versions (since
+some of the dependencies listed in the `composer.lock` file may have released new versions since
+the file was created). This is by design, as it ensures that your project never breaks because of
+unexpected changes in dependencies.
 
-This is important because the [`install`](03-cli.md#install) command checks
-if a lock file is present, and if it is, it downloads the versions specified
-there (regardless of what `composer.json` says).
+### Commit Your `composer.lock` File to Version Control
 
-This means that anyone who sets up the project will download the exact same
+Committing this file to VC is important because it will cause anyone who sets
+up the project to use the exact same
 versions of the dependencies that you're using. Your CI server, production
 machines, other developers in your team, everything and everyone runs on the
 same dependencies, which mitigates the potential for bugs affecting only some
@@ -124,14 +138,13 @@ reinstalling the project you can feel confident the dependencies installed are
 still working even if your dependencies released many new versions since then.
 (See note below about using the `update` command.)
 
-If no `composer.lock` file exists, Composer will read the dependencies and
-versions from `composer.json` and  create the lock file after executing.
+## Updating Dependencies to their Latest Versions
 
-This means that if any of the dependencies get a new version, you won't get the
-updates automatically. To update to the new version, use the
+As mentioned above, the `composer.lock` file prevents you from automatically getting
+the latest versions of your dependencies. To update to the latest versions, use the
 [`update`](03-cli.md#update) command. This will fetch the latest matching
 versions (according to your `composer.json` file) and also update the lock file
-with the new version.
+with the new version. (This is equivalent to simply deleting the `composer.lock` file.)
 
 ```sh
 php composer.phar update
@@ -166,18 +179,12 @@ but it enables discovery and adoption by other developers more quickly.
 ## Autoloading
 
 For libraries that specify autoload information, Composer generates a
-`vendor/autoload.php` file. You can simply include this file and you will get
-autoloading for free.
+`vendor/autoload.php` file. You can simply include this file and start
+using the classes that those libraries provide without any extra work:
 
 ```php
 require __DIR__ . '/vendor/autoload.php';
-```
 
-This makes it really easy to use third party code. For example: If your project
-depends on Monolog, you can just start using classes from it, and they will be
-autoloaded.
-
-```php
 $log = new Monolog\Logger('name');
 $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::WARNING));
 $log->addWarning('Foo');

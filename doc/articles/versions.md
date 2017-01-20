@@ -1,10 +1,100 @@
 <!--
-    tagline: Version constraints explained.
+    tagline: Versions explained.
 -->
 
 # Versions
 
-## Basic Constraints
+## Composer Versions vs VCS Versions
+
+Because Composer is heavily geared toward utilizing version control systems
+like git, the term "version" can be a little ambiguous. In the sense of a
+version control system, a "version" is a specific set of files that contain
+specific data. In git terminology, this is a "ref", or a specific commit,
+which may be represented by a branch HEAD or a tag. When you check out that
+version in your VCS -- for example, tag `v1.1` or commit `e35fa0d` --, you're
+asking for a single, known set of files, and you always get the same files back.
+
+In Composer, what's usually referred to casually as a version -- that is,
+the string that follows the package name in a require line (e.g., `~1.1` or
+`1.2.*`) -- is actually more specifically a version constraint. Composer
+uses version constraints to figure out which refs in a VCS it should be
+checking out.
+
+### Tags vs Branches
+
+Normally, Composer deals with tags (as opposed to branches -- if you don't
+know what this means, read up on
+[version control systems](https://en.wikipedia.org/wiki/Version_control#Common_vocabulary)).
+When referencing a tag, it may reference a specific tag (e.g., `1.1`) or it
+may reference a valid range of tags (e.g., `>=1.1 <2.0`). Furthermore, you
+can add "stability specifiers" to let Composer know that you are or aren't
+interested in certain tags, like alpha releases, beta releases, or release
+candidates, even if they're technically within the numeric range specified
+by the version constraint (these releases are usually considered "unstable",
+hence the term "stability specifier"). 
+
+If you want Composer to check out a branch instead of a tag, you use the
+special syntax described [here](02-libraries.md#branches). In short, if
+you're checking out a branch, it's assumed that you want to *work* on the
+branch and Composer simply clones the repo into the correct place in your
+`vendor` directory. (For tags, it just copies the right files without actually
+cloning the repo.) This can be very convenient for libraries under development,
+as you can make changes to the dependency files your project is actually using
+and still commit them to their respective repos as patches or other updates.
+
+Let's look at an example. Suppose you've published a library whose git repo
+looks like this:
+
+```sh
+$ git branch
+$ 
+$ v1
+$ v2
+$ my-feature
+$ nother-feature
+$
+$ git tag
+$ 
+$ v1.0
+$ v1.0.1
+$ v1.0.2
+$ v1.1-BETA
+$ v1.1-RC1
+$ v1.1-RC2
+$ v1.1
+$ v1.1.1
+$ v2.0-BETA
+$ v2.0-RC1
+$ v2.0
+$ v2.0.1
+$ v2.0.2
+```
+
+Now assume you've got a project that depends on this library and you've been
+running `composer update` in that project since the `v1.0` release. If you
+specified `~1.0` in Composer (the tilde modifier, among others, is detailed
+below), and you don't add a [`minimum-stability`](04-schema.md#minimum-stability)
+key elsewhere in the file, then Composer will default to "stable" as a minimum
+stability setting and you will receive only the `v1.0`, `v1.0.1`, `v1.0.2`,
+`v1.1` and `v1.1.1` tags as the tags are created in your VCS. If you set the
+`minimum-stability` key to `RC`, you would receive the aforementioned tags as
+they're released, plus the `v1.1-RC1` and `v1.1-RC2` tags, but not `v1.1-BETA`.
+(You can see the available stability constraints in order on the
+[schema page](04-schema.md#minimum-stability).
+
+The final important detail here is how branches are handled. In git, a branch
+simply represents a series of commits, with the current "HEAD" of the branch
+pointing at the most recent in the chain. A tag is a specific commit, independent
+of branch. By default composer checks out the tag that best matches the version
+constraint you've specified. However, if you specify the version constraint as
+"v1-dev" (or sometimes "dev-my-branch" -- see the [libraries page](02-libraries.md#branches)
+for syntax details), then Composer will clone the repo into your `vendor`
+  directory, checking out the `v1` branch.
+
+## Basic Version Constraints
+
+Now that you have an idea of how Composer sees versions, let's talk about how
+to specify version constraints for your project dependencies.
 
 ### Exact
 
@@ -87,7 +177,7 @@ library code.
 
 Example: `^1.2.3`
 
-## Stability
+## Stability Constraints
 
 If you are using a constraint that does not explicitly define a stability,
 Composer will default internally to `-dev` or `-stable`, depending on the
@@ -113,8 +203,9 @@ Examples:
 To allow various stabilities without enforcing them at the constraint level
 however, you may use [stability-flags](../04-schema.md#package-links) like
 `@<stability>` (e.g. `@dev`) to let composer know that a given package
-can be installed in a different stability than your default
-[minimum-stability](../04-schema.md#minimum-stability) setting.
+can be installed in a different stability than your default minimum-stability
+setting. All available stability flags are listed on the minimum-stability
+section of the [schema page](../04-schema.md#minimum-stability).
 
 ## Test version constraints
 
