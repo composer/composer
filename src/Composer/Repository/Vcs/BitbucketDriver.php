@@ -205,11 +205,15 @@ abstract class BitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getChangeDate($identifier);
         }
 
-        $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'
-                    . $this->owner . '/' . $this->repository . '/changesets/' . $identifier;
-        $changeset = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
+        $resource = sprintf(
+            'https://api.bitbucket.org/2.0/repositories/%s/%s/commit/%s?fields=date',
+            $this->owner,
+            $this->repository,
+            $identifier
+        );
+        $commit = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
 
-        return new \DateTime($changeset['timestamp']);
+        return new \DateTime($commit['date']);
     }
 
     /**
