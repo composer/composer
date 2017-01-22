@@ -39,13 +39,13 @@ class OutdatedCommand extends ShowCommand
             ->setHelp(<<<EOT
 The outdated command is just a proxy for `composer show -l`
 
-The color coding for dependency versions is as such:
+The color coding (or signage if you have ANSI colors disabled) for dependency versions is as such:
 
-- <info>green</info>: Dependency is in the latest version and is up to date.
-- <comment>yellow</comment>: Dependency has a new version available that includes backwards
+- <info>green</info> (=): Dependency is in the latest version and is up to date.
+- <comment>yellow</comment> (~): Dependency has a new version available that includes backwards
   compatibility breaks according to semver, so upgrade when you can but it
   may involve work.
-- <highlight>red</highlight>: Dependency has a new version that is semver-compatible and you should upgrade it.
+- <highlight>red</highlight> (!): Dependency has a new version that is semver-compatible and you should upgrade it.
 
 
 EOT

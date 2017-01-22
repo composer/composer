@@ -317,6 +317,9 @@ EOT
                 $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
                 $writeLatest = $writeVersion && $showLatest && ($nameLength + $versionLength + $latestLength + 3 <= $width);
                 $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + $versionLength + $latestLength + 24 <= $width);
+                if ($writeLatest && !$io->isDecorated()) {
+                    $latestLength += 2;
+                }
                 $hasOutdatedPackages = false;
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
@@ -339,6 +342,9 @@ EOT
                         if ($writeLatest && $latestPackackage) {
                             $latestVersion = $latestPackackage->getFullPrettyVersion();
                             $style = $this->getVersionStyle($latestPackackage, $package);
+                            if (!$io->isDecorated()) {
+                                $latestVersion = str_replace(array('info', 'highlight', 'comment'), array('=', '!', '~'), $style) . ' ' . $latestVersion;
+                            }
                             $io->write(' <'.$style.'>' . str_pad($latestVersion, $latestLength, ' ') . '</'.$style.'>', false);
                         }
 
