@@ -48,6 +48,8 @@ if (function_exists('ini_set')) {
     unset($memoryInBytes, $memoryLimit);
 }
 
+putenv('COMPOSER_BINARY='.realpath($_SERVER['argv'][0]));
+
 // run the command application
 $application = new Application();
 $application->run(null, $output);

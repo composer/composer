@@ -173,7 +173,7 @@ EOT
                     }
 
                     $io->writeError('Package ' . $packageFilter . ' not found in ' . $options['working-dir'] . '/composer.json');
-                    return;
+                    return 1;
                 }
             } else {
                 $versions = array($package->getPrettyVersion() => $package->getVersion());
