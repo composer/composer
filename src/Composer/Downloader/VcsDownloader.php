@@ -13,7 +13,10 @@
 namespace Composer\Downloader;
 
 use Composer\Config;
+use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionGuesser;
+use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -21,7 +24,7 @@ use Composer\Util\Filesystem;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterface
+abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterface, VcsCapableDownloaderInterface
 {
     /** @var IOInterface */
     protected $io;
@@ -57,14 +60,32 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
 
-        $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+        $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)", false);
         $this->filesystem->emptyDirectory($path);
 
         $urls = $package->getSourceUrls();
         while ($url = array_shift($urls)) {
             try {
                 if (Filesystem::isLocalPath($url)) {
+                    // realpath() below will not understand
+                    // url that starts with "file://"
+                    $needle = 'file://';
+                    $isFileProtocol = false;
+                    if (0 === strpos($url, $needle)) {
+                        $url = substr($url, strlen($needle));
+                        $isFileProtocol = true;
+                    }
+
+                    // realpath() below will not understand %20 spaces etc.
+                    if (false !== strpos($url, '%')) {
+                        $url = rawurldecode($url);
+                    }
+
                     $url = realpath($url);
+
+                    if ($isFileProtocol) {
+                        $url = $needle . $url;
+                    }
                 }
                 $this->doDownload($package, $path, $url);
                 break;
@@ -83,8 +104,6 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 }
             }
         }
-
-        $this->io->writeError('');
     }
 
     /**
@@ -111,7 +130,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             $to = $target->getFullPrettyVersion();
         }
 
-        $this->io->writeError("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
+        $this->io->writeError("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)", false);
 
         $this->cleanChanges($initial, $path, true);
         $urls = $target->getSourceUrls();
@@ -168,8 +187,6 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         if (!$urls && $exception) {
             throw $exception;
         }
-
-        $this->io->writeError('');
     }
 
     /**
@@ -191,6 +208,21 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     public function setOutputProgress($outputProgress)
     {
         return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getVcsReference(PackageInterface $package, $path)
+    {
+        $parser = new VersionParser;
+        $guesser = new VersionGuesser($this->config, $this->process, $parser);
+        $dumper = new ArrayDumper;
+
+        $packageConfig = $dumper->dump($package);
+        if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {
+            return $packageVersion['commit'];
+        }
     }
 
     /**

@@ -240,6 +240,35 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $manager->uninstall($this->repository, $operation);
     }
 
+    public function testInstallBinary()
+    {
+        $installer = $this->getMockBuilder('Composer\Installer\LibraryInstaller')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $manager   = new InstallationManager();
+        $manager->addInstaller($installer);
+
+        $package   = $this->createPackageMock();
+
+        $package
+            ->expects($this->once())
+            ->method('getType')
+            ->will($this->returnValue('library'));
+
+        $installer
+            ->expects($this->once())
+            ->method('supports')
+            ->with('library')
+            ->will($this->returnValue(true));
+
+        $installer
+            ->expects($this->once())
+            ->method('ensureBinariesPresence')
+            ->with($package);
+
+        $manager->ensureBinariesPresence($package);
+    }
+
     private function createInstallerMock()
     {
         return $this->getMockBuilder('Composer\Installer\InstallerInterface')

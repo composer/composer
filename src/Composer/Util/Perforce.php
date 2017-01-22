@@ -304,7 +304,9 @@ class Perforce
 
     public function connectClient()
     {
-        $p4CreateClientCommand = $this->generateP4Command('client -i < ' . str_replace(" ", "\\ ", $this->getP4ClientSpec()));
+        $p4CreateClientCommand = $this->generateP4Command(
+            'client -i < ' . str_replace(" ", "\\ ", $this->getP4ClientSpec())
+        );
         $this->executeCommand($p4CreateClientCommand);
     }
 
@@ -397,55 +399,54 @@ class Perforce
 
     public function getComposerInformation($identifier)
     {
+        $composerFileContent = $this->getFileContent('composer.json', $identifier);
+
+        if (!$composerFileContent) {
+            return;
+        }
+
+        return json_decode($composerFileContent, true);
+    }
+
+    public function getFileContent($file, $identifier)
+    {
+        $path = $this->getFilePath($file, $identifier);
+
+        $command = $this->generateP4Command(' print ' . $path);
+        $this->executeCommand($command);
+        $result = $this->commandResult;
+
+        if (!trim($result)) {
+            return null;
+        }
+
+        return $result;
+    }
+
+    public function getFilePath($file, $identifier)
+    {
         $index = strpos($identifier, '@');
         if ($index === false) {
-            $composerJson = $identifier. '/composer.json';
+            $path = $identifier. '/' . $file;
 
-            return $this->getComposerInformationFromPath($composerJson);
-        }
-
-        return $this->getComposerInformationFromLabel($identifier, $index);
-    }
-
-    public function getComposerInformationFromPath($composerJson)
-    {
-        $command = $this->generateP4Command(' print ' . $composerJson);
-        $this->executeCommand($command);
-        $result = $this->commandResult;
-        $index = strpos($result, '{');
-        if ($index === false) {
-            return '';
-        }
-        if ($index >= 0) {
-            $rawData = substr($result, $index);
-            $composer_info = json_decode($rawData, true);
-
-            return $composer_info;
-        }
-
-        return '';
-    }
-
-    public function getComposerInformationFromLabel($identifier, $index)
-    {
-        $composerJsonPath = substr($identifier, 0, $index) . '/composer.json' . substr($identifier, $index);
-        $command = $this->generateP4Command(' files ' . $composerJsonPath, false);
-        $this->executeCommand($command);
-        $result = $this->commandResult;
-        $index2 = strpos($result, 'no such file(s).');
-        if ($index2 === false) {
-            $index3 = strpos($result, 'change');
-            if (!($index3 === false)) {
-                $phrase = trim(substr($result, $index3));
-                $fields = explode(' ', $phrase);
-                $id = $fields[1];
-                $composerJson = substr($identifier, 0, $index) . '/composer.json@' . $id;
-
-                return $this->getComposerInformationFromPath($composerJson);
+            return $path;
+        } else {
+            $path = substr($identifier, 0, $index) . '/' . $file . substr($identifier, $index);
+            $command = $this->generateP4Command(' files ' . $path, false);
+            $this->executeCommand($command);
+            $result = $this->commandResult;
+            $index2 = strpos($result, 'no such file(s).');
+            if ($index2 === false) {
+                $index3 = strpos($result, 'change');
+                if ($index3 !== false) {
+                    $phrase = trim(substr($result, $index3));
+                    $fields = explode(' ', $phrase);
+                    return substr($identifier, 0, $index) . '/' . $file . '@' . $fields[1];
+                }
             }
         }
 
-        return "";
+        return null;
     }
 
     public function getBranches()

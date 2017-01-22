@@ -99,11 +99,13 @@ resolution.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-suggest:** Skips suggested packages in the output.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
+* **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 
 ## update
 
@@ -143,11 +145,13 @@ php composer.phar update vendor/*
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-suggest:** Skips suggested packages in the output.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
+* **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
 * **--with-dependencies:** Add also all dependencies of whitelisted packages to the whitelist.
@@ -186,6 +190,8 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-suggest:** Skips suggested packages in the output.
+* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
 * **--update-with-dependencies:** Also update dependencies of the newly
   required packages.
@@ -195,6 +201,10 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
   can take a bit of time to run so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
+* **--apcu-autoloader:** Use APCu to cache found/not-found classes.
+* **--prefer-stable:** Prefer stable versions of dependencies.
+* **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
+  versions of requirements, generally used with `--prefer-stable`.
 
 ## remove
 
@@ -216,6 +226,7 @@ uninstalled.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies:** Also update dependencies of the removed packages.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
@@ -223,6 +234,7 @@ uninstalled.
   can take a bit of time to run so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
+* **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 
 ## global
 
@@ -325,6 +337,7 @@ php composer.phar show monolog/monolog 1.0.2
 * **--name-only (-N):** List package names only.
 * **--path (-P):** List package paths.
 * **--outdated (-o):** Implies --latest, but this lists *only* packages that have a newer version available.
+* **--minor-only (-m):** Use with --latest. Only shows packages that have minor SemVer-compatible updates.
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 
 ## outdated
@@ -344,6 +357,7 @@ The color coding is as such:
 
 * **--all (-a):** Show all packages, not just outdated (alias for `composer show -l`).
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
+* **--minor-only (-m):** Only shows packages that have minor SemVer-compatible updates.
 
 ## browse / home
 
@@ -641,6 +655,7 @@ performance.
   a bit of time to run so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize`.
+* **--apcu:** Use APCu to cache found/not-found classes.
 * **--no-dev:** Disables autoload-dev rules.
 
 ## clear-cache
@@ -763,6 +778,11 @@ some tools like git or curl will only use the lower-cased `http_proxy` version.
 Alternatively you can also define the git proxy using
 `git config --global http.proxy <proxy url>`.
 
+If you are using Composer in a non-CLI context (i.e. integration into a CMS or
+similar use case), and need to support proxies, please provide the `CGI_HTTP_PROXY`
+environment variable instead. See [httpoxy.org](https://httpoxy.org/) for further
+details.
+
 ### no_proxy
 
 If you are behind a proxy and would like to disable it for certain domains, you
@@ -843,14 +863,16 @@ This env var controls the [`discard-changes`](06-config.md#discard-changes) conf
 If set to 1, this env var will make Composer behave as if you passed the
 `--no-interaction` flag to every command. This can be set on build boxes/CI.
 
-### COMPOSER_DISABLE_XDEBUG_WARN
-
-If set to 1, this env disables the warning about having xdebug enabled.
-
 ### COMPOSER_ALLOW_SUPERUSER
 
 If set to 1, this env disables the warning about running commands as root/super user.
 It also disables automatic clearing of sudo sessions, so you should really only set this
 if you use Composer as super user at all times like in docker containers.
+
+### COMPOSER_MIRROR_PATH_REPOS
+
+If set to 1, this env changes the default path repository strategy to `mirror` instead
+of `symlink`. As it is the default strategy being set it can still be overwritten by
+repository options.
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

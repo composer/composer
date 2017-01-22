@@ -90,6 +90,7 @@ abstract class BaseIO implements IOInterface, LoggerInterface
         $bitbucketOauth = $config->get('bitbucket-oauth') ?: array();
         $githubOauth = $config->get('github-oauth') ?: array();
         $gitlabOauth = $config->get('gitlab-oauth') ?: array();
+        $gitlabToken = $config->get('gitlab-token') ?: array();
         $httpBasic = $config->get('http-basic') ?: array();
 
         // reload oauth tokens from config if available
@@ -99,7 +100,7 @@ abstract class BaseIO implements IOInterface, LoggerInterface
         }
 
         foreach ($githubOauth as $domain => $token) {
-            if (!preg_match('{^[a-z0-9]+$}', $token)) {
+            if (!preg_match('{^[.a-z0-9]+$}', $token)) {
                 throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
             }
             $this->checkAndSetAuthentication($domain, $token, 'x-oauth-basic');
@@ -107,6 +108,10 @@ abstract class BaseIO implements IOInterface, LoggerInterface
 
         foreach ($gitlabOauth as $domain => $token) {
             $this->checkAndSetAuthentication($domain, $token, 'oauth2');
+        }
+
+        foreach ($gitlabToken as $domain => $token) {
+            $this->checkAndSetAuthentication($domain, $token, 'private-token');
         }
 
         // reload http basic credentials from config if available

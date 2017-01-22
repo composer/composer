@@ -45,6 +45,8 @@ class ArchiveManagerTest extends ArchiverTest
 
     public function testArchiveTar()
     {
+        $this->skipIfNotExecutable('git');
+
         $this->setupGitRepo();
 
         $package = $this->setupPackage();
@@ -62,6 +64,8 @@ class ArchiveManagerTest extends ArchiverTest
 
     public function testArchiveCustomFileName()
     {
+        $this->skipIfNotExecutable('git');
+
         $this->setupGitRepo();
 
         $package = $this->setupPackage();

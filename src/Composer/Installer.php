@@ -106,6 +106,7 @@ class Installer
     protected $preferDist = false;
     protected $optimizeAutoloader = false;
     protected $classMapAuthoritative = false;
+    protected $apcuAutoloader = false;
     protected $devMode = false;
     protected $dryRun = false;
     protected $verbose = false;
@@ -115,6 +116,10 @@ class Installer
     protected $ignorePlatformReqs = false;
     protected $preferStable = false;
     protected $preferLowest = false;
+    protected $skipSuggest = false;
+    protected $writeLock = true;
+    protected $executeOperations = true;
+
     /**
      * Array of package names/globs flagged for update
      *
@@ -182,6 +187,9 @@ class Installer
         if ($this->dryRun) {
             $this->verbose = true;
             $this->runScripts = false;
+            $this->executeOperations = false;
+            $this->writeLock = false;
+            $this->dumpAutoloader = false;
             $this->installationManager->addInstaller(new NoopInstaller);
             $this->mockLocalRepositories($this->repositoryManager);
         }
@@ -218,18 +226,18 @@ class Installer
                 return $res;
             }
         } catch (\Exception $e) {
-            if (!$this->dryRun) {
+            if ($this->executeOperations) {
                 $this->installationManager->notifyInstalls($this->io);
             }
 
             throw $e;
         }
-        if (!$this->dryRun) {
+        if ($this->executeOperations) {
             $this->installationManager->notifyInstalls($this->io);
         }
 
         // output suggestions if we're in dev mode
-        if ($this->devMode) {
+        if ($this->devMode && !$this->skipSuggest) {
             $this->suggestedPackagesReporter->output($installedRepo);
         }
 
@@ -252,49 +260,58 @@ class Installer
             );
         }
 
-        if (!$this->dryRun) {
-            // write lock
-            if ($this->update) {
-                $localRepo->reload();
+        // write lock
+        if ($this->update && $this->writeLock) {
+            $localRepo->reload();
 
-                $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
-                $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
+            $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
+            $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
 
-                $updatedLock = $this->locker->setLockData(
-                    array_diff($localRepo->getCanonicalPackages(), $devPackages),
-                    $devPackages,
-                    $platformReqs,
-                    $platformDevReqs,
-                    $aliases,
-                    $this->package->getMinimumStability(),
-                    $this->package->getStabilityFlags(),
-                    $this->preferStable || $this->package->getPreferStable(),
-                    $this->preferLowest,
-                    $this->config->get('platform') ?: array()
-                );
-                if ($updatedLock) {
-                    $this->io->writeError('<info>Writing lock file</info>');
-                }
+            $updatedLock = $this->locker->setLockData(
+                array_diff($localRepo->getCanonicalPackages(), $devPackages),
+                $devPackages,
+                $platformReqs,
+                $platformDevReqs,
+                $aliases,
+                $this->package->getMinimumStability(),
+                $this->package->getStabilityFlags(),
+                $this->preferStable || $this->package->getPreferStable(),
+                $this->preferLowest,
+                $this->config->get('platform') ?: array()
+            );
+            if ($updatedLock) {
+                $this->io->writeError('<info>Writing lock file</info>');
+            }
+        }
+
+        if ($this->dumpAutoloader) {
+            // write autoloader
+            if ($this->optimizeAutoloader) {
+                $this->io->writeError('<info>Generating optimized autoload files</info>');
+            } else {
+                $this->io->writeError('<info>Generating autoload files</info>');
             }
 
-            if ($this->dumpAutoloader) {
-                // write autoloader
-                if ($this->optimizeAutoloader) {
-                    $this->io->writeError('<info>Generating optimized autoload files</info>');
-                } else {
-                    $this->io->writeError('<info>Generating autoload files</info>');
-                }
+            $this->autoloadGenerator->setDevMode($this->devMode);
+            $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
+            $this->autoloadGenerator->setApcu($this->apcuAutoloader);
+            $this->autoloadGenerator->setRunScripts($this->runScripts);
+            $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+        }
 
-                $this->autoloadGenerator->setDevMode($this->devMode);
-                $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
-                $this->autoloadGenerator->setRunScripts($this->runScripts);
-                $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
-            }
+        if ($this->runScripts) {
+            $devMode = (int) $this->devMode;
+            putenv("COMPOSER_DEV_MODE=$devMode");
 
-            if ($this->runScripts) {
-                // dispatch post event
-                $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-                $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
+            // dispatch post event
+            $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
+            $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
+        }
+
+        if ($this->executeOperations) {
+            // force binaries re-generation in case they are missing
+            foreach ($localRepo->getPackages() as $package) {
+                $this->installationManager->ensureBinariesPresence($package);
             }
 
             $vendorDir = $this->config->get('vendor-dir');
@@ -441,7 +458,7 @@ class Installer
                 $request->install($package->getName(), $constraint);
             }
 
-            foreach ($this->locker->getPlatformRequirements(true) as $link) {
+            foreach ($this->locker->getPlatformRequirements($this->devMode) as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         }
@@ -454,7 +471,6 @@ class Installer
         $solver = new Solver($policy, $pool, $installedRepo, $this->io);
         try {
             $operations = $solver->solve($request, $this->ignorePlatformReqs);
-            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
             $this->io->writeError($e->getMessage());
@@ -462,11 +478,13 @@ class Installer
             return array(max(1, $e->getCode()), array());
         }
 
-        $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
-        $this->io->writeError("Analyzed ".$solver->getRuleSetSize()." rules to resolve dependencies", true, IOInterface::VERBOSE);
-
         // force dev packages to be updated if we update or install from a (potentially new) lock
         $operations = $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, 'force-updates', $operations);
+
+        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
+
+        $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
+        $this->io->writeError("Analyzed ".$solver->getRuleSetSize()." rules to resolve dependencies", true, IOInterface::VERBOSE);
 
         // execute operations
         if (!$operations) {
@@ -490,6 +508,38 @@ class Installer
         if (extension_loaded('curl')) {
             $prefetcher = new Prefetcher\Prefetcher;
             $prefetcher->fetchAllFromOperations($this->io, $this->config, $operations);
+        }
+
+        if ($operations) {
+            $installs = $updates = $uninstalls = array();
+            foreach ($operations as $operation) {
+                if ($operation instanceof InstallOperation) {
+                    $installs[] = $operation->getPackage()->getPrettyName().':'.$operation->getPackage()->getFullPrettyVersion();
+                } elseif ($operation instanceof UpdateOperation) {
+                    $updates[] = $operation->getTargetPackage()->getPrettyName().':'.$operation->getTargetPackage()->getFullPrettyVersion();
+                } elseif ($operation instanceof UninstallOperation) {
+                    $uninstalls[] = $operation->getPackage()->getPrettyName();
+                }
+            }
+
+            $this->io->writeError(
+                sprintf("<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
+                count($installs),
+                1 === count($installs) ? '' : 's',
+                count($updates),
+                1 === count($updates) ? '' : 's',
+                count($uninstalls),
+                1 === count($uninstalls) ? '' : 's')
+            );
+            if ($installs) {
+                $this->io->writeError("Installs: ".implode(', ', $installs), true, IOInterface::VERBOSE);
+            }
+            if ($updates) {
+                $this->io->writeError("Updates: ".implode(', ', $updates), true, IOInterface::VERBOSE);
+            }
+            if ($uninstalls) {
+                $this->io->writeError("Removals: ".implode(', ', $uninstalls), true, IOInterface::VERBOSE);
+            }
         }
 
         foreach ($operations as $operation) {
@@ -530,13 +580,11 @@ class Installer
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
-            // output non-alias ops in dry run, output alias ops in debug verbosity
-            if ($this->dryRun && false === strpos($operation->getJobType(), 'Alias')) {
+            // output non-alias ops when not executing operations (i.e. dry run), output alias ops in debug verbosity
+            if (!$this->executeOperations && false === strpos($operation->getJobType(), 'Alias')) {
                 $this->io->writeError('  - ' . $operation);
-                $this->io->writeError('');
             } elseif ($this->io->isDebug() && false !== strpos($operation->getJobType(), 'Alias')) {
                 $this->io->writeError('  - ' . $operation);
-                $this->io->writeError('');
             }
 
             $this->installationManager->execute($localRepo, $operation);
@@ -563,12 +611,12 @@ class Installer
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
-            if (!$this->dryRun) {
+            if ($this->executeOperations) {
                 $localRepo->write();
             }
         }
 
-        if (!$this->dryRun) {
+        if ($this->executeOperations) {
             // force source/dist urls to be updated for all packages
             $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
             $localRepo->write();
@@ -625,7 +673,7 @@ class Installer
         // but as it is not persisted on disk we use a loader/dumper
         // to reload it in memory
         $localRepo = new InstalledArrayRepository(array());
-        $loader = new ArrayLoader();
+        $loader = new ArrayLoader(null, true);
         $dumper = new ArrayDumper();
         foreach ($tempLocalRepo->getCanonicalPackages() as $pkg) {
             $localRepo->addPackage($loader->load($dumper->dump($pkg)));
@@ -976,6 +1024,8 @@ class Installer
                         )
                     )) {
                         $operations[] = new UpdateOperation($package, $newPackage);
+
+                        continue;
                     }
                 }
 
@@ -984,7 +1034,7 @@ class Installer
                     $references = $this->package->getReferences();
 
                     if (isset($references[$package->getName()]) && $references[$package->getName()] !== $package->getSourceReference()) {
-                        // changing the source ref to update to will be handled in the operations loop below
+                        // changing the source ref to update to will be handled in the operations loop
                         $operations[] = new UpdateOperation($package, clone $package);
                     }
                 }
@@ -1068,6 +1118,8 @@ class Installer
             return;
         }
 
+        $rootRefs = $this->package->getReferences();
+
         foreach ($localRepo->getCanonicalPackages() as $package) {
             // find similar packages (name/version) in all repositories
             $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()));
@@ -1094,12 +1146,20 @@ class Installer
                 // update the dist and source URLs
                 $sourceUrl = $package->getSourceUrl();
                 $newSourceUrl = $newPackage->getSourceUrl();
+                $newReference = $newPackage->getSourceReference();
 
-                $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newPackage->getSourceReference(), $newPackage->getDistUrl());
+                if ($package->isDev() && isset($rootRefs[$package->getName()]) && $package->getSourceReference() === $rootRefs[$package->getName()]) {
+                    $newReference = $rootRefs[$package->getName()];
+                }
+
+                $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newReference, $newPackage->getDistUrl());
 
                 if ($package instanceof CompletePackage && $newPackage instanceof CompletePackage) {
                     $package->setAbandoned($newPackage->getReplacementPackage() ?: $newPackage->isAbandoned());
                 }
+
+                $package->setDistMirrors($newPackage->getDistMirrors());
+                $package->setSourceMirrors($newPackage->getSourceMirrors());
             }
         }
     }
@@ -1128,6 +1188,10 @@ class Installer
 
     private function updateInstallReferences(PackageInterface $package, $reference)
     {
+        if (!$reference) {
+            return;
+        }
+
         $package->setSourceReference($reference);
         $package->setDistReference($reference);
 
@@ -1444,6 +1508,19 @@ class Installer
     }
 
     /**
+     * Whether or not generated autoloader considers APCu caching.
+     *
+     * @param  bool      $apcuAutoloader
+     * @return Installer
+     */
+    public function setApcuAutoloader($apcuAutoloader = false)
+    {
+        $this->apcuAutoloader = (boolean) $apcuAutoloader;
+
+        return $this;
+    }
+
+    /**
      * update packages
      *
      * @param  bool      $update
@@ -1472,6 +1549,8 @@ class Installer
     /**
      * set whether to run autoloader or not
      *
+     * This is disabled implicitly when enabling dryRun
+     *
      * @param  bool      $dumpAutoloader
      * @return Installer
      */
@@ -1484,6 +1563,8 @@ class Installer
 
     /**
      * set whether to run scripts or not
+     *
+     * This is disabled implicitly when enabling dryRun
      *
      * @param  bool      $runScripts
      * @return Installer
@@ -1593,6 +1674,49 @@ class Installer
     public function setPreferLowest($preferLowest = true)
     {
         $this->preferLowest = (boolean) $preferLowest;
+
+        return $this;
+    }
+
+    /**
+     * Should the lock file be updated when updating?
+     *
+     * This is disabled implicitly when enabling dryRun
+     *
+     * @param  bool      $writeLock
+     * @return Installer
+     */
+    public function setWriteLock($writeLock = true)
+    {
+        $this->writeLock = (boolean) $writeLock;
+
+        return $this;
+    }
+
+    /**
+     * Should the operations (packge install, update and removal) be executed on disk?
+     *
+     * This is disabled implicitly when enabling dryRun
+     *
+     * @param  bool      $executeOperations
+     * @return Installer
+     */
+    public function setExecuteOperations($executeOperations = true)
+    {
+        $this->executeOperations = (boolean) $executeOperations;
+
+        return $this;
+    }
+
+    /**
+     * Should suggestions be skipped?
+     *
+     * @param  bool      $skipSuggest
+     * @return Installer
+     */
+    public function setSkipSuggest($skipSuggest = true)
+    {
+        $this->skipSuggest = (boolean) $skipSuggest;
 
         return $this;
     }

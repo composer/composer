@@ -33,6 +33,8 @@ class OutdatedCommand extends ShowCommand
                 new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show only packages that are outdated (this is the default, but present here for compat with `show`'),
                 new InputOption('all', 'a', InputOption::VALUE_NONE, 'Show all installed packages with their latest versions'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
+                new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
+                new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.'),
             ))
             ->setHelp(<<<EOT
 The outdated command is just a proxy for `composer show -l`
@@ -65,6 +67,12 @@ EOT
         }
         if ($input->getArgument('package')) {
             $args['package'] = $input->getArgument('package');
+        }
+        if ($input->getOption('strict')) {
+            $args['--strict'] = true;
+        }
+        if ($input->getOption('minor-only')) {
+            $args['--minor-only'] = true;
         }
 
         $input = new ArrayInput($args);

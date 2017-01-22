@@ -28,6 +28,8 @@ class Bitbucket
     private $remoteFilesystem;
     private $token = array();
 
+    const OAUTH2_ACCESS_TOKEN_URL = 'https://bitbucket.org/site/oauth2/access_token';
+
     /**
      * Constructor.
      *
@@ -81,9 +83,7 @@ class Bitbucket
     private function requestAccessToken($originUrl)
     {
         try {
-            $apiUrl = 'https://bitbucket.org/site/oauth2/access_token';
-
-            $json = $this->remoteFilesystem->getContents($originUrl, $apiUrl, false, array(
+            $json = $this->remoteFilesystem->getContents($originUrl, self::OAUTH2_ACCESS_TOKEN_URL, false, array(
                 'retry-auth-failure' => false,
                 'http' => array(
                     'method' => 'POST',
@@ -93,8 +93,15 @@ class Bitbucket
 
             $this->token = json_decode($json, true);
         } catch (TransportException $e) {
-            if (in_array($e->getCode(), array(403, 401))) {
-                $this->io->writeError('<error>Invalid consumer provided.</error>');
+            if ($e->getCode() === 400) {
+                $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
+                $this->io->writeError('This can have two reasons:');
+                $this->io->writeError('1. You are authenticating with a bitbucket username/password combination');
+                $this->io->writeError('2. You are using an OAuth consumer, but didn\'t configure a (dummy) callback url');
+
+                return false;
+            } elseif (in_array($e->getCode(), array(403, 401))) {
+                $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
                 $this->io->writeError('You can also add it manually later by using "composer config bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
 
                 return false;
@@ -122,6 +129,7 @@ class Bitbucket
         $url = 'https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html';
         $this->io->writeError(sprintf('Follow the instructions on %s', $url));
         $this->io->writeError(sprintf('to create a consumer. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
+        $this->io->writeError('Ensure you enter a "Callback URL" or it will not be possible to create an Access Token (this callback url will not be used by composer)');
 
         $consumerKey = trim($this->io->askAndHideAnswer('Consumer Key (hidden): '));
 
@@ -153,6 +161,8 @@ class Bitbucket
             "consumer-secret" => $consumerSecret,
         );
         $this->config->getAuthConfigSource()->addConfigSetting('bitbucket-oauth.'.$originUrl, $consumer);
+        // Remove conflicting basic auth credentials (if available)
+        $this->config->getAuthConfigSource()->removeConfigSetting('http-basic.' . $originUrl);
 
         $this->io->writeError('<info>Consumer stored successfully.</info>');
 

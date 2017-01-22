@@ -65,7 +65,7 @@ breaks until 2.0, that works well. Another way of looking at it is that using
 
 Example: `~1.2`
 
-> **Note:** Though `2.0-beta.1` is strictly before `2.0`, a version constraint
+> **Note:** Although `2.0-beta.1` is strictly before `2.0`, a version constraint
 > like `~1.2` would not install it. As said above `~1.2` only means the `.2`
 > can change but the `1.` part is fixed.
 
@@ -118,7 +118,7 @@ can be installed in a different stability than your default
 
 ## Test version constraints
 
-You can test version constraints using [semver.mwl.be](http://semver.mwl.be).
+You can test version constraints using [semver.mwl.be](https://semver.mwl.be).
 Fill in a package name and it will autofill the default version constraint
 which Composer would add to your `composer.json` file. You can adjust the
 version constraint and the tool will highlight all releases that match.

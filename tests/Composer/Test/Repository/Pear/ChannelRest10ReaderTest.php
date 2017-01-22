@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Repository\Pear;
+namespace Composer\Test\Repository\Pear;
 
 use Composer\TestCase;
 use Composer\Test\Mock\RemoteFilesystemMock;

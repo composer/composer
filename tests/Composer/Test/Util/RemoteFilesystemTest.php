@@ -175,7 +175,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $res = $this->callGetOptionsForUrl($io, array('example.org', array('ssl' => array('cafile' => '/some/path/file.crt'))), array(), 'http://www.example.org');
 
         $this->assertTrue(isset($res['ssl']['ciphers']));
-        $this->assertRegExp("|!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK|", $res['ssl']['ciphers']);
+        $this->assertRegExp("|!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA|", $res['ssl']['ciphers']);
         $this->assertTrue($res['ssl']['verify_peer']);
         $this->assertTrue($res['ssl']['SNI_enabled']);
         $this->assertEquals(7, $res['ssl']['verify_depth']);
@@ -189,6 +189,84 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         } else {
             $this->assertFalse(isset($res['ssl']['disable_compression']));
         }
+    }
+
+    /**
+     * Provides URLs to public downloads at BitBucket.
+     *
+     * @return string[][]
+     */
+    public function provideBitbucketPublicDownloadUrls()
+    {
+        return array(
+            array('https://bitbucket.org/seldaek/composer-live-test-repo/downloads/composer-unit-test-download-me.txt', '1234'),
+        );
+    }
+
+    /**
+     * Tests that a BitBucket public download is correctly retrieved.
+     *
+     * @param string $url
+     * @param string $contents
+     * @dataProvider provideBitbucketPublicDownloadUrls
+     */
+    public function testBitBucketPublicDownload($url, $contents)
+    {
+        $io = $this
+            ->getMockBuilder('Composer\IO\ConsoleIO')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $rfs = new RemoteFilesystem($io);
+        $hostname = parse_url($url, PHP_URL_HOST);
+
+        $result = $rfs->getContents($hostname, $url, false);
+
+        $this->assertEquals($contents, $result);
+    }
+
+    /**
+     * Tests that a BitBucket public download is correctly retrieved when `bitbucket-oauth` is configured.
+     *
+     * @param string $url
+     * @param string $contents
+     * @dataProvider provideBitbucketPublicDownloadUrls
+     */
+    public function testBitBucketPublicDownloadWithAuthConfigured($url, $contents)
+    {
+        $io = $this
+            ->getMockBuilder('Composer\IO\ConsoleIO')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $config = $this
+            ->getMockBuilder('Composer\Config')
+            ->getMock();
+        $config
+            ->method('get')
+            ->withAnyParameters()
+            ->willReturn(array());
+
+        $io
+            ->method('hasAuthentication')
+            ->with('bitbucket.org')
+            ->willReturn(true);
+        $io
+            ->method('getAuthentication')
+            ->with('bitbucket.org')
+            ->willReturn(array(
+                'username' => 'x-token-auth',
+                // This token is fake, but it matches a valid token's pattern.
+                'password' => '1A0yeK5Po3ZEeiiRiMWLivS0jirLdoGuaSGq9NvESFx1Fsdn493wUDXC8rz_1iKVRTl1GINHEUCsDxGh5lZ='
+            ));
+
+
+        $rfs = new RemoteFilesystem($io, $config);
+        $hostname = parse_url($url, PHP_URL_HOST);
+
+        $result = $rfs->getContents($hostname, $url, false);
+
+        $this->assertEquals($contents, $result);
     }
 
     protected function callGetOptionsForUrl($io, array $args = array(), array $options = array(), $fileUrl = '')

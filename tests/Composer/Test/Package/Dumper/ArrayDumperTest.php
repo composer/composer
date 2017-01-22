@@ -31,6 +31,7 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
     {
         $this->dumper = new ArrayDumper();
         $this->package = $this->getMock('Composer\Package\CompletePackageInterface');
+        $this->packageExpects('getTransportOptions', array());
     }
 
     public function testRequiredInformation()
@@ -38,7 +39,8 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
         $this
             ->packageExpects('getPrettyName', 'foo')
             ->packageExpects('getPrettyVersion', '1.0')
-            ->packageExpects('getVersion', '1.0.0.0');
+            ->packageExpects('getVersion', '1.0.0.0')
+        ;
 
         $config = $this->dumper->dump($this->package);
         $this->assertEquals(
@@ -56,7 +58,9 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
         $this->package = $this->getMock('Composer\Package\RootPackageInterface');
 
         $this
-            ->packageExpects('getMinimumStability', 'dev');
+            ->packageExpects('getMinimumStability', 'dev')
+            ->packageExpects('getTransportOptions', array())
+        ;
 
         $config = $this->dumper->dump($this->package);
         $this->assertSame('dev', $config['minimum-stability']);
@@ -87,8 +91,14 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
      */
     public function testKeys($key, $value, $method = null, $expectedValue = null)
     {
+        $this->package = $this->getMock('Composer\Package\RootPackageInterface');
+
         $this->packageExpects('get'.ucfirst($method ?: $key), $value);
         $this->packageExpects('isAbandoned', $value);
+
+        if ($method !== 'transportOptions') {
+            $this->packageExpects('getTransportOptions', array());
+        }
 
         $config = $this->dumper->dump($this->package);
 
@@ -104,9 +114,9 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 'time',
-                new \DateTime('2012-02-01'),
+                $datetime = new \DateTime('2012-02-01'),
                 'ReleaseDate',
-                '2012-02-01 00:00:00',
+                $datetime->format(DATE_RFC3339),
             ),
             array(
                 'authors',

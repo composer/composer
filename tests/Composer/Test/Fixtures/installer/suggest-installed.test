@@ -21,6 +21,7 @@ install
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
 Updating dependencies (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
 Writing lock file
 Generating autoload files
 

@@ -22,7 +22,7 @@ class PackageEvents
     /**
      * The PRE_PACKAGE_INSTALL event occurs before a package is installed.
      *
-     * The event listener method receives a Composer\Script\PackageEvent instance.
+     * The event listener method receives a Composer\Installer\PackageEvent instance.
      *
      * @var string
      */
@@ -31,7 +31,7 @@ class PackageEvents
     /**
      * The POST_PACKAGE_INSTALL event occurs after a package is installed.
      *
-     * The event listener method receives a Composer\Script\PackageEvent instance.
+     * The event listener method receives a Composer\Installer\PackageEvent instance.
      *
      * @var string
      */
@@ -40,7 +40,7 @@ class PackageEvents
     /**
      * The PRE_PACKAGE_UPDATE event occurs before a package is updated.
      *
-     * The event listener method receives a Composer\Script\PackageEvent instance.
+     * The event listener method receives a Composer\Installer\PackageEvent instance.
      *
      * @var string
      */
@@ -49,7 +49,7 @@ class PackageEvents
     /**
      * The POST_PACKAGE_UPDATE event occurs after a package is updated.
      *
-     * The event listener method receives a Composer\Script\PackageEvent instance.
+     * The event listener method receives a Composer\Installer\PackageEvent instance.
      *
      * @var string
      */
@@ -58,7 +58,7 @@ class PackageEvents
     /**
      * The PRE_PACKAGE_UNINSTALL event occurs before a package has been uninstalled.
      *
-     * The event listener method receives a Composer\Script\PackageEvent instance.
+     * The event listener method receives a Composer\Installer\PackageEvent instance.
      *
      * @var string
      */
@@ -67,7 +67,7 @@ class PackageEvents
     /**
      * The POST_PACKAGE_UNINSTALL event occurs after a package has been uninstalled.
      *
-     * The event listener method receives a Composer\Script\PackageEvent instance.
+     * The event listener method receives a Composer\Installer\PackageEvent instance.
      *
      * @var string
      */

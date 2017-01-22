@@ -21,9 +21,10 @@ use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Script;
-use Composer\Script\CommandEvent;
-use Composer\Script\PackageEvent;
+use Composer\Installer\PackageEvent;
+use Composer\Installer\BinaryInstaller;
 use Composer\Util\ProcessExecutor;
+use Composer\Script\Event as ScriptEvent;
 use Symfony\Component\Process\PhpExecutableFinder;
 
 /**
@@ -220,6 +221,27 @@ class EventDispatcher
                 } else {
                     $this->io->writeError(sprintf('> %s', $exec));
                 }
+
+                $possibleLocalBinaries = $this->composer->getPackage()->getBinaries();
+                if ($possibleLocalBinaries) {
+                    foreach ($possibleLocalBinaries as $localExec) {
+                        if (preg_match('{\b'.preg_quote($callable).'$}', $localExec)) {
+                            $caller = BinaryInstaller::determineBinaryCaller($localExec);
+                            $exec = preg_replace('{^'.preg_quote($callable).'}', $caller . ' ' . $localExec, $exec);
+                            break;
+                        }
+                    }
+                }
+
+                if (substr($exec, 0, 5) === '@php ') {
+                    $finder = new PhpExecutableFinder();
+                    $phpPath = $finder->find();
+                    if (!$phpPath) {
+                        throw new \RuntimeException('Failed to locate PHP binary to execute "'.$exec.'"');
+                    }
+                    $exec = $phpPath . ' ' . substr($exec, 5);
+                }
+
                 if (0 !== ($exitCode = $this->process->execute($exec))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()));
 
@@ -256,9 +278,9 @@ class EventDispatcher
     }
 
     /**
-     * @param  mixed              $target
-     * @param  Event              $event
-     * @return Event|CommandEvent
+     * @param  mixed $target
+     * @param  Event $event
+     * @return Event
      */
     protected function checkListenerExpectedEvent($target, Event $event)
     {
@@ -415,6 +437,10 @@ class EventDispatcher
         }
 
         $generator = $this->composer->getAutoloadGenerator();
+        if ($event instanceof ScriptEvent) {
+            $generator->setDevMode($event->isDevMode());
+        }
+
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
         $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
         $map = $generator->parseAutoloads($packageMap, $package);
@@ -443,7 +469,7 @@ class EventDispatcher
      */
     protected function isComposerScript($callable)
     {
-        return '@' === substr($callable, 0, 1);
+        return '@' === substr($callable, 0, 1) && '@php ' !== substr($callable, 0, 5);
     }
 
     /**

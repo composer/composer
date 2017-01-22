@@ -40,7 +40,7 @@ class SvnDownloader extends VcsDownloader
             }
         }
 
-        $this->io->writeError("    Checking out ".$package->getSourceReference());
+        $this->io->writeError(" Checking out ".$package->getSourceReference());
         $this->execute($url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
     }
 
@@ -63,7 +63,7 @@ class SvnDownloader extends VcsDownloader
             }
         }
 
-        $this->io->writeError("    Checking out " . $ref);
+        $this->io->writeError(" Checking out " . $ref);
         $this->execute($url, "svn switch" . $flags, sprintf("%s/%s", $url, $ref), $path);
     }
 

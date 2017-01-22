@@ -2,7 +2,7 @@ Contributing to Composer
 ========================
 
 Please note that this project is released with a
-[Contributor Code of Conduct](http://contributor-covenant.org/version/1/2/0/).
+[Contributor Code of Conduct](http://contributor-covenant.org/version/1/4/).
 By participating in this project you agree to abide by its terms.
 
 Reporting Issues
@@ -20,6 +20,11 @@ commands, please provide full output of said command in very very verbose mode
 If your issue involves installing, updating or resolving dependencies, the
 chance of us being able to reproduce your issue will be much higher if you
 share your `composer.json` with us.
+
+Security Reports
+----------------
+
+Please send any sensitive issue to [security@packagist.org](mailto:security@packagist.org). Thanks!
 
 Installation from Source
 ------------------------

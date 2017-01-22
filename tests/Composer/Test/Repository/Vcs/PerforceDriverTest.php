@@ -122,8 +122,8 @@ class PerforceDriverTest extends TestCase
 
     public function testInitializeLogsInAndConnectsClient()
     {
-        $this->perforce->expects($this->at(0))->method('p4Login')->with($this->identicalTo($this->io));
-        $this->perforce->expects($this->at(1))->method('checkStream')->with($this->equalTo(self::TEST_DEPOT));
+        $this->perforce->expects($this->at(0))->method('p4Login');
+        $this->perforce->expects($this->at(1))->method('checkStream');
         $this->perforce->expects($this->at(2))->method('writeP4ClientSpec');
         $this->perforce->expects($this->at(3))->method('connectClient');
         $this->driver->initialize();

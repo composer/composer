@@ -10,8 +10,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Repository\Pear;
+namespace Composer\Test\Repository\Pear;
 
+use Composer\Repository\Pear\ChannelInfo;
+use Composer\Repository\Pear\DependencyConstraint;
+use Composer\Repository\Pear\DependencyInfo;
+use Composer\Repository\Pear\PackageInfo;
+use Composer\Repository\Pear\ReleaseInfo;
 use Composer\TestCase;
 use Composer\Semver\VersionParser;
 use Composer\Semver\Constraint\Constraint;

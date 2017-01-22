@@ -69,6 +69,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         'wiki' => 'http://example.org/',
                         'source' => 'http://example.org/',
                         'irc' => 'irc://example.org/example',
+                        'rss' => 'http://example.org/rss',
                     ),
                     'require' => array(
                         'a/b' => '1.*',
@@ -323,6 +324,18 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'require.bar/foo : unbound version constraints (dev-master) should be avoided',
                     'require.bar/hacked : unbound version constraints (@stable) should be avoided',
                     'require.bar/woo : exact version constraints (1.0.0) should be avoided if the package follows semantic versioning',
+                ),
+                false,
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'require' => array(
+                        'bar/unstable' => '0.3.0',
+                    ),
+                ),
+                array(
+                    // using an exact version constraint for an unstable version should not trigger a warning
                 ),
                 false,
             ),

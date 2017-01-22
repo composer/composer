@@ -46,63 +46,49 @@
             "description": "License name. Or an array of license names."
         },
         "authors": {
-            "type": "array",
-            "description": "List of authors that contributed to the package. This is typically the main maintainers, not the full list.",
-            "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [ "name"],
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Full name of the author."
-                    },
-                    "email": {
-                        "type": "string",
-                        "description": "Email address of the author.",
-                        "format": "email"
-                    },
-                    "homepage": {
-                        "type": "string",
-                        "description": "Homepage URL for the author.",
-                        "format": "uri"
-                    },
-                    "role": {
-                        "type": "string",
-                        "description": "Author's role in the project."
-                    }
-                }
-            }
+            "$ref": "#/definitions/authors"
         },
         "require": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that are required to run this package.",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "replace": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that can be replaced by this package.",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "conflict": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that conflict with this package.",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "provide": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that this package provides in addition to this package's name.",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "require-dev": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that this package requires for developing it (testing tools and such).",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "suggest": {
             "type": "object",
             "description": "This is a hash of package name (keys) and descriptions (values) that this package suggests work well with it (this will be suggested to the user during installation).",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "config": {
             "type": "object",
@@ -134,11 +120,20 @@
                 "github-oauth": {
                     "type": "object",
                     "description": "A hash of domain name => github API oauth tokens, typically {\"github.com\":\"<token>\"}.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "gitlab-oauth": {
                     "type": "object",
                     "description": "A hash of domain name => gitlab API oauth tokens, typically {\"gitlab.com\":\"<token>\"}.",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "gitlab-token": {
+                    "type": "object",
+                    "description": "A hash of domain name => gitlab private tokens, typically {\"gitlab.com\":\"<token>\"}.",
                     "additionalProperties": true
                 },
                 "disable-tls": {
@@ -160,7 +155,20 @@
                 "http-basic": {
                     "type": "object",
                     "description": "A hash of domain name => {\"username\": \"...\", \"password\": \"...\"}.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "object",
+                        "required": ["username", "password"],
+                        "properties": {
+                            "username": {
+                                "type": "string",
+                                "description": "The username used for HTTP Basic authentication"
+                            },
+                            "password": {
+                                "type": "string",
+                                "description": "The password used for HTTP Basic authentication"
+                            }
+                        }
+                    }
                 },
                 "store-auths": {
                     "type": ["string", "boolean"],
@@ -169,7 +177,9 @@
                 "platform": {
                     "type": "object",
                     "description": "This is a hash of package name (keys) and version (values) that will be used to mock the platform packages on this machine.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "vendor-dir": {
                     "type": "string",
@@ -235,6 +245,10 @@
                     "type": "boolean",
                     "description": "If true, the composer autoloader will not scan the filesystem for classes that are not found in the class map, defaults to false."
                 },
+                "apcu-autoloader": {
+                    "type": "boolean",
+                    "description": "If true, the Composer autoloader will check for APCu and use it to cache found/not-found classes when the extension is enabled, defaults to false."
+                },
                 "github-domains": {
                     "type": "array",
                     "description": "A list of domains to use in github mode. This is used for GitHub Enterprise setups, defaults to [\"github.com\"].",
@@ -269,32 +283,7 @@
             "additionalProperties": true
         },
         "autoload": {
-            "type": "object",
-            "description": "Description of how the package can be autoloaded.",
-            "properties": {
-                "psr-0": {
-                    "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
-                    "additionalProperties": true
-                },
-                "psr-4": {
-                    "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
-                    "additionalProperties": true
-                },
-                "classmap": {
-                    "type": "array",
-                    "description": "This is an array of directories that contain classes to be included in the class-map generation process."
-                },
-                "files": {
-                    "type": "array",
-                    "description": "This is an array of files that are always required on every request."
-                },
-                "exclude-from-classmap": {
-                    "type": "array",
-                    "description": "This is an array of patterns to exclude from autoload classmap generation. (e.g. \"exclude-from-classmap\": [\"/test/\", \"/tests/\", \"/Tests/\"]"
-                }
-            }
+            "$ref": "#/definitions/autoload"
         },
         "autoload-dev": {
             "type": "object",
@@ -303,12 +292,22 @@
                 "psr-0": {
                     "type": "object",
                     "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "psr-4": {
                     "type": "object",
                     "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "classmap": {
                     "type": "array",
@@ -333,7 +332,23 @@
         "repositories": {
             "type": ["object", "array"],
             "description": "A set of additional repositories where packages can be found.",
-            "additionalProperties": true
+            "additionalProperties": {
+                "oneOf": [
+                    { "$ref": "#/definitions/repository" },
+                    { "type": "boolean", "enum": [false] }
+                ]
+            },
+            "items": {
+                "oneOf": [
+                    { "$ref": "#/definitions/repository" },
+                    {
+                        "type": "object",
+                        "additionalProperties": { "type": "boolean", "enum": [false] },
+                        "minProperties": 1,
+                        "maxProperties": 1
+                    }
+                ]
+            }
         },
         "minimum-stability": {
             "type": ["string"],
@@ -483,6 +498,323 @@
         "abandoned": {
             "type": ["boolean", "string"],
             "description": "Indicates whether this package has been abandoned, it can be boolean or a package name/URL pointing to a recommended alternative. Defaults to false."
+        },
+        "_comment": {
+            "type": ["array", "string"],
+            "description": "A key to store comments in"
+        }
+    },
+    "definitions": {
+        "authors": {
+            "type": "array",
+            "description": "List of authors that contributed to the package. This is typically the main maintainers, not the full list.",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [ "name"],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Full name of the author."
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "Email address of the author.",
+                        "format": "email"
+                    },
+                    "homepage": {
+                        "type": "string",
+                        "description": "Homepage URL for the author.",
+                        "format": "uri"
+                    },
+                    "role": {
+                        "type": "string",
+                        "description": "Author's role in the project."
+                    }
+                }
+            }
+        },
+        "autoload": {
+            "type": "object",
+            "description": "Description of how the package can be autoloaded.",
+            "properties": {
+                "psr-0": {
+                    "type": "object",
+                    "description": "This is a hash of namespaces (keys) and the directories they can be found in (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "psr-4": {
+                    "type": "object",
+                    "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "classmap": {
+                    "type": "array",
+                    "description": "This is an array of directories that contain classes to be included in the class-map generation process."
+                },
+                "files": {
+                    "type": "array",
+                    "description": "This is an array of files that are always required on every request."
+                },
+                "exclude-from-classmap": {
+                    "type": "array",
+                    "description": "This is an array of patterns to exclude from autoload classmap generation. (e.g. \"exclude-from-classmap\": [\"/test/\", \"/tests/\", \"/Tests/\"]"
+                }
+            }
+        },
+        "repository": {
+            "type": "object",
+            "oneOf": [
+                { "$ref": "#/definitions/composer-repository" },
+                { "$ref": "#/definitions/vcs-repository" },
+                { "$ref": "#/definitions/path-repository" },
+                { "$ref": "#/definitions/artifact-repository" },
+                { "$ref": "#/definitions/pear-repository" },
+                { "$ref": "#/definitions/package-repository" }
+            ]
+        },
+        "composer-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["composer"] },
+                "url": { "type": "string", "format": "uri" },
+                "options": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "allow_ssl_downgrade": { "type": "boolean" },
+                "force-lazy-providers": { "type": "boolean" }
+            }
+        },
+        "vcs-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "git-bitbucket", "hg", "hg-bitbucket", "fossil", "perforce", "svn"] },
+                "url": { "type": "string" },
+                "no-api": { "type": "boolean" },
+                "secure-http": { "type": "boolean" },
+                "svn-cache-credentials": { "type": "boolean" },
+                "trunk-path": { "type": "string" },
+                "branches-path": { "type": "string" },
+                "tags-path": { "type": "string" },
+                "package-path": { "type": "string" },
+                "depot": { "type": "string" },
+                "branch": { "type": "string" },
+                "unique_perforce_client_name": { "type": "string" },
+                "p4user": { "type": "string" },
+                "p4password": { "type": "string" }
+            }
+        },
+        "path-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["path"] },
+                "url": { "type": "string" },
+                "options": {
+                    "type": "object",
+                    "properties": {
+                        "symlink": { "type": ["boolean", "null"] }
+                    },
+                    "additionalProperties": true
+                }
+            }
+        },
+        "artifact-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["artifact"] },
+                "url": { "type": "string" }
+            }
+        },
+        "pear-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["pear"] },
+                "url": { "type": "string", "format": "uri" },
+                "vendor-alias": { "type": "string" }
+            }
+        },
+        "package-repository": {
+            "type": "object",
+            "required": ["type", "package"],
+            "properties": {
+                "type": { "type": "string", "enum": ["package"] },
+                "package": {
+                    "oneOf": [
+                        { "$ref": "#/definitions/inline-package" },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": { "$ref": "#/definitions/inline-package" }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "inline-package": {
+            "required": ["name", "version"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Package name, including 'vendor-name/' prefix."
+                },
+                "type": {
+                    "type": "string"
+                },
+                "target-dir": {
+                    "description": "DEPRECATED: Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "homepage": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "version": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "license": {
+                    "type": [
+                        "string",
+                        "array"
+                    ]
+                },
+                "authors": {
+                    "$ref": "#/definitions/authors"
+                },
+                "require": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "replace": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "conflict": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "provide": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "require-dev": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "suggest": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "extra": {
+                    "type": ["object", "array"],
+                    "additionalProperties": true
+                },
+                "autoload": {
+                    "$ref": "#/definitions/autoload"
+                },
+                "archive": {
+                    "type": ["object"],
+                    "properties": {
+                        "exclude": {
+                            "type": "array"
+                        }
+                    }
+                },
+                "bin": {
+                    "type": ["array"],
+                    "description": "A set of files that should be treated as binaries and symlinked into bin-dir (from config).",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "include-path": {
+                    "type": ["array"],
+                    "description": "DEPRECATED: A list of directories which should get added to PHP's include path. This is only present to support legacy projects, and all new code should preferably use autoloading.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "source": {
+                    "type": "object",
+                    "required": ["type", "url", "reference"],
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        },
+                        "url": {
+                            "type": "string"
+                        },
+                        "reference": {
+                            "type": "string"
+                        },
+                        "mirrors": {
+                            "type": "array"
+                        }
+                    }
+                },
+                "dist": {
+                    "type": "object",
+                    "required": ["type", "url"],
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        },
+                        "url": {
+                            "type": "string"
+                        },
+                        "reference": {
+                            "type": "string"
+                        },
+                        "shasum": {
+                            "type": "string"
+                        },
+                        "mirrors": {
+                            "type": "array"
+                        }
+                    }
+                }
+            },
+            "additionalProperties": true
         }
     }
 }

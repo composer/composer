@@ -118,19 +118,20 @@ EOT
     {
         $url = ProcessExecutor::escape($url);
 
+        $process = new ProcessExecutor($this->getIO());
         if (Platform::isWindows()) {
-            return passthru('start "web" explorer "' . $url . '"');
+            return $process->execute('start "web" explorer "' . $url . '"', $output);
         }
 
-        passthru('which xdg-open', $linux);
-        passthru('which open', $osx);
+        $linux = $process->execute('which xdg-open', $output);
+        $osx = $process->execute('which open', $output);
 
         if (0 === $linux) {
-            passthru('xdg-open ' . $url);
+            $process->execute('xdg-open ' . $url, $output);
         } elseif (0 === $osx) {
-            passthru('open ' . $url);
+            $process->execute('open ' . $url, $output);
         } else {
-            $this->getIO()->writeError('no suitable browser opening command found, open yourself: ' . $url);
+            $this->getIO()->writeError('No suitable browser opening command found, open yourself: ' . $url);
         }
     }
 

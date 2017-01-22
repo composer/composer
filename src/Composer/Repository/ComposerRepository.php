@@ -59,6 +59,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $distMirrors;
     private $degradedMode = false;
     private $rootData;
+    private $hasPartialPackages;
+    private $partialPackagesByName;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
@@ -88,7 +90,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->config = $config;
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
-        $this->baseUrl = rtrim(preg_replace('{^(.*)(?:/[^/\\]+.json)?(?:[?#].*)?$}', '$1', $this->url), '/');
+        $this->baseUrl = rtrim(preg_replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
@@ -190,12 +192,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * {@inheritDoc}
      */
-    public function search($query, $mode = 0)
+    public function search($query, $mode = 0, $type = null)
     {
         $this->loadRootServerFile();
 
         if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
-            $url = str_replace('%query%', $query, $this->searchUrl);
+            $url = str_replace(array('%query%', '%type%'), array($query, $type), $this->searchUrl);
 
             $hostname = parse_url($url, PHP_URL_HOST) ?: $url;
             $json = $this->rfs->getContents($hostname, $url, false);
@@ -280,69 +282,84 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $this->providers[$name];
         }
 
-        // skip platform packages, root package and composer-plugin-api
-        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
-            return array();
+        if ($this->hasPartialPackages && null === $this->partialPackagesByName) {
+            $this->initializePartialPackages();
         }
 
-        if (null === $this->providerListing) {
-            $this->loadProviderListings($this->loadRootServerFile());
-        }
-
-        $useLastModifiedCheck = false;
-        if ($this->lazyProvidersUrl && !isset($this->providerListing[$name])) {
-            $hash = null;
-            $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
-            $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
-            $useLastModifiedCheck = true;
-        } elseif ($this->providersUrl) {
-            // package does not exist in this repo
-            if (!isset($this->providerListing[$name])) {
+        if (!$this->hasPartialPackages || !isset($this->partialPackagesByName[$name])) {
+            // skip platform packages, root package and composer-plugin-api
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
                 return array();
             }
 
-            $hash = $this->providerListing[$name]['sha256'];
-            $url = str_replace(array('%package%', '%hash%'), array($name, $hash), $this->providersUrl);
-            $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
-        } else {
-            return array();
-        }
+            if (null === $this->providerListing) {
+                $this->loadProviderListings($this->loadRootServerFile());
+            }
 
-        $packages = null;
-        if ($cacheKey) {
-            if (!$useLastModifiedCheck && $hash && $this->cache->sha256($cacheKey) === $hash) {
-                $packages = json_decode($this->cache->read($cacheKey), true);
-            } elseif ($useLastModifiedCheck) {
-                if ($contents = $this->cache->read($cacheKey)) {
-                    $contents = json_decode($contents, true);
-                    if (isset($contents['last-modified'])) {
-                        $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
-                        if (true === $response) {
-                            $packages = $contents;
-                        } elseif ($response) {
-                            $packages = $response;
+            $useLastModifiedCheck = false;
+            if ($this->lazyProvidersUrl && !isset($this->providerListing[$name])) {
+                $hash = null;
+                $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
+                $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
+                $useLastModifiedCheck = true;
+            } elseif ($this->providersUrl) {
+                // package does not exist in this repo
+                if (!isset($this->providerListing[$name])) {
+                    return array();
+                }
+
+                $hash = $this->providerListing[$name]['sha256'];
+                $url = str_replace(array('%package%', '%hash%'), array($name, $hash), $this->providersUrl);
+                $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
+            } else {
+                return array();
+            }
+
+            $packages = null;
+            if ($cacheKey) {
+                if (!$useLastModifiedCheck && $hash && $this->cache->sha256($cacheKey) === $hash) {
+                    $packages = json_decode($this->cache->read($cacheKey), true);
+                } elseif ($useLastModifiedCheck) {
+                    if ($contents = $this->cache->read($cacheKey)) {
+                        $contents = json_decode($contents, true);
+                        if (isset($contents['last-modified'])) {
+                            $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
+                            if (true === $response) {
+                                $packages = $contents;
+                            } elseif ($response) {
+                                $packages = $response;
+                            }
                         }
                     }
                 }
             }
-        }
 
-        if (!$packages) {
-            try {
-                $packages = $this->fetchFile($url, $cacheKey, $hash, $useLastModifiedCheck);
-            } catch (TransportException $e) {
-                // 404s are acceptable for lazy provider repos
-                if ($e->getStatusCode() === 404 && $this->lazyProvidersUrl) {
-                    $packages = array('packages' => array());
-                } else {
-                    throw $e;
+            if (!$packages) {
+                try {
+                    $packages = $this->fetchFile($url, $cacheKey, $hash, $useLastModifiedCheck);
+                } catch (TransportException $e) {
+                    // 404s are acceptable for lazy provider repos
+                    if ($e->getStatusCode() === 404 && $this->lazyProvidersUrl) {
+                        $packages = array('packages' => array());
+                    } else {
+                        throw $e;
+                    }
                 }
             }
+
+            $loadingPartialPackage = false;
+        } else {
+            $packages = array('packages' => array('versions' => $this->partialPackagesByName[$name]));
+            $loadingPartialPackage = true;
         }
 
         $this->providers[$name] = array();
         foreach ($packages['packages'] as $versions) {
             foreach ($versions as $version) {
+                if (!$loadingPartialPackage && $this->hasPartialPackages && isset($this->partialPackagesByName[$version['name']])) {
+                    continue;
+                }
+
                 // avoid loading the same objects twice
                 if (isset($this->providersByUid[$version['uid']])) {
                     // skip if already assigned
@@ -492,6 +509,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if (!empty($data['providers-lazy-url'])) {
             $this->lazyProvidersUrl = $this->canonicalizeUrl($data['providers-lazy-url']);
             $this->hasProviders = true;
+
+            $this->hasPartialPackages = !empty($data['packages']) && is_array($data['packages']);
         }
 
         if ($this->allowSslDowngrade) {
@@ -642,8 +661,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
                 $rfs = $preFileDownloadEvent->getRemoteFilesystem();
+
                 $json = $rfs->getContents($hostname, $filename, false);
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
+                    // undo downgrade before trying again if http seems to be hijacked or modifying content somehow
+                    if ($this->allowSslDowngrade) {
+                        $this->url = str_replace('http://', 'https://', $this->url);
+                        $this->baseUrl = str_replace('http://', 'https://', $this->baseUrl);
+                        $filename = str_replace('http://', 'https://', $filename);
+                    }
+
                     if ($retries) {
                         usleep(100000);
 
@@ -745,5 +772,36 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return true;
             }
         }
+    }
+
+    /**
+     * This initializes the packages key of a partial packages.json that contain some packages inlined + a providers-lazy-url
+     *
+     * This should only be called once
+     */
+    private function initializePartialPackages()
+    {
+        $rootData = $this->loadRootServerFile();
+
+        $this->partialPackagesByName = array();
+        foreach ($rootData['packages'] as $package => $versions) {
+            $package = strtolower($package);
+            foreach ($versions as $version) {
+                $this->partialPackagesByName[$package][] = $version;
+                if (!empty($version['provide']) && is_array($version['provide'])) {
+                    foreach ($version['provide'] as $provided => $providedVersion) {
+                        $this->partialPackagesByName[strtolower($provided)][] = $version;
+                    }
+                }
+                if (!empty($version['replace']) && is_array($version['replace'])) {
+                    foreach ($version['replace'] as $provided => $providedVersion) {
+                        $this->partialPackagesByName[strtolower($provided)][] = $version;
+                    }
+                }
+            }
+        }
+
+        // wipe rootData as it is fully consumed at this point and this saves some memory
+        $this->rootData = true;
     }
 }

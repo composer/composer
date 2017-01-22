@@ -24,10 +24,8 @@ class PerforceDriver extends VcsDriver
 {
     protected $depot;
     protected $branch;
+    /** @var Perforce */
     protected $perforce;
-    protected $composerInfo;
-    protected $composerInfoIdentifier;
-
     /**
      * {@inheritDoc}
      */
@@ -40,8 +38,8 @@ class PerforceDriver extends VcsDriver
         }
 
         $this->initPerforce($this->repoConfig);
-        $this->perforce->p4Login($this->io);
-        $this->perforce->checkStream($this->depot);
+        $this->perforce->p4Login();
+        $this->perforce->checkStream();
 
         $this->perforce->writeP4ClientSpec();
         $this->perforce->connectClient();
@@ -59,19 +57,21 @@ class PerforceDriver extends VcsDriver
         $this->perforce = Perforce::create($repoConfig, $this->getUrl(), $repoDir, $this->process, $this->io);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getComposerInformation($identifier)
-    {
-        if (!empty($this->composerInfoIdentifier)) {
-            if (strcmp($identifier, $this->composerInfoIdentifier) === 0) {
-                return $this->composerInfo;
-            }
-        }
-        $composer_info = $this->perforce->getComposerInformation($identifier);
 
-        return $composer_info;
+    /**
+     * {@inheritdoc}
+     */
+    public function getFileContent($file, $identifier)
+    {
+        return $this->perforce->getFileContent($file, $identifier);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChangeDate($identifier)
+    {
+        return null;
     }
 
     /**
@@ -138,10 +138,10 @@ class PerforceDriver extends VcsDriver
      */
     public function hasComposerFile($identifier)
     {
-        $this->composerInfo = $this->perforce->getComposerInformation('//' . $this->depot . '/' . $identifier);
-        $this->composerInfoIdentifier = $identifier;
+        $composerInfo = $this->perforce->getComposerInformation('//' . $this->depot . '/' . $identifier);
+        $composerInfoIdentifier = $identifier;
 
-        return !empty($this->composerInfo);
+        return !empty($composerInfo);
     }
 
     /**

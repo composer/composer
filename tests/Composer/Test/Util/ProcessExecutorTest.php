@@ -14,6 +14,8 @@ namespace Composer\Test\Util;
 
 use Composer\Util\ProcessExecutor;
 use Composer\TestCase;
+use Composer\IO\BufferIO;
+use Symfony\Component\Console\Output\StreamOutput;
 
 class ProcessExecutorTest extends TestCase
 {
@@ -33,6 +35,17 @@ class ProcessExecutorTest extends TestCase
         $this->assertEquals("foo".PHP_EOL, $output);
     }
 
+    public function testUseIOIsNotNullAndIfNotCaptured()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $io->expects($this->once())
+            ->method('write')
+            ->with($this->equalTo('foo'.PHP_EOL), false);
+
+        $process = new ProcessExecutor($io);
+        $process->execute('echo foo');
+    }
+
     public function testExecuteCapturesStderr()
     {
         $process = new ProcessExecutor;
@@ -46,6 +59,20 @@ class ProcessExecutorTest extends TestCase
         $process = new ProcessExecutor;
         $this->assertEquals(1, $process->getTimeout());
         ProcessExecutor::setTimeout(60);
+    }
+
+    public function testHidePasswords()
+    {
+        $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
+        $process->execute('echo https://foo:bar@example.org/ && echo http://foo@example.org && echo http://abcdef1234567890234578:x-oauth-token@github.com/', $output);
+        $this->assertEquals('Executing command (CWD): echo https://foo:***@example.org/ && echo http://foo@example.org && echo http://***:***@github.com/', trim($buffer->getOutput()));
+    }
+
+    public function testDoesntHidePorts()
+    {
+        $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
+        $process->execute('echo https://localhost:1234/', $output);
+        $this->assertEquals('Executing command (CWD): echo https://localhost:1234/', trim($buffer->getOutput()));
     }
 
     public function testSplitLines()

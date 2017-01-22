@@ -13,6 +13,7 @@
 namespace Composer\Test\EventDispatcher;
 
 use Composer\EventDispatcher\Event;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallerEvents;
 use Composer\Config;
 use Composer\Composer;
@@ -102,6 +103,96 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }
 
+    /**
+     * @dataProvider getDevModes
+     * @param bool $devMode
+     */
+    public function testDispatcherPassDevModeToAutoloadGeneratorForScriptEvents($devMode)
+    {
+        $composer = $this->createComposerInstance();
+
+        $generator = $this->getGeneratorMockForDevModePassingTest();
+        $generator->expects($this->atLeastOnce())
+            ->method('setDevMode')
+            ->with($devMode);
+
+        $composer->setAutoloadGenerator($generator);
+
+        $package = $this->getMock('Composer\Package\RootPackageInterface');
+        $package->method('getScripts')->will($this->returnValue(array('scriptName' => array('scriptName'))));
+        $composer->setPackage($package);
+
+        $composer->setRepositoryManager($this->getRepositoryManagerMockForDevModePassingTest());
+        $composer->setInstallationManager($this->getMock('Composer\Installer\InstallationManager'));
+
+        $dispatcher = new EventDispatcher(
+            $composer,
+            $this->getMock('Composer\IO\IOInterface'),
+            $this->getMock('Composer\Util\ProcessExecutor')
+        );
+
+        $event = $this->getMockBuilder('Composer\Script\Event')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $event->method('getName')->will($this->returnValue('scriptName'));
+        $event->expects($this->atLeastOnce())
+            ->method('isDevMode')
+            ->will($this->returnValue($devMode));
+
+        $dispatcher->hasEventListeners($event);
+    }
+
+    public function getDevModes()
+    {
+        return array(
+            array(true),
+            array(false),
+        );
+    }
+
+    private function getGeneratorMockForDevModePassingTest()
+    {
+        $generator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')
+            ->disableOriginalConstructor()
+            ->setMethods(array(
+                'buildPackageMap',
+                'parseAutoloads',
+                'createLoader',
+                'setDevMode',
+            ))
+            ->getMock();
+        $generator
+            ->method('buildPackageMap')
+            ->will($this->returnValue(array()));
+        $generator
+            ->method('parseAutoloads')
+            ->will($this->returnValue(array()));
+        $generator
+            ->method('createLoader')
+            ->will($this->returnValue($this->getMock('Composer\Autoload\ClassLoader')));
+
+        return $generator;
+    }
+
+    private function getRepositoryManagerMockForDevModePassingTest()
+    {
+        $rm = $this->getMockBuilder('Composer\Repository\RepositoryManager')
+            ->disableOriginalConstructor()
+            ->setMethods(array('getLocalRepository'))
+            ->getMock();
+
+        $repo = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
+        $repo
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue(array()));
+
+        $rm
+            ->method('getLocalRepository')
+            ->will($this->returnValue($repo));
+
+        return $rm;
+    }
+
     public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack()
     {
         $process = $this->getMock('Composer\Util\ProcessExecutor');
@@ -161,9 +252,13 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnCallback(function (Event $event) {
                 if ($event->getName() === 'root') {
                     return array('@group');
-                } elseif ($event->getName() === 'group') {
+                }
+
+                if ($event->getName() === 'group') {
                     return array('echo -n foo', '@subgroup', 'echo -n bar');
-                } elseif ($event->getName() === 'subgroup') {
+                }
+
+                if ($event->getName() === 'subgroup') {
                     return array('echo -n baz');
                 }
 
@@ -201,7 +296,9 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnCallback(function (Event $event) {
                 if ($event->getName() === 'root') {
                     return array('@recurse');
-                } elseif ($event->getName() === 'recurse') {
+                }
+
+                if ($event->getName() === 'recurse') {
                     return array('@root');
                 }
 
@@ -243,7 +340,7 @@ class EventDispatcherTest extends TestCase
             ->setConstructorArgs(array(
                 $this->createComposerInstance(),
                 $io = $this->getMock('Composer\IO\IOInterface'),
-                new ProcessExecutor,
+                new ProcessExecutor($io),
             ))
             ->setMethods(array('getListeners'))
             ->getMock();
@@ -257,9 +354,11 @@ class EventDispatcherTest extends TestCase
             ->method('writeError')
             ->with($this->equalTo('> echo foo'));
 
-        ob_start();
+        $io->expects($this->once())
+            ->method('write')
+            ->with($this->equalTo('foo'.PHP_EOL), false);
+
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
-        $this->assertEquals('foo', trim(ob_get_clean()));
     }
 
     public function testDispatcherOutputsErrorOnFailedCommand()
@@ -345,6 +444,8 @@ class EventDispatcherTest extends TestCase
         $composer = new Composer;
         $config = new Config;
         $composer->setConfig($config);
+        $package = $this->getMock('Composer\Package\RootPackageInterface');
+        $composer->setPackage($package);
 
         return $composer;
     }

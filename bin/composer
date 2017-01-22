@@ -7,9 +7,18 @@ if (PHP_SAPI !== 'cli') {
 
 require __DIR__.'/../src/bootstrap.php';
 
+use Composer\Factory;
+use Composer\XdebugHandler;
 use Composer\Console\Application;
 
 error_reporting(-1);
+
+// Create output for XdebugHandler and Application
+$output = Factory::createOutput();
+
+$xdebug = new XdebugHandler($output);
+$xdebug->check();
+unset($xdebug);
 
 if (function_exists('ini_set')) {
     @ini_set('display_errors', 1);
@@ -32,13 +41,13 @@ if (function_exists('ini_set')) {
     };
 
     $memoryLimit = trim(ini_get('memory_limit'));
-    // Increase memory_limit if it is lower than 1GB
-    if ($memoryLimit != -1 && $memoryInBytes($memoryLimit) < 1024 * 1024 * 1024) {
-        @ini_set('memory_limit', '1G');
+    // Increase memory_limit if it is lower than 1.5GB
+    if ($memoryLimit != -1 && $memoryInBytes($memoryLimit) < 1024 * 1024 * 1536) {
+        @ini_set('memory_limit', '1536M');
     }
     unset($memoryInBytes, $memoryLimit);
 }
 
 // run the command application
 $application = new Application();
-$application->run();
+$application->run(null, $output);

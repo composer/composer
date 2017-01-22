@@ -19,6 +19,7 @@ install
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
 Updating dependencies (including require-dev)
+Package operations: 1 install, 0 updates, 0 removals
 a/a suggests installing b/b (an obscure reason)
 Writing lock file
 Generating autoload files

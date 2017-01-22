@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\Cache;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
+use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
@@ -40,7 +41,7 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path, $output = true)
     {
         if (null === self::$hasSystemUnzip) {
             $finder = new ExecutableFinder;
@@ -49,20 +50,13 @@ class ZipDownloader extends ArchiveDownloader
 
         if (!class_exists('ZipArchive') && !self::$hasSystemUnzip) {
             // php.ini path is added to the error message to help users find the correct file
-            $iniPath = php_ini_loaded_file();
-
-            if ($iniPath) {
-                $iniMessage = 'The php.ini used by your command-line PHP is: ' . $iniPath;
-            } else {
-                $iniMessage = 'A php.ini file does not exist. You will have to create one.';
-            }
-
+            $iniMessage = IniHelper::getMessage();
             $error = "The zip extension and unzip command are both missing, skipping.\n" . $iniMessage;
 
             throw new \RuntimeException($error);
         }
 
-        return parent::download($package, $path);
+        return parent::download($package, $path, $output);
     }
 
     protected function extract($file, $path)
@@ -70,7 +64,7 @@ class ZipDownloader extends ArchiveDownloader
         $processError = null;
 
         if (self::$hasSystemUnzip && !(class_exists('ZipArchive') && Platform::isWindows())) {
-            $command = 'unzip '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path);
+            $command = 'unzip -qq '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path);
             if (!Platform::isWindows()) {
                 $command .= ' && chmod -R u+w ' . ProcessExecutor::escape($path);
             }

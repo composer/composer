@@ -28,14 +28,14 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path, $output = true)
     {
         $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
         $retries = 3;
         while ($retries--) {
-            $fileName = parent::download($package, $path);
+            $fileName = parent::download($package, $path, $output);
 
-            $this->io->writeError('    Extracting archive', true, IOInterface::VERBOSE);
+            $this->io->writeError(' Extracting archive', false, IOInterface::VERBOSE);
 
             try {
                 $this->filesystem->ensureDirectoryExists($temporaryDir);
@@ -76,6 +76,7 @@ abstract class ArchiveDownloader extends FileDownloader
 
                 // retry downloading if we have an invalid zip file
                 if ($retries && $e instanceof \UnexpectedValueException && class_exists('ZipArchive') && $e->getCode() === \ZipArchive::ER_NOZIP) {
+                    $this->io->writeError('');
                     if ($this->io->isDebug()) {
                         $this->io->writeError('    Invalid zip file ('.$e->getMessage().'), retrying...');
                     } else {
@@ -91,7 +92,9 @@ abstract class ArchiveDownloader extends FileDownloader
             break;
         }
 
-        $this->io->writeError('');
+        if ($output) {
+            $this->io->writeError('');
+        }
     }
 
     /**
