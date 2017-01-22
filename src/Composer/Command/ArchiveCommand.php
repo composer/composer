@@ -45,6 +45,7 @@ class ArchiveCommand extends BaseCommand
                 new InputOption('dir', null, InputOption::VALUE_REQUIRED, 'Write the archive to this directory'),
                 new InputOption('file', null, InputOption::VALUE_REQUIRED, 'Write the archive with the given file name.'
                     .' Note that the format will be appended.'),
+                new InputOption('ignore-filters', false, InputOption::VALUE_NONE, 'Ignore filters when saving package')
             ))
             ->setHelp(<<<EOT
 The <info>archive</info> command creates an archive of the specified format
@@ -82,7 +83,8 @@ EOT
             $input->getArgument('version'),
             $input->getOption('format'),
             $input->getOption('dir'),
-            $input->getOption('file')
+            $input->getOption('file'),
+            $input->getOption('ignore-filters')
         );
 
         if (0 === $returnCode && $composer) {
@@ -92,7 +94,7 @@ EOT
         return $returnCode;
     }
 
-    protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.', $fileName = null)
+    protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.', $fileName = null, $ignoreFilters)
     {
         $factory = new Factory;
         $downloadManager = $factory->createDownloadManager($io, $config);
@@ -109,7 +111,7 @@ EOT
         }
 
         $io->writeError('<info>Creating the archive into "'.$dest.'".</info>');
-        $packagePath = $archiveManager->archive($package, $format, $dest, $fileName);
+        $packagePath = $archiveManager->archive($package, $format, $dest, $fileName, $ignoreFilters);
         $fs = new Filesystem;
         $shortPath = $fs->findShortestPath(getcwd(), $packagePath, true);
 
