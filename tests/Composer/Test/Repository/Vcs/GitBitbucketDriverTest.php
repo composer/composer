@@ -118,12 +118,12 @@ class GitBitbucketDriverTest extends TestCase
                 ),
                 array(
                     $this->originUrl,
-                    'https://api.bitbucket.org/2.0/repositories/user/repo/refs/tags?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cnext',
+                    'https://api.bitbucket.org/2.0/repositories/user/repo/refs/tags?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cnext&sort=-target.date',
                     false
                 ),
                 array(
                     $this->originUrl,
-                    'https://api.bitbucket.org/2.0/repositories/user/repo/refs/branches?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cnext',
+                    'https://api.bitbucket.org/2.0/repositories/user/repo/refs/branches?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cnext&sort=-target.date',
                     false
                 ),
                 array(
@@ -133,7 +133,7 @@ class GitBitbucketDriverTest extends TestCase
                 ),
                 array(
                     $this->originUrl,
-                    'https://api.bitbucket.org/1.0/repositories/user/repo/changesets/master',
+                    'https://api.bitbucket.org/2.0/repositories/user/repo/commit/master?fields=date',
                     false
                 )
             )
@@ -143,7 +143,7 @@ class GitBitbucketDriverTest extends TestCase
                 '{"values":[{"name":"1.0.1","target":{"hash":"9b78a3932143497c519e49b8241083838c8ff8a1"}},{"name":"1.0.0","target":{"hash":"d3393d514318a9267d2f8ebbf463a9aaa389f8eb"}}]}',
                 '{"values":[{"name":"master","target":{"hash":"937992d19d72b5116c3e8c4a04f960e5fa270b22"}}]}',
                 '{"name": "user/repo","description": "test repo","license": "GPL","authors": [{"name": "Name","email": "local@domain.tld"}],"require": {"creator/package": "^1.0"},"require-dev": {"phpunit/phpunit": "~4.8"}}',
-                '{"node": "937992d19d72", "files": [{"type": "modified", "file": "path/to/file"}], "raw_author": "User <local@domain.tld>", "utctimestamp": "2016-05-17 11:19:52+00:00", "author": "user", "timestamp": "2016-05-17 13:19:52", "raw_node": "937992d19d72b5116c3e8c4a04f960e5fa270b22", "parents": ["71e195a33361"], "branch": "master", "message": "Commit message\n", "revision": null, "size": -1}'
+                '{"date": "2016-05-17T13:19:52+00:00"}'
             );
 
         $this->assertEquals(

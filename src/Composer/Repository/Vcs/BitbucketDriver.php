@@ -264,7 +264,8 @@ abstract class BitbucketDriver extends VcsDriver
                 http_build_query(
                     array(
                         'pagelen' => 100,
-                        'fields' => 'values.name,values.target.hash,next'
+                        'fields' => 'values.name,values.target.hash,next',
+                        'sort' => '-target.date'
                     )
                 )
             );
@@ -305,7 +306,8 @@ abstract class BitbucketDriver extends VcsDriver
                 http_build_query(
                     array(
                         'pagelen' => 100,
-                        'fields' => 'values.name,values.target.hash,next'
+                        'fields' => 'values.name,values.target.hash,next',
+                        'sort' => '-target.date'
                     )
                 )
             );
