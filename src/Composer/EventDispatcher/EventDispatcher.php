@@ -175,12 +175,7 @@ class EventDispatcher
                 $args = $event->getArguments();
                 $flags = $event->getFlags();
                 if (substr($callable, 0, 10) === '@composer ') {
-                    $finder = new PhpExecutableFinder();
-                    $phpPath = $finder->find();
-                    if (!$phpPath) {
-                        throw new \RuntimeException('Failed to locate PHP binary to execute '.$scriptName);
-                    }
-                    $exec = ProcessExecutor::escape($phpPath) . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . substr($callable, 9);
+                    $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . substr($callable, 9);
                     if (0 !== ($exitCode = $this->process->execute($exec))) {
                         $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()));
 
@@ -234,12 +229,7 @@ class EventDispatcher
                 }
 
                 if (substr($exec, 0, 5) === '@php ') {
-                    $finder = new PhpExecutableFinder();
-                    $phpPath = $finder->find();
-                    if (!$phpPath) {
-                        throw new \RuntimeException('Failed to locate PHP binary to execute "'.$exec.'"');
-                    }
-                    $exec = $phpPath . ' ' . substr($exec, 5);
+                    $exec = $this->getPhpExecCommand() . ' ' . substr($exec, 5);
                 }
 
                 if (0 !== ($exitCode = $this->process->execute($exec))) {
@@ -257,6 +247,19 @@ class EventDispatcher
         $this->popEvent();
 
         return $return;
+    }
+
+    protected function getPhpExecCommand()
+    {
+        $finder = new PhpExecutableFinder();
+        $phpPath = $finder->find();
+        if (!$phpPath) {
+            throw new \RuntimeException('Failed to locate PHP binary to execute '.$scriptName);
+        }
+
+        $memoryFlag = ' -d memory_limit='.ini_get('memory_limit');
+
+        return ProcessExecutor::escape($phpPath) . $memoryFlag;
     }
 
     /**
