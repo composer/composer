@@ -180,7 +180,7 @@ class EventDispatcher
                     if (!$phpPath) {
                         throw new \RuntimeException('Failed to locate PHP binary to execute '.$scriptName);
                     }
-                    $exec = $phpPath . '  ' . realpath($_SERVER['argv'][0]) . substr($callable, 9);
+                    $exec = ProcessExecutor::escape($phpPath) . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . substr($callable, 9);
                     if (0 !== ($exitCode = $this->process->execute($exec))) {
                         $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()));
 
