@@ -14,84 +14,79 @@ which may be represented by a branch HEAD or a tag. When you check out that
 version in your VCS -- for example, tag `v1.1` or commit `e35fa0d` --, you're
 asking for a single, known set of files, and you always get the same files back.
 
-In Composer, what's usually referred to casually as a version -- that is,
+In Composer, what's often referred to casually as a version -- that is,
 the string that follows the package name in a require line (e.g., `~1.1` or
 `1.2.*`) -- is actually more specifically a version constraint. Composer
 uses version constraints to figure out which refs in a VCS it should be
-checking out.
+checking out (or simply to verify that a given library is acceptable in
+the case of a statically-maintained library with a `version` specification
+in `composer.json`).
 
-### Tags vs Branches
+## VCS Tags and Branches
+
+*For the following discussion, let's assume the following sample library
+repository:*
+
+```sh
+~/my-library$ git branch
+~/my-library$ 
+~/my-library$ v1
+~/my-library$ v2
+~/my-library$ my-feature
+~/my-library$ nother-feature
+~/my-library$
+~/my-library$ git tag
+~/my-library$ 
+~/my-library$ v1.0
+~/my-library$ v1.0.1
+~/my-library$ v1.0.2
+~/my-library$ v1.1-BETA
+~/my-library$ v1.1-RC1
+~/my-library$ v1.1-RC2
+~/my-library$ v1.1
+~/my-library$ v1.1.1
+~/my-library$ v2.0-BETA
+~/my-library$ v2.0-RC1
+~/my-library$ v2.0
+~/my-library$ v2.0.1
+~/my-library$ v2.0.2
+```
+
+### Tags
 
 Normally, Composer deals with tags (as opposed to branches -- if you don't
 know what this means, read up on
 [version control systems](https://en.wikipedia.org/wiki/Version_control#Common_vocabulary)).
-When referencing a tag, it may reference a specific tag (e.g., `1.1`) or it
-may reference a valid range of tags (e.g., `>=1.1 <2.0`). Furthermore, you
-can add "stability specifiers" to let Composer know that you are or aren't
-interested in certain tags, like alpha releases, beta releases, or release
-candidates, even if they're technically within the numeric range specified
-by the version constraint (these releases are usually considered "unstable",
-hence the term "stability specifier"). 
+When you write a version constraint, it may reference a specific tag (e.g.,
+`1.1`) or it may reference a valid range of tags (e.g., `>=1.1 <2.0`, or
+`~4.0`). To resolve these constraints, Composer first asks the VCS to list
+all available tags, then creates an internal list of available versions based
+on these tags. In the above example, composer's internal list includes versions
+`1.0`, `1.0.1`, `1.0.2`, the beta release of `1.1`, the first and second
+release candidates of `1.1`, the final release version `1.1`, etc.... (Note
+that Composer automatically removes the 'v' prefix in the actual tagname to
+get a valid final version number.)
 
-If you want Composer to check out a branch instead of a tag, you use the
-special syntax described [here](02-libraries.md#branches). In short, if
-you're checking out a branch, it's assumed that you want to *work* on the
-branch and Composer simply clones the repo into the correct place in your
-`vendor` directory. (For tags, it just copies the right files without actually
-cloning the repo.) This can be very convenient for libraries under development,
-as you can make changes to the dependency files your project is actually using
-and still commit them to their respective repos as patches or other updates.
+When it has a complete list of available versions from your VCS, it then
+finds the highest version that matches all version constraints in your project
+(it's possible that other packages require more specific versions of the
+library than you do, so the version it chooses may not always be the highest
+available version) and it downloads a zip archive of that tag to unpack in the
+correct location in your `vendor` directory.
 
-Let's look at an example. Suppose you've published a library whose git repo
-looks like this:
+### Branches
 
-```sh
-$ git branch
-$ 
-$ v1
-$ v2
-$ my-feature
-$ nother-feature
-$
-$ git tag
-$ 
-$ v1.0
-$ v1.0.1
-$ v1.0.2
-$ v1.1-BETA
-$ v1.1-RC1
-$ v1.1-RC2
-$ v1.1
-$ v1.1.1
-$ v2.0-BETA
-$ v2.0-RC1
-$ v2.0
-$ v2.0.1
-$ v2.0.2
-```
+If you want Composer to check out a branch instead of a tag, there's a special syntax. If you're checking out a branch, it's assumed that you want to *work* on the branch and Composer actually clones the repo into the correct place in your `vendor` directory. (For tags, it just copies the right files without actually cloning the repo.) To get Composer to do this, you need to point it to the branch using the special `dev-*` prefix (or sometimes suffix; see below). 
 
-Now assume you've got a project that depends on this library and you've been
-running `composer update` in that project since the `v1.0` release. If you
-specified `~1.0` in Composer (the tilde modifier, among others, is detailed
-below), and you don't add a [`minimum-stability`](04-schema.md#minimum-stability)
-key elsewhere in the file, then Composer will default to "stable" as a minimum
-stability setting and you will receive only the `v1.0`, `v1.0.1`, `v1.0.2`,
-`v1.1` and `v1.1.1` tags as the tags are created in your VCS. If you set the
-`minimum-stability` key to `RC`, you would receive the aforementioned tags as
-they're released, plus the `v1.1-RC1` and `v1.1-RC2` tags, but not `v1.1-BETA`.
-(You can see the available stability constraints in order on the
-[schema page](04-schema.md#minimum-stability).
+In the above example, if I wanted to check out the `my-feature` branch, I would specify `dev-my-feature` as the version constraint in my `require` clause. This would result in Composer cloning the `my-library` repository into my `vendor` directory and checking out the `my-feature` branch.
 
-The final important detail here is how branches are handled. In git, a branch
-simply represents a series of commits, with the current "HEAD" of the branch
-pointing at the most recent in the chain. A tag is a specific commit, independent
-of branch. By default composer checks out the tag that best matches the version
-constraint you've specified. However, if you specify the version constraint as
-"v1-dev" (or sometimes "dev-my-branch" -- see the [libraries page](02-libraries.md#branches)
-for syntax details), then Composer will clone the repo into your `vendor`
-  directory, checking out the `v1` branch.
+The exception to this is when branch names look like versions. In that case, we have to clarify for composer that we're trying to check out a branch and not a tag. In the above example, we have two version branches, `v1` and `v2`. To get Composer to check out one of these branches, you must specify a version constraint that looks like this: `v1.x-dev`. There are two things to notice here. First, the `.x`: this is an arbitrary string that Composer requires us to append to tell it that we're talking about the `v1` branch and not a `v1` tag (alternatively, you can just name the branch `v1.x` instead of `v1`). Second, notice that in the case of a branch with a version-like name (`v1`, in this case), you append `-dev` as a suffix, rather than `dev-` as a prefix.
 
-## Basic Version Constraints
+### Minimum Stability
+
+There's one more thing that will affect which files are checked out of a library's VCS and added to your project: Composer allows you to specify stability constraints to limit which tags are considered valid. In the above example, notice that the library released a beta and two release candidates for version `1.1` before the final official release. In order to receive those versions when we run `composer install` or `composer update`, we have to explicitly tell composer that we're ok with release candidates and beta releases (and alpha releases, if we want those). This can be done using either a project-wide `minimum-stability` value in `composer.json` or using "stability flags" in version constraints. Read more on the [schema page](04-schema.md#minimum-stability).
+
+## Writing Basic Version Constraints
 
 Now that you have an idea of how Composer sees versions, let's talk about how
 to specify version constraints for your project dependencies.

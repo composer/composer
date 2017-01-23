@@ -48,7 +48,10 @@ will be identical - the vendor name just exists to prevent naming clashes. For
 example, it would allow two different people to create a library named `json`.
 One might be named `igorw/json` while the other might be `seldaek/json`.
 
-Read more about publishing packages and package naming [here](02-libraries.md)
+Read more about publishing packages and package naming [here](02-libraries.md).
+(Note that you can also specify "platform packages" as dependencies, allowing
+you to require certain versions of server software. See
+[platform packages](#platform-packages) below.)
 
 ### Package Version Constraints
 
@@ -57,8 +60,8 @@ In our example, we're requesting the Monolog package with the version constraint
 This means any version in the `1.0` development branch, or any version that is
 greater than or equal to 1.0 and less than 1.1 (`>=1.0 <1.1`).
 
-Version can be a little confusing in Composer, and version constraints can be specified
-in several ways. Please read [versions](articles/versions.md) for more in-depth information.
+(What the term "version" actually means can be a little confusing in Composer.
+Please read [versions](articles/versions.md) for more in-depth information.)
 
 > **How does Composer download the right files?** When you specify a dependency in
 > `composer.json`, Composer, first takes the name of the package that you've requested
@@ -69,7 +72,7 @@ in several ways. Please read [versions](articles/versions.md) for more in-depth 
 >
 > When it finds the right package, either in Packagist or in a repo you've specified,
 > it then uses the versioning features of the package's VCS (i.e., branches and tags)
-> to attempt to find the best match for the version you've specified. Be sure to read
+> to attempt to find the best match for the version constraint you've specified. Be sure to read
 > about versions and package resolution in the [versions article](articles/versions.md).
 
 > **Note:** If you're trying to require a package but Composer throws an error
@@ -108,7 +111,8 @@ folders under `vendor/`.
 
 When Composer has finished installing, it writes all of the packages and the exact versions
 of them that it downloaded to the `composer.lock` file, locking the project to those specific
-versions.
+versions. You should commit the `composer.lock` file to your project repo so that all people
+working on the project are locked to the same versions of dependencies (more below).
 
 ### Installing With `composer.lock`
 
@@ -122,7 +126,7 @@ all dependencies that you've listed in `composer.json`, but it uses the version 
 that it finds in `composer.lock` to ensure that the package versions are consistent for everyone
 working on your project. The result is that you have all dependencies requested by your
 `composer.json` file, but that they may not all be at the very latest available versions (since
-some of the dependencies listed in the `composer.lock` file may have released new versions since
+some of the dependencies listed in the `composer.lock` file may have released newer versions since
 the file was created). This is by design, as it ensures that your project never breaks because of
 unexpected changes in dependencies.
 
@@ -175,6 +179,31 @@ you can browse and search for packages.
 Any open source project using Composer is recommended to publish their packages
 on Packagist. A library doesn't need to be on Packagist to be used by Composer,
 but it enables discovery and adoption by other developers more quickly.
+
+## Platform packages
+
+Composer has platform packages, which are virtual packages for things that are
+installed on the system but are not actually installable by Composer. This
+includes PHP itself, PHP extensions and some system libraries.
+
+* `php` represents the PHP version of the user, allowing you to apply
+  constraints, e.g. `>=5.4.0`. To require a 64bit version of php, you can
+  require the `php-64bit` package.
+
+* `hhvm` represents the version of the HHVM runtime (aka HipHop Virtual
+  Machine) and allows you to apply a constraint, e.g., '>=2.3.3'.
+
+* `ext-<name>` allows you to require PHP extensions (includes core
+  extensions). Versioning can be quite inconsistent here, so it's often
+  a good idea to just set the constraint to `*`.  An example of an extension
+  package name is `ext-gd`.
+
+* `lib-<name>` allows constraints to be made on versions of libraries used by
+  PHP. The following are available: `curl`, `iconv`, `icu`, `libxml`,
+  `openssl`, `pcre`, `uuid`, `xsl`.
+
+You can use [`show --platform`](03-cli.md#show) to get a list of your locally
+available platform packages.
 
 ## Autoloading
 

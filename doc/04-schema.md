@@ -255,7 +255,8 @@ Optional.
 ### Package links
 
 All of the following take an object which maps package names to
-[version constraints](01-basic-usage.md#package-versions).
+versions of the package via version constraints. Read more about
+versions [here](articles/versions.md).
 
 Example:
 
@@ -680,9 +681,9 @@ it in your file to avoid surprises.
 
 All versions of each package are checked for stability, and those that are less
 stable than the `minimum-stability` setting will be ignored when resolving
-your project dependencies. Specific changes to the stability requirements of
-a given package can be done in `require` or `require-dev` (see
-[package links](#package-links)).
+your project dependencies. (Note that you can also specify stability requirements
+on a per-package basis using stability flags in the version constraints that you
+specify in a `require` block (see [package links](#package-links) for more details).
 
 Available options (in order of stability) are `dev`, `alpha`, `beta`, `RC`,
 and `stable`.
