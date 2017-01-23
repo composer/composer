@@ -23,6 +23,7 @@ use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
+use Composer\Package\AliasPackage;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
@@ -328,6 +329,10 @@ EOT
 
         if ($disablePlugins) {
             $io->writeError('<info>Plugins have been disabled.</info>');
+        }
+
+        if ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
         }
 
         if (0 === strpos($package->getPrettyVersion(), 'dev-') && in_array($package->getSourceType(), array('git', 'hg'))) {

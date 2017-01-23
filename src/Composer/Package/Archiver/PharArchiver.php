@@ -34,7 +34,7 @@ class PharArchiver implements ArchiverInterface
     /**
      * {@inheritdoc}
      */
-    public function archive($sources, $target, $format, array $excludes = array())
+    public function archive($sources, $target, $format, array $excludes = array(), $ignoreFilters = false)
     {
         $sources = realpath($sources);
 
@@ -53,7 +53,7 @@ class PharArchiver implements ArchiverInterface
             }
 
             $phar = new \PharData($target, null, null, static::$formats[$format]);
-            $files = new ArchivableFilesFinder($sources, $excludes);
+            $files = new ArchivableFilesFinder($sources, $excludes, $ignoreFilters);
             $filesOnly = new ArchivableFilesFilter($files);
             $phar->buildFromIterator($filesOnly, $sources);
             $filesOnly->addEmptyDir($phar, $sources);

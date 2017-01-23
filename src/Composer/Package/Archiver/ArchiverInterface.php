@@ -29,7 +29,7 @@ interface ArchiverInterface
      *
      * @return string The path to the written archive file
      */
-    public function archive($sources, $target, $format, array $excludes = array());
+    public function archive($sources, $target, $format, array $excludes = array(), $ignoreFilters = false);
 
     /**
      * Format supported by the archiver.

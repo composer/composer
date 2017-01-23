@@ -37,18 +37,23 @@ class ArchivableFilesFinder extends \FilterIterator
      *
      * @param string $sources  Path to source files to be archived
      * @param array  $excludes Composer's own exclude rules from composer.json
+     * @param boolean $ignoreFilters Ignore filters when looking for files
      */
-    public function __construct($sources, array $excludes)
+    public function __construct($sources, array $excludes, $ignoreFilters = false)
     {
         $fs = new Filesystem();
 
         $sources = $fs->normalizePath($sources);
 
-        $filters = array(
-            new HgExcludeFilter($sources),
-            new GitExcludeFilter($sources),
-            new ComposerExcludeFilter($sources, $excludes),
-        );
+        if ($ignoreFilters) {
+            $filters = array();
+        } else {
+            $filters = array(
+                new HgExcludeFilter($sources),
+                new GitExcludeFilter($sources),
+                new ComposerExcludeFilter($sources, $excludes),
+            );
+        }
 
         $this->finder = new Finder();
 
