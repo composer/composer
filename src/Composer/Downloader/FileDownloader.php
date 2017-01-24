@@ -132,8 +132,9 @@ class FileDownloader implements DownloaderInterface
 
             // download if we don't have it in cache or the cache is invalidated
             if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
+                $this->io->writeError(': ', false);
                 if (!$this->outputProgress) {
-                    $this->io->writeError(' Downloading', false);
+                    $this->io->writeError('Downloading', false);
                 }
 
                 // try to download 3 times then fail hard
@@ -153,12 +154,16 @@ class FileDownloader implements DownloaderInterface
                     }
                 }
 
+                if (!$this->outputProgress) {
+                    $this->io->writeError(' (<comment>100%</comment>)', false);
+                }
+
                 if ($this->cache) {
                     $this->lastCacheWrites[$package->getName()] = $cacheKey;
                     $this->cache->copyFrom($cacheKey, $fileName);
                 }
             } else {
-                $this->io->writeError(' Loading from cache', false);
+                $this->io->writeError(' from cache', false);
             }
 
             if (!file_exists($fileName)) {

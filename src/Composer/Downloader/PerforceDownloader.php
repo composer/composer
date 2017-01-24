@@ -32,7 +32,7 @@ class PerforceDownloader extends VcsDownloader
         $ref = $package->getSourceReference();
         $label = $this->getLabelFromSourceReference($ref);
 
-        $this->io->writeError(' Cloning ' . $ref);
+        $this->io->writeError('Cloning ' . $ref);
         $this->initPerforce($package, $path, $url);
         $this->perforce->setStream($ref);
         $this->perforce->p4Login();

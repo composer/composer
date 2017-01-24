@@ -30,7 +30,7 @@ class HgDownloader extends VcsDownloader
 
         $url = ProcessExecutor::escape($url);
         $ref = ProcessExecutor::escape($package->getSourceReference());
-        $this->io->writeError(" Cloning ".$package->getSourceReference());
+        $this->io->writeError("Cloning ".$package->getSourceReference());
         $command = sprintf('hg clone %s %s', $url, ProcessExecutor::escape($path));
         if (0 !== $this->process->execute($command, $ignoredOutput)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
