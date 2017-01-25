@@ -86,7 +86,9 @@ abstract class BitbucketDriver extends VcsDriver
             $this->owner,
             $this->repository,
             http_build_query(
-                array('fields' => '-project,-owner')
+                array('fields' => '-project,-owner'),
+                null,
+                '&'
             )
         );
 
@@ -266,7 +268,9 @@ abstract class BitbucketDriver extends VcsDriver
                         'pagelen' => 100,
                         'fields' => 'values.name,values.target.hash,next',
                         'sort' => '-target.date'
-                    )
+                    ),
+                    null,
+                    '&'
                 )
             );
             $hasNext = true;
@@ -308,7 +312,9 @@ abstract class BitbucketDriver extends VcsDriver
                         'pagelen' => 100,
                         'fields' => 'values.name,values.target.hash,next',
                         'sort' => '-target.date'
-                    )
+                    ),
+                    null,
+                    '&'
                 )
             );
             $hasNext = true;

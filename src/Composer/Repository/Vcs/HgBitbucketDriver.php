@@ -43,8 +43,8 @@ class HgBitbucketDriver extends BitbucketDriver
                 );
             }
 
-            $main_branch_data = $this->getMainBranchData();
-            $this->rootIdentifier = !empty($main_branch_data['name']) ? $main_branch_data['name'] : 'default';
+            $mainBranchData = $this->getMainBranchData();
+            $this->rootIdentifier = !empty($mainBranchData['name']) ? $mainBranchData['name'] : 'default';
         }
 
         return $this->rootIdentifier;
