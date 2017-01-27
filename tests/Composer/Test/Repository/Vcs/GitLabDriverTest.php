@@ -290,8 +290,8 @@ JSON;
 
     public function testGitlabSubDirectory()
     {
-        $url = 'https://mycompany.com/gitlab/mygroup/myproject';
-        $apiUrl = 'https://mycompany.com/gitlab/api/v3/projects/mygroup%2Fmyproject';
+        $url = 'https://mycompany.com/gitlab/mygroup/my-pro.ject';
+        $apiUrl = 'https://mycompany.com/gitlab/api/v3/projects/mygroup%2Fmy-pro%2Eject';
 
         $driver  = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
         $driver->initialize();
