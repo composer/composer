@@ -173,7 +173,12 @@ class XdebugHandler
             $content .= $data.PHP_EOL;
         }
 
-        $content .= PHP_EOL.'memory_limit='.ini_get('memory_limit').PHP_EOL;
+        $content .= 'memory_limit='.ini_get('memory_limit').PHP_EOL;
+
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            // Work-around for PHP windows bug, see issue #6052
+            $content .= 'opcache.enable_cli=0'.PHP_EOL;
+        }
 
         return @file_put_contents($this->tmpIni, $content);
     }

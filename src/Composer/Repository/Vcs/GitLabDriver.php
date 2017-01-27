@@ -220,7 +220,9 @@ class GitLabDriver extends VcsDriver
         $encoded = '';
         for ($i = 0; isset($string[$i]); $i++) {
             $character = $string[$i];
-            if (!ctype_alnum($character)) $character = '%' . sprintf('%02X', ord($character));
+            if (!ctype_alnum($character) && !in_array($character, array('-', '_'), true)) {
+                $character = '%' . sprintf('%02X', ord($character));
+            }
             $encoded .= $character;
         }
         return $encoded;
