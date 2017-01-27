@@ -1,3 +1,11 @@
+### [1.3.2] - 2017-01-27
+
+  * Added `COMPOSER_BINARY` env var that is defined within the scope of a Composer run automatically with the path to the phar file
+  * Fixed create-project ending in a detached HEAD when installing aliased packages
+  * Fixed composer show not returning non-zero exit code when the package does not exist
+  * Fixed `@composer` handling in scripts when --working-dir is used together with it
+  * Fixed private-GitLab handling of repos with dashes in them
+
 ### [1.3.1] - 2017-01-07
 
   * Fixed dist downloads from Bitbucket
@@ -484,6 +492,7 @@
 
   * Initial release
 
+[1.3.2]: https://github.com/composer/composer/compare/1.3.1...1.3.2
 [1.3.1]: https://github.com/composer/composer/compare/1.3.0...1.3.1
 [1.3.0]: https://github.com/composer/composer/compare/1.3.0-RC...1.3.0
 [1.3.0-RC]: https://github.com/composer/composer/compare/1.2.4...1.3.0-RC
