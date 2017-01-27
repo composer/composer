@@ -140,7 +140,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 throw new \RuntimeException('Could not reliably remove junction for package ' . $package->getName());
             }
         } else {
-            parent::remove($package, $path);
+            parent::remove($package, $path, $output);
         }
     }
 
