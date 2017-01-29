@@ -77,7 +77,7 @@ abstract class BitbucketDriver extends VcsDriver
      * Attempts to fetch the repository data via the BitBucket API and
      * sets some parameters which are used in other methods
      *
-     * @return void
+     * @return bool
      */
     protected function getRepoData()
     {
@@ -94,7 +94,7 @@ abstract class BitbucketDriver extends VcsDriver
 
         $repoData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource, true), $resource);
         if ($this->fallbackDriver) {
-            throw new BitbucketFallbackException();
+            return false;
         }
         $this->parseCloneUrls($repoData['links']['clone']);
 
@@ -104,6 +104,7 @@ abstract class BitbucketDriver extends VcsDriver
         $this->homeUrl = $repoData['links']['html']['href'];
         $this->website = $repoData['website'];
         $this->vcsType = $repoData['scm'];
+        return true;
     }
 
     /**

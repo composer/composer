@@ -30,9 +30,7 @@ class HgBitbucketDriver extends BitbucketDriver
         }
 
         if (null === $this->rootIdentifier) {
-            try {
-                $this->getRepoData();
-            } catch (BitbucketFallbackException $e) {
+            if (! $this->getRepoData()) {
                 return $this->fallbackDriver->getRootIdentifier();
             }
 
