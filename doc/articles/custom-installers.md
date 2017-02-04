@@ -89,6 +89,30 @@ Example:
 }
 ```
 
+### Development Only
+
+When you are planning to develop a plugin then you require `composer/composer` package, it should not be in your published plugin. Published composer.json should looks same as above.
+
+```
+{
+    "name": "phpdocumentor/template-installer-plugin",
+    "type": "composer-plugin",
+    "license": "MIT",
+    "autoload": {
+        "psr-0": {"phpDocumentor\\Composer": "src/"}
+    },
+    "extra": {
+        "class": "phpDocumentor\\Composer\\TemplateInstallerPlugin"
+    },
+    "require": {
+        "composer-plugin-api": "^1.0"
+    },
+    "require-dev": {
+        "composer/composer": "^1.3"
+    }
+}
+```
+
 ### The Plugin class
 
 The class defining the Composer plugin must implement the
