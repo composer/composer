@@ -836,6 +836,59 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testInstallMoreStrictVersion() {
+        $this->repo->addPackage($packageA = $this->getPackage('A', '2.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
+        $this->repo->addPackage($packageC1 = $this->getPackage('C', '2.0.2'));
+        $this->repo->addPackage($packageC2 = $this->getPackage('C', '2.0.1'));
+
+        $packageA->setRequires(array(
+            'c' => new Link('A', 'C', $this->getVersionConstraint('>=', '2.0.0'), 'requires'),
+        ));
+        $packageB->setRequires(array(
+            'c' => new Link('B', 'C', $this->getVersionConstraint('==', '2.0.1'), 'requires'),
+        ));
+
+        $this->reposComplete();
+        $this->request->install('A');
+        $this->request->install('B');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageC2),
+            array('job' => 'install', 'package' => $packageA),
+            array('job' => 'install', 'package' => $packageB),
+        ));
+    }
+
+    public function testInstallMoreStrictVersionInstallStrict() {
+        $packageA = $this->getPackage('A', '2.0');
+        $packageB = $this->getPackage('B', '2.0');
+        $packageC1 = $this->getPackage('C', '2.0.2');
+        $packageC2 = $this->getPackage('C', '2.0.1');
+
+        $packageA->setRequires(array(
+            'c' => new Link('A', 'C', $this->getVersionConstraint('>=', '2.0.0'), 'requires'),
+        ));
+        $packageB->setRequires(array(
+            'c' => new Link('B', 'C', $this->getVersionConstraint('==', '2.0.1'), 'requires'),
+        ));
+
+        $this->repo->addPackage($packageB);
+        $this->repo->addPackage($packageC2);
+
+        $this->repoInstalled->addPackage($packageA);
+        $this->repoInstalled->addPackage($packageC1);
+
+        $this->reposComplete();
+
+        $this->request->install('B');
+
+        $this->checkSolverResult(array(
+            array('job' => 'update', 'from' => $packageC1, 'to' => $packageC2),
+            array('job' => 'install', 'package' => $packageB),
+        ));
+    }
+
     protected function reposComplete()
     {
         $this->pool->addRepository($this->repoInstalled);
