@@ -89,7 +89,7 @@ Out of the box, Composer supports four types:
 - **project:** This denotes a project rather than a library. For example
   application shells like the [Symfony standard edition](https://github.com/symfony/symfony-standard),
   CMSs like the [SilverStripe installer](https://github.com/silverstripe/silverstripe-installer)
-  or full fledged applications distributed as packages. This can for example
+  or full fledged applications distributed as packages like the [customize able CPCInstaller plugin](https://github.com/farhanwazir/cpcinstaller). This can for example
   be used by IDEs to provide listings of projects to initialize when creating
   a new workspace.
 - **metapackage:** An empty package that contains requirements and will trigger
