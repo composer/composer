@@ -8,8 +8,9 @@ Before going into details as to why this is like that, you have to understand
 that the main use of custom VCS & package repositories is to temporarily try
 some things, or use a fork of a project until your pull request is merged, etc.
 You should not use them to keep track of private packages. For that you should
-look into [setting up Satis](../articles/handling-private-packages-with-satis.md)
-or getting a [Toran Proxy](https://toranproxy.com) license for your company.
+rather look into [Private Packagist](https://packagist.com) which lets you
+configure all your private packages in one place, and avoids the slow-downs
+associated with inline VCS repositories.
 
 There are three ways the dependency solver could work with custom repositories:
 
