@@ -59,6 +59,12 @@ class ZipDownloader extends ArchiveDownloader
         return parent::download($package, $path, $output);
     }
 
+    /*
+     * extract $file to $path
+     *
+     * @param string $file File to extract
+     * @param string $path Path where to extract file
+     */
     protected function extract($file, $path)
     {
         $processError = null;
@@ -79,9 +85,7 @@ class ZipDownloader extends ArchiveDownloader
                 $processError = 'Failed to execute ' . $command . "\n\n" . $e->getMessage();
             }
 
-            if (!class_exists('ZipArchive')) {
-                throw new \RuntimeException($processError);
-            }
+            throw new \RuntimeException($processError);
         }
 
         $zipArchive = new ZipArchive();
