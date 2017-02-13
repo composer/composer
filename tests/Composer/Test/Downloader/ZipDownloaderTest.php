@@ -25,10 +25,6 @@ class ZipDownloaderTest extends TestCase
 
     public function setUp()
     {
-        if (!class_exists('ZipArchive')) {
-            $this->markTestSkipped('zip extension missing');
-        }
-
         $this->testDir = $this->getUniqueTmpDirectory();
     }
 
@@ -40,6 +36,10 @@ class ZipDownloaderTest extends TestCase
 
     public function testErrorMessages()
     {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getDistUrl')
@@ -80,5 +80,86 @@ class ZipDownloaderTest extends TestCase
         } catch (\UnexpectedValueException $e) {
             $this->assertContains('is not a zip archive', $e->getMessage());
         }
+    }
+
+    /**
+     * @expectedException \Exception
+     * @expectedExceptionMessage ZipArchive Failed
+     */
+    function testZipArchiveOnlyFailed() {
+        $downloader = new TestDownloader($this->getMock('Composer\IO\IOInterface'));
+        $e = new \Exception("ZipArchive Failed");
+        $downloader->setUp(TRUE, FALSE, $e, NULL);
+        $downloader->extract('testfile.zip', 'vendor/dir');
+    }
+
+    function testZipArchiveOnlyGood() {
+        $downloader = new TestDownloader($this->getMock('Composer\IO\IOInterface'));
+        $downloader->setUp(TRUE, FALSE, TRUE, NULL);
+        $downloader->extract('testfile.zip', 'vendor/dir');
+    }
+
+    /**
+     * @expectedException \Exception
+     * @expectedExceptionMessage SystemUnzip Failed
+     */
+    function testSystemUnzipOnlyFailed() {
+        $this->setExpectedException(\Exception::class);
+        $downloader = new TestDownloader($this->getMock('Composer\IO\IOInterface'));
+        $e = new \Exception("SystemUnzip Failed");
+        $downloader->setUp(FALSE, TRUE,  NULL, $e);
+        $downloader->extract('testfile.zip', 'vendor/dir');
+    }
+
+    function testSystemUnzipOnlyGood() {
+        $downloader = new TestDownloader($this->getMock('Composer\IO\IOInterface'));
+        $downloader->setUp(FALSE, TRUE,  NULL, TRUE);
+        $downloader->extract('testfile.zip', 'vendor/dir');
+    }
+
+    function testSystemUnzipFallbackGood() {
+        $downloader = new TestDownloader($this->getMock('Composer\IO\IOInterface'));
+        $e = new \Exception("test");
+        $downloader->setUp(TRUE, TRUE, $e, TRUE);
+        $downloader->extract('testfile.zip', 'vendor/dir');
+    }
+
+    /**
+     * @expectedException \Exception
+     * @expectedExceptionMessage ZipArchive Failed
+     */
+    function testSystemUnzipFallbackFailed() {
+        $this->setExpectedException(\Exception::class);
+        $downloader = new TestDownloader($this->getMock('Composer\IO\IOInterface'));
+        $e1 = new \Exception("ZipArchive Failed");
+        $e2 = new \Exception("SystemUnzip Failed");
+        $downloader->setUp(TRUE, TRUE, $e1, $e2);
+        $downloader->extract('testfile.zip', 'vendor/dir');
+    }
+}
+
+class TestDownloader extends ZipDownloader {
+    public function __construct($io)
+    {
+        $this->io = $io;
+    }
+
+    public function extract($file, $path) {
+        parent::extract($file, $path);
+    }
+
+    public function setUp($zipArchive, $systemUnzip, $zipArchiveResponse, $systemUnzipResponse) {
+        self::$hasZipArchive = $zipArchive;
+        self::$hasSystemUnzip = $systemUnzip;
+        $this->zipArchiveResponse = $zipArchiveResponse;
+        $this->systemUnzipResponse = $systemUnzipResponse;
+    }
+
+    protected function extractWithZipArchive($file, $path) {
+        return $this->zipArchiveResponse;
+    }
+
+    protected function extractWithSystemUnzip($file, $path, $fallback) {
+        return $this->systemUnzipResponse;
     }
 }

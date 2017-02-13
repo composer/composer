@@ -31,6 +31,7 @@ class ZipDownloader extends ArchiveDownloader
 {
     protected $process;
     protected static $hasSystemUnzip;
+    protected static $hasZipArchive;
 
     public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null, RemoteFilesystem $rfs = null)
     {
@@ -48,7 +49,11 @@ class ZipDownloader extends ArchiveDownloader
             self::$hasSystemUnzip = (bool) $finder->find('unzip');
         }
 
-        if (!class_exists('ZipArchive') && !self::$hasSystemUnzip) {
+        if (null === self::$hasZipArchive) {
+            self::$hasZipArchive = class_exists('ZipArchive');
+        }
+
+        if (!self::$hasZipArchive && !self::$hasSystemUnzip) {
             // php.ini path is added to the error message to help users find the correct file
             $iniMessage = IniHelper::getMessage();
             $error = "The zip extension and unzip command are both missing, skipping.\n" . $iniMessage;
@@ -62,17 +67,18 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * extract $file to $path with "unzip" command
      *
-     * @param string $file File to extract
-     * @param string $path Path where to extract file
+     * @param string $file      File to extract
+     * @param string $path      Path where to extract file
+     * @param bool $isFallback  If true it is called as a fallback and should not throw exception
      * @return bool True if succeed
      */
-    protected function extractWithUnzip($file, $path)
+    protected function extractWithSystemUnzip($file, $path, $isFallback)
     {
         $processError = null;
-        $command = 'unzip -qq '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path);
-        if (!Platform::isWindows()) {
-            $command .= ' && chmod -R u+w ' . ProcessExecutor::escape($path);
-        }
+        // When called after a ZipArchive failed, perhaps there is some files to overwrite
+        $overwrite = $isFallback ? '-o' : '';
+
+        $command = 'unzip -qq '.$overwrite.' '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path);
 
         try {
             if (0 === $this->process->execute($command, $ignoredOutput)) {
@@ -84,7 +90,11 @@ class ZipDownloader extends ArchiveDownloader
             $processError = 'Failed to execute ' . $command . "\n\n" . $e->getMessage();
         }
 
-        throw new \RuntimeException($processError);
+        if ( $isFallback ) {
+            $this->io->write($processError);
+            return;
+        }
+        return new \RuntimeException($processError);
     }
 
     /**
@@ -99,11 +109,18 @@ class ZipDownloader extends ArchiveDownloader
         $zipArchive = new ZipArchive();
 
         if (true !== ($retval = $zipArchive->open($file))) {
-            throw new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n"), $retval);
+            return new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n"), $retval);
         }
 
-        if (true !== $zipArchive->extractTo($path)) {
-            throw new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));
+        $extractResult = FALSE;
+        try {
+            $extractResult = $zipArchive->extractTo($path);
+        } catch (\Exception $e ) {
+            return $e;
+        }
+
+        if (true !== $extractResult) {
+            return new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));
         }
 
         $zipArchive->close();
@@ -117,15 +134,42 @@ class ZipDownloader extends ArchiveDownloader
      * @param string $file File to extract
      * @param string $path Path where to extract file
      */
-    protected function extract($file, $path)
+    public function extract($file, $path)
     {
-        if (self::$hasSystemUnzip && !(class_exists('ZipArchive') && Platform::isWindows())) {
-            if ( $this->extractWithUnzip($file, $path) ) {
+        $resultZipArchive = NULL;
+        $resultUnzip = NULL;
+
+        if ( self::$hasZipArchive ) {
+            // zip module is present
+            $resultZipArchive = $this->extractWithZipArchive($file, $path);
+            if ($resultZipArchive === TRUE) {
                 return;
             }
         }
 
-        $this->extractWithZipArchive($file, $path);
+        if ( self::$hasSystemUnzip ) {
+            // we have unzip in the path
+            $isFallback=FALSE;
+            if ( $resultZipArchive !== NULL) {
+                $this->io->writeError("\nUnzip using ZipArchive failed, trying with unzip");
+                $isFallback=TRUE;
+            };
+            $resultUnzip = $this->extractWithSystemUnzip($file, $path, $isFallback);
+            if ( $resultUnzip === TRUE ) {
+                return ;
+            }
+        };
+
+        // extract functions return TRUE or an exception
+        if ( $resultZipArchive !== NULL ) {
+            // zipArchive failed
+            // unZip not present or failed too
+            throw $resultZipArchive;
+        } else {
+            // unZip failed
+            // zipArchive not available
+            throw $resultUnzip;
+        };
     }
 
     /**
