@@ -59,7 +59,59 @@ class ZipDownloader extends ArchiveDownloader
         return parent::download($package, $path, $output);
     }
 
-    /*
+    /**
+     * extract $file to $path with "unzip" command
+     *
+     * @param string $file File to extract
+     * @param string $path Path where to extract file
+     * @return bool True if succeed
+     */
+    protected function extractWithUnzip($file, $path)
+    {
+        $processError = null;
+        $command = 'unzip -qq '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path);
+        if (!Platform::isWindows()) {
+            $command .= ' && chmod -R u+w ' . ProcessExecutor::escape($path);
+        }
+
+        try {
+            if (0 === $this->process->execute($command, $ignoredOutput)) {
+                return TRUE;
+            }
+
+            $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
+        } catch (\Exception $e) {
+            $processError = 'Failed to execute ' . $command . "\n\n" . $e->getMessage();
+        }
+
+        throw new \RuntimeException($processError);
+    }
+
+    /**
+     * extract $file to $path with ZipArchive
+     *
+     * @param string $file File to extract
+     * @param string $path Path where to extract file
+     * @return bool True if succeed
+     */
+    protected function extractWithZipArchive($file, $path)
+    {
+        $zipArchive = new ZipArchive();
+
+        if (true !== ($retval = $zipArchive->open($file))) {
+            throw new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n"), $retval);
+        }
+
+        if (true !== $zipArchive->extractTo($path)) {
+            throw new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));
+        }
+
+        $zipArchive->close();
+
+        return TRUE;
+    }
+
+    /**
      * extract $file to $path
      *
      * @param string $file File to extract
@@ -67,38 +119,13 @@ class ZipDownloader extends ArchiveDownloader
      */
     protected function extract($file, $path)
     {
-        $processError = null;
-
         if (self::$hasSystemUnzip && !(class_exists('ZipArchive') && Platform::isWindows())) {
-            $command = 'unzip -qq '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path);
-            if (!Platform::isWindows()) {
-                $command .= ' && chmod -R u+w ' . ProcessExecutor::escape($path);
+            if ( $this->extractWithUnzip($file, $path) ) {
+                return;
             }
-
-            try {
-                if (0 === $this->process->execute($command, $ignoredOutput)) {
-                    return;
-                }
-
-                $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
-            } catch (\Exception $e) {
-                $processError = 'Failed to execute ' . $command . "\n\n" . $e->getMessage();
-            }
-
-            throw new \RuntimeException($processError);
         }
 
-        $zipArchive = new ZipArchive();
-
-        if (true !== ($retval = $zipArchive->open($file))) {
-            throw new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n".$processError), $retval);
-        }
-
-        if (true !== $zipArchive->extractTo($path)) {
-            throw new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n".$processError));
-        }
-
-        $zipArchive->close();
+        $this->extractWithZipArchive($file, $path);
     }
 
     /**
