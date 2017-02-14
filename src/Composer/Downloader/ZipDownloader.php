@@ -70,7 +70,7 @@ class ZipDownloader extends ArchiveDownloader
      * @param string $file      File to extract
      * @param string $path      Path where to extract file
      * @param bool $isFallback  If true it is called as a fallback and should not throw exception
-     * @return bool True if succeed
+     * @return bool|\Exception  True if succeed, an Exception if not
      */
     protected function extractWithSystemUnzip($file, $path, $isFallback)
     {
@@ -92,7 +92,6 @@ class ZipDownloader extends ArchiveDownloader
 
         if ( $isFallback ) {
             $this->io->write($processError);
-            return;
         }
         return new \RuntimeException($processError);
     }
@@ -102,7 +101,7 @@ class ZipDownloader extends ArchiveDownloader
      *
      * @param string $file File to extract
      * @param string $path Path where to extract file
-     * @return bool True if succeed
+     * @return bool|\Exception True if succeed, an Exception if not
      */
     protected function extractWithZipArchive($file, $path)
     {
