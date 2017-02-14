@@ -133,7 +133,7 @@ class ZipDownloader extends ArchiveDownloader
      * @param string $file File to extract
      * @param string $path Path where to extract file
      */
-    public function extract($file, $path)
+    protected function extract($file, $path)
     {
         $resultZipArchive = NULL;
         $resultUnzip = NULL;
