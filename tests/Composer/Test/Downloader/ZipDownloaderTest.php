@@ -104,7 +104,6 @@ class ZipDownloaderTest extends TestCase
      * @expectedExceptionMessage SystemUnzip Failed
      */
     function testSystemUnzipOnlyFailed() {
-        $this->setExpectedException(\Exception::class);
         $downloader = new TestDownloader($this->getMock('Composer\IO\IOInterface'));
         $e = new \Exception("SystemUnzip Failed");
         $downloader->setUp(FALSE, TRUE,  NULL, $e);
@@ -129,7 +128,6 @@ class ZipDownloaderTest extends TestCase
      * @expectedExceptionMessage ZipArchive Failed
      */
     function testSystemUnzipFallbackFailed() {
-        $this->setExpectedException(\Exception::class);
         $downloader = new TestDownloader($this->getMock('Composer\IO\IOInterface'));
         $e1 = new \Exception("ZipArchive Failed");
         $e2 = new \Exception("SystemUnzip Failed");
