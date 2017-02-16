@@ -271,7 +271,7 @@ The following are supported:
 
 * **Git:** [git-scm.com](https://git-scm.com)
 * **Subversion:** [subversion.apache.org](https://subversion.apache.org)
-* **Mercurial:** [mercurial.selenic.com](http://mercurial.selenic.com)
+* **Mercurial:** [mercurial-scm.org](https://www.mercurial-scm.org)
 * **Fossil**: [fossil-scm.org](https://www.fossil-scm.org/)
 
 To get packages from these systems you need to have their respective clients
