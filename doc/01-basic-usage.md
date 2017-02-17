@@ -193,7 +193,7 @@ This can be useful for autoloading classes in a test suite, for example.
 
 ```php
 $loader = require __DIR__ . '/vendor/autoload.php';
-$loader->add('Acme\\Test\\', __DIR__);
+$loader->addPsr4('Acme\\Test\\', __DIR__);
 ```
 
 In addition to PSR-4 autoloading, Composer also supports PSR-0, classmap and
