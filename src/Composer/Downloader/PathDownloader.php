@@ -45,11 +45,13 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             ));
         }
 
-        if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
-            throw new \RuntimeException(sprintf(
-                'Package %s cannot install to "%s" inside its source at "%s"',
-                $package->getName(), realpath($path), $realUrl
-            ));
+        $destinationIsSource = strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0;
+        if ($destinationIsSource) {
+            $this->io->write(sprintf(
+                'Package %s installed to source directory %s', $package->getName(), $path
+                )
+            );
+            return;
         }
 
         // Get the transport options with default values
