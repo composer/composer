@@ -63,8 +63,14 @@ class RuleSet implements \IteratorAggregate, \Countable
         // Do not add if rule already exists
         if (isset($this->rulesByHash[$hash])) {
             $potentialDuplicates = $this->rulesByHash[$hash];
-            foreach ($potentialDuplicates as $potentialDuplicate) {
-                if ($rule->equals($potentialDuplicate)) {
+            if (is_array($potentialDuplicates)) {
+                foreach ($potentialDuplicates as $potentialDuplicate) {
+                    if ($rule->equals($potentialDuplicate)) {
+                        return;
+                    }
+                }
+            } else {
+                if ($rule->equals($potentialDuplicates)) {
                     return;
                 }
             }
@@ -73,7 +79,7 @@ class RuleSet implements \IteratorAggregate, \Countable
         if (!isset($this->rules[$type])) {
             $this->rules[$type] = array();
         }
-        
+
         $this->rules[$type][] = $rule;
         $this->ruleById[$this->nextRuleId] = $rule;
         $rule->setType($type);
@@ -81,9 +87,12 @@ class RuleSet implements \IteratorAggregate, \Countable
         $this->nextRuleId++;
 
         if (!isset($this->rulesByHash[$hash])) {
-            $this->rulesByHash[$hash] = array($rule);
-        } else {
+            $this->rulesByHash[$hash] = $rule;
+        } elseif (is_array($this->rulesByHash[$hash])) {
             $this->rulesByHash[$hash][] = $rule;
+        } else {
+            $originalRule = $this->rulesByHash[$hash];
+            $this->rulesByHash[$hash] = array($originalRule, $rule);
         }
     }
 
