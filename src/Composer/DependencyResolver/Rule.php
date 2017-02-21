@@ -13,13 +13,12 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\CompletePackage;
-use Composer\Package\PackageInterface;
-use Composer\Package\Link;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ * @author Ruben Gonzalez <rubenrua@gmail.com>
  */
-class Rule
+abstract class Rule
 {
     // reason constants
     const RULE_INTERNAL_ALLOW_UPDATE = 1;
@@ -39,27 +38,16 @@ class Rule
     const BITFIELD_REASON = 8;
     const BITFIELD_DISABLED = 16;
 
-    /**
-     * READ-ONLY: The literals this rule consists of.
-     * @var array
-     */
-    public $literals;
-
     protected $bitfield;
     protected $reasonData;
 
     /**
-     * @param array                 $literals
      * @param int                   $reason     A RULE_* constant describing the reason for generating this rule
      * @param Link|PackageInterface $reasonData
      * @param array                 $job        The job this rule was created from
      */
-    public function __construct(array $literals, $reason, $reasonData, $job = null)
+    public function __construct($reason, $reasonData, $job = null)
     {
-        // sort all packages ascending by id
-        sort($literals);
-
-        $this->literals = $literals;
         $this->reasonData = $reasonData;
 
         if ($job) {
@@ -71,17 +59,16 @@ class Rule
             (255 << self::BITFIELD_TYPE);
     }
 
-    public function getHash()
-    {
-        $data = unpack('ihash', md5(implode(',', $this->literals), true));
+    abstract public function getLiterals();
 
-        return $data['hash'];
-    }
+    abstract public function getHash();
 
     public function getJob()
     {
         return isset($this->job) ? $this->job : null;
     }
+
+    abstract public function equals(Rule $rule);
 
     public function getReason()
     {
@@ -102,29 +89,6 @@ class Rule
         if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
             return $this->reasonData->getTarget();
         }
-    }
-
-    /**
-     * Checks if this rule is equal to another one
-     *
-     * Ignores whether either of the rules is disabled.
-     *
-     * @param  Rule $rule The rule to check against
-     * @return bool Whether the rules are equal
-     */
-    public function equals(Rule $rule)
-    {
-        if (count($this->literals) != count($rule->literals)) {
-            return false;
-        }
-
-        for ($i = 0, $n = count($this->literals); $i < $n; $i++) {
-            if ($this->literals[$i] !== $rule->literals[$i]) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public function setType($type)
@@ -157,15 +121,14 @@ class Rule
         return !(($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
-    public function isAssertion()
-    {
-        return 1 === count($this->literals);
-    }
+    abstract public function isAssertion();
 
     public function getPrettyString(Pool $pool, array $installedMap = array())
     {
+        $literals = $this->getLiterals();
+
         $ruleText = '';
-        foreach ($this->literals as $i => $literal) {
+        foreach ($literals as $i => $literal) {
             if ($i != 0) {
                 $ruleText .= '|';
             }
@@ -183,13 +146,12 @@ class Rule
                 return "Remove command rule ($ruleText)";
 
             case self::RULE_PACKAGE_CONFLICT:
-                $package1 = $pool->literalToPackage($this->literals[0]);
-                $package2 = $pool->literalToPackage($this->literals[1]);
+                $package1 = $pool->literalToPackage($literals[0]);
+                $package2 = $pool->literalToPackage($literals[1]);
 
                 return $package1->getPrettyString().' conflicts with '.$this->formatPackagesUnique($pool, array($package2)).'.';
 
             case self::RULE_PACKAGE_REQUIRES:
-                $literals = $this->literals;
                 $sourceLiteral = array_shift($literals);
                 $sourcePackage = $pool->literalToPackage($sourceLiteral);
 
@@ -261,7 +223,7 @@ class Rule
             case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
                 return $ruleText;
             case self::RULE_PACKAGE_SAME_NAME:
-                return 'Can only install one of: ' . $this->formatPackagesUnique($pool, $this->literals) . '.';
+                return 'Can only install one of: ' . $this->formatPackagesUnique($pool, $literals) . '.';
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
                 return $ruleText;
             case self::RULE_LEARNED:
@@ -288,26 +250,5 @@ class Rule
         }
 
         return implode(', ', $prepared);
-    }
-
-    /**
-     * Formats a rule as a string of the format (Literal1|Literal2|...)
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        $result = ($this->isDisabled()) ? 'disabled(' : '(';
-
-        foreach ($this->literals as $i => $literal) {
-            if ($i != 0) {
-                $result .= '|';
-            }
-            $result .= $literal;
-        }
-
-        $result .= ')';
-
-        return $result;
     }
 }
