@@ -34,7 +34,7 @@ requirements:
 The required version of the `composer-plugin-api` follows the same [rules][7]
 as a normal package's.
 
-The current composer plugin API version is 1.0.0.
+The current composer plugin API version is 1.1.0.
 
 An example of a valid plugin `composer.json` file (with the autoloading
 part omitted):
@@ -44,7 +44,7 @@ part omitted):
     "name": "my/plugin-package",
     "type": "composer-plugin",
     "require": {
-        "composer-plugin-api": "^1.0"
+        "composer-plugin-api": "^1.1"
     },
     "extra": {
         "class": "My\\Plugin"
