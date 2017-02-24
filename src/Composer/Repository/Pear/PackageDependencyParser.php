@@ -228,9 +228,8 @@ class PackageDependencyParser
         }
 
         $result = array();
-        foreach ($depItem as $key => $subDepItem) {
+        foreach ($depItem as $subDepItem) {
             if (!array_key_exists('channel', $subDepItem)) {
-                $depItem[$key]['channel'] = $depItem[$key]['uri'];
                 $subDepItem['channel'] = $subDepItem['uri'];
             }
             $depChannelName = $subDepItem['channel'];
