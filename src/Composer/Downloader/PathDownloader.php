@@ -51,8 +51,12 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 'Package %s installed to source directory %s', $package->getName(), $path
                 )
             );
+            $package->lockAdd();
             return;
         }
+
+        // If the source directory has a lock file, remove it.
+        $package->lockRemove();
 
         // Get the transport options with default values
         $transportOptions = $package->getTransportOptions() + array('symlink' => null);
@@ -102,7 +106,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     $fileSystem->symlink($shortestPath, $path);
                     $this->io->writeError(sprintf(' Symlinked from %s', $url), false);
                 }
-            } catch (IOException $e) {
+            }
+            catch (IOException $e) {
                 if (in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
                     $this->io->writeError('');
                     $this->io->writeError('    <error>Symlink failed, fallback to use mirroring!</error>');

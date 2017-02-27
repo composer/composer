@@ -358,4 +358,27 @@ interface PackageInterface
      * @return array
      */
     public function getTransportOptions();
+
+    /**
+     * For PATH packages, see if this package
+     * is deployed to it's source.
+     * 
+     * @return bool
+     */
+    public function lockIsEnabled();
+
+    /**
+     * For PATH packages, write a file to disk
+     * that ensure it is identified as containing
+     * a package's source.
+     * 
+     * @return void
+     */
+    public function lockAdd();
+
+    /**
+     * For PATH packages, remove the lock
+     * created with lockAdd()
+     */
+    public function lockRemove();
 }

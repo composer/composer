@@ -222,6 +222,12 @@ class FileDownloader implements DownloaderInterface
         if ($output) {
             $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
         }
+
+        if ($package->lockIsEnabled()) {
+            $package->lockRemove();
+            return;
+        }
+
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
         }
