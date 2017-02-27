@@ -79,7 +79,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         $this->filesystem->removeDirectory($path);
 
         if ($output) {
-            $this->io->write(sprintf(
+            $this->io->writeError(sprintf(
                 '  - Installing <info>%s</info> (<comment>%s</comment>)',
                 $package->getName(),
                 $package->getFullPrettyVersion()
@@ -106,8 +106,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 $fileSystem->symlink($shortestPath, $path);
                 $this->io->writeError(sprintf(' Symlinked from %s', $url), false);
                 $linked = true;
-            }
-            catch (IOException $e) {
+            } catch (IOException $e) {
                 $this->io->writeError($e->getMessage(), false);
             }
 
