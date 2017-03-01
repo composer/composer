@@ -16,7 +16,7 @@ Private Packagist is available as a hosted SaaS solution or as an on-premise sel
 package, providing an easy interactive set up experience.
 
 Some of Private Packagist's revenue is used to pay for Composer and Packagist.org
-development and hosting so using it is a good way to support the maitenance of
+development and hosting so using it is a good way to support the maintenance of
 these open source projects financially. You can find more information about how to
 set up your own package archive on [Packagist.com](https://packagist.com).
 
