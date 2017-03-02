@@ -279,11 +279,10 @@ class FileDownloader implements DownloaderInterface
      * Check if a package destination and source are the same.
      *
      * @param PackageInterface $package
-     * @param mixed $path
-     * @throws \RuntimeException
+     * @param string $path
      * @return boolean
      */
-    public function destinationIsSource(PackageInterface $package, $path) {
+    protected function destinationIsSource(PackageInterface $package, $path) {
         $url = $package->getDistUrl();
         $realUrl = realpath($url);
         return strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0;
