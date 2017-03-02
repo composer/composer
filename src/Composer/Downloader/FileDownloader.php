@@ -223,8 +223,7 @@ class FileDownloader implements DownloaderInterface
             $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
         }
 
-        if ($this->destinationIsSource($package, $path) || $package->lockIsEnabled($package)) {
-            $package->lockRemove();
+        if ($this->destinationIsSource($package, $path)) {
             if ($output) {
                 $this->io->writeError("Removing nothing. Package installed to source.");
             }

@@ -234,49 +234,4 @@ abstract class BasePackage implements PackageInterface
         $this->repository = null;
         $this->id = -1;
     }
-
-    /**
-     * Some packages are installed from filesystem
-     * to filesystem on the same directory. We use a
-     * file locking mechanism to identify them
-     * and prevent source code from being deleted.
-     *
-     * @return false|string
-     */
-    protected function lockGetPath() {
-        $url = $this->getDistUrl();
-        $realUrl = realpath($url);
-        if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
-            return false;
-        }
-        return $realUrl . DIRECTORY_SEPARATOR . '_composer-is-source.lock';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function lockIsEnabled() {
-        if ($path = $this->lockGetPath()) {
-            return file_exists($path);
-        }
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function lockAdd() {
-        file_put_contents($this->lockGetPath(), 'This directory contains a source package.');
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function lockRemove() {
-        if ($path = $this->lockGetPath()) {
-            if (file_exists($path)) {
-                unlink($path);
-            }
-        }
-    }
 }

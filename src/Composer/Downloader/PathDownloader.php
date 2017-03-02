@@ -43,7 +43,6 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 'Package %s installed to source directory %s', $package->getName(), $path
                 )
             );
-            $package->lockAdd();
             return;
         }
 
@@ -54,9 +53,6 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 'Source path "%s" is not found for package %s', $url, $package->getName()
             ));
         }
-
-        // If the source directory has a lock file, remove it.
-        $package->lockRemove();
 
         // Get the transport options with default values
         $transportOptions = $package->getTransportOptions() + array('symlink' => null);
