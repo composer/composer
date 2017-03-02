@@ -219,15 +219,15 @@ class FileDownloader implements DownloaderInterface
      */
     public function remove(PackageInterface $package, $path, $output = true)
     {
-        if ($output) {
-            $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
-        }
-
         if ($this->destinationIsSource($package, $path)) {
             if ($output) {
-                $this->io->writeError("Removing nothing. Package installed to source.");
+                $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> skipped (installed from source) (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
             }
             return;
+        }
+
+        if ($output) {
+            $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
         }
 
         if (!$this->filesystem->removeDirectory($path)) {
