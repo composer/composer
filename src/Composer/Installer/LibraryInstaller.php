@@ -130,7 +130,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $downloadPath = $this->getPackageBasePath($package);
         if (strpos($package->getName(), '/')) {
             $packageVendorDir = dirname($downloadPath);
-            if (is_dir($packageVendorDir) && $this->filesystem->isDirEmpty($packageVendorDir)) {
+            if ((!$package->lockIsEnabled()) && is_dir($packageVendorDir) && $this->filesystem->isDirEmpty($packageVendorDir)) {
                 Silencer::call('rmdir', $packageVendorDir);
             }
         }

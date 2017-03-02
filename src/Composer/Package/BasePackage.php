@@ -249,7 +249,7 @@ abstract class BasePackage implements PackageInterface
         if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
             return false;
         }
-        return $realUrl . PATH_SEPARATOR . '_composer-is-source.lock';
+        return $realUrl . DIRECTORY_SEPARATOR . '_composer-is-source.lock';
     }
 
     /**

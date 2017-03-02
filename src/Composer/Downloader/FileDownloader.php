@@ -223,8 +223,11 @@ class FileDownloader implements DownloaderInterface
             $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
         }
 
-        if ($package->lockIsEnabled()) {
+        if ($this->destinationIsSource($package, $path) || $package->lockIsEnabled($package)) {
             $package->lockRemove();
+            if ($output) {
+                $this->io->writeError("Removing nothing. Package installed to source.");
+            }
             return;
         }
 
@@ -271,5 +274,19 @@ class FileDownloader implements DownloaderInterface
         $cacheKey = sha1($processedUrl);
 
         return $package->getName().'/'.$cacheKey.'.'.$package->getDistType();
+    }
+
+    /**
+     * Check if a package destination and source are the same.
+     *
+     * @param PackageInterface $package
+     * @param mixed $path
+     * @throws \RuntimeException
+     * @return boolean
+     */
+    public function destinationIsSource(PackageInterface $package, $path) {
+        $url = $package->getDistUrl();
+        $realUrl = realpath($url);
+        return strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0;
     }
 }
