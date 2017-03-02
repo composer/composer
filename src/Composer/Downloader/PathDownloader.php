@@ -47,7 +47,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         $destinationIsSource = strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0;
         if ($destinationIsSource) {
-            $this->io->write(sprintf(
+            $this->io->writeError(sprintf(
                 'Package %s installed to source directory %s', $package->getName(), $path
                 )
             );
