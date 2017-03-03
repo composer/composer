@@ -113,13 +113,13 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             if (!$linked && Platform::isWindows()) {
                 // Use command linke symlinking as a fallback.
                 try {
-                    $return_var = 0;
+                    $exitCode = 0;
                     $output = array();
                     // Without this cleanup for backslashes symlink will
                     // be created, but completely broken.
                     $shortestPath = str_replace('/', '\\', $shortestPath);
-                    exec(sprintf('mklink /d %s %s', escapeshellarg($absolutePath), escapeshellarg($shortestPath)), $ouptput, $return_var);
-                    $linked = $return_var == 0;
+                    exec(sprintf('mklink /d %s %s', escapeshellarg($absolutePath), escapeshellarg($shortestPath)), $ouptput, $exitCode);
+                    $linked = $exitCode == 0;
                 }
                 catch (\Exception $e) {
                     $this->io->writeError($e->getMessage(), false);
