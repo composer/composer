@@ -57,6 +57,29 @@ class ClassLoader
     private $missingClasses = array();
     private $apcuPrefix;
 
+    const SEARCHMODE_OPCACHE = 0;
+    const SEARCHMODE_FILE = 1;
+    
+    public function __construct($enableOpcacheOptimize = false)
+    {
+        $this->searchModes = array(
+            self::SEARCHMODE_FILE
+        );
+
+        if ($enableOpcacheOptimize == false) {
+            return;
+        }
+        if (function_exists('opcache_is_script_cached') == false) {
+            //todo - should a warning be generated?
+            return;
+        }
+
+        $this->searchModes = array(
+            self::SEARCHMODE_OPCACHE,
+            self::SEARCHMODE_FILE,
+        );
+    }
+
     public function getPrefixes()
     {
         if (!empty($this->prefixesPsr0)) {
@@ -369,61 +392,97 @@ class ClassLoader
 
     private function findFileWithExtension($class, $ext)
     {
-        // PSR-4 lookup
-        $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . $ext;
+        foreach ($this->searchModes as $searchMode) {
 
-        $first = $class[0];
-        if (isset($this->prefixLengthsPsr4[$first])) {
-            foreach ($this->prefixLengthsPsr4[$first] as $prefix => $length) {
-                if (0 === strpos($class, $prefix)) {
-                    foreach ($this->prefixDirsPsr4[$prefix] as $dir) {
-                        if (file_exists($file = $dir . DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $length))) {
-                            return $file;
+            // PSR-4 lookup
+            $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR).$ext;
+
+            $first = $class[0];
+            if (isset($this->prefixLengthsPsr4[$first])) {
+                foreach ($this->prefixLengthsPsr4[$first] as $prefix => $length) {
+                    if (0 === strpos($class, $prefix)) {
+                        foreach ($this->prefixDirsPsr4[$prefix] as $dir) {
+                            $file = $dir.DIRECTORY_SEPARATOR.substr($logicalPathPsr4, $length);
+                            if ($searchMode === self::SEARCHMODE_OPCACHE) {
+                                if (opcache_is_script_cached($file)) {
+                                    return $file;
+                                }
+                            }
+                            else if ($searchMode === self::SEARCHMODE_FILE) {
+                                if (file_exists($file)) {
+                                    return $file;
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // PSR-4 fallback dirs
-        foreach ($this->fallbackDirsPsr4 as $dir) {
-            if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr4)) {
-                return $file;
+            // PSR-4 fallback dirs
+            foreach ($this->fallbackDirsPsr4 as $dir) {
+                $file = $dir.DIRECTORY_SEPARATOR.$logicalPathPsr4;
+                if ($searchMode === self::SEARCHMODE_OPCACHE) {
+                    if (opcache_is_script_cached($file)) {
+                        return $file;
+                    }
+                }
+                else if ($searchMode === self::SEARCHMODE_FILE) {
+                    if (file_exists($file)) {
+                        return $file;
+                    }
+                }
             }
-        }
 
-        // PSR-0 lookup
-        if (false !== $pos = strrpos($class, '\\')) {
-            // namespaced class name
-            $logicalPathPsr0 = substr($logicalPathPsr4, 0, $pos + 1)
-                . strtr(substr($logicalPathPsr4, $pos + 1), '_', DIRECTORY_SEPARATOR);
-        } else {
-            // PEAR-like class name
-            $logicalPathPsr0 = strtr($class, '_', DIRECTORY_SEPARATOR) . $ext;
-        }
+            // PSR-0 lookup
+            if (false !== $pos = strrpos($class, '\\')) {
+                // namespaced class name
+                $logicalPathPsr0 = substr($logicalPathPsr4, 0, $pos + 1)
+                    .strtr(substr($logicalPathPsr4, $pos + 1), '_', DIRECTORY_SEPARATOR);
+            }
+            else {
+                // PEAR-like class name
+                $logicalPathPsr0 = strtr($class, '_', DIRECTORY_SEPARATOR).$ext;
+            }
 
-        if (isset($this->prefixesPsr0[$first])) {
-            foreach ($this->prefixesPsr0[$first] as $prefix => $dirs) {
-                if (0 === strpos($class, $prefix)) {
-                    foreach ($dirs as $dir) {
-                        if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr0)) {
-                            return $file;
+            if (isset($this->prefixesPsr0[$first])) {
+                foreach ($this->prefixesPsr0[$first] as $prefix => $dirs) {
+                    if (0 === strpos($class, $prefix)) {
+                        foreach ($dirs as $dir) {
+                            $file = $dir.DIRECTORY_SEPARATOR.$logicalPathPsr0;
+                            if ($searchMode === self::SEARCHMODE_OPCACHE) {
+                                if (opcache_is_script_cached($file)) {
+                                    return $file;
+                                }
+                            }
+                            else if ($searchMode === self::SEARCHMODE_FILE) {
+                                if (file_exists($file)) {
+                                    return $file;
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // PSR-0 fallback dirs
-        foreach ($this->fallbackDirsPsr0 as $dir) {
-            if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr0)) {
+            // PSR-0 fallback dirs
+            foreach ($this->fallbackDirsPsr0 as $dir) {
+                $file = $dir.DIRECTORY_SEPARATOR.$logicalPathPsr0;
+                if ($searchMode === self::SEARCHMODE_OPCACHE) {
+                    if (opcache_is_script_cached($file)) {
+                        return $file;
+                    }
+                }
+                else if ($searchMode === self::SEARCHMODE_FILE) {
+                    if (file_exists($file)) {
+                        return $file;
+                    }
+                }
+            }
+
+            // PSR-0 include paths.
+            if ($this->useIncludePath && $file = stream_resolve_include_path($logicalPathPsr0)) {
                 return $file;
             }
-        }
-
-        // PSR-0 include paths.
-        if ($this->useIncludePath && $file = stream_resolve_include_path($logicalPathPsr0)) {
-            return $file;
         }
 
         return false;
