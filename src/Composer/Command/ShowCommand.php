@@ -270,6 +270,7 @@ EOT
         $showMinorOnly = $input->getOption('minor-only');
         $indent = $showAllTypes ? '  ' : '';
         $latestPackages = array();
+        $exitCode = 0;
         foreach (array('platform' => true, 'available' => false, 'installed' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
                 ksort($packages[$type]);
@@ -394,10 +395,13 @@ EOT
                     $io->write('');
                 }
                 if ($input->getOption('strict') && $hasOutdatedPackages) {
-                    return 1;
+                    $exitCode = 1;
+                    break;
                 }
             }
         }
+
+        return $exitCode;
     }
 
     protected function getRootRequires()
