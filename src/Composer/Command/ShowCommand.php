@@ -234,14 +234,14 @@ EOT
 
         foreach ($repos as $repo) {
             if ($repo === $platformRepo) {
-                $type = '<info>platform</info>:';
+                $type = 'platform';
             } elseif (
                 $repo === $installedRepo
                 || ($installedRepo instanceof CompositeRepository && in_array($repo, $installedRepo->getRepositories(), true))
             ) {
-                $type = '<info>installed</info>:';
+                $type = 'installed';
             } else {
-                $type = '<comment>available</comment>:';
+                $type = 'available';
             }
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
                 foreach ($repo->getProviderNames() as $name) {
@@ -270,7 +270,7 @@ EOT
         $showMinorOnly = $input->getOption('minor-only');
         $indent = $showAllTypes ? '  ' : '';
         $latestPackages = array();
-        foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
+        foreach (array('platform' => true, 'available' => false, 'installed' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
                 ksort($packages[$type]);
 
@@ -320,7 +320,11 @@ EOT
                 $hasOutdatedPackages = false;
 
                 if ($showAllTypes) {
-                    $io->write($type);
+                    if ('available' === $type) {
+                        $io->write('<comment>' . $type . '</comment>:');
+                    } else {
+                        $io->write('<info>' . $type . '</info>:');
+                    }
                 }
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
