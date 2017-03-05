@@ -323,11 +323,11 @@ EOT
                 $hasOutdatedPackages = false;
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
-                        $latestPackackage = null;
+                        $latestPackage = null;
                         if ($showLatest && isset($latestPackages[$package->getPrettyName()])) {
-                            $latestPackackage = $latestPackages[$package->getPrettyName()];
+                            $latestPackage = $latestPackages[$package->getPrettyName()];
                         }
-                        if ($input->getOption('outdated') && $latestPackackage && $latestPackackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && !$latestPackackage->isAbandoned()) {
+                        if ($input->getOption('outdated') && $latestPackage && $latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && !$latestPackage->isAbandoned()) {
                             continue;
                         } elseif ($input->getOption('outdated')) {
                             $hasOutdatedPackages = true;
@@ -339,9 +339,9 @@ EOT
                             $io->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
                         }
 
-                        if ($writeLatest && $latestPackackage) {
-                            $latestVersion = $latestPackackage->getFullPrettyVersion();
-                            $style = $this->getVersionStyle($latestPackackage, $package);
+                        if ($writeLatest && $latestPackage) {
+                            $latestVersion = $latestPackage->getFullPrettyVersion();
+                            $style = $this->getVersionStyle($latestPackage, $package);
                             if (!$io->isDecorated()) {
                                 $latestVersion = str_replace(array('info', 'highlight', 'comment'), array('=', '!', '~'), $style) . ' ' . $latestVersion;
                             }
@@ -365,9 +365,9 @@ EOT
                             $io->write(' ' . $path, false);
                         }
 
-                        if ($latestPackackage && $latestPackackage->isAbandoned()) {
-                            $replacement = (is_string($latestPackackage->getReplacementPackage()))
-                                ? 'Use ' . $latestPackackage->getReplacementPackage() . ' instead'
+                        if ($latestPackage && $latestPackage->isAbandoned()) {
+                            $replacement = (is_string($latestPackage->getReplacementPackage()))
+                                ? 'Use ' . $latestPackage->getReplacementPackage() . ' instead'
                                 : 'No replacement was suggested';
 
                             $io->writeError('');
