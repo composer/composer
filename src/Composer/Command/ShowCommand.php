@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\DefaultPolicy;
+use Composer\Json\JsonFile;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\BasePackage;
@@ -74,6 +75,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -110,6 +112,13 @@ EOT
 
         if ($input->getOption('tree') && ($input->getOption('all') || $input->getOption('available'))) {
             $io->writeError('The --tree (-t) option is not usable in combination with --all or --available (-a)');
+
+            return 1;
+        }
+
+        $format = $input->getOption('format');
+        if (!in_array($format, array('text', 'json'))) {
+            $io->writeError(sprintf('Unsupported format "%s". See help for supported formats.', $format));
 
             return 1;
         }
@@ -378,63 +387,67 @@ EOT
             }
         }
 
-        foreach ($viewData as $type => $packages) {
-            $nameLength = $viewMetaData[$type]['nameLength'];
-            $versionLength = $viewMetaData[$type]['versionLength'];
-            $latestLength = $viewMetaData[$type]['latestLength'];
+        if ('json' === $format) {
+            $io->write(JsonFile::encode($viewData));
+        } else {
+            foreach ($viewData as $type => $packages) {
+                $nameLength = $viewMetaData[$type]['nameLength'];
+                $versionLength = $viewMetaData[$type]['versionLength'];
+                $latestLength = $viewMetaData[$type]['latestLength'];
 
-            $writeVersion = $nameLength + $versionLength + 3 <= $width;
-            $writeLatest = $nameLength + $versionLength + $latestLength + 3 <= $width;
-            $writeDescription = $nameLength + $versionLength + $latestLength + 24 <= $width;
+                $writeVersion = $nameLength + $versionLength + 3 <= $width;
+                $writeLatest = $nameLength + $versionLength + $latestLength + 3 <= $width;
+                $writeDescription = $nameLength + $versionLength + $latestLength + 24 <= $width;
 
-            if ($writeLatest && !$io->isDecorated()) {
-                $latestLength += 2;
-            }
-
-            if ($showAllTypes) {
-                if ('available' === $type) {
-                    $io->write('<comment>' . $type . '</comment>:');
-                } else {
-                    $io->write('<info>' . $type . '</info>:');
+                if ($writeLatest && !$io->isDecorated()) {
+                    $latestLength += 2;
                 }
-            }
 
-            foreach ($packages as $package) {
-                $io->write($indent . str_pad($package['name'], $nameLength, ' '), false);
-                if (isset($package['version']) && $writeVersion) {
-                    $io->write(' ' . str_pad($package['version'], $versionLength, ' '), false);
-                }
-                if (isset($package['latest']) && $writeLatest) {
-                    $latestVersion = $package['latest'];
-                    $style = $package['latestStyle'];
-                    if (!$io->isDecorated()) {
-                        $latestVersion = str_replace(array('info', 'highlight', 'comment'), array('=', '!', '~'), $style) . ' ' . $latestVersion;
+                if ($showAllTypes) {
+                    if ('available' === $type) {
+                        $io->write('<comment>' . $type . '</comment>:');
+                    } else {
+                        $io->write('<info>' . $type . '</info>:');
                     }
-                    $io->write(' <'.$style.'>' . str_pad($latestVersion, $latestLength, ' ') . '</'.$style.'>', false);
                 }
-                if (isset($package['description']) && $writeDescription) {
-                    $description = strtok($package['description'], "\r\n");
-                    $remaining = $width - $nameLength - $versionLength - 4;
-                    if ($writeLatest) {
-                        $remaining -= $latestLength;
-                    }
-                    if (strlen($description) > $remaining) {
-                        $description = substr($description, 0, $remaining - 3) . '...';
-                    }
-                    $io->write(' ' . $description, false);
-                }
-                if (isset($package['path'])) {
-                    $io->write(' ' . $package['path'], false);
-                }
-                if (isset($package['warning'])) {
-                    $io->writeError('');
-                    $io->writeError('<warning>' . $package['warning'] . '</warning>', false);
-                }
-                $io->write('');
-            }
 
-            if ($showAllTypes) {
-                $io->write('');
+                foreach ($packages as $package) {
+                    $io->write($indent . str_pad($package['name'], $nameLength, ' '), false);
+                    if (isset($package['version']) && $writeVersion) {
+                        $io->write(' ' . str_pad($package['version'], $versionLength, ' '), false);
+                    }
+                    if (isset($package['latest']) && $writeLatest) {
+                        $latestVersion = $package['latest'];
+                        $style = $package['latestStyle'];
+                        if (!$io->isDecorated()) {
+                            $latestVersion = str_replace(array('info', 'highlight', 'comment'), array('=', '!', '~'), $style) . ' ' . $latestVersion;
+                        }
+                        $io->write(' <' . $style . '>' . str_pad($latestVersion, $latestLength, ' ') . '</' . $style . '>', false);
+                    }
+                    if (isset($package['description']) && $writeDescription) {
+                        $description = strtok($package['description'], "\r\n");
+                        $remaining = $width - $nameLength - $versionLength - 4;
+                        if ($writeLatest) {
+                            $remaining -= $latestLength;
+                        }
+                        if (strlen($description) > $remaining) {
+                            $description = substr($description, 0, $remaining - 3) . '...';
+                        }
+                        $io->write(' ' . $description, false);
+                    }
+                    if (isset($package['path'])) {
+                        $io->write(' ' . $package['path'], false);
+                    }
+                    if (isset($package['warning'])) {
+                        $io->writeError('');
+                        $io->writeError('<warning>' . $package['warning'] . '</warning>', false);
+                    }
+                    $io->write('');
+                }
+
+                if ($showAllTypes) {
+                    $io->write('');
+                }
             }
         }
 
