@@ -172,6 +172,9 @@ EOT
 
         // show single package or single version
         if (($packageFilter && false === strpos($packageFilter, '*')) || !empty($package)) {
+            if ('json' === $format) {
+                $io->writeError('Format "json" is only supported for package listings, falling back to format "text"');
+            }
             if (empty($package)) {
                 list($package, $versions) = $this->getPackage($installedRepo, $repos, $input->getArgument('package'), $input->getArgument('version'));
 
@@ -214,6 +217,9 @@ EOT
 
         // show tree view if requested
         if ($input->getOption('tree')) {
+            if ('json' === $format) {
+                $io->writeError('Format "json" is only supported for package listings, falling back to format "text"');
+            }
             $rootRequires = $this->getRootRequires();
             foreach ($installedRepo->getPackages() as $package) {
                 if (in_array($package->getName(), $rootRequires, true)) {
