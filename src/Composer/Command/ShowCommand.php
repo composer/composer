@@ -355,7 +355,7 @@ EOT
                         }
                         if ($writeLatest && $latestPackage) {
                             $packageViewData['latest'] = $latestPackage->getFullPrettyVersion();
-                            $packageViewData['latestStyle'] = $this->getVersionStyle($latestPackage, $package);
+                            $packageViewData['status'] = $this->getUpdateStatus($latestPackage, $package);
                         }
                         if ($writeDescription) {
                             $packageViewData['description'] = $package->getDescription();
@@ -418,9 +418,10 @@ EOT
                     }
                     if (isset($package['latest']) && $writeLatest) {
                         $latestVersion = $package['latest'];
-                        $style = $package['latestStyle'];
+                        $updateStatus = $package['status'];
+                        $style = $this->updateStatusToVersionStyle($updateStatus);
                         if (!$io->isDecorated()) {
-                            $latestVersion = str_replace(array('info', 'highlight', 'comment'), array('=', '!', '~'), $style) . ' ' . $latestVersion;
+                            $latestVersion = str_replace(array('up-to-date', 'update-recommended', 'update-possible'), array('=', '!', '~'), $updateStatus) . ' ' . $latestVersion;
                         }
                         $io->write(' <' . $style . '>' . str_pad($latestVersion, $latestLength, ' ') . '</' . $style . '>', false);
                     }
@@ -465,22 +466,7 @@ EOT
 
     protected function getVersionStyle(PackageInterface $latestPackage, PackageInterface $package)
     {
-        if ($latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion()) {
-            // print green as it's up to date
-            return 'info';
-        }
-
-        $constraint = $package->getVersion();
-        if (0 !== strpos($constraint, 'dev-')) {
-            $constraint = '^'.$constraint;
-        }
-        if ($latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), $constraint)) {
-            // print red as it needs an immediate semver-compliant upgrade
-            return 'highlight';
-        }
-
-        // print yellow as it needs an upgrade but has potential BC breaks so is not urgent
-        return 'comment';
+        return $this->updateStatusToVersionStyle($this->getUpdateStatus($latestPackage, $package));
     }
 
     /**
@@ -773,6 +759,32 @@ EOT
                 }
             }
         }
+    }
+
+    private function updateStatusToVersionStyle($updateStatus)
+    {
+        // 'up-to-date' is printed green
+        // 'update-recommended' is printed red
+        // 'upgrade-possible' is printed yellow
+        return str_replace(array('up-to-date', 'update-recommended', 'update-possible'), array('info', 'highlight', 'comment'), $updateStatus);
+    }
+
+    private function getUpdateStatus(PackageInterface $latestPackage, PackageInterface $package) {
+        if ($latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion()) {
+            return 'up-to-date';
+        }
+
+        $constraint = $package->getVersion();
+        if (0 !== strpos($constraint, 'dev-')) {
+            $constraint = '^'.$constraint;
+        }
+        if ($latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), $constraint)) {
+            // it needs an immediate semver-compliant upgrade
+            return 'update-recommended';
+        }
+
+        // it needs an upgrade but has potential BC breaks so is not urgent
+        return 'update-possible';
     }
 
     private function writeTreeLine($line)
