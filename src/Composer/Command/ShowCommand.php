@@ -375,16 +375,13 @@ EOT
                             $replacement = (is_string($latestPackage->getReplacementPackage()))
                                 ? 'Use ' . $latestPackage->getReplacementPackage() . ' instead'
                                 : 'No replacement was suggested';
-
-                            $io->writeError('');
-                            $io->writeError(
-                                sprintf(
-                                    "<warning>Package %s is abandoned, you should avoid using it. %s.</warning>",
-                                    $package->getPrettyName(),
-                                    $replacement
-                                ),
-                                false
+                            $packageWarning = sprintf(
+                                'Package %s is abandoned, you should avoid using it. %s.',
+                                $package->getPrettyName(),
+                                $replacement
                             );
+                            $io->writeError('');
+                            $io->writeError('<warning>' . $packageWarning . '</warning>', false);
                         }
                     } else {
                         $io->write($indent . $package, false);
