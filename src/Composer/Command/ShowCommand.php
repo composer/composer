@@ -232,6 +232,21 @@ EOT
             $packageListFilter = $this->getRootRequires();
         }
 
+        list($width) = $this->getApplication()->getTerminalDimensions();
+        if (null === $width) {
+            // In case the width is not detected, we're probably running the command
+            // outside of a real terminal, use space without a limit
+            $width = PHP_INT_MAX;
+        }
+        if (Platform::isWindows()) {
+            $width--;
+        }
+
+        if ($input->getOption('path') && null === $composer) {
+            $io->writeError('No composer.json found in the current directory, disabling "path" option');
+            $input->setOption('path', false);
+        }
+
         foreach ($repos as $repo) {
             if ($repo === $platformRepo) {
                 $type = 'platform';
@@ -295,20 +310,6 @@ EOT
                     } else {
                         $nameLength = max($nameLength, strlen($package));
                     }
-                }
-                list($width) = $this->getApplication()->getTerminalDimensions();
-                if (null === $width) {
-                    // In case the width is not detected, we're probably running the command
-                    // outside of a real terminal, use space without a limit
-                    $width = PHP_INT_MAX;
-                }
-                if (Platform::isWindows()) {
-                    $width--;
-                }
-
-                if ($input->getOption('path') && null === $composer) {
-                    $io->writeError('No composer.json found in the current directory, disabling "path" option');
-                    $input->setOption('path', false);
                 }
 
                 $writePath = !$input->getOption('name-only') && $input->getOption('path');
