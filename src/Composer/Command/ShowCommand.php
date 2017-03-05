@@ -272,9 +272,6 @@ EOT
         $latestPackages = array();
         foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
-                if ($showAllTypes) {
-                    $io->write($type);
-                }
                 ksort($packages[$type]);
 
                 $nameLength = $versionLength = $latestLength = 0;
@@ -321,6 +318,10 @@ EOT
                     $latestLength += 2;
                 }
                 $hasOutdatedPackages = false;
+
+                if ($showAllTypes) {
+                    $io->write($type);
+                }
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
                         $latestPackage = null;
