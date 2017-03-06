@@ -348,7 +348,7 @@ class RemoteFilesystem
         if ($originUrl === 'bitbucket.org'
             && !$this->isPublicBitBucketDownload($fileUrl)
             && substr($fileUrl, -4) === '.zip'
-            && preg_match('{^text/html\b}i', $contentType)
+            && $contentType && preg_match('{^text/html\b}i', $contentType)
         ) {
             $result = false;
             if ($this->retryAuthFailure) {
@@ -385,7 +385,8 @@ class RemoteFilesystem
 
         // decode gzip
         if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http' && !$hasFollowedRedirect) {
-            $decode = 'gzip' === strtolower($this->findHeaderValue($http_response_header, 'content-encoding'));
+            $contentEncoding = $this->findHeaderValue($http_response_header, 'content-encoding');
+            $decode = $contentEncoding && 'gzip' === strtolower($contentEncoding);
 
             if ($decode) {
                 try {

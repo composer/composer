@@ -65,17 +65,17 @@ class VersionGuesser
     {
         if (function_exists('proc_open')) {
             $versionData = $this->guessGitVersion($packageConfig, $path);
-            if (null !== $versionData) {
+            if (null !== $versionData && null !== $versionData['version']) {
                 return $versionData;
             }
 
             $versionData = $this->guessHgVersion($packageConfig, $path);
-            if (null !== $versionData) {
+            if (null !== $versionData && null !== $versionData['version']) {
                 return $versionData;
             }
 
             $versionData = $this->guessFossilVersion($packageConfig, $path);
-            if (null !== $versionData) {
+            if (null !== $versionData && null !== $versionData['version']) {
                 return $versionData;
             }
 

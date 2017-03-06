@@ -85,9 +85,15 @@ Example:
     },
     "require": {
         "composer-plugin-api": "^1.0"
+    },
+    "require-dev": {
+        "composer/composer": "^1.3"
     }
 }
 ```
+
+The example above has Composer itself in its require-dev, which allows you to use
+the Composer classes in your test suite for example.
 
 ### The Plugin class
 
