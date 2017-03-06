@@ -37,6 +37,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      */
     public function download(PackageInterface $package, $path, $output = true)
     {
+        // Make sure that the source path for the package exists.
         $url = $package->getDistUrl();
         $realUrl = realpath($url);
         if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
@@ -45,6 +46,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             ));
         }
 
+        // Prevent target from being same as source, as this has fatal consequences
+        // when deleting packages.
         if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
             // IMPORTANT NOTICE: If you wish to change this, don't. You are wasting your time and ours.
             //
@@ -88,31 +91,69 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         }
 
         $isFallback = false;
+        $linked = false;
+
         if (self::STRATEGY_SYMLINK == $currentStrategy) {
+
+            $absolutePath = $path;
+            if (!$this->filesystem->isAbsolutePath($absolutePath)) {
+                $absolutePath = getcwd() . DIRECTORY_SEPARATOR . $path;
+            }
+            $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
+            $path = rtrim($path, "/");
+
             try {
-                if (Platform::isWindows()) {
+                // Creating symlinks on windows through PHP's symlink function
+                // is totally broken with relative paths.
+                // @see https://github.com/php/php-src/pull/1243
+                // @see https://bugs.php.net/bug.php?id=69473
+                $fileSystem->symlink($shortestPath, $path);
+                $this->io->writeError(sprintf(' Symlinked from %s', $url), false);
+                $linked = true;
+            } catch (IOException $e) {
+                $this->io->writeError($e->getMessage(), false);
+            }
+
+            if (!$linked && Platform::isWindows()) {
+                // Use command-line symlinking as a fallback.
+                try {
+                    $exitCode = 0;
+                    $output = array();
+                    // Without this cleanup for backslashes symlink will
+                    // be created, but completely broken.
+                    $shortestPath = str_replace('/', '\\', $shortestPath);
+                    exec(sprintf('mklink /d %s %s', escapeshellarg($absolutePath), escapeshellarg($shortestPath)), $ouptput, $exitCode);
+                    $linked = $exitCode == 0;
+                }
+                catch (\Exception $e) {
+                    $this->io->writeError($e->getMessage(), false);
+                }
+            }
+
+            if (!$linked && Platform::isWindows()) {
+                try {
                     // Implement symlinks as NTFS junctions on Windows
+                    // this 'should' be considered an error
+                    // because junctions are not portable. Yet, good
+                    // enough for dev environments.
                     $this->filesystem->junction($realUrl, $path);
                     $this->io->writeError(sprintf(' Junctioned from %s', $url), false);
-                } else {
-                    $absolutePath = $path;
-                    if (!$this->filesystem->isAbsolutePath($absolutePath)) {
-                        $absolutePath = getcwd() . DIRECTORY_SEPARATOR . $path;
-                    }
-                    $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
-                    $path = rtrim($path, "/");
-                    $fileSystem->symlink($shortestPath, $path);
-                    $this->io->writeError(sprintf(' Symlinked from %s', $url), false);
+                    $linked = true;
                 }
-            } catch (IOException $e) {
-                if (in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
-                    $this->io->writeError('');
-                    $this->io->writeError('    <error>Symlink failed, fallback to use mirroring!</error>');
-                    $currentStrategy = self::STRATEGY_MIRROR;
-                    $isFallback = true;
-                } else {
-                    throw new \RuntimeException(sprintf('Symlink from "%s" to "%s" failed!', $realUrl, $path));
+                catch (IOException $e) {
+                    $this->io->writeError($e->getMessage(), false);
                 }
+            }
+
+            if (!$linked && !in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
+                throw new \RuntimeException(sprintf('Symlink from "%s" to "%s" failed!', $realUrl, $path));
+            }
+
+            if (!$linked) {
+                $this->io->writeError('');
+                $this->io->writeError('    <error>Symlink failed, fallback to use mirroring!</error>');
+                $currentStrategy = self::STRATEGY_MIRROR;
+                $isFallback = true;
             }
         }
 
