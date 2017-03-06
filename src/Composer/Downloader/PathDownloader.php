@@ -37,18 +37,20 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      */
     public function download(PackageInterface $package, $path, $output = true)
     {
+        // If destination is source, just lock the package.
+        if ($this->destinationIsSource($package, $path)) {
+            $this->io->writeError(sprintf(
+                'Package %s installed to source directory %s', $package->getName(), $path
+                )
+            );
+            return;
+        }
+
         $url = $package->getDistUrl();
         $realUrl = realpath($url);
         if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
             throw new \RuntimeException(sprintf(
                 'Source path "%s" is not found for package %s', $url, $package->getName()
-            ));
-        }
-
-        if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
-            throw new \RuntimeException(sprintf(
-                'Package %s cannot install to "%s" inside its source at "%s"',
-                $package->getName(), realpath($path), $realUrl
             ));
         }
 

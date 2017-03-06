@@ -126,14 +126,6 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $this->removeCode($package);
         $this->binaryInstaller->removeBinaries($package);
         $repo->removePackage($package);
-
-        $downloadPath = $this->getPackageBasePath($package);
-        if (strpos($package->getName(), '/')) {
-            $packageVendorDir = dirname($downloadPath);
-            if (is_dir($packageVendorDir) && $this->filesystem->isDirEmpty($packageVendorDir)) {
-                Silencer::call('rmdir', $packageVendorDir);
-            }
-        }
     }
 
     /**
