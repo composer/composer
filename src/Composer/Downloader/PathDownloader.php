@@ -111,7 +111,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             }
 
             if (!$linked && Platform::isWindows()) {
-                // Use command linke symlinking as a fallback.
+                // Use command-line symlinking as a fallback.
                 try {
                     $exitCode = 0;
                     $output = array();
