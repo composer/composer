@@ -107,8 +107,14 @@ EOT
             $repos
         ));
 
+        if ($composer->getPackage()->getPreferStable()) {
+            $preferredStability = 'stable';
+        } else {
+            $preferredStability = $composer->getPackage()->getMinimumStability();
+        }
+
         $phpVersion = $this->repos->findPackage('php', '*')->getVersion();
-        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion);
+        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion, $preferredStability);
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
