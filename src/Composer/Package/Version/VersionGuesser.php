@@ -89,6 +89,7 @@ class VersionGuesser
         $commit = null;
         $version = null;
         $prettyVersion = null;
+        $isDetached = false;
 
         // try to fetch current version from git branch
         if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output, $path)) {
@@ -102,6 +103,7 @@ class VersionGuesser
                         $version = 'dev-' . $match[2];
                         $prettyVersion = $version;
                         $isFeatureBranch = true;
+                        $isDetached = true;
                     } else {
                         $version = $this->versionParser->normalizeBranch($match[1]);
                         $prettyVersion = 'dev-' . $match[1];
@@ -131,7 +133,7 @@ class VersionGuesser
             }
         }
 
-        if (!$version) {
+        if (!$version || $isDetached) {
             $result = $this->versionFromGitTags($path);
             if ($result) {
                 $version = $result['version'];
