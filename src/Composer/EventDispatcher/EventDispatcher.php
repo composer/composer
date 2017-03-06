@@ -177,13 +177,13 @@ class EventDispatcher
                 if (substr($callable, 0, 10) === '@composer ') {
                     $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . substr($callable, 9);
                     if (0 !== ($exitCode = $this->process->execute($exec))) {
-                        $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()));
+                        $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
                         throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                     }
                 } else {
                     if (!$this->getListeners(new Event($scriptName))) {
-                        $this->io->writeError(sprintf('<warning>You made a reference to a non-existent script %s</warning>', $callable));
+                        $this->io->writeError(sprintf('<warning>You made a reference to a non-existent script %s</warning>', $callable), true, IOInterface::QUIET);
                     }
 
                     $return = $this->dispatch($scriptName, new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode(), $args, $flags));
@@ -193,11 +193,11 @@ class EventDispatcher
                 $methodName = substr($callable, strpos($callable, '::') + 2);
 
                 if (!class_exists($className)) {
-                    $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>');
+                    $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
                     continue;
                 }
                 if (!is_callable($callable)) {
-                    $this->io->writeError('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>');
+                    $this->io->writeError('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
                     continue;
                 }
 
@@ -205,7 +205,7 @@ class EventDispatcher
                     $return = false === $this->executeEventPhpScript($className, $methodName, $event) ? 1 : 0;
                 } catch (\Exception $e) {
                     $message = "Script %s handling the %s event terminated with an exception";
-                    $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>');
+                    $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
                     throw $e;
                 }
             } else {
@@ -233,7 +233,7 @@ class EventDispatcher
                 }
 
                 if (0 !== ($exitCode = $this->process->execute($exec))) {
-                    $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()));
+                    $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
                     throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                 }
