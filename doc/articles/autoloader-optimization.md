@@ -17,6 +17,10 @@ new classes do not appear at random between deploys.
 
 For this reason, Composer offers a few strategies to optimize the autoloader.
 
+> **Note:** You **should not** enable any of these optimizations in **development** as
+> they all will cause various problems when adding/removing classes. The performance
+> gains are not worth the trouble in a development setting.
+
 ## Optimization Level 1: Class map generation
 
 ### How to run it?
