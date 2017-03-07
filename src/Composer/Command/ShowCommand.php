@@ -361,7 +361,7 @@ EOT
                         }
                         if ($writeLatest && $latestPackage) {
                             $packageViewData['latest'] = $latestPackage->getFullPrettyVersion();
-                            $packageViewData['status'] = $this->getUpdateStatus($latestPackage, $package);
+                            $packageViewData['latest-status'] = $this->getUpdateStatus($latestPackage, $package);
                         }
                         if ($writeDescription) {
                             $packageViewData['description'] = $package->getDescription();
@@ -424,10 +424,10 @@ EOT
                     }
                     if (isset($package['latest']) && $writeLatest) {
                         $latestVersion = $package['latest'];
-                        $updateStatus = $package['status'];
+                        $updateStatus = $package['latest-status'];
                         $style = $this->updateStatusToVersionStyle($updateStatus);
                         if (!$io->isDecorated()) {
-                            $latestVersion = str_replace(array('up-to-date', 'update-recommended', 'update-possible'), array('=', '!', '~'), $updateStatus) . ' ' . $latestVersion;
+                            $latestVersion = str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('=', '!', '~'), $updateStatus) . ' ' . $latestVersion;
                         }
                         $io->write(' <' . $style . '>' . str_pad($latestVersion, $latestLength, ' ') . '</' . $style . '>', false);
                     }
@@ -770,9 +770,9 @@ EOT
     private function updateStatusToVersionStyle($updateStatus)
     {
         // 'up-to-date' is printed green
-        // 'update-recommended' is printed red
-        // 'upgrade-possible' is printed yellow
-        return str_replace(array('up-to-date', 'update-recommended', 'update-possible'), array('info', 'highlight', 'comment'), $updateStatus);
+        // 'semver-safe-update' is printed red
+        // 'update-possible' is printed yellow
+        return str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('info', 'highlight', 'comment'), $updateStatus);
     }
 
     private function getUpdateStatus(PackageInterface $latestPackage, PackageInterface $package) {
@@ -786,7 +786,7 @@ EOT
         }
         if ($latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), $constraint)) {
             // it needs an immediate semver-compliant upgrade
-            return 'update-recommended';
+            return 'semver-safe-update';
         }
 
         // it needs an upgrade but has potential BC breaks so is not urgent
