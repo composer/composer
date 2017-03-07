@@ -122,17 +122,17 @@ class Git
 
                     if (!$bitbucketUtil->authorizeOAuth($match[1]) && $this->io->isInteractive()) {
                         $bitbucketUtil->authorizeOAuthInteractively($match[1], $message);
-                        $token = $bitbucketUtil->getToken();
-                        $this->io->setAuthentication($match[1], 'x-token-auth', $token['access_token']);
+                        $accessToken = $bitbucketUtil->getToken();
+                        $this->io->setAuthentication($match[1], 'x-token-auth', $accessToken);
                     }
                 } else { //We're authenticating with a locally stored consumer.
                     $auth = $this->io->getAuthentication($match[1]);
 
                     //We already have an access_token from a previous request.
                     if ($auth['username'] !== 'x-token-auth') {
-                        $token = $bitbucketUtil->requestToken($match[1], $auth['username'], $auth['password']);
-                        if (!empty($token)) {
-                            $this->io->setAuthentication($match[1], 'x-token-auth', $token['access_token']);
+                        $accessToken = $bitbucketUtil->requestToken($match[1], $auth['username'], $auth['password']);
+                        if (! empty($accessToken)) {
+                            $this->io->setAuthentication($match[1], 'x-token-auth', $accessToken);
                         }
                     }
                 }

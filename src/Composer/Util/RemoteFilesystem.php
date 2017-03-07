@@ -245,14 +245,6 @@ class RemoteFilesystem
             unset($options['gitlab-token']);
         }
 
-        if (isset($options['bitbucket-token'])) {
-            // skip using the token for BitBucket downloads as these are not working with auth
-            if (!$this->isPublicBitBucketDownload($origFileUrl)) {
-                $fileUrl .= (false === strpos($fileUrl,'?') ? '?' : '&') . 'access_token=' . $options['bitbucket-token'];
-            }
-            unset($options['bitbucket-token']);
-        }
-
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
@@ -607,9 +599,9 @@ class RemoteFilesystem
                 $auth = $this->io->getAuthentication($this->originUrl);
                 if ($auth['username'] !== 'x-token-auth') {
                     $bitbucketUtil = new Bitbucket($this->io, $this->config);
-                    $token = $bitbucketUtil->requestToken($this->originUrl, $auth['username'], $auth['password']);
-                    if (! empty($token)) {
-                        $this->io->setAuthentication($this->originUrl, 'x-token-auth', $token['access_token']);
+                    $accessToken = $bitbucketUtil->requestToken($this->originUrl, $auth['username'], $auth['password']);
+                    if (! empty($accessToken)) {
+                        $this->io->setAuthentication($this->originUrl, 'x-token-auth', $accessToken);
                         $askForOAuthToken = false;
                     }
                 } else {
@@ -736,7 +728,9 @@ class RemoteFilesystem
             } elseif ('bitbucket.org' === $originUrl
                 && $this->fileUrl !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL && 'x-token-auth' === $auth['username']
             ) {
-                $options['bitbucket-token'] = $auth['password'];
+                if (!$this->isPublicBitBucketDownload($this->fileUrl)) {
+                    $headers[] = 'Authorization: Bearer ' . $auth['password'];
+                }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
@@ -1009,6 +1003,13 @@ class RemoteFilesystem
      */
     private function isPublicBitBucketDownload($urlToBitBucketFile)
     {
+        $domain = parse_url($urlToBitBucketFile, PHP_URL_HOST);
+        if (strpos($domain, 'bitbucket.org') === false) {
+            // Bitbucket downloads are hosted on amazonaws.
+            // We do not need to authenticate there at all
+            return true;
+        }
+
         $path = parse_url($urlToBitBucketFile, PHP_URL_PATH);
 
         // Path for a public download follows this pattern /{user}/{repo}/downloads/{whatever}

@@ -79,7 +79,9 @@ class Config
     private $config;
     private $baseDir;
     private $repositories;
+    /** @var ConfigSourceInterface */
     private $configSource;
+    /** @var ConfigSourceInterface */
     private $authConfigSource;
     private $useEnvironment;
     private $warnedHosts = array();
