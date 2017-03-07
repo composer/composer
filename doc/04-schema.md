@@ -316,12 +316,12 @@ Example:
 }
 ```
 
-> **Note:** This feature has severe technical limitations, as the 
+> **Note:** This feature has severe technical limitations, as the
 > composer.json metadata will still be read from the branch name you specify
 > before the hash. You should therefore only use this as a temporary solution
 > during development to remediate transient issues, until you can switch to
 > tagged releases. The Composer team does not actively support this feature
-> and will not accept bug reports related to it. 
+> and will not accept bug reports related to it.
 
 It is also possible to inline-alias a package constraint so that it matches
 a constraint that it otherwise would not. For more information [see the
@@ -425,10 +425,11 @@ Example:
 
 Autoload mapping for a PHP autoloader.
 
-Currently [`PSR-0`](http://www.php-fig.org/psr/psr-0/) autoloading,
-[`PSR-4`](http://www.php-fig.org/psr/psr-4/) autoloading, `classmap` generation and
-`files` includes are supported. PSR-4 is the recommended way though since it offers
-greater ease of use (no need to regenerate the autoloader when you add classes).
+[`PSR-4`](http://www.php-fig.org/psr/psr-4/) and [`PSR-0`](http://www.php-fig.org/psr/psr-0/)
+autoloading, `classmap` generation and `files` includes are supported.
+
+PSR-4 is the recommended way since it offers greater ease of use (no need
+to regenerate the autoloader when you add classes).
 
 #### PSR-4
 
@@ -598,6 +599,13 @@ Example:
     }
 }
 ```
+
+#### Optimizing the autoloader
+
+The autoloader can have quite a substantial impact on your request time
+(50-100ms per request in large frameworks using a lot of classes). See the
+[`article about optimizing the autoloader`](articles/autoloader-optimization.md)
+for more details on how to reduce this impact.
 
 ### autoload-dev <span>([root-only](04-schema.md#root-package))</span>
 
