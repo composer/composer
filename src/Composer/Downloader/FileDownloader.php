@@ -84,7 +84,7 @@ class FileDownloader implements DownloaderInterface
         }
 
         if ($output) {
-            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)", false);
+            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>): ", false);
         }
 
         $urls = $package->getDistUrls();
@@ -133,7 +133,7 @@ class FileDownloader implements DownloaderInterface
             // download if we don't have it in cache or the cache is invalidated
             if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
                 if (!$this->outputProgress) {
-                    $this->io->writeError(' Downloading', false);
+                    $this->io->writeError('Downloading', false);
                 }
 
                 // try to download 3 times then fail hard
@@ -153,12 +153,16 @@ class FileDownloader implements DownloaderInterface
                     }
                 }
 
+                if (!$this->outputProgress) {
+                    $this->io->writeError(' (<comment>100%</comment>)', false);
+                }
+
                 if ($this->cache) {
                     $this->lastCacheWrites[$package->getName()] = $cacheKey;
                     $this->cache->copyFrom($cacheKey, $fileName);
                 }
             } else {
-                $this->io->writeError(' Loading from cache', false);
+                $this->io->writeError('Loading from cache', false);
             }
 
             if (!file_exists($fileName)) {
@@ -206,7 +210,7 @@ class FileDownloader implements DownloaderInterface
         $from = $initial->getPrettyVersion();
         $to = $target->getPrettyVersion();
 
-        $this->io->writeError("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)", false);
+        $this->io->writeError("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
 
         $this->remove($initial, $path, false);
         $this->download($target, $path, false);
