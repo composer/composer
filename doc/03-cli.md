@@ -339,6 +339,7 @@ php composer.phar show monolog/monolog 1.0.2
 * **--outdated (-o):** Implies --latest, but this lists *only* packages that have a newer version available.
 * **--minor-only (-m):** Use with --latest. Only shows packages that have minor SemVer-compatible updates.
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
+* **--format (-f):** Lets you pick between text (default) or json output format.
 
 ## outdated
 
@@ -348,16 +349,18 @@ including their current and latest versions. This is basically an alias for
 
 The color coding is as such:
 
-- **green**: Dependency is in the latest version and is up to date.
-- **yellow**: Dependency has a new version available that includes backwards compatibility breaks according to semver, so upgrade when
+- **green (=)**: Dependency is in the latest version and is up to date.
+- **yellow (~)**: Dependency has a new version available that includes backwards compatibility breaks according to semver, so upgrade when
   you can but it may involve work.
-- **red**: Dependency has a new version that is semver-compatible and you should upgrade it.
+- **red (!)**: Dependency has a new version that is semver-compatible and you should upgrade it.
 
 ### Options
 
 * **--all (-a):** Show all packages, not just outdated (alias for `composer show -l`).
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 * **--minor-only (-m):** Only shows packages that have minor SemVer-compatible updates.
+* **--strict:** Returns non-zero exit code if any package is outdated.
+* **--format (-f):** Lets you pick between text (default) or json output format.
 
 ## browse / home
 
