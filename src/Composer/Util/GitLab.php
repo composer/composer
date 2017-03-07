@@ -144,7 +144,7 @@ class GitLab
             'username' => $username,
             'password' => $password,
             'grant_type' => 'password',
-        ));
+        ), null, '&');
         $options = array(
             'retry-auth-failure' => false,
             'http' => array(
