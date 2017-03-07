@@ -600,7 +600,7 @@ class RemoteFilesystem
                 if ($auth['username'] !== 'x-token-auth') {
                     $bitbucketUtil = new Bitbucket($this->io, $this->config);
                     $accessToken = $bitbucketUtil->requestToken($this->originUrl, $auth['username'], $auth['password']);
-                    if (! empty($accessToken)) {
+                    if (!empty($accessToken)) {
                         $this->io->setAuthentication($this->originUrl, 'x-token-auth', $accessToken);
                         $askForOAuthToken = false;
                     }
@@ -610,7 +610,7 @@ class RemoteFilesystem
             }
 
             if ($askForOAuthToken) {
-                $message = "\n".'Could not fetch ' . $this->fileUrl . ', please create a bitbucket OAuth token to ' . ($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
+                $message = "\n".'Could not fetch ' . $this->fileUrl . ', please create a bitbucket OAuth token to ' . (($httpStatus === 401 || $httpStatus === 403) ? 'to access private repos' : 'to go over the API rate limit');
                 $bitBucketUtil = new Bitbucket($this->io, $this->config);
                 if (! $bitBucketUtil->authorizeOAuth($this->originUrl)
                     && (! $this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($this->originUrl, $message))

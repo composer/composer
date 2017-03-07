@@ -54,7 +54,7 @@ class Bitbucket
      */
     public function getToken()
     {
-        if (! isset($this->token['access_token'])) {
+        if (!isset($this->token['access_token'])) {
             return '';
         }
         return $this->token['access_token'];
@@ -137,7 +137,7 @@ class Bitbucket
         $url = 'https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html';
         $this->io->writeError(sprintf('Follow the instructions on %s', $url));
         $this->io->writeError(sprintf('to create a consumer. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
-        $this->io->writeError('Ensure you enter a "Callback URL" or it will not be possible to create an Access Token (this callback url will not be used by composer)');
+        $this->io->writeError('Ensure you enter a "Callback URL" (http://example.com is fine) or it will not be possible to create an Access Token (this callback url will not be used by composer)');
 
         $consumerKey = trim($this->io->askAndHideAnswer('Consumer Key (hidden): '));
 
@@ -159,7 +159,7 @@ class Bitbucket
 
         $this->io->setAuthentication($originUrl, $consumerKey, $consumerSecret);
 
-        if (! $this->requestAccessToken($originUrl)) {
+        if (!$this->requestAccessToken($originUrl)) {
             return false;
         }
 
@@ -189,7 +189,7 @@ class Bitbucket
         }
 
         $this->io->setAuthentication($originUrl, $consumerKey, $consumerSecret);
-        if (! $this->requestAccessToken($originUrl)) {
+        if (!$this->requestAccessToken($originUrl)) {
             return '';
         }
 
@@ -227,9 +227,10 @@ class Bitbucket
     {
         $authConfig = $this->config->get('bitbucket-oauth');
 
-        if (! isset($authConfig[$originUrl]['access-token']) ||
-            ! isset($authConfig[$originUrl]['access-token-expiration']) ||
-            time() > $authConfig[$originUrl]['access-token-expiration']
+        if (
+            !isset($authConfig[$originUrl]['access-token'])
+            || !isset($authConfig[$originUrl]['access-token-expiration'])
+            || time() > $authConfig[$originUrl]['access-token-expiration']
         ) {
             return false;
         }
