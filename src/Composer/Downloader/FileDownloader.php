@@ -88,10 +88,17 @@ class FileDownloader implements DownloaderInterface
         }
 
         $urls = $package->getDistUrls();
+        $processUrl = true;
+
+        if (isset($urls[0]) && preg_match('#^https://api\.github\.com/repos/([^/]++/[^/]++)/zipball/(.++)$#', $urls[0], $match) && !$this->io->hasAuthentication('github.com')) {
+            array_unshift($urls, 'https://github.com/'.$match[1].'/archive/'.$match[2].'.zip');
+            $processUrl = false;
+        }
         while ($url = array_shift($urls)) {
             try {
-                return $this->doDownload($package, $path, $url);
+                return $this->doDownload($package, $path, $url, $processUrl);
             } catch (\Exception $e) {
+                $processUrl = true;
                 if ($this->io->isDebug()) {
                     $this->io->writeError('');
                     $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
@@ -111,13 +118,13 @@ class FileDownloader implements DownloaderInterface
         }
     }
 
-    protected function doDownload(PackageInterface $package, $path, $url)
+    protected function doDownload(PackageInterface $package, $path, $url, $processUrl = true)
     {
         $this->filesystem->emptyDirectory($path);
 
         $fileName = $this->getFileName($package, $path);
 
-        $processedUrl = $this->processUrl($package, $url);
+        $processedUrl = $processUrl ? $this->processUrl($package, $url) : $url;
         $hostname = parse_url($processedUrl, PHP_URL_HOST);
 
         $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $processedUrl);
