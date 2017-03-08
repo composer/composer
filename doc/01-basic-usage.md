@@ -60,8 +60,8 @@ In our example, we're requesting the Monolog package with the version constraint
 This means any version in the `1.0` development branch, or any version that is
 greater than or equal to 1.0 and less than 1.1 (`>=1.0 <1.1`).
 
-(What the term "version" actually means can be a little confusing in Composer.
-Please read [versions](articles/versions.md) for more in-depth information.)
+Please read [versions](articles/versions.md) for more in-depth information on
+versions, how versions relate to each other, and on version constraints.
 
 > **How does Composer download the right files?** When you specify a dependency in
 > `composer.json`, Composer, first takes the name of the package that you've requested
