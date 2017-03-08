@@ -122,12 +122,12 @@ This brings us to the second scenario. If there's already a `composer.lock` file
 committed the `composer.lock` file to the project (which is good).
 
 Either way, running `install` when a `composer.lock` file is present simply resolves and installs
-all dependencies that you've listed in `composer.json`, but it uses the version constraints
-that it finds in `composer.lock` to ensure that the package versions are consistent for everyone
+all dependencies that you've listed in `composer.json`, but it uses the exact versions listed
+in `composer.lock` to ensure that the package versions are consistent for everyone
 working on your project. The result is that you have all dependencies requested by your
 `composer.json` file, but that they may not all be at the very latest available versions (since
 some of the dependencies listed in the `composer.lock` file may have released newer versions since
-the file was created). This is by design, as it ensures that your project never breaks because of
+the file was created). This is by design, it ensures that your project does not break because of
 unexpected changes in dependencies.
 
 ### Commit Your `composer.lock` File to Version Control
