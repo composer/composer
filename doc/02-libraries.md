@@ -48,13 +48,16 @@ file:
 }
 ```
 
+> **Note:** When you add a hardcoded version to a VCS, the version will conflict
+> with tag names. Composer will not be able to determine the version number.
+
 ### VCS Versioning
 
 Composer uses your VCS's branch and tag features to resolve the version
 constraints you specify in your `require` field to specific sets of files.
 When determining valid available versions, Composer looks at all of your tags
 and branches and translates their names into an internal list of options that
-it then matches against the version constraint you've provided.
+it then matches against the version constraint you provided.
 
 For more on how Composer treats tags and branches and how it resolves package
 version constraints, read the [versions](articles/versions.md) article.
