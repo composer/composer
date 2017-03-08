@@ -29,27 +29,25 @@ repository:*
 
 ```sh
 ~/my-library$ git branch
-~/my-library$ 
-~/my-library$ v1
-~/my-library$ v2
-~/my-library$ my-feature
-~/my-library$ nother-feature
-~/my-library$
+v1
+v2
+my-feature
+nother-feature
+
 ~/my-library$ git tag
-~/my-library$ 
-~/my-library$ v1.0
-~/my-library$ v1.0.1
-~/my-library$ v1.0.2
-~/my-library$ v1.1-BETA
-~/my-library$ v1.1-RC1
-~/my-library$ v1.1-RC2
-~/my-library$ v1.1
-~/my-library$ v1.1.1
-~/my-library$ v2.0-BETA
-~/my-library$ v2.0-RC1
-~/my-library$ v2.0
-~/my-library$ v2.0.1
-~/my-library$ v2.0.2
+v1.0
+v1.0.1
+v1.0.2
+v1.1-BETA
+v1.1-RC1
+v1.1-RC2
+v1.1
+v1.1.1
+v2.0-BETA
+v2.0-RC1
+v2.0
+v2.0.1
+v2.0.2
 ```
 
 ### Tags
