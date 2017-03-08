@@ -88,7 +88,7 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
         $versionArray = $guesser->guessVersion(array(), 'dummy/path');
 
-        $this->assertEquals($branch, $versionArray['version']);
+        $this->assertEquals('dev-' . $branch, $versionArray['version']);
         $this->assertEmpty($versionArray['commit']);
     }
 

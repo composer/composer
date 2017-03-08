@@ -179,7 +179,7 @@ class VersionGuesser
             }
 
             if (!$isFeatureBranch) {
-                return $version;
+                return array('version' => $version, 'commit' => null, 'pretty_version' => $version);
             }
 
             // re-use the HgDriver to fetch branches (this properly includes bookmarks)
