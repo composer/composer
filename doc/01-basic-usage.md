@@ -33,7 +33,7 @@ As you can see, [`require`](04-schema.md#require) takes an object that maps
 **package names** (e.g. `monolog/monolog`) to **version constraints** (e.g.
 `1.0.*`).
 
-It uses this information to search for the right set of files in package
+Composer uses this information to search for the right set of files in package
 "repositories" that you register using the [`repositories`](04-schema.md#repositories)
 key, or in Packagist, the default package respository. In the above example,
 since no other repository has been registered in the `composer.json` file, it is
