@@ -212,7 +212,8 @@ class GitHubDriver extends VcsDriver
     /**
      * {@inheritdoc}
      */
-    public function getChangeDate($identifier) {
+    public function getChangeDate($identifier)
+    {
         if ($this->gitDriver) {
             return $this->gitDriver->getChangeDate($identifier);
         }
