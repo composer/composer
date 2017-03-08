@@ -65,7 +65,7 @@ release candidates of `1.1`, the final release version `1.1`, etc.... (Note
 that Composer automatically removes the 'v' prefix in the actual tagname to
 get a valid final version number.)
 
-When it has a complete list of available versions from your VCS, it then
+When Composer has a complete list of available versions from your VCS, it then
 finds the highest version that matches all version constraints in your project
 (it's possible that other packages require more specific versions of the
 library than you do, so the version it chooses may not always be the highest
@@ -78,11 +78,11 @@ If you want Composer to check out a branch instead of a tag, there's a special s
 
 In the above example, if I wanted to check out the `my-feature` branch, I would specify `dev-my-feature` as the version constraint in my `require` clause. This would result in Composer cloning the `my-library` repository into my `vendor` directory and checking out the `my-feature` branch.
 
-The exception to this is when branch names look like versions. In that case, we have to clarify for composer that we're trying to check out a branch and not a tag. In the above example, we have two version branches, `v1` and `v2`. To get Composer to check out one of these branches, you must specify a version constraint that looks like this: `v1.x-dev`. There are two things to notice here. First, the `.x`: this is an arbitrary string that Composer requires us to append to tell it that we're talking about the `v1` branch and not a `v1` tag (alternatively, you can just name the branch `v1.x` instead of `v1`). Second, notice that in the case of a branch with a version-like name (`v1`, in this case), you append `-dev` as a suffix, rather than `dev-` as a prefix.
+The exception to this is when branch names look like versions. In that case, we have to clarify for composer that we're trying to check out a branch and not a tag. In the above example, we have two version branches, `v1` and `v2`. To get Composer to check out one of these branches, you must specify a version constraint that looks like this: `v1.x-dev`. There are two things to note here. First, the `.x`: this is an arbitrary string that Composer requires us to append to tell it that we're talking about the `v1` branch and not a `v1` tag (alternatively, you can just name the branch `v1.x` instead of `v1`). Second, in the case of a branch with a version-like name (`v1`, in this case), you append `-dev` as a suffix, rather than `dev-` as a prefix.
 
 ### Minimum Stability
 
-There's one more thing that will affect which files are checked out of a library's VCS and added to your project: Composer allows you to specify stability constraints to limit which tags are considered valid. In the above example, notice that the library released a beta and two release candidates for version `1.1` before the final official release. In order to receive those versions when we run `composer install` or `composer update`, we have to explicitly tell composer that we're ok with release candidates and beta releases (and alpha releases, if we want those). This can be done using either a project-wide `minimum-stability` value in `composer.json` or using "stability flags" in version constraints. Read more on the [schema page](04-schema.md#minimum-stability).
+There's one more thing that will affect which files are checked out of a library's VCS and added to your project: Composer allows you to specify stability constraints to limit which tags are considered valid. In the above example, note that the library released a beta and two release candidates for version `1.1` before the final official release. In order to receive those versions when we run `composer install` or `composer update`, we have to explicitly tell composer that we're ok with release candidates and beta releases (and alpha releases, if we want those). This can be done using either a project-wide `minimum-stability` value in `composer.json` or using "stability flags" in version constraints. Read more on the [schema page](04-schema.md#minimum-stability).
 
 ## Writing Basic Version Constraints
 
