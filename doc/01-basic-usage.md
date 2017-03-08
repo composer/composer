@@ -18,7 +18,7 @@ other metadata as well.
 ### The `require` Key
 
 The first (and often only) thing you specify in `composer.json` is the
-[`require`](04-schema.md#require) key. You're simply telling Composer which
+[`require`](04-schema.md#require) key. You are simply telling Composer which
 packages your project depends on.
 
 ```json
@@ -55,7 +55,7 @@ you to require certain versions of server software. See
 
 ### Package Version Constraints
 
-In our example, we're requesting the Monolog package with the version constraint
+In our example, we are requesting the Monolog package with the version constraint
 [`1.0.*`](http://semver.mwl.be/#?package=monolog%2Fmonolog&version=1.0.*).
 This means any version in the `1.0` development branch, or any version that is
 greater than or equal to 1.0 and less than 1.1 (`>=1.0 <1.1`).
@@ -64,23 +64,23 @@ Please read [versions](articles/versions.md) for more in-depth information on
 versions, how versions relate to each other, and on version constraints.
 
 > **How does Composer download the right files?** When you specify a dependency in
-> `composer.json`, Composer first takes the name of the package that you've requested
-> and searches for it in any repositories that you've registered using the
-> [`repositories`](04-schema.md#repositories) key. If you haven't registered
-> any extra repositories, or it doesn't find a package with that name in the
-> repositories you've specified, it falls back to Packagist (more [below](#packagist)).
+> `composer.json`, Composer first takes the name of the package that you have requested
+> and searches for it in any repositories that you have registered using the
+> [`repositories`](04-schema.md#repositories) key. If you have not registered
+> any extra repositories, or it does not find a package with that name in the
+> repositories you have specified, it falls back to Packagist (more [below](#packagist)).
 >
-> When Composer finds the right package, either in Packagist or in a repo you've specified,
+> When Composer finds the right package, either in Packagist or in a repo you have specified,
 > it then uses the versioning features of the package's VCS (i.e., branches and tags)
-> to attempt to find the best match for the version constraint you've specified. Be sure to read
+> to attempt to find the best match for the version constraint you have specified. Be sure to read
 > about versions and package resolution in the [versions article](articles/versions.md).
 
-> **Note:** If you're trying to require a package but Composer throws an error
-> regarding package stability, the version you've specified may not meet your
+> **Note:** If you are trying to require a package but Composer throws an error
+> regarding package stability, the version you have specified may not meet your
 > default minimum stability requirements. By default only stable releases are taken
 > into consideration when searching for valid package versions in your VCS.
 >
-> You might run into this if you're trying to require dev, alpha, beta, or RC
+> You might run into this if you are trying to require dev, alpha, beta, or RC
 > versions of a package. Read more about stability flags and the `minimum-stability`
 > key on the [schema page](04-schema.md).
 
@@ -97,7 +97,7 @@ When you run this command, one of two things may happen:
 
 ### Installing Without `composer.lock`
 
-If you've never run the command before and there is also no `composer.lock` file present,
+If you have never run the command before and there is also no `composer.lock` file present,
 Composer simply resolves all dependencies listed in your `composer.json` file and downloads
 the latest version of their files into the `vendor` directory in your project. (The `vendor`
 directory is the conventional location for all third-party code in a project). In our
@@ -116,17 +116,17 @@ working on the project are locked to the same versions of dependencies (more bel
 
 ### Installing With `composer.lock`
 
-This brings us to the second scenario. If there's already a `composer.lock` file as well as a
-`composer.json` file when you run `composer install`, it means that either you've run the
-`install` command before, or someone else on the project has run the `install` command and
+This brings us to the second scenario. If there is already a `composer.lock` file as well as a
+`composer.json` file when you run `composer install`, it means either you ran the
+`install` command before, or someone else on the project ran the `install` command and
 committed the `composer.lock` file to the project (which is good).
 
-Either way, running `install` when a `composer.lock` file is present simply resolves and installs
-all dependencies that you've listed in `composer.json`, but it uses the exact versions listed
+Either way, running `install` when a `composer.lock` file is present resolves and installs
+all dependencies that you listed in `composer.json`, but Composer uses the exact versions listed
 in `composer.lock` to ensure that the package versions are consistent for everyone
-working on your project. The result is that you have all dependencies requested by your
-`composer.json` file, but that they may not all be at the very latest available versions (since
-some of the dependencies listed in the `composer.lock` file may have released newer versions since
+working on your project. As a result you will have all dependencies requested by your
+`composer.json` file, but they may not all be at the very latest available versions
+(some of the dependencies listed in the `composer.lock` file may have released newer versions since
 the file was created). This is by design, it ensures that your project does not break because of
 unexpected changes in dependencies.
 
@@ -134,7 +134,7 @@ unexpected changes in dependencies.
 
 Committing this file to VC is important because it will cause anyone who sets
 up the project to use the exact same
-versions of the dependencies that you're using. Your CI server, production
+versions of the dependencies that you are using. Your CI server, production
 machines, other developers in your team, everything and everyone runs on the
 same dependencies, which mitigates the potential for bugs affecting only some
 parts of the deployments. Even if you develop alone, in six months when
@@ -177,7 +177,7 @@ If you go to the [Packagist website](https://packagist.org/) (packagist.org),
 you can browse and search for packages.
 
 Any open source project using Composer is recommended to publish their packages
-on Packagist. A library doesn't need to be on Packagist to be used by Composer,
+on Packagist. A library does not need to be on Packagist to be used by Composer,
 but it enables discovery and adoption by other developers more quickly.
 
 ## Platform packages
