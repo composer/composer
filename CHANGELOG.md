@@ -1,3 +1,14 @@
+### [1.3.3] - 2017-03-08
+
+  * Improved baseline psr-4 autoloader performance for projects with many nested namespaces configured
+  * Fixed issues with gitlab API access when the token had insufficient permissions
+  * Fixed some HHVM strict type issues
+  * Fixed version guessing of headless git checkouts in some conditions
+  * Fixed compatibility with subversion 1.8
+  * Fixed version guessing not working with svn/hg
+  * Fixed script/exec errors not being output correctly
+  * Fixed PEAR repository bug with pear.php.net
+
 ### [1.3.2] - 2017-01-27
 
   * Added `COMPOSER_BINARY` env var that is defined within the scope of a Composer run automatically with the path to the phar file
@@ -492,6 +503,7 @@
 
   * Initial release
 
+[1.3.3]: https://github.com/composer/composer/compare/1.3.2...1.3.3
 [1.3.2]: https://github.com/composer/composer/compare/1.3.1...1.3.2
 [1.3.1]: https://github.com/composer/composer/compare/1.3.0...1.3.1
 [1.3.0]: https://github.com/composer/composer/compare/1.3.0-RC...1.3.0
