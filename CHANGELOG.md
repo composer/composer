@@ -1,5 +1,15 @@
+### [1.4.0] - 2017-03-08
+
+  * Improved memory usage of dependency solver
+  * Added `--format json` option to the `outdated` and `show` command to get machine readable package listings
+  * Added `--ignore-filters` flag to `archive` command to bypass the .gitignore and co
+  * Added support for `outdated` output without ansi colors
+  * Added support for Bitbucket API v2
+  * Changed the require command to follow minimum-stability / prefer-stable values when picking a version
+
 ### [1.3.3] - 2017-03-08
 
+  * **Capifony users beware**: This release has output format tweaks that mess up capifony interactive mode, see #6233
   * Improved baseline psr-4 autoloader performance for projects with many nested namespaces configured
   * Fixed issues with gitlab API access when the token had insufficient permissions
   * Fixed some HHVM strict type issues
@@ -503,6 +513,7 @@
 
   * Initial release
 
+[1.4.0]: https://github.com/composer/composer/compare/1.3.3...1.4.0
 [1.3.3]: https://github.com/composer/composer/compare/1.3.2...1.3.3
 [1.3.2]: https://github.com/composer/composer/compare/1.3.1...1.3.2
 [1.3.1]: https://github.com/composer/composer/compare/1.3.0...1.3.1
