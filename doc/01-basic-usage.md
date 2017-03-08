@@ -64,13 +64,13 @@ Please read [versions](articles/versions.md) for more in-depth information on
 versions, how versions relate to each other, and on version constraints.
 
 > **How does Composer download the right files?** When you specify a dependency in
-> `composer.json`, Composer, first takes the name of the package that you've requested
+> `composer.json`, Composer first takes the name of the package that you've requested
 > and searches for it in any repositories that you've registered using the
 > [`repositories`](04-schema.md#repositories) key. If you haven't registered
 > any extra repositories, or it doesn't find a package with that name in the
 > repositories you've specified, it falls back to Packagist (more [below](#packagist)).
 >
-> When it finds the right package, either in Packagist or in a repo you've specified,
+> When Composer finds the right package, either in Packagist or in a repo you've specified,
 > it then uses the versioning features of the package's VCS (i.e., branches and tags)
 > to attempt to find the best match for the version constraint you've specified. Be sure to read
 > about versions and package resolution in the [versions article](articles/versions.md).
