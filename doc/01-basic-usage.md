@@ -191,8 +191,8 @@ includes PHP itself, PHP extensions and some system libraries.
   constraints, e.g. `>=5.4.0`. To require a 64bit version of php, you can
   require the `php-64bit` package.
 
-* `hhvm` represents the version of the HHVM runtime (aka HipHop Virtual
-  Machine) and allows you to apply a constraint, e.g., '>=2.3.3'.
+* `hhvm` represents the version of the HHVM runtime and allows you to apply
+  a constraint, e.g., '>=2.3.3'.
 
 * `ext-<name>` allows you to require PHP extensions (includes core
   extensions). Versioning can be quite inconsistent here, so it's often
