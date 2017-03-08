@@ -82,7 +82,7 @@ The exception to this is when branch names look like versions. In that case, we 
 
 ### Minimum Stability
 
-There's one more thing that will affect which files are checked out of a library's VCS and added to your project: Composer allows you to specify stability constraints to limit which tags are considered valid. In the above example, note that the library released a beta and two release candidates for version `1.1` before the final official release. In order to receive those versions when we run `composer install` or `composer update`, we have to explicitly tell composer that we're ok with release candidates and beta releases (and alpha releases, if we want those). This can be done using either a project-wide `minimum-stability` value in `composer.json` or using "stability flags" in version constraints. Read more on the [schema page](04-schema.md#minimum-stability).
+There's one more thing that will affect which files are checked out of a library's VCS and added to your project: Composer allows you to specify stability constraints to limit which tags are considered valid. In the above example, note that the library released a beta and two release candidates for version `1.1` before the final official release. To receive these versions when running `composer install` or `composer update`, we have to explicitly tell Composer that we are ok with release candidates and beta releases (and alpha releases, if we want those). This can be done using either a project-wide `minimum-stability` value in `composer.json` or using "stability flags" in version constraints. Read more on the [schema page](04-schema.md#minimum-stability).
 
 ## Writing Basic Version Constraints
 
