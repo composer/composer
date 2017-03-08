@@ -356,7 +356,7 @@ class EventDispatcher
      * Add a listener for a particular event
      *
      * @param string   $eventName The event name - typically a constant
-     * @param Callable $listener  A callable expecting an event argument
+     * @param callable $listener  A callable expecting an event argument
      * @param int      $priority  A higher value represents a higher priority
      */
     public function addListener($eventName, $listener, $priority = 0)

@@ -165,7 +165,7 @@ class Git
                     $defaultUsername = null;
                     if (isset($authParts) && $authParts) {
                         if (false !== strpos($authParts, ':')) {
-                            list($defaultUsername,) = explode(':', $authParts, 2);
+                            list($defaultUsername, ) = explode(':', $authParts, 2);
                         } else {
                             $defaultUsername = $authParts;
                         }
@@ -238,7 +238,7 @@ class Git
             'fatal: Authentication failed',
             'remote error: Invalid username or password.',
             'error: 401 Unauthorized',
-            'fatal: unable to access'
+            'fatal: unable to access',
         );
 
         foreach ($authFailures as $authFailure) {

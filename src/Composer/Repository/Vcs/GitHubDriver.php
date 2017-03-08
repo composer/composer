@@ -186,7 +186,6 @@ class GitHubDriver extends VcsDriver
         $notFoundRetries = 2;
         while ($notFoundRetries) {
             try {
-
                 $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/' . $file . '?ref='.urlencode($identifier);
                 $resource = JsonFile::parseJson($this->getContents($resource));
                 if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($content = base64_decode($resource['content']))) {
@@ -202,6 +201,7 @@ class GitHubDriver extends VcsDriver
                 // TODO should be removed when possible
                 // retry fetching if github returns a 404 since they happen randomly
                 $notFoundRetries--;
+
                 return null;
             }
         }
@@ -220,6 +220,7 @@ class GitHubDriver extends VcsDriver
 
         $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/commits/'.urlencode($identifier);
         $commit = JsonFile::parseJson($this->getContents($resource), $resource);
+
         return new \DateTime($commit['commit']['committer']['date']);
     }
 

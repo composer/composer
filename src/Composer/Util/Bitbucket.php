@@ -57,6 +57,7 @@ class Bitbucket
         if (!isset($this->token['access_token'])) {
             return '';
         }
+
         return $this->token['access_token'];
     }
 
@@ -213,14 +214,14 @@ class Bitbucket
             "consumer-key" => $consumerKey,
             "consumer-secret" => $consumerSecret,
             "access-token" => $this->token['access_token'],
-            "access-token-expiration" => $time + $this->token['expires_in']
+            "access-token-expiration" => $time + $this->token['expires_in'],
         );
 
         $this->config->getAuthConfigSource()->addConfigSetting('bitbucket-oauth.'.$originUrl, $consumer);
     }
 
     /**
-     * @param string $originUrl
+     * @param  string $originUrl
      * @return bool
      */
     private function getTokenFromConfig($originUrl)
@@ -236,7 +237,7 @@ class Bitbucket
         }
 
         $this->token = array(
-            'access_token' => $authConfig[$originUrl]['access-token']
+            'access_token' => $authConfig[$originUrl]['access-token'],
         );
 
         return true;

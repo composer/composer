@@ -47,7 +47,7 @@ class SvnDriverTest extends TestCase
     {
         $console = $this->getMock('Composer\IO\IOInterface');
 
-        $output  = "svn: OPTIONS of 'https://corp.svn.local/repo':";
+        $output = "svn: OPTIONS of 'https://corp.svn.local/repo':";
         $output .= " authorization failed: Could not authenticate to server:";
         $output .= " rejected Basic challenge (https://corp.svn.local/)";
 

@@ -76,7 +76,7 @@ class BitbucketTest extends \PHPUnit_Framework_TestCase
                     'http' => array(
                         'method' => 'POST',
                         'content' => 'grant_type=client_credentials',
-                    )
+                    ),
                 )
             )
             ->willReturn(
@@ -110,8 +110,8 @@ class BitbucketTest extends \PHPUnit_Framework_TestCase
                         'access-token' => $this->token,
                         'access-token-expiration' => $this->time + 1800,
                         'consumer-key' => $this->consumer_key,
-                        'consumer-secret' => $this->consumer_secret
-                    )
+                        'consumer-secret' => $this->consumer_secret,
+                    ),
                 )
             );
 
@@ -132,8 +132,8 @@ class BitbucketTest extends \PHPUnit_Framework_TestCase
                         'access-token' => 'randomExpiredToken',
                         'access-token-expiration' => $this->time - 400,
                         'consumer-key' => $this->consumer_key,
-                        'consumer-secret' => $this->consumer_secret
-                    )
+                        'consumer-secret' => $this->consumer_secret,
+                    ),
                 )
             );
 
@@ -152,7 +152,7 @@ class BitbucketTest extends \PHPUnit_Framework_TestCase
                     'http' => array(
                         'method' => 'POST',
                         'content' => 'grant_type=client_credentials',
-                    )
+                    ),
                 )
             )
             ->willReturn(
@@ -196,7 +196,7 @@ class BitbucketTest extends \PHPUnit_Framework_TestCase
                     'http' => array(
                         'method' => 'POST',
                         'content' => 'grant_type=client_credentials',
-                    )
+                    ),
                 )
             )
             ->willThrowException(
@@ -279,7 +279,7 @@ class BitbucketTest extends \PHPUnit_Framework_TestCase
                     "consumer-key" => $this->consumer_key,
                     "consumer-secret" => $this->consumer_secret,
                     "access-token" => $this->token,
-                    "access-token-expiration" => $this->time + 3600
+                    "access-token-expiration" => $this->time + 3600,
                 )
             );
 

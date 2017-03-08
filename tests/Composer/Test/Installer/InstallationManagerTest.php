@@ -35,7 +35,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
                 return $arg === 'vendor';
             }));
 
-        $manager   = new InstallationManager();
+        $manager = new InstallationManager();
 
         $manager->addInstaller($installer);
         $this->assertSame($installer, $manager->getInstaller('vendor'));
@@ -64,7 +64,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
                 return $arg === 'vendor';
             }));
 
-        $manager   = new InstallationManager();
+        $manager = new InstallationManager();
 
         $manager->addInstaller($installer);
         $this->assertSame($installer, $manager->getInstaller('vendor'));
@@ -81,8 +81,8 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $installOperation = new InstallOperation($this->createPackageMock());
-        $removeOperation  = new UninstallOperation($this->createPackageMock());
-        $updateOperation  = new UpdateOperation(
+        $removeOperation = new UninstallOperation($this->createPackageMock());
+        $updateOperation = new UpdateOperation(
             $this->createPackageMock(), $this->createPackageMock()
         );
 
@@ -107,10 +107,10 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     public function testInstall()
     {
         $installer = $this->createInstallerMock();
-        $manager   = new InstallationManager();
+        $manager = new InstallationManager();
         $manager->addInstaller($installer);
 
-        $package   = $this->createPackageMock();
+        $package = $this->createPackageMock();
         $operation = new InstallOperation($package, 'test');
 
         $package
@@ -135,11 +135,11 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     public function testUpdateWithEqualTypes()
     {
         $installer = $this->createInstallerMock();
-        $manager   = new InstallationManager();
+        $manager = new InstallationManager();
         $manager->addInstaller($installer);
 
-        $initial   = $this->createPackageMock();
-        $target    = $this->createPackageMock();
+        $initial = $this->createPackageMock();
+        $target = $this->createPackageMock();
         $operation = new UpdateOperation($initial, $target, 'test');
 
         $initial
@@ -169,12 +169,12 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     {
         $libInstaller = $this->createInstallerMock();
         $bundleInstaller = $this->createInstallerMock();
-        $manager    = new InstallationManager();
+        $manager = new InstallationManager();
         $manager->addInstaller($libInstaller);
         $manager->addInstaller($bundleInstaller);
 
-        $initial   = $this->createPackageMock();
-        $target    = $this->createPackageMock();
+        $initial = $this->createPackageMock();
+        $target = $this->createPackageMock();
         $operation = new UpdateOperation($initial, $target, 'test');
 
         $initial
@@ -215,10 +215,10 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     public function testUninstall()
     {
         $installer = $this->createInstallerMock();
-        $manager   = new InstallationManager();
+        $manager = new InstallationManager();
         $manager->addInstaller($installer);
 
-        $package   = $this->createPackageMock();
+        $package = $this->createPackageMock();
         $operation = new UninstallOperation($package, 'test');
 
         $package
@@ -245,10 +245,10 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $installer = $this->getMockBuilder('Composer\Installer\LibraryInstaller')
             ->disableOriginalConstructor()
             ->getMock();
-        $manager   = new InstallationManager();
+        $manager = new InstallationManager();
         $manager->addInstaller($installer);
 
-        $package   = $this->createPackageMock();
+        $package = $this->createPackageMock();
 
         $package
             ->expects($this->once())

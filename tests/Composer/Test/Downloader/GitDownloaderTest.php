@@ -45,7 +45,8 @@ class GitDownloaderTest extends TestCase
         $refl->setValue(null, null);
     }
 
-    protected function setupConfig($config = null) {
+    protected function setupConfig($config = null)
+    {
         if (!$config) {
             $config = new Config();
         }
@@ -53,6 +54,7 @@ class GitDownloaderTest extends TestCase
             $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
             $config->merge(array('config' => array('home' => $tmpDir)));
         }
+
         return $config;
     }
 
@@ -100,8 +102,9 @@ class GitDownloaderTest extends TestCase
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($this->winCompat('git --version')))
-            ->will($this->returnCallback(function($command, &$output = null) {
+            ->will($this->returnCallback(function ($command, &$output = null) {
                 $output = 'git version 1.0.0';
+
                 return 0;
             }));
 
@@ -150,8 +153,9 @@ class GitDownloaderTest extends TestCase
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($this->winCompat('git --version')))
-            ->will($this->returnCallback(function($command, &$output = null) {
+            ->will($this->returnCallback(function ($command, &$output = null) {
                 $output = 'git version 2.3.1';
+
                 return 0;
             }));
 
@@ -215,8 +219,9 @@ class GitDownloaderTest extends TestCase
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($this->winCompat('git --version')))
-            ->will($this->returnCallback(function($command, &$output = null) {
+            ->will($this->returnCallback(function ($command, &$output = null) {
                 $output = 'git version 1.0.0';
+
                 return 0;
             }));
 
@@ -298,8 +303,9 @@ class GitDownloaderTest extends TestCase
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($this->winCompat('git --version')))
-            ->will($this->returnCallback(function($command, &$output = null) {
+            ->will($this->returnCallback(function ($command, &$output = null) {
                 $output = 'git version 1.0.0';
+
                 return 0;
             }));
 
@@ -343,8 +349,9 @@ class GitDownloaderTest extends TestCase
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($this->winCompat('git --version')))
-            ->will($this->returnCallback(function($command, &$output = null) {
+            ->will($this->returnCallback(function ($command, &$output = null) {
                 $output = 'git version 1.0.0';
+
                 return 0;
             }));
         $processExecutor->expects($this->at(1))
@@ -455,6 +462,7 @@ origin https://github.com/old/url (push)
 composer https://github.com/old/url (fetch)
 composer https://github.com/old/url (push)
 ';
+
                 return 0;
             }));
         $processExecutor->expects($this->at(3))

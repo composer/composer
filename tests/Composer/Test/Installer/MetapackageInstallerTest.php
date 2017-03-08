@@ -44,7 +44,7 @@ class MetapackageInstallerTest extends \PHPUnit_Framework_TestCase
     public function testUpdate()
     {
         $initial = $this->createPackageMock();
-        $target  = $this->createPackageMock();
+        $target = $this->createPackageMock();
 
         $this->repository
             ->expects($this->exactly(2))

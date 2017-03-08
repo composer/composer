@@ -30,7 +30,7 @@ use Symfony\Component\Filesystem\Filesystem;
 class PathDownloader extends FileDownloader implements VcsCapableDownloaderInterface
 {
     const STRATEGY_SYMLINK = 10;
-    const STRATEGY_MIRROR  = 20;
+    const STRATEGY_MIRROR = 20;
 
     /**
      * {@inheritdoc}

@@ -97,8 +97,7 @@ class FossilDownloader extends VcsDownloader
         $match = '/\d\d:\d\d:\d\d\s+\[' . $toReference . '\]/';
 
         foreach ($this->process->splitLines($output) as $line) {
-            if (preg_match($match, $line))
-            {
+            if (preg_match($match, $line)) {
                 break;
             }
             $log .= $line;

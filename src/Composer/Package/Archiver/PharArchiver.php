@@ -20,14 +20,14 @@ namespace Composer\Package\Archiver;
 class PharArchiver implements ArchiverInterface
 {
     protected static $formats = array(
-        'zip'     => \Phar::ZIP,
-        'tar'     => \Phar::TAR,
-        'tar.gz'  => \Phar::TAR,
+        'zip' => \Phar::ZIP,
+        'tar' => \Phar::TAR,
+        'tar.gz' => \Phar::TAR,
         'tar.bz2' => \Phar::TAR,
     );
 
     protected static $compressFormats = array(
-        'tar.gz'  => \Phar::GZ,
+        'tar.gz' => \Phar::GZ,
         'tar.bz2' => \Phar::BZ2,
     );
 

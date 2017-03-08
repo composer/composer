@@ -19,7 +19,6 @@ use Composer\TestCase;
 
 class RunScriptCommandTest extends TestCase
 {
-
     /**
      * @dataProvider getDevOptions
      * @param bool $dev
@@ -79,7 +78,7 @@ class RunScriptCommandTest extends TestCase
                 'getSynopsis',
                 'initialize',
                 'isInteractive',
-                'getComposer'
+                'getComposer',
             ))
             ->getMock();
         $command->expects($this->any())->method('getComposer')->willReturn($composer);
@@ -101,7 +100,7 @@ class RunScriptCommandTest extends TestCase
     private function createComposerInstance()
     {
         $composer = new Composer;
-        $config   = new Config;
+        $config = new Config;
         $composer->setConfig($config);
 
         return $composer;

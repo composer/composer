@@ -185,6 +185,7 @@ EOT
                     }
 
                     $io->writeError('Package ' . $packageFilter . ' not found in ' . $options['working-dir'] . '/composer.json');
+
                     return 1;
                 }
             } else {
@@ -314,14 +315,13 @@ EOT
                         if ($showVersion) {
                             $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
                             if ($showLatest) {
-
                                 $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly);
                                 if ($latestPackage === false) {
                                     continue;
                                 }
 
                                 $latestPackages[$package->getPrettyName()] = $latestPackage;
-                                $latestLength =  max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
+                                $latestLength = max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
                             }
                         }
                     } else {
@@ -464,6 +464,7 @@ EOT
     protected function getRootRequires()
     {
         $rootPackage = $this->getComposer()->getPackage();
+
         return array_map(
             'strtolower',
             array_keys(array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()))
@@ -775,7 +776,8 @@ EOT
         return str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('info', 'highlight', 'comment'), $updateStatus);
     }
 
-    private function getUpdateStatus(PackageInterface $latestPackage, PackageInterface $package) {
+    private function getUpdateStatus(PackageInterface $latestPackage, PackageInterface $package)
+    {
         if ($latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion()) {
             return 'up-to-date';
         }
@@ -806,10 +808,10 @@ EOT
     /**
      * Given a package, this finds the latest package matching it
      *
-     * @param  PackageInterface $package
-     * @param  Composer         $composer
-     * @param  string           $phpVersion
-     * @param  bool             $minorOnly
+     * @param PackageInterface $package
+     * @param Composer         $composer
+     * @param string           $phpVersion
+     * @param bool             $minorOnly
      *
      * @return PackageInterface|null
      */

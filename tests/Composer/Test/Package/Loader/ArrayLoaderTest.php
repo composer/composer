@@ -136,6 +136,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $expectedConfig = $config;
         unset($expectedConfig['transport-options']);
+
         return $expectedConfig;
     }
 

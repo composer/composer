@@ -13,7 +13,6 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Config;
-use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
@@ -142,6 +141,7 @@ class FossilDriver extends VcsDriver
     public function getChangeDate($identifier)
     {
         $this->process->execute(sprintf('fossil finfo composer.json | head -n 2 | tail -n 1 | awk \'{print $1}\''), $output, $this->checkoutDir);
+
         return new \DateTime(trim($output), new \DateTimeZone('UTC'));
     }
 
@@ -194,8 +194,7 @@ class FossilDriver extends VcsDriver
             return true;
         }
 
-        if (preg_match('!/fossil/|\.fossil!', $url))
-        {
+        if (preg_match('!/fossil/|\.fossil!', $url)) {
             return true;
         }
 
@@ -214,5 +213,5 @@ class FossilDriver extends VcsDriver
         }
 
         return false;
-   }
+    }
 }

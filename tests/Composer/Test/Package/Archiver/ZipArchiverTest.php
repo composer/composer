@@ -25,7 +25,7 @@ class ZipArchiverTest extends ArchiverTest
         // Set up repository
         $this->setupDummyRepo();
         $package = $this->setupPackage();
-        $target  = sys_get_temp_dir().'/composer_archiver_test.zip';
+        $target = sys_get_temp_dir().'/composer_archiver_test.zip';
 
         // Test archive
         $archiver = new ZipArchiver();

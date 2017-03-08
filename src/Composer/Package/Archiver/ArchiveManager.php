@@ -94,12 +94,12 @@ class ArchiveManager
     /**
      * Create an archive of the specified package.
      *
-     * @param  PackageInterface          $package   The package to archive
-     * @param  string                    $format    The format of the archive (zip, tar, ...)
-     * @param  string                    $targetDir The directory where to build the archive
-     * @param  string|null               $fileName  The relative file name to use for the archive, or null to generate
-     *                                              the package name. Note that the format will be appended to this name
-     * @param boolean                    $ignoreFilters Ignore filters when looking for files in the package
+     * @param  PackageInterface          $package       The package to archive
+     * @param  string                    $format        The format of the archive (zip, tar, ...)
+     * @param  string                    $targetDir     The directory where to build the archive
+     * @param  string|null               $fileName      The relative file name to use for the archive, or null to generate
+     *                                                  the package name. Note that the format will be appended to this name
+     * @param  bool                      $ignoreFilters Ignore filters when looking for files in the package
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      * @return string                    The path of the created archive

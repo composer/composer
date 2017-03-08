@@ -127,6 +127,7 @@ class GitLabDriver extends VcsDriver
             if ($e->getCode() !== 404) {
                 throw $e;
             }
+
             return null;
         }
 
@@ -148,7 +149,6 @@ class GitLabDriver extends VcsDriver
 
         return new \DateTime();
     }
-
 
     /**
      * {@inheritDoc}
@@ -247,7 +247,7 @@ class GitLabDriver extends VcsDriver
     /**
      * Urlencode all non alphanumeric characters. rawurlencode() can not be used as it does not encode `.`
      *
-     * @param string $string
+     * @param  string $string
      * @return string
      */
     private function urlEncodeAll($string)
@@ -260,6 +260,7 @@ class GitLabDriver extends VcsDriver
             }
             $encoded .= $character;
         }
+
         return $encoded;
     }
 

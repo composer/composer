@@ -820,7 +820,7 @@ class Solver
                 $lastLiteral = null;
                 $lastLevel = null;
                 $lastBranchIndex = 0;
-                $lastBranchOffset  = 0;
+                $lastBranchOffset = 0;
 
                 for ($i = count($this->branches) - 1; $i >= 0; $i--) {
                     list($literals, $l) = $this->branches[$i];

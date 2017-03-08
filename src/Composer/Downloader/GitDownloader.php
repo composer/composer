@@ -59,7 +59,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                     $cacheOptions = sprintf('--dissociate --reference %s ', ProcessExecutor::escape($cachePath));
                     $msg = "Cloning ".$this->getShortHash($ref).' from cache';
                 }
-            } catch (\RuntimeException $e) {}
+            } catch (\RuntimeException $e) {
+            }
         }
         $command = 'git clone --no-checkout %s %s '.$cacheOptions.'&& cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->writeError($msg);

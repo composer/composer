@@ -32,19 +32,19 @@ class PerforceDriverTest extends TestCase
     protected $repoConfig;
     protected $perforce;
 
-    const TEST_URL    = 'TEST_PERFORCE_URL';
-    const TEST_DEPOT  = 'TEST_DEPOT_CONFIG';
+    const TEST_URL = 'TEST_PERFORCE_URL';
+    const TEST_DEPOT = 'TEST_DEPOT_CONFIG';
     const TEST_BRANCH = 'TEST_BRANCH_CONFIG';
 
     protected function setUp()
     {
-        $this->testPath         = $this->getUniqueTmpDirectory();
-        $this->config           = $this->getTestConfig($this->testPath);
-        $this->repoConfig       = $this->getTestRepoConfig();
-        $this->io               = $this->getMockIOInterface();
-        $this->process          = $this->getMockProcessExecutor();
+        $this->testPath = $this->getUniqueTmpDirectory();
+        $this->config = $this->getTestConfig($this->testPath);
+        $this->repoConfig = $this->getTestRepoConfig();
+        $this->io = $this->getMockIOInterface();
+        $this->process = $this->getMockProcessExecutor();
         $this->remoteFileSystem = $this->getMockRemoteFilesystem();
-        $this->perforce         = $this->getMockPerforce();
+        $this->perforce = $this->getMockPerforce();
         $this->driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->process, $this->remoteFileSystem);
         $this->overrideDriverInternalPerforce($this->perforce);
     }
@@ -54,14 +54,14 @@ class PerforceDriverTest extends TestCase
         //cleanup directory under test path
         $fs = new Filesystem;
         $fs->removeDirectory($this->testPath);
-        $this->driver           = null;
-        $this->perforce         = null;
+        $this->driver = null;
+        $this->perforce = null;
         $this->remoteFileSystem = null;
-        $this->process          = null;
-        $this->io               = null;
-        $this->repoConfig       = null;
-        $this->config           = null;
-        $this->testPath         = null;
+        $this->process = null;
+        $this->io = null;
+        $this->repoConfig = null;
+        $this->config = null;
+        $this->testPath = null;
     }
 
     protected function overrideDriverInternalPerforce(Perforce $perforce)
@@ -83,8 +83,8 @@ class PerforceDriverTest extends TestCase
     protected function getTestRepoConfig()
     {
         return array(
-            'url'    => self::TEST_URL,
-            'depot'  => self::TEST_DEPOT,
+            'url' => self::TEST_URL,
+            'depot' => self::TEST_DEPOT,
             'branch' => self::TEST_BRANCH,
         );
     }

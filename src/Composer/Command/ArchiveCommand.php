@@ -45,7 +45,7 @@ class ArchiveCommand extends BaseCommand
                 new InputOption('dir', null, InputOption::VALUE_REQUIRED, 'Write the archive to this directory'),
                 new InputOption('file', null, InputOption::VALUE_REQUIRED, 'Write the archive with the given file name.'
                     .' Note that the format will be appended.'),
-                new InputOption('ignore-filters', false, InputOption::VALUE_NONE, 'Ignore filters when saving package')
+                new InputOption('ignore-filters', false, InputOption::VALUE_NONE, 'Ignore filters when saving package'),
             ))
             ->setHelp(<<<EOT
 The <info>archive</info> command creates an archive of the specified format
@@ -139,7 +139,9 @@ EOT
         if (count($packages) > 1) {
             $package = reset($packages);
             $io->writeError('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
-            $io->writeError('Alternatives were '.implode(', ', array_map(function ($p) { return $p->getPrettyString(); }, $packages)).'.');
+            $io->writeError('Alternatives were '.implode(', ', array_map(function ($p) {
+                return $p->getPrettyString();
+            }, $packages)).'.');
             $io->writeError('<comment>Please use a more specific constraint to pick a different package.</comment>');
         } elseif ($packages) {
             $package = reset($packages);

@@ -66,7 +66,7 @@ class AutoloadGenerator
 
     public function setDevMode($devMode = true)
     {
-        $this->devMode = (boolean) $devMode;
+        $this->devMode = (bool) $devMode;
     }
 
     /**
@@ -77,7 +77,7 @@ class AutoloadGenerator
      */
     public function setClassMapAuthoritative($classMapAuthoritative)
     {
-        $this->classMapAuthoritative = (boolean) $classMapAuthoritative;
+        $this->classMapAuthoritative = (bool) $classMapAuthoritative;
     }
 
     /**
@@ -87,7 +87,7 @@ class AutoloadGenerator
      */
     public function setApcu($apcu)
     {
-        $this->apcu = (boolean) $apcu;
+        $this->apcu = (bool) $apcu;
     }
 
     /**
@@ -97,7 +97,7 @@ class AutoloadGenerator
      */
     public function setRunScripts($runScripts = true)
     {
-        $this->runScripts = (boolean) $runScripts;
+        $this->runScripts = (bool) $runScripts;
     }
 
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
@@ -543,7 +543,7 @@ EOF;
 
     protected function getAutoloadFile($vendorPathToTargetDirCode, $suffix)
     {
-        $lastChar = $vendorPathToTargetDirCode[strlen($vendorPathToTargetDirCode)-1];
+        $lastChar = $vendorPathToTargetDirCode[strlen($vendorPathToTargetDirCode) - 1];
         if ("'" === $lastChar || '"' === $lastChar) {
             $vendorPathToTargetDirCode = substr($vendorPathToTargetDirCode, 0, -1).'/autoload_real.php'.$lastChar;
         } else {

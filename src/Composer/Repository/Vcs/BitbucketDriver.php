@@ -56,7 +56,7 @@ abstract class BitbucketDriver extends VcsDriver
                 $this->config->get('cache-repo-dir'),
                 $this->originUrl,
                 $this->owner,
-                $this->repository
+                $this->repository,
             ))
         );
     }
@@ -104,6 +104,7 @@ abstract class BitbucketDriver extends VcsDriver
         $this->homeUrl = $repoData['links']['html']['href'];
         $this->website = $repoData['website'];
         $this->vcsType = $repoData['scm'];
+
         return true;
     }
 
@@ -268,7 +269,7 @@ abstract class BitbucketDriver extends VcsDriver
                     array(
                         'pagelen' => 100,
                         'fields' => 'values.name,values.target.hash,next',
-                        'sort' => '-target.date'
+                        'sort' => '-target.date',
                     ),
                     null,
                     '&'
@@ -312,7 +313,7 @@ abstract class BitbucketDriver extends VcsDriver
                     array(
                         'pagelen' => 100,
                         'fields' => 'values.name,values.target.hash,next',
-                        'sort' => '-target.date'
+                        'sort' => '-target.date',
                     ),
                     null,
                     '&'
@@ -338,8 +339,8 @@ abstract class BitbucketDriver extends VcsDriver
     /**
      * Get the remote content.
      *
-     * @param string $url The URL of content
-     * @param bool $fetchingRepoData
+     * @param string $url              The URL of content
+     * @param bool   $fetchingRepoData
      *
      * @return mixed The result
      */
@@ -389,13 +390,13 @@ abstract class BitbucketDriver extends VcsDriver
     }
 
     /**
-     * @param string $url
+     * @param  string $url
      * @return void
      */
     abstract protected function setupFallbackDriver($url);
 
     /**
-     * @param array $cloneLinks
+     * @param  array $cloneLinks
      * @return void
      */
     protected function parseCloneUrls(array $cloneLinks)

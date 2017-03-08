@@ -57,7 +57,7 @@ class RuleSetTest extends TestCase
                 new GenericRule(array(), Rule::RULE_JOB_INSTALL, null),
                 new GenericRule(array(), Rule::RULE_JOB_INSTALL, null),
                 new GenericRule(array(), Rule::RULE_JOB_INSTALL, null),
-            )
+            ),
         );
 
         $ruleSet = new RuleSet;

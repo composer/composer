@@ -23,25 +23,25 @@ use Composer\Repository\PlatformRepository;
 abstract class BasePackage implements PackageInterface
 {
     public static $supportedLinkTypes = array(
-        'require'   => array('description' => 'requires', 'method' => 'requires'),
-        'conflict'  => array('description' => 'conflicts', 'method' => 'conflicts'),
-        'provide'   => array('description' => 'provides', 'method' => 'provides'),
-        'replace'   => array('description' => 'replaces', 'method' => 'replaces'),
+        'require' => array('description' => 'requires', 'method' => 'requires'),
+        'conflict' => array('description' => 'conflicts', 'method' => 'conflicts'),
+        'provide' => array('description' => 'provides', 'method' => 'provides'),
+        'replace' => array('description' => 'replaces', 'method' => 'replaces'),
         'require-dev' => array('description' => 'requires (for development)', 'method' => 'devRequires'),
     );
 
-    const STABILITY_STABLE  = 0;
-    const STABILITY_RC      = 5;
-    const STABILITY_BETA    = 10;
-    const STABILITY_ALPHA   = 15;
-    const STABILITY_DEV     = 20;
+    const STABILITY_STABLE = 0;
+    const STABILITY_RC = 5;
+    const STABILITY_BETA = 10;
+    const STABILITY_ALPHA = 15;
+    const STABILITY_DEV = 20;
 
     public static $stabilities = array(
         'stable' => self::STABILITY_STABLE,
-        'RC'     => self::STABILITY_RC,
-        'beta'   => self::STABILITY_BETA,
-        'alpha'  => self::STABILITY_ALPHA,
-        'dev'    => self::STABILITY_DEV,
+        'RC' => self::STABILITY_RC,
+        'beta' => self::STABILITY_BETA,
+        'alpha' => self::STABILITY_ALPHA,
+        'dev' => self::STABILITY_DEV,
     );
 
     /**

@@ -123,12 +123,12 @@ class JsonConfigSource implements ConfigSourceInterface
             if (substr($key, 0, 6) === 'extra.') {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
-                $arr =& $config['extra'];
+                $arr = &$config['extra'];
                 foreach ($bits as $bit) {
                     if (!isset($arr[$bit])) {
                         $arr[$bit] = array();
                     }
-                    $arr =& $arr[$bit];
+                    $arr = &$arr[$bit];
                 }
                 $arr[$last] = $val;
             } else {
@@ -147,12 +147,12 @@ class JsonConfigSource implements ConfigSourceInterface
             if (substr($key, 0, 6) === 'extra.') {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
-                $arr =& $config['extra'];
+                $arr = &$config['extra'];
                 foreach ($bits as $bit) {
                     if (!isset($arr[$bit])) {
                         return;
                     }
-                    $arr =& $arr[$bit];
+                    $arr = &$arr[$bit];
                 }
                 unset($arr[$last]);
             } else {

@@ -97,9 +97,9 @@ EOT
                 }
 
                 $io->write(JsonFile::encode(array(
-                    'name'         => $root->getPrettyName(),
-                    'version'      => $root->getFullPrettyVersion(),
-                    'license'      => $root->getLicense(),
+                    'name' => $root->getPrettyName(),
+                    'version' => $root->getFullPrettyVersion(),
+                    'license' => $root->getLicense(),
                     'dependencies' => $dependencies,
                 )));
                 break;

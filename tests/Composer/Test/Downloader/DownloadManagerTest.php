@@ -28,7 +28,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
     public function testSetGetDownloader()
     {
         $downloader = $this->createDownloaderMock();
-        $manager    = new DownloadManager($this->io, false, $this->filesystem);
+        $manager = new DownloadManager($this->io, false, $this->filesystem);
 
         $manager->setDownloader('test', $downloader);
         $this->assertSame($downloader, $manager->getDownloader('test'));

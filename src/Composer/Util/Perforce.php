@@ -285,7 +285,7 @@ class Perforce
     public function isLoggedIn()
     {
         $command = $this->generateP4Command('login -s', false);
-        $exitCode  = $this->executeCommand($command);
+        $exitCode = $this->executeCommand($command);
         if ($exitCode) {
             $errorOutput = $this->process->getErrorOutput();
             $index = strpos($errorOutput, $this->getUser());
@@ -441,6 +441,7 @@ class Perforce
                 if ($index3 !== false) {
                     $phrase = trim(substr($result, $index3));
                     $fields = explode(' ', $phrase);
+
                     return substr($identifier, 0, $index) . '/' . $file . '@' . $fields[1];
                 }
             }

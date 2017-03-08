@@ -58,7 +58,7 @@ class GitBitbucketDriverTest extends TestCase
     }
 
     /**
-     * @param array $repoConfig
+     * @param  array              $repoConfig
      * @return GitBitbucketDriver
      */
     private function getDriver(array $repoConfig)
@@ -109,32 +109,32 @@ class GitBitbucketDriverTest extends TestCase
                 array(
                     $this->originUrl,
                     'https://api.bitbucket.org/2.0/repositories/user/repo?fields=-project%2C-owner',
-                    false
+                    false,
                 ),
                 array(
                     $this->originUrl,
                     'https://api.bitbucket.org/1.0/repositories/user/repo/main-branch',
-                    false
+                    false,
                 ),
                 array(
                     $this->originUrl,
                     'https://api.bitbucket.org/2.0/repositories/user/repo/refs/tags?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cnext&sort=-target.date',
-                    false
+                    false,
                 ),
                 array(
                     $this->originUrl,
                     'https://api.bitbucket.org/2.0/repositories/user/repo/refs/branches?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cnext&sort=-target.date',
-                    false
+                    false,
                 ),
                 array(
                     $this->originUrl,
                     'https://api.bitbucket.org/1.0/repositories/user/repo/raw/master/composer.json',
-                    false
+                    false,
                 ),
                 array(
                     $this->originUrl,
                     'https://api.bitbucket.org/2.0/repositories/user/repo/commit/master?fields=date',
-                    false
+                    false,
                 )
             )
             ->willReturnOnConsecutiveCalls(
@@ -154,14 +154,14 @@ class GitBitbucketDriverTest extends TestCase
         $this->assertEquals(
             array(
                 '1.0.1' => '9b78a3932143497c519e49b8241083838c8ff8a1',
-                '1.0.0' => 'd3393d514318a9267d2f8ebbf463a9aaa389f8eb'
+                '1.0.0' => 'd3393d514318a9267d2f8ebbf463a9aaa389f8eb',
             ),
             $driver->getTags()
         );
 
         $this->assertEquals(
             array(
-                'master' => '937992d19d72b5116c3e8c4a04f960e5fa270b22'
+                'master' => '937992d19d72b5116c3e8c4a04f960e5fa270b22',
             ),
             $driver->getBranches()
         );
@@ -174,20 +174,20 @@ class GitBitbucketDriverTest extends TestCase
                 'authors' => array(
                     array(
                         'name' => 'Name',
-                        'email' => 'local@domain.tld'
-                    )
+                        'email' => 'local@domain.tld',
+                    ),
                 ),
                 'require' => array(
-                    'creator/package' => '^1.0'
+                    'creator/package' => '^1.0',
                 ),
                 'require-dev' => array(
-                    'phpunit/phpunit' => '~4.8'
+                    'phpunit/phpunit' => '~4.8',
                 ),
                 'time' => '2016-05-17 13:19:52',
                 'support' => array(
-                    'source' => 'https://bitbucket.org/user/repo/src/937992d19d72b5116c3e8c4a04f960e5fa270b22/?at=master'
+                    'source' => 'https://bitbucket.org/user/repo/src/937992d19d72b5116c3e8c4a04f960e5fa270b22/?at=master',
                 ),
-                'homepage' => 'https://bitbucket.org/user/repo'
+                'homepage' => 'https://bitbucket.org/user/repo',
             ),
             $driver->getComposerInformation('master')
         );
@@ -210,7 +210,7 @@ class GitBitbucketDriverTest extends TestCase
                 'type' => 'zip',
                 'url' => 'https://bitbucket.org/user/repo/get/reference.zip',
                 'reference' => 'reference',
-                'shasum' => ''
+                'shasum' => '',
             ),
             $driver->getDist('reference')
         );

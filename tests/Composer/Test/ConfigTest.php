@@ -261,7 +261,9 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             'ssh://[user@]host.xz[:port]/path/to/repo.git/',
         );
 
-        return array_combine($urls, array_map(function ($e) { return array($e); }, $urls));
+        return array_combine($urls, array_map(function ($e) {
+            return array($e);
+        }, $urls));
     }
 
     /**
@@ -280,7 +282,9 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             'git://5.6.7.8/git.git',
         );
 
-        return array_combine($urls, array_map(function ($e) { return array($e); }, $urls));
+        return array_combine($urls, array_map(function ($e) {
+            return array($e);
+        }, $urls));
     }
 
     /**

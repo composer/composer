@@ -82,8 +82,8 @@ class InstallerTest extends TestCase
         $result = $installer->run();
         $this->assertSame(0, $result);
 
-        $expectedInstalled   = isset($options['install']) ? $options['install'] : array();
-        $expectedUpdated     = isset($options['update']) ? $options['update'] : array();
+        $expectedInstalled = isset($options['install']) ? $options['install'] : array();
+        $expectedUpdated = isset($options['update']) ? $options['update'] : array();
         $expectedUninstalled = isset($options['uninstall']) ? $options['uninstall'] : array();
 
         $installed = $installationManager->getInstalledPackages();
@@ -198,7 +198,7 @@ class InstallerTest extends TestCase
         }
 
         $contents = json_encode($composerConfig);
-        $locker   = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), $contents);
+        $locker = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), $contents);
         $composer->setLocker($locker);
 
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
@@ -345,7 +345,7 @@ class InstallerTest extends TestCase
             'CONDITION' => false,
             'COMPOSER' => true,
             'LOCK' => false,
-            'INSTALLED'  => false,
+            'INSTALLED' => false,
             'RUN' => true,
             'EXPECT-LOCK' => false,
             'EXPECT-OUTPUT' => false,

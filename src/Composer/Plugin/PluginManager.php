@@ -232,7 +232,7 @@ class PluginManager
     public function addPlugin(PluginInterface $plugin)
     {
         $this->io->writeError('Loading plugin '.get_class($plugin), true, IOInterface::DEBUG);
-        $this->plugins[] =  $plugin;
+        $this->plugins[] = $plugin;
         $plugin->activate($this->composer, $this->io);
 
         if ($plugin instanceof EventSubscriberInterface) {
@@ -383,10 +383,10 @@ class PluginManager
     }
 
     /**
-     * @param  string          $capabilityClassName The fully qualified name of the API interface which the plugin may provide
-     *                                              an implementation of.
-     * @param  array           $ctorArgs            Arguments passed to Capability's constructor.
-     *                                              Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @param  string       $capabilityClassName The fully qualified name of the API interface which the plugin may provide
+     *                                           an implementation of.
+     * @param  array        $ctorArgs            Arguments passed to Capability's constructor.
+     *                                           Keeping it an array will allow future values to be passed w\o changing the signature.
      * @return Capability[]
      */
     public function getPluginCapabilities($capabilityClassName, array $ctorArgs = array())

@@ -12,7 +12,6 @@
 
 namespace Composer\Util;
 
-use Symfony\Component\Process\PhpProcess;
 use Composer\CaBundle\CaBundle;
 
 /**
@@ -137,12 +136,12 @@ final class TlsHelper
     public static function getCertificateFingerprint($certificate)
     {
         $pubkeydetails = openssl_pkey_get_details(openssl_get_publickey($certificate));
-        $pubkeypem     = $pubkeydetails['key'];
+        $pubkeypem = $pubkeydetails['key'];
         //Convert PEM to DER before SHA1'ing
-        $start         = '-----BEGIN PUBLIC KEY-----';
-        $end           = '-----END PUBLIC KEY-----';
-        $pemtrim       = substr($pubkeypem, (strpos($pubkeypem, $start) + strlen($start)), (strlen($pubkeypem) - strpos($pubkeypem, $end)) * (-1));
-        $der           = base64_decode($pemtrim);
+        $start = '-----BEGIN PUBLIC KEY-----';
+        $end = '-----END PUBLIC KEY-----';
+        $pemtrim = substr($pubkeypem, (strpos($pubkeypem, $start) + strlen($start)), (strlen($pubkeypem) - strpos($pubkeypem, $end)) * (-1));
+        $der = base64_decode($pemtrim);
 
         return sha1($der);
     }

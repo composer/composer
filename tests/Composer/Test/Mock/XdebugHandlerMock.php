@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -25,7 +26,7 @@ class XdebugHandlerMock extends XdebugHandler
         $this->output = Factory::createOutput();
         parent::__construct($this->output);
 
-        $loaded = null === $loaded ? true: $loaded;
+        $loaded = null === $loaded ? true : $loaded;
         $class = new \ReflectionClass(get_parent_class($this));
 
         $prop = $class->getProperty('loaded');

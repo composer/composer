@@ -334,7 +334,7 @@ class Installer
      * @param  RepositoryInterface $installedRepo
      * @param  PlatformRepository  $platformRepo
      * @param  array               $aliases
-     * @return array [int, PackageInterfaces[]|null] with the exit code and an array of dev packages on update, or null on install
+     * @return array               [int, PackageInterfaces[]|null] with the exit code and an array of dev packages on update, or null on install
      */
     protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases)
     {
@@ -1194,7 +1194,6 @@ class Installer
         }
     }
 
-
     /**
      * @param PlatformRepository $platformRepo
      * @param array              $aliases
@@ -1424,7 +1423,7 @@ class Installer
      */
     public function setDryRun($dryRun = true)
     {
-        $this->dryRun = (boolean) $dryRun;
+        $this->dryRun = (bool) $dryRun;
 
         return $this;
     }
@@ -1447,7 +1446,7 @@ class Installer
      */
     public function setPreferSource($preferSource = true)
     {
-        $this->preferSource = (boolean) $preferSource;
+        $this->preferSource = (bool) $preferSource;
 
         return $this;
     }
@@ -1460,7 +1459,7 @@ class Installer
      */
     public function setPreferDist($preferDist = true)
     {
-        $this->preferDist = (boolean) $preferDist;
+        $this->preferDist = (bool) $preferDist;
 
         return $this;
     }
@@ -1473,7 +1472,7 @@ class Installer
      */
     public function setOptimizeAutoloader($optimizeAutoloader = false)
     {
-        $this->optimizeAutoloader = (boolean) $optimizeAutoloader;
+        $this->optimizeAutoloader = (bool) $optimizeAutoloader;
         if (!$this->optimizeAutoloader) {
             // Force classMapAuthoritative off when not optimizing the
             // autoloader
@@ -1492,7 +1491,7 @@ class Installer
      */
     public function setClassMapAuthoritative($classMapAuthoritative = false)
     {
-        $this->classMapAuthoritative = (boolean) $classMapAuthoritative;
+        $this->classMapAuthoritative = (bool) $classMapAuthoritative;
         if ($this->classMapAuthoritative) {
             // Force optimizeAutoloader when classmap is authoritative
             $this->setOptimizeAutoloader(true);
@@ -1509,7 +1508,7 @@ class Installer
      */
     public function setApcuAutoloader($apcuAutoloader = false)
     {
-        $this->apcuAutoloader = (boolean) $apcuAutoloader;
+        $this->apcuAutoloader = (bool) $apcuAutoloader;
 
         return $this;
     }
@@ -1522,7 +1521,7 @@ class Installer
      */
     public function setUpdate($update = true)
     {
-        $this->update = (boolean) $update;
+        $this->update = (bool) $update;
 
         return $this;
     }
@@ -1535,7 +1534,7 @@ class Installer
      */
     public function setDevMode($devMode = true)
     {
-        $this->devMode = (boolean) $devMode;
+        $this->devMode = (bool) $devMode;
 
         return $this;
     }
@@ -1550,7 +1549,7 @@ class Installer
      */
     public function setDumpAutoloader($dumpAutoloader = true)
     {
-        $this->dumpAutoloader = (boolean) $dumpAutoloader;
+        $this->dumpAutoloader = (bool) $dumpAutoloader;
 
         return $this;
     }
@@ -1565,7 +1564,7 @@ class Installer
      */
     public function setRunScripts($runScripts = true)
     {
-        $this->runScripts = (boolean) $runScripts;
+        $this->runScripts = (bool) $runScripts;
 
         return $this;
     }
@@ -1591,7 +1590,7 @@ class Installer
      */
     public function setVerbose($verbose = true)
     {
-        $this->verbose = (boolean) $verbose;
+        $this->verbose = (bool) $verbose;
 
         return $this;
     }
@@ -1614,7 +1613,7 @@ class Installer
      */
     public function setIgnorePlatformRequirements($ignorePlatformReqs = false)
     {
-        $this->ignorePlatformReqs = (boolean) $ignorePlatformReqs;
+        $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;
 
         return $this;
     }
@@ -1641,7 +1640,7 @@ class Installer
      */
     public function setWhitelistDependencies($updateDependencies = true)
     {
-        $this->whitelistDependencies = (boolean) $updateDependencies;
+        $this->whitelistDependencies = (bool) $updateDependencies;
 
         return $this;
     }
@@ -1654,7 +1653,7 @@ class Installer
      */
     public function setPreferStable($preferStable = true)
     {
-        $this->preferStable = (boolean) $preferStable;
+        $this->preferStable = (bool) $preferStable;
 
         return $this;
     }
@@ -1667,7 +1666,7 @@ class Installer
      */
     public function setPreferLowest($preferLowest = true)
     {
-        $this->preferLowest = (boolean) $preferLowest;
+        $this->preferLowest = (bool) $preferLowest;
 
         return $this;
     }
@@ -1682,7 +1681,7 @@ class Installer
      */
     public function setWriteLock($writeLock = true)
     {
-        $this->writeLock = (boolean) $writeLock;
+        $this->writeLock = (bool) $writeLock;
 
         return $this;
     }
@@ -1697,7 +1696,7 @@ class Installer
      */
     public function setExecuteOperations($executeOperations = true)
     {
-        $this->executeOperations = (boolean) $executeOperations;
+        $this->executeOperations = (bool) $executeOperations;
 
         return $this;
     }
@@ -1710,7 +1709,7 @@ class Installer
      */
     public function setSkipSuggest($skipSuggest = true)
     {
-        $this->skipSuggest = (boolean) $skipSuggest;
+        $this->skipSuggest = (bool) $skipSuggest;
 
         return $this;
     }

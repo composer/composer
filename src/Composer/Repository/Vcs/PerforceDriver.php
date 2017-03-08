@@ -26,6 +26,7 @@ class PerforceDriver extends VcsDriver
     protected $branch;
     /** @var Perforce */
     protected $perforce;
+
     /**
      * {@inheritDoc}
      */
@@ -56,7 +57,6 @@ class PerforceDriver extends VcsDriver
         $repoDir = $this->config->get('cache-vcs-dir') . '/' . $this->depot;
         $this->perforce = Perforce::create($repoConfig, $this->getUrl(), $repoDir, $this->process, $this->io);
     }
-
 
     /**
      * {@inheritdoc}
@@ -116,10 +116,10 @@ class PerforceDriver extends VcsDriver
     public function getSource($identifier)
     {
         $source = array(
-            'type'      => 'perforce',
-            'url'       => $this->repoConfig['url'],
+            'type' => 'perforce',
+            'url' => $this->repoConfig['url'],
             'reference' => $identifier,
-            'p4user'    => $this->perforce->getUser(),
+            'p4user' => $this->perforce->getUser(),
         );
 
         return $source;

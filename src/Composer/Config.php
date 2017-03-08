@@ -416,7 +416,7 @@ class Config
     {
         if (isset($this->repositories[$name])) {
             unset($this->repositories[$name]);
-        } else if ($name === 'packagist') { // BC support for default "packagist" named repo
+        } elseif ($name === 'packagist') { // BC support for default "packagist" named repo
             unset($this->repositories['packagist.org']);
         }
     }

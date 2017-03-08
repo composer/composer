@@ -186,7 +186,7 @@ class InstallationManager
         $target = $operation->getTargetPackage();
 
         $initialType = $initial->getType();
-        $targetType  = $target->getType();
+        $targetType = $target->getType();
 
         if ($initialType === $targetType) {
             $installer = $this->getInstaller($initialType);
@@ -273,8 +273,8 @@ class InstallationManager
                     );
                     $opts = array('http' =>
                         array(
-                            'method'  => 'POST',
-                            'header'  => array('Content-type: application/x-www-form-urlencoded'),
+                            'method' => 'POST',
+                            'header' => array('Content-type: application/x-www-form-urlencoded'),
                             'content' => http_build_query($params, '', '&'),
                             'timeout' => 3,
                         ),
@@ -300,8 +300,8 @@ class InstallationManager
 
             $opts = array('http' =>
                 array(
-                    'method'  => 'POST',
-                    'header'  => array('Content-Type: application/json'),
+                    'method' => 'POST',
+                    'header' => array('Content-Type: application/json'),
                     'content' => json_encode($postData),
                     'timeout' => 6,
                 ),

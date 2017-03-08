@@ -21,7 +21,7 @@ class PharArchiverTest extends ArchiverTest
         // Set up repository
         $this->setupDummyRepo();
         $package = $this->setupPackage();
-        $target  = $this->getUniqueTmpDirectory().'/composer_archiver_test.tar';
+        $target = $this->getUniqueTmpDirectory().'/composer_archiver_test.tar';
 
         // Test archive
         $archiver = new PharArchiver();
@@ -36,7 +36,7 @@ class PharArchiverTest extends ArchiverTest
         // Set up repository
         $this->setupDummyRepo();
         $package = $this->setupPackage();
-        $target  = $this->getUniqueTmpDirectory().'/composer_archiver_test.zip';
+        $target = $this->getUniqueTmpDirectory().'/composer_archiver_test.zip';
 
         // Test archive
         $archiver = new PharArchiver();

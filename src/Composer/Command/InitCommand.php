@@ -323,7 +323,7 @@ EOT
         if (preg_match('/^(?P<name>[- .,\p{L}\p{N}\'’"()]+) <(?P<email>.+?)>$/u', $author, $match)) {
             if ($this->isValidEmail($match['email'])) {
                 return array(
-                    'name'  => trim($match['name']),
+                    'name' => trim($match['name']),
                     'email' => $match['email'],
                 );
             }

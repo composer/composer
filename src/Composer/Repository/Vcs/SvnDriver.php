@@ -37,10 +37,10 @@ class SvnDriver extends VcsDriver
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    protected $trunkPath    = 'trunk';
+    protected $trunkPath = 'trunk';
     protected $branchesPath = 'branches';
-    protected $tagsPath     = 'tags';
-    protected $packagePath   = '';
+    protected $tagsPath = 'tags';
+    protected $packagePath = '';
     protected $cacheCredentials = true;
 
     /**
@@ -131,7 +131,6 @@ class SvnDriver extends VcsDriver
 
             $this->infoCache[$identifier] = $composer;
         }
-
 
         return $this->infoCache[$identifier];
     }
