@@ -633,7 +633,7 @@ By default the command checks for the packages on packagist.org.
   terminals or scripts which don't handle backspace characters.
 * **--keep-vcs:** Skip the deletion of the VCS metadata for the created
   project. This is mostly useful if you run the command in non-interactive
-  mode.
+  mode. (only works together with: -s dev|--stability=dev|dev-master)
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
   fulfill these.
