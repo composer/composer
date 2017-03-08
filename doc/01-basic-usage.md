@@ -147,8 +147,9 @@ still working even if your dependencies released many new versions since then.
 As mentioned above, the `composer.lock` file prevents you from automatically getting
 the latest versions of your dependencies. To update to the latest versions, use the
 [`update`](03-cli.md#update) command. This will fetch the latest matching
-versions (according to your `composer.json` file) and also update the lock file
-with the new version. (This is equivalent to simply deleting the `composer.lock` file.)
+versions (according to your `composer.json` file) and update the lock file
+with the new versions. (This is equivalent to deleting the `composer.lock` file
+and running `install` again.)
 
 ```sh
 php composer.phar update
