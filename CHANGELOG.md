@@ -6,6 +6,7 @@
   * Added support for `outdated` output without ansi colors
   * Added support for Bitbucket API v2
   * Changed the require command to follow minimum-stability / prefer-stable values when picking a version
+  * Fixed regression when using composer in a Mercurial repository
 
 ### [1.3.3] - 2017-03-08
 
