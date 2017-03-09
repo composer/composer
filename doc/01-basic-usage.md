@@ -39,7 +39,7 @@ key, or in Packagist, the default package respository. In the above example,
 since no other repository has been registered in the `composer.json` file, it is
 assumed that the `monolog/monolog` package is registered on Packagist. (See more
 about Packagist [below](#packagist), or read more about repositories
-[here](05-repositories.md).
+[here](05-repositories.md)).
 
 ### Package Names
 
