@@ -588,7 +588,7 @@
             "required": ["type", "url"],
             "properties": {
                 "type": { "type": "string", "enum": ["composer"] },
-                "url": { "type": "string", "format": "uri" },
+                "url": { "type": "string" },
                 "options": {
                     "type": "object",
                     "additionalProperties": true
@@ -645,7 +645,7 @@
             "required": ["type", "url"],
             "properties": {
                 "type": { "type": "string", "enum": ["pear"] },
-                "url": { "type": "string", "format": "uri" },
+                "url": { "type": "string" },
                 "vendor-alias": { "type": "string" }
             }
         },
