@@ -1,3 +1,9 @@
+### [1.4.1] - 2017-03-10
+
+  * Fixed `apcu-autoloader` config option being ignored in `dump-autoload` command
+  * Fixed json validation not allowing boolean for trunk-path, branches-path and tags-path in svn repos
+  * Fixed json validation not allowing repository URLs without scheme
+
 ### [1.4.0] - 2017-03-08
 
   * Improved memory usage of dependency solver
