@@ -91,10 +91,6 @@ abstract class ArchiveDownloader extends FileDownloader
 
             break;
         }
-
-        if ($output) {
-            $this->io->writeError('');
-        }
     }
 
     /**
