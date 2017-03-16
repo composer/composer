@@ -575,6 +575,7 @@
         "repository": {
             "type": "object",
             "oneOf": [
+                {"$ref": "#/definitions/packagist-repository"},
                 { "$ref": "#/definitions/composer-repository" },
                 { "$ref": "#/definitions/vcs-repository" },
                 { "$ref": "#/definitions/path-repository" },
@@ -582,6 +583,16 @@
                 { "$ref": "#/definitions/pear-repository" },
                 { "$ref": "#/definitions/package-repository" }
             ]
+        },
+        "packagist-repository": {
+            "type":"object",
+            "required": ["packagist.org"],
+            "properties": {
+                "packagist.org": {
+                    "type": "boolean",
+                    "enum": [false]
+                }
+            }
         },
         "composer-repository": {
             "type": "object",
