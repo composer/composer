@@ -90,7 +90,8 @@ class FileDownloader implements DownloaderInterface
         $urls = $package->getDistUrls();
         while ($url = array_shift($urls)) {
             try {
-                return $this->doDownload($package, $path, $url);
+                $fileName = $this->doDownload($package, $path, $url);
+                break;
             } catch (\Exception $e) {
                 if ($this->io->isDebug()) {
                     $this->io->writeError('');
@@ -109,6 +110,8 @@ class FileDownloader implements DownloaderInterface
         if ($output) {
             $this->io->writeError('');
         }
+
+        return $fileName;
     }
 
     protected function doDownload(PackageInterface $package, $path, $url)
