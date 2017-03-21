@@ -28,6 +28,7 @@ class ArrayLoader implements LoaderInterface
 {
     protected $versionParser;
     protected $loadOptions;
+    protected $linksCache = array();
 
     public function __construct(SemverVersionParser $parser = null, $loadOptions = false)
     {
@@ -241,7 +242,13 @@ class ArrayLoader implements LoaderInterface
                 $parsedConstraint = $this->versionParser->parseConstraints($constraint);
             }
 
-            $res[strtolower($target)] = new Link($source, $target, $parsedConstraint, $description, $constraint);
+            $key = $source . $target . $parsedConstraint . $description . $constraint;
+
+            if (isset($this->linksCache[$key])) {
+                $res[strtolower($target)] = $this->linksCache[$key];
+            } else {
+                $res[strtolower($target)] = $this->linksCache[$key] = new Link($source, $target, $parsedConstraint, $description, $constraint);
+            }
         }
 
         return $res;
