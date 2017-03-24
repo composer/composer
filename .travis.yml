@@ -10,6 +10,7 @@ addons:
   apt:
     packages:
       - parallel
+      - kwstyle
 
 php:
   - 5.3
@@ -36,6 +37,7 @@ before_script:
 
 script:
     - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && $(exit 1));'
+    - KWStyle -v -gcc -d -R src/
 
 git:
   depth: 5
