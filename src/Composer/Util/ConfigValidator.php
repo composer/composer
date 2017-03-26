@@ -86,7 +86,7 @@ class ConfigValidator
             $licenseValidator = new SpdxLicenses();
             if ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license']) && $licenseValidator->validate(trim($manifest['license']))) {
                 $warnings[] = sprintf(
-                    'Trim the license identifier (remove useless spaces, etc).',
+                    'License %s must not contain extra spaces, make sure to trim it.',
                     json_encode($manifest['license'])
                 );
             } else if ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license'])) {
