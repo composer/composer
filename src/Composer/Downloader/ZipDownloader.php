@@ -29,10 +29,11 @@ use ZipArchive;
  */
 class ZipDownloader extends ArchiveDownloader
 {
+    private static $hasSystemUnzip;
+    private static $hasZipArchive;
+    private static $isWindows;
+
     protected $process;
-    public static $hasSystemUnzip;
-    public static $hasZipArchive;
-    public static $isWindows;
     private $zipArchiveObject;
 
     public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null, RemoteFilesystem $rfs = null)
@@ -80,12 +81,12 @@ class ZipDownloader extends ArchiveDownloader
      */
     protected function extractWithSystemUnzip($file, $path, $isLastChance)
     {
-        if (! self::$hasZipArchive) {
+        if (!self::$hasZipArchive) {
             // Force Exception throwing if the Other alternative is not available
             $isLastChance = true;
         }
 
-        if (! self::$hasSystemUnzip && ! $isLastChance) {
+        if (!self::$hasSystemUnzip && !$isLastChance) {
             // This was call as the favorite extract way, but is not available
             // We switch to the alternative
             return $this->extractWithZipArchive($file, $path, true);
@@ -107,17 +108,14 @@ class ZipDownloader extends ArchiveDownloader
             $processError = $e;
         }
 
-        if (! self::$hasZipArchive) {
-            $isLastChance = true;
-        }
-
         if ($isLastChance) {
             throw $processError;
-        } else {
-            $this->io->write($processError->getMessage());
-            $this->io->write('Unzip with unzip command failed, falling back to ZipArchive class');
-            return $this->extractWithZipArchive($file, $path, true);
         }
+
+        $this->io->writeError('    '.$processError->getMessage());
+        $this->io->writeError('    Unzip with unzip command failed, falling back to ZipArchive class');
+
+        return $this->extractWithZipArchive($file, $path, true);
     }
 
     /**
@@ -130,12 +128,12 @@ class ZipDownloader extends ArchiveDownloader
      */
     protected function extractWithZipArchive($file, $path, $isLastChance)
     {
-        if (! self::$hasSystemUnzip) {
+        if (!self::$hasSystemUnzip) {
             // Force Exception throwing if the Other alternative is not available
             $isLastChance = true;
         }
 
-        if (! self::$hasZipArchive && ! $isLastChance) {
+        if (!self::$hasZipArchive && !$isLastChance) {
             // This was call as the favorite extract way, but is not available
             // We switch to the alternative
             return $this->extractWithSystemUnzip($file, $path, true);
@@ -150,10 +148,11 @@ class ZipDownloader extends ArchiveDownloader
 
                 if (true === $extractResult) {
                     $zipArchive->close();
+
                     return true;
-                } else {
-                    $processError = new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));
                 }
+
+                $processError = new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));
             } else {
                 $processError = new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n"), $retval);
             }
@@ -163,11 +162,12 @@ class ZipDownloader extends ArchiveDownloader
 
         if ($isLastChance) {
             throw $processError;
-        } else {
-            $this->io->write($processError->getMessage());
-            $this->io->write('Unzip with ZipArchive class failed, falling back to unzip command');
-            return $this->extractWithSystemUnzip($file, $path, true);
         }
+
+        $this->io->writeError('    '.$processError->getMessage());
+        $this->io->writeError('    Unzip with ZipArchive class failed, falling back to unzip command');
+
+        return $this->extractWithSystemUnzip($file, $path, true);
     }
 
     /**
