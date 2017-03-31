@@ -176,7 +176,7 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash) {
                 $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
-                $output = "* (HEAD detached at FETCH_HEAD) $commitHash Commit message\n";
+                $output = "* (HEAD detached at " . substr($commitHash, 0, 9) . ") $commitHash Commit message\n";
 
                 return 0;
             })
