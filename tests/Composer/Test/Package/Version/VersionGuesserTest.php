@@ -163,7 +163,7 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
         $commitHash = 'da53c52eddd5f32ffca64a7b3801bea';
 
         $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
-            ->setMethods(['execute'])
+            ->setMethods(array('execute'))
             ->disableArgumentCloning()
             ->disableOriginalConstructor()
             ->getMock();
@@ -181,9 +181,9 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
             });
 
         $config = new Config;
-        $config->merge(['repositories' => ['packagist' => false]]);
+        $config->merge(array('repositories' => array('packagist' => false)));
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
-        $versionData = $guesser->guessVersion([], 'dummy/path');
+        $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
         $this->assertEquals("dev-$commitHash", $versionData['version']);
     }
@@ -193,7 +193,7 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
         $commitHash = 'da53c52eddd5f32ffca64a7b3801bea';
 
         $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
-            ->setMethods(['execute'])
+            ->setMethods(array('execute'))
             ->disableArgumentCloning()
             ->disableOriginalConstructor()
             ->getMock();
@@ -211,9 +211,9 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
             });
 
         $config = new Config;
-        $config->merge(['repositories' => ['packagist' => false]]);
+        $config->merge(array('repositories' => array('packagist' => false)));
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
-        $versionData = $guesser->guessVersion([], 'dummy/path');
+        $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
         $this->assertEquals("dev-$commitHash", $versionData['version']);
     }
