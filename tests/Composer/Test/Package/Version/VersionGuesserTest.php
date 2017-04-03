@@ -160,7 +160,7 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
 
     public function testDetachedFetchHeadBecomesDevHashGit2()
     {
-        $commitHash = 'da53c52eddd5f32ffca64a7b3801bea';
+        $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
 
         $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
             ->setMethods(array('execute'))
@@ -190,7 +190,7 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
 
     public function testDetachedCommitHeadBecomesDevHashGit2()
     {
-        $commitHash = 'da53c52eddd5f32ffca64a7b3801bea';
+        $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
 
         $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
             ->setMethods(array('execute'))
@@ -205,7 +205,7 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash) {
                 $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
-                $output = "* (HEAD detached at da53c52ed) $commitHash Commit message\n";
+                $output = "* (HEAD detached at 03a15d220) $commitHash Commit message\n";
 
                 return 0;
             });
