@@ -74,7 +74,7 @@ EOT
         $io = $this->getIO();
 
         $newlyCreated = !file_exists($file);
-        if (!file_exists($file) && !file_put_contents($file, "{\n}\n")) {
+        if ($newlyCreated && !file_put_contents($file, "{\n}\n")) {
             $io->writeError('<error>'.$file.' could not be created.</error>');
 
             return 1;
