@@ -158,7 +158,7 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("dev-$commitHash", $versionData['version']);
     }
 
-    public function testDetachedHeadBecomesDevHashGit2()
+    public function testDetachedFetchHeadBecomesDevHashGit2()
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
 
@@ -166,8 +166,7 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
             ->setMethods(array('execute'))
             ->disableArgumentCloning()
             ->disableOriginalConstructor()
-            ->getMock()
-        ;
+            ->getMock();
 
         $self = $this;
 
@@ -179,8 +178,37 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
                 $output = "* (HEAD detached at FETCH_HEAD) $commitHash Commit message\n";
 
                 return 0;
-            })
-        ;
+            });
+
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $guesser = new VersionGuesser($config, $executor, new VersionParser());
+        $versionData = $guesser->guessVersion(array(), 'dummy/path');
+
+        $this->assertEquals("dev-$commitHash", $versionData['version']);
+    }
+
+    public function testDetachedCommitHeadBecomesDevHashGit2()
+    {
+        $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
+
+        $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
+            ->setMethods(array('execute'))
+            ->disableArgumentCloning()
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $self = $this;
+
+        $executor
+            ->expects($this->at(0))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self, $commitHash) {
+                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $output = "* (HEAD detached at 03a15d220) $commitHash Commit message\n";
+
+                return 0;
+            });
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
