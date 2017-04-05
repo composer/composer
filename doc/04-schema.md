@@ -35,7 +35,7 @@ separated by `/`. Examples:
 * igorw/event-source
 
 The name can contain any character, including white spaces, and it's case
-sensitive (`foor/bar` is considered a different package than `Foo/Bar`). In order
+insensitive (`foor/bar` and `Foo/Bar` are considered the same package). In order
 to simplify its installation, it's recommended to define a short and lowercase
 name that doesn't include non-alphanumeric characters or white spaces.
 
