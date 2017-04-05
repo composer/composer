@@ -29,12 +29,15 @@ The config of dependencies is ignored. This makes the `config` field
 ### name
 
 The name of the package. It consists of vendor name and project name,
-separated by `/`.
-
-Examples:
+separated by `/`. Examples:
 
 * monolog/monolog
 * igorw/event-source
+
+The name can contain any character, including white spaces, and it's case
+sensitive (`foor/bar` is considered a different package than `Foo/Bar`). In order
+to simplify its installation, it's recommended to define a short and lowercase
+name that doesn't include non-alphanumeric characters or white spaces.
 
 Required for published packages (libraries).
 
