@@ -26,7 +26,7 @@ class ExecCommand extends BaseCommand
     {
         $this
             ->setName('exec')
-            ->setDescription('Execute a vendored binary/script.')
+            ->setDescription('Executes a vendored binary/script.')
             ->setDefinition(array(
                 new InputOption('list', 'l', InputOption::VALUE_NONE),
                 new InputArgument('binary', InputArgument::OPTIONAL, 'The binary to run, e.g. phpunit'),
