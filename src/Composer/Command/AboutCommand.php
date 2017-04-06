@@ -24,7 +24,7 @@ class AboutCommand extends BaseCommand
     {
         $this
             ->setName('about')
-            ->setDescription('Short information about Composer.')
+            ->setDescription('Shows the short information about Composer.')
             ->setHelp(<<<EOT
 <info>php composer.phar about</info>
 EOT

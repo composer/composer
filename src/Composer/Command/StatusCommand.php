@@ -40,7 +40,7 @@ class StatusCommand extends BaseCommand
     {
         $this
             ->setName('status')
-            ->setDescription('Show a list of locally modified packages.')
+            ->setDescription('Shows a list of locally modified packages.')
             ->setDefinition(array(
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.'),
             ))

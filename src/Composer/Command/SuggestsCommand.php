@@ -24,7 +24,7 @@ class SuggestsCommand extends BaseCommand
     {
         $this
             ->setName('suggests')
-            ->setDescription('Show package suggestions.')
+            ->setDescription('Shows package suggestions.')
             ->setDefinition(array(
                 new InputOption('by-package', null, InputOption::VALUE_NONE, 'Groups output by suggesting package'),
                 new InputOption('by-suggestion', null, InputOption::VALUE_NONE, 'Groups output by suggested package'),
