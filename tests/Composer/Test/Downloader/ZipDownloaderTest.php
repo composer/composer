@@ -128,6 +128,28 @@ class ZipDownloaderTest extends TestCase
     }
 
     /**
+     * @expectedException \ErrorException
+     * @expectedExceptionMessage Archive may contain identical directory or file name with different capitalization (fails on case insensitive filesystems)
+     */
+    public function testZipArchiveExtractOnlyFailed()
+    {
+        $this->setPrivateProperty('hasSystemUnzip', false);
+        $this->setPrivateProperty('hasZipArchive', true);
+        $downloader = new MockedZipDownloader($this->io, $this->config);
+
+        $zipArchive = $this->getMock('ZipArchive');
+        $zipArchive->expects($this->at(0))
+            ->method('open')
+            ->will($this->returnValue(true));
+        $zipArchive->expects($this->at(1))
+            ->method('extractTo')
+            ->will($this->throwException(new \ErrorException('Not a directory')));
+
+        $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
+        $downloader->extract('testfile.zip', 'vendor/dir');
+    }
+
+    /**
      * @group only
      */
     public function testZipArchiveOnlyGood()
