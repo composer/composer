@@ -116,11 +116,24 @@ class SuggestedPackagesReporter
             $this->io->writeError(sprintf(
                 '%s suggests installing %s (%s)',
                 $suggestion['source'],
-                $suggestion['target'],
-                $suggestion['reason']
+                $this->removeControlCharacters($suggestion['target']),
+                $this->removeControlCharacters($suggestion['reason'])
             ));
         }
 
         return $this;
+    }
+
+    /**
+     * @param string $string
+     * @return string
+     */
+    private function removeControlCharacters($string)
+    {
+        return preg_replace(
+            '/[[:cntrl:]]/',
+            '',
+            str_replace("\n", ' ', $string)
+        );
     }
 }
