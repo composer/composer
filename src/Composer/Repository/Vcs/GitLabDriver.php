@@ -175,7 +175,7 @@ class GitLabDriver extends VcsDriver
      */
     public function getDist($identifier)
     {
-        $url = $this->getApiUrl().'/repository/archive.zip?ref='.$identifier;
+        $url = $this->getApiUrl().'/repository/archive.zip?sha='.$identifier;
 
         return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
     }
