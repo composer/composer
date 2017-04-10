@@ -144,7 +144,7 @@ JSON;
         $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
         $expected = array(
             'type' => 'zip',
-            'url' => 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject/repository/archive.zip?ref='.$reference,
+            'url' => 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject/repository/archive.zip?sha='.$reference,
             'reference' => $reference,
             'shasum' => '',
         );
