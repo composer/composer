@@ -66,7 +66,7 @@ class GitLabDriver extends VcsDriver
      */
     private $isPrivate = true;
 
-    const URL_REGEX = '#^(?:(?P<scheme>https?)://(?P<domain>.+?)/|git@(?P<domain2>[^:]+):)(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git|/)?$#';
+    const URL_REGEX = '#^(?:(?P<scheme>https?)://(?P<host>[^/]+)/|git@(?P<githost>[^:]+):)(?P<owner>.+)/(?P<repo>[^/]+)(?:\.git|/)?$#';
 
     /**
      * Extracts information from the repository url.
@@ -81,10 +81,25 @@ class GitLabDriver extends VcsDriver
             throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
         }
 
+        $gitlabDomains = (array) $this->config->get('gitlab-domains');
+
         $this->scheme = !empty($match['scheme']) ? $match['scheme'] : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https');
-        $this->originUrl = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
+        $this->originUrl = $match['githost'];
         $this->owner = $match['owner'];
-        $this->repository = preg_replace('#(\.git)$#', '', $match['repo']);
+        $this->repository = $match['repo'];
+
+        if (empty($this->originUrl)) {
+            $haystack = $match['host'].'/'.$match['owner'];
+
+            foreach ($gitlabDomains as $domain) {
+                if (substr($haystack, 0, $domainLength = strlen($domain) + 1) === $domain.'/') {
+                    $this->originUrl = $domain;
+                    $this->owner = substr($haystack, $domainLength);
+
+                    break;
+                }
+            }
+        }
 
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
@@ -420,10 +435,24 @@ class GitLabDriver extends VcsDriver
             return false;
         }
 
-        $scheme = !empty($match['scheme']) ? $match['scheme'] : null;
-        $originUrl = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
+        $gitlabDomains = (array) $config->get('gitlab-domains');
 
-        if (!in_array($originUrl, (array) $config->get('gitlab-domains'))) {
+        $scheme = !empty($match['scheme']) ? $match['scheme'] : null;
+        $originUrl = $match['githost'];
+
+        if (empty($originUrl)) {
+            $haystack = $match['host'].'/'.$match['owner'];
+
+            foreach ($gitlabDomains as $domain) {
+                if (substr($haystack, 0, strlen($domain) + 1) === $domain.'/') {
+                    $originUrl = $domain;
+
+                    break;
+                }
+            }
+        }
+
+        if (!in_array($originUrl, $gitlabDomains)) {
             return false;
         }
 
