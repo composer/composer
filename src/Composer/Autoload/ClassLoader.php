@@ -55,6 +55,7 @@ class ClassLoader
     private $classMap = array();
     private $classMapAuthoritative = false;
     private $missingClasses = array();
+    private $foundClasses = array();
     private $apcuPrefix;
 
     public function getPrefixes()
@@ -84,6 +85,11 @@ class ClassLoader
     public function getClassMap()
     {
         return $this->classMap;
+    }
+
+    public function getFoundClasses()
+    {
+        return $this->foundClasses;
     }
 
     /**
@@ -363,8 +369,7 @@ class ClassLoader
             // Remember that this class does not exist.
             $this->missingClasses[$class] = true;
         } else {
-            // Remember that this class exist
-            $this->classMap[$class] = $file;
+            $this->foundClasses[$class] = $file;
         }
 
         return $file;
