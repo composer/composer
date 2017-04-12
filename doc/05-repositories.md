@@ -585,7 +585,7 @@ For instance, if you have the following directory structure in your repository:
   \_ composer.json
 ```
 
-Then, to add the package `my/package` as a dependency, in your
+Then, to add the package `my-package` as a dependency, in your
 `apps/my-app/composer.json` file, you can use the following configuration:
 
 ```json
