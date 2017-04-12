@@ -362,6 +362,9 @@ class ClassLoader
         if (false === $file) {
             // Remember that this class does not exist.
             $this->missingClasses[$class] = true;
+        } else {
+            // Remember that this class exist
+            $this->classMap[$class] = $file;
         }
 
         return $file;
