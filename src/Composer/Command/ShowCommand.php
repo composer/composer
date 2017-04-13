@@ -445,11 +445,10 @@ EOT
                     if (isset($package['path'])) {
                         $io->write(' ' . $package['path'], false);
                     }
-                    if (isset($package['warning'])) {
-                        $io->writeError('');
-                        $io->writeError('<warning>' . $package['warning'] . '</warning>', false);
-                    }
                     $io->write('');
+                    if (isset($package['warning'])) {
+                        $io->write('<warning>' . $package['warning'] . '</warning>');
+                    }
                 }
 
                 if ($showAllTypes) {
