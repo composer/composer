@@ -256,6 +256,8 @@ EOT
         }
         if (Platform::isWindows()) {
             $width--;
+        } else {
+            $width = max(80, $width);
         }
 
         if ($input->getOption('path') && null === $composer) {
