@@ -321,6 +321,11 @@ abstract class BitbucketDriver extends VcsDriver
             );
             $hasNext = true;
             while ($hasNext) {
+                // skip headless branches which seem to be deleted branches that bitbucket nevertheless returns in the API
+                if ($this->vcsType === 'hg' && empty($data['heads'])) {
+                    continue;
+                }
+
                 $branchData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
                 foreach ($branchData['values'] as $data) {
                     $this->branches[$data['name']] = $data['target']['hash'];
