@@ -28,29 +28,29 @@ use Composer\Util\GitLab;
  */
 class GitLabDriver extends VcsDriver
 {
-    private $scheme;
-    private $owner;
-    private $repository;
+    protected $scheme;
+    protected $owner;
+    protected $repository;
 
     /**
      * @var array Project data returned by GitLab API
      */
-    private $project;
+    protected $project;
 
     /**
      * @var array Keeps commits returned by GitLab API
      */
-    private $commits = array();
+    protected $commits = array();
 
     /**
      * @var array List of tag => reference
      */
-    private $tags;
+    protected $tags;
 
     /**
      * @var array List of branch => reference
      */
-    private $branches;
+    protected $branches;
 
     /**
      * Git Driver
@@ -64,7 +64,7 @@ class GitLabDriver extends VcsDriver
      *
      * @var bool defines whether the repo is private or not
      */
-    private $isPrivate = true;
+    protected $isPrivate = true;
 
     const URL_REGEX = '#^(?:(?P<scheme>https?)://(?P<domain>.+?)/|git@(?P<domain2>[^:]+):)(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git|/)?$#';
 
