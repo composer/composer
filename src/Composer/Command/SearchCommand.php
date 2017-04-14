@@ -74,8 +74,26 @@ EOT
         $flags = $onlyName ? RepositoryInterface::SEARCH_NAME : RepositoryInterface::SEARCH_FULLTEXT;
         $results = $repos->search(implode(' ', $input->getArgument('tokens')), $flags, $type);
 
+        // set the column width to the longest name
+        $name_width = 0;
         foreach ($results as $result) {
-            $io->write($result['name'] . (isset($result['description']) ? ' '. $result['description'] : ''));
+            $width = strlen($result['name']);
+            if ($width > $name_width) {
+                $name_width = $width;
+            }
+        }
+
+        // sort the results by name
+        asort($results);
+
+        // output the results in table format
+        printf("%-${name_width}s  %s\n", "Name", "Description");
+        printf("%-${name_width}s  %s\n", "----", "-----------");
+        foreach ($results as $result) {
+            if (!isset($result['description'])) {
+                $result['description'] = '';
+            }
+            printf("%-${name_width}s  %s\n", $result['name'], $result['description']);
         }
     }
 }
