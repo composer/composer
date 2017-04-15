@@ -68,6 +68,10 @@ class NoProxyPattern
 
                 if (!isset($ip)) {
                     $ip = gethostbyname($host);
+                    // if hostname cannot be resolved abort
+                    if (!preg_match('/^(\d{1,3}\.){3}\d{1,3}$/', $ip)) {
+                        return false;
+                    }
                 }
 
                 if (strpos($ruleHost, '/') === false) {
