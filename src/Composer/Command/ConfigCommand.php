@@ -69,6 +69,7 @@ class ConfigCommand extends BaseCommand
                 new InputOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor'),
                 new InputOption('auth', 'a', InputOption::VALUE_NONE, 'Affect auth config file (only used for --editor)'),
                 new InputOption('unset', null, InputOption::VALUE_NONE, 'Unset the given setting-key'),
+                new InputOption('get', null, InputOption::VALUE_NONE, 'Get current value for setting-key'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
                 new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
@@ -123,6 +124,13 @@ You can always pass more than one option. As an example, if you want to edit the
 global config.json file.
 
     <comment>%command.full_name% --editor --global</comment>
+
+If you want to know the value for a specific setting-key, you can use the
+<info>--get</info> option.
+
+For example, to get the vendor directory configuration value:
+
+    <comment>%command.full_name% --get vendor-dir</comment>
 EOT
             )
         ;
@@ -221,6 +229,12 @@ EOT
 
         $settingKey = $input->getArgument('setting-key');
         if (!$settingKey) {
+            return 0;
+        }
+
+        if ($input->getOption('get')) {
+            $output->writeln($this->config->get($settingKey));
+
             return 0;
         }
 
