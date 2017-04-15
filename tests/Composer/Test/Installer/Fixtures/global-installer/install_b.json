@@ -1,0 +1,45 @@
+{
+    "name": "b/b",
+    "version": "1.0",
+    "require": {
+        "bar/foo": "dev-master",
+        "foo/test": "1.0"
+    },
+
+    "repositories": [
+        {
+            "packagist": false
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "bar/foo",
+                "version": "dev-master",
+                "source": {
+                    "type": "git",
+                    "url": "http://example.org",
+                    "reference": "8f619c1883b5ca7f72b1d2a793104a29c37789fc"
+                },
+                "autoload": {
+                    "psr-0": {"Bar\\Foo": "lib/"}
+                },
+                "target-dir": "Bar/Foo"
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "foo/test",
+                "version": "1.0",
+                "dist": {
+                    "type": "file",
+                    "url": "http://example.org"
+                }
+            }
+        }
+    ],
+
+    "autoload": {
+        "psr-0": {"foo": "src", "bar": "src"}
+    }
+}
