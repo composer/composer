@@ -60,6 +60,12 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $json = '{
         \'foo\': "bar"
 }';
+        // The regular PHP json extension does not accept single quotes.
+        // However, some versions of pecl-json-c do accept them, causing this
+        // test to fail. This is fixed in
+        // https://github.com/remicollet/pecl-json-c/commit/c15ddc2a95fece22a65a05eeeb4bfdd63a745273
+        // Related Composer issue:
+        // https://github.com/composer/composer/issues/2457
         $this->expectParseException('Parse error on line 1', $json);
     }
 
