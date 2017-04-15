@@ -184,6 +184,20 @@ class Config
             }
             $this->repositories = array_reverse($this->repositories, true);
         }
+        // allow include file local feature
+        if (!empty($config['include']) && is_array($config['include'])) {
+            foreach ($config['include'] as $file) {
+                $user_repo = new JsonFile($file . "/respo.json");
+                if($user_repo->exists()){
+                    $rp = $user_repo->read();
+                    foreach ($rp["repositories"] as $repository) {
+                        $repository["package"]["dist"]["url"] =  $file . "/" . $repository["package"]["dist"]["url"];
+                        $this->repositories[] = $repository;
+                    }
+                    $this->repositories = array_reverse($this->repositories, false);
+                }
+            }
+        }
     }
 
     /**

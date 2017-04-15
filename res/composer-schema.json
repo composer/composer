@@ -55,6 +55,11 @@
                 "type": "string"
             }
         },
+        "include": {
+            "type": ["array","string"],
+            "description": "Custom local repositories file.",
+            "format": "uri"
+        },
         "replace": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that can be replaced by this package.",
