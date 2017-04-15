@@ -1,8 +1,11 @@
 # Repositories
+cHARLOTTE WAS HERE
+T
 
-This chapter will explain the concept of packages and repositories, what kinds
-of repositories are available, and how they work.
 
+
+his chapter will explain the concept of packages and repositories, what kinds
+of repositories are available, and how they wo
 ## Concepts
 
 Before we look at the different types of repositories that exist, we need to
