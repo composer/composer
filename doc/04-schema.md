@@ -386,6 +386,8 @@ package, publish it under a different name with its own version numbers, while
 packages requiring the original package continue to work with your fork because
 it replaces the original package.
 
+> **Note:** Do **not** replace packages you do not own.
+
 This is also useful for packages that contain sub-packages, for example the main
 symfony/symfony package contains all the Symfony Components which are also
 available as individual packages. If you require the main package it will
