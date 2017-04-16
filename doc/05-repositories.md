@@ -60,7 +60,8 @@ This is also the repository type that packagist uses. To reference a
 `composer` repository, just supply the path before the `packages.json` file.
 In the case of packagist, that file is located at `/packages.json`, so the URL of
 the repository would be `packagist.org`. For `example.org/packages.json` the
-repository URL would be `example.org`.
+repository URL would be `example.org`. For `/home/me/example/packages.json` the
+repository URL would be `file:///home/example/`.
 
 #### packages
 
