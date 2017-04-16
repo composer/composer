@@ -364,7 +364,7 @@ class ClassLoader
             $this->missingClasses[$class] = true;
         }
 
-        return $file;
+        return $this->classMap[$class] = $file;
     }
 
     private function findFileWithExtension($class, $ext)
