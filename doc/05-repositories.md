@@ -216,7 +216,7 @@ Example assuming you patched monolog to fix a bug in the `bugfix` branch:
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/igorw/monolog"
+            "url": "https://github.com/igorw/monolog.git"
         }
     ],
     "require": {
