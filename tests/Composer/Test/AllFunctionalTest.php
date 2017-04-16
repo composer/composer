@@ -206,7 +206,10 @@ class AllFunctionalTest extends TestCase
 
         // validate data
         if (!isset($data['RUN'])) {
-            throw new \RuntimeException('The test file must have a section named "RUN".');
+            throw new \RuntimeException(
+                'The test file must have a section named "RUN". If it does, '
+                . 'make sure it has LF (not CRLF) line endings.'
+            );
         }
         if (!isset($data['EXPECT']) && !isset($data['EXPECT-ERROR']) && !isset($data['EXPECT-REGEX']) && !isset($data['EXPECT-ERROR-REGEX'])) {
             throw new \RuntimeException('The test file must have a section named "EXPECT", "EXPECT-ERROR", "EXPECT-REGEX", or "EXPECT-ERROR-REGEX".');
