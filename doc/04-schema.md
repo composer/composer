@@ -813,7 +813,7 @@ through the use of scripts.
 
 See [Scripts](articles/scripts.md) for events details and examples.
 
-### extra
+### extra <span>(root-only)</span>
 
 Arbitrary extra data for consumption by `scripts`.
 
