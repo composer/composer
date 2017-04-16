@@ -144,9 +144,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         foreach ($driver->getTags() as $tag => $identifier) {
             $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $tag . '</comment>)';
             if ($verbose) {
-                $this->io->writeError($msg);
+                $this->io->write($msg);
             } else {
-                $this->io->overwriteError($msg, false);
+                $this->io->overwrite($msg, false);
             }
 
             // strip the release- prefix from tags if present
@@ -208,9 +208,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         foreach ($driver->getBranches() as $branch => $identifier) {
             $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $branch . '</comment>)';
             if ($verbose) {
-                $this->io->writeError($msg);
+                $this->io->write($msg);
             } else {
-                $this->io->overwriteError($msg, false);
+                $this->io->overwrite($msg, false);
             }
 
             if (!$parsedBranch = $this->validateBranch($branch)) {
