@@ -88,26 +88,24 @@ class InstallationManager
     /**
      * Returns installer for a specific package type.
      *
-     * @param string $type package type
+     * @param PackageInterface $package package instance
      *
      * @throws \InvalidArgumentException if installer for provided type is not registered
      * @return InstallerInterface
      */
-    public function getInstaller($type)
+    public function getInstaller(PackageInterface $package)
     {
-        $type = strtolower($type);
-
-        if (isset($this->cache[$type])) {
-            return $this->cache[$type];
+        if (isset($this->cache[$package->getUniqueName()])) {
+            return $this->cache[$package->getUniqueName()];
         }
 
         foreach ($this->installers as $installer) {
-            if ($installer->supports($type)) {
-                return $this->cache[$type] = $installer;
+            if ($installer->supports($package)) {
+                return $this->cache[$package->getUniqueName()] = $installer;
             }
         }
 
-        throw new \InvalidArgumentException('Unknown installer type: '.$type);
+        throw new \InvalidArgumentException('Unknown installer type: '.$package->getType());
     }
 
     /**
@@ -124,7 +122,7 @@ class InstallationManager
             return $repo->hasPackage($package) && $this->isPackageInstalled($repo, $package->getAliasOf());
         }
 
-        return $this->getInstaller($package->getType())->isInstalled($repo, $package);
+        return $this->getInstaller($package)->isInstalled($repo, $package);
     }
 
     /**
@@ -169,7 +167,7 @@ class InstallationManager
     public function install(RepositoryInterface $repo, InstallOperation $operation)
     {
         $package = $operation->getPackage();
-        $installer = $this->getInstaller($package->getType());
+        $installer = $this->getInstaller($package);
         $installer->install($repo, $package);
         $this->markForNotification($package);
     }
@@ -189,12 +187,12 @@ class InstallationManager
         $targetType = $target->getType();
 
         if ($initialType === $targetType) {
-            $installer = $this->getInstaller($initialType);
+            $installer = $this->getInstaller($initial);
             $installer->update($repo, $initial, $target);
             $this->markForNotification($target);
         } else {
-            $this->getInstaller($initialType)->uninstall($repo, $initial);
-            $this->getInstaller($targetType)->install($repo, $target);
+            $this->getInstaller($initial)->uninstall($repo, $initial);
+            $this->getInstaller($target)->install($repo, $target);
         }
     }
 
@@ -207,7 +205,7 @@ class InstallationManager
     public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
     {
         $package = $operation->getPackage();
-        $installer = $this->getInstaller($package->getType());
+        $installer = $this->getInstaller($package);
         $installer->uninstall($repo, $package);
     }
 
@@ -247,7 +245,7 @@ class InstallationManager
      */
     public function getInstallPath(PackageInterface $package)
     {
-        $installer = $this->getInstaller($package->getType());
+        $installer = $this->getInstaller($package);
 
         return $installer->getInstallPath($package);
     }

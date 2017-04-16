@@ -32,16 +32,36 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->exactly(2))
             ->method('supports')
             ->will($this->returnCallback(function ($arg) {
-                return $arg === 'vendor';
+                return $arg->getType() === 'vendor';
             }));
 
         $manager = new InstallationManager();
 
+        $package = $this->createPackageMock();
+        $package
+            ->expects($this->exactly(2))
+            ->method('getUniqueName')
+            ->will($this->returnValue('foo/bar-1.0.0'));
+        $package
+            ->expects($this->once())
+            ->method('getType')
+            ->will($this->returnValue('vendor'));
+
         $manager->addInstaller($installer);
-        $this->assertSame($installer, $manager->getInstaller('vendor'));
+        $this->assertSame($installer, $manager->getInstaller($package));
+
+        $invalid = $this->createPackageMock();
+        $invalid
+            ->expects($this->once())
+            ->method('getUniqueName')
+            ->will($this->returnValue('foo/bar-2.0.0'));
+        $invalid
+            ->expects($this->exactly(2))
+            ->method('getType')
+            ->will($this->returnValue('unregistered'));
 
         $this->setExpectedException('InvalidArgumentException');
-        $manager->getInstaller('unregistered');
+        $manager->getInstaller($invalid);
     }
 
     public function testAddRemoveInstaller()
@@ -52,7 +72,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->exactly(2))
             ->method('supports')
             ->will($this->returnCallback(function ($arg) {
-                return $arg === 'vendor';
+                return $arg->getType() === 'vendor';
             }));
 
         $installer2 = $this->createInstallerMock();
@@ -61,17 +81,27 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->exactly(1))
             ->method('supports')
             ->will($this->returnCallback(function ($arg) {
-                return $arg === 'vendor';
+                return $arg->getType() === 'vendor';
             }));
 
         $manager = new InstallationManager();
 
+        $package = $this->createPackageMock();
+        $package
+            ->expects($this->exactly(6))
+            ->method('getUniqueName')
+            ->will($this->returnValue('foo/bar-1.0.0'));
+        $package
+            ->expects($this->exactly(3))
+            ->method('getType')
+            ->will($this->returnValue('vendor'));
+
         $manager->addInstaller($installer);
-        $this->assertSame($installer, $manager->getInstaller('vendor'));
+        $this->assertSame($installer, $manager->getInstaller($package));
         $manager->addInstaller($installer2);
-        $this->assertSame($installer2, $manager->getInstaller('vendor'));
+        $this->assertSame($installer2, $manager->getInstaller($package));
         $manager->removeInstaller($installer2);
-        $this->assertSame($installer, $manager->getInstaller('vendor'));
+        $this->assertSame($installer, $manager->getInstaller($package));
     }
 
     public function testExecute()
@@ -114,14 +144,12 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $operation = new InstallOperation($package, 'test');
 
         $package
-            ->expects($this->once())
-            ->method('getType')
-            ->will($this->returnValue('library'));
+            ->expects($this->never())
+            ->method('getType');
 
         $installer
             ->expects($this->once())
             ->method('supports')
-            ->with('library')
             ->will($this->returnValue(true));
 
         $installer
@@ -143,9 +171,16 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $operation = new UpdateOperation($initial, $target, 'test');
 
         $initial
+            ->expects($this->exactly(2))
+            ->method('getUniqueName')
+            ->will($this->returnValue('foo/bar-1.0.0'));
+        $initial
             ->expects($this->once())
             ->method('getType')
             ->will($this->returnValue('library'));
+        $target
+            ->expects($this->never())
+            ->method('getUniqueName');
         $target
             ->expects($this->once())
             ->method('getType')
@@ -154,7 +189,6 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $installer
             ->expects($this->once())
             ->method('supports')
-            ->with('library')
             ->will($this->returnValue(true));
 
         $installer
@@ -178,11 +212,19 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $operation = new UpdateOperation($initial, $target, 'test');
 
         $initial
-            ->expects($this->once())
+            ->expects($this->exactly(2))
+            ->method('getUniqueName')
+            ->will($this->returnValue('foo/bar-1.0.0'));
+        $initial
+            ->expects($this->exactly(2))
             ->method('getType')
             ->will($this->returnValue('library'));
         $target
-            ->expects($this->once())
+            ->expects($this->exactly(2))
+            ->method('getUniqueName')
+            ->will($this->returnValue('foo/bar-2.0.0'));
+        $target
+            ->expects($this->exactly(2))
             ->method('getType')
             ->will($this->returnValue('bundles'));
 
@@ -190,13 +232,12 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->exactly(2))
             ->method('supports')
             ->will($this->returnCallback(function ($arg) {
-                return $arg === 'bundles';
+                return $arg->getType() === 'bundles';
             }));
 
         $libInstaller
             ->expects($this->once())
             ->method('supports')
-            ->with('library')
             ->will($this->returnValue(true));
 
         $libInstaller
@@ -222,9 +263,8 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $operation = new UninstallOperation($package, 'test');
 
         $package
-            ->expects($this->once())
-            ->method('getType')
-            ->will($this->returnValue('library'));
+            ->expects($this->never())
+            ->method('getType');
 
         $installer
             ->expects($this->once())
@@ -234,7 +274,6 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $installer
             ->expects($this->once())
             ->method('supports')
-            ->with('library')
             ->will($this->returnValue(true));
 
         $manager->uninstall($this->repository, $operation);
