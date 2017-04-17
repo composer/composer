@@ -154,6 +154,15 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('testGetContents', $fs->getContents('http://example.org', 'file://'.__FILE__));
     }
 
+    public function testGetOptions()
+    {
+        $args = array( 'test' => true );
+
+        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'), null, $args);
+
+        $this->assertEquals( $args, $fs->getOptions() );
+    }
+
     public function testCopy()
     {
         $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
