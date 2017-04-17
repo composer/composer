@@ -197,6 +197,9 @@ class Installer
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
             $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
+        } elseif ($this->dryRun) {
+            $eventName = $this->update ? ScriptEvents::PRE_UPDATE_DRY_CMD : ScriptEvents::PRE_INSTALL_DRY_CMD;
+            $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
         }
 
         $this->downloadManager->setPreferSource($this->preferSource);
@@ -319,6 +322,9 @@ class Installer
                 // see https://github.com/composer/composer/issues/4070#issuecomment-129792748
                 @touch($vendorDir);
             }
+        } else {
+            $eventName = $this->update ? ScriptEvents::POST_UPDATE_DRY_CMD : ScriptEvents::POST_INSTALL_DRY_CMD;
+            $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
         }
 
         // re-enable GC except on HHVM which triggers a warning here

@@ -30,6 +30,15 @@ class ScriptEvents
     const PRE_INSTALL_CMD = 'pre-install-cmd';
 
     /**
+     * The PRE_INSTALL_DRY_CMD event occurs before the install command is executed with dry-run option.
+     *
+     * The event listener method receives a Composer\Script\CommandEvent instance.
+     *
+     * @var string
+     */
+    const PRE_INSTALL_DRY_CMD = 'pre-install-dry-cmd';
+
+    /**
      * The POST_INSTALL_CMD event occurs after the install command is executed.
      *
      * The event listener method receives a Composer\Script\Event instance.
@@ -37,6 +46,15 @@ class ScriptEvents
      * @var string
      */
     const POST_INSTALL_CMD = 'post-install-cmd';
+
+    /**
+     * The POST_INSTALL_DRY_CMD event occurs after the install command is executed with dry-run option.
+     *
+     * The event listener method receives a Composer\Script\CommandEvent instance.
+     *
+     * @var string
+     */
+    const POST_INSTALL_DRY_CMD = 'post-install-dry-cmd';
 
     /**
      * The PRE_UPDATE_CMD event occurs before the update command is executed.
@@ -48,6 +66,15 @@ class ScriptEvents
     const PRE_UPDATE_CMD = 'pre-update-cmd';
 
     /**
+     * The PRE_UPDATE_DRY_CMD event occurs before the update command is executed with dry-run option.
+     *
+     * The event listener method receives a Composer\Script\CommandEvent instance.
+     *
+     * @var string
+     */
+    const PRE_UPDATE_DRY_CMD = 'pre-update-dry-cmd';
+
+    /**
      * The POST_UPDATE_CMD event occurs after the update command is executed.
      *
      * The event listener method receives a Composer\Script\Event instance.
@@ -55,6 +82,15 @@ class ScriptEvents
      * @var string
      */
     const POST_UPDATE_CMD = 'post-update-cmd';
+
+    /**
+     * The POST_UPDATE_DRY_CMD event occurs after the update command is executed with dry-run option.
+     *
+     * The event listener method receives a Composer\Script\CommandEvent instance.
+     *
+     * @var string
+     */
+    const POST_UPDATE_DRY_CMD = 'post-update-dry-cmd';
 
     /**
      * The PRE_STATUS_CMD event occurs before the status command is executed.
