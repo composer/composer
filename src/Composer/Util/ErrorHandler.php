@@ -45,6 +45,10 @@ class ErrorHandler
             $message .= "\n\nWarning: You have xdebug.scream enabled, the warning above may be".
             "\na legitimately suppressed error that you were not supposed to see.";
         }
+        
+        if (strpos($message, 'proc_open(): fork failed - Cannot allocate memory') !== false) {
+            $message .= "\n\nCheck https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for more info on how to handle this error.";
+        }
 
         if ($level !== E_DEPRECATED && $level !== E_USER_DEPRECATED) {
             throw new \ErrorException($message, 0, $level, $file, $line);
