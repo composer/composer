@@ -18,15 +18,15 @@ problems:
 
 If you really feel like you must do this, you have a few options:
 
-1. Limit yourself to installing tagged releases (no dev versions), so that you
+1. Add a .gitignore rule (`/vendor/**/.git`) to ignore all the vendor `.git` folders.
+   This approach does not require that you delete dependencies from disk prior to
+   running a composer update.
+2. Limit yourself to installing tagged releases (no dev versions), so that you
    only get zipped installs, and avoid problems with the git "submodules".
-2. Use --prefer-dist or set `preferred-install` to `dist` in your
+3. Use --prefer-dist or set `preferred-install` to `dist` in your
    [config](../04-schema.md#config).
-3. Remove the `.git` directory of every dependency after the installation, then
+4. Remove the `.git` directory of every dependency after the installation, then
    you can add them to your git repo. You can do that with `rm -rf vendor/**/.git`
    in ZSH or `find vendor/ -type d -name ".git" -exec rm -rf {} \;` in Bash.
    but this means you will have to delete those dependencies from disk before
    running composer update.
-4. Add a .gitignore rule (`/vendor/**/.git`) to ignore all the vendor `.git` folders.
-   This approach does not require that you delete dependencies from disk prior to
-   running a composer update.
