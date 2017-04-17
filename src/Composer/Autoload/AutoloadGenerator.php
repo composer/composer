@@ -571,25 +571,15 @@ AUTOLOAD;
 
 class ComposerAutoloaderInit$suffix
 {
-    private static \$loader;
-
-    public static function loadClassLoader(\$class)
-    {
-        if ('Composer\\Autoload\\ClassLoader' === \$class) {
-            require __DIR__ . '/ClassLoader.php';
-        }
-    }
-
     public static function getLoader()
     {
-        if (null !== self::\$loader) {
-            return self::\$loader;
+        static $loader = null;
+        if (null !== $loader) {
+            return $loader;
         }
 
-        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prependAutoloader);
-        self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
-        spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
-
+        require __DIR__ . '/ClassLoader.php';
+        \$loader = new \\Composer\\Autoload\\ClassLoader();
 
 HEADER;
 
