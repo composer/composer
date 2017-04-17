@@ -28,7 +28,7 @@ use Composer\Util\ProcessExecutor;
  *
  * @code
  * "require": {
- *     "<vendor>/<local-package>": "*"
+ *     "<vendor>/<local-package>": "*@dev"
  * },
  * "repositories": [
  *     {
