@@ -317,6 +317,6 @@ class DownloadManager
             }
         }
 
-        return $package->isDev() ? 'source' : 'dist';
+        return 'dist';
     }
 }
