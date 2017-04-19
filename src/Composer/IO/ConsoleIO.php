@@ -16,7 +16,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Composer\Question\StrictConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 
 /**
@@ -247,7 +247,7 @@ class ConsoleIO extends BaseIO
     {
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
-        $question = new ConfirmationQuestion($question, $default);
+        $question = new StrictConfirmationQuestion($question, $default);
 
         return $helper->ask($this->input, $this->getErrorOutput(), $question);
     }

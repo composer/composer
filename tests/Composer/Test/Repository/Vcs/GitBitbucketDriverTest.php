@@ -123,7 +123,7 @@ class GitBitbucketDriverTest extends TestCase
                 ),
                 array(
                     $this->originUrl,
-                    'https://api.bitbucket.org/2.0/repositories/user/repo/refs/branches?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cnext&sort=-target.date',
+                    'https://api.bitbucket.org/2.0/repositories/user/repo/refs/branches?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cvalues.heads%2Cnext&sort=-target.date',
                     false,
                 ),
                 array(
