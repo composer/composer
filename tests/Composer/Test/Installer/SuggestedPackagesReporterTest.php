@@ -147,6 +147,25 @@ class SuggestedPackagesReporterTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::output
      */
+    public function testOutputIgnoresFormatting()
+    {
+        $this->suggestedPackagesReporter->addPackage('source', 'target1', "\x1b[1;37;42m Like us\r\non Facebook \x1b[0m");
+        $this->suggestedPackagesReporter->addPackage('source', 'target2', "<bg=green>Like us on Facebook</>");
+
+        $this->io->expects($this->at(0))
+            ->method('writeError')
+            ->with("source suggests installing target1 ([1;37;42m Like us on Facebook [0m)");
+
+        $this->io->expects($this->at(1))
+            ->method('writeError')
+            ->with('source suggests installing target2 (\\<bg=green>Like us on Facebook\\</>)');
+
+        $this->suggestedPackagesReporter->output();
+    }
+
+    /**
+     * @covers ::output
+     */
     public function testOutputMultiplePackages()
     {
         $this->suggestedPackagesReporter->addPackage('a', 'b', 'c');
