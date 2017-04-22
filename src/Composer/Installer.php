@@ -745,7 +745,8 @@ class Installer
     private function movePluginsToFront(array $operations)
     {
         $installerOps = array();
-        foreach ($operations as $idx => $op) {
+        $installerRequires = array();
+        foreach (array_reverse($operations, true) as $idx => $op) {
             if ($op instanceof InstallOperation) {
                 $package = $op->getPackage();
             } elseif ($op instanceof UpdateOperation) {
@@ -754,19 +755,15 @@ class Installer
                 continue;
             }
 
-            if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
-                // ignore requirements to platform or composer-plugin-api
-                $requires = array_keys($package->getRequires());
-                foreach ($requires as $index => $req) {
-                    if ($req === 'composer-plugin-api' || preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
-                        unset($requires[$index]);
-                    }
-                }
-                // if there are no other requirements, move the plugin to the top of the op list
-                if (!count($requires)) {
-                    $installerOps[] = $op;
-                    unset($operations[$idx]);
-                }
+            if ($package->getType() === 'composer-plugin' 
+                || $package->getType() === 'composer-installer'
+                || in_array($package->getName(), $installerRequires)
+            ) {
+                // capture the requirements for this package so those packages will be moved up as well
+                $installerRequires = array_merge($installerRequires, array_keys($package->getRequires()));
+                // move the operation to the front
+                array_unshift($installerOps, $op);
+                unset($operations[$idx]);
             }
         }
 
