@@ -49,6 +49,10 @@ class AutoloadGenerator
     private $classMapAuthoritative = false;
 
     /**
+     * @var array
+     */
+    private $allowedAutoloadDevRepos = [];
+    /**
      * @var bool
      */
     private $apcu = false;
@@ -67,6 +71,13 @@ class AutoloadGenerator
     public function setDevMode($devMode = true)
     {
         $this->devMode = (bool) $devMode;
+    }
+
+    /**
+     * @param array $autoloadDevMode
+     */
+    public function setAutoloadDevModeRepos(array $autoloadDevMode = []) {
+        $this->allowedAutoloadDevRepos =  $autoloadDevMode;
     }
 
     /**
@@ -121,6 +132,9 @@ class AutoloadGenerator
         $vendorPath = $filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
+
+        $this->setAutoloadDevModeRepos($config->getEnableAutoloadDevForChild());
+
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
@@ -815,7 +829,14 @@ INITIALIZER;
             list($package, $installPath) = $item;
 
             $autoload = $package->getAutoload();
-            if ($this->devMode && $package === $mainPackage) {
+
+            //IF Root repo enable-child repos name matches with given package name.
+            $allowAutoloadDev = false;
+
+            if(in_array($package->getName(),$this->allowedAutoloadDevRepos)) {
+                $allowAutoloadDev = true;
+            }
+            if ($this->devMode && ($package === $mainPackage || ($type == "psr-4" && $allowAutoloadDev))) {
                 $autoload = array_merge_recursive($autoload, $package->getDevAutoload());
             }
 
