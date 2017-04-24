@@ -35,7 +35,11 @@ class GitLabDriverTest extends TestCase
         $this->config->merge(array(
             'config' => array(
                 'home' => $this->home,
-                'gitlab-domains' => array('mycompany.com/gitlab', 'gitlab.com'),
+                'gitlab-domains' => array(
+                    'mycompany.com/gitlab',
+                    'othercompany.com/nested/gitlab',
+                    'gitlab.com',
+                ),
             ),
         ));
 
@@ -285,6 +289,10 @@ JSON;
             array('http://example.com/foo/bar', false),
             array('http://mycompany.com/gitlab/mygroup/myproject', true),
             array('https://mycompany.com/gitlab/mygroup/myproject', extension_loaded('openssl')),
+            array('http://othercompany.com/nested/gitlab/mygroup/myproject', true),
+            array('https://othercompany.com/nested/gitlab/mygroup/myproject', extension_loaded('openssl')),
+            array('http://gitlab.com/mygroup/mysubgroup/mysubsubgroup/myproject', true),
+            array('https://gitlab.com/mygroup/mysubgroup/mysubsubgroup/myproject', extension_loaded('openssl')),
         );
     }
 
@@ -298,14 +306,80 @@ JSON;
     "id": 17,
     "default_branch": "mymaster",
     "public": false,
-    "http_url_to_repo": "https://gitlab.com/mygroup/my-pro.ject",
+    "http_url_to_repo": "https://gitlab.com/gitlab/mygroup/my-pro.ject",
     "ssh_url_to_repo": "git@gitlab.com:mygroup/my-pro.ject.git",
     "last_activity_at": "2014-12-01T09:17:51.000+01:00",
     "name": "My Project",
     "name_with_namespace": "My Group / My Project",
     "path": "myproject",
     "path_with_namespace": "mygroup/my-pro.ject",
-    "web_url": "https://gitlab.com/mygroup/my-pro.ject"
+    "web_url": "https://gitlab.com/gitlab/mygroup/my-pro.ject"
+}
+JSON;
+
+        $this->remoteFilesystem
+            ->getContents('mycompany.com/gitlab', $apiUrl, false)
+            ->willReturn($projectData)
+            ->shouldBeCalledTimes(1)
+        ;
+
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver->initialize();
+
+        $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
+    }
+
+    public function testGitlabSubGroup()
+    {
+        $url = 'https://gitlab.com/mygroup/mysubgroup/myproject';
+        $apiUrl = 'https://gitlab.com/api/v3/projects/mygroup%2Fmysubgroup%2Fmyproject';
+
+        $projectData = <<<JSON
+{
+    "id": 17,
+    "default_branch": "mymaster",
+    "public": false,
+    "http_url_to_repo": "https://gitlab.com/mygroup/mysubgroup/my-pro.ject",
+    "ssh_url_to_repo": "git@gitlab.com:mygroup/mysubgroup/my-pro.ject.git",
+    "last_activity_at": "2014-12-01T09:17:51.000+01:00",
+    "name": "My Project",
+    "name_with_namespace": "My Group / My Project",
+    "path": "myproject",
+    "path_with_namespace": "mygroup/mysubgroup/my-pro.ject",
+    "web_url": "https://gitlab.com/mygroup/mysubgroup/my-pro.ject"
+}
+JSON;
+
+        $this->remoteFilesystem
+            ->getContents('gitlab.com', $apiUrl, false)
+            ->willReturn($projectData)
+            ->shouldBeCalledTimes(1)
+        ;
+
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver->initialize();
+
+        $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
+    }
+
+    public function testGitlabSubDirectorySubGroup()
+    {
+        $url = 'https://mycompany.com/gitlab/mygroup/mysubgroup/myproject';
+        $apiUrl = 'https://mycompany.com/gitlab/api/v3/projects/mygroup%2Fmysubgroup%2Fmyproject';
+
+        $projectData = <<<JSON
+{
+    "id": 17,
+    "default_branch": "mymaster",
+    "public": false,
+    "http_url_to_repo": "https://mycompany.com/gitlab/mygroup/mysubgroup/my-pro.ject",
+    "ssh_url_to_repo": "git@mycompany.com:mygroup/mysubgroup/my-pro.ject.git",
+    "last_activity_at": "2014-12-01T09:17:51.000+01:00",
+    "name": "My Project",
+    "name_with_namespace": "My Group / My Project",
+    "path": "myproject",
+    "path_with_namespace": "mygroup/mysubgroup/my-pro.ject",
+    "web_url": "https://mycompany.com/gitlab/mygroup/mysubgroup/my-pro.ject"
 }
 JSON;
 
