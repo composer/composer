@@ -160,7 +160,9 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     protected function getContents($url)
     {
-        return $this->remoteFilesystem->getContents($this->originUrl, $url, false);
+        $options = isset($this->repoConfig['options']) ? $this->repoConfig['options'] : array();
+
+        return $this->remoteFilesystem->getContents($this->originUrl, $url, false, $options);
     }
 
     /**
