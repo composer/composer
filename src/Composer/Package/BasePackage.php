@@ -65,9 +65,17 @@ abstract class BasePackage implements PackageInterface
      */
     public function __construct($name)
     {
+        $this->setName($name);
+        $this->id = -1;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName($name)
+    {
         $this->prettyName = $name;
         $this->name = strtolower($name);
-        $this->id = -1;
     }
 
     /**
