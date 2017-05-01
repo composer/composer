@@ -490,8 +490,7 @@ class Installer
             $this->io->writeError('Nothing to install or update');
         }
 
-        $operations = $this->movePluginsToFront($operations);
-        $operations = $this->moveUninstallsToFront($operations);
+        $operations = $this->movePlugins($operations);
 
         // extract dev packages and mark them to be skipped if it's a --no-dev install or update
         // we also force them to be uninstalled if they are present in the local repo
@@ -739,58 +738,107 @@ class Installer
      * it at least fixes the symptoms and makes usage of composer possible (again)
      * in such scenarios.
      *
-     * @param  OperationInterface[] $operations
-     * @return OperationInterface[] reordered operation list
-     */
-    private function movePluginsToFront(array $operations)
-    {
-        $installerOps = array();
-        foreach ($operations as $idx => $op) {
-            if ($op instanceof InstallOperation) {
-                $package = $op->getPackage();
-            } elseif ($op instanceof UpdateOperation) {
-                $package = $op->getTargetPackage();
-            } else {
-                continue;
-            }
-
-            if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
-                // ignore requirements to platform or composer-plugin-api
-                $requires = array_keys($package->getRequires());
-                foreach ($requires as $index => $req) {
-                    if ($req === 'composer-plugin-api' || preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
-                        unset($requires[$index]);
-                    }
-                }
-                // if there are no other requirements, move the plugin to the top of the op list
-                if (!count($requires)) {
-                    $installerOps[] = $op;
-                    unset($operations[$idx]);
-                }
-            }
-        }
-
-        return array_merge($installerOps, $operations);
-    }
-
-    /**
-     * Removals of packages should be executed before installations in
-     * case two packages resolve to the same path (due to custom installers)
+     * This change does fix for https://github.com/composer/composer/issues/3791
+     * also includes fix for https://github.com/composer/composer/issues/2874
      *
      * @param  OperationInterface[] $operations
      * @return OperationInterface[] reordered operation list
      */
-    private function moveUninstallsToFront(array $operations)
+    private function movePlugins(array $operations)
     {
-        $uninstOps = array();
+        $operationsPackagesIndex = array();
+
+        foreach ($operations as $idx => $op) {
+            if ($op instanceof UpdateOperation) {
+                $package = $op->getTargetPackage();
+            } else {
+                $package = $op->getPackage();
+            }
+
+            $operationsPackagesIndex[$package->getName()]['operation'] = $op;
+            $operationsPackagesIndex[$package->getName()]['package'] = $package;
+            $operationsPackagesIndex[$package->getName()]['index'] = $idx;
+        }
+
+        $pluginUninstallOperations = array();
+        $pluginInstallOperations = array();
+        $packagesUninstallOperations = array();
+
+        foreach ($operationsPackagesIndex as $packageName => $packageData) {
+            $pluginOperations = array();
+            if ($packageData['package']->getType() === 'composer-plugin'
+                || $packageData['package']->getType() === 'composer-installer'
+            ) {
+
+                $pluginDependencies = $this->getAllRequires($packageData['package'], $operationsPackagesIndex);
+                foreach ($pluginDependencies as $packageName) {
+                    if (isset($operationsPackagesIndex[$packageName])) {
+                        $pluginOperations[] = $operationsPackagesIndex[$packageName]['operation'];
+                        unset($operations[$operationsPackagesIndex[$packageName]['index']]);
+                    }
+                }
+
+                unset($operations[$packageData['index']]);
+
+                if ($packageData['operation'] instanceof UninstallOperation) {
+                    $pluginUninstallOperations = array_merge($pluginUninstallOperations, $pluginOperations);
+                    array_unshift($pluginUninstallOperations, $packageData['operation']);
+                } else {
+                    $pluginOperations = array_reverse($pluginOperations);
+                    $pluginOperations[] = $packageData['operation'];
+                    $pluginInstallOperations = array_merge(
+                        $pluginInstallOperations,
+                        $pluginOperations
+                    );
+                }
+            }
+        }
+
         foreach ($operations as $idx => $op) {
             if ($op instanceof UninstallOperation) {
-                $uninstOps[] = $op;
+                $packagesUninstallOperations[] = $op;
                 unset($operations[$idx]);
             }
         }
 
-        return array_merge($uninstOps, $operations);
+        $operations = array_merge(
+            $packagesUninstallOperations, // uninstalls packages
+            $pluginUninstallOperations,   // uninstalls plugins and plugins dependencies
+            $pluginInstallOperations,     // installs and updates plugins and plugins dependencies
+            $operations                   // installs and updates packages
+        );
+
+        return $operations;
+    }
+
+    /**
+     * Gets all required packages names for package
+     *
+     * @param PackageInterface $package
+     * @param array $operationsPackagesIndex
+     *
+     * @return string[] Flat array of requirements
+     */
+    private function getAllRequires($package, $operationsPackagesIndex)
+    {
+        $requiresPackages = array();
+        $requires = array_keys($package->getRequires());
+
+        foreach($requires as $packageName) {
+            if (isset($operationsPackagesIndex[$packageName])) {
+                $requiresPackages[] = $packageName;
+
+                $requiresPackages = array_merge(
+                    $requiresPackages,
+                    $this->getAllRequires(
+                        $operationsPackagesIndex[$packageName]['package'],
+                        $operationsPackagesIndex
+                    )
+                );
+            }
+        }
+
+        return $requiresPackages;
     }
 
     /**
