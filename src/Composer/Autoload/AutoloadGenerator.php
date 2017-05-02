@@ -866,7 +866,7 @@ INITIALIZER;
                             $installPath = strtr(getcwd(), '\\', '/');
                         }
 
-                        $resolvedPath = realpath($installPath . '/' . $updir);
+                        $resolvedPath = rtrim($installPath . '/' . $updir, '/');
                         $autoloads[] = preg_quote(strtr($resolvedPath, '\\', '/')) . '/' . $path;
                         continue;
                     }
