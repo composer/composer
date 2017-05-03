@@ -12,6 +12,7 @@
 
 namespace Composer\Test\DependencyResolver;
 
+use Composer\DependencyResolver\GenericRule;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\Pool;
@@ -32,11 +33,11 @@ class RuleSetTest extends TestCase
         $rules = array(
             RuleSet::TYPE_PACKAGE => array(),
             RuleSet::TYPE_JOB => array(
-                new Rule(array(1), Rule::RULE_JOB_INSTALL, null),
-                new Rule(array(2), Rule::RULE_JOB_INSTALL, null),
+                new GenericRule(array(1), Rule::RULE_JOB_INSTALL, null),
+                new GenericRule(array(2), Rule::RULE_JOB_INSTALL, null),
             ),
             RuleSet::TYPE_LEARNED => array(
-                new Rule(array(), Rule::RULE_INTERNAL_ALLOW_UPDATE, null),
+                new GenericRule(array(), Rule::RULE_INTERNAL_ALLOW_UPDATE, null),
             ),
         );
 
@@ -53,10 +54,10 @@ class RuleSetTest extends TestCase
     {
         $rules = array(
             RuleSet::TYPE_JOB => array(
-                new Rule(array(), Rule::RULE_JOB_INSTALL, null),
-                new Rule(array(), Rule::RULE_JOB_INSTALL, null),
-                new Rule(array(), Rule::RULE_JOB_INSTALL, null),
-            )
+                new GenericRule(array(), Rule::RULE_JOB_INSTALL, null),
+                new GenericRule(array(), Rule::RULE_JOB_INSTALL, null),
+                new GenericRule(array(), Rule::RULE_JOB_INSTALL, null),
+            ),
         );
 
         $ruleSet = new RuleSet;
@@ -75,15 +76,15 @@ class RuleSetTest extends TestCase
     {
         $ruleSet = new RuleSet;
 
-        $ruleSet->add(new Rule(array(), Rule::RULE_JOB_INSTALL, null), 7);
+        $ruleSet->add(new GenericRule(array(), Rule::RULE_JOB_INSTALL, null), 7);
     }
 
     public function testCount()
     {
         $ruleSet = new RuleSet;
 
-        $ruleSet->add(new Rule(array(1), Rule::RULE_JOB_INSTALL, null), RuleSet::TYPE_JOB);
-        $ruleSet->add(new Rule(array(2), Rule::RULE_JOB_INSTALL, null), RuleSet::TYPE_JOB);
+        $ruleSet->add(new GenericRule(array(1), Rule::RULE_JOB_INSTALL, null), RuleSet::TYPE_JOB);
+        $ruleSet->add(new GenericRule(array(2), Rule::RULE_JOB_INSTALL, null), RuleSet::TYPE_JOB);
 
         $this->assertEquals(2, $ruleSet->count());
     }
@@ -92,7 +93,7 @@ class RuleSetTest extends TestCase
     {
         $ruleSet = new RuleSet;
 
-        $rule = new Rule(array(), Rule::RULE_JOB_INSTALL, null);
+        $rule = new GenericRule(array(), Rule::RULE_JOB_INSTALL, null);
         $ruleSet->add($rule, RuleSet::TYPE_JOB);
 
         $this->assertSame($rule, $ruleSet->ruleById[0]);
@@ -102,8 +103,8 @@ class RuleSetTest extends TestCase
     {
         $ruleSet = new RuleSet;
 
-        $rule1 = new Rule(array(1), Rule::RULE_JOB_INSTALL, null);
-        $rule2 = new Rule(array(2), Rule::RULE_JOB_INSTALL, null);
+        $rule1 = new GenericRule(array(1), Rule::RULE_JOB_INSTALL, null);
+        $rule2 = new GenericRule(array(2), Rule::RULE_JOB_INSTALL, null);
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
 
@@ -117,8 +118,8 @@ class RuleSetTest extends TestCase
     public function testGetIteratorFor()
     {
         $ruleSet = new RuleSet;
-        $rule1 = new Rule(array(1), Rule::RULE_JOB_INSTALL, null);
-        $rule2 = new Rule(array(2), Rule::RULE_JOB_INSTALL, null);
+        $rule1 = new GenericRule(array(1), Rule::RULE_JOB_INSTALL, null);
+        $rule2 = new GenericRule(array(2), Rule::RULE_JOB_INSTALL, null);
 
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
@@ -131,8 +132,8 @@ class RuleSetTest extends TestCase
     public function testGetIteratorWithout()
     {
         $ruleSet = new RuleSet;
-        $rule1 = new Rule(array(1), Rule::RULE_JOB_INSTALL, null);
-        $rule2 = new Rule(array(2), Rule::RULE_JOB_INSTALL, null);
+        $rule1 = new GenericRule(array(1), Rule::RULE_JOB_INSTALL, null);
+        $rule2 = new GenericRule(array(2), Rule::RULE_JOB_INSTALL, null);
 
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
@@ -150,7 +151,7 @@ class RuleSetTest extends TestCase
 
         $ruleSet = new RuleSet;
         $literal = $p->getId();
-        $rule = new Rule(array($literal), Rule::RULE_JOB_INSTALL, null);
+        $rule = new GenericRule(array($literal), Rule::RULE_JOB_INSTALL, null);
 
         $ruleSet->add($rule, RuleSet::TYPE_JOB);
 

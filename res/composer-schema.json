@@ -592,7 +592,7 @@
             "required": ["type", "url"],
             "properties": {
                 "type": { "type": "string", "enum": ["composer"] },
-                "url": { "type": "string", "format": "uri" },
+                "url": { "type": "string" },
                 "options": {
                     "type": "object",
                     "additionalProperties": true
@@ -610,9 +610,9 @@
                 "no-api": { "type": "boolean" },
                 "secure-http": { "type": "boolean" },
                 "svn-cache-credentials": { "type": "boolean" },
-                "trunk-path": { "type": "string" },
-                "branches-path": { "type": "string" },
-                "tags-path": { "type": "string" },
+                "trunk-path": { "type": ["string", "boolean"] },
+                "branches-path": { "type": ["string", "boolean"] },
+                "tags-path": { "type": ["string", "boolean"] },
                 "package-path": { "type": "string" },
                 "depot": { "type": "string" },
                 "branch": { "type": "string" },
@@ -649,7 +649,7 @@
             "required": ["type", "url"],
             "properties": {
                 "type": { "type": "string", "enum": ["pear"] },
-                "url": { "type": "string", "format": "uri" },
+                "url": { "type": "string" },
                 "vendor-alias": { "type": "string" }
             }
         },

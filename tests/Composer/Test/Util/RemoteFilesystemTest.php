@@ -257,9 +257,8 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
             ->willReturn(array(
                 'username' => 'x-token-auth',
                 // This token is fake, but it matches a valid token's pattern.
-                'password' => '1A0yeK5Po3ZEeiiRiMWLivS0jirLdoGuaSGq9NvESFx1Fsdn493wUDXC8rz_1iKVRTl1GINHEUCsDxGh5lZ='
+                'password' => '1A0yeK5Po3ZEeiiRiMWLivS0jirLdoGuaSGq9NvESFx1Fsdn493wUDXC8rz_1iKVRTl1GINHEUCsDxGh5lZ=',
             ));
-
 
         $rfs = new RemoteFilesystem($io, $config);
         $hostname = parse_url($url, PHP_URL_HOST);

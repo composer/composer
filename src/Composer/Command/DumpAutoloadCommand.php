@@ -28,7 +28,7 @@ class DumpAutoloadCommand extends BaseCommand
         $this
             ->setName('dump-autoload')
             ->setAliases(array('dumpautoload'))
-            ->setDescription('Dumps the autoloader')
+            ->setDescription('Dumps the autoloader.')
             ->setDefinition(array(
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.'),
@@ -57,7 +57,7 @@ EOT
 
         $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
-        $apcu = $input->getOption('apcu') || $config->get('apcu');
+        $apcu = $input->getOption('apcu') || $config->get('apcu-autoloader');
 
         if ($optimize || $authoritative) {
             $this->getIO()->writeError('<info>Generating optimized autoload files</info>');

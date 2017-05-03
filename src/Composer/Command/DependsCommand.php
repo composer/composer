@@ -30,7 +30,7 @@ class DependsCommand extends BaseDependencyCommand
         $this
             ->setName('depends')
             ->setAliases(array('why'))
-            ->setDescription('Shows which packages cause the given package to be installed')
+            ->setDescription('Shows which packages cause the given package to be installed.')
             ->setHelp(<<<EOT
 Displays detailed information about where a package is referenced.
 

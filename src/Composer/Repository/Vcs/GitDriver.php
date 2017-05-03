@@ -12,7 +12,6 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\Util\Git as GitUtil;
@@ -143,6 +142,7 @@ class GitDriver extends VcsDriver
             'git log -1 --format=%%at %s',
             ProcessExecutor::escape($identifier)
         ), $output, $this->repoDir);
+
         return new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
     }
 

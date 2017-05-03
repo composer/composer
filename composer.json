@@ -23,7 +23,7 @@
     },
     "require": {
         "php": "^5.3.2 || ^7.0",
-        "justinrainbow/json-schema": "^3.0 || ^4.0",
+        "justinrainbow/json-schema": "^3.0 || ^4.0 || ^5.0",
         "composer/ca-bundle": "^1.0",
         "composer/semver": "^1.0",
         "composer/spdx-licenses": "^1.0",
@@ -59,7 +59,7 @@
     "bin": ["bin/composer"],
     "extra": {
         "branch-alias": {
-            "dev-master": "1.4-dev"
+            "dev-master": "1.5-dev"
         }
     },
     "scripts": {

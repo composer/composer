@@ -89,7 +89,7 @@ class ComposerRepositoryTest extends TestCase
                 ),
                 array('packages' => array(
                     'bar/foo' => array(
-                        '3.14'  => array('name' => 'bar/foo', 'version' => '3.14'),
+                        '3.14' => array('name' => 'bar/foo', 'version' => '3.14'),
                         '3.145' => array('name' => 'bar/foo', 'version' => '3.145'),
                     ),
                 )),
@@ -178,9 +178,9 @@ class ComposerRepositoryTest extends TestCase
             'results' => array(
                 array(
                     'name' => 'foo',
-                    'description' => null
-                )
-            )
+                    'description' => null,
+                ),
+            ),
         );
 
         $rfs = $this->getMockBuilder('Composer\Util\RemoteFilesystem')

@@ -67,6 +67,7 @@ class XdebugHandler
                 $command = $this->getCommand();
                 $this->restart($command);
             }
+
             return;
         }
 
@@ -136,6 +137,7 @@ class XdebugHandler
     {
         $this->tmpIni = '';
         $iniPaths = IniHelper::getAll();
+        $additional = count($iniPaths) > 1;
 
         if (empty($iniPaths[0])) {
             // There is no loaded ini
@@ -143,7 +145,7 @@ class XdebugHandler
         }
 
         if ($this->writeTmpIni($iniPaths)) {
-            return $this->setEnvironment($iniPaths);
+            return $this->setEnvironment($additional, $iniPaths);
         }
 
         return false;
@@ -172,7 +174,12 @@ class XdebugHandler
             $content .= $data.PHP_EOL;
         }
 
-        $content .= PHP_EOL.'memory_limit='.ini_get('memory_limit').PHP_EOL;
+        $content .= 'memory_limit='.ini_get('memory_limit').PHP_EOL;
+
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            // Work-around for PHP windows bug, see issue #6052
+            $content .= 'opcache.enable_cli=0'.PHP_EOL;
+        }
 
         return @file_put_contents($this->tmpIni, $content);
     }
@@ -193,15 +200,14 @@ class XdebugHandler
     /**
      * Returns true if the restart environment variables were set
      *
-     * @param array $iniPaths Locations used by the current prcoess
+     * @param bool  $additional Whether there were additional inis
+     * @param array $iniPaths   Locations used by the current prcoess
      *
      * @return bool
      */
-    private function setEnvironment(array $iniPaths)
+    private function setEnvironment($additional, array $iniPaths)
     {
         // Set scan dir to an empty value if additional ini files were used
-        $additional = count($iniPaths) > 1;
-
         if ($additional && !putenv('PHP_INI_SCAN_DIR=')) {
             return false;
         }
@@ -244,7 +250,7 @@ class XdebugHandler
         }
 
         if ($this->output->isDecorated()) {
-            $offset = count($args) > 1 ? 2: 1;
+            $offset = count($args) > 1 ? 2 : 1;
             array_splice($args, $offset, 0, '--ansi');
         }
 
@@ -257,8 +263,8 @@ class XdebugHandler
      * From https://github.com/johnstevenson/winbox-args
      * MIT Licensed (c) John Stevenson <john-stevenson@blueyonder.co.uk>
      *
-     * @param string $arg The argument to be escaped
-     * @param bool $meta Additionally escape cmd.exe meta characters
+     * @param string $arg  The argument to be escaped
+     * @param bool   $meta Additionally escape cmd.exe meta characters
      *
      * @return string The escaped argument
      */

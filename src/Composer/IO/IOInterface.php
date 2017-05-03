@@ -131,7 +131,7 @@ interface IOInterface
      * otherwise.
      *
      * @param string|array $question  The question to ask
-     * @param callback     $validator A PHP callback
+     * @param callable     $validator A PHP callback
      * @param null|int     $attempts  Max number of times to ask before giving up (default of null means infinite)
      * @param mixed        $default   The default answer if none is given by the user
      *

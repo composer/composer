@@ -35,7 +35,7 @@ class ScriptAliasCommand extends BaseCommand
     {
         $this
             ->setName($this->script)
-            ->setDescription('Run the '.$this->script.' script as defined in composer.json.')
+            ->setDescription('Runs the '.$this->script.' script as defined in composer.json.')
             ->setDefinition(array(
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),

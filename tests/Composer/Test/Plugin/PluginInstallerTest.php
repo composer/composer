@@ -243,7 +243,7 @@ class PluginInstallerTest extends TestCase
              ->expects($this->any())
              ->method('getPackages')
              ->will($this->returnCallback(function () use ($plugApiInternalPackage, $plugins) {
-                return array_merge(array($plugApiInternalPackage), $plugins);
+                 return array_merge(array($plugApiInternalPackage), $plugins);
              }));
 
         $this->pm->loadInstalledPlugins();

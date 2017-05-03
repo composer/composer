@@ -87,7 +87,7 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver  = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -126,7 +126,7 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver  = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -257,7 +257,7 @@ JSON;
 
         $expected = array(
             'mymaster' => '97eda36b5c1dd953a3792865c222d4e85e5f302e',
-            'staging'  => '502cffe49f136443f2059803f2e7192d1ac066cd',
+            'staging' => '502cffe49f136443f2059803f2e7192d1ac066cd',
         );
 
         $this->assertEquals($expected, $driver->getBranches());
@@ -290,11 +290,34 @@ JSON;
 
     public function testGitlabSubDirectory()
     {
-        $url = 'https://mycompany.com/gitlab/mygroup/myproject';
-        $apiUrl = 'https://mycompany.com/gitlab/api/v3/projects/mygroup%2Fmyproject';
+        $url = 'https://mycompany.com/gitlab/mygroup/my-pro.ject';
+        $apiUrl = 'https://mycompany.com/gitlab/api/v3/projects/mygroup%2Fmy-pro%2Eject';
 
-        $driver  = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $projectData = <<<JSON
+{
+    "id": 17,
+    "default_branch": "mymaster",
+    "public": false,
+    "http_url_to_repo": "https://gitlab.com/mygroup/my-pro.ject",
+    "ssh_url_to_repo": "git@gitlab.com:mygroup/my-pro.ject.git",
+    "last_activity_at": "2014-12-01T09:17:51.000+01:00",
+    "name": "My Project",
+    "name_with_namespace": "My Group / My Project",
+    "path": "myproject",
+    "path_with_namespace": "mygroup/my-pro.ject",
+    "web_url": "https://gitlab.com/mygroup/my-pro.ject"
+}
+JSON;
+
+        $this->remoteFilesystem
+            ->getContents('mycompany.com/gitlab', $apiUrl, false)
+            ->willReturn($projectData)
+            ->shouldBeCalledTimes(1)
+        ;
+
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
         $driver->initialize();
+
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
     }
 }

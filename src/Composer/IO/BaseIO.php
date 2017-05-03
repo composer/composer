@@ -126,8 +126,8 @@ abstract class BaseIO implements IOInterface, LoggerInterface
     /**
      * System is unusable.
      *
-     * @param string $message
-     * @param array $context
+     * @param  string $message
+     * @param  array  $context
      * @return null
      */
     public function emergency($message, array $context = array())
@@ -141,8 +141,8 @@ abstract class BaseIO implements IOInterface, LoggerInterface
      * Example: Entire website down, database unavailable, etc. This should
      * trigger the SMS alerts and wake you up.
      *
-     * @param string $message
-     * @param array $context
+     * @param  string $message
+     * @param  array  $context
      * @return null
      */
     public function alert($message, array $context = array())
@@ -155,8 +155,8 @@ abstract class BaseIO implements IOInterface, LoggerInterface
      *
      * Example: Application component unavailable, unexpected exception.
      *
-     * @param string $message
-     * @param array $context
+     * @param  string $message
+     * @param  array  $context
      * @return null
      */
     public function critical($message, array $context = array())
@@ -168,8 +168,8 @@ abstract class BaseIO implements IOInterface, LoggerInterface
      * Runtime errors that do not require immediate action but should typically
      * be logged and monitored.
      *
-     * @param string $message
-     * @param array $context
+     * @param  string $message
+     * @param  array  $context
      * @return null
      */
     public function error($message, array $context = array())
@@ -183,8 +183,8 @@ abstract class BaseIO implements IOInterface, LoggerInterface
      * Example: Use of deprecated APIs, poor use of an API, undesirable things
      * that are not necessarily wrong.
      *
-     * @param string $message
-     * @param array $context
+     * @param  string $message
+     * @param  array  $context
      * @return null
      */
     public function warning($message, array $context = array())
@@ -195,8 +195,8 @@ abstract class BaseIO implements IOInterface, LoggerInterface
     /**
      * Normal but significant events.
      *
-     * @param string $message
-     * @param array $context
+     * @param  string $message
+     * @param  array  $context
      * @return null
      */
     public function notice($message, array $context = array())
@@ -209,8 +209,8 @@ abstract class BaseIO implements IOInterface, LoggerInterface
      *
      * Example: User logs in, SQL logs.
      *
-     * @param string $message
-     * @param array $context
+     * @param  string $message
+     * @param  array  $context
      * @return null
      */
     public function info($message, array $context = array())
@@ -221,8 +221,8 @@ abstract class BaseIO implements IOInterface, LoggerInterface
     /**
      * Detailed debug information.
      *
-     * @param string $message
-     * @param array $context
+     * @param  string $message
+     * @param  array  $context
      * @return null
      */
     public function debug($message, array $context = array())
@@ -233,9 +233,9 @@ abstract class BaseIO implements IOInterface, LoggerInterface
     /**
      * Logs with an arbitrary level.
      *
-     * @param mixed $level
-     * @param string $message
-     * @param array $context
+     * @param  mixed  $level
+     * @param  string $message
+     * @param  array  $context
      * @return null
      */
     public function log($level, $message, array $context = array())

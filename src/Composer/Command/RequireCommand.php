@@ -36,7 +36,7 @@ class RequireCommand extends InitCommand
     {
         $this
             ->setName('require')
-            ->setDescription('Adds required packages to your composer.json and installs them')
+            ->setDescription('Adds required packages to your composer.json and installs them.')
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Required package name optionally including a version constraint, e.g. foo/bar or foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
@@ -74,7 +74,7 @@ EOT
         $io = $this->getIO();
 
         $newlyCreated = !file_exists($file);
-        if (!file_exists($file) && !file_put_contents($file, "{\n}\n")) {
+        if ($newlyCreated && !file_put_contents($file, "{\n}\n")) {
             $io->writeError('<error>'.$file.' could not be created.</error>');
 
             return 1;
@@ -107,8 +107,14 @@ EOT
             $repos
         ));
 
+        if ($composer->getPackage()->getPreferStable()) {
+            $preferredStability = 'stable';
+        } else {
+            $preferredStability = $composer->getPackage()->getMinimumStability();
+        }
+
         $phpVersion = $this->repos->findPackage('php', '*')->getVersion();
-        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion);
+        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion, $preferredStability);
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';

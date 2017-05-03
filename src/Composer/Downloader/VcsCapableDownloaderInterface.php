@@ -21,7 +21,6 @@ use Composer\Package\PackageInterface;
  */
 interface VcsCapableDownloaderInterface
 {
-
     /**
      * Gets the VCS Reference for the package at path
      *

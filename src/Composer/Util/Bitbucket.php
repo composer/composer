@@ -27,6 +27,7 @@ class Bitbucket
     private $process;
     private $remoteFilesystem;
     private $token = array();
+    private $time;
 
     const OAUTH2_ACCESS_TOKEN_URL = 'https://bitbucket.org/site/oauth2/access_token';
 
@@ -37,21 +38,27 @@ class Bitbucket
      * @param Config           $config           The composer configuration
      * @param ProcessExecutor  $process          Process instance, injectable for mocking
      * @param RemoteFilesystem $remoteFilesystem Remote Filesystem, injectable for mocking
+     * @param int              $time             Timestamp, injectable for mocking
      */
-    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
+    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null, $time = null)
     {
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor;
         $this->remoteFilesystem = $remoteFilesystem ?: Factory::createRemoteFilesystem($this->io, $config);
+        $this->time = $time;
     }
 
     /**
-     * @return array
+     * @return string
      */
     public function getToken()
     {
-        return $this->token;
+        if (!isset($this->token['access_token'])) {
+            return '';
+        }
+
+        return $this->token['access_token'];
     }
 
     /**
@@ -109,6 +116,8 @@ class Bitbucket
 
             throw $e;
         }
+
+        return true;
     }
 
     /**
@@ -129,7 +138,7 @@ class Bitbucket
         $url = 'https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html';
         $this->io->writeError(sprintf('Follow the instructions on %s', $url));
         $this->io->writeError(sprintf('to create a consumer. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
-        $this->io->writeError('Ensure you enter a "Callback URL" or it will not be possible to create an Access Token (this callback url will not be used by composer)');
+        $this->io->writeError('Ensure you enter a "Callback URL" (http://example.com is fine) or it will not be possible to create an Access Token (this callback url will not be used by composer)');
 
         $consumerKey = trim($this->io->askAndHideAnswer('Consumer Key (hidden): '));
 
@@ -151,16 +160,13 @@ class Bitbucket
 
         $this->io->setAuthentication($originUrl, $consumerKey, $consumerSecret);
 
-        $this->requestAccessToken($originUrl);
+        if (!$this->requestAccessToken($originUrl)) {
+            return false;
+        }
 
         // store value in user config
-        $this->config->getConfigSource()->removeConfigSetting('bitbucket-oauth.'.$originUrl);
+        $this->storeInAuthConfig($originUrl, $consumerKey, $consumerSecret);
 
-        $consumer = array(
-            "consumer-key" => $consumerKey,
-            "consumer-secret" => $consumerSecret,
-        );
-        $this->config->getAuthConfigSource()->addConfigSetting('bitbucket-oauth.'.$originUrl, $consumer);
         // Remove conflicting basic auth credentials (if available)
         $this->config->getAuthConfigSource()->removeConfigSetting('http-basic.' . $originUrl);
 
@@ -175,17 +181,65 @@ class Bitbucket
      * @param  string $originUrl
      * @param  string $consumerKey
      * @param  string $consumerSecret
-     * @return array
+     * @return string
      */
     public function requestToken($originUrl, $consumerKey, $consumerSecret)
     {
-        if (!empty($this->token)) {
-            return $this->token;
+        if (!empty($this->token) || $this->getTokenFromConfig($originUrl)) {
+            return $this->token['access_token'];
         }
 
         $this->io->setAuthentication($originUrl, $consumerKey, $consumerSecret);
-        $this->requestAccessToken($originUrl);
+        if (!$this->requestAccessToken($originUrl)) {
+            return '';
+        }
 
-        return $this->token;
+        $this->storeInAuthConfig($originUrl, $consumerKey, $consumerSecret);
+
+        return $this->token['access_token'];
+    }
+
+    /**
+     * Store the new/updated credentials to the configuration
+     * @param string $originUrl
+     * @param string $consumerKey
+     * @param string $consumerSecret
+     */
+    private function storeInAuthConfig($originUrl, $consumerKey, $consumerSecret)
+    {
+        $this->config->getConfigSource()->removeConfigSetting('bitbucket-oauth.'.$originUrl);
+
+        $time = null === $this->time ? time() : $this->time;
+        $consumer = array(
+            "consumer-key" => $consumerKey,
+            "consumer-secret" => $consumerSecret,
+            "access-token" => $this->token['access_token'],
+            "access-token-expiration" => $time + $this->token['expires_in'],
+        );
+
+        $this->config->getAuthConfigSource()->addConfigSetting('bitbucket-oauth.'.$originUrl, $consumer);
+    }
+
+    /**
+     * @param  string $originUrl
+     * @return bool
+     */
+    private function getTokenFromConfig($originUrl)
+    {
+        $authConfig = $this->config->get('bitbucket-oauth');
+
+        if (
+            !isset($authConfig[$originUrl]['access-token'])
+            || !isset($authConfig[$originUrl]['access-token-expiration'])
+            || time() > $authConfig[$originUrl]['access-token-expiration']
+        ) {
+            return false;
+        }
+
+        $this->token = array(
+            'access_token' => $authConfig[$originUrl]['access-token'],
+        );
+
+        return true;
     }
 }

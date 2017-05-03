@@ -140,7 +140,7 @@ class LibraryInstallerTest extends TestCase
           ->with($this->vendorDir.'/package1/oldtarget', $this->vendorDir.'/package1/newtarget');
 
         $initial = $this->createPackageMock();
-        $target  = $this->createPackageMock();
+        $target = $this->createPackageMock();
 
         $initial
             ->expects($this->any())

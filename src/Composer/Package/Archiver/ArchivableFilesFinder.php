@@ -35,10 +35,11 @@ class ArchivableFilesFinder extends \FilterIterator
     /**
      * Initializes the internal Symfony Finder with appropriate filters
      *
-     * @param string $sources  Path to source files to be archived
-     * @param array  $excludes Composer's own exclude rules from composer.json
+     * @param string $sources       Path to source files to be archived
+     * @param array  $excludes      Composer's own exclude rules from composer.json
+     * @param bool   $ignoreFilters Ignore filters when looking for files
      */
-    public function __construct($sources, array $excludes)
+    public function __construct($sources, array $excludes, $ignoreFilters = false)
     {
         if (array_key_exists(ArchiveManager::IGNORE_VCS_KEY, $excludes)) {
             $ignoreVcs = $excludes[ArchiveManager::IGNORE_VCS_KEY];
@@ -51,11 +52,15 @@ class ArchivableFilesFinder extends \FilterIterator
 
         $sources = $fs->normalizePath($sources);
 
-        $filters = array(
-            new HgExcludeFilter($sources),
-            new GitExcludeFilter($sources),
-            new ComposerExcludeFilter($sources, $excludes),
-        );
+        if ($ignoreFilters) {
+            $filters = array();
+        } else {
+            $filters = array(
+                new HgExcludeFilter($sources),
+                new GitExcludeFilter($sources),
+                new ComposerExcludeFilter($sources, $excludes),
+            );
+        }
 
         $this->finder = new Finder();
 

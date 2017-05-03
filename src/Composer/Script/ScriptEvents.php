@@ -95,7 +95,7 @@ class ScriptEvents
     /**
      * The POST_ROOT_PACKAGE_INSTALL event occurs after the root package has been installed.
      *
-     * The event listener method receives a Composer\Installer\PackageEvent instance.
+     * The event listener method receives a Composer\Script\Event instance.
      *
      * @var string
      */
@@ -105,7 +105,7 @@ class ScriptEvents
      * The POST_CREATE_PROJECT event occurs after the create-project command has been executed.
      * Note: Event occurs after POST_INSTALL_CMD
      *
-     * The event listener method receives a Composer\Installer\PackageEvent instance.
+     * The event listener method receives a Composer\Script\Event instance.
      *
      * @var string
      */

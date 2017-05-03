@@ -26,13 +26,8 @@ class ArchiveManager
 {
     const IGNORE_VCS_KEY = 'ignoreVcs';
 
-    const IGNORE_VCS_DEFAULT = true;
-
     protected $downloadManager;
 
-    /**
-     * @var ArchiverInterface[]
-     */
     protected $archivers = array();
 
     /**
@@ -101,16 +96,17 @@ class ArchiveManager
     /**
      * Create an archive of the specified package.
      *
-     * @param  PackageInterface          $package   The package to archive
-     * @param  string                    $format    The format of the archive (zip, tar, ...)
-     * @param  string                    $targetDir The directory where to build the archive
-     * @param  string|null               $fileName  The relative file name to use for the archive, or null to generate
-     *                                              the package name. Note that the format will be appended to this name
+     * @param  PackageInterface          $package       The package to archive
+     * @param  string                    $format        The format of the archive (zip, tar, ...)
+     * @param  string                    $targetDir     The directory where to build the archive
+     * @param  string|null               $fileName      The relative file name to use for the archive, or null to generate
+     *                                                  the package name. Note that the format will be appended to this name
+     * @param  bool                      $ignoreFilters Ignore filters when looking for files in the package
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      * @return string                    The path of the created archive
      */
-    public function archive(PackageInterface $package, $format, $targetDir, $fileName = null)
+    public function archive(PackageInterface $package, $format, $targetDir, $fileName = null, $ignoreFilters = false)
     {
         if (empty($format)) {
             throw new \InvalidArgumentException('Format must be specified');
@@ -170,9 +166,7 @@ class ArchiveManager
         $tempTarget = sys_get_temp_dir().'/composer_archive'.uniqid().'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($tempTarget));
 
-        $excludes = $package->getArchiveExcludes();
-        $excludes[self::IGNORE_VCS_KEY] = $package->getIgnoreVcs();
-        $archivePath = $usableArchiver->archive($sourcePath, $tempTarget, $format, $excludes);
+        $archivePath = $usableArchiver->archive($sourcePath, $tempTarget, $format, $package->getArchiveExcludes(), $ignoreFilters);
         $filesystem->rename($archivePath, $target);
 
         // cleanup temporary download

@@ -179,7 +179,7 @@ class ConsoleIOTest extends TestCase
             ->with(
                 $this->isInstanceOf('Symfony\Component\Console\Input\InputInterface'),
                 $this->isInstanceOf('Symfony\Component\Console\Output\OutputInterface'),
-                $this->isInstanceOf('Symfony\Component\Console\Question\ConfirmationQuestion')
+                $this->isInstanceOf('Composer\Question\StrictConfirmationQuestion')
             )
         ;
 

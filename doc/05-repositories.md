@@ -58,7 +58,7 @@ The main repository type is the `composer` repository. It uses a single
 
 This is also the repository type that packagist uses. To reference a
 `composer` repository, just supply the path before the `packages.json` file.
-In case of packagist, that file is located at `/packages.json`, so the URL of
+In the case of packagist, that file is located at `/packages.json`, so the URL of
 the repository would be `packagist.org`. For `example.org/packages.json` the
 repository URL would be `example.org`.
 
@@ -271,7 +271,7 @@ The following are supported:
 
 * **Git:** [git-scm.com](https://git-scm.com)
 * **Subversion:** [subversion.apache.org](https://subversion.apache.org)
-* **Mercurial:** [mercurial.selenic.com](http://mercurial.selenic.com)
+* **Mercurial:** [mercurial-scm.org](https://www.mercurial-scm.org)
 * **Fossil**: [fossil-scm.org](https://www.fossil-scm.org/)
 
 To get packages from these systems you need to have their respective clients

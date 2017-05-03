@@ -17,7 +17,10 @@ use Composer\Util\Filesystem;
 
 class CacheTest extends TestCase
 {
-    private $files, $root, $finder, $cache;
+    private $files;
+    private $root;
+    private $finder;
+    private $cache;
 
     public function setUp()
     {

@@ -2266,7 +2266,6 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('{
 }
 ', $manipulator->getContents());
-
     }
 
     public function testIndentDetection()

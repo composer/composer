@@ -245,14 +245,6 @@ class RemoteFilesystem
             unset($options['gitlab-token']);
         }
 
-        if (isset($options['bitbucket-token'])) {
-            // skip using the token for BitBucket downloads as these are not working with auth
-            if (!$this->isPublicBitBucketDownload($origFileUrl)) {
-                $fileUrl .= (false === strpos($fileUrl,'?') ? '?' : '&') . 'access_token=' . $options['bitbucket-token'];
-            }
-            unset($options['bitbucket-token']);
-        }
-
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
@@ -276,7 +268,7 @@ class RemoteFilesystem
         }
 
         if ($this->progress && !$isRedirect) {
-            $this->io->writeError(" Downloading: <comment>Connecting...</comment>", false);
+            $this->io->writeError("Downloading (<comment>connecting...</comment>)", false);
         }
 
         $errorMessage = '';
@@ -294,7 +286,13 @@ class RemoteFilesystem
             $contentLength = !empty($http_response_header[0]) ? $this->findHeaderValue($http_response_header, 'content-length') : null;
             if ($contentLength && Platform::strlen($result) < $contentLength) {
                 // alas, this is not possible via the stream callback because STREAM_NOTIFY_COMPLETED is documented, but not implemented anywhere in PHP
-                throw new TransportException('Content-Length mismatch');
+                $e = new TransportException('Content-Length mismatch, received '.Platform::strlen($result).' bytes out of the expected '.$contentLength);
+                $e->setHeaders($http_response_header);
+                $e->setStatusCode($this->findStatusCode($http_response_header));
+                $e->setResponse($result);
+                $this->io->writeError('Content-Length mismatch, received "'.$result.'" ('.Platform::strlen($result).' out of '.$contentLength.' bytes)', true, IOInterface::DEBUG);
+
+                throw $e;
             }
 
             if (PHP_VERSION_ID < 50600 && !empty($options['ssl']['peer_fingerprint'])) {
@@ -348,7 +346,7 @@ class RemoteFilesystem
         if ($originUrl === 'bitbucket.org'
             && !$this->isPublicBitBucketDownload($fileUrl)
             && substr($fileUrl, -4) === '.zip'
-            && preg_match('{^text/html\b}i', $contentType)
+            && $contentType && preg_match('{^text/html\b}i', $contentType)
         ) {
             $result = false;
             if ($this->retryAuthFailure) {
@@ -367,7 +365,7 @@ class RemoteFilesystem
         if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
             if (!$this->retry) {
                 if ($this->progress && !$this->retry && !$isRedirect) {
-                    $this->io->overwriteError(" Downloading: <error>Failed</error>", false);
+                    $this->io->overwriteError("Downloading (<error>failed</error>)", false);
                 }
 
                 $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
@@ -380,12 +378,13 @@ class RemoteFilesystem
         }
 
         if ($this->progress && !$this->retry && !$isRedirect) {
-            $this->io->overwriteError(" Downloading: ".($result === false ? '<error>Failed</error>' : '<comment>100%</comment>'), false);
+            $this->io->overwriteError("Downloading (".($result === false ? '<error>failed</error>' : '<comment>100%</comment>').")", false);
         }
 
         // decode gzip
         if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http' && !$hasFollowedRedirect) {
-            $decode = 'gzip' === strtolower($this->findHeaderValue($http_response_header, 'content-encoding'));
+            $contentEncoding = $this->findHeaderValue($http_response_header, 'content-encoding');
+            $decode = $contentEncoding && 'gzip' === strtolower($contentEncoding);
 
             if ($decode) {
                 try {
@@ -567,7 +566,7 @@ class RemoteFilesystem
 
                     if ((0 === $progression % 5) && 100 !== $progression && $progression !== $this->lastProgress) {
                         $this->lastProgress = $progression;
-                        $this->io->overwriteError(" Downloading: <comment>$progression%</comment>", false);
+                        $this->io->overwriteError("Downloading (<comment>$progression%</comment>)", false);
                     }
                 }
                 break;
@@ -590,6 +589,11 @@ class RemoteFilesystem
         } elseif ($this->config && in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
             $message = "\n".'Could not fetch '.$this->fileUrl.', enter your ' . $this->originUrl . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
+
+            if ($this->io->hasAuthentication($this->originUrl) && ($auth = $this->io->getAuthentication($this->originUrl)) && $auth['password'] === 'private-token') {
+                throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
+            }
+
             if (!$gitLabUtil->authorizeOAuth($this->originUrl)
                 && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, $message))
             ) {
@@ -601,9 +605,9 @@ class RemoteFilesystem
                 $auth = $this->io->getAuthentication($this->originUrl);
                 if ($auth['username'] !== 'x-token-auth') {
                     $bitbucketUtil = new Bitbucket($this->io, $this->config);
-                    $token = $bitbucketUtil->requestToken($this->originUrl, $auth['username'], $auth['password']);
-                    if (! empty($token)) {
-                        $this->io->setAuthentication($this->originUrl, 'x-token-auth', $token['access_token']);
+                    $accessToken = $bitbucketUtil->requestToken($this->originUrl, $auth['username'], $auth['password']);
+                    if (!empty($accessToken)) {
+                        $this->io->setAuthentication($this->originUrl, 'x-token-auth', $accessToken);
                         $askForOAuthToken = false;
                     }
                 } else {
@@ -612,7 +616,7 @@ class RemoteFilesystem
             }
 
             if ($askForOAuthToken) {
-                $message = "\n".'Could not fetch ' . $this->fileUrl . ', please create a bitbucket OAuth token to ' . ($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
+                $message = "\n".'Could not fetch ' . $this->fileUrl . ', please create a bitbucket OAuth token to ' . (($httpStatus === 401 || $httpStatus === 403) ? 'access private repos' : 'go over the API rate limit');
                 $bitBucketUtil = new Bitbucket($this->io, $this->config);
                 if (! $bitBucketUtil->authorizeOAuth($this->originUrl)
                     && (! $this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($this->originUrl, $message))
@@ -723,14 +727,15 @@ class RemoteFilesystem
             } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
-                }
-                else if ($auth['password'] === 'private-token') {
+                } elseif ($auth['password'] === 'private-token') {
                     $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
                 }
             } elseif ('bitbucket.org' === $originUrl
                 && $this->fileUrl !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL && 'x-token-auth' === $auth['username']
             ) {
-                $options['bitbucket-token'] = $auth['password'];
+                if (!$this->isPublicBitBucketDownload($this->fileUrl)) {
+                    $headers[] = 'Authorization: Bearer ' . $auth['password'];
+                }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
@@ -1003,6 +1008,13 @@ class RemoteFilesystem
      */
     private function isPublicBitBucketDownload($urlToBitBucketFile)
     {
+        $domain = parse_url($urlToBitBucketFile, PHP_URL_HOST);
+        if (strpos($domain, 'bitbucket.org') === false) {
+            // Bitbucket downloads are hosted on amazonaws.
+            // We do not need to authenticate there at all
+            return true;
+        }
+
         $path = parse_url($urlToBitBucketFile, PHP_URL_PATH);
 
         // Path for a public download follows this pattern /{user}/{repo}/downloads/{whatever}

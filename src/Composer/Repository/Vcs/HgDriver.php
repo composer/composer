@@ -13,7 +13,6 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Config;
-use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
@@ -142,6 +141,7 @@ class HgDriver extends VcsDriver
             $output,
             $this->repoDir
         );
+
         return new \DateTime(trim($output), new \DateTimeZone('UTC'));
     }
 

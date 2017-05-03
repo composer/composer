@@ -30,7 +30,7 @@ use Symfony\Component\Filesystem\Filesystem;
 class PathDownloader extends FileDownloader implements VcsCapableDownloaderInterface
 {
     const STRATEGY_SYMLINK = 10;
-    const STRATEGY_MIRROR  = 20;
+    const STRATEGY_MIRROR = 20;
 
     /**
      * {@inheritdoc}
@@ -46,6 +46,10 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         }
 
         if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
+            // IMPORTANT NOTICE: If you wish to change this, don't. You are wasting your time and ours.
+            //
+            // Please see https://github.com/composer/composer/pull/5974 and https://github.com/composer/composer/pull/6174
+            // for previous attempts that were shut down because they did not work well enough or introduced too many risks.
             throw new \RuntimeException(sprintf(
                 'Package %s cannot install to "%s" inside its source at "%s"',
                 $package->getName(), realpath($path), $realUrl
@@ -77,7 +81,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         if ($output) {
             $this->io->writeError(sprintf(
-                '  - Installing <info>%s</info> (<comment>%s</comment>)',
+                '  - Installing <info>%s</info> (<comment>%s</comment>): ',
                 $package->getName(),
                 $package->getFullPrettyVersion()
             ), false);
@@ -88,8 +92,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             try {
                 if (Platform::isWindows()) {
                     // Implement symlinks as NTFS junctions on Windows
+                    $this->io->writeError(sprintf('Junctioning from %s', $url), false);
                     $this->filesystem->junction($realUrl, $path);
-                    $this->io->writeError(sprintf(' Junctioned from %s', $url), false);
                 } else {
                     $absolutePath = $path;
                     if (!$this->filesystem->isAbsolutePath($absolutePath)) {
@@ -97,8 +101,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     }
                     $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
                     $path = rtrim($path, "/");
+                    $this->io->writeError(sprintf('Symlinking from %s', $url), false);
                     $fileSystem->symlink($shortestPath, $path);
-                    $this->io->writeError(sprintf(' Symlinked from %s', $url), false);
                 }
             } catch (IOException $e) {
                 if (in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
@@ -114,8 +118,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         // Fallback if symlink failed or if symlink is not allowed for the package
         if (self::STRATEGY_MIRROR == $currentStrategy) {
+            $this->io->writeError(sprintf('%sMirroring from %s', $isFallback ? '    ' : '', $url), false);
             $fileSystem->mirror($realUrl, $path);
-            $this->io->writeError(sprintf('%s Mirrored from %s', $isFallback ? '   ' : '', $url), false);
         }
 
         $this->io->writeError('');
@@ -140,7 +144,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 throw new \RuntimeException('Could not reliably remove junction for package ' . $package->getName());
             }
         } else {
-            parent::remove($package, $path);
+            parent::remove($package, $path, $output);
         }
     }
 

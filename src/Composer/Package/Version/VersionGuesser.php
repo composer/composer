@@ -65,17 +65,17 @@ class VersionGuesser
     {
         if (function_exists('proc_open')) {
             $versionData = $this->guessGitVersion($packageConfig, $path);
-            if (null !== $versionData) {
+            if (null !== $versionData && null !== $versionData['version']) {
                 return $versionData;
             }
 
             $versionData = $this->guessHgVersion($packageConfig, $path);
-            if (null !== $versionData) {
+            if (null !== $versionData && null !== $versionData['version']) {
                 return $versionData;
             }
 
             $versionData = $this->guessFossilVersion($packageConfig, $path);
-            if (null !== $versionData) {
+            if (null !== $versionData && null !== $versionData['version']) {
                 return $versionData;
             }
 
@@ -89,6 +89,7 @@ class VersionGuesser
         $commit = null;
         $version = null;
         $prettyVersion = null;
+        $isDetached = false;
 
         // try to fetch current version from git branch
         if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output, $path)) {
@@ -97,11 +98,12 @@ class VersionGuesser
 
             // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\(HEAD detached at FETCH_HEAD\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\(HEAD detached at \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if ($match[1] === '(no branch)' || substr($match[1], 0, 10) === '(detached ' || substr($match[1], 0, 17) === '(HEAD detached at') {
                         $version = 'dev-' . $match[2];
                         $prettyVersion = $version;
                         $isFeatureBranch = true;
+                        $isDetached = true;
                     } else {
                         $version = $this->versionParser->normalizeBranch($match[1]);
                         $prettyVersion = 'dev-' . $match[1];
@@ -131,7 +133,7 @@ class VersionGuesser
             }
         }
 
-        if (!$version) {
+        if (!$version || $isDetached) {
             $result = $this->versionFromGitTags($path);
             if ($result) {
                 $version = $result['version'];
@@ -177,7 +179,7 @@ class VersionGuesser
             }
 
             if (!$isFeatureBranch) {
-                return $version;
+                return array('version' => $version, 'commit' => null, 'pretty_version' => $version);
             }
 
             // re-use the HgDriver to fetch branches (this properly includes bookmarks)

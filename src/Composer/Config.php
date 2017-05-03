@@ -79,7 +79,9 @@ class Config
     private $config;
     private $baseDir;
     private $repositories;
+    /** @var ConfigSourceInterface */
     private $configSource;
+    /** @var ConfigSourceInterface */
     private $authConfigSource;
     private $useEnvironment;
     private $warnedHosts = array();
@@ -414,7 +416,7 @@ class Config
     {
         if (isset($this->repositories[$name])) {
             unset($this->repositories[$name]);
-        } else if ($name === 'packagist') { // BC support for default "packagist" named repo
+        } elseif ($name === 'packagist') { // BC support for default "packagist" named repo
             unset($this->repositories['packagist.org']);
         }
     }

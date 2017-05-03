@@ -355,7 +355,7 @@ class Locker
                 continue;
             }
 
-            $name    = $package->getPrettyName();
+            $name = $package->getPrettyName();
             $version = $package->getPrettyVersion();
 
             if (!$name || !$version) {

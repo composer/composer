@@ -24,7 +24,7 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
      *
      * @dataProvider getLoadClassTests
      *
-     * @param string $class            The fully-qualified class name to test, without preceding namespace separator.
+     * @param string $class The fully-qualified class name to test, without preceding namespace separator.
      */
     public function testLoadClass($class)
     {

@@ -27,7 +27,7 @@ class ZipArchiver implements ArchiverInterface
     /**
      * {@inheritdoc}
      */
-    public function archive($sources, $target, $format, array $excludes = array())
+    public function archive($sources, $target, $format, array $excludes = array(), $ignoreFilters = false)
     {
         $fs = new Filesystem();
         $sources = $fs->normalizePath($sources);
@@ -35,7 +35,7 @@ class ZipArchiver implements ArchiverInterface
         $zip = new ZipArchive();
         $res = $zip->open($target, ZipArchive::CREATE);
         if ($res === true) {
-            $files = new ArchivableFilesFinder($sources, $excludes);
+            $files = new ArchivableFilesFinder($sources, $excludes, $ignoreFilters);
             foreach ($files as $file) {
                 /** @var $file \SplFileInfo */
                 $filepath = strtr($file->getPath()."/".$file->getFilename(), '\\', '/');

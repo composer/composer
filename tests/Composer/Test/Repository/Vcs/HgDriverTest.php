@@ -19,7 +19,6 @@ use Composer\Config;
 
 class HgDriverTest extends TestCase
 {
-
     /** @type \Composer\IO\IOInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $io;
     /** @type Config */
@@ -65,5 +64,4 @@ class HgDriverTest extends TestCase
             array('https://user@bitbucket.org/user/repo'),
         );
     }
-
 }

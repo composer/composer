@@ -72,7 +72,7 @@ class Svn
     public function __construct($url, IOInterface $io, Config $config, ProcessExecutor $process = null)
     {
         $this->url = $url;
-        $this->io  = $io;
+        $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor;
     }

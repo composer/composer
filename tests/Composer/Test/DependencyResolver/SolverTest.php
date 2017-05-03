@@ -850,14 +850,14 @@ class SolverTest extends TestCase
         foreach ($transaction as $operation) {
             if ('update' === $operation->getJobType()) {
                 $result[] = array(
-                    'job'  => 'update',
+                    'job' => 'update',
                     'from' => $operation->getInitialPackage(),
-                    'to'   => $operation->getTargetPackage(),
+                    'to' => $operation->getTargetPackage(),
                 );
             } else {
                 $job = ('uninstall' === $operation->getJobType() ? 'remove' : 'install');
                 $result[] = array(
-                    'job'     => $job,
+                    'job' => $job,
                     'package' => $operation->getPackage(),
                 );
             }

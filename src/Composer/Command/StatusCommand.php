@@ -32,16 +32,15 @@ use Composer\Util\ProcessExecutor;
  */
 class StatusCommand extends BaseCommand
 {
-
-    const EXIT_CODE_ERRORS           = 1;
+    const EXIT_CODE_ERRORS = 1;
     const EXIT_CODE_UNPUSHED_CHANGES = 2;
-    const EXIT_CODE_VERSION_CHANGES  = 4;
+    const EXIT_CODE_VERSION_CHANGES = 4;
 
     protected function configure()
     {
         $this
             ->setName('status')
-            ->setDescription('Show a list of locally modified packages')
+            ->setDescription('Shows a list of locally modified packages.')
             ->setDefinition(array(
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.'),
             ))
@@ -113,11 +112,11 @@ EOT
                         $vcsVersionChanges[$targetDir] = array(
                             'previous' => array(
                                 'version' => $package->getPrettyVersion(),
-                                'ref'     => $previousRef
+                                'ref' => $previousRef,
                             ),
-                            'current'  => array(
+                            'current' => array(
                                 'version' => $currentVersion['pretty_version'],
-                                'ref'     => $currentVersion['commit'],
+                                'ref' => $currentVersion['commit'],
                             ),
                         );
                     }
@@ -134,6 +133,7 @@ EOT
         // output errors/warnings
         if (!$errors && !$unpushedChanges && !$vcsVersionChanges) {
             $io->writeError('<info>No local changes</info>');
+
             return 0;
         }
 

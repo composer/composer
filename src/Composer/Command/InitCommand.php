@@ -320,10 +320,10 @@ EOT
      */
     public function parseAuthorString($author)
     {
-        if (preg_match('/^(?P<name>[- .,\p{L}\p{N}\'’"()]+) <(?P<email>.+?)>$/u', $author, $match)) {
+        if (preg_match('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+) <(?P<email>.+?)>$/u', $author, $match)) {
             if ($this->isValidEmail($match['email'])) {
                 return array(
-                    'name'  => trim($match['name']),
+                    'name' => trim($match['name']),
                     'email' => $match['email'],
                 );
             }
@@ -352,7 +352,7 @@ EOT
         return $this->repos;
     }
 
-    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null)
+    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null, $preferredStability = 'stable')
     {
         if ($requires) {
             $requires = $this->normalizeRequirements($requires);
@@ -362,7 +362,7 @@ EOT
             foreach ($requires as $requirement) {
                 if (!isset($requirement['version'])) {
                     // determine the best version automatically
-                    $version = $this->findBestVersionForPackage($input, $requirement['name'], $phpVersion);
+                    $version = $this->findBestVersionForPackage($input, $requirement['name'], $phpVersion, $preferredStability);
                     $requirement['version'] = $version;
 
                     $io->writeError(sprintf(
@@ -457,7 +457,7 @@ EOT
                     );
 
                     if (false === $constraint) {
-                        $constraint = $this->findBestVersionForPackage($input, $package, $phpVersion);
+                        $constraint = $this->findBestVersionForPackage($input, $package, $phpVersion, $preferredStability);
 
                         $io->writeError(sprintf(
                             'Using version <info>%s</info> for <info>%s</info>',
@@ -623,14 +623,15 @@ EOT
      * @param  InputInterface            $input
      * @param  string                    $name
      * @param  string                    $phpVersion
+     * @param  string                    $preferredStability
      * @throws \InvalidArgumentException
      * @return string
      */
-    private function findBestVersionForPackage(InputInterface $input, $name, $phpVersion)
+    private function findBestVersionForPackage(InputInterface $input, $name, $phpVersion, $preferredStability = 'stable')
     {
         // find the latest version allowed in this pool
         $versionSelector = new VersionSelector($this->getPool($input));
-        $package = $versionSelector->findBestCandidate($name, null, $phpVersion);
+        $package = $versionSelector->findBestCandidate($name, null, $phpVersion, $preferredStability);
 
         if (!$package) {
             // Check whether the PHP version was the problem

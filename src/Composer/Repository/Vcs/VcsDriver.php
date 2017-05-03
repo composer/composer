@@ -75,8 +75,8 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * Returns whether or not the given $identifier should be cached or not.
      *
-     * @param string $identifier
-     * @return boolean
+     * @param  string $identifier
+     * @return bool
      */
     protected function shouldCache($identifier)
     {
@@ -101,7 +101,6 @@ abstract class VcsDriver implements VcsDriverInterface
 
             $this->infoCache[$identifier] = $composer;
         }
-
 
         return $this->infoCache[$identifier];
     }

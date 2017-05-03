@@ -33,9 +33,9 @@ class RemoveCommand extends BaseCommand
     {
         $this
             ->setName('remove')
-            ->setDescription('Removes a package from the require or require-dev')
+            ->setDescription('Removes a package from the require or require-dev.')
             ->setDefinition(array(
-                new InputArgument('packages', InputArgument::IS_ARRAY, 'Packages that should be removed.'),
+                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Packages that should be removed.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),

@@ -28,7 +28,7 @@ class DownloadManager
     private $preferSource = false;
     private $packagePreferences = array();
     private $filesystem;
-    private $downloaders  = array();
+    private $downloaders = array();
 
     /**
      * Initializes download manager.
@@ -181,8 +181,8 @@ class DownloadManager
     public function download(PackageInterface $package, $targetDir, $preferSource = null)
     {
         $preferSource = null !== $preferSource ? $preferSource : $this->preferSource;
-        $sourceType   = $package->getSourceType();
-        $distType     = $package->getDistType();
+        $sourceType = $package->getSourceType();
+        $distType = $package->getDistType();
 
         $sources = array();
         if ($sourceType) {
@@ -248,10 +248,10 @@ class DownloadManager
 
         if ('dist' === $installationSource) {
             $initialType = $initial->getDistType();
-            $targetType  = $target->getDistType();
+            $targetType = $target->getDistType();
         } else {
             $initialType = $initial->getSourceType();
-            $targetType  = $target->getSourceType();
+            $targetType = $target->getSourceType();
         }
 
         // upgrading from a dist stable package to a dev package, force source reinstall

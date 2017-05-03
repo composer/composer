@@ -1,3 +1,46 @@
+### [1.4.1] - 2017-03-10
+
+  * Fixed `apcu-autoloader` config option being ignored in `dump-autoload` command
+  * Fixed json validation not allowing boolean for trunk-path, branches-path and tags-path in svn repos
+  * Fixed json validation not allowing repository URLs without scheme
+
+### [1.4.0] - 2017-03-08
+
+  * Improved memory usage of dependency solver
+  * Added `--format json` option to the `outdated` and `show` command to get machine readable package listings
+  * Added `--ignore-filters` flag to `archive` command to bypass the .gitignore and co
+  * Added support for `outdated` output without ansi colors
+  * Added support for Bitbucket API v2
+  * Changed the require command to follow minimum-stability / prefer-stable values when picking a version
+  * Fixed regression when using composer in a Mercurial repository
+
+### [1.3.3] - 2017-03-08
+
+  * **Capifony users beware**: This release has output format tweaks that mess up capifony interactive mode, see #6233
+  * Improved baseline psr-4 autoloader performance for projects with many nested namespaces configured
+  * Fixed issues with gitlab API access when the token had insufficient permissions
+  * Fixed some HHVM strict type issues
+  * Fixed version guessing of headless git checkouts in some conditions
+  * Fixed compatibility with subversion 1.8
+  * Fixed version guessing not working with svn/hg
+  * Fixed script/exec errors not being output correctly
+  * Fixed PEAR repository bug with pear.php.net
+
+### [1.3.2] - 2017-01-27
+
+  * Added `COMPOSER_BINARY` env var that is defined within the scope of a Composer run automatically with the path to the phar file
+  * Fixed create-project ending in a detached HEAD when installing aliased packages
+  * Fixed composer show not returning non-zero exit code when the package does not exist
+  * Fixed `@composer` handling in scripts when --working-dir is used together with it
+  * Fixed private-GitLab handling of repos with dashes in them
+
+### [1.3.1] - 2017-01-07
+
+  * Fixed dist downloads from Bitbucket
+  * Fixed some regressions related to xdebug disabling
+  * Fixed `--minor-only` flag in `outdated` command
+  * Fixed handling of config.platform.php which did not replace other php-* package's versions
+
 ### [1.3.0] - 2016-12-24
 
   * Fixed handling of annotated git tags vs lightweight tags leading to useless updates sometimes
@@ -477,6 +520,11 @@
 
   * Initial release
 
+[1.4.1]: https://github.com/composer/composer/compare/1.4.0...1.4.1
+[1.4.0]: https://github.com/composer/composer/compare/1.3.3...1.4.0
+[1.3.3]: https://github.com/composer/composer/compare/1.3.2...1.3.3
+[1.3.2]: https://github.com/composer/composer/compare/1.3.1...1.3.2
+[1.3.1]: https://github.com/composer/composer/compare/1.3.0...1.3.1
 [1.3.0]: https://github.com/composer/composer/compare/1.3.0-RC...1.3.0
 [1.3.0-RC]: https://github.com/composer/composer/compare/1.2.4...1.3.0-RC
 [1.2.4]: https://github.com/composer/composer/compare/1.2.3...1.2.4

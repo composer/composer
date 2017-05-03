@@ -152,14 +152,16 @@ class GitHubDriver extends VcsDriver
             }
 
             $composer = $this->getBaseComposerInformation($identifier);
+            if ($composer) {
 
-            // specials for github
-            if (!isset($composer['support']['source'])) {
-                $label = array_search($identifier, $this->getTags()) ?: array_search($identifier, $this->getBranches()) ?: $identifier;
-                $composer['support']['source'] = sprintf('https://%s/%s/%s/tree/%s', $this->originUrl, $this->owner, $this->repository, $label);
-            }
-            if (!isset($composer['support']['issues']) && $this->hasIssues) {
-                $composer['support']['issues'] = sprintf('https://%s/%s/%s/issues', $this->originUrl, $this->owner, $this->repository);
+                // specials for github
+                if (!isset($composer['support']['source'])) {
+                    $label = array_search($identifier, $this->getTags()) ?: array_search($identifier, $this->getBranches()) ?: $identifier;
+                    $composer['support']['source'] = sprintf('https://%s/%s/%s/tree/%s', $this->originUrl, $this->owner, $this->repository, $label);
+                }
+                if (!isset($composer['support']['issues']) && $this->hasIssues) {
+                    $composer['support']['issues'] = sprintf('https://%s/%s/%s/issues', $this->originUrl, $this->owner, $this->repository);
+                }
             }
 
             if ($this->shouldCache($identifier)) {
@@ -184,7 +186,6 @@ class GitHubDriver extends VcsDriver
         $notFoundRetries = 2;
         while ($notFoundRetries) {
             try {
-
                 $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/' . $file . '?ref='.urlencode($identifier);
                 $resource = JsonFile::parseJson($this->getContents($resource));
                 if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($content = base64_decode($resource['content']))) {
@@ -200,6 +201,7 @@ class GitHubDriver extends VcsDriver
                 // TODO should be removed when possible
                 // retry fetching if github returns a 404 since they happen randomly
                 $notFoundRetries--;
+
                 return null;
             }
         }
@@ -210,13 +212,15 @@ class GitHubDriver extends VcsDriver
     /**
      * {@inheritdoc}
      */
-    public function getChangeDate($identifier) {
+    public function getChangeDate($identifier)
+    {
         if ($this->gitDriver) {
             return $this->gitDriver->getChangeDate($identifier);
         }
 
         $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/commits/'.urlencode($identifier);
         $commit = JsonFile::parseJson($this->getContents($resource), $resource);
+
         return new \DateTime($commit['commit']['committer']['date']);
     }
 

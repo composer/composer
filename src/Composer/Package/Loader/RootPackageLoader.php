@@ -73,7 +73,7 @@ class RootPackageLoader extends ArrayLoader
                 $version = getenv('COMPOSER_ROOT_VERSION');
                 $commit = null;
             } else {
-                $versionData =  $this->versionGuesser->guessVersion($config, $cwd ?: getcwd());
+                $versionData = $this->versionGuesser->guessVersion($config, $cwd ?: getcwd());
                 $version = $versionData['version'];
                 $commit = $versionData['commit'];
             }

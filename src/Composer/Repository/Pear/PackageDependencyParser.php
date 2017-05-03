@@ -229,6 +229,9 @@ class PackageDependencyParser
 
         $result = array();
         foreach ($depItem as $subDepItem) {
+            if (!array_key_exists('channel', $subDepItem)) {
+                $subDepItem['channel'] = $subDepItem['uri'];
+            }
             $depChannelName = $subDepItem['channel'];
             $depPackageName = $subDepItem['name'];
             $depVersionConstraint = $this->parse20VersionConstraint($subDepItem);

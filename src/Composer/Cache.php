@@ -46,6 +46,7 @@ class Cache
 
         if (preg_match('{(^|[\\\\/])(\$null|NUL|/dev/null)([\\\\/]|$)}', $cacheDir)) {
             $this->enabled = false;
+
             return;
         }
 

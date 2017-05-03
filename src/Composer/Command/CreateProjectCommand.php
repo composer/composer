@@ -23,6 +23,7 @@ use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
+use Composer\Package\AliasPackage;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
@@ -58,7 +59,7 @@ class CreateProjectCommand extends BaseCommand
     {
         $this
             ->setName('create-project')
-            ->setDescription('Create new project from a package into given directory.')
+            ->setDescription('Creates new project from a package into given directory.')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package name to be installed'),
                 new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
@@ -328,6 +329,10 @@ EOT
 
         if ($disablePlugins) {
             $io->writeError('<info>Plugins have been disabled.</info>');
+        }
+
+        if ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
         }
 
         if (0 === strpos($package->getPrettyVersion(), 'dev-') && in_array($package->getSourceType(), array('git', 'hg'))) {

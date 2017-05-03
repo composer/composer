@@ -36,7 +36,7 @@ class UpdateOperation extends SolverOperation
         parent::__construct($reason);
 
         $this->initialPackage = $initial;
-        $this->targetPackage  = $target;
+        $this->targetPackage = $target;
     }
 
     /**

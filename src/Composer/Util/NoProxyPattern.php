@@ -125,7 +125,7 @@ class NoProxyPattern
         list($a, $b, $c, $d) = explode('.', $base);
 
         // Now do some bit shifting/switching to convert to ints
-        $i    = ($a << 24) + ($b << 16) + ($c << 8) + $d;
+        $i = ($a << 24) + ($b << 16) + ($c << 8) + $d;
         $mask = $bits == 0 ? 0 : (~0 << (32 - $bits));
 
         // Here's our lowest int

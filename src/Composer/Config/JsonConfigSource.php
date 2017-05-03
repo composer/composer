@@ -60,6 +60,21 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addRepository($name, $config)
     {
         $this->manipulateJson('addRepository', $name, $config, function (&$config, $repo, $repoConfig) {
+            // if converting from an array format to hashmap format, and there is a {"packagist.org":false} repo, we have
+            // to convert it to "packagist.org": false key on the hashmap otherwise it fails schema validation
+            if (isset($config['repositories'])) {
+                foreach ($config['repositories'] as $index => $val) {
+                    if ($index === $repo) {
+                        continue;
+                    }
+                    if (is_numeric($index) && ($val === array('packagist' => false) || $val === array('packagist.org' => false))) {
+                        unset($config['repositories'][$index]);
+                        $config['repositories']['packagist.org'] = false;
+                        break;
+                    }
+                }
+            }
+
             $config['repositories'][$repo] = $repoConfig;
         });
     }
@@ -123,12 +138,12 @@ class JsonConfigSource implements ConfigSourceInterface
             if (substr($key, 0, 6) === 'extra.') {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
-                $arr =& $config['extra'];
+                $arr = &$config['extra'];
                 foreach ($bits as $bit) {
                     if (!isset($arr[$bit])) {
                         $arr[$bit] = array();
                     }
-                    $arr =& $arr[$bit];
+                    $arr = &$arr[$bit];
                 }
                 $arr[$last] = $val;
             } else {
@@ -147,12 +162,12 @@ class JsonConfigSource implements ConfigSourceInterface
             if (substr($key, 0, 6) === 'extra.') {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
-                $arr =& $config['extra'];
+                $arr = &$config['extra'];
                 foreach ($bits as $bit) {
                     if (!isset($arr[$bit])) {
                         return;
                     }
-                    $arr =& $arr[$bit];
+                    $arr = &$arr[$bit];
                 }
                 unset($arr[$last]);
             } else {

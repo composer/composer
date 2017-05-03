@@ -36,23 +36,23 @@ class PerforceDownloaderTest extends TestCase
 
     protected function setUp()
     {
-        $this->testPath        = $this->getUniqueTmpDirectory();
-        $this->repoConfig      = $this->getRepoConfig();
-        $this->config          = $this->getConfig();
-        $this->io              = $this->getMockIoInterface();
+        $this->testPath = $this->getUniqueTmpDirectory();
+        $this->repoConfig = $this->getRepoConfig();
+        $this->config = $this->getConfig();
+        $this->io = $this->getMockIoInterface();
         $this->processExecutor = $this->getMockProcessExecutor();
-        $this->repository      = $this->getMockRepository($this->repoConfig, $this->io, $this->config);
-        $this->package         = $this->getMockPackageInterface($this->repository);
-        $this->downloader      = new PerforceDownloader($this->io, $this->config, $this->processExecutor);
+        $this->repository = $this->getMockRepository($this->repoConfig, $this->io, $this->config);
+        $this->package = $this->getMockPackageInterface($this->repository);
+        $this->downloader = new PerforceDownloader($this->io, $this->config, $this->processExecutor);
     }
 
     protected function tearDown()
     {
         $this->downloader = null;
-        $this->package    = null;
+        $this->package = null;
         $this->repository = null;
-        $this->io         = null;
-        $this->config     = null;
+        $this->io = null;
+        $this->config = null;
         $this->repoConfig = null;
         if (is_dir($this->testPath)) {
             $fs = new Filesystem;
