@@ -24,8 +24,6 @@ use Composer\Json\JsonFile;
  */
 class ArchiveManager
 {
-    const IGNORE_VCS_KEY = 'ignoreVcs';
-
     protected $downloadManager;
 
     protected $archivers = array();

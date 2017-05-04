@@ -58,8 +58,6 @@ abstract class BasePackage implements PackageInterface
     protected $repository;
     /** @var array */
     protected $transportOptions = array();
-    /** @var bool */
-    protected $ignoreVcs = ArchiveManager::IGNORE_VCS_DEFAULT;
 
     /**
      * All descendants' constructors should call this parent constructor
@@ -160,24 +158,6 @@ abstract class BasePackage implements PackageInterface
     public function setTransportOptions(array $options)
     {
         $this->transportOptions = $options;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return bool
-     */
-    public function getIgnoreVcs()
-    {
-        return $this->ignoreVcs;
-    }
-
-    /**
-     * @param bool $ignoreVcs
-     */
-    public function setIgnoreVcs($ignoreVcs)
-    {
-        $this->ignoreVcs = $ignoreVcs;
     }
 
     /**

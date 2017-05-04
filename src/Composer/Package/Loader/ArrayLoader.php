@@ -166,10 +166,6 @@ class ArrayLoader implements LoaderInterface
             $package->setArchiveExcludes($config['archive']['exclude']);
         }
 
-        if (isset($config['archive']['ignore-vcs'])) {
-            $package->setIgnoreVcs($config['archive']['ignore-vcs']);
-        }
-
         if ($package instanceof Package\CompletePackageInterface) {
             if (isset($config['scripts']) && is_array($config['scripts'])) {
                 foreach ($config['scripts'] as $event => $listeners) {

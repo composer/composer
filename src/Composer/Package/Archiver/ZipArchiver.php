@@ -42,13 +42,9 @@ class ZipArchiver implements ArchiverInterface
                 $localname = str_replace($sources.'/', '', $filepath);
                 if ($file->isDir()) {
                     $zip->addEmptyDir($localname);
-                    $fileInZip = $localname;
                 } else {
                     $zip->addFile($filepath, $localname);
-                    $fileInZip = $filepath;
                 }
-                $perm = substr(sprintf('%o', $file->getPerms()), -4);
-                $zip->setExternalAttributesName($fileInZip, ZipArchive::OPSYS_UNIX, $perm << 16);
             }
             if ($zip->close()) {
                 return $target;
