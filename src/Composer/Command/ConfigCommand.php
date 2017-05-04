@@ -446,6 +446,18 @@ EOT
                     return $vals;
                 },
             ),
+            'gitlab-unsecure-domains' => array(
+                function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
+
+                    return true;
+                },
+                function ($vals) {
+                    return $vals;
+                },
+            ),
         );
 
         if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {
