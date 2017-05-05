@@ -48,9 +48,11 @@ class InitCommand extends BaseCommand
      */
     protected function configure()
     {
+        $configFile = Factory::getComposerFile();
+
         $this
             ->setName('init')
-            ->setDescription('Creates a basic composer.json file in current directory.')
+            ->setDescription('Creates a basic ' . $configFile . ' file in current directory.')
             ->setDefinition(array(
                 new InputOption('name', null, InputOption::VALUE_REQUIRED, 'Name of the package'),
                 new InputOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package'),
@@ -65,7 +67,7 @@ class InitCommand extends BaseCommand
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories, either by URL or using JSON arrays'),
             ))
             ->setHelp(<<<EOT
-The <info>init</info> command creates a basic composer.json file
+The <info>init</info> command creates a basic $configFile file
 in the current directory.
 
 <info>php composer.phar init</info>
@@ -181,7 +183,7 @@ EOT
         // namespace
         $io->writeError(array(
             '',
-            'This command will guide you through creating your composer.json config.',
+            'This command will guide you through creating your ' . Factory::getComposerFile() . ' config.',
             '',
         ));
 
