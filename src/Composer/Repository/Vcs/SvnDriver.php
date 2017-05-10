@@ -198,23 +198,7 @@ class SvnDriver extends VcsDriver
     {
         if (null === $this->tags) {
             $this->tags = array();
-
-            if ($this->tagsPath !== false) {
-                $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->tagsPath);
-                if ($output) {
-                    foreach ($this->process->splitLines($output) as $line) {
-                        $line = trim($line);
-                        if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                            if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
-                                $this->tags[rtrim($match[2], '/')] = $this->buildIdentifier(
-                                    '/' . $this->tagsPath . '/' . $match[2],
-                                    $match[1]
-                                );
-                            }
-                        }
-                    }
-                }
-            }
+            $this->processTags();
         }
 
         return $this->tags;
@@ -227,47 +211,8 @@ class SvnDriver extends VcsDriver
     {
         if (null === $this->branches) {
             $this->branches = array();
-
-            if (false === $this->trunkPath) {
-                $trunkParent = $this->baseUrl . '/';
-            } else {
-                $trunkParent = $this->baseUrl . '/' . $this->trunkPath;
-            }
-
-            $output = $this->execute('svn ls --verbose', $trunkParent);
-            if ($output) {
-                foreach ($this->process->splitLines($output) as $line) {
-                    $line = trim($line);
-                    if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                        if (isset($match[1]) && isset($match[2]) && $match[2] === './') {
-                            $this->branches['trunk'] = $this->buildIdentifier(
-                                '/' . $this->trunkPath,
-                                $match[1]
-                            );
-                            $this->rootIdentifier = $this->branches['trunk'];
-                            break;
-                        }
-                    }
-                }
-            }
-            unset($output);
-
-            if ($this->branchesPath !== false) {
-                $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->branchesPath);
-                if ($output) {
-                    foreach ($this->process->splitLines(trim($output)) as $line) {
-                        $line = trim($line);
-                        if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                            if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
-                                $this->branches[rtrim($match[2], '/')] = $this->buildIdentifier(
-                                    '/' . $this->branchesPath . '/' . $match[2],
-                                    $match[1]
-                                );
-                            }
-                        }
-                    }
-                }
-            }
+            $this->processTrunk();
+            $this->processBranches();
         }
 
         return $this->branches;
@@ -374,5 +319,116 @@ class SvnDriver extends VcsDriver
     protected function buildIdentifier($baseDir, $revision)
     {
         return rtrim($baseDir, '/') . $this->packagePath . '/@' . $revision;
+    }
+
+    /**
+     * Process the "trunk" branch
+     */
+    private function processTrunk()
+    {
+        if (false === $this->trunkPath) {
+            $trunkParent = $this->baseUrl . '/';
+        } else {
+            $trunkParent = $this->baseUrl . '/' . $this->trunkPath;
+        }
+
+        $output = $this->execute('svn ls --verbose', $trunkParent);
+        if ($output) {
+            foreach ($this->process->splitLines($output) as $line) {
+                $line = trim($line);
+                if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                    if (isset($match[1]) && isset($match[2]) && $match[2] === './') {
+                        $this->branches['trunk'] = $this->buildIdentifier(
+                            '/' . $this->trunkPath,
+                            $match[1]
+                        );
+                        $this->rootIdentifier = $this->branches['trunk'];
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Process the configured branches path(s)
+     */
+    private function processBranches()
+    {
+        if ($this->branchesPath !== false) {
+            if (is_array($this->branchesPath)) {
+                // multiple branch paths specified for processing
+                foreach ($this->branchesPath as $branchPath) {
+                    $this->processBranch($branchPath);
+                }
+            } else {
+                // single branches directory specified for processing
+                $this->processBranch($this->branchesPath);
+            }
+        }
+    }
+
+    /**
+     * Process the configured tag path(s)
+     */
+    private function processTags()
+    {
+        if ($this->tagsPath !== false) {
+            if (is_array($this->tagsPath)) {
+                // multiple tag directories specified for processing
+                foreach ($this->tagsPath as $tagPath) {
+                    $this->processTag($tagPath);
+                }
+            } else {
+                // single tags directory specified for processing
+                $this->processTag($this->tagsPath);
+            }
+        }
+    }
+
+    /**
+     * Process a specific branch directory path
+     *
+     * @param string $branchPath The SVN path to a specific branch directory
+     */
+    private function processBranch($branchPath)
+    {
+        $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $branchPath);
+        if ($output) {
+            foreach ($this->process->splitLines(trim($output)) as $line) {
+                $line = trim($line);
+                if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                    if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
+                        $this->branches[rtrim($match[2], '/')] = $this->buildIdentifier(
+                            '/' . $branchPath . '/' . $match[2],
+                            $match[1]
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Process a specific tag directory path
+     *
+     * @param string $tagPath The SVN path to a specific tag directory
+     */
+    private function processTag($tagPath)
+    {
+        $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $tagPath);
+        if ($output) {
+            foreach ($this->process->splitLines($output) as $line) {
+                $line = trim($line);
+                if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                    if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
+                        $this->tags[rtrim($match[2], '/')] = $this->buildIdentifier(
+                            '/' . $tagPath . '/' . $match[2],
+                            $match[1]
+                        );
+                    }
+                }
+            }
+        }
     }
 }

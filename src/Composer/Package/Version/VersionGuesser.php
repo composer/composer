@@ -276,8 +276,16 @@ class VersionGuesser
         // try to fetch current version from svn
         if (0 === $this->process->execute('svn info --xml', $output, $path)) {
             $trunkPath = isset($packageConfig['trunk-path']) ? preg_quote($packageConfig['trunk-path'], '#') : 'trunk';
-            $branchesPath = isset($packageConfig['branches-path']) ? preg_quote($packageConfig['branches-path'], '#') : 'branches';
-            $tagsPath = isset($packageConfig['tags-path']) ? preg_quote($packageConfig['tags-path'], '#') : 'tags';
+            $branchesPath = 'branches';
+            $tagsPath = 'tags';
+            if (isset($packageConfig['branches-path'])) {
+                $branchesPath = (is_array($packageConfig['branches-path'])) ? implode('|', $packageConfig['branches-path']) : $packageConfig['branches-path'];
+                $branchesPath = preg_quote($branchesPath, '#');
+            }
+            if (isset($packageConfig['tags-path'])) {
+                $tagsPath = (is_array($packageConfig['tags-path'])) ? implode('|', $packageConfig['tags-path']) : $packageConfig['tags-path'];
+                $tagsPath = preg_quote($tagsPath, '#');
+            }
 
             $urlPattern = '#<url>.*/(' . $trunkPath . '|(' . $branchesPath . '|' . $tagsPath . ')/(.*))</url>#';
 
