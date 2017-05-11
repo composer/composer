@@ -174,6 +174,8 @@ class XdebugHandler
             $content .= $data.PHP_EOL;
         }
 
+        $content .= 'allow_url_fopen='.ini_get('allow_url_fopen').PHP_EOL;
+        $content .= 'disable_functions="'.ini_get('disable_functions').'"'.PHP_EOL;
         $content .= 'memory_limit='.ini_get('memory_limit').PHP_EOL;
 
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
