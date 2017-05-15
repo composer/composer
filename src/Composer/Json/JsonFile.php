@@ -59,7 +59,8 @@ class JsonFile
         $this->rfs = $rfs;
         $this->io = $io;
 
-        $this->usingRedis = (new Config(true, getcwd()))->get('redis-store');
+        $config = new Config(true, getcwd());
+        $this->usingRedis = $config->get('redis-store');
         if ($this->usingRedis) {
             $this->redis = new \Redis();
             $this->redis->connect('127.0.0.1');
