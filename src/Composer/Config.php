@@ -60,6 +60,7 @@ class Config
         'platform' => array(),
         'archive-format' => 'tar',
         'archive-dir' => '.',
+        'redis-store' => false,
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth

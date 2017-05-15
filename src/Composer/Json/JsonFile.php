@@ -12,6 +12,7 @@
 
 namespace Composer\Json;
 
+use Composer\Config;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
@@ -38,6 +39,7 @@ class JsonFile
     private $rfs;
     private $io;
     private $redis;
+    private $usingRedis = false;
 
     /**
      * Initializes json file reader/parser.
@@ -57,9 +59,12 @@ class JsonFile
         $this->rfs = $rfs;
         $this->io = $io;
 
-        $this->redis = new \Redis();
-        $this->redis->connect('127.0.0.1');
-        $this->redis->select(0);
+        $this->usingRedis = (new Config(true, getcwd()))->get('redis-store');
+        if ($this->usingRedis) {
+            $this->redis = new \Redis();
+            $this->redis->connect('127.0.0.1');
+            $this->redis->select(0);
+        }
     }
 
     /**
@@ -77,7 +82,9 @@ class JsonFile
      */
     public function exists()
     {
-//        return is_file($this->path);
+        if (!$this->usingRedis) {
+            return is_file($this->path);
+        }
 
         $redisKey = realpath($this->path);
 
@@ -107,8 +114,11 @@ class JsonFile
                 if ($this->io && $this->io->isDebug()) {
                     $this->io->writeError('Reading ' . $this->path);
                 }
-//                $json = file_get_contents($this->path);
-                $json = $this->redis->get(realpath($this->path));
+                if (!$this->usingRedis) {
+                    $json = file_get_contents($this->path);
+                } else {
+                    $json = $this->redis->get(realpath($this->path));
+                }
             }
         } catch (TransportException $e) {
             throw new \RuntimeException($e->getMessage(), 0, $e);
@@ -145,8 +155,13 @@ class JsonFile
         $retries = 3;
         while ($retries--) {
             try {
-//                file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
-                $this->redis->set(realpath($this->path), static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                if (!$this->usingRedis) {
+                    file_put_contents($this->path,
+                        static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                } else {
+                    $this->redis->set(realpath($this->path),
+                        static::encode($hash, $options) . ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                }
                 break;
             } catch (\Exception $e) {
                 if ($retries) {
@@ -168,8 +183,11 @@ class JsonFile
      */
     public function validateSchema($schema = self::STRICT_SCHEMA)
     {
-//        $content = file_get_contents($this->path);
-        $content = $this->redis->get(realpath($this->path));
+        if (!$this->usingRedis) {
+            $content = file_get_contents($this->path);
+        } else {
+            $content = $this->redis->get(realpath($this->path));
+        }
         $data = json_decode($content);
 
         if (null === $data && 'null' !== $content) {
