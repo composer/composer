@@ -58,6 +58,11 @@ class AutoloadGenerator
      */
     private $runScripts = false;
 
+    /**
+     * @var array
+     */
+    private static $autoloadedPackages = array();
+
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
@@ -157,7 +162,7 @@ EOF;
 
         // Collect information from all packages.
         $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getCanonicalPackages());
-        $autoloads = $this->parseAutoloads($packageMap, $mainPackage);
+        $autoloads = $this->parseAutoloads($packageMap, $mainPackage, false);
 
         // Process the 'psr-0' base directories.
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
@@ -383,9 +388,10 @@ EOF;
      *
      * @param  array            $packageMap  array of array(package, installDir-relative-to-composer.json)
      * @param  PackageInterface $mainPackage root package instance
+     * @param  bool             $requireFilesOneTime Should require autoload files only one time per package
      * @return array            array('psr-0' => array('Ns\\Foo' => array('installDir')))
      */
-    public function parseAutoloads(array $packageMap, PackageInterface $mainPackage)
+    public function parseAutoloads(array $packageMap, PackageInterface $mainPackage, $requireFilesOneTime = true)
     {
         $mainPackageMap = array_shift($packageMap);
         $sortedPackageMap = $this->sortPackageMap($packageMap);
@@ -395,7 +401,7 @@ EOF;
         $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $mainPackage);
         $psr4 = $this->parseAutoloadsType($packageMap, 'psr-4', $mainPackage);
         $classmap = $this->parseAutoloadsType(array_reverse($sortedPackageMap), 'classmap', $mainPackage);
-        $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage);
+        $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage, $requireFilesOneTime);
         $exclude = $this->parseAutoloadsType($sortedPackageMap, 'exclude-from-classmap', $mainPackage);
 
         krsort($psr0);
@@ -442,7 +448,23 @@ EOF;
             }
         }
 
+        if (isset($autoloads['files'])) {
+            foreach ($autoloads['files'] as $file) {
+                require_once $file;
+            }
+        }
+
         return $loader;
+    }
+
+    /**
+     * Prevent to package autoload don't be reinserted
+     *
+     * @param  PackageInterface $package Package to be autoloaded
+     * @return bool             The autoload files of this package were required?
+     */
+    protected function packageFilesRequired(PackageInterface $package) {
+        return in_array($package->getName(), self::$autoloadedPackages);
     }
 
     protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)
@@ -807,7 +829,7 @@ $initializer
 INITIALIZER;
     }
 
-    protected function parseAutoloadsType(array $packageMap, $type, PackageInterface $mainPackage)
+    protected function parseAutoloadsType(array $packageMap, $type, PackageInterface $mainPackage, $requireFilesOneTime = true)
     {
         $autoloads = array();
 
@@ -823,6 +845,16 @@ INITIALIZER;
             if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
                 continue;
             }
+
+            // only require files one time to prevent redeclare (function, class, etc.) error
+            if ($type === 'files') {
+                if ($requireFilesOneTime && $this->packageFilesRequired($package)) {
+                    continue;
+                } else {
+                    static::$autoloadedPackages[] = $package->getName();
+                }
+            }
+
             if (null !== $package->getTargetDir() && $package !== $mainPackage) {
                 $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
             }
