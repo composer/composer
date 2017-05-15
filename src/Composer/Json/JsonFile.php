@@ -37,6 +37,7 @@ class JsonFile
     private $path;
     private $rfs;
     private $io;
+    private $redis;
 
     /**
      * Initializes json file reader/parser.
@@ -55,6 +56,10 @@ class JsonFile
         }
         $this->rfs = $rfs;
         $this->io = $io;
+
+        $this->redis = new \Redis();
+        $this->redis->connect('127.0.0.1');
+        $this->redis->select(0);
     }
 
     /**
@@ -90,7 +95,8 @@ class JsonFile
                 if ($this->io && $this->io->isDebug()) {
                     $this->io->writeError('Reading ' . $this->path);
                 }
-                $json = file_get_contents($this->path);
+//                $json = file_get_contents($this->path);
+                $json = $this->redis->get($this->path);
             }
         } catch (TransportException $e) {
             throw new \RuntimeException($e->getMessage(), 0, $e);
@@ -127,7 +133,8 @@ class JsonFile
         $retries = 3;
         while ($retries--) {
             try {
-                file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+//                file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                $this->redis->set($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
                 break;
             } catch (\Exception $e) {
                 if ($retries) {
@@ -149,7 +156,8 @@ class JsonFile
      */
     public function validateSchema($schema = self::STRICT_SCHEMA)
     {
-        $content = file_get_contents($this->path);
+//        $content = file_get_contents($this->path);
+        $content = $this->redis->get($this->path);
         $data = json_decode($content);
 
         if (null === $data && 'null' !== $content) {
