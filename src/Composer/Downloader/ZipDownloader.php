@@ -29,7 +29,7 @@ use ZipArchive;
  */
 class ZipDownloader extends ArchiveDownloader
 {
-    private static $hasSystemUnzip;
+    protected static $hasSystemUnzip;
     private static $hasZipArchive;
     private static $isWindows;
 
