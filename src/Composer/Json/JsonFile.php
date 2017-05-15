@@ -79,12 +79,14 @@ class JsonFile
     {
 //        return is_file($this->path);
 
-        if ($this->redis->exists($this->path)) {
+        $redisKey = realpath($this->path);
+
+        if ($this->redis->exists($redisKey)) {
             return true;
         }
 
         if (is_file($this->path)) {
-            return $this->redis->set($this->path, file_get_contents($this->path));
+            return $this->redis->set($redisKey, file_get_contents($this->path));
         }
 
         return false;
@@ -106,7 +108,7 @@ class JsonFile
                     $this->io->writeError('Reading ' . $this->path);
                 }
 //                $json = file_get_contents($this->path);
-                $json = $this->redis->get($this->path);
+                $json = $this->redis->get(realpath($this->path));
             }
         } catch (TransportException $e) {
             throw new \RuntimeException($e->getMessage(), 0, $e);
@@ -144,7 +146,7 @@ class JsonFile
         while ($retries--) {
             try {
 //                file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
-                $this->redis->set($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                $this->redis->set(realpath($this->path), static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
                 break;
             } catch (\Exception $e) {
                 if ($retries) {
@@ -167,7 +169,7 @@ class JsonFile
     public function validateSchema($schema = self::STRICT_SCHEMA)
     {
 //        $content = file_get_contents($this->path);
-        $content = $this->redis->get($this->path);
+        $content = $this->redis->get(realpath($this->path));
         $data = json_decode($content);
 
         if (null === $data && 'null' !== $content) {
