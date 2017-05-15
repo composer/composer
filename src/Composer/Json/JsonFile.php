@@ -160,12 +160,11 @@ class JsonFile
         $retries = 3;
         while ($retries--) {
             try {
+                $jsonContent = static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : '');
                 if (!$this->usingRedis) {
-                    file_put_contents($this->path,
-                        static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                    file_put_contents($this->path, $jsonContent);
                 } else {
-                    $this->redis->set(realpath($this->path),
-                        static::encode($hash, $options) . ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                    $this->redis->set(realpath($this->path), $jsonContent);
                 }
                 break;
             } catch (\Exception $e) {
