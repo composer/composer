@@ -77,7 +77,17 @@ class JsonFile
      */
     public function exists()
     {
-        return is_file($this->path);
+//        return is_file($this->path);
+
+        if ($this->redis->exists($this->path)) {
+            return true;
+        }
+
+        if (is_file($this->path)) {
+            return $this->redis->set($this->path, file_get_contents($this->path));
+        }
+
+        return false;
     }
 
     /**
