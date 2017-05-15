@@ -63,8 +63,12 @@ class JsonFile
         $this->usingRedis = $config->get('redis-store');
         if ($this->usingRedis) {
             $this->redis = new \Redis();
-            $this->redis->connect('127.0.0.1');
-            $this->redis->select(0);
+            $this->redis->connect($config->get('redis-host'), $config->get('redis-port'), $config->get('redis-timeout'));
+            $this->redis->select($config->get('redis-db-index'));
+            $redisPassword = $config->get('redis-password');
+            if ($redisPassword) {
+                $this->redis->auth($redisPassword);
+            }
         }
     }
 
