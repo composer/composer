@@ -156,8 +156,8 @@ class ZipDownloader extends ArchiveDownloader
             } else {
                 $processError = new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n"), $retval);
             }
-        } catch (\ErrorException $ex) {
-            $processError = new \ErrorException('Archive may contain identical directory or file name with different capitalization (fails on case insensitive filesystems)');
+        } catch (\ErrorException $e) {
+            $processError = new \RuntimeException('The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): '.$e->getMessage(), 0, $e);
         } catch (\Exception $e) {
             $processError = $e;
         }

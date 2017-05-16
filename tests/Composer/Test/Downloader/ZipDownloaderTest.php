@@ -128,8 +128,8 @@ class ZipDownloaderTest extends TestCase
     }
 
     /**
-     * @expectedException \ErrorException
-     * @expectedExceptionMessage Archive may contain identical directory or file name with different capitalization (fails on case insensitive filesystems)
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): Not a directory
      */
     public function testZipArchiveExtractOnlyFailed()
     {
