@@ -360,6 +360,10 @@ class Factory
             // initialize autoload generator
             $generator = new AutoloadGenerator($dispatcher, $io);
             $composer->setAutoloadGenerator($generator);
+
+            // initialize archive manager
+            $am = $this->createArchiveManager($config, $dm);
+            $composer->setArchiveManager($am);
         }
 
         // add installers to the manager (must happen after download manager is created since they read it out of $composer)

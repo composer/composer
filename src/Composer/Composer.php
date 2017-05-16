@@ -20,6 +20,7 @@ use Composer\Plugin\PluginManager;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
+use Composer\Package\Archiver\ArchiveManager;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -76,6 +77,11 @@ class Composer
      * @var Autoload\AutoloadGenerator
      */
     private $autoloadGenerator;
+
+    /**
+     * @var ArchiveManager
+     */
+    private $archiveManager;
 
     /**
      * @param  Package\RootPackageInterface $package
@@ -156,6 +162,22 @@ class Composer
     public function getDownloadManager()
     {
         return $this->downloadManager;
+    }
+
+    /**
+     * @param ArchiveManager $manager
+     */
+    public function setArchiveManager(ArchiveManager $manager)
+    {
+        $this->archiveManager = $manager;
+    }
+
+    /**
+     * @return ArchiveManager
+     */
+    public function getArchiveManager()
+    {
+        return $this->archiveManager;
     }
 
     /**
