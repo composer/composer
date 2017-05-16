@@ -359,7 +359,7 @@ class Installer
         }
 
         $this->whitelistUpdateDependencies(
-            $localRepo,
+            $lockedRepository ?: $localRepo,
             $this->package->getRequires(),
             $this->package->getDevRequires()
         );
@@ -1268,11 +1268,13 @@ class Installer
      * skipped including their dependencies, unless they are listed in the
      * update whitelist themselves.
      *
-     * @param RepositoryInterface $localRepo
+     * @param RepositoryInterface $localOrLockRepo Use the locked repo if available, otherwise installed repo will do
+     *                                             As we want the most accurate package list to work with, and installed
+     *                                             repo might be empty but locked repo will always be current.
      * @param array               $rootRequires    An array of links to packages in require of the root package
      * @param array               $rootDevRequires An array of links to packages in require-dev of the root package
      */
-    private function whitelistUpdateDependencies($localRepo, array $rootRequires, array $rootDevRequires)
+    private function whitelistUpdateDependencies($localOrLockRepo, array $rootRequires, array $rootDevRequires)
     {
         if (!$this->updateWhitelist) {
             return;
@@ -1291,7 +1293,7 @@ class Installer
         }
 
         $pool = new Pool;
-        $pool->addRepository($localRepo);
+        $pool->addRepository($localOrLockRepo);
 
         $seen = array();
 
