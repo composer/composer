@@ -319,7 +319,7 @@ JSON;
 JSON;
 
         $this->remoteFilesystem
-            ->getContents('mycompany.com/gitlab', $apiUrl, false)
+            ->getContents('mycompany.com/gitlab', $apiUrl, false, array())
             ->willReturn($projectData)
             ->shouldBeCalledTimes(1)
         ;
@@ -352,7 +352,7 @@ JSON;
 JSON;
 
         $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false)
+            ->getContents('gitlab.com', $apiUrl, false, array())
             ->willReturn($projectData)
             ->shouldBeCalledTimes(1)
         ;
