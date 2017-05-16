@@ -257,9 +257,11 @@ class EventDispatcher
             throw new \RuntimeException('Failed to locate PHP binary to execute '.$scriptName);
         }
 
-        $memoryFlag = ' -d memory_limit='.ini_get('memory_limit');
+        $allowUrlFOpenFlag = ' -d allow_url_fopen=' . ProcessExecutor::escape(ini_get('allow_url_fopen'));
+        $disableFunctionsFlag = ' -d disable_functions=' . ProcessExecutor::escape(ini_get('disable_functions'));
+        $memoryLimitFlag = ' -d memory_limit=' . ProcessExecutor::escape(ini_get('memory_limit'));
 
-        return ProcessExecutor::escape($phpPath) . $memoryFlag;
+        return ProcessExecutor::escape($phpPath) . $allowUrlFOpenFlag . $disableFunctionsFlag . $memoryLimitFlag;
     }
 
     /**
