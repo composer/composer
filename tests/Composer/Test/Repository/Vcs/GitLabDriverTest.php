@@ -16,6 +16,7 @@ use Composer\Repository\Vcs\GitLabDriver;
 use Composer\Config;
 use Composer\TestCase;
 use Composer\Util\Filesystem;
+use Prophecy\Argument;
 
 /**
  * @author Jérôme Tamarelle <jerome@tamarelle.net>
@@ -86,7 +87,7 @@ class GitLabDriverTest extends TestCase
 JSON;
 
         $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false)
+            ->getContents('gitlab.com', $apiUrl, false, array())
             ->willReturn($projectData)
             ->shouldBeCalledTimes(1)
         ;
@@ -125,7 +126,7 @@ JSON;
 JSON;
 
         $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false)
+            ->getContents('gitlab.com', $apiUrl, false, array())
             ->willReturn($projectData)
             ->shouldBeCalledTimes(1)
         ;
@@ -211,7 +212,7 @@ JSON;
 JSON;
 
         $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false)
+            ->getContents('gitlab.com', $apiUrl, false, array())
             ->willReturn($tagData)
             ->shouldBeCalledTimes(1)
         ;
@@ -253,7 +254,7 @@ JSON;
 JSON;
 
         $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false)
+            ->getContents('gitlab.com', $apiUrl, false, array())
             ->willReturn($branchData)
             ->shouldBeCalledTimes(1)
         ;
@@ -384,7 +385,7 @@ JSON;
 JSON;
 
         $this->remoteFilesystem
-            ->getContents('mycompany.com/gitlab', $apiUrl, false)
+            ->getContents('mycompany.com/gitlab', $apiUrl, false, array())
             ->willReturn($projectData)
             ->shouldBeCalledTimes(1)
         ;
@@ -393,5 +394,43 @@ JSON;
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
+    }
+
+    public function testForwardsOptions()
+    {
+        $options = array(
+            'ssl' => array(
+                'verify_peer' => false,
+            )
+        );
+        $projectData = <<<JSON
+{
+    "id": 17,
+    "default_branch": "mymaster",
+    "public": false,
+    "http_url_to_repo": "https://gitlab.mycompany.local/mygroup/myproject",
+    "ssh_url_to_repo": "git@gitlab.mycompany.local:mygroup/myproject.git",
+    "last_activity_at": "2014-12-01T09:17:51.000+01:00",
+    "name": "My Project",
+    "name_with_namespace": "My Group / My Project",
+    "path": "myproject",
+    "path_with_namespace": "mygroup/myproject",
+    "web_url": "https://gitlab.mycompany.local/mygroup/myproject"
+}
+JSON;
+
+        $this->remoteFilesystem
+            ->getContents(Argument::cetera(), $options)
+            ->willReturn($projectData)
+            ->shouldBeCalled();
+
+        $driver = new GitLabDriver(
+            array('url' => 'https://gitlab.mycompany.local/mygroup/myproject', 'options' => $options),
+            $this->io->reveal(),
+            $this->config,
+            $this->process->reveal(),
+            $this->remoteFilesystem->reveal()
+        );
+        $driver->initialize();
     }
 }
