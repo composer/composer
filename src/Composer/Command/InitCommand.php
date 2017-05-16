@@ -299,16 +299,18 @@ EOT
         $io->writeError(array('', 'Define your dependencies.', ''));
 
         $question = 'Would you like to define your dependencies (require) interactively [<comment>yes</comment>]? ';
+        $require = $input->getOption('require');
         $requirements = array();
-        if ($io->askConfirmation($question, true)) {
-            $requirements = $this->determineRequirements($input, $output, $input->getOption('require'));
+        if ($require || $io->askConfirmation($question, true)) {
+            $requirements = $this->determineRequirements($input, $output, $require);
         }
         $input->setOption('require', $requirements);
 
         $question = 'Would you like to define your dev dependencies (require-dev) interactively [<comment>yes</comment>]? ';
+        $requireDev = $input->getOption('require-dev');
         $devRequirements = array();
-        if ($io->askConfirmation($question, true)) {
-            $devRequirements = $this->determineRequirements($input, $output, $input->getOption('require-dev'));
+        if ($requireDev || $io->askConfirmation($question, true)) {
+            $devRequirements = $this->determineRequirements($input, $output, $requireDev);
         }
         $input->setOption('require-dev', $devRequirements);
     }
