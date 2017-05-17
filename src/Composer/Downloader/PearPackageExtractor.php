@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Util\Filesystem;
+use Composer\Util\Tar;
 
 /**
  * Extractor for pear packages.
@@ -54,8 +55,8 @@ class PearPackageExtractor
         $extractionPath = $target.'/tarball';
 
         try {
-            $archive = new \PharData($this->file);
-            $archive->extractTo($extractionPath, null, true);
+            $archive = new Tar($this->file);
+            $archive->extract($extractionPath);
 
             if (!is_file($this->combine($extractionPath, '/package.xml'))) {
                 throw new \RuntimeException('Invalid PEAR package. It must contain package.xml file.');
