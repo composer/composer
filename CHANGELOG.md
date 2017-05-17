@@ -1,3 +1,12 @@
+### [1.4.2] - 2017-05-17
+
+  * Fixed Bitbucket API handler parsing old deleted branches in hg repos
+  * Fixed regression in gitlab downloads
+  * Fixed output inconsistencies
+  * Fixed unicode handling in `init` command for author names
+  * Fixed useless warning when doing partial updates/removes on packages that are not currently installed
+  * Fixed xdebug disabling issue when combined with disable_functions and allow_url_fopen CLI overrides
+
 ### [1.4.1] - 2017-03-10
 
   * Fixed `apcu-autoloader` config option being ignored in `dump-autoload` command
@@ -520,6 +529,7 @@
 
   * Initial release
 
+[1.4.2]: https://github.com/composer/composer/compare/1.4.1...1.4.2
 [1.4.1]: https://github.com/composer/composer/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/composer/composer/compare/1.3.3...1.4.0
 [1.3.3]: https://github.com/composer/composer/compare/1.3.2...1.3.3
