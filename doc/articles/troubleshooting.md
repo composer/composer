@@ -206,6 +206,8 @@ To enable the swap you can use for example:
 ```
 You can make a permanent swap file following this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04).
 
+This also can be caused by an using an older PHP version. In this case an update of PHP will solve it.
+
 ## Degraded Mode
 
 Due to some intermittent issues on Travis and other systems, we introduced a
