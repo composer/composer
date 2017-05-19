@@ -89,7 +89,7 @@ class ConfigValidator
                     'License %s must not contain extra spaces, make sure to trim it.',
                     json_encode($manifest['license'])
                 );
-            } else if ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license'])) {
+            } elseif ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license'])) {
                 $warnings[] = sprintf(
                     'License %s is not a valid SPDX license identifier, see https://spdx.org/licenses/ if you use an open license.'
                     . PHP_EOL .

@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
-use Symfony\Component\Process\Process;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>

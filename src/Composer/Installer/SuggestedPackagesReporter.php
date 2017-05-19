@@ -126,7 +126,7 @@ class SuggestedPackagesReporter
     }
 
     /**
-     * @param string $string
+     * @param  string $string
      * @return string
      */
     private function escapeOutput($string)
@@ -137,7 +137,7 @@ class SuggestedPackagesReporter
     }
 
     /**
-     * @param string $string
+     * @param  string $string
      * @return string
      */
     private function removeControlCharacters($string)

@@ -445,9 +445,9 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * @param array $configuredDomains
-     * @param string $guessedDomain
-     * @param array $urlParts
+     * @param  array       $configuredDomains
+     * @param  string      $guessedDomain
+     * @param  array       $urlParts
      * @return bool|string
      */
     private static function determineOrigin(array $configuredDomains, $guessedDomain, array &$urlParts)
