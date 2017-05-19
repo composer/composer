@@ -28,7 +28,7 @@ class RepositoryFactoryTest extends TestCase
         $ref->setAccessible(true);
         $repositoryClasses = $ref->getValue($manager);
 
-        $this->assertEquals([
+        $this->assertEquals(array(
             'composer',
             'vcs',
             'package',
@@ -42,6 +42,6 @@ class RepositoryFactoryTest extends TestCase
             'hg',
             'artifact',
             'path',
-        ], array_keys($repositoryClasses));
+        ), array_keys($repositoryClasses));
     }
 }
