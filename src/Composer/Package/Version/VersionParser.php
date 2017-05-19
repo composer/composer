@@ -23,6 +23,7 @@ class VersionParser extends SemverVersionParser
      */
     public function parseConstraints($constraints)
     {
+        $constraints = (string) $constraints;
         if (!isset(self::$constraints[$constraints])) {
             self::$constraints[$constraints] = parent::parseConstraints($constraints);
         }
