@@ -63,9 +63,9 @@ class ValidatingArrayLoader implements LoaderInterface
                 unset($this->config['version']);
             }
         }
-        
+
         if (!empty($this->config['config']['platform'])) {
-            foreach ((array)$this->config['config']['platform'] as $key=>$platform) {
+            foreach ((array) $this->config['config']['platform'] as $key => $platform) {
                 try {
                     $this->versionParser->normalize($platform);
                 } catch (\Exception $e) {

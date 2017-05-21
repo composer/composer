@@ -13,7 +13,6 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Perforce;
-use Composer\Util\ProcessExecutor;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>

@@ -74,10 +74,10 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * extract $file to $path with "unzip" command
      *
-     * @param string $file      File to extract
-     * @param string $path      Path where to extract file
-     * @param bool $isLastChance  If true it is called as a fallback and should throw an exception
-     * @return bool             Success status
+     * @param  string $file         File to extract
+     * @param  string $path         Path where to extract file
+     * @param  bool   $isLastChance If true it is called as a fallback and should throw an exception
+     * @return bool   Success status
      */
     protected function extractWithSystemUnzip($file, $path, $isLastChance)
     {
@@ -121,10 +121,10 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * extract $file to $path with ZipArchive
      *
-     * @param string $file      File to extract
-     * @param string $path      Path where to extract file
-     * @param bool $isLastChance  If true it is called as a fallback and should throw an exception
-     * @return bool             Success status
+     * @param  string $file         File to extract
+     * @param  string $path         Path where to extract file
+     * @param  bool   $isLastChance If true it is called as a fallback and should throw an exception
+     * @return bool   Success status
      */
     protected function extractWithZipArchive($file, $path, $isLastChance)
     {

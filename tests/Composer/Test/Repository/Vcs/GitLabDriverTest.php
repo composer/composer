@@ -401,7 +401,7 @@ JSON;
         $options = array(
             'ssl' => array(
                 'verify_peer' => false,
-            )
+            ),
         );
         $projectData = <<<JSON
 {

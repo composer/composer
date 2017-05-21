@@ -32,7 +32,6 @@ class ZipDownloaderTest extends TestCase
         $this->config = $this->getMock('Composer\Config');
     }
 
-
     public function tearDown()
     {
         $fs = new Filesystem;
