@@ -159,7 +159,7 @@ class Application extends BaseApplication
                 Composer::VERSION,
                 Composer::RELEASE_DATE,
                 defined('HHVM_VERSION') ? 'HHVM '.HHVM_VERSION : 'PHP '.PHP_VERSION,
-                php_uname('s') . ' / ' . php_uname('r')
+                function_exists('php_uname') ? php_uname('s') . ' / ' . php_uname('r') : 'Unknown OS'
             ), true, IOInterface::DEBUG);
 
             if (PHP_VERSION_ID < 50302) {
