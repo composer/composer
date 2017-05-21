@@ -109,7 +109,7 @@ class Bitbucket
                 return false;
             } elseif (in_array($e->getCode(), array(403, 401))) {
                 $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
-                $this->io->writeError('You can also add it manually later by using "composer config bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
+                $this->io->writeError('You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
 
                 return false;
             }
@@ -144,7 +144,7 @@ class Bitbucket
 
         if (!$consumerKey) {
             $this->io->writeError('<warning>No consumer key given, aborting.</warning>');
-            $this->io->writeError('You can also add it manually later by using "composer config bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
+            $this->io->writeError('You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
 
             return false;
         }
@@ -153,7 +153,7 @@ class Bitbucket
 
         if (!$consumerSecret) {
             $this->io->writeError('<warning>No consumer secret given, aborting.</warning>');
-            $this->io->writeError('You can also add it manually later by using "composer config bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
+            $this->io->writeError('You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
 
             return false;
         }

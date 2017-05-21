@@ -184,7 +184,7 @@ class JsonManipulator
         $decoded = JsonFile::parseJson($this->contents);
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'repositories', 'extra')) && false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'extra')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
@@ -304,7 +304,7 @@ class JsonManipulator
         }
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'repositories', 'extra')) && false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'extra')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
