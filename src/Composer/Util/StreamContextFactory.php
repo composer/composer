@@ -143,8 +143,8 @@ final class StreamContextFactory
             $options['http']['header'][] = sprintf(
                 'User-Agent: Composer/%s (%s; %s; %s%s)',
                 Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
-                php_uname('s'),
-                php_uname('r'),
+                function_exists('php_uname') ? php_uname('s') : 'Unknown',
+                function_exists('php_uname') ? php_uname('r') : 'Unknown',
                 $phpVersion,
                 getenv('CI') ? '; CI' : ''
             );
