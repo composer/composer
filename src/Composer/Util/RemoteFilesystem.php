@@ -290,7 +290,7 @@ class RemoteFilesystem
                 $e->setHeaders($http_response_header);
                 $e->setStatusCode($this->findStatusCode($http_response_header));
                 $e->setResponse($result);
-                $this->io->writeError('Content-Length mismatch, received "'.$result.'" ('.Platform::strlen($result).' out of '.$contentLength.' bytes)', true, IOInterface::DEBUG);
+                $this->io->writeError('Content-Length mismatch, received '.Platform::strlen($result).' out of '.$contentLength.' bytes: (' . base64_encode($result).')', true, IOInterface::DEBUG);
 
                 throw $e;
             }
