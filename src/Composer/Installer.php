@@ -755,9 +755,9 @@ class Installer
                 continue;
             }
 
-            if ($package->getType() === 'composer-plugin' 
+            if ($package->getType() === 'composer-plugin'
                 || $package->getType() === 'composer-installer'
-                || in_array($package->getName(), $installerRequires)
+                || count(array_intersect($package->getNames(), $installerRequires))
             ) {
                 // capture the requirements for this package so those packages will be moved up as well
                 $installerRequires = array_merge($installerRequires, array_keys($package->getRequires()));
