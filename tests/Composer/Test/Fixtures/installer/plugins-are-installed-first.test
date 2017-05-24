@@ -1,5 +1,5 @@
 --TEST--
-Composer installers are installed first if they have no meaningful requirements
+Composer installers and their requirements are installed first
 --COMPOSER--
 {
     "repositories": [
@@ -26,6 +26,6 @@ install
 --EXPECT--
 Installing inst (1.0.0)
 Installing inst-with-req (1.0.0)
-Installing pkg (1.0.0)
 Installing pkg2 (1.0.0)
 Installing inst-with-req2 (1.0.0)
+Installing pkg (1.0.0)
