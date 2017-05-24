@@ -758,17 +758,17 @@ class Installer
             }
 
             // is this package a plugin?
-            $is_plugin = $package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer';
+            $isPlugin = $package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer';
 
             // is this a plugin or a dependency of a plugin?
-            if ($is_plugin || count(array_intersect($package->getNames(), $pluginRequires))) {
+            if ($isPlugin || count(array_intersect($package->getNames(), $pluginRequires))) {
                 // get the package's requires, but filter out any platform requirements or 'composer-plugin-api'
                 $requires = array_filter(array_keys($package->getRequires()), function($req) {
                     return $req !== 'composer-plugin-api' && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
                 });
 
                 // is this a plugin with no meaningful dependencies?
-                if ($is_plugin && !count($requires)) {
+                if ($isPlugin && !count($requires)) {
                     // plugins with no dependencies go to the very front
                     array_unshift($pluginsNoDeps, $op);
                 } else {
