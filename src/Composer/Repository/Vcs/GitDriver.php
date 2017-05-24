@@ -115,6 +115,18 @@ class GitDriver extends VcsDriver
      */
     public function getDist($identifier)
     {
+        if (isset($this->repoConfig['dist'])) {
+            $label = array_search($identifier, $this->getTags()) ?: $identifier;
+            $infos = $this->getComposerInformation($identifier);
+
+            return array(
+                'type' => 'zip',
+                'url' => sprintf($this->repoConfig['dist'], $infos['version']),
+                'reference' => $label,
+                'shasum' => null
+            );
+        }
+
         return null;
     }
 
