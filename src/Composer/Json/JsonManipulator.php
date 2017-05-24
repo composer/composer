@@ -459,7 +459,7 @@ class JsonManipulator
             return $out . implode(','.$this->newline, $elems) . $this->newline . str_repeat($this->indent, $depth + 1) . '}';
         }
 
-        return JsonFile::encode($data);
+        return JsonFile::encode(addcslashes($data, '\\'));
     }
 
     protected function detectIndenting()
