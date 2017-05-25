@@ -264,6 +264,10 @@ GitHub and BitBucket:
 
 The only requirement is the installation of SSH keys for a git client.
 
+> **Note:** Use the Bitbucket repository slug (aka full_name) and not the
+> repository name in your composer configuration. The repository slug is
+> lowercase and contains exactly one '/'.
+
 #### Git alternatives
 
 Git is not the only version control system supported by the VCS repository.
