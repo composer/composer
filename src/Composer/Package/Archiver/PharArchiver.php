@@ -74,6 +74,12 @@ class PharArchiver implements ArchiverInterface
                 $target = $filename . '.' . $format;
             }
 
+            // Compress zip file if possible (not implemented yet as of HHVM 3.5.0)
+            if ($format === 'zip' && extension_loaded('zlib') && !defined('HHVM_VERSION'))
+            {
+                $phar->compressFiles(\Phar::GZ);
+            }
+
             return $target;
         } catch (\UnexpectedValueException $e) {
             $message = sprintf("Could not create archive '%s' from '%s': %s",
