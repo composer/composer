@@ -107,6 +107,7 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
 
     public function getKeys()
     {
+        date_default_timezone_set('UTC');
         return array(
             array(
                 'type',
