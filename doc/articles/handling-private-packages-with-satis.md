@@ -51,7 +51,8 @@ The default file Satis looks for is `satis.json` in the root of the repository.
   "repositories": [
     { "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
     { "type": "vcs", "url": "http://svn.example.org/private/repo" },
-    { "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
+    { "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" },
+    { "packagist": false }
   ],
   "require-all": true
 }
