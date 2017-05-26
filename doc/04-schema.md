@@ -146,13 +146,9 @@ The recommended notation for the most common licenses is (alphabetical):
 - BSD-3-Clause
 - BSD-4-Clause
 - GPL-2.0
-- GPL-2.0+
 - GPL-3.0
-- GPL-3.0+
 - LGPL-2.1
-- LGPL-2.1+
 - LGPL-3.0
-- LGPL-3.0+
 - MIT
 
 Optional, but it is highly recommended to supply this. More identifiers are
