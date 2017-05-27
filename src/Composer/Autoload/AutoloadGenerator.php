@@ -791,7 +791,7 @@ HEADER;
 
             $file .= sprintf("    public static $%s = %s;\n\n", $prop, $value);
             if ('files' !== $prop) {
-                $initializer .= "            \$loader->$prop = ComposerStaticInit$suffix::\$$prop;\n";
+                $initializer .= "            \$loader->$prop = self::\$$prop;\n";
             }
         }
 
