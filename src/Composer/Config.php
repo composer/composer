@@ -175,10 +175,12 @@ class Config
                 if (is_int($name)) {
                     $this->repositories[] = $repository;
                 } else {
-                    if ($name === 'packagist') { // BC support for default "packagist" named repo
-                        $this->repositories[$name . '.org'] = $repository;
-                    } else {
-                        $this->repositories[$name] = $repository;
+                    if (!isset($this->repositories[$name]) || !array_key_exists('immutable', $this->repositories[$name]) || !$this->repositories[$name]['immutable']) {
+                        if ($name === 'packagist') { // BC support for default "packagist" named repo
+                            $this->repositories[$name . '.org'] = $repository;
+                        } else {
+                            $this->repositories[$name] = $repository;
+                        }
                     }
                 }
             }

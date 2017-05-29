@@ -264,6 +264,50 @@ GitHub and BitBucket:
 
 The only requirement is the installation of SSH keys for a git client.
 
+#### Using named private repositories
+
+When working with private repositories it's sometimes required to use different 
+ways to access a repository.
+While your CI system might use SSH to read from your repository a developer 
+needs to access the same repository using another resource or authentication.
+
+You'll need to define a named repository in your `composer.json` file:
+
+```json
+{
+    "require": {
+        "vendor/my-private-repo": "dev-master"
+    },
+    "repositories": {
+        "my-private-repo": {
+            "type": "vcs",
+            "url":  "git@bitbucket.org:vendor/my-private-repo.git"
+        }
+    }
+}
+```
+
+Any developer who cannot access the default repository source can now 
+define an own source for this named repository in his global Composer `config.json`.
+Adding `"immutable": true` to the repository config will override any same named
+repository configuration.
+
+```json
+{
+    "config": {
+    
+    },
+    "repositories": {
+        "my-private-repo": {
+            "type": "vcs",
+            "url":  "https://bitbucket.org:vendor/my-private-repo.git",
+            "immutable": true
+        }
+    }
+}
+```
+
+
 #### Git alternatives
 
 Git is not the only version control system supported by the VCS repository.
