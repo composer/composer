@@ -332,14 +332,10 @@ class ClassLoader
         // Search for versioned php files (ex .php3, .php4, .php5, .php7)
         if (false === $file) {
 
-            // Retrieve the major version of the current php environment
-            $phpVersionArray = explode('.', phpversion());
-            $phpMajorVersion = array_shift($phpVersionArray);
-
             // Append the major version to the .php extension
             $file = $this->findFileWithExtension(
                 $class,
-                '.php' . $phpMajorVersion
+                '.php' . PHP_MAJOR_VERSION
             );
 
         }
