@@ -326,7 +326,22 @@ class ClassLoader
             return false;
         }
 
+        // Search for default .php files
         $file = $this->findFileWithExtension($class, '.php');
+
+        // Search for versioned php files (ex .php3, .php4, .php5, .php7)
+        if (false === $file) {
+
+            // Retrieve the major version of the current php environment
+            $PhpMajorVersion = explode('.', phpversion())[0];
+
+            // Append the major version to the .php extension
+            $file = $this->findFileWithExtension(
+                $class,
+                '.php' . $PhpMajorVersion
+            );
+
+        }
 
         // Search for Hack files if we are running on HHVM
         if (false === $file && defined('HHVM_VERSION')) {
