@@ -333,12 +333,13 @@ class ClassLoader
         if (false === $file) {
 
             // Retrieve the major version of the current php environment
-            $PhpMajorVersion = explode('.', phpversion())[0];
+            $phpVersionArray = explode('.', phpversion());
+            $phpMajorVersion = array_shift($phpVersionArray);
 
             // Append the major version to the .php extension
             $file = $this->findFileWithExtension(
                 $class,
-                '.php' . $PhpMajorVersion
+                '.php' . $phpMajorVersion
             );
 
         }
