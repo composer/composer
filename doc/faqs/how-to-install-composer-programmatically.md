@@ -4,12 +4,12 @@ As noted on the download page, the installer script contains a
 signature which changes when the installer code changes and as such
 it should not be relied upon long term.
 
-An alternative is to use this script which only works with unix utils:
+An alternative is to use this script which only works with UNIX utils:
 
 ```bash
 #!/bin/sh
 
-EXPECTED_SIGNATURE=$(wget -q -O - https://composer.github.io/installer.sig)
+EXPECTED_SIGNATURE=$(php -r "echo trim(file_get_contents('https://composer.github.io/installer.sig'));")
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 ACTUAL_SIGNATURE=$(php -r "echo hash_file('SHA384', 'composer-setup.php');")
 
