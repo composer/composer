@@ -186,6 +186,10 @@ EOT
 
                     $io->write('<info>'.$path.'</info>:');
                     $io->write(sprintf('    From <comment>%s</comment> to <comment>%s</comment>', $previousVersion, $currentVersion));
+
+                    if ($currentVersion === $previousVersion) {
+                        $io->writeError('    <warning>Version may have been updated since composer.lock was last updated</warning>');
+                    }
                 } else {
                     $io->write($path);
                 }
