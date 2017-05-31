@@ -21,6 +21,7 @@ use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Script\ScriptEvents;
+use Webmozart\PathUtil\Path;
 
 /**
  * @author Igor Wiedler <igor@wiedler.ch>
@@ -866,7 +867,7 @@ INITIALIZER;
                             $installPath = strtr(getcwd(), '\\', '/');
                         }
 
-                        $resolvedPath = rtrim($installPath . '/' . $updir, '/');
+                        $resolvedPath = Path::canonicalize($installPath . '/' . $updir);
                         $autoloads[] = preg_quote(strtr($resolvedPath, '\\', '/')) . '/' . $path;
                         continue;
                     }
