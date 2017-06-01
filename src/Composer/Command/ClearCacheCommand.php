@@ -42,10 +42,10 @@ EOT
         $io = $this->getIO();
 
         $cachePaths = array(
-            'cache-dir' => $config->get('cache-dir'),
-            'cache-files-dir' => $config->get('cache-files-dir'),
-            'cache-repo-dir' => $config->get('cache-repo-dir'),
             'cache-vcs-dir' => $config->get('cache-vcs-dir'),
+            'cache-repo-dir' => $config->get('cache-repo-dir'),
+            'cache-files-dir' => $config->get('cache-files-dir'),
+            'cache-dir' => $config->get('cache-dir'),
         );
 
         foreach ($cachePaths as $key => $cachePath) {
@@ -63,7 +63,7 @@ EOT
             }
 
             $io->writeError("<info>Clearing cache ($key): $cachePath</info>");
-            $cache->gc(0, 0);
+            $cache->clear();
         }
 
         $io->writeError('<info>All caches cleared.</info>');
