@@ -234,14 +234,14 @@ one by prefixing the command name with `@`:
 
 ## Calling Composer commands
 
-To call Composer commands, you can use `@composer` which will automatically
+To call Composer commands, you can use `composer` which will automatically
 resolve to whatever composer.phar is currently being used:
 
 ```json
 {
     "scripts": {
         "test": [
-            "@composer install",
+            "composer install",
             "phpunit"
         ]
     }
@@ -249,7 +249,7 @@ resolve to whatever composer.phar is currently being used:
 ```
 
 One limitation of this is that you can not call multiple composer commands in
-a row like `@composer install && @composer foo`. You must split them up in a
+a row like `composer install && composer foo`. You must split them up in a
 JSON array of commands.
 
 ## Executing PHP scripts
