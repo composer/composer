@@ -66,7 +66,7 @@ class Rule2Literals extends Rule
     public function equals(Rule $rule)
     {
         $literals = $rule->getLiterals();
-        if (2 != count($literals)) {
+        if (2 !== count($literals)) {
             return false;
         }
 
