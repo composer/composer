@@ -216,6 +216,7 @@ class FilesystemTest extends TestCase
             array('/', '//'),
             array('/', '///'),
             array('/Foo', '///Foo'),
+            array('//windows/UNC/Name', '\\\\windows\\UNC\\Name'),
             array('c:/', 'c:\\'),
             array('../src', 'Foo/Bar/../../../src'),
             array('c:../b', 'c:.\\..\\a\\..\\b'),
