@@ -318,6 +318,9 @@ class ClassLoader
      */
     public function loadClass($class)
     {
+        if(class_exists($class,false)){
+            return;
+        }
         if ($file = $this->findFile($class)) {
             includeFile($file);
 
