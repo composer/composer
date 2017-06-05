@@ -132,7 +132,10 @@ Create a new `composer.bat` file alongside `composer.phar`:
 ```sh
 C:\bin>echo @php "%~dp0composer.phar" %*>composer.bat
 ```
-
+For powershell user(like Windows 10), please run 
+```sh
+c:\bin>echo "php '%~dp0composer.phar' %*" | Set-Content -Encoding ASCII composer.bat
+```
 Add the directory to your PATH environment variable if it isn't already.
 For information on changing your PATH variable, please see
 [this article](http://www.computerhope.com/issues/ch000549.htm) and/or
