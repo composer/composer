@@ -162,7 +162,7 @@ Example using a custom repository using SSH (requires the SSH2 PECL extension):
 
 > **Tip:** See [ssh2 context options] for more information.
 
-Example using HTTP over SSL using a client certificate:
+Example using SSL/TLS (HTTPS) using a client certificate:
 
 ```json
 {
