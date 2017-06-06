@@ -36,7 +36,7 @@ For example:
 
 ```bash
 wget https://raw.githubusercontent.com/composer/getcomposer.org/1b137f8bf6db3e79a38a5bc45324414a6b1f9df2/web/installer -O - -q | php -- --quiet
-```
+```doc/faqs/how-to-install-composer-programmatically.md
 
 You may replace the commit hash by whatever the last commit hash is on
 https://github.com/composer/getcomposer.org/commits/master
