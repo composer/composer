@@ -102,6 +102,10 @@ mv composer.phar /usr/local/bin/composer
 > directory" then you must create the directory manually before proceeding:
 > `mkdir -p /usr/local/bin`.
 
+> **NOTE:** Running commands with sudo can brick your computer. So, a better
+> alternative could be to create the $HOME/bin directory, and mv composer to
+> that location and add $HOME/bin to your path.
+
 > **Note:** For information on changing your PATH, please read the
 > [Wikipedia article](https://en.wikipedia.org/wiki/PATH_(variable)) and/or use Google.
 
