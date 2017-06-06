@@ -12,6 +12,7 @@
 
 namespace Composer\Json;
 
+use Composer\Config;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
@@ -37,6 +38,8 @@ class JsonFile
     private $path;
     private $rfs;
     private $io;
+    private $redis;
+    private $usingRedis = false;
 
     /**
      * Initializes json file reader/parser.
@@ -55,6 +58,18 @@ class JsonFile
         }
         $this->rfs = $rfs;
         $this->io = $io;
+
+        $config = new Config(true, getcwd());
+        $this->usingRedis = $config->get('redis-store');
+        if ($this->usingRedis) {
+            $this->redis = new \Redis();
+            $this->redis->connect($config->get('redis-host'), $config->get('redis-port'), $config->get('redis-timeout'));
+            $this->redis->select($config->get('redis-db-index'));
+            $redisPassword = $config->get('redis-password');
+            if ($redisPassword) {
+                $this->redis->auth($redisPassword);
+            }
+        }
     }
 
     /**
@@ -72,7 +87,21 @@ class JsonFile
      */
     public function exists()
     {
-        return is_file($this->path);
+        if (!$this->usingRedis) {
+            return is_file($this->path);
+        }
+
+        $redisKey = realpath($this->path);
+
+        if ($this->redis->exists($redisKey)) {
+            return true;
+        }
+
+        if (is_file($this->path)) {
+            return $this->redis->set($redisKey, file_get_contents($this->path));
+        }
+
+        return false;
     }
 
     /**
@@ -90,7 +119,11 @@ class JsonFile
                 if ($this->io && $this->io->isDebug()) {
                     $this->io->writeError('Reading ' . $this->path);
                 }
-                $json = file_get_contents($this->path);
+                if (!$this->usingRedis) {
+                    $json = file_get_contents($this->path);
+                } else {
+                    $json = $this->redis->get(realpath($this->path));
+                }
             }
         } catch (TransportException $e) {
             throw new \RuntimeException($e->getMessage(), 0, $e);
@@ -127,7 +160,12 @@ class JsonFile
         $retries = 3;
         while ($retries--) {
             try {
-                file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                $jsonContent = static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : '');
+                if (!$this->usingRedis) {
+                    file_put_contents($this->path, $jsonContent);
+                } else {
+                    $this->redis->set(realpath($this->path), $jsonContent);
+                }
                 break;
             } catch (\Exception $e) {
                 if ($retries) {
@@ -149,7 +187,11 @@ class JsonFile
      */
     public function validateSchema($schema = self::STRICT_SCHEMA)
     {
-        $content = file_get_contents($this->path);
+        if (!$this->usingRedis) {
+            $content = file_get_contents($this->path);
+        } else {
+            $content = $this->redis->get(realpath($this->path));
+        }
         $data = json_decode($content);
 
         if (null === $data && 'null' !== $content) {

@@ -60,6 +60,12 @@ class Config
         'platform' => array(),
         'archive-format' => 'tar',
         'archive-dir' => '.',
+        'redis-store' => false,
+        'redis-host' => '127.0.0.1',
+        'redis-port' => '6379',
+        'redis-password' => '',
+        'redis-timeout' => 0.0,
+        'redis-db-index' => 0,
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth
