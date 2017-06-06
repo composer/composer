@@ -4,7 +4,7 @@
     "keywords": ["package", "dependency", "autoload"],
     "homepage": "https://getcomposer.org/",
     "type": "library",
-    "license": "MIT",
+    "license": "{$env:LICENSE}",
     "authors": [
         {
             "name": "Nils Adermann",
@@ -34,7 +34,7 @@
     },
     "config": {
         "platform": {
-            "php": "5.3.3"
+            "php": "{$env:PHP_VERSION}"
         }
     },
     "suggest": {

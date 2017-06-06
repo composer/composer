@@ -208,6 +208,19 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $doubleData = json_decode($decodedData['t'], true);
         $this->assertEquals($data, $doubleData);
     }
+    
+    public function testReplaceEnvironmentVariables()
+    {
+        $license = 'MIT';
+        $platformVersion = '5.3.3';
+        putenv("LICENSE=$license");
+        putenv("PHP_VERSION=$platformVersion");
+        
+        $file = new JsonFile(__DIR__.'/Fixtures/composer.json');
+        $data = $file->replaceEnvironmentVariables($file->read());
+        $this->assertEquals($license, $data['license']);
+        $this->assertEquals($platformVersion, $data['config']['platform']['php']);
+    }
 
     private function expectParseException($text, $json)
     {

@@ -283,7 +283,7 @@ class Factory
                 $instructions = 'To initialize a project, please create a composer.json file as described in the https://getcomposer.org/ "Getting Started" section';
                 throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
             }
-
+            
             $file->validateSchema(JsonFile::LAX_SCHEMA);
             $jsonParser = new JsonParser;
             try {
@@ -293,7 +293,7 @@ class Factory
                 $io->writeError('<warning>Key '.$details['key'].' is a duplicate in '.$localConfig.' at line '.$details['line'].'</warning>');
             }
 
-            $localConfig = $file->read();
+            $localConfig = $file->replaceEnvironmentVariables($file->read());
         }
 
         // Load config and override with local config/auth config
