@@ -112,4 +112,52 @@ class ApplicationTest extends TestCase
     {
         $this->ensureNoDevWarning('self-up');
     }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testNoFatalErrorOnInvalidSysTempDir()
+    {
+        $inputMock = $this->getMock('\Symfony\Component\Console\Input\InputInterface');
+        $inputMock->expects($this->at(0))
+            ->method('getParameterOption')
+            ->with($this->equalTo(array('--working-dir', '-d')))
+            ->willReturn(false)
+        ;
+
+        $outputMock = $this->getMock('\Symfony\Component\Console\Output\OutputInterface');
+        $outputMock->expects($this->any())
+            ->method('getVerbosity')
+            ->willReturn(OutputInterface::VERBOSITY_NORMAL)
+        ;
+
+        $errorMessage = null;
+
+        $outputMock->expects($this->atLeastOnce())
+            ->method('write')
+            ->willReturnCallback(function ($message) use (&$errorMessage) {
+                if (substr($message, 0, strlen('<error>')) !== '<error>') {
+                    return;
+                }
+
+                $errorMessage = $message;
+            })
+        ;
+
+        eval(<<<CODE
+namespace Composer\Console {
+    function sys_get_temp_dir()
+    {
+        return '/composer-tmp-dir';
+    }
+}
+CODE
+
+        );
+
+        $application = new Application;
+        $application->doRun($inputMock, $outputMock);
+
+        $this->assertEquals('<error>PHP temp directory (/composer-tmp-dir) does not exist or is not writable to Composer. Set sys_temp_dir in your php.ini</error>', $errorMessage);
+    }
 }
