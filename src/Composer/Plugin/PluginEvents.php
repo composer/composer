@@ -16,6 +16,7 @@ namespace Composer\Plugin;
  * The Plugin Events.
  *
  * @author Nils Adermann <naderman@naderman.de>
+ * @author Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
 class PluginEvents
 {
@@ -43,9 +44,43 @@ class PluginEvents
      * The PRE_FILE_DOWNLOAD event occurs before downloading a file
      *
      * The event listener method receives a
-     * Composer\Plugin\PreFileDownloadEvent instance.
+     * Composer\Plugin\FileDownloadEvent instance.
      *
      * @var string
      */
+
     const PRE_FILE_DOWNLOAD = 'pre-file-download';
+
+
+    /**
+     * The POST_FILE_DOWNLOAD event occurs after downloading a file
+     *
+     * The event listener method receives a
+     * Composer\Plugin\FileDownloadEvent instance.
+     *
+     * @var string
+     */
+    const POST_FILE_DOWNLOAD = 'post-file-download';
+
+
+    /**
+     * The PRE_VCS_DOWNLOAD event occurs before downloading a repository
+     *
+     * The event listener method receives a
+     * Composer\Plugin\FileDownloadEvent instance.
+     *
+     * @var string
+     */
+    const PRE_VCS_DOWNLOAD = 'pre-vcs-download';
+
+
+    /**
+     * The POST_VCS_DOWNLOAD event occurs after downloading a repository
+     *
+     * The event listener method receives a
+     * Composer\Plugin\FileDownloadEvent instance.
+     *
+     * @var string
+     */
+    const POST_VCS_DOWNLOAD = 'post-vcs-download';
 }
