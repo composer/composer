@@ -572,6 +572,66 @@ EOT
             return $this->configSource->addConfigSetting($settingKey, $values[0]);
         }
 
+        // handle defaults
+        $uniqueDefaults = array(
+            'vendor-prefix' => array('is_string', function ($val) { return $val; }),
+            'type' => array('is_string', function ($val) { return $val; }),
+            'description' => array('is_string', function ($val) { return $val; }),
+            'minimum-stability' => array(
+                function ($val) { return isset(BasePackage::$stabilities[VersionParser::normalizeStability($val)]); },
+                function ($val) { return VersionParser::normalizeStability($val); }
+            ),
+        );
+        $multiDefaults = array(
+            'license' => array(
+                function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
+
+                    return true;
+                },
+                function ($vals) {
+                    return $vals;
+                },
+            ),
+        );
+
+        if (preg_match('/^defaults\.(.+)/', $settingKey, $matches)) {
+            if (! $input->getOption('global')) {
+                throw new \InvalidArgumentException('The '.$settingKey.' property can only be set in the global config.json file. Use `composer config -g` instead.');
+            }
+
+            if ($input->getOption('unset')) {
+                return $this->configSource->removeConfigSetting($settingKey);
+            }
+
+            if ('defaults.author' == $settingKey) {
+                // TODO: Extract parseAuthorString to Trait or Util. Not sure about best approach but this isn't it.
+                $initCmd = new InitCommand();
+                $author = $initCmd->parseAuthorString($values[0]);
+
+                return $this->configSource->addConfigSetting('defaults.author', $author);
+            }
+
+            if (preg_match('/^defaults\.author\.(.+)/', $settingKey, $authorMatches)) {
+                $composer = $this->getComposer();
+                $config = $composer->getConfig();
+                $defaults = $config->get('defaults');
+                $author = empty($defaults['author']) ? array() : $defaults['author'];
+                $author[$authorMatches[1]] = $values[0];
+
+                return $this->configSource->addConfigSetting('defaults.author', $author);
+            }
+
+            if (isset($uniqueDefaults[$matches[1]])) {
+                return $this->handleSingleValue($settingKey, $uniqueDefaults[$matches[1]], $values, 'addConfigSetting');
+            }
+            if (isset($multiDefaults[$matches[1]])) {
+                return $this->handleMultiValue($settingKey, $multiDefaults[$matches[1]], $values, 'addConfigSetting');
+            }
+        }
+
         // handle auth
         if (preg_match('/^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic)\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
