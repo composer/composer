@@ -655,4 +655,10 @@ You can disable the default Packagist.org repository by adding this to your
 }
 ```
 
+You can disable Packagist.org globally by using the global config flag:
+
+```
+composer confg -g repo.packagist false
+```
+
 &larr; [Schema](04-schema.md)  |  [Config](06-config.md) &rarr;
