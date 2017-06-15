@@ -348,7 +348,19 @@ class ClassLoader
             }
         }
 
+        // Search for default .php files
         $file = $this->findFileWithExtension($class, '.php');
+
+        // Search for versioned php files (ex .php3, .php4, .php5, .php7)
+        if (false === $file) {
+
+            // Append the major version to the .php extension
+            $file = $this->findFileWithExtension(
+                $class,
+                '.php' . PHP_MAJOR_VERSION
+            );
+
+        }
 
         // Search for Hack files if we are running on HHVM
         if (false === $file && defined('HHVM_VERSION')) {
