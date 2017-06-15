@@ -274,6 +274,10 @@
                 "archive-dir": {
                     "type": "string",
                     "description": "The default archive path when not provided on cli, defaults to \".\"."
+                },
+                "htaccess-protect": {
+                    "type": "boolean",
+                    "description": "Defaults to true. If set to false, Composer will not create .htaccess files in the composer home, cache, and data directories."
                 }
             }
         },
