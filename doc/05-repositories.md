@@ -292,6 +292,28 @@ repository as it would with any other git repository instead of using the
 GitHub API. But unlike using the `git` driver directly, Composer will still
 attempt to use github's zip files.
 
+Please note:
+* **To let Composer choose which driver to use** the repository type needs to be defined as "vcs"
+* **BitBucket driver** require the OAuth method to access to BitBucket REST APIs.
+If you want to know how to create a OAuth consumer using BitBucket, please refer to [this link](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). 
+**Remember** to fill the callback url (even with a casual address) to makes OAuth 2 work.
+After created an OAuth consumer, you need to setup your composer.json config section with 
+the requested credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
+```json
+{
+    "config": {
+        "bitbucket-oauth": {
+            "bitbucket.org": {
+                "consumer-key": "myKey", 
+                "consumer-secret": "mySecret"
+            }
+        }
+        
+    }
+}
+```
+* **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update composer cache and install the package from dist.
+
 #### Subversion Options
 
 Since Subversion has no native concept of branches and tags, Composer assumes
