@@ -534,10 +534,6 @@ EOF;
             }
         }
 
-        if (preg_match('/\.phar$/', $path)) {
-            $baseDir = "'phar://' . " . $baseDir;
-        }
-
         return $baseDir . (($path !== false) ? var_export($path, true) : "");
     }
 

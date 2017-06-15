@@ -101,9 +101,10 @@ class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
         if (!$validator->isValid()) {
             $errors = $validator->getErrors();
 
-            // remove justinrainbow/json-schema 3.0 props so it works with all versions
+            // remove justinrainbow/json-schema 3.0/5.2 props so it works with all versions
             foreach ($errors as &$err) {
                 unset($err['pointer']);
+                unset($err['context']);
             }
 
             return $errors;
