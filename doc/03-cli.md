@@ -898,4 +898,8 @@ If set to 1, this env changes the default path repository strategy to `mirror` i
 of `symlink`. As it is the default strategy being set it can still be overwritten by
 repository options.
 
+### COMPOSER_HTACCESS_PROTECT
+
+Defaults to `true`. If set to `false`, Composer will not create `.htaccess` files in the composer home, cache, and data directories.
+
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
