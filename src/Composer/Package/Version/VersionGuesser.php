@@ -211,6 +211,11 @@ class VersionGuesser
                 $nonFeatureBranches = implode('|', $packageConfig['non-feature-branches']);
             }
 
+            $featureBranches = 'master|trunk|default|develop';
+            if (!empty($packageConfig['feature-branches'])) {
+                $featureBranches = implode('|', $packageConfig['feature-branches']);
+            }
+
             foreach ($branches as $candidate) {
                 // return directly, if branch is configured to be non-feature branch
                 if ($candidate === $branch && preg_match('{^(' . $nonFeatureBranches . ')$}', $candidate)) {
@@ -218,7 +223,7 @@ class VersionGuesser
                 }
 
                 // do not compare against other feature branches
-                if ($candidate === $branch || !preg_match('{^(master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
+                if ($candidate === $branch || !preg_match('{^(' . $featureBranches . '|\d+\..+)$}', $candidate, $match)) {
                     continue;
                 }
 

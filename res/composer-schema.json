@@ -488,6 +488,13 @@
                 }
             }
         },
+        "feature-branches": {
+            "type": ["array"],
+            "description": "A set of string or regex patterns for non-numeric branch names that will be handled as feature branches. Overrides default feature branch names \"master\", \"trunk\", \"default\" and \"develop\" when declared.",
+            "items": {
+                "type": "string"
+            }
+        },
         "non-feature-branches": {
             "type": ["array"],
             "description": "A set of string or regex patterns for non-numeric branch names that will not be handled as feature branches.",
