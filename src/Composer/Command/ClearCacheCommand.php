@@ -43,7 +43,7 @@ EOT
 
         $cachePaths = array(
             'cache-vcs-dir' => $config->get('cache-vcs-dir'),
-            'cache-repo-dir' => $config->get('cache-repo-dir'),
+            'cache-repo-dir'  => $config->get('cache-repo-dir'),
             'cache-files-dir' => $config->get('cache-files-dir'),
             'cache-dir' => $config->get('cache-dir'),
         );
