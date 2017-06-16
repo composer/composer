@@ -900,6 +900,7 @@ repository options.
 
 ### COMPOSER_HTACCESS_PROTECT
 
-Defaults to `true`. If set to `false`, Composer will not create `.htaccess` files in the composer home, cache, and data directories.
+Defaults to `true`. If set to `false`, Composer will not create `.htaccess` files in the
+composer home, cache, and data directories.
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

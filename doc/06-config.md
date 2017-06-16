@@ -267,6 +267,7 @@ Example:
 
 ## htaccess-protect
 
-Defaults to `true`. If set to `false`, Composer will not create `.htaccess` files in the composer home, cache, and data directories.
+Defaults to `true`. If set to `false`, Composer will not create `.htaccess` files
+in the composer home, cache, and data directories.
 
 &larr; [Repositories](05-repositories.md)  |  [Community](07-community.md) &rarr;
