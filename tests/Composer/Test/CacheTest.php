@@ -107,4 +107,18 @@ class CacheTest extends TestCase
         }
         $this->assertFileExists("{$this->root}/cached.file3.zip");
     }
+
+    public function testClearCache()
+    {
+        $this->finder
+            ->method('removeDirectory')
+            ->with($this->root)
+            ->willReturn(true);
+
+        $this->assertTrue($this->cache->clear());
+
+        for ($i = 0; $i < 3; $i++) {
+            $this->assertFileNotExists("{$this->root}/cached.file{$i}.zip");
+        }
+    }
 }
