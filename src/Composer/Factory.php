@@ -164,16 +164,19 @@ class Factory
             'data-dir' => self::getDataDir($home),
         )));
 
-        // Protect directory against web access. Since HOME could be
-        // the www-data's user home and be web-accessible it is a
-        // potential security risk
-        $dirs = array($config->get('home'), $config->get('cache-dir'), $config->get('data-dir'));
-        foreach ($dirs as $dir) {
-            if (!file_exists($dir . '/.htaccess')) {
-                if (!is_dir($dir)) {
-                    Silencer::call('mkdir', $dir, 0777, true);
+        $htaccessProtect = (bool) $config->get('htaccess-protect');
+        if ($htaccessProtect) {
+            // Protect directory against web access. Since HOME could be
+            // the www-data's user home and be web-accessible it is a
+            // potential security risk
+            $dirs = array($config->get('home'), $config->get('cache-dir'), $config->get('data-dir'));
+            foreach ($dirs as $dir) {
+                if (!file_exists($dir . '/.htaccess')) {
+                    if (!is_dir($dir)) {
+                        Silencer::call('mkdir', $dir, 0777, true);
+                    }
+                    Silencer::call('file_put_contents', $dir . '/.htaccess', 'Deny from all');
                 }
-                Silencer::call('file_put_contents', $dir . '/.htaccess', 'Deny from all');
             }
         }
 
