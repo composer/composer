@@ -1,6 +1,7 @@
 language: php
 
 sudo: false
+dist: trusty
 
 cache:
   directories:
@@ -12,7 +13,6 @@ addons:
       - parallel
 
 php:
-  - 5.3
   - 5.4
   - 5.5
   - 5.6
@@ -22,6 +22,9 @@ php:
   - nightly
 
 matrix:
+  include:
+    - dist: precise
+      php: 5.3
   fast_finish: true
   allow_failures:
     - php: nightly
