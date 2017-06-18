@@ -113,6 +113,7 @@ class ZipDownloader extends ArchiveDownloader
         }
 
         $this->io->writeError('    '.$processError->getMessage());
+        $this->io->writeError('    The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems)');
         $this->io->writeError('    Unzip with unzip command failed, falling back to ZipArchive class');
 
         return $this->extractWithZipArchive($file, $path, true);
