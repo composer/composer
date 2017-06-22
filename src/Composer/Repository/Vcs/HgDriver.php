@@ -119,7 +119,7 @@ class HgDriver extends VcsDriver
     public function getFileContent($file, $identifier)
     {
         $resource = sprintf('hg cat -r %s %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
-        $this->process->execute(sprintf('hg cat -r %s', $resource), $content, $this->repoDir);
+        $this->process->execute($resource, $content, $this->repoDir);
 
         if (!trim($content)) {
             return;
