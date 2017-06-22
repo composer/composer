@@ -91,7 +91,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      *
      * @param string $executableName The name of the binary to test.
      *
-     * @throws PHPUnit_Framework_SkippedTestError
+     * @throws \PHPUnit_Framework_SkippedTestError
      */
     protected function skipIfNotExecutable($executableName)
     {
