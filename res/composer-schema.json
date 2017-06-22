@@ -274,6 +274,10 @@
                 "archive-dir": {
                     "type": "string",
                     "description": "The default archive path when not provided on cli, defaults to \".\"."
+                },
+                "htaccess-protect": {
+                    "type": "boolean",
+                    "description": "Defaults to true. If set to false, Composer will not create .htaccess files in the composer home, cache, and data directories."
                 }
             }
         },
@@ -486,6 +490,13 @@
                     "description": "URL to the RSS feed.",
                     "format": "uri"
                 }
+            }
+        },
+        "feature-branches": {
+            "type": ["array"],
+            "description": "A set of string or regex patterns for non-numeric branch names that will be handled as feature branches. Overrides default feature branch names \"master\", \"trunk\", \"default\" and \"develop\" when declared.",
+            "items": {
+                "type": "string"
             }
         },
         "non-feature-branches": {

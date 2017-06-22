@@ -744,8 +744,11 @@ class Installer
      */
     private function movePluginsToFront(array $operations)
     {
-        $installerOps = array();
-        foreach ($operations as $idx => $op) {
+        $pluginsNoDeps = array();
+        $pluginsWithDeps = array();
+        $pluginRequires = array();
+
+        foreach (array_reverse($operations, true) as $idx => $op) {
             if ($op instanceof InstallOperation) {
                 $package = $op->getPackage();
             } elseif ($op instanceof UpdateOperation) {
@@ -754,23 +757,32 @@ class Installer
                 continue;
             }
 
-            if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
-                // ignore requirements to platform or composer-plugin-api
-                $requires = array_keys($package->getRequires());
-                foreach ($requires as $index => $req) {
-                    if ($req === 'composer-plugin-api' || preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
-                        unset($requires[$index]);
-                    }
+            // is this package a plugin?
+            $isPlugin = $package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer';
+
+            // is this a plugin or a dependency of a plugin?
+            if ($isPlugin || count(array_intersect($package->getNames(), $pluginRequires))) {
+                // get the package's requires, but filter out any platform requirements or 'composer-plugin-api'
+                $requires = array_filter(array_keys($package->getRequires()), function($req) {
+                    return $req !== 'composer-plugin-api' && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+                });
+
+                // is this a plugin with no meaningful dependencies?
+                if ($isPlugin && !count($requires)) {
+                    // plugins with no dependencies go to the very front
+                    array_unshift($pluginsNoDeps, $op);
+                } else {
+                    // capture the requirements for this package so those packages will be moved up as well
+                    $pluginRequires = array_merge($pluginRequires, $requires);
+                    // move the operation to the front
+                    array_unshift($pluginsWithDeps, $op);
                 }
-                // if there are no other requirements, move the plugin to the top of the op list
-                if (!count($requires)) {
-                    $installerOps[] = $op;
-                    unset($operations[$idx]);
-                }
+
+                unset($operations[$idx]);
             }
         }
 
-        return array_merge($installerOps, $operations);
+        return array_merge($pluginsNoDeps, $pluginsWithDeps, $operations);
     }
 
     /**

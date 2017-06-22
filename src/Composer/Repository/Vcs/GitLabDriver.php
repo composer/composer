@@ -29,7 +29,7 @@ use Composer\Util\GitLab;
 class GitLabDriver extends VcsDriver
 {
     private $scheme;
-    private $owner;
+    private $namespace;
     private $repository;
 
     /**
@@ -66,7 +66,7 @@ class GitLabDriver extends VcsDriver
      */
     private $isPrivate = true;
 
-    const URL_REGEX = '#^(?:(?P<scheme>https?)://(?P<domain>.+?)/|git@(?P<domain2>[^:]+):)(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git|/)?$#';
+    const URL_REGEX = '#^(?:(?P<scheme>https?)://(?P<domain>.+?)/|git@(?P<domain2>[^:]+):)(?P<parts>.+)/(?P<repo>[^/]+?)(?:\.git|/)?$#';
 
     /**
      * Extracts information from the repository url.
@@ -81,12 +81,19 @@ class GitLabDriver extends VcsDriver
             throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
         }
 
-        $this->scheme = !empty($match['scheme']) ? $match['scheme'] : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https');
-        $this->originUrl = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
-        $this->owner = $match['owner'];
+        $guessedDomain = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
+        $configuredDomains = $this->config->get('gitlab-domains');
+        $urlParts = explode('/', $match['parts']);
+
+        $this->scheme = !empty($match['scheme'])
+            ? $match['scheme']
+            : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https')
+        ;
+        $this->originUrl = $this->determineOrigin($configuredDomains, $guessedDomain, $urlParts);
+        $this->namespace = implode('/', $urlParts);
         $this->repository = preg_replace('#(\.git)$#', '', $match['repo']);
 
-        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
+        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->namespace.'/'.$this->repository);
 
         $this->fetchProject();
     }
@@ -241,7 +248,7 @@ class GitLabDriver extends VcsDriver
      */
     public function getApiUrl()
     {
-        return $this->scheme.'://'.$this->originUrl.'/api/v3/projects/'.$this->urlEncodeAll($this->owner).'%2F'.$this->urlEncodeAll($this->repository);
+        return $this->scheme.'://'.$this->originUrl.'/api/v3/projects/'.$this->urlEncodeAll($this->namespace).'%2F'.$this->urlEncodeAll($this->repository);
     }
 
     /**
@@ -326,12 +333,12 @@ class GitLabDriver extends VcsDriver
      */
     protected function generateSshUrl()
     {
-        return 'git@' . $this->originUrl . ':'.$this->owner.'/'.$this->repository.'.git';
+        return 'git@' . $this->originUrl . ':'.$this->namespace.'/'.$this->repository.'.git';
     }
 
     protected function generatePublicUrl()
     {
-        return 'https://' . $this->originUrl . '/'.$this->owner.'/'.$this->repository.'.git';
+        return 'https://' . $this->originUrl . '/'.$this->namespace.'/'.$this->repository.'.git';
     }
 
     protected function setupGitDriver($url)
@@ -386,7 +393,7 @@ class GitLabDriver extends VcsDriver
                     if (!$this->io->isInteractive()) {
                         return $this->attemptCloneFallback();
                     }
-                    $this->io->writeError('<warning>Failed to download ' . $this->owner . '/' . $this->repository . ':' . $e->getMessage() . '</warning>');
+                    $this->io->writeError('<warning>Failed to download ' . $this->namespace . '/' . $this->repository . ':' . $e->getMessage() . '</warning>');
                     $gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, 'Your credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
 
                     return parent::getContents($url);
@@ -421,9 +428,10 @@ class GitLabDriver extends VcsDriver
         }
 
         $scheme = !empty($match['scheme']) ? $match['scheme'] : null;
-        $originUrl = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
+        $guessedDomain = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
+        $urlParts = explode('/', $match['parts']);
 
-        if (!in_array($originUrl, (array) $config->get('gitlab-domains'))) {
+        if (false === self::determineOrigin((array) $config->get('gitlab-domains'), $guessedDomain, $urlParts)) {
             return false;
         }
 
@@ -434,5 +442,28 @@ class GitLabDriver extends VcsDriver
         }
 
         return true;
+    }
+
+    /**
+     * @param  array       $configuredDomains
+     * @param  string      $guessedDomain
+     * @param  array       $urlParts
+     * @return bool|string
+     */
+    private static function determineOrigin(array $configuredDomains, $guessedDomain, array &$urlParts)
+    {
+        if (in_array($guessedDomain, $configuredDomains)) {
+            return $guessedDomain;
+        }
+
+        while (null !== ($part = array_shift($urlParts))) {
+            $guessedDomain .= '/' . $part;
+
+            if (in_array($guessedDomain, $configuredDomains)) {
+                return $guessedDomain;
+            }
+        }
+
+        return false;
     }
 }

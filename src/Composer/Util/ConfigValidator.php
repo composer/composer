@@ -84,10 +84,16 @@ class ConfigValidator
             }
 
             $licenseValidator = new SpdxLicenses();
-            if ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license'])) {
+            if ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license']) && $licenseValidator->validate(trim($manifest['license']))) {
+                $warnings[] = sprintf(
+                    'License %s must not contain extra spaces, make sure to trim it.',
+                    json_encode($manifest['license'])
+                );
+            } elseif ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license'])) {
                 $warnings[] = sprintf(
                     'License %s is not a valid SPDX license identifier, see https://spdx.org/licenses/ if you use an open license.'
-                    ."\nIf the software is closed-source, you may use \"proprietary\" as license.",
+                    . PHP_EOL .
+                    'If the software is closed-source, you may use "proprietary" as license.',
                     json_encode($manifest['license'])
                 );
             }

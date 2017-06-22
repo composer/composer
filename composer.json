@@ -59,7 +59,7 @@
     "bin": ["bin/composer"],
     "extra": {
         "branch-alias": {
-            "dev-master": "1.4-dev"
+            "dev-master": "1.5-dev"
         }
     },
     "scripts": {

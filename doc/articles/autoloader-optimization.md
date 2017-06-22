@@ -74,7 +74,7 @@ filesystem according to PSR-4 rules.
 
 ### Trade-offs
 
-This option makes the autoloader always returns very quickly. On the flipside it
+This option makes the autoloader always return very quickly. On the flipside it
 also means that in case a class is generated at runtime for some reason, it will
 not be allowed to be autoloaded. If your project or any of your dependencies does that
 then you might experience "class not found" issues in production. Enable this with care.

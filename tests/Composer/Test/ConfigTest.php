@@ -310,4 +310,12 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $config->get('process-timeout'));
         putenv('COMPOSER_PROCESS_TIMEOUT');
     }
+
+    public function testHtaccessProtect()
+    {
+        putenv('COMPOSER_HTACCESS_PROTECT=0');
+        $config = new Config(true);
+        $this->assertEquals(0, $config->get('htaccess-protect'));
+        putenv('COMPOSER_HTACCESS_PROTECT');
+    }
 }

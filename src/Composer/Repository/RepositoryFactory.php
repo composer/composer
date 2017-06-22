@@ -119,6 +119,7 @@ class RepositoryFactory
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
         $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
         $rm->setRepositoryClass('git', 'Composer\Repository\VcsRepository');
+        $rm->setRepositoryClass('github', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('gitlab', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('svn', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('fossil', 'Composer\Repository\VcsRepository');

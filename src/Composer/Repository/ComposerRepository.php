@@ -499,7 +499,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if (!empty($mirror['dist-url'])) {
                     $this->distMirrors[] = array(
                         'url' => $this->canonicalizeUrl($mirror['dist-url']),
-                        'preferred' => !empty($mirror['preferred'])
+                        'preferred' => !empty($mirror['preferred']),
                     );
                 }
             }

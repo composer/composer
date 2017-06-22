@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
+use Composer\Composer;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Script\ScriptEvents;
@@ -37,7 +38,7 @@ class ArchiveCommand extends BaseCommand
     {
         $this
             ->setName('archive')
-            ->setDescription('Create an archive of this composer package.')
+            ->setDescription('Creates an archive of this composer package.')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),
@@ -84,7 +85,8 @@ EOT
             $input->getOption('format'),
             $input->getOption('dir'),
             $input->getOption('file'),
-            $input->getOption('ignore-filters')
+            $input->getOption('ignore-filters'),
+            $composer
         );
 
         if (0 === $returnCode && $composer) {
@@ -94,11 +96,15 @@ EOT
         return $returnCode;
     }
 
-    protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.', $fileName = null, $ignoreFilters)
+    protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.', $fileName = null, $ignoreFilters = false, Composer $composer = null)
     {
-        $factory = new Factory;
-        $downloadManager = $factory->createDownloadManager($io, $config);
-        $archiveManager = $factory->createArchiveManager($config, $downloadManager);
+        if ($composer) {
+            $archiveManager = $composer->getArchiveManager();
+        } else {
+            $factory = new Factory;
+            $downloadManager = $factory->createDownloadManager($io, $config);
+            $archiveManager = $factory->createArchiveManager($config, $downloadManager);
+        }
 
         if ($packageName) {
             $package = $this->selectPackage($io, $packageName, $version);

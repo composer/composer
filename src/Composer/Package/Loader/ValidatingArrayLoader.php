@@ -64,6 +64,16 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
+        if (!empty($this->config['config']['platform'])) {
+            foreach ((array) $this->config['config']['platform'] as $key => $platform) {
+                try {
+                    $this->versionParser->normalize($platform);
+                } catch (\Exception $e) {
+                    $this->errors[] = 'config.platform.' . $key . ' : invalid value ('.$platform.'): '.$e->getMessage();
+                }
+            }
+        }
+
         $this->validateRegex('type', '[A-Za-z0-9-]+');
         $this->validateString('target-dir');
         $this->validateArray('extra');
