@@ -24,10 +24,6 @@ class CacheTest extends TestCase
 
     public function setUp()
     {
-        if (getenv('TRAVIS')) {
-            $this->markTestSkipped('Test causes intermittent failures on Travis');
-        }
-
         $this->root = $this->getUniqueTmpDirectory();
         $this->files = array();
         $zeros = str_repeat('0', 1000);
