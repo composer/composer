@@ -1,7 +1,11 @@
 language: php
 
 sudo: false
+
 dist: trusty
+
+git:
+  depth: 5
 
 cache:
   directories:
@@ -29,16 +33,27 @@ matrix:
   allow_failures:
     - php: nightly
 
-before_script:
-    - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
-    - flags="--prefer-dist"
+before_install:
+    # determine INI file
+    - if [[ $TRAVIS_PHP_VERSION = hhvm* ]]; then export INI=/etc/hhvm/php.ini; else export INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini; fi
+     # disable xdebug if available
+    - phpenv config-rm xdebug.ini || echo "xdebug not available"
+    # disable default memory limit
+    - echo memory_limit = -1 >> $INI
+
+install:
+    # flags to pass to install
+    - flags="--ansi --prefer-dist --no-interaction --optimize-autoloader --no-suggest --no-progress"
+    # install dependencies using system provided composer binary
     - composer install $flags
+    # install dependencies using composer from source
     - bin/composer install $flags
+
+before_script:
+    # make sure git tests do not complain about user/email not being set
     - git config --global user.name travis-ci
     - git config --global user.email travis@example.com
 
 script:
+    # run test suite directories in parallel using GNU parallel
     - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && $(exit 1));'
-
-git:
-  depth: 5
