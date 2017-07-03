@@ -69,11 +69,15 @@ class JsonManipulator
 
         $links = $matches['value'];
 
-        if (isset($decoded[$type][$package])) {
+        // try to find existing link
+        $packageRegex = str_replace('/', '\\\\?/', preg_quote($package));
+        $regex = '{'.self::$DEFINES.'"(?P<package>'.$packageRegex.')"(\s*:\s*)(?&string)}ix';
+        if ($this->pregMatch($regex, $links, $packageMatches)) {
             // update existing link
-            $packageRegex = str_replace('/', '\\\\?/', preg_quote($package));
-            $links = preg_replace_callback('{'.self::$DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', function ($m) use ($package, $constraint) {
-                return JsonFile::encode($package) . $m['separator'] . '"' . $constraint . '"';
+            $existingPackage = $packageMatches['package'];
+            $packageRegex = str_replace('/', '\\\\?/', preg_quote($existingPackage));
+            $links = preg_replace_callback('{'.self::$DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', function ($m) use ($existingPackage, $constraint) {
+                return JsonFile::encode(str_replace('\\/', '/', $existingPackage)) . $m['separator'] . '"' . $constraint . '"';
             }, $links);
         } else {
             if ($this->pregMatch('#^\s*\{\s*\S+.*?(\s*\}\s*)$#s', $links, $match)) {
