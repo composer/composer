@@ -89,7 +89,7 @@ There's one more thing that will affect which files are checked out of a library
 Now that you have an idea of how Composer sees versions, let's talk about how
 to specify version constraints for your project dependencies.
 
-### Exact
+### Exact Version Constraint
 
 You can specify the exact version of a package. This will tell Composer to
 install this version and this version only. If other dependencies require
@@ -98,7 +98,7 @@ or update procedures.
 
 Example: `1.0.2`
 
-### Range
+### Version Range
 
 By using comparison operators you can specify ranges of valid versions. Valid
 operators are `>`, `>=`, `<`, `<=`, `!=`.
@@ -117,7 +117,7 @@ Examples:
 * `>=1.0 <2.0`
 * `>=1.0 <1.1 || >=1.2`
 
-### Range (Hyphen)
+### Hyphenated Version Range ( - )
 
 Inclusive set of versions. Partial versions on the right include are completed
 with a wildcard. For example `1.0 - 2.0` is equivalent to `>=1.0.0 <2.1` as the
@@ -126,7 +126,7 @@ with a wildcard. For example `1.0 - 2.0` is equivalent to `>=1.0.0 <2.1` as the
 
 Example: `1.0 - 2.0`
 
-### Wildcard
+### Wildcard Version Range (.*)
 
 You can specify a pattern with a `*` wildcard. `1.0.*` is the equivalent of
 `>=1.0 <1.1`.
@@ -135,7 +135,7 @@ Example: `1.0.*`
 
 ## Next Significant Release Operators
 
-### Tilde
+### Tilde Version Range (~)
 
 The `~` operator is best explained by example: `~1.2` is equivalent to
 `>=1.2 <2.0.0`, while `~1.2.3` is equivalent to `>=1.2.3 <1.3.0`. As you can see
@@ -157,7 +157,7 @@ Example: `~1.2`
 > it will not allow the major number to increase trying to keep backwards
 > compatibility.
 
-### Caret
+### Caret Version Range (^)
 
 The `^` operator behaves very similarly but it sticks closer to semantic
 versioning, and will always allow non-breaking updates. For example `^1.2.3`
@@ -200,7 +200,7 @@ can be installed in a different stability than your default minimum-stability
 setting. All available stability flags are listed on the minimum-stability
 section of the [schema page](../04-schema.md#minimum-stability).
 
-## Test version constraints
+## Testing Version Constraints
 
 You can test version constraints using [semver.mwl.be](https://semver.mwl.be).
 Fill in a package name and it will autofill the default version constraint
