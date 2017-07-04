@@ -75,7 +75,9 @@ class ClassMapGenerator
 
         $map = array();
         $filesystem = new Filesystem();
-        $cwd = getcwd();
+        // Do not remove realpath() call.
+        // Fixes incorrect encoding in working dir on Windows.
+        $cwd = realpath(getcwd());
 
         foreach ($path as $file) {
             $filePath = $file->getPathname();
