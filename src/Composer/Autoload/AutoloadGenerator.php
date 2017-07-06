@@ -433,9 +433,14 @@ EOF;
         }
 
         if (isset($autoloads['classmap'])) {
+            $blacklist = null;
+            if (!empty($autoloads['exclude-from-classmap'])) {
+                $blacklist = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
+            }
+
             foreach ($autoloads['classmap'] as $dir) {
                 try {
-                    $loader->addClassMap($this->generateClassMap($dir, null, null, false));
+                    $loader->addClassMap($this->generateClassMap($dir, $blacklist, null, false));
                 } catch (\RuntimeException $e) {
                     $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
                 }
