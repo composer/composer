@@ -290,7 +290,7 @@ If one of your dependencies has a dependency on an unstable package you need to
 explicitly require it as well, along with its sufficient stability flag.
 
 Example:
-
+"doctrine/doctrine-fixtures-bundle" requires "doctrine/data-fixtures":"dev-master" so inside the root-composer.json you need:
 ```json
 {
     "require": {
