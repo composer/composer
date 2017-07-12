@@ -195,6 +195,8 @@ EOT
                 $name = $git['github.user'] . '/' . $name;
             } elseif (!empty($_SERVER['USERNAME'])) {
                 $name = $_SERVER['USERNAME'] . '/' . $name;
+            } elseif (!empty($_SERVER['USER'])) {
+                $name = $_SERVER['USER'] . '/' . $name;
             } elseif (get_current_user()) {
                 $name = get_current_user() . '/' . $name;
             } else {
