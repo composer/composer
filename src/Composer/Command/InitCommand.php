@@ -115,6 +115,8 @@ EOT
             }
         }
 
+        $options['config'] = array('sort-packages' => true);
+
         $file = new JsonFile(Factory::getComposerFile());
         $json = $file->encode($options);
 
