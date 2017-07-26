@@ -194,7 +194,7 @@ class BinaryInstaller
         $proxyCode = <<<PROXY
 #!/usr/bin/env sh
 
-dir=$(d=\${0%[/\\\\]*}; cd "\$d"; cd $binDir && pwd)
+dir=$(d=\${0%[/\\\\]*}; cd "\$d" > /dev/null; cd $binDir && pwd)
 
 # See if we are running in Cygwin by checking for cygpath program
 if command -v 'cygpath' >/dev/null 2>&1; then
