@@ -294,13 +294,22 @@ attempt to use github's zip files.
 
 Please note:
 * **To let Composer choose which driver to use** the repository type needs to be defined as "vcs"
-* **BitBucket driver** require the OAuth method to access to BitBucket REST APIs.
-If you want to know how to create a OAuth consumer using BitBucket, please refer to [this link](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). 
-**Remember** to fill the callback url (even with a casual address) to makes OAuth 2 work.
-After created an OAuth consumer, you need to setup your composer.json config section with 
-the requested credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
+* **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update composer cache and install the package from dist.
+
+#### BitBucket Driver Configuration
+
+The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs and you will need to create an OAuth consumer to use the driver, please refer to [Atlassian's Documentation](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). You will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and is not used by Composer.
+
+After creating an OAuth consumer in the BitBucket control panel, you need to setup your composer.json config section with 
+the credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
 ```json
 {
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://bitbucket.org/vendor/repository.git"
+        }
+    ],
     "config": {
         "bitbucket-oauth": {
             "bitbucket.org": {
@@ -312,7 +321,9 @@ the requested credentials like this (more info [here](https://getcomposer.org/do
     }
 }
 ```
-* **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update composer cache and install the package from dist.
+**Note that the repository endpoint is https rather than git, this seems to be required by the BitBucket driver.**
+
+Alternatively if you prefer not to have your OAuth credentials in your composer.json file you may export the ```bitbucket-oauth``` block above to the [COMPOSER_AUTH](https://getcomposer.org/doc/03-cli.md#composer-auth) environment variable instead.
 
 #### Subversion Options
 
