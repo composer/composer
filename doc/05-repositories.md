@@ -300,16 +300,10 @@ Please note:
 
 The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs and you will need to create an OAuth consumer to use the driver, please refer to [Atlassian's Documentation](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). You will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and is not used by Composer.
 
-After creating an OAuth consumer in the BitBucket control panel, you need to setup your composer.json config section with 
+After creating an OAuth consumer in the BitBucket control panel, you need to setup your auth.json file with 
 the credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
 ```json
 {
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://bitbucket.org/vendor/repository.git"
-        }
-    ],
     "config": {
         "bitbucket-oauth": {
             "bitbucket.org": {
@@ -321,9 +315,9 @@ the credentials like this (more info [here](https://getcomposer.org/doc/06-confi
     }
 }
 ```
-**Note that the repository endpoint is https rather than git, this seems to be required by the BitBucket driver.**
+**Note that the repository endpoint needs to be https rather than git.**
 
-Alternatively if you prefer not to have your OAuth credentials in your composer.json file you may export the ```bitbucket-oauth``` block above to the [COMPOSER_AUTH](https://getcomposer.org/doc/03-cli.md#composer-auth) environment variable instead.
+Alternatively if you prefer not to have your OAuth credentials on your filesystem you may export the ```bitbucket-oauth``` block above to the [COMPOSER_AUTH](https://getcomposer.org/doc/03-cli.md#composer-auth) environment variable instead.
 
 #### Subversion Options
 
