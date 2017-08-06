@@ -13,6 +13,8 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\CompletePackage;
+use Composer\Package\Link;
+use Composer\Package\PackageInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -235,6 +237,12 @@ abstract class Rule
         }
     }
 
+    /**
+     * @param Pool  $pool
+     * @param array $packages
+     *
+     * @return string
+     */
     protected function formatPackagesUnique($pool, array $packages)
     {
         $prepared = array();
