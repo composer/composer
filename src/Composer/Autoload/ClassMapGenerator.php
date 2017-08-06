@@ -90,7 +90,8 @@ class ClassMapGenerator
                 $filePath = preg_replace('{[\\\\/]{2,}}', '/', $filePath);
             }
 
-            if ($blacklist && preg_match($blacklist, strtr($filePath, '\\', '/'))) {
+            // check the realpath of the file against the blacklist as the path might be a symlink and the blacklist is realpath'd so symlink are resolved
+            if ($blacklist && preg_match($blacklist, strtr(realpath($filePath), '\\', '/'))) {
                 continue;
             }
 
