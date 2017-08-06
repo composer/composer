@@ -1187,10 +1187,12 @@ class Installer
         }
 
         $package->setSourceReference($reference);
-        $package->setDistReference($reference);
 
         if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}i', $package->getDistUrl())) {
+            $package->setDistReference($reference);
             $package->setDistUrl(preg_replace('{(?<=/)[a-f0-9]{40}(?=/|$)}i', $reference, $package->getDistUrl()));
+        } else if ($package->getDistReference()) { // update the dist reference if there was one, but if none was provided ignore it
+            $package->setDistReference($reference);
         }
     }
 
