@@ -1,3 +1,13 @@
+### [1.4.3] - 2017-08-06
+
+  * Fixed GitLab URLs
+  * Fixed root package version detection using latest git versions
+  * Fixed inconsistencies in date format in composer.lock when installing from source
+  * Fixed Mercurial support regression
+  * Fixed exclude-from-classmap not being applied when autoloading files for Composer plugins
+  * Fixed exclude-from-classmap being ignored when cwd has the wrong case on case insensitive filesystems
+  * Fixed several other minor issues
+
 ### [1.4.2] - 2017-05-17
 
   * Fixed Bitbucket API handler parsing old deleted branches in hg repos
@@ -529,6 +539,7 @@
 
   * Initial release
 
+[1.4.3]: https://github.com/composer/composer/compare/1.4.2...1.4.3
 [1.4.2]: https://github.com/composer/composer/compare/1.4.1...1.4.2
 [1.4.1]: https://github.com/composer/composer/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/composer/composer/compare/1.3.3...1.4.0
