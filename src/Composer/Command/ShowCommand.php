@@ -353,7 +353,7 @@ EOT
                         }
                         if ($input->getOption('outdated') && $latestPackage && $latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && !$latestPackage->isAbandoned()) {
                             continue;
-                        } elseif ($input->getOption('outdated')) {
+                        } elseif ($input->getOption('outdated') || $input->getOption('strict')) {
                             $hasOutdatedPackages = true;
                         }
 
