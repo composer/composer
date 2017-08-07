@@ -314,7 +314,7 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
         $this->remoteFilesystem->getLastHeaders()
-          ->willReturn([]);
+          ->willReturn(array());
 
         $driver->setRemoteFilesystem($this->remoteFilesystem->reveal());
 
