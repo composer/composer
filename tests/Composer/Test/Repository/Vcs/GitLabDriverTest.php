@@ -58,9 +58,9 @@ class GitLabDriverTest extends TestCase
     public function getInitializeUrls()
     {
         return array(
-            array('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject'),
-            array('http://gitlab.com/mygroup/myproject', 'http://gitlab.com/api/v3/projects/mygroup%2Fmyproject'),
-            array('git@gitlab.com:mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject'),
+            array('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject'),
+            array('http://gitlab.com/mygroup/myproject', 'http://gitlab.com/api/v4/projects/mygroup%2Fmyproject'),
+            array('git@gitlab.com:mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject'),
         );
     }
 
@@ -74,7 +74,7 @@ class GitLabDriverTest extends TestCase
 {
     "id": 17,
     "default_branch": "mymaster",
-    "public": false,
+    "visibility": "private",
     "http_url_to_repo": "https://gitlab.com/mygroup/myproject.git",
     "ssh_url_to_repo": "git@gitlab.com:mygroup/myproject.git",
     "last_activity_at": "2014-12-01T09:17:51.000+01:00",
@@ -113,7 +113,7 @@ JSON;
 {
     "id": 17,
     "default_branch": "mymaster",
-    "public": true,
+    "visibility": "public",
     "http_url_to_repo": "https://gitlab.com/mygroup/myproject.git",
     "ssh_url_to_repo": "git@gitlab.com:mygroup/myproject.git",
     "last_activity_at": "2014-12-01T09:17:51.000+01:00",
@@ -144,12 +144,12 @@ JSON;
 
     public function testGetDist()
     {
-        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject');
+        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
         $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
         $expected = array(
             'type' => 'zip',
-            'url' => 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject/repository/archive.zip?sha='.$reference,
+            'url' => 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/archive.zip?sha='.$reference,
             'reference' => $reference,
             'shasum' => '',
         );
@@ -159,7 +159,7 @@ JSON;
 
     public function testGetSource()
     {
-        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject');
+        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
         $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
         $expected = array(
@@ -173,7 +173,7 @@ JSON;
 
     public function testGetSource_GivenPublicProject()
     {
-        $driver = $this->testInitializePublicProject('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject', true);
+        $driver = $this->testInitializePublicProject('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject', true);
 
         $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
         $expected = array(
@@ -187,9 +187,9 @@ JSON;
 
     public function testGetTags()
     {
-        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject');
+        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
-        $apiUrl = 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject/repository/tags';
+        $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags';
 
         // @link http://doc.gitlab.com/ce/api/repositories.html#list-project-repository-tags
         $tagData = <<<JSON
@@ -229,9 +229,9 @@ JSON;
 
     public function testGetBranches()
     {
-        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject');
+        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
-        $apiUrl = 'https://gitlab.com/api/v3/projects/mygroup%2Fmyproject/repository/branches';
+        $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/branches';
 
         // @link http://doc.gitlab.com/ce/api/repositories.html#list-project-repository-branches
         $branchData = <<<JSON
@@ -300,13 +300,13 @@ JSON;
     public function testGitlabSubDirectory()
     {
         $url = 'https://mycompany.com/gitlab/mygroup/my-pro.ject';
-        $apiUrl = 'https://mycompany.com/gitlab/api/v3/projects/mygroup%2Fmy-pro%2Eject';
+        $apiUrl = 'https://mycompany.com/gitlab/api/v4/projects/mygroup%2Fmy-pro%2Eject';
 
         $projectData = <<<JSON
 {
     "id": 17,
     "default_branch": "mymaster",
-    "public": false,
+    "visibility": "private",
     "http_url_to_repo": "https://gitlab.com/gitlab/mygroup/my-pro.ject",
     "ssh_url_to_repo": "git@gitlab.com:mygroup/my-pro.ject.git",
     "last_activity_at": "2014-12-01T09:17:51.000+01:00",
@@ -333,13 +333,13 @@ JSON;
     public function testGitlabSubGroup()
     {
         $url = 'https://gitlab.com/mygroup/mysubgroup/myproject';
-        $apiUrl = 'https://gitlab.com/api/v3/projects/mygroup%2Fmysubgroup%2Fmyproject';
+        $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmysubgroup%2Fmyproject';
 
         $projectData = <<<JSON
 {
     "id": 17,
     "default_branch": "mymaster",
-    "public": false,
+    "visibility": "private",
     "http_url_to_repo": "https://gitlab.com/mygroup/mysubgroup/my-pro.ject",
     "ssh_url_to_repo": "git@gitlab.com:mygroup/mysubgroup/my-pro.ject.git",
     "last_activity_at": "2014-12-01T09:17:51.000+01:00",
@@ -366,13 +366,13 @@ JSON;
     public function testGitlabSubDirectorySubGroup()
     {
         $url = 'https://mycompany.com/gitlab/mygroup/mysubgroup/myproject';
-        $apiUrl = 'https://mycompany.com/gitlab/api/v3/projects/mygroup%2Fmysubgroup%2Fmyproject';
+        $apiUrl = 'https://mycompany.com/gitlab/api/v4/projects/mygroup%2Fmysubgroup%2Fmyproject';
 
         $projectData = <<<JSON
 {
     "id": 17,
     "default_branch": "mymaster",
-    "public": false,
+    "visibility": "private",
     "http_url_to_repo": "https://mycompany.com/gitlab/mygroup/mysubgroup/my-pro.ject",
     "ssh_url_to_repo": "git@mycompany.com:mygroup/mysubgroup/my-pro.ject.git",
     "last_activity_at": "2014-12-01T09:17:51.000+01:00",
@@ -407,7 +407,7 @@ JSON;
 {
     "id": 17,
     "default_branch": "mymaster",
-    "public": false,
+    "visibility": "private",
     "http_url_to_repo": "https://gitlab.mycompany.local/mygroup/myproject",
     "ssh_url_to_repo": "git@gitlab.mycompany.local:mygroup/myproject.git",
     "last_activity_at": "2014-12-01T09:17:51.000+01:00",
