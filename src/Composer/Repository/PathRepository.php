@@ -47,7 +47,8 @@ use Composer\Util\ProcessExecutor;
  *         "type": "path",
  *         "url": "../../relative/path/to/package/",
  *         "options": {
- *             "symlink": false
+ *             "symlink": false,
+ *             "versions": {"symfony/symfony": "3.3.0"}
  *         }
  *     },
  * ]
@@ -143,8 +144,12 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             $package['transport-options'] = $this->options;
 
             if (!isset($package['version'])) {
-                $versionData = $this->versionGuesser->guessVersion($package, $path);
-                $package['version'] = $versionData['version'] ?: 'dev-master';
+                if (isset($this->options['versions'][$package['name']])) {
+                    $package['version'] = $this->options['versions'][$package['name']];
+                } else {
+                    $versionData = $this->versionGuesser->guessVersion($package, $path);
+                    $package['version'] = $versionData['version'] ?: 'dev-master';
+                }
             }
 
             $output = '';

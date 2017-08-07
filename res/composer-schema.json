@@ -637,7 +637,14 @@
                 "options": {
                     "type": "object",
                     "properties": {
-                        "symlink": { "type": ["boolean", "null"] }
+                        "symlink": { "type": ["boolean", "null"] },
+                        "versions": {
+                            "type": "object",
+                            "description": "This is a maps of package name (keys) and version.",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     },
                     "additionalProperties": true
                 }
