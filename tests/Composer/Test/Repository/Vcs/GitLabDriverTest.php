@@ -230,7 +230,7 @@ JSON;
         $this->assertEquals($expected, $driver->getTags(), 'Tags are cached');
     }
 
-    public function testGetTagsPaginated() {
+    public function testGetPaginatedRefs() {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
         $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/branches';
