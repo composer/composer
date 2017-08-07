@@ -216,6 +216,9 @@ JSON;
             ->willReturn($tagData)
             ->shouldBeCalledTimes(1)
         ;
+        $this->remoteFilesystem->getLastHeaders()
+          ->willReturn([]);
+        
         $driver->setRemoteFilesystem($this->remoteFilesystem->reveal());
 
         $expected = array(
@@ -227,6 +230,58 @@ JSON;
         $this->assertEquals($expected, $driver->getTags(), 'Tags are cached');
     }
 
+    public function testGetTagsPaginated() {
+        $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
+
+        $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/branches';
+
+        // @link http://doc.gitlab.com/ce/api/repositories.html#list-project-repository-branches
+        $branchData = <<<JSON
+[
+    {
+       "name": "mymaster",
+        "commit": {
+            "id": "97eda36b5c1dd953a3792865c222d4e85e5f302e",
+            "committed_date": "2013-01-03T21:04:07.000+01:00"
+        }
+    },
+    {
+        "name": "staging",
+        "commit": {
+            "id": "502cffe49f136443f2059803f2e7192d1ac066cd",
+            "committed_date": "2013-03-09T16:35:23.000+01:00"
+        }
+    }
+]
+JSON;
+
+        $this->remoteFilesystem
+            ->getContents('gitlab.com', $apiUrl, false, array())
+            ->willReturn($branchData)
+            ->shouldBeCalledTimes(1)
+        ;
+
+         $this->remoteFilesystem
+            ->getContents('gitlab.com', "http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20", false, array())
+            ->willReturn($branchData)
+            ->shouldBeCalledTimes(1)
+        ;
+
+        $this->remoteFilesystem->getLastHeaders()
+          ->willReturn(['Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="next", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"'], ['Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="prev", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"'])
+          ->shouldBeCalledTimes(2);
+
+        $driver->setRemoteFilesystem($this->remoteFilesystem->reveal());
+
+        $expected = array(
+            'mymaster' => '97eda36b5c1dd953a3792865c222d4e85e5f302e',
+            'staging' => '502cffe49f136443f2059803f2e7192d1ac066cd',
+        );
+
+        $this->assertEquals($expected, $driver->getBranches());
+        $this->assertEquals($expected, $driver->getBranches(), 'Branches are cached');
+
+    }
     public function testGetBranches()
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
@@ -258,6 +313,9 @@ JSON;
             ->willReturn($branchData)
             ->shouldBeCalledTimes(1)
         ;
+        $this->remoteFilesystem->getLastHeaders()
+          ->willReturn([]);
+
         $driver->setRemoteFilesystem($this->remoteFilesystem->reveal());
 
         $expected = array(
