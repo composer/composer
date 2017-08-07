@@ -897,47 +897,4 @@ Then "composer show -s" will give you `versions : * dev-latest-testing`.
 
 Optional.
 
-### feature-branches
-
-If your feature branch names are other than the default names:
-
-* master
-* trunk
-* default
-* develop
-
-You can use this setting to declare the list of branch names which should be considered
-feature branches in your package. For example, if you do not use `develop` but rather use
-a name like `development` and have no `trunk` or `default` branches, you can change this
-setting to:
-
-
-```json
-{
-    "feature-branches": ["master", "development"]
-}
-```
-
-And Composer will consider those two branches (plus any numeric branches) as your only
-feature branches. This allows Composer to recognise when you create a new branch based
-on such a non-standard named feature branch, that your new branch is based on that "version".
-
-In practice this allows you to have `my/package:dev-oddname` in your dependency
-section and still have `my/package:dev-branchofoddname` be recognised as compatible.
-Without overriding this configuration option, Composer would instead demand that you
-explicitly install `my/package:dev-oddname` or change the dependency to the explicit
-name `my/package:dev-branchofoddname`.
-
-Particularly useful when combined with local repositories of type `path` where Composer
-will read the checked-out branch name to determine the version. Without this setting, if you
-used non-standard names, Composer would reject creating a symlink to the path and will
-instead force `git clone`. With the setting, symlink creation is allowed when your local
-branches are based on such non-standard named feature branches.
-
-Note that this is only the case when your branch names are other than the above mentioned
-four default branch names. When you use default names you never need to declare this list -
-Composer will then detect your feature branches based on the default set of names.
-
-Optional.
-
 &larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
