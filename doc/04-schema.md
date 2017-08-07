@@ -291,6 +291,10 @@ explicitly require it as well, along with its sufficient stability flag.
 
 Example:
 
+Assuming `doctrine/doctrine-fixtures-bundle` requires `"doctrine/data-fixtures": "dev-master"`
+then inside the root composer.json you need to add the second line below to allow dev
+releases for the `doctrine/data-fixtures` package :
+
 ```json
 {
     "require": {
