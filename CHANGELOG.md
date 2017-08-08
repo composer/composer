@@ -1,3 +1,16 @@
+### [1.5.0] - 2017-08-08
+
+  * Changed the package install order to ensure that plugins are always installed as soon as possible
+  * Added ability to call composer from within sub-directories of a project
+  * Added support for GitLab API v4
+  * Added support for GitLab sub-groups
+  * Added some more rules to composer validate
+  * Added support for reading the `USER` env when guessing the username in `composer init`
+  * Added warning when uncompressing files with the same name but difference cases on case insensitive filesystems
+  * Added `htaccess-protect` option / `COMPOSER_HTACCESS_PROTECT` env var to disable the .htaccess creation in home dir (defaults to true)
+  * Improved `clear-cache` command
+  * Minor improvements/fixes and many documentation updates
+
 ### [1.4.3] - 2017-08-06
 
   * Fixed GitLab URLs
@@ -539,6 +552,7 @@
 
   * Initial release
 
+[1.5.0]: https://github.com/composer/composer/compare/1.4.3...1.5.0
 [1.4.3]: https://github.com/composer/composer/compare/1.4.2...1.4.3
 [1.4.2]: https://github.com/composer/composer/compare/1.4.1...1.4.2
 [1.4.1]: https://github.com/composer/composer/compare/1.4.0...1.4.1
