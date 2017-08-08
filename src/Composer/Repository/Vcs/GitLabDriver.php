@@ -278,7 +278,7 @@ class GitLabDriver extends VcsDriver
      */
     protected function getReferences($type)
     {
-        $resource = $this->getApiUrl().'/repository/'.$type;
+        $resource = $this->getApiUrl().'/repository/'.$type.'?per_page=100';
 
         do {
             $data = JsonFile::parseJson($this->getContents($resource), $resource);
