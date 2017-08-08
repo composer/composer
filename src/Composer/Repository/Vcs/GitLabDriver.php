@@ -280,17 +280,20 @@ class GitLabDriver extends VcsDriver
     {
         $resource = $this->getApiUrl().'/repository/'.$type;
 
-        $data = JsonFile::parseJson($this->getContents($resource), $resource);
+        do {
+            $data = JsonFile::parseJson($this->getContents($resource), $resource);
 
-        $references = array();
+            $references = array();
 
-        foreach ($data as $datum) {
-            $references[$datum['name']] = $datum['commit']['id'];
+            foreach ($data as $datum) {
+                $references[$datum['name']] = $datum['commit']['id'];
 
-            // Keep the last commit date of a reference to avoid
-            // unnecessary API call when retrieving the composer file.
-            $this->commits[$datum['commit']['id']] = $datum['commit'];
-        }
+              // Keep the last commit date of a reference to avoid
+             // unnecessary API call when retrieving the composer file.
+              $this->commits[$datum['commit']['id']] = $datum['commit'];
+            }
+            $resource = $this->getNextPage();
+        } while ($resource);
 
         return $references;
     }
@@ -442,6 +445,21 @@ class GitLabDriver extends VcsDriver
         }
 
         return true;
+    }
+
+    protected function getNextPage()
+    {
+        $headers = $this->remoteFilesystem->getLastHeaders();
+        foreach ($headers as $header) {
+            if (substr($header, 0, 5) === 'Link:') {
+                $links = explode(',', substr($header, 5));
+                foreach ($links as $link) {
+                    if (preg_match('{<(.+?)>; *rel="next"}', $link, $match)) {
+                        return $match[1];
+                    }
+                }
+            }
+        }
     }
 
     /**
