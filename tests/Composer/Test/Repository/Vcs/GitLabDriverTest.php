@@ -217,8 +217,8 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
         $this->remoteFilesystem->getLastHeaders()
-          ->willReturn(array());
-        
+            ->willReturn(array());
+
         $driver->setRemoteFilesystem($this->remoteFilesystem->reveal());
 
         $expected = array(
@@ -268,8 +268,11 @@ JSON;
         ;
 
         $this->remoteFilesystem->getLastHeaders()
-          ->willReturn(array('Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="next", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"'), array('Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="prev", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"'))
-          ->shouldBeCalledTimes(2);
+            ->willReturn(
+                array('Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="next", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"'),
+                array('Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="prev", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"')
+            )
+            ->shouldBeCalledTimes(2);
 
         $driver->setRemoteFilesystem($this->remoteFilesystem->reveal());
 
@@ -314,7 +317,7 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
         $this->remoteFilesystem->getLastHeaders()
-          ->willReturn(array());
+            ->willReturn(array());
 
         $driver->setRemoteFilesystem($this->remoteFilesystem->reveal());
 

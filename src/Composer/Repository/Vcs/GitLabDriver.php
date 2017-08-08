@@ -447,12 +447,12 @@ class GitLabDriver extends VcsDriver
         return true;
     }
 
-    protected function getNextPage()
+    private function getNextPage()
     {
         $headers = $this->remoteFilesystem->getLastHeaders();
         foreach ($headers as $header) {
-            if (substr($header, 0, 5) === 'Link:') {
-                $links = explode(',', substr($header, 5));
+            if (preg_match('{^link:\s*(.+?)\s*$}i', $header, $match)) {
+                $links = explode(',', $match[1]);
                 foreach ($links as $link) {
                     if (preg_match('{<(.+?)>; *rel="next"}', $link, $match)) {
                         return $match[1];
