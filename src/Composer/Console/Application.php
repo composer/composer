@@ -127,13 +127,13 @@ class Application extends BaseApplication
         }
 
         // prompt user for dir change if no composer.json is present in current dir
-        if ($io->isInteractive() && !in_array($commandName, array('init', 'about', 'help', 'diagnose', 'self-update', 'global'), true) && !file_exists('./composer.json')) {
+        if ($io->isInteractive() && !in_array($commandName, array('init', 'about', 'help', 'diagnose', 'self-update', 'global'), true) && !file_exists(Factory::getComposerFile())) {
             $dir = dirname(getcwd());
             $home = realpath(getenv('HOME') ?: getenv('USERPROFILE') ?: '/');
 
             // abort when we reach the home dir or top of the filesystem
             while (dirname($dir) !== $dir && $dir !== $home) {
-                if (file_exists($dir.'/composer.json')) {
+                if (file_exists($dir.'/'.Factory::getComposerFile())) {
                     if ($io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ', true)) {
                         $oldWorkingDir = getcwd();
                         chdir($dir);
