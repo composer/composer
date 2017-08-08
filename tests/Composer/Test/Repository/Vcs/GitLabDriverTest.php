@@ -189,7 +189,7 @@ JSON;
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
-        $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags';
+        $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?per_page=100';
 
         // @link http://doc.gitlab.com/ce/api/repositories.html#list-project-repository-tags
         $tagData = <<<JSON
@@ -233,7 +233,7 @@ JSON;
     public function testGetPaginatedRefs() {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
-        $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/branches';
+        $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/branches?per_page=100';
 
         // @link http://doc.gitlab.com/ce/api/repositories.html#list-project-repository-branches
         $branchData = <<<JSON
@@ -289,7 +289,7 @@ JSON;
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
-        $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/branches';
+        $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/branches?per_page=100';
 
         // @link http://doc.gitlab.com/ce/api/repositories.html#list-project-repository-branches
         $branchData = <<<JSON
