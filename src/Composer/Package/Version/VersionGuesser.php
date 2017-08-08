@@ -217,7 +217,7 @@ class VersionGuesser
                     break;
                 }
 
-                // do not compare against other feature branches
+                // do not compare against itself or other feature branches
                 if ($candidate === $branch || !preg_match('{^(' . $nonFeatureBranches . '|master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
                     continue;
                 }
