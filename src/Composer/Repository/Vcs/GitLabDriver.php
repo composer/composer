@@ -280,10 +280,11 @@ class GitLabDriver extends VcsDriver
     {
         $resource = $this->getApiUrl().'/repository/'.$type.'?per_page=100';
 
+        $references = array();
         do {
             $data = JsonFile::parseJson($this->getContents($resource), $resource);
 
-            $references = array();
+
 
             foreach ($data as $datum) {
                 $references[$datum['name']] = $datum['commit']['id'];
