@@ -284,8 +284,6 @@ class GitLabDriver extends VcsDriver
         do {
             $data = JsonFile::parseJson($this->getContents($resource), $resource);
 
-
-
             foreach ($data as $datum) {
                 $references[$datum['name']] = $datum['commit']['id'];
 
