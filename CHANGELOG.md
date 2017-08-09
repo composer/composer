@@ -1,3 +1,8 @@
+### [1.5.1] - 2017-08-09
+
+  * Fixed regression in GitLabDriver with repos containing >100 branches or tags
+  * Fixed sub-directory call support to respect the COMPOSER env var
+
 ### [1.5.0] - 2017-08-08
 
   * Changed the package install order to ensure that plugins are always installed as soon as possible
@@ -552,6 +557,7 @@
 
   * Initial release
 
+[1.5.1]: https://github.com/composer/composer/compare/1.5.0...1.5.1
 [1.5.0]: https://github.com/composer/composer/compare/1.4.3...1.5.0
 [1.4.3]: https://github.com/composer/composer/compare/1.4.2...1.4.3
 [1.4.2]: https://github.com/composer/composer/compare/1.4.1...1.4.2
