@@ -200,6 +200,28 @@ can be installed in a different stability than your default minimum-stability
 setting. All available stability flags are listed on the minimum-stability
 section of the [schema page](../04-schema.md#minimum-stability).
 
+## Summary
+```
+"require": {
+    "vendor/package": "1.3.2", // exactly 1.3.2
+
+    // >, <, >=, <= | specify upper / lower bounds
+    "vendor/package": ">=1.3.2", // anything above or equal to 1.3.2
+    "vendor/package": "<1.3.2", // anything below 1.3.2
+
+    // * | wildcard
+    "vendor/package": "1.3.*", // >=1.3.0 <1.4.0
+
+    // ~ | allows last digit specified to go up
+    "vendor/package": "~1.3.2", // >=1.3.2 <1.4.0
+    "vendor/package": "~1.3", // >=1.3.0 <2.0.0
+
+    // ^ | doesn't allow breaking changes (major version fixed - following semvar)
+    "vendor/package": "^1.3.2", // >=1.3.2 <2.0.0
+    "vendor/package": "^0.3.2", // >=0.3.2 <0.4.0 // except if major version is 0
+}
+```
+
 ## Testing Version Constraints
 
 You can test version constraints using [semver.mwl.be](https://semver.mwl.be).
