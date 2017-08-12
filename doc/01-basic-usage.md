@@ -35,7 +35,7 @@ As you can see, [`require`](04-schema.md#require) takes an object that maps
 
 Composer uses this information to search for the right set of files in package
 "repositories" that you register using the [`repositories`](04-schema.md#repositories)
-key, or in Packagist, the default package respository. In the above example,
+key, or in Packagist, the default package repository. In the above example,
 since no other repository has been registered in the `composer.json` file, it is
 assumed that the `monolog/monolog` package is registered on Packagist. (See more
 about Packagist [below](#packagist), or read more about repositories
