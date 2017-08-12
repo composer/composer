@@ -140,9 +140,10 @@ class FossilDriver extends VcsDriver
      */
     public function getChangeDate($identifier)
     {
-        $this->process->execute(sprintf('fossil finfo composer.json | head -n 2 | tail -n 1 | awk \'{print $1}\''), $output, $this->checkoutDir);
-
-        return new \DateTime(trim($output), new \DateTimeZone('UTC'));
+        $this->process->execute('fossil finfo -b -n 1 composer.json', $output, $this->checkoutDir);
+        list($ckout, $date, $message) = explode(' ', trim($output), 3);
+        
+        return new \DateTime($date, new \DateTimeZone('UTC'));
     }
 
     /**
