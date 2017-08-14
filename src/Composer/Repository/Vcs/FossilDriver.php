@@ -48,9 +48,9 @@ class FossilDriver extends VcsDriver
             $localName = preg_replace('{[^a-z0-9]}i', '-', $this->url);
             $this->repoFile = $this->config->get('cache-repo-dir') . '/' . $localName . '.fossil';
             $this->checkoutDir = $this->config->get('cache-vcs-dir') . '/' . $localName . '/';
-        }
 
-        $this->updateLocalRepo();
+            $this->updateLocalRepo();
+        }
 
         $this->getTags();
         $this->getBranches();
