@@ -28,14 +28,15 @@
         "composer/semver": "^1.0",
         "composer/spdx-licenses": "^1.0",
         "seld/jsonlint": "^1.4",
-        "symfony/console": "^2.7 || ^3.0",
-        "symfony/finder": "^2.7 || ^3.0",
-        "symfony/process": "^2.7 || ^3.0",
-        "symfony/filesystem": "^2.7 || ^3.0",
+        "symfony/console": "^2.7 || ^3.0 || ^4.0",
+        "symfony/finder": "^2.7 || ^3.0 || ^4.0",
+        "symfony/process": "^2.7 || ^3.0 || ^4.0",
+        "symfony/filesystem": "^2.7 || ^3.0 || ^4.0",
         "seld/phar-utils": "^1.0",
         "seld/cli-prompt": "^1.0",
         "psr/log": "^1.0"
     },
+    "minimum-stability": "dev",
     "require-dev": {
         "phpunit/phpunit": "^4.5 || ^5.0.5",
         "phpunit/phpunit-mock-objects": "^2.3 || ^3.0"
