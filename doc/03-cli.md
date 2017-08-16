@@ -679,7 +679,7 @@ performance.
 * **--apcu:** Use APCu to cache found/not-found classes.
 * **--no-dev:** Disables autoload-dev rules.
 
-## clear-cache
+## clear-cache (clearcache)
 
 Deletes all content from Composer's cache directories.
 
