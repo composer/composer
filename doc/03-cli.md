@@ -501,7 +501,7 @@ vendor/seld/jsonlint:
     M README.mdown
 ```
 
-## self-update
+## self-update (selfupdate)
 
 To update Composer itself to the latest version, just run the `self-update`
 command. It will replace your `composer.phar` with the latest version.
@@ -656,7 +656,7 @@ By default the command checks for the packages on packagist.org.
   requirements and force the installation even if the local machine does not
   fulfill these.
 
-## dump-autoload
+## dump-autoload (dumpautoload)
 
 If you need to update the autoloader because of new classes in a classmap
 package for example, you can use "dump-autoload" to do that without having to
