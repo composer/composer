@@ -7,6 +7,12 @@ To get help from the command-line, simply call `composer` or `composer list`
 to see the complete list of commands, then `--help` combined with any of those
 can give you more information.
 
+As Composer uses [symfony/console](https://github.com/symfony/console) you can call commands by short name if it's not ambiguous.
+```sh
+composer dump
+```
+calls `composer dump-autoload`.
+
 ## Global Options
 
 The following options are available with every command:
