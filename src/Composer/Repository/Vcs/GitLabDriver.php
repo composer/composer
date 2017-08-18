@@ -278,7 +278,8 @@ class GitLabDriver extends VcsDriver
      */
     protected function getReferences($type)
     {
-        $resource = $this->getApiUrl().'/repository/'.$type.'?per_page=100';
+        $perPage = 100;
+        $resource = $this->getApiUrl().'/repository/'.$type.'?per_page='.$perPage;
 
         $references = array();
         do {
@@ -287,11 +288,16 @@ class GitLabDriver extends VcsDriver
             foreach ($data as $datum) {
                 $references[$datum['name']] = $datum['commit']['id'];
 
-              // Keep the last commit date of a reference to avoid
-             // unnecessary API call when retrieving the composer file.
-              $this->commits[$datum['commit']['id']] = $datum['commit'];
+                // Keep the last commit date of a reference to avoid
+                // unnecessary API call when retrieving the composer file.
+                $this->commits[$datum['commit']['id']] = $datum['commit'];
             }
-            $resource = $this->getNextPage();
+
+            if (count($data) >= $perPage) {
+                $resource = $this->getNextPage();
+            } else {
+                $resource = false;
+            }
         } while ($resource);
 
         return $references;
