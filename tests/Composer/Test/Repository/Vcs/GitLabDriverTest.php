@@ -236,24 +236,34 @@ JSON;
         $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/branches?per_page=100';
 
         // @link http://doc.gitlab.com/ce/api/repositories.html#list-project-repository-branches
-        $branchData = <<<JSON
-[
-    {
-       "name": "mymaster",
-        "commit": {
-            "id": "97eda36b5c1dd953a3792865c222d4e85e5f302e",
-            "committed_date": "2013-01-03T21:04:07.000+01:00"
+        $branchData = array(
+            array(
+               "name" => "mymaster",
+                "commit" => array(
+                    "id" => "97eda36b5c1dd953a3792865c222d4e85e5f302e",
+                    "committed_date" => "2013-01-03T21:04:07.000+01:00"
+                )
+            ),
+            array(
+                "name" => "staging",
+                "commit" => array(
+                    "id" => "502cffe49f136443f2059803f2e7192d1ac066cd",
+                    "committed_date" => "2013-03-09T16:35:23.000+01:00"
+                )
+            ),
+        );
+
+        for ($i = 0; $i < 98; $i++) {
+            $branchData[] = array(
+                "name" => "stagingdupe",
+                "commit" => array(
+                    "id" => "502cffe49f136443f2059803f2e7192d1ac066cd",
+                    "committed_date" => "2013-03-09T16:35:23.000+01:00"
+                )
+            );
         }
-    },
-    {
-        "name": "staging",
-        "commit": {
-            "id": "502cffe49f136443f2059803f2e7192d1ac066cd",
-            "committed_date": "2013-03-09T16:35:23.000+01:00"
-        }
-    }
-]
-JSON;
+
+        $branchData = json_encode($branchData);
 
         $this->remoteFilesystem
             ->getContents('gitlab.com', $apiUrl, false, array())
@@ -279,6 +289,7 @@ JSON;
         $expected = array(
             'mymaster' => '97eda36b5c1dd953a3792865c222d4e85e5f302e',
             'staging' => '502cffe49f136443f2059803f2e7192d1ac066cd',
+            'stagingdupe' => '502cffe49f136443f2059803f2e7192d1ac066cd',
         );
 
         $this->assertEquals($expected, $driver->getBranches());
