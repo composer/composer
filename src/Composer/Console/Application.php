@@ -127,7 +127,7 @@ class Application extends BaseApplication
         }
 
         // prompt user for dir change if no composer.json is present in current dir
-        if ($io->isInteractive() && !in_array($commandName, array('init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project'), true) && !file_exists(Factory::getComposerFile())) {
+        if ($io->isInteractive() && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project'), true) && !file_exists(Factory::getComposerFile())) {
             $dir = dirname(getcwd());
             $home = realpath(getenv('HOME') ?: getenv('USERPROFILE') ?: '/');
 
