@@ -58,6 +58,7 @@ License
 Composer is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
 Acknowledgments
+
 ---------------
 
 - This project's Solver started out as a PHP port of openSUSE's
