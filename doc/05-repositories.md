@@ -518,6 +518,30 @@ Typically you would leave the source part off, as you don't really need it.
 >   reference you will have to delete the package to force an update, and will
 >   have to deal with an unstable lock file.
 
+"package" option can also get an array as value. Using this, you can define several versions of your package like this :  
+
+```json
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "foo/bar",
+                    "version": "1.0.0",
+                    ...
+                },
+                {
+                    "name": "foo/bar",
+                    "version": "2.0.0",
+                    ...
+                }
+            ]
+        }
+    ]
+}
+```
+
 ## Hosting your own
 
 While you will probably want to put your packages on packagist most of the
