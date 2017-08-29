@@ -430,6 +430,11 @@ class JsonManipulator
                 return false;
             }
 
+            //check if we do not left a coma alone on previous line if it was the last line
+            if(preg_match('#,\s*$#', $matches['start']) && preg_match('#^\}$#', $matches['end'])) {
+                $matches['start'] = rtrim(preg_replace('#,(\s*)$#', '$1', $matches['start']), $this->indent);
+            }
+
             $this->contents = $matches['start'] . $matches['end'];
             if (preg_match('#^\{\s*\}\s*$#', $this->contents)) {
                 $this->contents = "{\n}";
