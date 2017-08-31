@@ -311,4 +311,46 @@ class FilesystemTest extends TestCase
         $this->assertTrue($fs->removeJunction($junction));
         $this->assertFalse(is_dir($junction));
     }
+
+    public function testCopy()
+    {
+        @mkdir($this->workingDir . '/foo/bar', 0777, true);
+        @mkdir($this->workingDir . '/foo/baz', 0777, true);
+        file_put_contents($this->workingDir . '/foo/foo.file', 'foo');
+        file_put_contents($this->workingDir . '/foo/bar/foobar.file', 'foobar');
+        file_put_contents($this->workingDir . '/foo/baz/foobaz.file', 'foobaz');
+        file_put_contents($this->testFile, 'testfile');
+        $fs = new Filesystem();
+        $result1 = $fs->copy($this->workingDir . '/foo', $this->workingDir . '/foop');
+        $result2 = $fs->copy($this->testFile, $this->workingDir . '/foop/testfile.file');
+        $this->assertTrue($result1);
+        $this->assertTrue($result2);
+        $this->assertTrue(is_dir($this->workingDir . '/foop'));
+        $this->assertTrue(is_dir($this->workingDir . '/foop/bar'));
+        $this->assertTrue(is_dir($this->workingDir . '/foop/baz'));
+        $this->assertTrue(is_file($this->workingDir . '/foop/foo.file'));
+        $this->assertTrue(is_file($this->workingDir . '/foop/bar/foobar.file'));
+        $this->assertTrue(is_file($this->workingDir . '/foop/baz/foobaz.file'));
+        $this->assertTrue(is_file($this->workingDir . '/foop/testfile.file'));
+    }
+
+    public function testCopyTheRemove()
+    {
+        @mkdir($this->workingDir . '/foo/bar', 0777, true);
+        @mkdir($this->workingDir . '/foo/baz', 0777, true);
+        file_put_contents($this->workingDir . '/foo/foo.file', 'foo');
+        file_put_contents($this->workingDir . '/foo/bar/foobar.file', 'foobar');
+        file_put_contents($this->workingDir . '/foo/baz/foobaz.file', 'foobaz');
+        file_put_contents($this->testFile, 'testfile');
+        $fs = new Filesystem();
+        $fs->copyThenRemove($this->workingDir . '/foo', $this->workingDir . '/foop');
+        $fs->copyThenRemove($this->testFile, $this->workingDir . '/foop/testfile.file');
+        $this->assertFalse(is_file($this->workingDir . '/foop/testfile.file'));
+        $this->assertFalse(is_file($this->workingDir . '/foop/baz/foobaz.file'));
+        $this->assertFalse(is_file($this->workingDir . '/foop/bar/foobar.file'));
+        $this->assertFalse(is_file($this->workingDir . '/foop/foo.file'));
+        $this->assertFalse(is_dir($this->workingDir . '/foop/baz'));
+        $this->assertFalse(is_dir($this->workingDir . '/foop/bar'));
+        $this->assertFalse(is_dir($this->workingDir . '/foop'));
+    }
 }
