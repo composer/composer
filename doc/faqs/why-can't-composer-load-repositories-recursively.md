@@ -29,7 +29,7 @@ dist/source. There are many many ways this could go wrong.
 - Fetch the repositories of root package, then fetch the repositories of the
 first level dependencies, then fetch the repositories of their dependencies, etc,
 then resolve requirements. This sounds more efficient, but it suffers from the
-same problems than the second solution, because loading the repositories of the
+same problems as the second solution, because loading the repositories of the
 dependencies is not as easy as it sounds. You need to load all the repos of all
 the potential matches for a requirement, which again might have conflicting
 package definitions.
