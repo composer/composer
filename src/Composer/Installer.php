@@ -1309,7 +1309,7 @@ class Installer
             $skipPackages[$require->getTarget()] = true;
         }
 
-        $pool = new Pool;
+        $pool = new Pool('dev');
         $pool->addRepository($localOrLockRepo);
 
         $seen = array();
