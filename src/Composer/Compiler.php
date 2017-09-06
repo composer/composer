@@ -164,10 +164,24 @@ class Compiler
         $util->save($pharFile, \Phar::SHA1);
     }
 
+    /**
+     * @param \SplFileInfo $file
+     * @return string
+     */
+    private function getRelativeFilePath($file)
+    {
+        $realPath = $file->getRealPath();
+        $pathPrefix = dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR;
+
+        $pos = strpos($realPath, $pathPrefix);
+        $relativePath = ($pos !== false) ? substr_replace($realPath, '', $pos, strlen($pathPrefix)) : $realPath;
+
+        return strtr($relativePath, '\\', '/');
+    }
+
     private function addFile($phar, $file, $strip = true)
     {
-        $path = strtr(str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath()), '\\', '/');
-
+        $path = $this->getRelativeFilePath($file);
         $content = file_get_contents($file);
         if ($strip) {
             $content = $this->stripWhitespace($content);
