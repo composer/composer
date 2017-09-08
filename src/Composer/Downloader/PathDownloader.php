@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use Composer\Package\Archiver\ArchivableFilesFinder;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionGuesser;
@@ -119,7 +120,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         // Fallback if symlink failed or if symlink is not allowed for the package
         if (self::STRATEGY_MIRROR == $currentStrategy) {
             $this->io->writeError(sprintf('%sMirroring from %s', $isFallback ? '    ' : '', $url), false);
-            $fileSystem->mirror($realUrl, $path);
+            $iterator = new ArchivableFilesFinder($realUrl, array());
+            $fileSystem->mirror($realUrl, $path, $iterator);
         }
 
         $this->io->writeError('');
