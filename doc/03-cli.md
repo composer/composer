@@ -7,6 +7,12 @@ To get help from the command-line, simply call `composer` or `composer list`
 to see the complete list of commands, then `--help` combined with any of those
 can give you more information.
 
+As Composer uses [symfony/console](https://github.com/symfony/console) you can call commands by short name if it's not ambiguous.
+```sh
+composer dump
+```
+calls `composer dump-autoload`.
+
 ## Global Options
 
 The following options are available with every command:
@@ -397,7 +403,7 @@ This implies `--by-package --by-suggestion`, showing both lists.
 * **--by-suggestion:** Groups output by suggested package.
 * **--no-dev:** Excludes suggestions from `require-dev` packages.
 
-## depends
+## depends (why)
 
 The `depends` command tells you which other packages depend on a certain
 package. As with installation `require-dev` relationships are only considered
@@ -432,7 +438,7 @@ psr/log 1.0.0 Common interface for logging libraries
 * **--recursive (-r):** Recursively resolves up to the root package.
 * **--tree (-t):** Prints the results as a nested tree, implies -r.
 
-## prohibits
+## prohibits (why-not)
 
 The `prohibits` command tells you which packages are blocking a given package
 from being installed. Specify a version constraint to verify whether upgrades
@@ -501,7 +507,7 @@ vendor/seld/jsonlint:
     M README.mdown
 ```
 
-## self-update
+## self-update (selfupdate)
 
 To update Composer itself to the latest version, just run the `self-update`
 command. It will replace your `composer.phar` with the latest version.
@@ -656,7 +662,7 @@ By default the command checks for the packages on packagist.org.
   requirements and force the installation even if the local machine does not
   fulfill these.
 
-## dump-autoload
+## dump-autoload (dumpautoload)
 
 If you need to update the autoloader because of new classes in a classmap
 package for example, you can use "dump-autoload" to do that without having to
@@ -679,7 +685,7 @@ performance.
 * **--apcu:** Use APCu to cache found/not-found classes.
 * **--no-dev:** Disables autoload-dev rules.
 
-## clear-cache
+## clear-cache (clearcache)
 
 Deletes all content from Composer's cache directories.
 
