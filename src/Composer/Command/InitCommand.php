@@ -13,20 +13,22 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Pool;
-use Composer\Json\JsonFile;
 use Composer\Factory;
-use Composer\Repository\RepositoryFactory;
+use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
+use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryFactory;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ExecutableFinder;
+use Symfony\Component\Process\Process;
 
 /**
  * @author Justin Rainbow <justin.rainbow@gmail.com>
@@ -644,6 +646,14 @@ EOT
                     'Could not find package %s at any version matching your PHP version %s', $name, $phpVersion
                 ));
             }
+            $similar = $this->findSimilar($name);
+            if ($similar) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Could not find package %s. Did you mean: %s ?',
+                    $name,
+                    $similar
+                ));
+            }
             throw new \InvalidArgumentException(sprintf(
                 'Could not find package %s at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
                 $name,
@@ -652,5 +662,32 @@ EOT
         }
 
         return $versionSelector->findRecommendedRequireVersion($package);
+    }
+
+    private function findSimilar($package)
+    {
+        $registeredPackages = $this->getPackages();
+        $min = (strlen($package) / 4 + 1) * 10 + .1;
+        $similar = null;
+        foreach ($registeredPackages as $registeredPackage) {
+            $levenshtein = levenshtein($package, $registeredPackage, 10, 11, 10);
+            if ($levenshtein < $min) {
+                $min = $levenshtein;
+                $similar = $registeredPackage;
+            }
+        }
+        return $similar;
+    }
+
+    private function getPackages()
+    {
+        $packages = array();
+        foreach ($this->repos->getRepositories() as $repository) {
+            $repositoryPackages = $repository instanceof ComposerRepository ? $repository->getProviderNames() : $repository->getPackages();
+            foreach ($repositoryPackages as $repositoryPackage) {
+                $packages[] = $repositoryPackage instanceof PackageInterface ? $repositoryPackage->getName() : $repositoryPackage;
+            }
+        }
+        return $packages;
     }
 }
