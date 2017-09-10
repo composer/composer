@@ -279,7 +279,8 @@ class ClassLoader
      */
     public function setApcuPrefix($apcuPrefix)
     {
-        $this->apcuPrefix = function_exists('apcu_fetch') && ini_get('apc.enabled') ? $apcuPrefix : null;
+        $this->apcuPrefix = (function_exists('apc_fetch') || function_exists('apcu_fetch'))
+            && ini_get('apc.enabled') ? $apcuPrefix : null;
     }
 
     /**
@@ -342,7 +343,9 @@ class ClassLoader
             return false;
         }
         if (null !== $this->apcuPrefix) {
-            $file = apcu_fetch($this->apcuPrefix.$class, $hit);
+            // We already checked that both functions exist, but prefer apcu
+            $func = function_exists('apcu_fetch') ? 'apcu_fetch' : 'apc_fetch';
+            $file = $func($this->apcuPrefix.$class, $hit);
             if ($hit) {
                 return $file;
             }
@@ -356,7 +359,9 @@ class ClassLoader
         }
 
         if (null !== $this->apcuPrefix) {
-            apcu_add($this->apcuPrefix.$class, $file);
+            // We already checked that both functions exist, but prefer apcu
+            $func = function_exists('apcu_add') ? 'apcu_add' : 'apc_add';
+            $func($this->apcuPrefix.$class, $file);
         }
 
         if (false === $file) {
