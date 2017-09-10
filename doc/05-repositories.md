@@ -518,7 +518,7 @@ Typically you would leave the source part off, as you don't really need it.
 >   reference you will have to delete the package to force an update, and will
 >   have to deal with an unstable lock file.
 
-"package" option can also get an array as value. Using this, you can define several versions of your package like this :  
+The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:  
 
 ```json
 {
