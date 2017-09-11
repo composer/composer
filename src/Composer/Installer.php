@@ -126,6 +126,7 @@ class Installer
      */
     protected $updateWhitelist = null;
     protected $whitelistDependencies = false;
+    protected $whitelistAllDependencies = false;
 
     /**
      * @var SuggestedPackagesReporter
@@ -1351,7 +1352,7 @@ class Installer
                 $seen[$package->getId()] = true;
                 $this->updateWhitelist[$package->getName()] = true;
 
-                if (!$this->whitelistDependencies) {
+                if (!$this->whitelistDependencies && !$this->whitelistAllDependencies) {
                     continue;
                 }
 
@@ -1361,7 +1362,7 @@ class Installer
                     $requirePackages = $pool->whatProvides($require->getTarget());
 
                     foreach ($requirePackages as $requirePackage) {
-                        if (isset($this->updateWhitelist[$requirePackage->getName()])) {
+                        if (!$this->whitelistAllDependencies && isset($this->updateWhitelist[$requirePackage->getName()])) {
                             continue;
                         }
 
@@ -1652,14 +1653,33 @@ class Installer
     }
 
     /**
-     * Should dependencies of whitelisted packages be updated recursively?
+     * Should indirect dependencies of whitelisted packages be updated?
+     *
+     * This will NOT whitelist any dependencies that are also directly defined
+     * in the root package.
      *
      * @param  bool      $updateDependencies
      * @return Installer
      */
-    public function setWhitelistDependencies($updateDependencies = true)
+    public function setIndirectWhitelistDependencies($updateDependencies = true)
     {
         $this->whitelistDependencies = (bool) $updateDependencies;
+
+        return $this;
+    }
+
+    /**
+     * Should all dependencies of whitelisted packages be updated recursively?
+     *
+     * This will NOT whitelist any dependencies that are also defined in the
+     * root package.
+     *
+     * @param  bool      $updateAllDependencies
+     * @return Installer
+     */
+    public function setAllWhitelistDependencies($updateAllDependencies = true)
+    {
+        $this->whitelistAllDependencies = (bool) $updateAllDependencies;
 
         return $this;
     }
