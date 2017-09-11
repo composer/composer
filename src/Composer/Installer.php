@@ -1284,7 +1284,7 @@ class Installer
      *
      * Packages which are listed as requirements in the root package will be
      * skipped including their dependencies, unless they are listed in the
-     * update whitelist themselves.
+     * update whitelist themselves or `with-all-dependencies` is used.
      *
      * @param RepositoryInterface $localOrLockRepo Use the locked repo if available, otherwise installed repo will do
      *                                             As we want the most accurate package list to work with, and installed
@@ -1306,8 +1306,10 @@ class Installer
         }
 
         $skipPackages = array();
-        foreach ($rootRequires as $require) {
-            $skipPackages[$require->getTarget()] = true;
+        if (!$this->whitelistAllDependencies) {
+          foreach ($rootRequires as $require) {
+            $skipPackages[$require->getTarget()] = TRUE;
+          }
         }
 
         $pool = new Pool('dev');
@@ -1366,7 +1368,7 @@ class Installer
                             continue;
                         }
 
-                        if (!$this->whitelistAllDependencies && isset($skipPackages[$requirePackage->getName()])) {
+                        if (isset($skipPackages[$requirePackage->getName()])) {
                             $this->io->writeError('<warning>Dependency "' . $requirePackage->getName() . '" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>');
                             continue;
                         }
