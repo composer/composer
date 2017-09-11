@@ -125,7 +125,7 @@ class Installer
      * @var array|null
      */
     protected $updateWhitelist = null;
-    protected $whitelistIndirectDependencies = false;
+    protected $whitelistNonRootDependencies = false;
     protected $whitelistAllDependencies = false;
 
     /**
@@ -1354,7 +1354,7 @@ class Installer
                 $seen[$package->getId()] = true;
                 $this->updateWhitelist[$package->getName()] = true;
 
-                if (!$this->whitelistIndirectDependencies && !$this->whitelistAllDependencies) {
+                if (!$this->whitelistNonRootDependencies && !$this->whitelistAllDependencies) {
                     continue;
                 }
 
@@ -1660,12 +1660,13 @@ class Installer
      * This will NOT whitelist any dependencies that are also directly defined
      * in the root package.
      *
-     * @param  bool      $updateDependencies
+     * @param  bool      $updateNonRootDependencies
+     *
      * @return Installer
      */
-    public function setIndirectWhitelistDependencies($updateDependencies = true)
+    public function setWhitelistNonRootDependencies($updateNonRootDependencies = true)
     {
-        $this->whitelistIndirectDependencies = (bool) $updateDependencies;
+        $this->whitelistNonRootDependencies = (bool) $updateNonRootDependencies;
 
         return $this;
     }

@@ -170,7 +170,7 @@ EOT
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
             ->setUpdateWhitelist(array_keys($requirements))
-            ->setIndirectWhitelistDependencies($input->getOption('update-with-dependencies'))
+            ->setWhitelistNonRootDependencies($input->getOption('update-with-dependencies'))
             ->setAllWhitelistDependencies($input->getOption('update-with-all-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
