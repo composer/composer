@@ -1680,7 +1680,7 @@ class Installer
      * @param  bool      $updateAllDependencies
      * @return Installer
      */
-    public function setAllWhitelistDependencies($updateAllDependencies = true)
+    public function setWhitelistAllDependencies($updateAllDependencies = true)
     {
         $this->whitelistAllDependencies = (bool) $updateAllDependencies;
 

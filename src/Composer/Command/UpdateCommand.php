@@ -147,7 +147,7 @@ EOT
             ->setUpdate(true)
             ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $packages)
             ->setWhitelistNonRootDependencies($input->getOption('with-dependencies'))
-            ->setAllWhitelistDependencies($input->getOption('with-all-dependencies'))
+            ->setWhitelistAllDependencies($input->getOption('with-all-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))

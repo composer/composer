@@ -171,7 +171,7 @@ EOT
             ->setUpdate(true)
             ->setUpdateWhitelist(array_keys($requirements))
             ->setWhitelistNonRootDependencies($input->getOption('update-with-dependencies'))
-            ->setAllWhitelistDependencies($input->getOption('update-with-all-dependencies'))
+            ->setWhitelistAllDependencies($input->getOption('update-with-all-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
