@@ -18,7 +18,7 @@ When `with-all-dependencies` is used, Composer\Installer::whitelistUpdateDepende
         }
     ],
     "require": {
-        "a": "~1.0",
+        "a": "^1.0",
         "b": "~1.0"
     }
 }
