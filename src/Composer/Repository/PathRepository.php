@@ -142,6 +142,17 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             );
             $package['transport-options'] = $this->options;
 
+            // carry over the root package version if this path repo is in the same git repository as root package
+            if (!isset($package['version']) && ($rootVersion = getenv('COMPOSER_ROOT_VERSION'))) {
+                if (
+                    0 === $this->process->execute('git rev-parse HEAD', $ref1, $path)
+                    && 0 === $this->process->execute('git rev-parse HEAD', $ref2)
+                    && $ref1 === $ref2
+                ) {
+                    $package['version'] = $rootVersion;
+                }
+            }
+
             if (!isset($package['version'])) {
                 $versionData = $this->versionGuesser->guessVersion($package, $path);
                 $package['version'] = $versionData['version'] ?: 'dev-master';
