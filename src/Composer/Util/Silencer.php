@@ -36,7 +36,7 @@ class Silencer
             $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT;
         }
         $old = error_reporting();
-        array_push(self::$stack, $old);
+        self::$stack[] = $old;
         error_reporting($old & ~$mask);
 
         return $old;

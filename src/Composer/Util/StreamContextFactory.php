@@ -139,7 +139,7 @@ final class StreamContextFactory
             $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
         }
 
-        if (!isset($options['http']['header']) || false === strpos(strtolower(implode('', $options['http']['header'])), 'user-agent')) {
+        if (!isset($options['http']['header']) || false === stripos(implode('', $options['http']['header']), 'user-agent')) {
             $options['http']['header'][] = sprintf(
                 'User-Agent: Composer/%s (%s; %s; %s%s)',
                 Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,

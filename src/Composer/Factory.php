@@ -204,7 +204,7 @@ class Factory
         if ($composerAuthEnv = getenv('COMPOSER_AUTH')) {
             $authData = json_decode($composerAuthEnv, true);
 
-            if (is_null($authData)) {
+            if (null === $authData) {
                 throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed, should be a valid JSON object');
             }
 
@@ -437,7 +437,7 @@ class Factory
     {
         $composer = null;
         try {
-            $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), $fullLoad);
+            $composer = $this->createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), $fullLoad);
         } catch (\Exception $e) {
             $io->writeError('Failed to initialize global composer: '.$e->getMessage(), true, IOInterface::DEBUG);
         }

@@ -88,7 +88,7 @@ EOT
                 continue;
             }
             foreach ($package['suggest'] as $suggestion => $reason) {
-                if (false === strpos('/', $suggestion) && !is_null($platform->findPackage($suggestion, '*'))) {
+                if (false === strpos('/', $suggestion) && null !== $platform->findPackage($suggestion, '*')) {
                     continue;
                 }
                 if (!isset($installed[$suggestion])) {
