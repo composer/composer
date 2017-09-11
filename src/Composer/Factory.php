@@ -204,7 +204,7 @@ class Factory
         if ($composerAuthEnv = getenv('COMPOSER_AUTH')) {
             $authData = json_decode($composerAuthEnv, true);
 
-            if (is_null($authData)) {
+            if (null === $authData) {
                 throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed, should be a valid JSON object');
             }
 

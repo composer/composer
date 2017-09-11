@@ -171,7 +171,8 @@ EOT
         );
         $autocompleterValues = array();
         foreach ($requires as $require) {
-            $autocompleterValues[strtolower($require->getTarget())] = $require->getTarget();
+            $target = $require->getTarget();
+            $autocompleterValues[strtolower($target)] = $target;
         }
 
         $installedPackages = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
