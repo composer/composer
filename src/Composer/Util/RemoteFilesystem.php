@@ -354,6 +354,17 @@ class RemoteFilesystem
             }
         }
 
+        // check for gitlab 404 when downloading archives
+        if ($statusCode === 404
+            && $this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)
+            && false !== strpos($fileUrl, 'archive.zip')
+        ) {
+            $result = false;
+            if ($this->retryAuthFailure) {
+                $this->promptAuthAndRetry(401);
+            }
+        }
+
         // handle 3xx redirects for php<5.6, 304 Not Modified is excluded
         $hasFollowedRedirect = false;
         if ($userlandFollow && $statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $this->redirects < $this->maxRedirects) {
