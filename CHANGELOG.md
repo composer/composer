@@ -1,3 +1,13 @@
+### [1.5.2] - 2017-09-11
+
+  * Fixed GitLabDriver looping endlessly in some conditions
+  * Fixed GitLabDriver support for unauthenticated requests
+  * Fixed GitLab zip downloads not triggering credentials prompt if unauthenticated
+  * Fixed path repository support of COMPOSER_ROOT_VERSION, it now applies to all path repos within the same git repository
+  * Fixed path repository handling of copies to avoid copying VCS files and others
+  * Fixed sub-directory call to ignore list and create-project commands as well as calls to Composer using --working-dir
+  * Fixed invalid warning appearing when calling `remove` on an non-stable package
+
 ### [1.5.1] - 2017-08-09
 
   * Fixed regression in GitLabDriver with repos containing >100 branches or tags
@@ -557,6 +567,7 @@
 
   * Initial release
 
+[1.5.2]: https://github.com/composer/composer/compare/1.5.1...1.5.2
 [1.5.1]: https://github.com/composer/composer/compare/1.5.0...1.5.1
 [1.5.0]: https://github.com/composer/composer/compare/1.4.3...1.5.0
 [1.4.3]: https://github.com/composer/composer/compare/1.4.2...1.4.3
