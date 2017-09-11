@@ -2331,4 +2331,34 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 ', $manipulator->getContents());
     }
+
+    public function testRemoveMainKeyAtEndOfFile()
+    {
+        $manipulator = new JsonManipulator('{
+    "require": {
+        "package/a": "*"
+    }
+}
+');
+        $this->assertTrue($manipulator->addMainKey('homepage', 'http...'));
+        $this->assertTrue($manipulator->addMainKey('license', 'mit'));
+        $this->assertEquals('{
+    "require": {
+        "package/a": "*"
+    },
+    "homepage": "http...",
+    "license": "mit"
+}
+', $manipulator->getContents());
+
+        $this->assertTrue($manipulator->removeMainKey('homepage'));
+        $this->assertTrue($manipulator->removeMainKey('license'));
+        $this->assertEquals('{
+    "require": {
+        "package/a": "*"
+    }
+}
+', $manipulator->getContents());
+
+    }
 }
