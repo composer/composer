@@ -649,9 +649,9 @@ EOT
             $similar = $this->findSimilar($name);
             if ($similar) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Could not find package %s. Did you mean: %s ?',
+                    "Could not find package %s.\n\nDid you mean " . (count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
                     $name,
-                    $similar
+                    implode("\n    ", $similar)
                 ));
             }
             throw new \InvalidArgumentException(sprintf(
@@ -666,28 +666,11 @@ EOT
 
     private function findSimilar($package)
     {
-        $registeredPackages = $this->getPackages();
-        $min = (strlen($package) / 4 + 1) * 10 + .1;
-        $similar = null;
-        foreach ($registeredPackages as $registeredPackage) {
-            $levenshtein = levenshtein($package, $registeredPackage, 10, 11, 10);
-            if ($levenshtein < $min) {
-                $min = $levenshtein;
-                $similar = $registeredPackage;
-            }
+        $results = $this->repos->search($package);
+        foreach ($results as $result) {
+            $similarPackages[$result['name']] = levenshtein($package, $result['name']);
         }
-        return $similar;
-    }
-
-    private function getPackages()
-    {
-        $packages = array();
-        foreach ($this->repos->getRepositories() as $repository) {
-            $repositoryPackages = $repository instanceof ComposerRepository ? $repository->getProviderNames() : $repository->getPackages();
-            foreach ($repositoryPackages as $repositoryPackage) {
-                $packages[] = $repositoryPackage instanceof PackageInterface ? $repositoryPackage->getName() : $repositoryPackage;
-            }
-        }
-        return $packages;
+        asort($similarPackages);
+        return array_keys(array_slice($similarPackages, 0, 5));
     }
 }
