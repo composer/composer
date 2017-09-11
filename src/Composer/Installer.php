@@ -125,7 +125,7 @@ class Installer
      * @var array|null
      */
     protected $updateWhitelist = null;
-    protected $whitelistDependencies = false;
+    protected $whitelistIndirectDependencies = false;
     protected $whitelistAllDependencies = false;
 
     /**
@@ -1352,7 +1352,7 @@ class Installer
                 $seen[$package->getId()] = true;
                 $this->updateWhitelist[$package->getName()] = true;
 
-                if (!$this->whitelistDependencies && !$this->whitelistAllDependencies) {
+                if (!$this->whitelistIndirectDependencies && !$this->whitelistAllDependencies) {
                     continue;
                 }
 
@@ -1663,7 +1663,7 @@ class Installer
      */
     public function setIndirectWhitelistDependencies($updateDependencies = true)
     {
-        $this->whitelistDependencies = (bool) $updateDependencies;
+        $this->whitelistIndirectDependencies = (bool) $updateDependencies;
 
         return $this;
     }
