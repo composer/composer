@@ -1284,7 +1284,7 @@ class Installer
      *
      * Packages which are listed as requirements in the root package will be
      * skipped including their dependencies, unless they are listed in the
-     * update whitelist themselves or `with-all-dependencies` is used.
+     * update whitelist themselves or $whitelistAllDependencies is true.
      *
      * @param RepositoryInterface $localOrLockRepo Use the locked repo if available, otherwise installed repo will do
      *                                             As we want the most accurate package list to work with, and installed
