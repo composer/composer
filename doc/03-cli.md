@@ -112,7 +112,9 @@ resolution.
 ## update
 
 In order to get the latest versions of the dependencies and to update the
-`composer.lock` file, you should use the `update` command.
+`composer.lock` file, you should use the `update` command. This command is also
+aliased as `upgrade` as it does the same as `upgrade` does if you are thinking
+of `apt-get` or similar package managers.
 
 ```sh
 php composer.phar update
