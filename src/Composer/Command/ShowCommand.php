@@ -222,7 +222,9 @@ EOT
                 $io->writeError('Format "json" is only supported for package listings, falling back to format "text"');
             }
             $rootRequires = $this->getRootRequires();
-            foreach ($installedRepo->getPackages() as $package) {
+            $packages = $installedRepo->getPackages();
+            usort($packages, 'strcmp');
+            foreach ($packages as $package) {
                 if (in_array($package->getName(), $rootRequires, true)) {
                     $this->displayPackageTree($package, $installedRepo, $repos);
                 }
@@ -703,6 +705,7 @@ EOT
 
         if (is_object($package)) {
             $requires = $package->getRequires();
+            ksort($requires);
             $treeBar = '├';
             $j = 0;
             $total = count($requires);
@@ -744,6 +747,7 @@ EOT
         list($package, $versions) = $this->getPackage($installedRepo, $distantRepos, $name, $package->getPrettyConstraint() === 'self.version' ? $package->getConstraint() : $package->getPrettyConstraint());
         if (is_object($package)) {
             $requires = $package->getRequires();
+            ksort($requires);
             $treeBar = $previousTreeBar . '  ├';
             $i = 0;
             $total = count($requires);
