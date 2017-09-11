@@ -95,11 +95,6 @@ class Transaction
         return $this->transaction;
     }
 
-    /**
-     * @param $installMap
-     * @param $updateMap
-     * @param $uninstallMap
-     */
     protected function transactionFromMaps($installMap, $updateMap, $uninstallMap)
     {
         $queue = array_map(
