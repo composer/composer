@@ -153,7 +153,8 @@ php composer.phar update vendor/*
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--no-suggest:** Skips suggested packages in the output.
-* **--with-dependencies:** Add also all dependencies of whitelisted packages to the whitelist.
+* **--with-dependencies:** Add also dependencies of whitelisted packages to the whitelist, except those that are root requirements.
+* **--with-all-dependencies:** Add also all dependencies of whitelisted packages to the whitelist, including those that are root requirements.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -199,8 +200,8 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
-* **--update-with-dependencies:** Also update dependencies of the newly
-  required packages.
+* **--update-with-dependencies:** Also update dependencies of the newly required packages, except those that are root requirements.
+* **--update-with-all-dependencies:** Also update dependencies of the newly required packages, including those that are root requirements.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
   fulfill these. See also the [`platform`](06-config.md#platform) config option.
