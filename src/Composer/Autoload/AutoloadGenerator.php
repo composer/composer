@@ -199,7 +199,7 @@ EOF;
         $targetDirLoader = null;
         $mainAutoload = $mainPackage->getAutoload();
         if ($mainPackage->getTargetDir() && !empty($mainAutoload['psr-0'])) {
-            $levels = substr_count($filesystem->normalizePath($mainPackage->getTargetDir()), '/') + 1;
+            $levels = count(explode('/', $filesystem->normalizePath($mainPackage->getTargetDir())));
             $prefixes = implode(', ', array_map(function ($prefix) {
                 return var_export($prefix, true);
             }, array_keys($mainAutoload['psr-0'])));
