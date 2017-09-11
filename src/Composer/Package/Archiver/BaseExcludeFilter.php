@@ -125,12 +125,12 @@ abstract class BaseExcludeFilter
         $negate = false;
         $pattern = '{';
 
-        if (strlen($rule) && $rule[0] === '!') {
+        if ('' !== $rule && '!' === $rule[0]) {
             $negate = true;
             $rule = substr($rule, 1);
         }
 
-        if (strlen($rule) && $rule[0] === '/') {
+        if ('' !== $rule && '/' === $rule[0]) {
             $pattern .= '^/';
             $rule = substr($rule, 1);
         } elseif (strlen($rule) - 1 === strpos($rule, '/')) {

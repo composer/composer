@@ -95,6 +95,11 @@ class Transaction
         return $this->transaction;
     }
 
+    /**
+     * @param $installMap
+     * @param $updateMap
+     * @param $uninstallMap
+     */
     protected function transactionFromMaps($installMap, $updateMap, $uninstallMap)
     {
         $queue = array_map(
@@ -111,16 +116,16 @@ class Transaction
             $packageId = $package->id;
 
             if (!isset($visited[$packageId])) {
-                array_push($queue, $package);
+                $queue[] = $package;
 
                 if ($package instanceof AliasPackage) {
-                    array_push($queue, $package->getAliasOf());
+                    $queue[] = $package->getAliasOf();
                 } else {
                     foreach ($package->getRequires() as $link) {
                         $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                         foreach ($possibleRequires as $require) {
-                            array_push($queue, $require);
+                            $queue[] = $require;
                         }
                     }
                 }

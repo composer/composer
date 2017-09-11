@@ -412,7 +412,7 @@ class Filesystem
         }
         $relTarget = substr($to, strlen($commonPath));
 
-        return $commonPathCode . (strlen($relTarget) ? '.' . var_export('/' . $relTarget, true) : '');
+        return $commonPathCode . ('' !== $relTarget ? '.' . var_export('/' . $relTarget, true) : '');
     }
 
     /**
@@ -608,7 +608,7 @@ class Filesystem
 
         $resolved = rtrim($pathname, '/');
 
-        if (!strlen($resolved)) {
+        if ('' === $resolved) {
             return $pathname;
         }
 
