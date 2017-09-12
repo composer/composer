@@ -90,7 +90,7 @@ EOT
 
         $args = $input->getArgument('args');
 
-        if (!is_null($timeout = $input->getOption('timeout'))) {
+        if (null !== $timeout = $input->getOption('timeout')) {
             if (!ctype_digit($timeout)) {
                 throw new \RuntimeException('Timeout value must be numeric and positive if defined, or 0 for forever');
             }

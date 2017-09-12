@@ -87,9 +87,7 @@ class PerforceDriver extends VcsDriver
      */
     public function getBranches()
     {
-        $branches = $this->perforce->getBranches();
-
-        return $branches;
+        return $this->perforce->getBranches();
     }
 
     /**
@@ -97,9 +95,7 @@ class PerforceDriver extends VcsDriver
      */
     public function getTags()
     {
-        $tags = $this->perforce->getTags();
-
-        return $tags;
+        return $this->perforce->getTags();
     }
 
     /**

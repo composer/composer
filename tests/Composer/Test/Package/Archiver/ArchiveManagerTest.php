@@ -92,9 +92,7 @@ class ArchiveManagerTest extends ArchiverTest
             $packageName = $fileName;
         }
 
-        $target = $this->targetDir.'/'.$packageName.'.'.$format;
-
-        return $target;
+        return $this->targetDir.'/'.$packageName.'.'.$format;
     }
 
     /**

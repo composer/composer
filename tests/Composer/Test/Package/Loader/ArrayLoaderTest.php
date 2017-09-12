@@ -126,10 +126,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
             'abandoned' => 'foo/bar',
         );
 
-        $validTestArguments = array($validConfig);
-        $argumentsToProvide = array($validTestArguments);
-
-        return $argumentsToProvide;
+        return array(array($validConfig));
     }
 
     protected function fixConfigWhenLoadConfigIsFalse($config)
