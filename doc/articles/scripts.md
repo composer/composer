@@ -271,3 +271,19 @@ resolve to whatever php process is currently being used:
 One limitation of this is that you can not call multiple commands in
 a row like `@php install && @php foo`. You must split them up in a
 JSON array of commands.
+
+## Custom descriptions.
+
+You can set custom script descriptions with the following extra in your composer.json:
+
+ ```json
+ {
+     "extra": {
+        "scripts-description": {
+            "test": "Run all tests!"
+        }
+     }
+ }
+ ```
+
+> **Note:** You can only set custom descriptions of custom commands.
