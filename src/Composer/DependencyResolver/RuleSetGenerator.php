@@ -283,7 +283,7 @@ class RuleSetGenerator
             switch ($job['cmd']) {
                 case 'install':
                     if (!$job['fixed'] && $ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
-                        break; // or `continue 2` ?
+                        break;
                     }
 
                     $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
