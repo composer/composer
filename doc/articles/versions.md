@@ -109,7 +109,7 @@ will be treated as a **logical OR**. AND has higher precedence than OR.
 
 > **Note:** Be careful when using unbounded ranges as you might end up
 > unexpectedly installing versions that break backwards compatibility.
-> Consider using the [caret](#caret) operator instead for safety.
+> Consider using the [caret](#caret-version-range-) operator instead for safety.
 
 Examples:
 
