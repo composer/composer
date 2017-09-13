@@ -173,7 +173,7 @@ class GitDownloaderTest extends TestCase
                 return 0;
             }));
 
-        $expectedGitCommand = $this->winCompat(sprintf("git clone --no-checkout 'https://example.com/composer/composer' 'composerPath' --dissociate --reference '%s' && cd 'composerPath' && git remote add composer 'https://example.com/composer/composer' && git fetch composer", $cachePath));
+        $expectedGitCommand = $this->winCompat(sprintf("git clone --no-checkout '%1\$s' 'composerPath' --dissociate --reference '%1\$s' && cd 'composerPath' && git remote set-url origin 'https://example.com/composer/composer' && git remote add composer 'https://example.com/composer/composer' && git fetch composer", $cachePath));
         $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
