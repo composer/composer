@@ -228,6 +228,22 @@ class Git
         return true;
     }
 
+    public function lazySyncMirror($url, $dir, $ref)
+    {
+        if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
+            try {
+                $commandCallable = function ($ref) {
+                    return sprintf('git cat-file -t %s', ProcessExecutor::escape($ref));
+                };
+                $this->runCommand($commandCallable, $ref, $dir);
+                return true;
+            } catch (\Exception $e) {
+            }
+        }
+
+        return $this->syncMirror($url, $dir);
+    }
+
     private function isAuthenticationFailure($url, &$match)
     {
         if (!preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match)) {
