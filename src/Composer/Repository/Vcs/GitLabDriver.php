@@ -196,7 +196,7 @@ class GitLabDriver extends VcsDriver
             return $this->gitDriver->getSource($identifier);
         }
 
-        return array('type' => 'git', 'url' => $this->getRepositoryUrl(), 'reference' => $identifier);
+        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $identifier);
     }
 
     /**
