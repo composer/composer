@@ -79,29 +79,160 @@ class FossilDriver extends VcsDriver
         }
 
         // update the repo if it is a valid fossil repository
-        if (is_file($this->repoFile) && is_dir($this->checkoutDir) && 0 === $this->process->execute('fossil info', $output, $this->checkoutDir)) {
-            if (0 !== $this->process->execute('fossil pull', $output, $this->checkoutDir)) {
+        if ($this->isLocalCheckout()) {
+            $cmd = $this->getPullCommand();
+            if (0 !== $this->process->execute($cmd, $output, $this->checkoutDir)) {
                 $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
             }
-        } else {
+        }
+        else {
             // clean up directory and do a fresh clone into it
             $fs->removeDirectory($this->checkoutDir);
             $fs->remove($this->repoFile);
 
             $fs->ensureDirectoryExists($this->checkoutDir);
 
-            if (0 !== $this->process->execute(sprintf('fossil clone %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoFile)), $output)) {
+            $cmd = $this->getCloneCommand();
+            if (0 !== $this->process->execute($cmd, $output)) {
                 $output = $this->process->getErrorOutput();
 
                 throw new \RuntimeException('Failed to clone '.$this->url.' to repository ' . $this->repoFile . "\n\n" .$output);
             }
 
-            if (0 !== $this->process->execute(sprintf('fossil open %s', ProcessExecutor::escape($this->repoFile)), $output, $this->checkoutDir)) {
+            $cmd = $this->getOpenCommand();
+            if (0 !== $this->process->execute($cmd, $output, $this->checkoutDir)) {
                 $output = $this->process->getErrorOutput();
 
                 throw new \RuntimeException('Failed to open repository '.$this->repoFile.' in ' . $this->checkoutDir . "\n\n" .$output);
             }
         }
+    }
+
+    /**
+     * Checks whether `$this->checkoutDir` points to a local checkout.
+     */
+    protected function isLocalCheckout()
+    {
+        return is_file($this->repoFile) &&
+            is_dir($this->checkoutDir) &&
+            ($this->process->execute('fossil info', $output, $this->checkoutDir) === 0);
+    }
+
+    /**
+     * Returns the clone command.
+     */
+    protected function getCloneCommand()
+    {
+        return sprintf(
+            'fossil clone --once %s %s %s',
+            $this->getHttpBasicAuth(),
+            ProcessExecutor::escape($this->getUrlWithAuth()),
+            ProcessExecutor::escape($this->repoFile)
+        );
+    }
+
+    /**
+     * Returns the pull command.
+     */
+    protected function getPullCommand()
+    {
+        return sprintf(
+            'fossil pull %s --once %s',
+            ProcessExecutor::escape($this->getUrlWithAuth()),
+            $this->getHttpBasicAuth()
+        );
+    }
+
+    /**
+     * Returns the open command.
+     */
+    protected function getOpenCommand()
+    {
+        return sprintf(
+            'fossil open %s',
+            ProcessExecutor::escape($this->repoFile)
+        );
+    }
+
+    /**
+     * Find username and password for HTTP authentication, if they are defined.
+     * The returned string is in the format expected by the fossil executable.
+     */
+    protected function getHttpBasicAuth()
+    {
+        $parsed = parse_url($this->url);
+
+        // Only for http(s) URLs.
+        if (!isset($parsed['scheme']) || ($parsed['scheme'] != 'http' && $parsed['scheme'] != 'https') || empty($parsed['host']))
+            return '';
+
+        if ($this->io->hasAuthentication($parsed['host']))
+            $creds = $this->io->getAuthentication($parsed['host']);
+        else
+            return '';
+
+        // We don't allow empty username or password. Both must be defined.
+        if (!empty($creds['username']) && !empty($creds['password']))
+            return sprintf('-B %s', ProcessExecutor::escape($creds['username'] .':'. $creds['password']));
+
+        return '';
+    }
+
+    /**
+     * To clone or pull from a remote fossil repo via HTTP URL, we might have to go through two authentications:
+     *
+     *   1. HTTP Basic authentication, if accessing the HTTP URL is so protected by the web server.
+     *   2. Fossil authentication, if accessing the remote repo is not allowed for anonymous users.
+     * 
+     * Fossil considers the username and password specified in the HTTP URL to be the credentials for Fossil authentication,
+     * and provides a separate parameter for HTTP Basic authentication.
+     *
+     * As best practice, users should probably keep all their credentials in auth.json. The composer.json should
+     * only have the URL to the remote repo as if it was accessible to the public without any credentials.
+     *
+     * This method manipulates the repo URL and adds fossil repository credentials to it.
+     *
+     * It is expected that credentials specific for each repository would be located in auth.json in the following structure:
+     *
+     * {
+     *   "fossil-auth": {
+     *     "host.com/path/to/repo": {
+     *       "username": "my-user",
+     *       "password": "my-pass"
+     *     }
+     *   }
+     * }
+     */
+    protected function getUrlWithAuth()
+    {
+        $url = $this->url;
+        $parsed = parse_url($url);
+
+        // Only for http(s) URLs.
+        if (!isset($parsed['scheme']) || ($parsed['scheme'] != 'http' && $parsed['scheme'] != 'https') || empty($parsed['host']))
+            return $url;
+
+        $remoteRepo = $parsed['host'] . $parsed['path'];
+        $authentications = $this->config->get('fossil-auth');
+
+        if (isset($authentications[$remoteRepo])) {
+            $creds = $authentications[$remoteRepo];
+
+            // We don't care if username or password were provided in the URL.
+            $url = sprintf(
+                '%s://%s:%s@%s%s%s%s%s',
+                $parsed['scheme'],
+                $creds['username'],
+                $creds['password'],
+                $parsed['host'],
+                isset($parsed['port']) ? ':'.$parsed['port'] : '',
+                $parsed['path'],
+                isset($parsed['query']) ? '?'.$parsed['query'] : '',
+                isset($parsed['fragment']) ? '#'.$parsed['fragment'] : ''
+            );
+        }
+
+        return $url;
     }
 
     /**
@@ -162,7 +293,7 @@ class FossilDriver extends VcsDriver
     {
         $this->process->execute('fossil finfo -b -n 1 composer.json', $output, $this->checkoutDir);
         list($ckout, $date, $message) = explode(' ', trim($output), 3);
-        
+
         return new \DateTime($date, new \DateTimeZone('UTC'));
     }
 
