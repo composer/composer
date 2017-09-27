@@ -209,10 +209,13 @@ class FossilDownloader extends VcsDownloader
      */
     protected function getCloneCommand($url, $repoFile)
     {
+        $basicAuth = $this->getHttpBasicAuth($url);
+        $urlWithAuth = $this->getUrlWithAuth($url);
+
         return sprintf(
-            'fossil clone --once %s %s %s',
-            $this->getHttpBasicAuth($url),
-            ProcessExecutor::escape($this->getUrlWithAuth($url)),
+            'fossil clone --once %s%s %s',
+            (empty($basicAuth) ? '' : $basicAuth . ' '),
+            ProcessExecutor::escape($urlWithAuth),
             ProcessExecutor::escape($repoFile)
         );
     }
@@ -222,10 +225,13 @@ class FossilDownloader extends VcsDownloader
      */
     protected function getPullCommand($url)
     {
-        return sprintf(
+        $basicAuth = $this->getHttpBasicAuth($url);
+        $urlWithAuth = $this->getUrlWithAuth($url);
+
+        return trim(sprintf(
             'fossil pull %s --once %s',
-            ProcessExecutor::escape($this->getUrlWithAuth($url)),
-            $this->getHttpBasicAuth($url)
-        );
+            ProcessExecutor::escape($urlWithAuth),
+            $basicAuth
+        ));
     }
 }

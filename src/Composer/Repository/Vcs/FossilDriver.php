@@ -122,10 +122,13 @@ class FossilDriver extends VcsDriver
      */
     protected function getCloneCommand()
     {
+        $basicAuth = $this->getHttpBasicAuth();
+        $urlWithAuth = $this->getUrlWithAuth();
+
         return sprintf(
-            'fossil clone --once %s %s %s',
-            $this->getHttpBasicAuth(),
-            ProcessExecutor::escape($this->getUrlWithAuth()),
+            'fossil clone --once %s%s %s',
+            (empty($basicAuth) ? '' : $basicAuth . ' '),
+            ProcessExecutor::escape($urlWithAuth),
             ProcessExecutor::escape($this->repoFile)
         );
     }
@@ -135,11 +138,14 @@ class FossilDriver extends VcsDriver
      */
     protected function getPullCommand()
     {
-        return sprintf(
+        $basicAuth = $this->getHttpBasicAuth();
+        $urlWithAuth = $this->getUrlWithAuth();
+
+        return trim(sprintf(
             'fossil pull %s --once %s',
-            ProcessExecutor::escape($this->getUrlWithAuth()),
-            $this->getHttpBasicAuth()
-        );
+            ProcessExecutor::escape($urlWithAuth),
+            $basicAuth
+        ));
     }
 
     /**
