@@ -216,7 +216,7 @@ section of the [schema page](../04-schema.md#minimum-stability).
     "vendor/package": "~1.3.2", // >=1.3.2 <1.4.0
     "vendor/package": "~1.3", // >=1.3.0 <2.0.0
 
-    // ^ | doesn't allow breaking changes (major version fixed - following semvar)
+    // ^ | doesn't allow breaking changes (major version fixed - following semver)
     "vendor/package": "^1.3.2", // >=1.3.2 <2.0.0
     "vendor/package": "^0.3.2", // >=0.3.2 <0.4.0 // except if major version is 0
 }
