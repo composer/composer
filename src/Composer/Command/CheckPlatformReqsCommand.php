@@ -62,24 +62,24 @@ EOT
                     // 检查版本
                     $version = $currentPlatformPackageMap[$key]->getVersion();
                     if (!$require->getConstraint()->matches(new Constraint('<=', $version))) {
-                        $results[] = [
+                        $results[] = array(
                             $require,
                             $currentPlatformPackageMap[$key],
                             'failed',
-                        ];
+                        );
                     } else {
-                        $results[] = [
+                        $results[] = array(
                             $require,
                             $currentPlatformPackageMap[$key],
                             'success',
-                        ];
+                        );
                     }
                 } else {
-                    $results[] = [
+                    $results[] = array(
                         $require,
                         null,
                         'miss',
-                    ];
+                    );
                 }
             }
         }
@@ -99,7 +99,13 @@ EOT
              */
             list($require, $platformPackage, $reason) = $result;
             $version = (strpos($platformPackage->getPrettyVersion(), 'No version set') === 0) ? '-' : $platformPackage->getPrettyVersion();
-            $rows[]  = [$platformPackage->getPrettyName(), $version, $require->getDescription(), sprintf('%s (%s)', $require->getTarget(), $require->getPrettyConstraint()), $reason];
+            $rows[]  = array(
+                $platformPackage->getPrettyName(),
+                $version,
+                $require->getDescription(),
+                sprintf('%s (%s)', $require->getTarget(), $require->getPrettyConstraint()),
+                $reason
+            );
         }
         $table = array_merge($rows, $table);
 
