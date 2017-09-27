@@ -397,6 +397,7 @@ class Application extends BaseApplication
             new Command\HomeCommand(),
             new Command\ExecCommand(),
             new Command\OutdatedCommand(),
+            new Command\CheckPlatformReqsCommand(),
         ));
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
