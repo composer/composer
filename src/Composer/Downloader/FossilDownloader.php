@@ -131,15 +131,17 @@ class FossilDownloader extends VcsDownloader
         $parsed = parse_url($url);
 
         // Only for http(s) URLs.
-        if (!isset($parsed['scheme']) || ($parsed['scheme'] != 'http' && $parsed['scheme'] != 'https') || empty($parsed['host']))
+        if (!isset($parsed['scheme']) || ($parsed['scheme'] != 'http' && $parsed['scheme'] != 'https') || empty($parsed['host'])) {
             return '';
+        }
 
         $httpBasicConfig = $this->config->get('http-basic');
         if (isset($httpBasicConfig[$parsed['host']])) {
             $creds = $httpBasicConfig[$parsed['host']];
             // We don't allow empty username or password. Both must be defined.
-            if (!empty($creds['username']) && !empty($creds['password']))
+            if (!empty($creds['username']) && !empty($creds['password'])) {
                 return sprintf('-B %s', ProcessExecutor::escape($creds['username'] .':'. $creds['password']));
+            }
         }
 
         return '';
@@ -150,7 +152,7 @@ class FossilDownloader extends VcsDownloader
      *
      *   1. HTTP Basic authentication, if accessing the HTTP URL is so protected by the web server.
      *   2. Fossil authentication, if accessing the remote repo is not allowed for anonymous users.
-     * 
+     *
      * Fossil considers the username and password specified in the HTTP URL to be the credentials for Fossil authentication,
      * and provides a separate parameter for HTTP Basic authentication.
      *
@@ -175,8 +177,9 @@ class FossilDownloader extends VcsDownloader
         $parsed = parse_url($url);
 
         // Only for http(s) URLs.
-        if (!isset($parsed['scheme']) || ($parsed['scheme'] != 'http' && $parsed['scheme'] != 'https') || empty($parsed['host']))
+        if (!isset($parsed['scheme']) || ($parsed['scheme'] != 'http' && $parsed['scheme'] != 'https') || empty($parsed['host'])) {
             return $url;
+        }
 
         $remoteRepo = $parsed['host'] . $parsed['path'];
         $authentications = $this->config->get('fossil-auth');

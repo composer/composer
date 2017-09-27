@@ -84,8 +84,7 @@ class FossilDriver extends VcsDriver
             if (0 !== $this->process->execute($cmd, $output, $this->checkoutDir)) {
                 $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
             }
-        }
-        else {
+        } else {
             // clean up directory and do a fresh clone into it
             $fs->removeDirectory($this->checkoutDir);
             $fs->remove($this->repoFile);
@@ -163,17 +162,20 @@ class FossilDriver extends VcsDriver
         $parsed = parse_url($this->url);
 
         // Only for http(s) URLs.
-        if (!isset($parsed['scheme']) || ($parsed['scheme'] != 'http' && $parsed['scheme'] != 'https') || empty($parsed['host']))
+        if (!isset($parsed['scheme']) || ($parsed['scheme'] != 'http' && $parsed['scheme'] != 'https') || empty($parsed['host'])) {
             return '';
+        }
 
-        if ($this->io->hasAuthentication($parsed['host']))
+        if ($this->io->hasAuthentication($parsed['host'])) {
             $creds = $this->io->getAuthentication($parsed['host']);
-        else
+        } else {
             return '';
+        }
 
         // We don't allow empty username or password. Both must be defined.
-        if (!empty($creds['username']) && !empty($creds['password']))
+        if (!empty($creds['username']) && !empty($creds['password'])) {
             return sprintf('-B %s', ProcessExecutor::escape($creds['username'] .':'. $creds['password']));
+        }
 
         return '';
     }
@@ -183,7 +185,7 @@ class FossilDriver extends VcsDriver
      *
      *   1. HTTP Basic authentication, if accessing the HTTP URL is so protected by the web server.
      *   2. Fossil authentication, if accessing the remote repo is not allowed for anonymous users.
-     * 
+     *
      * Fossil considers the username and password specified in the HTTP URL to be the credentials for Fossil authentication,
      * and provides a separate parameter for HTTP Basic authentication.
      *
@@ -209,8 +211,9 @@ class FossilDriver extends VcsDriver
         $parsed = parse_url($url);
 
         // Only for http(s) URLs.
-        if (!isset($parsed['scheme']) || ($parsed['scheme'] != 'http' && $parsed['scheme'] != 'https') || empty($parsed['host']))
+        if (!isset($parsed['scheme']) || ($parsed['scheme'] != 'http' && $parsed['scheme'] != 'https') || empty($parsed['host'])) {
             return $url;
+        }
 
         $remoteRepo = $parsed['host'] . $parsed['path'];
         $authentications = $this->config->get('fossil-auth');
