@@ -31,6 +31,12 @@ class GitLabDriver extends VcsDriver
     private $scheme;
     private $namespace;
     private $repository;
+    private $distFormat;
+
+    /**
+     * @var array gitlab types mapped to downloader type.
+     */
+    private $distFormats = array('zip' => 'zip', 'tar.gz' => 'tar', 'tar.bz2' => 'tar', 'tar' => 'tar');
 
     /**
      * @var array Project data returned by GitLab API
@@ -80,6 +86,13 @@ class GitLabDriver extends VcsDriver
         if (!preg_match(self::URL_REGEX, $this->url, $match)) {
             throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
         }
+
+        $format = $this->config->get('gitlab-dist-format') ?: 'zip';
+
+        if (!array_key_exists($format, $this->distFormats)) {
+            throw new \InvalidArgumentException('The dist format provided is invalid. It must be one of zip, tar, tar.gz or tar.bz2.');
+        }
+        $this->distFormat = $format;
 
         $guessedDomain = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
         $configuredDomains = $this->config->get('gitlab-domains');
@@ -182,9 +195,10 @@ class GitLabDriver extends VcsDriver
      */
     public function getDist($identifier)
     {
-        $url = $this->getApiUrl().'/repository/archive.zip?sha='.$identifier;
+        $url = $this->getApiUrl().'/repository/archive.' . $this->distFormat . '?sha='.$identifier;
+        $format = $this->distFormats[$this->distFormat];
 
-        return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
+        return array('type' => $format, 'url' => $url, 'reference' => $identifier, 'shasum' => '');
     }
 
     /**
@@ -311,7 +325,7 @@ class GitLabDriver extends VcsDriver
         if (isset($this->project['visibility'])) {
             $this->isPrivate = $this->project['visibility'] !== 'public';
         } else {
-            // client is not authendicated, therefore repository has to be public 
+            // client is not authenticated, therefore repository has to be public
             $this->isPrivate = false;
         }
     }

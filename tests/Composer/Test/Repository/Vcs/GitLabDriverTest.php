@@ -195,6 +195,33 @@ JSON;
         $this->assertEquals($expected, $driver->getDist($reference));
     }
 
+    public function testGetDistFormat()
+    {
+        $this->config->merge(array('config' => array('gitlab-dist-format' => 'tar.gz')));
+
+        $driver = $this->testInitialize('https://gitlab.com/mygroup/myprojecttoo', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyprojecttoo');
+
+        $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
+        $expected = array(
+            'type' => 'tar',
+            'url' => 'https://gitlab.com/api/v4/projects/mygroup%2Fmyprojecttoo/repository/archive.tar.gz?sha='.$reference,
+            'reference' => $reference,
+            'shasum' => '',
+        );
+
+        $this->assertEquals($expected, $driver->getDist($reference));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testGetDistInvalidFormat()
+    {
+        $this->config->merge(array('config' => array('gitlab-dist-format' => 'foo')));
+        $driver = new GitLabDriver(array('url' => ''), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver->initialize();
+    }
+
     public function testGetSource()
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');

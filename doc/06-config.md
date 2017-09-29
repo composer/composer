@@ -73,6 +73,10 @@ A list of domain names and private tokens. For example using `{"gitlab.com":
 "privatetoken"}` as the value of this option will use `privatetoken` to access
 private repositories on gitlab.
 
+## gitlab-dist-format
+Type of archive to download from gitlab. Set to `zip`, `tar`, `tar.gz` or `tar.bz2`
+Defaults to `zip`.
+
 ## disable-tls
 
 Defaults to `false`. If set to true all HTTPS URLs will be tried with HTTP
