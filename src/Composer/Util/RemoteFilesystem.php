@@ -232,7 +232,7 @@ class RemoteFilesystem
 
     if ($isRedirect && $this->io->hasAuthentication($this->originUrl)) {
       // Redirecting away from originUrl domain? Then remove the auth headers.
-      $redirectHost = parse_url($this->fileUrl, PHP_URL_HOST);      
+      $redirectHost = parse_url($this->fileUrl, PHP_URL_HOST);
       if ($this->originUrl != $redirectHost && stripos($redirectHost, '.' . $this->originUrl) === false) {
         // Strip off authentication
         $options['http']['header'] = array_filter($options['http']['header'], function($value){
