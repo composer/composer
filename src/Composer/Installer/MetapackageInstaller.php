@@ -12,8 +12,8 @@
 
 namespace Composer\Installer;
 
-use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 
 /**
  * Metapackage installation manager.

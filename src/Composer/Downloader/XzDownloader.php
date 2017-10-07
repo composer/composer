@@ -12,13 +12,13 @@
 
 namespace Composer\Downloader;
 
-use Composer\Config;
 use Composer\Cache;
+use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
-use Composer\IO\IOInterface;
 
 /**
  * Xz archive downloader.

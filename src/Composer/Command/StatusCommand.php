@@ -12,9 +12,6 @@
 
 namespace Composer\Command;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Downloader\ChangeReportInterface;
 use Composer\Downloader\DvcsDownloaderInterface;
 use Composer\Downloader\VcsCapableDownloaderInterface;
@@ -25,6 +22,9 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Tiago Ribeiro <tiago.ribeiro@seegno.com>

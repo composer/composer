@@ -13,16 +13,16 @@
 namespace Composer\Command;
 
 use Composer\Composer;
-use Composer\Factory;
 use Composer\Config;
-use Composer\Util\Filesystem;
+use Composer\Downloader\FilesystemException;
+use Composer\Factory;
+use Composer\IO\IOInterface;
 use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
-use Composer\IO\IOInterface;
-use Composer\Downloader\FilesystemException;
+use Composer\Util\Filesystem;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 

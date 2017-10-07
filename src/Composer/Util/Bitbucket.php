@@ -12,10 +12,10 @@
 
 namespace Composer\Util;
 
-use Composer\Factory;
-use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Downloader\TransportException;
+use Composer\Factory;
+use Composer\IO\IOInterface;
 
 /**
  * @author Paul Wenke <wenke.paul@gmail.com>

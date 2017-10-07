@@ -17,9 +17,9 @@ use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
+use Composer\Util\Filesystem as ComposerFilesystem;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem as ComposerFilesystem;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 

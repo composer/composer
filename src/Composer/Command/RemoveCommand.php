@@ -13,14 +13,14 @@
 namespace Composer\Command;
 
 use Composer\Config\JsonConfigSource;
+use Composer\Factory;
 use Composer\Installer;
+use Composer\Json\JsonFile;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Json\JsonFile;
-use Composer\Factory;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**

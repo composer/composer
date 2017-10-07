@@ -12,30 +12,30 @@
 
 namespace Composer;
 
+use Composer\Autoload\AutoloadGenerator;
 use Composer\Config\JsonConfigSource;
-use Composer\Json\JsonFile;
+use Composer\Downloader\TransportException;
+use Composer\EventDispatcher\Event;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\Archiver;
 use Composer\Package\Version\VersionGuesser;
-use Composer\Repository\RepositoryManager;
+use Composer\Package\Version\VersionParser;
+use Composer\Plugin\PluginEvents;
 use Composer\Repository\RepositoryFactory;
+use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\Silencer;
-use Composer\Plugin\PluginEvents;
-use Composer\EventDispatcher\Event;
 use Seld\JsonLint\DuplicateKeyException;
+use Seld\JsonLint\JsonParser;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use Composer\EventDispatcher\EventDispatcher;
-use Composer\Autoload\AutoloadGenerator;
-use Composer\Package\Version\VersionParser;
-use Composer\Downloader\TransportException;
-use Seld\JsonLint\JsonParser;
 
 /**
  * Creates a configured instance of composer.

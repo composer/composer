@@ -12,8 +12,8 @@
 
 namespace Composer\Package\Archiver;
 
-use ZipArchive;
 use Composer\Util\Filesystem;
+use ZipArchive;
 
 /**
  * @author Jan Prieser <jan@prieser.net>

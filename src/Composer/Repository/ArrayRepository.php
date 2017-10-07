@@ -13,11 +13,11 @@
 namespace Composer\Repository;
 
 use Composer\Package\AliasPackage;
-use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
-use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * A repository implementation that simply stores packages in an array

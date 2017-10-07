@@ -13,8 +13,8 @@
 namespace Composer\DependencyResolver;
 
 use Composer\IO\IOInterface;
-use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>

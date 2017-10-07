@@ -14,9 +14,9 @@ namespace Composer\Package\Version;
 
 use Composer\DependencyResolver\Pool;
 use Composer\Package\BasePackage;
-use Composer\Package\PackageInterface;
-use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 
 /**

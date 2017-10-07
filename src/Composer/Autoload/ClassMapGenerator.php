@@ -18,9 +18,9 @@
 
 namespace Composer\Autoload;
 
-use Symfony\Component\Finder\Finder;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 /**
  * ClassMapGenerator

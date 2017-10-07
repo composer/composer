@@ -12,9 +12,9 @@
 
 namespace Composer\Util;
 
+use Composer\IO\IOInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessUtils;
-use Composer\IO\IOInterface;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>

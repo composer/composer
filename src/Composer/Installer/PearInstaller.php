@@ -12,13 +12,13 @@
 
 namespace Composer\Installer;
 
-use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\Downloader\PearPackageExtractor;
-use Composer\Repository\InstalledRepositoryInterface;
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
-use Composer\Util\Platform;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 
 /**
  * Package installation manager.

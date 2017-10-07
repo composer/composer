@@ -13,14 +13,14 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
-use Composer\Downloader\TransportException;
 use Composer\Config;
+use Composer\Downloader\TransportException;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
-use Composer\Util\Filesystem;
 
 /**
  * A driver implementation for driver with authentication interaction.

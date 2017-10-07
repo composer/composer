@@ -12,12 +12,12 @@
 
 namespace Composer\Repository;
 
-use Composer\Factory;
-use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\Util\RemoteFilesystem;
+use Composer\Factory;
+use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

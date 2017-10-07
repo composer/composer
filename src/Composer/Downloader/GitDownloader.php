@@ -12,13 +12,13 @@
 
 namespace Composer\Downloader;
 
+use Composer\Config;
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
+use Composer\Util\Filesystem;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\IO\IOInterface;
-use Composer\Util\Filesystem;
-use Composer\Config;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

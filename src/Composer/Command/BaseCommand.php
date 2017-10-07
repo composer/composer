@@ -17,9 +17,9 @@ use Composer\Config;
 use Composer\Console\Application;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Command\Command;
 
 /**
  * Base class for Composer commands

@@ -14,8 +14,8 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Config;
 use Composer\IO\IOInterface;
-use Composer\Util\ProcessExecutor;
 use Composer\Util\Perforce;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>

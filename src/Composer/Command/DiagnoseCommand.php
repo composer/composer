@@ -13,19 +13,19 @@
 namespace Composer\Command;
 
 use Composer\Composer;
-use Composer\Factory;
 use Composer\Config;
 use Composer\Downloader\TransportException;
+use Composer\Factory;
+use Composer\IO\NullIO;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\SelfUpdate\Keys;
+use Composer\SelfUpdate\Versions;
 use Composer\Util\ConfigValidator;
 use Composer\Util\IniHelper;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
-use Composer\SelfUpdate\Keys;
-use Composer\SelfUpdate\Versions;
-use Composer\IO\NullIO;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 

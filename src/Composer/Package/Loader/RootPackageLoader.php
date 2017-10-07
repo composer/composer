@@ -12,13 +12,13 @@
 
 namespace Composer\Package\Loader;
 
-use Composer\Package\BasePackage;
-use Composer\Package\AliasPackage;
 use Composer\Config;
+use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 use Composer\Package\RootPackageInterface;
-use Composer\Repository\RepositoryFactory;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
+use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 

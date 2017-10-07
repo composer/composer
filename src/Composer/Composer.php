@@ -12,15 +12,15 @@
 
 namespace Composer;
 
-use Composer\Package\RootPackageInterface;
-use Composer\Package\Locker;
-use Composer\Repository\RepositoryManager;
-use Composer\Installer\InstallationManager;
-use Composer\Plugin\PluginManager;
+use Composer\Autoload\AutoloadGenerator;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\Autoload\AutoloadGenerator;
+use Composer\Installer\InstallationManager;
 use Composer\Package\Archiver\ArchiveManager;
+use Composer\Package\Locker;
+use Composer\Package\RootPackageInterface;
+use Composer\Plugin\PluginManager;
+use Composer\Repository\RepositoryManager;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

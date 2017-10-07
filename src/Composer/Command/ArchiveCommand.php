@@ -12,15 +12,15 @@
 
 namespace Composer\Command;
 
+use Composer\Composer;
+use Composer\Config;
 use Composer\Factory;
 use Composer\IO\IOInterface;
-use Composer\Config;
-use Composer\Composer;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Script\ScriptEvents;
-use Composer\Plugin\CommandEvent;
-use Composer\Plugin\PluginEvents;
 use Composer\Util\Filesystem;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

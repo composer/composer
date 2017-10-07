@@ -12,10 +12,10 @@
 
 namespace Composer\Util;
 
-use Composer\Config;
-use Composer\IO\IOInterface;
-use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
+use Composer\Config;
+use Composer\Downloader\TransportException;
+use Composer\IO\IOInterface;
 use Psr\Log\LoggerInterface;
 
 /**

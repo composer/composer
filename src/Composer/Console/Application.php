@@ -12,21 +12,21 @@
 
 namespace Composer\Console;
 
+use Composer\Command;
+use Composer\Composer;
+use Composer\EventDispatcher\ScriptExecutionException;
+use Composer\Exception\NoSslException;
+use Composer\Factory;
+use Composer\IO\ConsoleIO;
+use Composer\IO\IOInterface;
+use Composer\Json\JsonValidationException;
+use Composer\Util\ErrorHandler;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\Command;
-use Composer\Composer;
-use Composer\Factory;
-use Composer\IO\IOInterface;
-use Composer\IO\ConsoleIO;
-use Composer\Json\JsonValidationException;
-use Composer\Util\ErrorHandler;
-use Composer\EventDispatcher\ScriptExecutionException;
-use Composer\Exception\NoSslException;
 
 /**
  * The console application that handles the commands
