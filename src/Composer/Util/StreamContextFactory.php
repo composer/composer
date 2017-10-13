@@ -55,7 +55,7 @@ final class StreamContextFactory
         }
 
         // Remove proxy if URL matches no_proxy directive
-        if (!empty($_SERVER['NO_PROXY']) || $_SERVER['no_proxy']) && parse_url($url, PHP_URL_HOST)) {
+        if (!empty($_SERVER['NO_PROXY']) || !empty($_SERVER['no_proxy']) && parse_url($url, PHP_URL_HOST)) {
             $pattern = new NoProxyPattern(!empty($_SERVER['no_proxy']) ? $_SERVER['no_proxy'] : $_SERVER['NO_PROXY']);
             if ($pattern->test($url)) {
                 unset($proxy);
