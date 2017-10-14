@@ -200,6 +200,16 @@ class Factory
         }
         $config->setAuthConfigSource(new JsonConfigSource($file, true));
 
+        // load global auth file
+        $file = new JsonFile($config->get('home').'/defaults.json');
+        if ($file->exists()) {
+            if ($io && $io->isDebug()) {
+                $io->writeError('Loading config file ' . $file->getPath());
+            }
+            $config->merge(array('config' => $file->read()));
+        }
+        $config->setDefaultsConfigSource(new JsonConfigSource($file, true));
+
         // load COMPOSER_AUTH environment variable if set
         if ($composerAuthEnv = getenv('COMPOSER_AUTH')) {
             $authData = json_decode($composerAuthEnv, true);
