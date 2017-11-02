@@ -236,11 +236,7 @@ class RemoteFilesystem
             if ($this->originUrl != $redirectHost && stripos($redirectHost, '.' . $this->originUrl) === false) {
                 // Strip off authentication
                 $options['http']['header'] = array_filter($options['http']['header'], function($value){
-                    if (stripos($value, 'Authorization') === 0)
-                    {
-                        return false;
-                    }
-                    return true;
+                    return stripos($value, 'Authorization') !== 0;
                 });
             }
         }
