@@ -222,7 +222,7 @@ one by prefixing the command name with `@`:
 
 ```json
 {
-    "scripts": {
+My    "scripts": {
         "test": [
             "@clearCache",
             "phpunit"
