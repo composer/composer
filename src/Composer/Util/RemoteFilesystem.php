@@ -198,7 +198,8 @@ class RemoteFilesystem
         // Gitlab can be installed in a non-root context (i.e. gitlab.com/foo). When downloading archives the originUrl
         // is the host without the path, so we look for the registered gitlab-domains matching the host here
         if (
-            is_array($this->config->get('gitlab-domains'))
+            $this->config
+            && is_array($this->config->get('gitlab-domains'))
             && false === strpos($originUrl, '/')
             && !in_array($originUrl, $this->config->get('gitlab-domains'))
         ) {
