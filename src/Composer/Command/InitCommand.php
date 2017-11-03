@@ -13,20 +13,20 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Pool;
-use Composer\Json\JsonFile;
 use Composer\Factory;
-use Composer\Repository\RepositoryFactory;
+use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryFactory;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ExecutableFinder;
+use Symfony\Component\Process\Process;
 
 /**
  * @author Justin Rainbow <justin.rainbow@gmail.com>
@@ -644,6 +644,14 @@ EOT
                     'Could not find package %s at any version matching your PHP version %s', $name, $phpVersion
                 ));
             }
+            $similar = $this->findSimilar($name);
+            if ($similar) {
+                throw new \InvalidArgumentException(sprintf(
+                    "Could not find package %s.\n\nDid you mean " . (count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
+                    $name,
+                    implode("\n    ", $similar)
+                ));
+            }
             throw new \InvalidArgumentException(sprintf(
                 'Could not find package %s at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
                 $name,
@@ -652,5 +660,15 @@ EOT
         }
 
         return $versionSelector->findRecommendedRequireVersion($package);
+    }
+
+    private function findSimilar($package)
+    {
+        $results = $this->repos->search($package);
+        foreach ($results as $result) {
+            $similarPackages[$result['name']] = levenshtein($package, $result['name']);
+        }
+        asort($similarPackages);
+        return array_keys(array_slice($similarPackages, 0, 5));
     }
 }
