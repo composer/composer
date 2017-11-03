@@ -228,7 +228,8 @@ class Application extends BaseApplication
                             if ($this->has($script)) {
                                 $io->writeError('<warning>A script named '.$script.' would override a Composer command and has been skipped</warning>');
                             } else {
-                                $this->add(new Command\ScriptAliasCommand($script));
+                                $description = isset($composer['extra']['scripts-description'][$script]) ? $composer['extra']['scripts-description'][$script]:NULL;
+                                $this->add(new Command\ScriptAliasCommand($script, $description));
                             }
                         }
                     }
