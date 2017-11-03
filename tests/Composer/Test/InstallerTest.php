@@ -224,7 +224,7 @@ class InstallerTest extends TestCase
                 ->setUpdate(true)
                 ->setDryRun($input->getOption('dry-run'))
                 ->setUpdateWhitelist($input->getArgument('packages'))
-                ->setWhitelistNonRootDependencies($input->getOption('with-dependencies'))
+                ->setWhitelistTransitiveDependencies($input->getOption('with-dependencies'))
                 ->setWhitelistAllDependencies($input->getOption('with-all-dependencies'))
                 ->setPreferStable($input->getOption('prefer-stable'))
                 ->setPreferLowest($input->getOption('prefer-lowest'))

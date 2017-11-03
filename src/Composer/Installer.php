@@ -125,7 +125,7 @@ class Installer
      * @var array|null
      */
     protected $updateWhitelist = null;
-    protected $whitelistNonRootDependencies = false;
+    protected $whitelistDependencies = false; // TODO 2.0 rename to whitelistTransitiveDependencies
     protected $whitelistAllDependencies = false;
 
     /**
@@ -1307,9 +1307,9 @@ class Installer
 
         $skipPackages = array();
         if (!$this->whitelistAllDependencies) {
-          foreach ($rootRequires as $require) {
-            $skipPackages[$require->getTarget()] = TRUE;
-          }
+            foreach ($rootRequires as $require) {
+                $skipPackages[$require->getTarget()] = true;
+            }
         }
 
         $pool = new Pool('dev');
@@ -1354,7 +1354,7 @@ class Installer
                 $seen[$package->getId()] = true;
                 $this->updateWhitelist[$package->getName()] = true;
 
-                if (!$this->whitelistNonRootDependencies && !$this->whitelistAllDependencies) {
+                if (!$this->whitelistDependencies && !$this->whitelistAllDependencies) {
                     continue;
                 }
 
@@ -1655,18 +1655,25 @@ class Installer
     }
 
     /**
-     * Should indirect dependencies of whitelisted packages be updated?
+     * @deprecated use setWhitelistTransitiveDependencies instead
+     */
+    public function setWhitelistDependencies($updateDependencies = true)
+    {
+        return $this->setWhitelistTransitiveDependencies($updateDependencies);
+    }
+
+    /**
+     * Should dependencies of whitelisted packages (but not direct dependencies) be updated?
      *
      * This will NOT whitelist any dependencies that are also directly defined
      * in the root package.
      *
-     * @param  bool      $updateNonRootDependencies
-     *
+     * @param  bool      $updateTransitiveDependencies
      * @return Installer
      */
-    public function setWhitelistNonRootDependencies($updateNonRootDependencies = true)
+    public function setWhitelistTransitiveDependencies($updateTransitiveDependencies = true)
     {
-        $this->whitelistNonRootDependencies = (bool) $updateNonRootDependencies;
+        $this->whitelistDependencies = (bool) $updateTransitiveDependencies;
 
         return $this;
     }
@@ -1674,8 +1681,8 @@ class Installer
     /**
      * Should all dependencies of whitelisted packages be updated recursively?
      *
-     * This will NOT whitelist any dependencies that are also defined in the
-     * root package.
+     * This will whitelist any dependencies of the whitelisted packages, including
+     * those defined in the root package.
      *
      * @param  bool      $updateAllDependencies
      * @return Installer
