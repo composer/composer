@@ -125,7 +125,8 @@ class Installer
      * @var array|null
      */
     protected $updateWhitelist = null;
-    protected $whitelistDependencies = false;
+    protected $whitelistNonRootDependencies = false;
+    protected $whitelistAllDependencies = false;
 
     /**
      * @var SuggestedPackagesReporter
@@ -1283,7 +1284,7 @@ class Installer
      *
      * Packages which are listed as requirements in the root package will be
      * skipped including their dependencies, unless they are listed in the
-     * update whitelist themselves.
+     * update whitelist themselves or $whitelistAllDependencies is true.
      *
      * @param RepositoryInterface $localOrLockRepo Use the locked repo if available, otherwise installed repo will do
      *                                             As we want the most accurate package list to work with, and installed
@@ -1305,8 +1306,10 @@ class Installer
         }
 
         $skipPackages = array();
-        foreach ($rootRequires as $require) {
-            $skipPackages[$require->getTarget()] = true;
+        if (!$this->whitelistAllDependencies) {
+          foreach ($rootRequires as $require) {
+            $skipPackages[$require->getTarget()] = TRUE;
+          }
         }
 
         $pool = new Pool('dev');
@@ -1351,7 +1354,7 @@ class Installer
                 $seen[$package->getId()] = true;
                 $this->updateWhitelist[$package->getName()] = true;
 
-                if (!$this->whitelistDependencies) {
+                if (!$this->whitelistNonRootDependencies && !$this->whitelistAllDependencies) {
                     continue;
                 }
 
@@ -1652,14 +1655,34 @@ class Installer
     }
 
     /**
-     * Should dependencies of whitelisted packages be updated recursively?
+     * Should indirect dependencies of whitelisted packages be updated?
      *
-     * @param  bool      $updateDependencies
+     * This will NOT whitelist any dependencies that are also directly defined
+     * in the root package.
+     *
+     * @param  bool      $updateNonRootDependencies
+     *
      * @return Installer
      */
-    public function setWhitelistDependencies($updateDependencies = true)
+    public function setWhitelistNonRootDependencies($updateNonRootDependencies = true)
     {
-        $this->whitelistDependencies = (bool) $updateDependencies;
+        $this->whitelistNonRootDependencies = (bool) $updateNonRootDependencies;
+
+        return $this;
+    }
+
+    /**
+     * Should all dependencies of whitelisted packages be updated recursively?
+     *
+     * This will NOT whitelist any dependencies that are also defined in the
+     * root package.
+     *
+     * @param  bool      $updateAllDependencies
+     * @return Installer
+     */
+    public function setWhitelistAllDependencies($updateAllDependencies = true)
+    {
+        $this->whitelistAllDependencies = (bool) $updateAllDependencies;
 
         return $this;
     }
