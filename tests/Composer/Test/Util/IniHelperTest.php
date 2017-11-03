@@ -21,7 +21,18 @@ class IniHelperTest extends \PHPUnit_Framework_TestCase
 {
     public static $envOriginal;
 
-    public function testWithLoadedIni()
+    public function testWithNoIni()
+    {
+        $paths = array(
+            '',
+        );
+
+        $this->setEnv($paths);
+        $this->assertContains('does not exist', IniHelper::getMessage());
+        $this->assertEquals($paths, IniHelper::getAll());
+    }
+
+    public function testWithLoadedIniOnly()
     {
         $paths = array(
             'loaded.ini',
@@ -32,7 +43,20 @@ class IniHelperTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($paths, IniHelper::getAll());
     }
 
-    public function testWithoutLoadedIni()
+    public function testWithLoadedIniAndAdditional()
+    {
+        $paths = array(
+            'loaded.ini',
+            'one.ini',
+            'two.ini',
+        );
+
+        $this->setEnv($paths);
+        $this->assertContains('multiple ini files', IniHelper::getMessage());
+        $this->assertEquals($paths, IniHelper::getAll());
+    }
+
+    public function testWithoutLoadedIniAndAdditional()
     {
         $paths = array(
             '',
@@ -41,7 +65,7 @@ class IniHelperTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->setEnv($paths);
-        $this->assertContains('does not exist', IniHelper::getMessage());
+        $this->assertContains('multiple ini files', IniHelper::getMessage());
         $this->assertEquals($paths, IniHelper::getAll());
     }
 
