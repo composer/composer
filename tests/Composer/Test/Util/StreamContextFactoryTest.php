@@ -22,6 +22,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         unset($_SERVER['http_proxy']);
         unset($_SERVER['HTTPS_PROXY']);
         unset($_SERVER['https_proxy']);
+        unset($_SERVER['NO_PROXY']);
         unset($_SERVER['no_proxy']);
     }
 
@@ -31,6 +32,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         unset($_SERVER['http_proxy']);
         unset($_SERVER['HTTPS_PROXY']);
         unset($_SERVER['https_proxy']);
+        unset($_SERVER['NO_PROXY']);
         unset($_SERVER['no_proxy']);
     }
 

@@ -815,10 +815,10 @@ similar use case), and need to support proxies, please provide the `CGI_HTTP_PRO
 environment variable instead. See [httpoxy.org](https://httpoxy.org/) for further
 details.
 
-### no_proxy
+### no_proxy or NO_PROXY
 
 If you are behind a proxy and would like to disable it for certain domains, you
-can use the `no_proxy` env var. Simply set it to a comma separated list of
+can use the `no_proxy` or `NO_PROXY` env var. Simply set it to a comma separated list of
 domains the proxy should *not* be used for.
 
 The env var accepts domains, IP addresses, and IP address blocks in CIDR
