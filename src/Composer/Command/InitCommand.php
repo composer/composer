@@ -644,6 +644,7 @@ EOT
                     'Could not find package %s at any version matching your PHP version %s', $name, $phpVersion
                 ));
             }
+
             $similar = $this->findSimilar($name);
             if ($similar) {
                 throw new \InvalidArgumentException(sprintf(
@@ -652,6 +653,7 @@ EOT
                     implode("\n    ", $similar)
                 ));
             }
+
             throw new \InvalidArgumentException(sprintf(
                 'Could not find package %s at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
                 $name,
@@ -664,11 +666,19 @@ EOT
 
     private function findSimilar($package)
     {
-        $results = $this->repos->search($package);
+        try {
+            $results = $this->repos->search($package);
+        } catch (\Exception $e) {
+            // ignore search errors
+            return array();
+        }
+        $similarPackages = array();
+
         foreach ($results as $result) {
             $similarPackages[$result['name']] = levenshtein($package, $result['name']);
         }
         asort($similarPackages);
+
         return array_keys(array_slice($similarPackages, 0, 5));
     }
 }
