@@ -260,7 +260,7 @@ can hold CLI tools or Composer plugins that you want to have available everywher
 This can be used to install CLI utilities globally. Here is an example:
 
 ```sh
-php composer.phar global require fabpot/php-cs-fixer
+php composer.phar global require friendsofphp/php-cs-fixer
 ```
 
 Now the `php-cs-fixer` binary is available globally. Just make sure your global
