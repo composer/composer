@@ -13,8 +13,9 @@
 namespace Composer\Test\Json;
 
 use Composer\Json\JsonManipulator;
+use PHPUnit\Framework\TestCase;
 
-class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
+class JsonManipulatorTest extends TestCase
 {
     /**
      * @dataProvider linkProvider

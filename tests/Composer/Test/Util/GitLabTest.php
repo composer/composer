@@ -14,11 +14,12 @@ namespace Composer\Test\Util;
 
 use Composer\Downloader\TransportException;
 use Composer\Util\GitLab;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author Jérôme Tamarelle <jerome@tamarelle.net>
  */
-class GitLabTest extends \PHPUnit_Framework_TestCase
+class GitLabTest extends TestCase
 {
     private $username = 'username';
     private $password = 'password';

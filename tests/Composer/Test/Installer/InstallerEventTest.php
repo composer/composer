@@ -13,8 +13,9 @@
 namespace Composer\Test\Installer;
 
 use Composer\Installer\InstallerEvent;
+use PHPUnit\Framework\TestCase;
 
-class InstallerEventTest extends \PHPUnit_Framework_TestCase
+class InstallerEventTest extends TestCase
 {
     public function testGetter()
     {

@@ -13,11 +13,12 @@
 namespace Composer\Test\Installer;
 
 use Composer\Installer\SuggestedPackagesReporter;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @coversDefaultClass Composer\Installer\SuggestedPackagesReporter
  */
-class SuggestedPackagesReporterTest extends \PHPUnit_Framework_TestCase
+class SuggestedPackagesReporterTest extends TestCase
 {
     private $io;
     private $suggestedPackagesReporter;

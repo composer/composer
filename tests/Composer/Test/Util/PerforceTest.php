@@ -13,11 +13,12 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Perforce;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
  */
-class PerforceTest extends \PHPUnit_Framework_TestCase
+class PerforceTest extends TestCase
 {
     protected $perforce;
     protected $processExecutor;

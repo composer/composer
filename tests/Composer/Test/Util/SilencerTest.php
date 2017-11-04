@@ -13,13 +13,14 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Silencer;
+use PHPUnit\Framework\TestCase;
 
 /**
  * SilencerTest
  *
  * @author Niels Keurentjes <niels.keurentjes@omines.com>
  */
-class SilencerTest extends \PHPUnit_Framework_TestCase
+class SilencerTest extends TestCase
 {
     /**
      * Test succeeds when no warnings are emitted externally, and original level is restored.

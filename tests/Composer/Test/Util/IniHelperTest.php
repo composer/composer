@@ -13,11 +13,12 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\IniHelper;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
  */
-class IniHelperTest extends \PHPUnit_Framework_TestCase
+class IniHelperTest extends TestCase
 {
     public static $envOriginal;
 

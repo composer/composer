@@ -17,9 +17,10 @@ use Composer\Package\AliasPackage;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
+use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Component\Process\ExecutableFinder;
 
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+abstract class TestCase extends BaseTestCase
 {
     private static $parser;
     private static $executableCache = array();

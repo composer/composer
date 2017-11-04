@@ -13,11 +13,12 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Bitbucket;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author Paul Wenke <wenke.paul@gmail.com>
  */
-class BitbucketTest extends \PHPUnit_Framework_TestCase
+class BitbucketTest extends TestCase
 {
     private $username = 'username';
     private $password = 'password';

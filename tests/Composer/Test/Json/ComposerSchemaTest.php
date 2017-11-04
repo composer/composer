@@ -13,11 +13,12 @@
 namespace Composer\Test\Json;
 
 use JsonSchema\Validator;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author Rob Bast <rob.bast@gmail.com>
  */
-class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
+class ComposerSchemaTest extends TestCase
 {
     public function testRequiredProperties()
     {

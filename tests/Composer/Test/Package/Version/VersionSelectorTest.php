@@ -16,8 +16,9 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Package\Package;
 use Composer\Package\Link;
 use Composer\Semver\VersionParser;
+use PHPUnit\Framework\TestCase;
 
-class VersionSelectorTest extends \PHPUnit_Framework_TestCase
+class VersionSelectorTest extends TestCase
 {
     // A) multiple versions, get the latest one
     // B) targetPackageVersion will pass to pool

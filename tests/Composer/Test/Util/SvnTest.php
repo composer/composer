@@ -16,8 +16,9 @@ use Composer\Config;
 use Composer\IO\NullIO;
 use Composer\Util\Platform;
 use Composer\Util\Svn;
+use PHPUnit\Framework\TestCase;
 
-class SvnTest extends \PHPUnit_Framework_TestCase
+class SvnTest extends TestCase
 {
     /**
      * Test the credential string.

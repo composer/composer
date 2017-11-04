@@ -17,9 +17,10 @@ use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 
-class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
+class RootPackageLoaderTest extends TestCase
 {
     protected function loadPackage($data)
     {

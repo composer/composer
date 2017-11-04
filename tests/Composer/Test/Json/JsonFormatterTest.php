@@ -13,8 +13,9 @@
 namespace Composer\Test\Json;
 
 use Composer\Json\JsonFormatter;
+use PHPUnit\Framework\TestCase;
 
-class JsonFormatterTest extends \PHPUnit_Framework_TestCase
+class JsonFormatterTest extends TestCase
 {
     /**
      * Test if \u0119 (196+153) will get correctly formatted
