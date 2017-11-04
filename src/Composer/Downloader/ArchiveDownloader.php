@@ -51,12 +51,6 @@ abstract class ArchiveDownloader extends FileDownloader
 
                 $contentDir = $this->getFolderContent($temporaryDir);
 
-                // Filter macOS' .DS_Store file.
-                $contentDir = array_filter($contentDir, function ($file) {
-                    /** @var SplFileInfo $file */
-                    return $file->getFilename() != '.DS_Store';
-                });
-
                 // only one dir in the archive, extract its contents out of it
                 if (1 === count($contentDir) && is_dir(reset($contentDir))) {
                     $contentDir = $this->getFolderContent((string) reset($contentDir));
@@ -154,6 +148,11 @@ abstract class ArchiveDownloader extends FileDownloader
         $finder = Finder::create()
             ->ignoreVCS(false)
             ->ignoreDotFiles(false)
+            ->filter(function ($file) {
+                /** @var \SplFileInfo $file */
+                // Filter macOS' .DS_Store file.
+                return $file->getFilename() != '.DS_Store';
+            })
             ->depth(0)
             ->in($dir);
 
