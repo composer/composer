@@ -12,8 +12,8 @@
 
 namespace Composer\Installer;
 
-use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloadManager;
+use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 

@@ -12,12 +12,12 @@
 
 namespace Composer\Repository;
 
-use Composer\XdebugHandler;
 use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginInterface;
 use Composer\Util\Silencer;
+use Composer\XdebugHandler;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

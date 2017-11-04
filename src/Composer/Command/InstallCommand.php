@@ -15,9 +15,9 @@ namespace Composer\Command;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**

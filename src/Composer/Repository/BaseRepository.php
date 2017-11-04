@@ -12,10 +12,10 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\RootPackageInterface;
-use Composer\Semver\Constraint\ConstraintInterface;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Link;
+use Composer\Package\RootPackageInterface;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * Common ancestor class for generic repository functionality.

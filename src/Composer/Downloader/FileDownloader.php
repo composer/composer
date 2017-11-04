@@ -14,12 +14,12 @@ namespace Composer\Downloader;
 
 use Composer\Config;
 use Composer\Cache;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
-use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
 

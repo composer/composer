@@ -19,8 +19,8 @@ use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
-use Composer\Util\Filesystem;
 use Composer\Script\ScriptEvents;
+use Composer\Util\Filesystem;
 
 /**
  * @author Igor Wiedler <igor@wiedler.ch>

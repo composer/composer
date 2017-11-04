@@ -13,9 +13,9 @@
 namespace Composer\Command;
 
 use Composer\Json\JsonFile;
+use Composer\Package\PackageInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;

@@ -13,8 +13,8 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Util\Svn as SvnUtil;
 use Composer\Repository\VcsRepository;
+use Composer\Util\Svn as SvnUtil;
 
 /**
  * @author Ben Bieker <mail@ben-bieker.de>

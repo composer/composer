@@ -13,9 +13,9 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Config;
-use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>

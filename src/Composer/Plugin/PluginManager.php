@@ -13,17 +13,17 @@
 namespace Composer\Plugin;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Pool;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
-use Composer\Package\Package;
-use Composer\Package\Version\VersionParser;
-use Composer\Repository\RepositoryInterface;
 use Composer\Package\AliasPackage;
-use Composer\Package\PackageInterface;
 use Composer\Package\Link;
-use Composer\Semver\Constraint\Constraint;
-use Composer\DependencyResolver\Pool;
+use Composer\Package\Package;
+use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionParser;
 use Composer\Plugin\Capability\Capability;
+use Composer\Repository\RepositoryInterface;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * Plugin manager

@@ -13,13 +13,13 @@
 namespace Composer\Downloader;
 
 use Composer\Config;
+use Composer\IO\IOInterface;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
-use Composer\Util\ProcessExecutor;
-use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

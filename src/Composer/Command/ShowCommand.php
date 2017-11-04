@@ -12,32 +12,32 @@
 
 namespace Composer\Command;
 
-use Composer\DependencyResolver\Pool;
+use Composer\Composer;
 use Composer\DependencyResolver\DefaultPolicy;
+use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
-use Composer\Package\CompletePackageInterface;
-use Composer\Package\Version\VersionParser;
 use Composer\Package\BasePackage;
+use Composer\Package\CompletePackageInterface;
+use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Package\PackageInterface;
+use Composer\Repository\ArrayRepository;
+use Composer\Repository\ComposerRepository;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryFactory;
+use Composer\Repository\RepositoryInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Semver;
+use Composer\Spdx\SpdxLicenses;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\Repository\ArrayRepository;
-use Composer\Repository\CompositeRepository;
-use Composer\Repository\ComposerRepository;
-use Composer\Repository\PlatformRepository;
-use Composer\Repository\RepositoryInterface;
-use Composer\Repository\RepositoryFactory;
-use Composer\Spdx\SpdxLicenses;
-use Composer\Composer;
-use Composer\Semver\Semver;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>

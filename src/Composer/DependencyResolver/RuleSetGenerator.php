@@ -12,8 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
 
 /**

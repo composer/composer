@@ -14,9 +14,9 @@ namespace Composer\Package\Loader;
 
 use Composer\Package;
 use Composer\Package\BasePackage;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

@@ -12,12 +12,12 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
-use Composer\Util\Git as GitUtil;
-use Composer\IO\IOInterface;
 use Composer\Cache;
 use Composer\Config;
+use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
+use Composer\Util\Git as GitUtil;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

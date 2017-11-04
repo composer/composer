@@ -12,16 +12,16 @@
 
 namespace Composer\Repository;
 
+use Composer\Config;
 use Composer\Downloader\TransportException;
-use Composer\Repository\Vcs\VcsDriverInterface;
-use Composer\Package\Version\VersionParser;
-use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Loader\ValidatingArrayLoader;
-use Composer\Package\Loader\InvalidPackageException;
-use Composer\Package\Loader\LoaderInterface;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
-use Composer\Config;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\InvalidPackageException;
+use Composer\Package\Loader\LoaderInterface;
+use Composer\Package\Loader\ValidatingArrayLoader;
+use Composer\Package\Version\VersionParser;
+use Composer\Repository\Vcs\VcsDriverInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

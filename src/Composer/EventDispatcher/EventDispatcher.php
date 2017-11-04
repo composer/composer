@@ -12,19 +12,19 @@
 
 namespace Composer\EventDispatcher;
 
+use Composer\Composer;
+use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
+use Composer\Installer\BinaryInstaller;
 use Composer\Installer\InstallerEvent;
+use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
-use Composer\Composer;
-use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Script;
-use Composer\Installer\PackageEvent;
-use Composer\Installer\BinaryInstaller;
-use Composer\Util\ProcessExecutor;
 use Composer\Script\Event as ScriptEvent;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Process\PhpExecutableFinder;
 
 /**

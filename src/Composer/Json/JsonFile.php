@@ -12,12 +12,12 @@
 
 namespace Composer\Json;
 
+use Composer\Downloader\TransportException;
+use Composer\IO\IOInterface;
+use Composer\Util\RemoteFilesystem;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
-use Composer\Util\RemoteFilesystem;
-use Composer\IO\IOInterface;
-use Composer\Downloader\TransportException;
 
 /**
  * Reads/writes json files.

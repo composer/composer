@@ -13,32 +13,32 @@
 namespace Composer\Command;
 
 use Composer\Config;
+use Composer\Config\JsonConfigSource;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Pool;
 use Composer\Factory;
 use Composer\Installer;
-use Composer\Installer\ProjectInstaller;
 use Composer\Installer\InstallationManager;
+use Composer\Installer\ProjectInstaller;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
-use Composer\Package\BasePackage;
-use Composer\DependencyResolver\Pool;
-use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\Package\Version\VersionSelector;
+use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
-use Composer\Repository\RepositoryFactory;
+use Composer\Package\BasePackage;
+use Composer\Package\Version\VersionParser;
+use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
-use Composer\Repository\PlatformRepository;
 use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryFactory;
 use Composer\Script\ScriptEvents;
+use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
-use Composer\Json\JsonFile;
-use Composer\Config\JsonConfigSource;
-use Composer\Util\Filesystem;
-use Composer\Package\Version\VersionParser;
 
 /**
  * Install a package as new project into new directory.

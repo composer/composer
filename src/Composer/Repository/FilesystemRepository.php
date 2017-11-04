@@ -13,8 +13,8 @@
 namespace Composer\Repository;
 
 use Composer\Json\JsonFile;
-use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Package\Loader\ArrayLoader;
 
 /**
  * Filesystem repository.

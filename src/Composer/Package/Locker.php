@@ -12,15 +12,15 @@
 
 namespace Composer\Package;
 
-use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
-use Composer\Repository\RepositoryManager;
-use Composer\Util\ProcessExecutor;
-use Composer\Repository\ArrayRepository;
+use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Repository\ArrayRepository;
+use Composer\Repository\RepositoryManager;
 use Composer\Util\Git as GitUtil;
-use Composer\IO\IOInterface;
+use Composer\Util\ProcessExecutor;
 use Seld\JsonLint\ParsingException;
 
 /**
