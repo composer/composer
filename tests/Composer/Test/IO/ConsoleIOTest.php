@@ -249,11 +249,6 @@ class ConsoleIOTest extends TestCase
             ->will($this->returnValue($helperMock))
         ;
 
-        $inputMock->expects($this->once())
-            ->method('isInteractive')
-            ->will($this->returnValue(true))
-        ;
-
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);
         $consoleIO->select('Select item', array("item1", "item2"), null, false, "Error message", true);
     }
