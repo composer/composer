@@ -12,9 +12,9 @@
 
 namespace Composer\Util;
 
+use Composer\IO\IOInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessUtils;
-use Composer\IO\IOInterface;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -131,6 +131,59 @@ class ProcessExecutor
      */
     public static function escape($argument)
     {
-        return ProcessUtils::escapeArgument($argument);
+        if (method_exists('Symfony\Component\Process\ProcessUtils', 'escapeArgument')) {
+            return ProcessUtils::escapeArgument($argument);
+        }
+        return self::escapeArgument($argument);
+    }
+
+    /**
+     * Copy of ProcessUtils::escapeArgument() that is removed in Symfony 4.
+     *
+     * @param string $argument
+     *
+     * @return string
+     */
+    private static function escapeArgument($argument)
+    {
+        //Fix for PHP bug #43784 escapeshellarg removes % from given string
+        //Fix for PHP bug #49446 escapeshellarg doesn't work on Windows
+        //@see https://bugs.php.net/bug.php?id=43784
+        //@see https://bugs.php.net/bug.php?id=49446
+        if ('\\' === DIRECTORY_SEPARATOR) {
+            if ('' === $argument) {
+                return escapeshellarg($argument);
+            }
+
+            $escapedArgument = '';
+            $quote = false;
+            foreach (preg_split('/(")/', $argument, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE) as $part) {
+                if ('"' === $part) {
+                    $escapedArgument .= '\\"';
+                } elseif (self::isSurroundedBy($part, '%')) {
+                    // Avoid environment variable expansion
+                    $escapedArgument .= '^%"'.substr($part, 1, -1).'"^%';
+                } else {
+                    // escape trailing backslash
+                    if ('\\' === substr($part, -1)) {
+                        $part .= '\\';
+                    }
+                    $quote = true;
+                    $escapedArgument .= $part;
+                }
+            }
+            if ($quote) {
+                $escapedArgument = '"'.$escapedArgument.'"';
+            }
+
+            return $escapedArgument;
+        }
+
+        return "'".str_replace("'", "'\\''", $argument)."'";
+    }
+
+    private static function isSurroundedBy($arg, $char)
+    {
+        return 2 < strlen($arg) && $char === $arg[0] && $char === $arg[strlen($arg) - 1];
     }
 }
