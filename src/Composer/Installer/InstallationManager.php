@@ -50,7 +50,7 @@ class InstallationManager
      */
     public function addInstaller(InstallerInterface $installer)
     {
-        array_unshift($this->installers, $installer);
+        \array_unshift($this->installers, $installer);
         $this->cache = array();
     }
 
@@ -61,8 +61,8 @@ class InstallationManager
      */
     public function removeInstaller(InstallerInterface $installer)
     {
-        if (false !== ($key = array_search($installer, $this->installers, true))) {
-            array_splice($this->installers, $key, 1);
+        if (false !== ($key = \array_search($installer, $this->installers, true))) {
+            \array_splice($this->installers, $key, 1);
             $this->cache = array();
         }
     }
@@ -95,7 +95,7 @@ class InstallationManager
      */
     public function getInstaller($type)
     {
-        $type = strtolower($type);
+        $type = \strtolower($type);
 
         if (isset($this->cache[$type])) {
             return $this->cache[$type];
@@ -255,17 +255,17 @@ class InstallationManager
     public function notifyInstalls(IOInterface $io)
     {
         foreach ($this->notifiablePackages as $repoUrl => $packages) {
-            $repositoryName = parse_url($repoUrl, PHP_URL_HOST);
+            $repositoryName = \parse_url($repoUrl, PHP_URL_HOST);
             if ($io->hasAuthentication($repositoryName)) {
                 $auth = $io->getAuthentication($repositoryName);
-                $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
+                $authStr = \base64_encode($auth['username'] . ':' . $auth['password']);
                 $authHeader = 'Authorization: Basic '.$authStr;
             }
 
             // non-batch API, deprecated
-            if (strpos($repoUrl, '%package%')) {
+            if (\strpos($repoUrl, '%package%')) {
                 foreach ($packages as $package) {
-                    $url = str_replace('%package%', $package->getPrettyName(), $repoUrl);
+                    $url = \str_replace('%package%', $package->getPrettyName(), $repoUrl);
 
                     $params = array(
                         'version' => $package->getPrettyVersion(),
@@ -275,7 +275,7 @@ class InstallationManager
                         array(
                             'method' => 'POST',
                             'header' => array('Content-type: application/x-www-form-urlencoded'),
-                            'content' => http_build_query($params, '', '&'),
+                            'content' => \http_build_query($params, '', '&'),
                             'timeout' => 3,
                         ),
                     );
@@ -284,7 +284,7 @@ class InstallationManager
                     }
 
                     $context = StreamContextFactory::getContext($url, $opts);
-                    @file_get_contents($url, false, $context);
+                    @\file_get_contents($url, false, $context);
                 }
 
                 continue;
@@ -302,7 +302,7 @@ class InstallationManager
                 array(
                     'method' => 'POST',
                     'header' => array('Content-Type: application/json'),
-                    'content' => json_encode($postData),
+                    'content' => \json_encode($postData),
                     'timeout' => 6,
                 ),
             );
@@ -311,7 +311,7 @@ class InstallationManager
             }
 
             $context = StreamContextFactory::getContext($repoUrl, $opts);
-            @file_get_contents($repoUrl, false, $context);
+            @\file_get_contents($repoUrl, false, $context);
         }
 
         $this->reset();

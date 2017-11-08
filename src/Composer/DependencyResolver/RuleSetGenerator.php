@@ -193,7 +193,7 @@ class RuleSetGenerator
             $this->addedMap[$package->id] = true;
 
             foreach ($package->getRequires() as $link) {
-                if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+                if ($ignorePlatformReqs && \preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
                     continue;
                 }
 
@@ -282,7 +282,7 @@ class RuleSetGenerator
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'install':
-                    if (!$job['fixed'] && $ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
+                    if (!$job['fixed'] && $ignorePlatformReqs && \preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
                         break;
                     }
 

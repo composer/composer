@@ -74,9 +74,9 @@ EOT
         }
 
         $script = $input->getArgument('script');
-        if (!in_array($script, $this->scriptEvents)) {
-            if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
-                throw new \InvalidArgumentException(sprintf('Script "%s" cannot be run with this command', $script));
+        if (!\in_array($script, $this->scriptEvents)) {
+            if (\defined('Composer\Script\ScriptEvents::'.\str_replace('-', '_', \strtoupper($script)))) {
+                throw new \InvalidArgumentException(\sprintf('Script "%s" cannot be run with this command', $script));
             }
         }
 
@@ -85,13 +85,13 @@ EOT
         $event = new ScriptEvent($script, $composer, $this->getIO(), $devMode);
         $hasListeners = $composer->getEventDispatcher()->hasEventListeners($event);
         if (!$hasListeners) {
-            throw new \InvalidArgumentException(sprintf('Script "%s" is not defined in this package', $script));
+            throw new \InvalidArgumentException(\sprintf('Script "%s" is not defined in this package', $script));
         }
 
         $args = $input->getArgument('args');
 
         if (null !== $timeout = $input->getOption('timeout')) {
-            if (!ctype_digit($timeout)) {
+            if (!\ctype_digit($timeout)) {
                 throw new \RuntimeException('Timeout value must be numeric and positive if defined, or 0 for forever');
             }
             // Override global timeout set before in Composer by environment or config
@@ -105,7 +105,7 @@ EOT
     {
         $scripts = $this->getComposer()->getPackage()->getScripts();
 
-        if (!count($scripts)) {
+        if (!\count($scripts)) {
             return 0;
         }
 

@@ -99,7 +99,7 @@ class Perforce
 
     public function generateUniquePerforceClientName()
     {
-        return gethostname() . "_" . time();
+        return \gethostname() . "_" . \time();
     }
 
     public function cleanupClientSpec()
@@ -123,7 +123,7 @@ class Perforce
     public function getClient()
     {
         if (!isset($this->p4Client)) {
-            $cleanStreamName = str_replace(array('//', '/', '@'), array('', '_', ''), $this->getStream());
+            $cleanStreamName = \str_replace(array('//', '/', '@'), array('', '_', ''), $this->getStream());
             $this->p4Client = 'composer_perforce_' . $this->uniquePerforceClientName . '_' . $cleanStreamName;
         }
 
@@ -150,7 +150,7 @@ class Perforce
     public function setStream($stream)
     {
         $this->p4Stream = $stream;
-        $index = strrpos($stream, '/');
+        $index = \strrpos($stream, '/');
         //Stream format is //depot/stream, while non-streaming depot is //depot
         if ($index > 2) {
             $this->p4DepotType = 'stream';
@@ -159,7 +159,7 @@ class Perforce
 
     public function isStream()
     {
-        return (strcmp($this->p4DepotType, 'stream') === 0);
+        return (\strcmp($this->p4DepotType, 'stream') === 0);
     }
 
     public function getStream()
@@ -177,12 +177,12 @@ class Perforce
 
     public function getStreamWithoutLabel($stream)
     {
-        $index = strpos($stream, '@');
+        $index = \strpos($stream, '@');
         if ($index === false) {
             return $stream;
         }
 
-        return substr($stream, 0, $index);
+        return \substr($stream, 0, $index);
     }
 
     public function getP4ClientSpec()
@@ -203,11 +203,11 @@ class Perforce
     public function queryP4User()
     {
         $this->getUser();
-        if (strlen($this->p4User) > 0) {
+        if (\strlen($this->p4User) > 0) {
             return;
         }
         $this->p4User = $this->getP4variable('P4USER');
-        if (strlen($this->p4User) > 0) {
+        if (\strlen($this->p4User) > 0) {
             return;
         }
         $this->p4User = $this->io->ask('Enter P4 User:');
@@ -224,18 +224,18 @@ class Perforce
         if ($this->windowsFlag) {
             $command = 'p4 set';
             $this->executeCommand($command);
-            $result = trim($this->commandResult);
-            $resArray = explode(PHP_EOL, $result);
+            $result = \trim($this->commandResult);
+            $resArray = \explode(PHP_EOL, $result);
             foreach ($resArray as $line) {
-                $fields = explode('=', $line);
-                if (strcmp($name, $fields[0]) == 0) {
-                    $index = strpos($fields[1], ' ');
+                $fields = \explode('=', $line);
+                if (\strcmp($name, $fields[0]) == 0) {
+                    $index = \strpos($fields[1], ' ');
                     if ($index === false) {
                         $value = $fields[1];
                     } else {
-                        $value = substr($fields[1], 0, $index);
+                        $value = \substr($fields[1], 0, $index);
                     }
-                    $value = trim($value);
+                    $value = \trim($value);
 
                     return $value;
                 }
@@ -245,7 +245,7 @@ class Perforce
         } else {
             $command = 'echo $' . $name;
             $this->executeCommand($command);
-            $result = trim($this->commandResult);
+            $result = \trim($this->commandResult);
 
             return $result;
         }
@@ -257,7 +257,7 @@ class Perforce
             return $this->p4Password;
         }
         $password = $this->getP4variable('P4PASSWD');
-        if (strlen($password) <= 0) {
+        if (\strlen($password) <= 0) {
             $password = $this->io->askAndHideAnswer('Enter password for Perforce user ' . $this->getUser() . ': ');
         }
         $this->p4Password = $password;
@@ -283,9 +283,9 @@ class Perforce
         $exitCode = $this->executeCommand($command);
         if ($exitCode) {
             $errorOutput = $this->process->getErrorOutput();
-            $index = strpos($errorOutput, $this->getUser());
+            $index = \strpos($errorOutput, $this->getUser());
             if ($index === false) {
-                $index = strpos($errorOutput, 'p4');
+                $index = \strpos($errorOutput, 'p4');
                 if ($index === false) {
                     return false;
                 }
@@ -300,40 +300,40 @@ class Perforce
     public function connectClient()
     {
         $p4CreateClientCommand = $this->generateP4Command(
-            'client -i < ' . str_replace(" ", "\\ ", $this->getP4ClientSpec())
+            'client -i < ' . \str_replace(" ", "\\ ", $this->getP4ClientSpec())
         );
         $this->executeCommand($p4CreateClientCommand);
     }
 
     public function syncCodeBase($sourceReference)
     {
-        $prevDir = getcwd();
-        chdir($this->path);
+        $prevDir = \getcwd();
+        \chdir($this->path);
         $p4SyncCommand = $this->generateP4Command('sync -f ');
         if (null !== $sourceReference) {
             $p4SyncCommand = $p4SyncCommand . '@' . $sourceReference;
         }
         $this->executeCommand($p4SyncCommand);
-        chdir($prevDir);
+        \chdir($prevDir);
     }
 
     public function writeClientSpecToFile($spec)
     {
-        fwrite($spec, 'Client: ' . $this->getClient() . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'Update: ' . date('Y/m/d H:i:s') . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'Access: ' . date('Y/m/d H:i:s') . PHP_EOL);
-        fwrite($spec, 'Owner:  ' . $this->getUser() . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'Description:' . PHP_EOL);
-        fwrite($spec, '  Created by ' . $this->getUser() . ' from composer.' . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'Root: ' . $this->getPath() . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'Options:  noallwrite noclobber nocompress unlocked modtime rmdir' . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'SubmitOptions:  revertunchanged' . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'LineEnd:  local' . PHP_EOL . PHP_EOL);
+        \fwrite($spec, 'Client: ' . $this->getClient() . PHP_EOL . PHP_EOL);
+        \fwrite($spec, 'Update: ' . \date('Y/m/d H:i:s') . PHP_EOL . PHP_EOL);
+        \fwrite($spec, 'Access: ' . \date('Y/m/d H:i:s') . PHP_EOL);
+        \fwrite($spec, 'Owner:  ' . $this->getUser() . PHP_EOL . PHP_EOL);
+        \fwrite($spec, 'Description:' . PHP_EOL);
+        \fwrite($spec, '  Created by ' . $this->getUser() . ' from composer.' . PHP_EOL . PHP_EOL);
+        \fwrite($spec, 'Root: ' . $this->getPath() . PHP_EOL . PHP_EOL);
+        \fwrite($spec, 'Options:  noallwrite noclobber nocompress unlocked modtime rmdir' . PHP_EOL . PHP_EOL);
+        \fwrite($spec, 'SubmitOptions:  revertunchanged' . PHP_EOL . PHP_EOL);
+        \fwrite($spec, 'LineEnd:  local' . PHP_EOL . PHP_EOL);
         if ($this->isStream()) {
-            fwrite($spec, 'Stream:' . PHP_EOL);
-            fwrite($spec, '  ' . $this->getStreamWithoutLabel($this->p4Stream) . PHP_EOL);
+            \fwrite($spec, 'Stream:' . PHP_EOL);
+            \fwrite($spec, '  ' . $this->getStreamWithoutLabel($this->p4Stream) . PHP_EOL);
         } else {
-            fwrite(
+            \fwrite(
                 $spec,
                 'View:  ' . $this->getStream() . '/...  //' . $this->getClient() . '/... ' . PHP_EOL
             );
@@ -343,24 +343,24 @@ class Perforce
     public function writeP4ClientSpec()
     {
         $clientSpec = $this->getP4ClientSpec();
-        $spec = fopen($clientSpec, 'w');
+        $spec = \fopen($clientSpec, 'w');
         try {
             $this->writeClientSpecToFile($spec);
         } catch (\Exception $e) {
-            fclose($spec);
+            \fclose($spec);
             throw $e;
         }
-        fclose($spec);
+        \fclose($spec);
     }
 
     protected function read($pipe, $name)
     {
-        if (feof($pipe)) {
+        if (\feof($pipe)) {
             return;
         }
-        $line = fgets($pipe);
+        $line = \fgets($pipe);
         while ($line !== false) {
-            $line = fgets($pipe);
+            $line = \fgets($pipe);
         }
 
         return;
@@ -384,7 +384,7 @@ class Perforce
             } else {
                 $command = 'echo ' . $password  . ' | ' . $this->generateP4Command(' login -a', false);
                 $exitCode = $this->executeCommand($command);
-                $result = trim($this->commandResult);
+                $result = \trim($this->commandResult);
                 if ($exitCode) {
                     throw new \Exception("Error logging in:" . $this->process->getErrorOutput());
                 }
@@ -400,7 +400,7 @@ class Perforce
             return;
         }
 
-        return json_decode($composerFileContent, true);
+        return \json_decode($composerFileContent, true);
     }
 
     public function getFileContent($file, $identifier)
@@ -411,7 +411,7 @@ class Perforce
         $this->executeCommand($command);
         $result = $this->commandResult;
 
-        if (!trim($result)) {
+        if (!\trim($result)) {
             return null;
         }
 
@@ -420,24 +420,24 @@ class Perforce
 
     public function getFilePath($file, $identifier)
     {
-        $index = strpos($identifier, '@');
+        $index = \strpos($identifier, '@');
         if ($index === false) {
             $path = $identifier. '/' . $file;
 
             return $path;
         } else {
-            $path = substr($identifier, 0, $index) . '/' . $file . substr($identifier, $index);
+            $path = \substr($identifier, 0, $index) . '/' . $file . \substr($identifier, $index);
             $command = $this->generateP4Command(' files ' . $path, false);
             $this->executeCommand($command);
             $result = $this->commandResult;
-            $index2 = strpos($result, 'no such file(s).');
+            $index2 = \strpos($result, 'no such file(s).');
             if ($index2 === false) {
-                $index3 = strpos($result, 'change');
+                $index3 = \strpos($result, 'change');
                 if ($index3 !== false) {
-                    $phrase = trim(substr($result, $index3));
-                    $fields = explode(' ', $phrase);
+                    $phrase = \trim(\substr($result, $index3));
+                    $fields = \explode(' ', $phrase);
 
-                    return substr($identifier, 0, $index) . '/' . $file . '@' . $fields[1];
+                    return \substr($identifier, 0, $index) . '/' . $file . '@' . $fields[1];
                 }
             }
         }
@@ -454,11 +454,11 @@ class Perforce
             $command = $this->generateP4Command('streams //' . $this->p4Depot . '/...');
             $this->executeCommand($command);
             $result = $this->commandResult;
-            $resArray = explode(PHP_EOL, $result);
+            $resArray = \explode(PHP_EOL, $result);
             foreach ($resArray as $line) {
-                $resBits = explode(' ', $line);
-                if (count($resBits) > 4) {
-                    $branch = preg_replace('/[^A-Za-z0-9 ]/', '', $resBits[4]);
+                $resBits = \explode(' ', $line);
+                if (\count($resBits) > 4) {
+                    $branch = \preg_replace('/[^A-Za-z0-9 ]/', '', $resBits[4]);
                     $possibleBranches[$branch] = $resBits[1];
                 }
             }
@@ -466,9 +466,9 @@ class Perforce
         $command = $this->generateP4Command('changes '. $this->getStream() . '/...', false);
         $this->executeCommand($command);
         $result = $this->commandResult;
-        $resArray = explode(PHP_EOL, $result);
+        $resArray = \explode(PHP_EOL, $result);
         $lastCommit = $resArray[0];
-        $lastCommitArr = explode(' ', $lastCommit);
+        $lastCommitArr = \explode(' ', $lastCommit);
         $lastCommitNum = $lastCommitArr[1];
 
         $branches = array('master' => $possibleBranches[$this->p4Branch] . '@'. $lastCommitNum);
@@ -481,12 +481,12 @@ class Perforce
         $command = $this->generateP4Command('labels');
         $this->executeCommand($command);
         $result = $this->commandResult;
-        $resArray = explode(PHP_EOL, $result);
+        $resArray = \explode(PHP_EOL, $result);
         $tags = array();
         foreach ($resArray as $line) {
-            $index = strpos($line, 'Label');
+            $index = \strpos($line, 'Label');
             if (!($index === false)) {
-                $fields = explode(' ', $line);
+                $fields = \explode(' ', $line);
                 $tags[$fields[1]] = $this->getStream() . '@' . $fields[1];
             }
         }
@@ -499,12 +499,12 @@ class Perforce
         $command = $this->generateP4Command('depots', false);
         $this->executeCommand($command);
         $result = $this->commandResult;
-        $resArray = explode(PHP_EOL, $result);
+        $resArray = \explode(PHP_EOL, $result);
         foreach ($resArray as $line) {
-            $index = strpos($line, 'Depot');
+            $index = \strpos($line, 'Depot');
             if (!($index === false)) {
-                $fields = explode(' ', $line);
-                if (strcmp($this->p4Depot, $fields[1]) === 0) {
+                $fields = \explode(' ', $line);
+                if (\strcmp($this->p4Depot, $fields[1]) === 0) {
                     $this->p4DepotType = $fields[3];
 
                     return $this->isStream();
@@ -521,18 +521,18 @@ class Perforce
      */
     protected function getChangeList($reference)
     {
-        $index = strpos($reference, '@');
+        $index = \strpos($reference, '@');
         if ($index === false) {
             return null;
         }
-        $label = substr($reference, $index);
+        $label = \substr($reference, $index);
         $command = $this->generateP4Command(' changes -m1 ' . $label);
         $this->executeCommand($command);
         $changes = $this->commandResult;
-        if (strpos($changes, 'Change') !== 0) {
+        if (\strpos($changes, 'Change') !== 0) {
             return null;
         }
-        $fields = explode(' ', $changes);
+        $fields = \explode(' ', $changes);
 
         return $fields[1];
     }
@@ -552,8 +552,8 @@ class Perforce
         if ($toChangeList === null) {
             return null;
         }
-        $index = strpos($fromReference, '@');
-        $main = substr($fromReference, 0, $index) . '/...';
+        $index = \strpos($fromReference, '@');
+        $main = \substr($fromReference, 0, $index) . '/...';
         $command = $this->generateP4Command('filelog ' . $main . '@' . $fromChangeList. ',' . $toChangeList);
         $this->executeCommand($command);
 

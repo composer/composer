@@ -75,7 +75,7 @@ class RepositoryManager
         $packages = array();
 
         foreach ($this->repositories as $repository) {
-            $packages = array_merge($packages, $repository->findPackages($name, $constraint));
+            $packages = \array_merge($packages, $repository->findPackages($name, $constraint));
         }
 
         return $packages;
@@ -100,7 +100,7 @@ class RepositoryManager
      */
     public function prependRepository(RepositoryInterface $repository)
     {
-        array_unshift($this->repositories, $repository);
+        \array_unshift($this->repositories, $repository);
     }
 
     /**
@@ -119,7 +119,7 @@ class RepositoryManager
         }
 
         if (isset($config['packagist']) && false === $config['packagist']) {
-            $this->io->writeError('<warning>Repository "'.$name.'" ('.json_encode($config).') has a packagist key which should be in its own repository definition</warning>');
+            $this->io->writeError('<warning>Repository "'.$name.'" ('.\json_encode($config).') has a packagist key which should be in its own repository definition</warning>');
         }
 
         $class = $this->repositoryClasses[$type];

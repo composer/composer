@@ -55,6 +55,6 @@ class XzDownloader extends ArchiveDownloader
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
+        return $path.'/'.\pathinfo(\parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
     }
 }

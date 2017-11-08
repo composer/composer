@@ -149,22 +149,22 @@ class ConsoleIO extends BaseIO
         }
 
         if (null !== $this->startTime) {
-            $memoryUsage = memory_get_usage() / 1024 / 1024;
-            $timeSpent = microtime(true) - $this->startTime;
-            $messages = array_map(function ($message) use ($memoryUsage, $timeSpent) {
-                return sprintf('[%.1fMB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
+            $memoryUsage = \memory_get_usage() / 1024 / 1024;
+            $timeSpent = \microtime(true) - $this->startTime;
+            $messages = \array_map(function ($message) use ($memoryUsage, $timeSpent) {
+                return \sprintf('[%.1fMB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
             }, (array) $messages);
         }
 
         if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
             $this->output->getErrorOutput()->write($messages, $newline, $sfVerbosity);
-            $this->lastMessageErr = implode($newline ? "\n" : '', (array) $messages);
+            $this->lastMessageErr = \implode($newline ? "\n" : '', (array) $messages);
 
             return;
         }
 
         $this->output->write($messages, $newline, $sfVerbosity);
-        $this->lastMessage = implode($newline ? "\n" : '', (array) $messages);
+        $this->lastMessage = \implode($newline ? "\n" : '', (array) $messages);
     }
 
     /**
@@ -193,15 +193,15 @@ class ConsoleIO extends BaseIO
     private function doOverwrite($messages, $newline, $size, $stderr, $verbosity)
     {
         // messages can be an array, let's convert it to string anyway
-        $messages = implode($newline ? "\n" : '', (array) $messages);
+        $messages = \implode($newline ? "\n" : '', (array) $messages);
 
         // since overwrite is supposed to overwrite last message...
         if (!isset($size)) {
             // removing possible formatting of lastMessage with strip_tags
-            $size = strlen(strip_tags($stderr ? $this->lastMessageErr : $this->lastMessage));
+            $size = \strlen(\strip_tags($stderr ? $this->lastMessageErr : $this->lastMessage));
         }
         // ...let's fill its length with backspaces
-        $this->doWrite(str_repeat("\x08", $size), false, $stderr, $verbosity);
+        $this->doWrite(\str_repeat("\x08", $size), false, $stderr, $verbosity);
 
         // write the new message
         $this->doWrite($messages, false, $stderr, $verbosity);
@@ -209,12 +209,12 @@ class ConsoleIO extends BaseIO
         // In cmd.exe on Win8.1 (possibly 10?), the line can not be cleared, so we need to
         // track the length of previous output and fill it with spaces to make sure the line is cleared.
         // See https://github.com/composer/composer/pull/5836 for more details
-        $fill = $size - strlen(strip_tags($messages));
+        $fill = $size - \strlen(\strip_tags($messages));
         if ($fill > 0) {
             // whitespace whatever has left
-            $this->doWrite(str_repeat(' ', $fill), false, $stderr, $verbosity);
+            $this->doWrite(\str_repeat(' ', $fill), false, $stderr, $verbosity);
             // move the cursor back
-            $this->doWrite(str_repeat("\x08", $fill), false, $stderr, $verbosity);
+            $this->doWrite(\str_repeat("\x08", $fill), false, $stderr, $verbosity);
         }
 
         if ($newline) {

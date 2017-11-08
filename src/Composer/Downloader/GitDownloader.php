@@ -42,7 +42,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     {
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
-        $cachePath = $this->config->get('cache-vcs-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $url).'/';
+        $cachePath = $this->config->get('cache-vcs-dir').'/'.\preg_replace('{[^a-z0-9.]}i', '-', $url).'/';
         $cacheOptions = '';
         $ref = $package->getSourceReference();
         $flag = Platform::isWindows() ? '/D ' : '';
@@ -50,13 +50,13 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         // --dissociate option is only available since git 2.3.0-rc0
         $gitVersion = $this->gitUtil->getVersion();
         $msg = "Cloning ".$this->getShortHash($ref);
-        if ($gitVersion && version_compare($gitVersion, '2.3.0-rc0', '>=')) {
+        if ($gitVersion && \version_compare($gitVersion, '2.3.0-rc0', '>=')) {
             $this->io->writeError('', true, IOInterface::DEBUG);
-            $this->io->writeError(sprintf('    Cloning to cache at %s', ProcessExecutor::escape($cachePath)), true, IOInterface::DEBUG);
+            $this->io->writeError(\sprintf('    Cloning to cache at %s', ProcessExecutor::escape($cachePath)), true, IOInterface::DEBUG);
             try {
                 $this->gitUtil->syncMirror($url, $cachePath);
-                if (is_dir($cachePath)) {
-                    $cacheOptions = sprintf('--dissociate --reference %s ', ProcessExecutor::escape($cachePath));
+                if (\is_dir($cachePath)) {
+                    $cacheOptions = \sprintf('--dissociate --reference %s ', ProcessExecutor::escape($cachePath));
                     $msg = "Cloning ".$this->getShortHash($ref).' from cache';
                 }
             } catch (\RuntimeException $e) {
@@ -66,7 +66,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $this->io->writeError($msg);
 
         $commandCallable = function ($url) use ($ref, $path, $command) {
-            return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($path), ProcessExecutor::escape($ref));
+            return \sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($path), ProcessExecutor::escape($ref));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
@@ -97,8 +97,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $updateOriginUrl = false;
         if (
             0 === $this->process->execute('git remote -v', $output, $path)
-            && preg_match('{^origin\s+(?P<url>\S+)}m', $output, $originMatch)
-            && preg_match('{^composer\s+(?P<url>\S+)}m', $output, $composerMatch)
+            && \preg_match('{^origin\s+(?P<url>\S+)}m', $output, $originMatch)
+            && \preg_match('{^composer\s+(?P<url>\S+)}m', $output, $composerMatch)
         ) {
             if ($originMatch['url'] === $composerMatch['url'] && $composerMatch['url'] !== $target->getSourceUrl()) {
                 $updateOriginUrl = true;
@@ -110,7 +110,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $command = 'git remote set-url composer %s && git rev-parse --quiet --verify %s^{commit} || (git fetch composer && git fetch --tags composer)';
 
         $commandCallable = function ($url) use ($command, $ref) {
-            return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($ref));
+            return \sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($ref));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
@@ -141,7 +141,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
-        return trim($output) ?: null;
+        return \trim($output) ?: null;
     }
 
     public function getUnpushedChanges(PackageInterface $package, $path)
@@ -157,14 +157,14 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
-        $refs = trim($output);
-        if (!preg_match('{^([a-f0-9]+) HEAD$}mi', $refs, $match)) {
+        $refs = \trim($output);
+        if (!\preg_match('{^([a-f0-9]+) HEAD$}mi', $refs, $match)) {
             // could not match the HEAD for some reason
             return;
         }
 
         $headRef = $match[1];
-        if (!preg_match_all('{^'.$headRef.' refs/heads/(.+)$}mi', $refs, $matches)) {
+        if (!\preg_match_all('{^'.$headRef.' refs/heads/(.+)$}mi', $refs, $matches)) {
             // not on a branch, we are either on a not-modified tag or some sort of detached head, so skip this
             return;
         }
@@ -177,7 +177,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         for ($i = 0; $i <= 1; $i++) {
             // try to find the a matching branch name in the composer remote
             foreach ($matches[1] as $candidate) {
-                if (preg_match('{^[a-f0-9]+ refs/remotes/((?:composer|origin)/'.preg_quote($candidate).')$}mi', $refs, $match)) {
+                if (\preg_match('{^[a-f0-9]+ refs/remotes/((?:composer|origin)/'.\preg_quote($candidate).')$}mi', $refs, $match)) {
                     $branch = $candidate;
                     $remoteBranch = $match[1];
                     break;
@@ -190,12 +190,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             if (!isset($remoteBranch)) {
                 $unpushedChanges = 'Branch ' . $branch . ' could not be found on the origin remote and appears to be unpushed';
             } else {
-                $command = sprintf('git diff --name-status %s...%s --', $remoteBranch, $branch);
+                $command = \sprintf('git diff --name-status %s...%s --', $remoteBranch, $branch);
                 if (0 !== $this->process->execute($command, $output, $path)) {
                     throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
                 }
 
-                $unpushedChanges = trim($output) ?: null;
+                $unpushedChanges = \trim($output) ?: null;
             }
 
             // first pass and we found unpushed changes, fetch from both remotes to make sure we have up to date
@@ -246,13 +246,13 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             return parent::cleanChanges($package, $path, $update);
         }
 
-        $changes = array_map(function ($elem) {
+        $changes = \array_map(function ($elem) {
             return '    '.$elem;
-        }, preg_split('{\s*\r?\n\s*}', $changes));
+        }, \preg_split('{\s*\r?\n\s*}', $changes));
         $this->io->writeError('    <error>The package has modified files:</error>');
-        $this->io->writeError(array_slice($changes, 0, 10));
-        if (count($changes) > 10) {
-            $this->io->writeError('    <info>' . (count($changes) - 10) . ' more files modified, choose "v" to view the full list</info>');
+        $this->io->writeError(\array_slice($changes, 0, 10));
+        if (\count($changes) > 10) {
+            $this->io->writeError('    <info>' . (\count($changes) - 10) . ' more files modified, choose "v" to view the full list</info>');
         }
 
         while (true) {
@@ -335,7 +335,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         // If the non-existent branch is actually the name of a file, the file
         // is checked out.
         $template = 'git checkout '.$force.'%s -- && git reset --hard %1$s --';
-        $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
+        $branch = \preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
 
         $branches = null;
         if (0 === $this->process->execute('git branch -r', $output, $path)) {
@@ -344,42 +344,42 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         // check whether non-commitish are branches or tags, and fetch branches with the remote name
         $gitRef = $reference;
-        if (!preg_match('{^[a-f0-9]{40}$}', $reference)
+        if (!\preg_match('{^[a-f0-9]{40}$}', $reference)
             && $branches
-            && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $branches)
+            && \preg_match('{^\s+composer/'.\preg_quote($reference).'$}m', $branches)
         ) {
-            $command = sprintf('git checkout '.$force.'-B %s %s -- && git reset --hard %2$s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
+            $command = \sprintf('git checkout '.$force.'-B %s %s -- && git reset --hard %2$s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 return;
             }
         }
 
         // try to checkout branch by name and then reset it so it's on the proper branch name
-        if (preg_match('{^[a-f0-9]{40}$}', $reference)) {
+        if (\preg_match('{^[a-f0-9]{40}$}', $reference)) {
             // add 'v' in front of the branch if it was stripped when generating the pretty name
-            if (!preg_match('{^\s+composer/'.preg_quote($branch).'$}m', $branches) && preg_match('{^\s+composer/v'.preg_quote($branch).'$}m', $branches)) {
+            if (!\preg_match('{^\s+composer/'.\preg_quote($branch).'$}m', $branches) && \preg_match('{^\s+composer/v'.\preg_quote($branch).'$}m', $branches)) {
                 $branch = 'v' . $branch;
             }
 
-            $command = sprintf('git checkout %s --', ProcessExecutor::escape($branch));
-            $fallbackCommand = sprintf('git checkout '.$force.'-B %s %s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$branch));
+            $command = \sprintf('git checkout %s --', ProcessExecutor::escape($branch));
+            $fallbackCommand = \sprintf('git checkout '.$force.'-B %s %s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$branch));
             if (0 === $this->process->execute($command, $output, $path)
                 || 0 === $this->process->execute($fallbackCommand, $output, $path)
             ) {
-                $command = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
+                $command = \sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
                 if (0 === $this->process->execute($command, $output, $path)) {
                     return;
                 }
             }
         }
 
-        $command = sprintf($template, ProcessExecutor::escape($gitRef));
+        $command = \sprintf($template, ProcessExecutor::escape($gitRef));
         if (0 === $this->process->execute($command, $output, $path)) {
             return;
         }
 
         // reference was not found (prints "fatal: reference is not a tree: $ref")
-        if (false !== strpos($this->process->getErrorOutput(), $reference)) {
+        if (false !== \strpos($this->process->getErrorOutput(), $reference)) {
             $this->io->writeError('    <warning>'.$reference.' is gone (history was rewritten?)</warning>');
         }
 
@@ -388,20 +388,20 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
     protected function updateOriginUrl($path, $url)
     {
-        $this->process->execute(sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
+        $this->process->execute(\sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
         $this->setPushUrl($path, $url);
     }
 
     protected function setPushUrl($path, $url)
     {
         // set push url for github projects
-        if (preg_match('{^(?:https?|git)://'.GitUtil::getGitHubDomainsRegex($this->config).'/([^/]+)/([^/]+?)(?:\.git)?$}', $url, $match)) {
+        if (\preg_match('{^(?:https?|git)://'.GitUtil::getGitHubDomainsRegex($this->config).'/([^/]+)/([^/]+?)(?:\.git)?$}', $url, $match)) {
             $protocols = $this->config->get('github-protocols');
             $pushUrl = 'git@'.$match[1].':'.$match[2].'/'.$match[3].'.git';
-            if (!in_array('ssh', $protocols, true)) {
+            if (!\in_array('ssh', $protocols, true)) {
                 $pushUrl = 'https://' . $match[1] . '/'.$match[2].'/'.$match[3].'.git';
             }
-            $cmd = sprintf('git remote set-url --push origin %s', ProcessExecutor::escape($pushUrl));
+            $cmd = \sprintf('git remote set-url --push origin %s', ProcessExecutor::escape($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);
         }
     }
@@ -412,7 +412,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
         $path = $this->normalizePath($path);
-        $command = sprintf('git log %s..%s --pretty=format:"%%h - %%an: %%s"', $fromReference, $toReference);
+        $command = \sprintf('git log %s..%s --pretty=format:"%%h - %%an: %%s"', $fromReference, $toReference);
 
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
@@ -465,20 +465,20 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
     protected function normalizePath($path)
     {
-        if (Platform::isWindows() && strlen($path) > 0) {
+        if (Platform::isWindows() && \strlen($path) > 0) {
             $basePath = $path;
             $removed = array();
 
-            while (!is_dir($basePath) && $basePath !== '\\') {
-                array_unshift($removed, basename($basePath));
-                $basePath = dirname($basePath);
+            while (!\is_dir($basePath) && $basePath !== '\\') {
+                \array_unshift($removed, \basename($basePath));
+                $basePath = \dirname($basePath);
             }
 
             if ($basePath === '\\') {
                 return $path;
             }
 
-            $path = rtrim(realpath($basePath) . '/' . implode('/', $removed), '/');
+            $path = \rtrim(\realpath($basePath) . '/' . \implode('/', $removed), '/');
         }
 
         return $path;
@@ -491,13 +491,13 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     {
         $path = $this->normalizePath($path);
 
-        return is_dir($path.'/.git');
+        return \is_dir($path.'/.git');
     }
 
     protected function getShortHash($reference)
     {
-        if (!$this->io->isVerbose() && preg_match('{^[0-9a-f]{40}$}', $reference)) {
-            return substr($reference, 0, 10);
+        if (!$this->io->isVerbose() && \preg_match('{^[0-9a-f]{40}$}', $reference)) {
+            return \substr($reference, 0, 10);
         }
 
         return $reference;

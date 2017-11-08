@@ -81,7 +81,7 @@ class ChannelRest10Reader extends BaseChannelReader
      */
     private function readPackage($baseUrl, $packageName)
     {
-        $xmlPath = '/p/' . strtolower($packageName) . '/info.xml';
+        $xmlPath = '/p/' . \strtolower($packageName) . '/info.xml';
         $xml = $this->requestXml($baseUrl, $xmlPath);
         $xml->registerXPathNamespace('ns', self::PACKAGE_INFO_NS);
 
@@ -115,7 +115,7 @@ class ChannelRest10Reader extends BaseChannelReader
         $result = array();
 
         try {
-            $xmlPath = '/r/' . strtolower($packageName) . '/allreleases.xml';
+            $xmlPath = '/r/' . \strtolower($packageName) . '/allreleases.xml';
             $xml = $this->requestXml($baseUrl, $xmlPath);
             $xml->registerXPathNamespace('ns', self::ALL_RELEASES_NS);
             foreach ($xml->xpath('ns:r') as $node) {
@@ -155,9 +155,9 @@ class ChannelRest10Reader extends BaseChannelReader
     {
         $dependencyReader = new PackageDependencyParser();
 
-        $depthPath = '/r/' . strtolower($packageName) . '/deps.' . $version . '.txt';
+        $depthPath = '/r/' . \strtolower($packageName) . '/deps.' . $version . '.txt';
         $content = $this->requestContent($baseUrl, $depthPath);
-        $dependencyArray = unserialize($content);
+        $dependencyArray = \unserialize($content);
 
         return $dependencyReader->buildDependencyInfo($dependencyArray);
     }

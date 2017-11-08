@@ -61,14 +61,14 @@ EOT
             $packages = $this->appendPackages($repo->getPackages(), array());
         }
 
-        ksort($packages);
+        \ksort($packages);
         $io = $this->getIO();
 
         switch ($format = $input->getOption('format')) {
             case 'text':
                 $io->write('Name: <comment>'.$root->getPrettyName().'</comment>');
                 $io->write('Version: <comment>'.$root->getFullPrettyVersion().'</comment>');
-                $io->write('Licenses: <comment>'.(implode(', ', $root->getLicense()) ?: 'none').'</comment>');
+                $io->write('Licenses: <comment>'.(\implode(', ', $root->getLicense()) ?: 'none').'</comment>');
                 $io->write('Dependencies:');
                 $io->write('');
 
@@ -81,7 +81,7 @@ EOT
                     $table->addRow(array(
                         $package->getPrettyName(),
                         $package->getFullPrettyVersion(),
-                        implode(', ', $package->getLicense()) ?: 'none',
+                        \implode(', ', $package->getLicense()) ?: 'none',
                     ));
                 }
                 $table->render();
@@ -105,7 +105,7 @@ EOT
                 break;
 
             default:
-                throw new \RuntimeException(sprintf('Unsupported format "%s".  See help for supported formats.', $format));
+                throw new \RuntimeException(\sprintf('Unsupported format "%s".  See help for supported formats.', $format));
         }
     }
 
@@ -119,13 +119,13 @@ EOT
      */
     private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, $bucket = array())
     {
-        $requires = array_keys($package->getRequires());
+        $requires = \array_keys($package->getRequires());
 
-        $packageListNames = array_keys($bucket);
-        $packages = array_filter(
+        $packageListNames = \array_keys($bucket);
+        $packages = \array_filter(
             $repo->getPackages(),
             function ($package) use ($requires, $packageListNames) {
-                return in_array($package->getName(), $requires) && !in_array($package->getName(), $packageListNames);
+                return \in_array($package->getName(), $requires) && !\in_array($package->getName(), $packageListNames);
             }
         );
 

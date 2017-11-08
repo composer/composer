@@ -80,7 +80,7 @@ abstract class BaseRepository implements RepositoryInterface
                     if ($link->getTarget() === $needle) {
                         if ($constraint === null || ($link->getConstraint()->matches($constraint) === !$invert)) {
                             // already displayed this node's dependencies, cutting short
-                            if (in_array($link->getSource(), $packagesInTree)) {
+                            if (\in_array($link->getSource(), $packagesInTree)) {
                                 $results[$link->getSource()] = array($package, $link, false);
                                 continue;
                             }
@@ -93,7 +93,7 @@ abstract class BaseRepository implements RepositoryInterface
             }
 
             // When inverting, we need to check for conflicts of the needles against installed packages
-            if ($invert && in_array($package->getName(), $needles)) {
+            if ($invert && \in_array($package->getName(), $needles)) {
                 foreach ($package->getConflicts() as $link) {
                     foreach ($this->findPackages($link->getTarget()) as $pkg) {
                         $version = new Constraint('=', $pkg->getVersion());
@@ -105,9 +105,9 @@ abstract class BaseRepository implements RepositoryInterface
             }
 
             // When inverting, we need to check for conflicts of the needles' requirements against installed packages
-            if ($invert && $constraint && in_array($package->getName(), $needles) && $constraint->matches(new Constraint('=', $package->getVersion()))) {
+            if ($invert && $constraint && \in_array($package->getName(), $needles) && $constraint->matches(new Constraint('=', $package->getVersion()))) {
                 foreach ($package->getRequires() as $link) {
-                    if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+                    if (\preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
                         if ($this->findPackage($link->getTarget(), $link->getConstraint())) {
                             continue;
                         }
@@ -120,7 +120,7 @@ abstract class BaseRepository implements RepositoryInterface
                     }
 
                     foreach ($this->getPackages() as $pkg) {
-                        if (!in_array($link->getTarget(), $pkg->getNames())) {
+                        if (!\in_array($link->getTarget(), $pkg->getNames())) {
                             continue;
                         }
 
@@ -129,8 +129,8 @@ abstract class BaseRepository implements RepositoryInterface
                             // if we have a root package (we should but can not guarantee..) we show
                             // the root requires as well to perhaps allow to find an issue there
                             if ($rootPackage) {
-                                foreach (array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()) as $rootReq) {
-                                    if (in_array($rootReq->getTarget(), $pkg->getNames()) && !$rootReq->getConstraint()->matches($link->getConstraint())) {
+                                foreach (\array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()) as $rootReq) {
+                                    if (\in_array($rootReq->getTarget(), $pkg->getNames()) && !$rootReq->getConstraint()->matches($link->getConstraint())) {
                                         $results[] = array($package, $link, false);
                                         $results[] = array($rootPackage, $rootReq, false);
                                         continue 3;
@@ -150,7 +150,7 @@ abstract class BaseRepository implements RepositoryInterface
             }
         }
 
-        ksort($results);
+        \ksort($results);
 
         return $results;
     }

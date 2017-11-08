@@ -41,7 +41,7 @@ class ArrayLoader implements LoaderInterface
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
     {
         if (!isset($config['name'])) {
-            throw new \UnexpectedValueException('Unknown package has no name defined ('.json_encode($config).').');
+            throw new \UnexpectedValueException('Unknown package has no name defined ('.\json_encode($config).').');
         }
         if (!isset($config['version'])) {
             throw new \UnexpectedValueException('Package '.$config['name'].' has no version defined.');
@@ -54,22 +54,22 @@ class ArrayLoader implements LoaderInterface
             $version = $this->versionParser->normalize($config['version']);
         }
         $package = new $class($config['name'], $version, $config['version']);
-        $package->setType(isset($config['type']) ? strtolower($config['type']) : 'library');
+        $package->setType(isset($config['type']) ? \strtolower($config['type']) : 'library');
 
         if (isset($config['target-dir'])) {
             $package->setTargetDir($config['target-dir']);
         }
 
-        if (isset($config['extra']) && is_array($config['extra'])) {
+        if (isset($config['extra']) && \is_array($config['extra'])) {
             $package->setExtra($config['extra']);
         }
 
         if (isset($config['bin'])) {
-            if (!is_array($config['bin'])) {
-                throw new \UnexpectedValueException('Package '.$config['name'].'\'s bin key should be an array, '.gettype($config['bin']).' given.');
+            if (!\is_array($config['bin'])) {
+                throw new \UnexpectedValueException('Package '.$config['name'].'\'s bin key should be an array, '.\gettype($config['bin']).' given.');
             }
             foreach ($config['bin'] as $key => $bin) {
-                $config['bin'][$key] = ltrim($bin, '/');
+                $config['bin'][$key] = \ltrim($bin, '/');
             }
             $package->setBinaries($config['bin']);
         }
@@ -80,10 +80,10 @@ class ArrayLoader implements LoaderInterface
 
         if (isset($config['source'])) {
             if (!isset($config['source']['type']) || !isset($config['source']['url']) || !isset($config['source']['reference'])) {
-                throw new \UnexpectedValueException(sprintf(
+                throw new \UnexpectedValueException(\sprintf(
                     "Package %s's source key should be specified as {\"type\": ..., \"url\": ..., \"reference\": ...},\n%s given.",
                     $config['name'],
-                    json_encode($config['source'])
+                    \json_encode($config['source'])
                 ));
             }
             $package->setSourceType($config['source']['type']);
@@ -97,11 +97,11 @@ class ArrayLoader implements LoaderInterface
         if (isset($config['dist'])) {
             if (!isset($config['dist']['type'])
              || !isset($config['dist']['url'])) {
-                throw new \UnexpectedValueException(sprintf(
+                throw new \UnexpectedValueException(\sprintf(
                     "Package %s's dist key should be specified as ".
                     "{\"type\": ..., \"url\": ..., \"reference\": ..., \"shasum\": ...},\n%s given.",
                     $config['name'],
-                    json_encode($config['dist'])
+                    \json_encode($config['dist'])
                 ));
             }
             $package->setDistType($config['dist']['type']);
@@ -115,7 +115,7 @@ class ArrayLoader implements LoaderInterface
 
         foreach (Package\BasePackage::$supportedLinkTypes as $type => $opts) {
             if (isset($config[$type])) {
-                $method = 'set'.ucfirst($opts['method']);
+                $method = 'set'.\ucfirst($opts['method']);
                 $package->{$method}(
                     $this->parseLinks(
                         $package->getName(),
@@ -127,9 +127,9 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-        if (isset($config['suggest']) && is_array($config['suggest'])) {
+        if (isset($config['suggest']) && \is_array($config['suggest'])) {
             foreach ($config['suggest'] as $target => $reason) {
-                if ('self.version' === trim($reason)) {
+                if ('self.version' === \trim($reason)) {
                     $config['suggest'][$target] = $package->getPrettyVersion();
                 }
             }
@@ -149,7 +149,7 @@ class ArrayLoader implements LoaderInterface
         }
 
         if (!empty($config['time'])) {
-            $time = preg_match('/^\d++$/D', $config['time']) ? '@'.$config['time'] : $config['time'];
+            $time = \preg_match('/^\d++$/D', $config['time']) ? '@'.$config['time'] : $config['time'];
 
             try {
                 $date = new \DateTime($time, new \DateTimeZone('UTC'));
@@ -167,33 +167,33 @@ class ArrayLoader implements LoaderInterface
         }
 
         if ($package instanceof Package\CompletePackageInterface) {
-            if (isset($config['scripts']) && is_array($config['scripts'])) {
+            if (isset($config['scripts']) && \is_array($config['scripts'])) {
                 foreach ($config['scripts'] as $event => $listeners) {
                     $config['scripts'][$event] = (array) $listeners;
                 }
                 if (isset($config['scripts']['composer'])) {
-                    trigger_error('The `composer` script name is reserved for internal use, please avoid defining it', E_USER_DEPRECATED);
+                    \trigger_error('The `composer` script name is reserved for internal use, please avoid defining it', E_USER_DEPRECATED);
                 }
                 $package->setScripts($config['scripts']);
             }
 
-            if (!empty($config['description']) && is_string($config['description'])) {
+            if (!empty($config['description']) && \is_string($config['description'])) {
                 $package->setDescription($config['description']);
             }
 
-            if (!empty($config['homepage']) && is_string($config['homepage'])) {
+            if (!empty($config['homepage']) && \is_string($config['homepage'])) {
                 $package->setHomepage($config['homepage']);
             }
 
-            if (!empty($config['keywords']) && is_array($config['keywords'])) {
+            if (!empty($config['keywords']) && \is_array($config['keywords'])) {
                 $package->setKeywords($config['keywords']);
             }
 
             if (!empty($config['license'])) {
-                $package->setLicense(is_array($config['license']) ? $config['license'] : array($config['license']));
+                $package->setLicense(\is_array($config['license']) ? $config['license'] : array($config['license']));
             }
 
-            if (!empty($config['authors']) && is_array($config['authors'])) {
+            if (!empty($config['authors']) && \is_array($config['authors'])) {
                 $package->setAuthors($config['authors']);
             }
 
@@ -208,9 +208,9 @@ class ArrayLoader implements LoaderInterface
 
         if ($aliasNormalized = $this->getBranchAlias($config)) {
             if ($package instanceof RootPackageInterface) {
-                $package = new RootAliasPackage($package, $aliasNormalized, preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
+                $package = new RootAliasPackage($package, $aliasNormalized, \preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
             } else {
-                $package = new AliasPackage($package, $aliasNormalized, preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
+                $package = new AliasPackage($package, $aliasNormalized, \preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
             }
         }
 
@@ -232,8 +232,8 @@ class ArrayLoader implements LoaderInterface
     {
         $res = array();
         foreach ($links as $target => $constraint) {
-            if (!is_string($constraint)) {
-                throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.gettype($constraint) . ' (' . var_export($constraint, true) . ')');
+            if (!\is_string($constraint)) {
+                throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.\gettype($constraint) . ' (' . \var_export($constraint, true) . ')');
             }
             if ('self.version' === $constraint) {
                 $parsedConstraint = $this->versionParser->parseConstraints($sourceVersion);
@@ -241,7 +241,7 @@ class ArrayLoader implements LoaderInterface
                 $parsedConstraint = $this->versionParser->parseConstraints($constraint);
             }
 
-            $res[strtolower($target)] = new Link($source, $target, $parsedConstraint, $description, $constraint);
+            $res[\strtolower($target)] = new Link($source, $target, $parsedConstraint, $description, $constraint);
         }
 
         return $res;
@@ -255,34 +255,34 @@ class ArrayLoader implements LoaderInterface
      */
     public function getBranchAlias(array $config)
     {
-        if (('dev-' !== substr($config['version'], 0, 4) && '-dev' !== substr($config['version'], -4))
+        if (('dev-' !== \substr($config['version'], 0, 4) && '-dev' !== \substr($config['version'], -4))
             || !isset($config['extra']['branch-alias'])
-            || !is_array($config['extra']['branch-alias'])
+            || !\is_array($config['extra']['branch-alias'])
         ) {
             return;
         }
 
         foreach ($config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
             // ensure it is an alias to a -dev package
-            if ('-dev' !== substr($targetBranch, -4)) {
+            if ('-dev' !== \substr($targetBranch, -4)) {
                 continue;
             }
 
             // normalize without -dev and ensure it's a numeric branch that is parseable
-            $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
-            if ('-dev' !== substr($validatedTargetBranch, -4)) {
+            $validatedTargetBranch = $this->versionParser->normalizeBranch(\substr($targetBranch, 0, -4));
+            if ('-dev' !== \substr($validatedTargetBranch, -4)) {
                 continue;
             }
 
             // ensure that it is the current branch aliasing itself
-            if (strtolower($config['version']) !== strtolower($sourceBranch)) {
+            if (\strtolower($config['version']) !== \strtolower($sourceBranch)) {
                 continue;
             }
 
             // If using numeric aliases ensure the alias is a valid subversion
             if (($sourcePrefix = $this->versionParser->parseNumericAliasPrefix($sourceBranch))
                 && ($targetPrefix = $this->versionParser->parseNumericAliasPrefix($targetBranch))
-                && (stripos($targetPrefix, $sourcePrefix) !== 0)
+                && (\stripos($targetPrefix, $sourcePrefix) !== 0)
             ) {
                 continue;
             }

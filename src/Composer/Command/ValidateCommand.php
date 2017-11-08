@@ -69,12 +69,12 @@ EOT
         $file = $input->getArgument('file');
         $io = $this->getIO();
 
-        if (!file_exists($file)) {
+        if (!\file_exists($file)) {
             $io->writeError('<error>' . $file . ' not found.</error>');
 
             return 3;
         }
-        if (!is_readable($file)) {
+        if (!\is_readable($file)) {
             $io->writeError('<error>' . $file . ' is not readable.</error>');
 
             return 3;
@@ -103,19 +103,19 @@ EOT
             foreach ($localRepo->getPackages() as $package) {
                 $path = $composer->getInstallationManager()->getInstallPath($package);
                 $file = $path . '/composer.json';
-                if (is_dir($path) && file_exists($file)) {
+                if (\is_dir($path) && \file_exists($file)) {
                     list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
                     $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors);
 
                     $depCode = $errors || ($publishErrors && $checkPublish) ? 2 : ($isStrict && $warnings ? 1 : 0);
-                    $exitCode = max($depCode, $exitCode);
+                    $exitCode = \max($depCode, $exitCode);
                 }
             }
         }
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'validate', $input, $output);
         $eventCode = $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
-        $exitCode = max($eventCode, $exitCode);
+        $exitCode = \max($eventCode, $exitCode);
 
         return $exitCode;
     }
@@ -141,16 +141,16 @@ EOT
 
         // If checking publish errors, display them as errors, otherwise just show them as warnings
         if ($checkPublish) {
-            $errors = array_merge($errors, $publishErrors);
+            $errors = \array_merge($errors, $publishErrors);
         } else {
-            $warnings = array_merge($warnings, $publishErrors);
+            $warnings = \array_merge($warnings, $publishErrors);
         }
 
         // If checking lock errors, display them as errors, otherwise just show them as warnings
         if ($checkLock) {
-            $errors = array_merge($errors, $lockErrors);
+            $errors = \array_merge($errors, $lockErrors);
         } else {
-            $warnings = array_merge($warnings, $lockErrors);
+            $warnings = \array_merge($warnings, $lockErrors);
         }
 
         $messages = array(

@@ -126,24 +126,24 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         parent::initialize();
 
         foreach ($this->getUrlMatches() as $url) {
-            $path = realpath($url) . DIRECTORY_SEPARATOR;
+            $path = \realpath($url) . DIRECTORY_SEPARATOR;
             $composerFilePath = $path.'composer.json';
 
-            if (!file_exists($composerFilePath)) {
+            if (!\file_exists($composerFilePath)) {
                 continue;
             }
 
-            $json = file_get_contents($composerFilePath);
+            $json = \file_get_contents($composerFilePath);
             $package = JsonFile::parseJson($json, $composerFilePath);
             $package['dist'] = array(
                 'type' => 'path',
                 'url' => $url,
-                'reference' => sha1($json . serialize($this->options)),
+                'reference' => \sha1($json . \serialize($this->options)),
             );
             $package['transport-options'] = $this->options;
 
             // carry over the root package version if this path repo is in the same git repository as root package
-            if (!isset($package['version']) && ($rootVersion = getenv('COMPOSER_ROOT_VERSION'))) {
+            if (!isset($package['version']) && ($rootVersion = \getenv('COMPOSER_ROOT_VERSION'))) {
                 if (
                     0 === $this->process->execute('git rev-parse HEAD', $ref1, $path)
                     && 0 === $this->process->execute('git rev-parse HEAD', $ref2)
@@ -159,8 +159,8 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             }
 
             $output = '';
-            if (is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
-                $package['dist']['reference'] = trim($output);
+            if (\is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
+                $package['dist']['reference'] = \trim($output);
             }
             $package = $this->loader->load($package);
             $this->addPackage($package);
@@ -175,8 +175,8 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
     private function getUrlMatches()
     {
         // Ensure environment-specific path separators are normalized to URL separators
-        return array_map(function ($val) {
-            return rtrim(str_replace(DIRECTORY_SEPARATOR, '/', $val), '/');
-        }, glob($this->url, GLOB_MARK | GLOB_ONLYDIR));
+        return \array_map(function ($val) {
+            return \rtrim(\str_replace(DIRECTORY_SEPARATOR, '/', $val), '/');
+        }, \glob($this->url, GLOB_MARK | GLOB_ONLYDIR));
     }
 }

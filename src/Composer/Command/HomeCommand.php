@@ -96,12 +96,12 @@ EOT
             $url = $package->getHomepage();
         }
 
-        if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
+        if (!$url || !\filter_var($url, FILTER_VALIDATE_URL)) {
             return false;
         }
 
         if ($showOnly) {
-            $this->getIO()->write(sprintf('<info>%s</info>', $url));
+            $this->getIO()->write(\sprintf('<info>%s</info>', $url));
         } else {
             $this->openBrowser($url);
         }
@@ -147,7 +147,7 @@ EOT
         $composer = $this->getComposer(false);
 
         if ($composer) {
-            return array_merge(
+            return \array_merge(
                 array(new ArrayRepository(array($composer->getPackage()))), // root package
                 array($composer->getRepositoryManager()->getLocalRepository()), // installed packages
                 $composer->getRepositoryManager()->getRepositories() // remotes

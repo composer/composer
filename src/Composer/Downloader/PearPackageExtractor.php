@@ -32,7 +32,7 @@ class PearPackageExtractor
 
     public function __construct($file)
     {
-        if (!is_file($file)) {
+        if (!\is_file($file)) {
             throw new \UnexpectedValueException('PEAR package file is not found at '.$file);
         }
 
@@ -57,7 +57,7 @@ class PearPackageExtractor
             $archive = new \PharData($this->file);
             $archive->extractTo($extractionPath, null, true);
 
-            if (!is_file($this->combine($extractionPath, '/package.xml'))) {
+            if (!\is_file($this->combine($extractionPath, '/package.xml'))) {
                 throw new \RuntimeException('Invalid PEAR package. It must contain package.xml file.');
             }
 
@@ -65,7 +65,7 @@ class PearPackageExtractor
             $this->copyFiles($fileCopyActions, $extractionPath, $target, $roles, $vars);
             $this->filesystem->removeDirectory($extractionPath);
         } catch (\Exception $exception) {
-            throw new \UnexpectedValueException(sprintf('Failed to extract PEAR package %s to %s. Reason: %s', $this->file, $target, $exception->getMessage()), 0, $exception);
+            throw new \UnexpectedValueException(\sprintf('Failed to extract PEAR package %s to %s. Reason: %s', $this->file, $target, $exception->getMessage()), 0, $exception);
         }
     }
 
@@ -91,35 +91,35 @@ class PearPackageExtractor
 
     private function copyFile($from, $to, $tasks, $vars)
     {
-        if (!is_file($from)) {
+        if (!\is_file($from)) {
             throw new \RuntimeException('Invalid PEAR package. package.xml defines file that is not located inside tarball.');
         }
 
-        $this->filesystem->ensureDirectoryExists(dirname($to));
+        $this->filesystem->ensureDirectoryExists(\dirname($to));
 
-        if (0 == count($tasks)) {
-            $copied = copy($from, $to);
+        if (0 == \count($tasks)) {
+            $copied = \copy($from, $to);
         } else {
-            $content = file_get_contents($from);
+            $content = \file_get_contents($from);
             $replacements = array();
             foreach ($tasks as $task) {
                 $pattern = $task['from'];
                 $varName = $task['to'];
                 if (isset($vars[$varName])) {
-                    if ($varName === 'php_bin' && false === strpos($to, '.bat')) {
-                        $replacements[$pattern] = preg_replace('{\.bat$}', '', $vars[$varName]);
+                    if ($varName === 'php_bin' && false === \strpos($to, '.bat')) {
+                        $replacements[$pattern] = \preg_replace('{\.bat$}', '', $vars[$varName]);
                     } else {
                         $replacements[$pattern] = $vars[$varName];
                     }
                 }
             }
-            $content = strtr($content, $replacements);
+            $content = \strtr($content, $replacements);
 
-            $copied = file_put_contents($to, $content);
+            $copied = \file_put_contents($to, $content);
         }
 
         if (false === $copied) {
-            throw new \RuntimeException(sprintf('Failed to copy %s to %s', $from, $to));
+            throw new \RuntimeException(\sprintf('Failed to copy %s to %s', $from, $to));
         }
     }
 
@@ -136,7 +136,7 @@ class PearPackageExtractor
     private function buildCopyActions($source, array $roles, $vars)
     {
         /** @var $package \SimpleXmlElement */
-        $package = simplexml_load_string(file_get_contents($this->combine($source, 'package.xml')));
+        $package = \simplexml_load_string(\file_get_contents($this->combine($source, 'package.xml')));
         if (false === $package) {
             throw new \RuntimeException('Package definition file is not valid.');
         }
@@ -206,14 +206,14 @@ class PearPackageExtractor
                 $dirTarget = $child['baseinstalldir'] ?: $target;
                 $dirRole = $child['role'] ?: $role;
                 $dirFiles = $this->buildSourceList10($child->children(), $targetRoles, $dirSource, $dirTarget, $dirRole, $packageName);
-                $result = array_merge($result, $dirFiles);
+                $result = \array_merge($result, $dirFiles);
             } elseif ($child->getName() == 'file') {
                 $fileRole = (string) $child['role'] ?: $role;
                 if (isset($targetRoles[$fileRole])) {
                     $fileName = (string) ($child['name'] ?: $child[0]); // $child[0] means text content
                     $fileSource = $this->combine($source, $fileName);
                     $fileTarget = $this->combine((string) $child['baseinstalldir'] ?: $target, $fileName);
-                    if (!in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
+                    if (!\in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
                         $fileTarget = $packageName . '/' . $fileTarget;
                     }
                     $result[(string) $child['name']] = array('from' => $fileSource, 'to' => $fileTarget, 'role' => $fileRole, 'tasks' => array());
@@ -236,7 +236,7 @@ class PearPackageExtractor
                 $dirTarget = $child['baseinstalldir'] ?: $target;
                 $dirRole = $child['role'] ?: $role;
                 $dirFiles = $this->buildSourceList20($child->children(), $targetRoles, $dirSource, $dirTarget, $dirRole, $packageName);
-                $result = array_merge($result, $dirFiles);
+                $result = \array_merge($result, $dirFiles);
             } elseif ('file' == $child->getName()) {
                 $fileRole = (string) $child['role'] ?: $role;
                 if (isset($targetRoles[$fileRole])) {
@@ -248,7 +248,7 @@ class PearPackageExtractor
                             $fileTasks[] = array('from' => (string) $taskNode->attributes()->from, 'to' => (string) $taskNode->attributes()->to);
                         }
                     }
-                    if (!in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
+                    if (!\in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
                         $fileTarget = $packageName . '/' . $fileTarget;
                     }
                     $result[(string) $child['name']] = array('from' => $fileSource, 'to' => $fileTarget, 'role' => $fileRole, 'tasks' => $fileTasks);
@@ -261,6 +261,6 @@ class PearPackageExtractor
 
     private function combine($left, $right)
     {
-        return rtrim($left, '/') . '/' . ltrim($right, '/');
+        return \rtrim($left, '/') . '/' . \ltrim($right, '/');
     }
 }

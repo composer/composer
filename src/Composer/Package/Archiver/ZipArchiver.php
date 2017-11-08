@@ -38,8 +38,8 @@ class ZipArchiver implements ArchiverInterface
             $files = new ArchivableFilesFinder($sources, $excludes, $ignoreFilters);
             foreach ($files as $file) {
                 /** @var $file \SplFileInfo */
-                $filepath = strtr($file->getPath()."/".$file->getFilename(), '\\', '/');
-                $localname = str_replace($sources.'/', '', $filepath);
+                $filepath = \strtr($file->getPath()."/".$file->getFilename(), '\\', '/');
+                $localname = \str_replace($sources.'/', '', $filepath);
                 if ($file->isDir()) {
                     $zip->addEmptyDir($localname);
                 } else {
@@ -50,7 +50,7 @@ class ZipArchiver implements ArchiverInterface
                 return $target;
             }
         }
-        $message = sprintf("Could not create archive '%s' from '%s': %s",
+        $message = \sprintf("Could not create archive '%s' from '%s': %s",
             $target,
             $sources,
             $zip->getStatusString()
@@ -68,6 +68,6 @@ class ZipArchiver implements ArchiverInterface
 
     private function compressionAvailable()
     {
-        return class_exists('ZipArchive');
+        return \class_exists('ZipArchive');
     }
 }

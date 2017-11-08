@@ -43,7 +43,7 @@ class Decisions implements \Iterator, \Countable
 
     public function satisfy($literal)
     {
-        $packageId = abs($literal);
+        $packageId = \abs($literal);
 
         return (
             $literal > 0 && isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] > 0 ||
@@ -53,7 +53,7 @@ class Decisions implements \Iterator, \Countable
 
     public function conflict($literal)
     {
-        $packageId = abs($literal);
+        $packageId = \abs($literal);
 
         return (
             (isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] > 0 && $literal < 0) ||
@@ -63,26 +63,26 @@ class Decisions implements \Iterator, \Countable
 
     public function decided($literalOrPackageId)
     {
-        return !empty($this->decisionMap[abs($literalOrPackageId)]);
+        return !empty($this->decisionMap[\abs($literalOrPackageId)]);
     }
 
     public function undecided($literalOrPackageId)
     {
-        return empty($this->decisionMap[abs($literalOrPackageId)]);
+        return empty($this->decisionMap[\abs($literalOrPackageId)]);
     }
 
     public function decidedInstall($literalOrPackageId)
     {
-        $packageId = abs($literalOrPackageId);
+        $packageId = \abs($literalOrPackageId);
 
         return isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] > 0;
     }
 
     public function decisionLevel($literalOrPackageId)
     {
-        $packageId = abs($literalOrPackageId);
+        $packageId = \abs($literalOrPackageId);
         if (isset($this->decisionMap[$packageId])) {
-            return abs($this->decisionMap[$packageId]);
+            return \abs($this->decisionMap[$packageId]);
         }
 
         return 0;
@@ -90,10 +90,10 @@ class Decisions implements \Iterator, \Countable
 
     public function decisionRule($literalOrPackageId)
     {
-        $packageId = abs($literalOrPackageId);
+        $packageId = \abs($literalOrPackageId);
 
         foreach ($this->decisionQueue as $i => $decision) {
-            if ($packageId === abs($decision[self::DECISION_LITERAL])) {
+            if ($packageId === \abs($decision[self::DECISION_LITERAL])) {
                 return $decision[self::DECISION_REASON];
             }
         }
@@ -108,78 +108,78 @@ class Decisions implements \Iterator, \Countable
 
     public function validOffset($queueOffset)
     {
-        return $queueOffset >= 0 && $queueOffset < count($this->decisionQueue);
+        return $queueOffset >= 0 && $queueOffset < \count($this->decisionQueue);
     }
 
     public function lastReason()
     {
-        return $this->decisionQueue[count($this->decisionQueue) - 1][self::DECISION_REASON];
+        return $this->decisionQueue[\count($this->decisionQueue) - 1][self::DECISION_REASON];
     }
 
     public function lastLiteral()
     {
-        return $this->decisionQueue[count($this->decisionQueue) - 1][self::DECISION_LITERAL];
+        return $this->decisionQueue[\count($this->decisionQueue) - 1][self::DECISION_LITERAL];
     }
 
     public function reset()
     {
-        while ($decision = array_pop($this->decisionQueue)) {
-            $this->decisionMap[abs($decision[self::DECISION_LITERAL])] = 0;
+        while ($decision = \array_pop($this->decisionQueue)) {
+            $this->decisionMap[\abs($decision[self::DECISION_LITERAL])] = 0;
         }
     }
 
     public function resetToOffset($offset)
     {
-        while (count($this->decisionQueue) > $offset + 1) {
-            $decision = array_pop($this->decisionQueue);
-            $this->decisionMap[abs($decision[self::DECISION_LITERAL])] = 0;
+        while (\count($this->decisionQueue) > $offset + 1) {
+            $decision = \array_pop($this->decisionQueue);
+            $this->decisionMap[\abs($decision[self::DECISION_LITERAL])] = 0;
         }
     }
 
     public function revertLast()
     {
-        $this->decisionMap[abs($this->lastLiteral())] = 0;
-        array_pop($this->decisionQueue);
+        $this->decisionMap[\abs($this->lastLiteral())] = 0;
+        \array_pop($this->decisionQueue);
     }
 
     public function count()
     {
-        return count($this->decisionQueue);
+        return \count($this->decisionQueue);
     }
 
     public function rewind()
     {
-        end($this->decisionQueue);
+        \end($this->decisionQueue);
     }
 
     public function current()
     {
-        return current($this->decisionQueue);
+        return \current($this->decisionQueue);
     }
 
     public function key()
     {
-        return key($this->decisionQueue);
+        return \key($this->decisionQueue);
     }
 
     public function next()
     {
-        return prev($this->decisionQueue);
+        return \prev($this->decisionQueue);
     }
 
     public function valid()
     {
-        return false !== current($this->decisionQueue);
+        return false !== \current($this->decisionQueue);
     }
 
     public function isEmpty()
     {
-        return count($this->decisionQueue) === 0;
+        return \count($this->decisionQueue) === 0;
     }
 
     protected function addDecision($literal, $level)
     {
-        $packageId = abs($literal);
+        $packageId = \abs($literal);
 
         $previousDecision = isset($this->decisionMap[$packageId]) ? $this->decisionMap[$packageId] : null;
         if ($previousDecision != 0) {

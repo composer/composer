@@ -80,7 +80,7 @@ class Svn
     public static function cleanEnv()
     {
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
-        putenv("DYLD_LIBRARY_PATH");
+        \putenv("DYLD_LIBRARY_PATH");
         unset($_SERVER['DYLD_LIBRARY_PATH']);
     }
 
@@ -109,7 +109,7 @@ class Svn
             if ($type !== 'out') {
                 return;
             }
-            if ('Redirecting to URL ' === substr($buffer, 0, 19)) {
+            if ('Redirecting to URL ' === \substr($buffer, 0, 19)) {
                 return;
             }
             $output .= $buffer;
@@ -123,13 +123,13 @@ class Svn
         }
 
         $errorOutput = $this->process->getErrorOutput();
-        $fullOutput = implode("\n", array($output, $errorOutput));
+        $fullOutput = \implode("\n", array($output, $errorOutput));
 
         // the error is not auth-related
-        if (false === stripos($fullOutput, 'Could not authenticate to server:')
-            && false === stripos($fullOutput, 'authorization failed')
-            && false === stripos($fullOutput, 'svn: E170001:')
-            && false === stripos($fullOutput, 'svn: E215004:')) {
+        if (false === \stripos($fullOutput, 'Could not authenticate to server:')
+            && false === \stripos($fullOutput, 'authorization failed')
+            && false === \stripos($fullOutput, 'svn: E170001:')
+            && false === \stripos($fullOutput, 'svn: E215004:')) {
             throw new \RuntimeException($fullOutput);
         }
 
@@ -193,7 +193,7 @@ class Svn
      */
     protected function getCommand($cmd, $url, $path = null)
     {
-        $cmd = sprintf('%s %s%s %s',
+        $cmd = \sprintf('%s %s%s %s',
             $cmd,
             '--non-interactive ',
             $this->getCredentialString(),
@@ -220,7 +220,7 @@ class Svn
             return '';
         }
 
-        return sprintf(
+        return \sprintf(
             ' %s--username %s --password %s ',
             $this->getAuthCache(),
             ProcessExecutor::escape($this->getUsername()),
@@ -299,7 +299,7 @@ class Svn
 
         $authConfig = $this->config->get('http-basic');
 
-        $host = parse_url($this->url, PHP_URL_HOST);
+        $host = \parse_url($this->url, PHP_URL_HOST);
         if (isset($authConfig[$host])) {
             $this->credentials['username'] = $authConfig[$host]['username'];
             $this->credentials['password'] = $authConfig[$host]['password'];
@@ -317,7 +317,7 @@ class Svn
      */
     private function createAuthFromUrl()
     {
-        $uri = parse_url($this->url);
+        $uri = \parse_url($this->url);
         if (empty($uri['user'])) {
             return $this->hasAuth = false;
         }

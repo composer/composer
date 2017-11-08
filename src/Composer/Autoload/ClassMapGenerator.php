@@ -41,10 +41,10 @@ class ClassMapGenerator
         $maps = array();
 
         foreach ($dirs as $dir) {
-            $maps = array_merge($maps, static::createMap($dir));
+            $maps = \array_merge($maps, static::createMap($dir));
         }
 
-        file_put_contents($file, sprintf('<?php return %s;', var_export($maps, true)));
+        \file_put_contents($file, \sprintf('<?php return %s;', \var_export($maps, true)));
     }
 
     /**
@@ -60,10 +60,10 @@ class ClassMapGenerator
      */
     public static function createMap($path, $blacklist = null, IOInterface $io = null, $namespace = null)
     {
-        if (is_string($path)) {
-            if (is_file($path)) {
+        if (\is_string($path)) {
+            if (\is_file($path)) {
                 $path = array(new \SplFileInfo($path));
-            } elseif (is_dir($path)) {
+            } elseif (\is_dir($path)) {
                 $path = Finder::create()->files()->followLinks()->name('/\.(php|inc|hh)$/')->in($path);
             } else {
                 throw new \RuntimeException(
@@ -75,11 +75,11 @@ class ClassMapGenerator
 
         $map = array();
         $filesystem = new Filesystem();
-        $cwd = realpath(getcwd());
+        $cwd = \realpath(\getcwd());
 
         foreach ($path as $file) {
             $filePath = $file->getPathname();
-            if (!in_array(pathinfo($filePath, PATHINFO_EXTENSION), array('php', 'inc', 'hh'))) {
+            if (!\in_array(\pathinfo($filePath, PATHINFO_EXTENSION), array('php', 'inc', 'hh'))) {
                 continue;
             }
 
@@ -87,11 +87,11 @@ class ClassMapGenerator
                 $filePath = $cwd . '/' . $filePath;
                 $filePath = $filesystem->normalizePath($filePath);
             } else {
-                $filePath = preg_replace('{[\\\\/]{2,}}', '/', $filePath);
+                $filePath = \preg_replace('{[\\\\/]{2,}}', '/', $filePath);
             }
 
             // check the realpath of the file against the blacklist as the path might be a symlink and the blacklist is realpath'd so symlink are resolved
-            if ($blacklist && preg_match($blacklist, strtr(realpath($filePath), '\\', '/'))) {
+            if ($blacklist && \preg_match($blacklist, \strtr(\realpath($filePath), '\\', '/'))) {
                 continue;
             }
 
@@ -99,13 +99,13 @@ class ClassMapGenerator
 
             foreach ($classes as $class) {
                 // skip classes not within the given namespace prefix
-                if (null !== $namespace && 0 !== strpos($class, $namespace)) {
+                if (null !== $namespace && 0 !== \strpos($class, $namespace)) {
                     continue;
                 }
 
                 if (!isset($map[$class])) {
                     $map[$class] = $filePath;
-                } elseif ($io && $map[$class] !== $filePath && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($map[$class].' '.$filePath, '\\', '/'))) {
+                } elseif ($io && $map[$class] !== $filePath && !\preg_match('{/(test|fixture|example|stub)s?/}i', \strtr($map[$class].' '.$filePath, '\\', '/'))) {
                     $io->writeError(
                         '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
                         ' was found in both "'.$map[$class].'" and "'.$filePath.'", the first will be used.</warning>'
@@ -127,56 +127,56 @@ class ClassMapGenerator
     private static function findClasses($path)
     {
         $extraTypes = PHP_VERSION_ID < 50400 ? '' : '|trait';
-        if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>=')) {
+        if (\defined('HHVM_VERSION') && \version_compare(HHVM_VERSION, '3.3', '>=')) {
             $extraTypes .= '|enum';
         }
 
         // Use @ here instead of Silencer to actively suppress 'unhelpful' output
         // @link https://github.com/composer/composer/pull/4886
-        $contents = @php_strip_whitespace($path);
+        $contents = @\php_strip_whitespace($path);
         if (!$contents) {
-            if (!file_exists($path)) {
+            if (!\file_exists($path)) {
                 $message = 'File at "%s" does not exist, check your classmap definitions';
-            } elseif (!is_readable($path)) {
+            } elseif (!\is_readable($path)) {
                 $message = 'File at "%s" is not readable, check its permissions';
-            } elseif ('' === trim(file_get_contents($path))) {
+            } elseif ('' === \trim(\file_get_contents($path))) {
                 // The input file was really empty and thus contains no classes
                 return array();
             } else {
                 $message = 'File at "%s" could not be parsed as PHP, it may be binary or corrupted';
             }
-            $error = error_get_last();
+            $error = \error_get_last();
             if (isset($error['message'])) {
                 $message .= PHP_EOL . 'The following message may be helpful:' . PHP_EOL . $error['message'];
             }
-            throw new \RuntimeException(sprintf($message, $path));
+            throw new \RuntimeException(\sprintf($message, $path));
         }
 
         // return early if there is no chance of matching anything in this file
-        if (!preg_match('{\b(?:class|interface'.$extraTypes.')\s}i', $contents)) {
+        if (!\preg_match('{\b(?:class|interface'.$extraTypes.')\s}i', $contents)) {
             return array();
         }
 
         // strip heredocs/nowdocs
-        $contents = preg_replace('{<<<\s*(\'?)(\w+)\\1(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)\\2(?=\r\n|\n|\r|;)}s', 'null', $contents);
+        $contents = \preg_replace('{<<<\s*(\'?)(\w+)\\1(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)\\2(?=\r\n|\n|\r|;)}s', 'null', $contents);
         // strip strings
-        $contents = preg_replace('{"[^"\\\\]*+(\\\\.[^"\\\\]*+)*+"|\'[^\'\\\\]*+(\\\\.[^\'\\\\]*+)*+\'}s', 'null', $contents);
+        $contents = \preg_replace('{"[^"\\\\]*+(\\\\.[^"\\\\]*+)*+"|\'[^\'\\\\]*+(\\\\.[^\'\\\\]*+)*+\'}s', 'null', $contents);
         // strip leading non-php code if needed
-        if (substr($contents, 0, 2) !== '<?') {
-            $contents = preg_replace('{^.+?<\?}s', '<?', $contents, 1, $replacements);
+        if (\substr($contents, 0, 2) !== '<?') {
+            $contents = \preg_replace('{^.+?<\?}s', '<?', $contents, 1, $replacements);
             if ($replacements === 0) {
                 return array();
             }
         }
         // strip non-php blocks in the file
-        $contents = preg_replace('{\?>.+<\?}s', '?><?', $contents);
+        $contents = \preg_replace('{\?>.+<\?}s', '?><?', $contents);
         // strip trailing non-php code if needed
-        $pos = strrpos($contents, '?>');
-        if (false !== $pos && false === strpos(substr($contents, $pos), '<?')) {
-            $contents = substr($contents, 0, $pos);
+        $pos = \strrpos($contents, '?>');
+        if (false !== $pos && false === \strpos(\substr($contents, $pos), '<?')) {
+            $contents = \substr($contents, 0, $pos);
         }
 
-        preg_match_all('{
+        \preg_match_all('{
             (?:
                  \b(?<![\$:>])(?P<type>class|interface'.$extraTypes.') \s++ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+)
                | \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;]
@@ -186,9 +186,9 @@ class ClassMapGenerator
         $classes = array();
         $namespace = '';
 
-        for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
+        for ($i = 0, $len = \count($matches['type']); $i < $len; $i++) {
             if (!empty($matches['ns'][$i])) {
-                $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
+                $namespace = \str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
             } else {
                 $name = $matches['name'][$i];
                 // skip anon classes extending/implementing
@@ -197,15 +197,15 @@ class ClassMapGenerator
                 }
                 if ($name[0] === ':') {
                     // This is an XHP class, https://github.com/facebook/xhp
-                    $name = 'xhp'.substr(str_replace(array('-', ':'), array('_', '__'), $name), 1);
+                    $name = 'xhp'.\substr(\str_replace(array('-', ':'), array('_', '__'), $name), 1);
                 } elseif ($matches['type'][$i] === 'enum') {
                     // In Hack, something like:
                     //   enum Foo: int { HERP = '123'; }
                     // The regex above captures the colon, which isn't part of
                     // the class name.
-                    $name = rtrim($name, ':');
+                    $name = \rtrim($name, ':');
                 }
-                $classes[] = ltrim($namespace . $name, '\\');
+                $classes[] = \ltrim($namespace . $name, '\\');
             }
         }
 

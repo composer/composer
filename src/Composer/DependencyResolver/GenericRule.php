@@ -33,7 +33,7 @@ class GenericRule extends Rule
         parent::__construct($reason, $reasonData, $job);
 
         // sort all packages ascending by id
-        sort($literals);
+        \sort($literals);
 
         $this->literals = $literals;
     }
@@ -45,7 +45,7 @@ class GenericRule extends Rule
 
     public function getHash()
     {
-        $data = unpack('ihash', md5(implode(',', $this->literals), true));
+        $data = \unpack('ihash', \md5(\implode(',', $this->literals), true));
 
         return $data['hash'];
     }
@@ -65,7 +65,7 @@ class GenericRule extends Rule
 
     public function isAssertion()
     {
-        return 1 === count($this->literals);
+        return 1 === \count($this->literals);
     }
 
     /**

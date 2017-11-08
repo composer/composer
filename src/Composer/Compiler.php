@@ -39,27 +39,27 @@ class Compiler
      */
     public function compile($pharFile = 'composer.phar')
     {
-        if (file_exists($pharFile)) {
-            unlink($pharFile);
+        if (\file_exists($pharFile)) {
+            \unlink($pharFile);
         }
 
         $process = new Process('git log --pretty="%H" -n1 HEAD', __DIR__);
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
-        $this->version = trim($process->getOutput());
+        $this->version = \trim($process->getOutput());
 
         $process = new Process('git log -n1 --pretty=%ci HEAD', __DIR__);
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
 
-        $this->versionDate = new \DateTime(trim($process->getOutput()));
+        $this->versionDate = new \DateTime(\trim($process->getOutput()));
         $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
         $process = new Process('git describe --tags --exact-match HEAD');
         if ($process->run() == 0) {
-            $this->version = trim($process->getOutput());
+            $this->version = \trim($process->getOutput());
         } else {
             // get branch-alias defined in composer.json for dev-master (if any)
             $localConfig = __DIR__.'/../../composer.json';
@@ -76,7 +76,7 @@ class Compiler
         $phar->startBuffering();
 
         $finderSort = function ($a, $b) {
-            return strcmp(strtr($a->getRealPath(), '\\', '/'), strtr($b->getRealPath(), '\\', '/'));
+            return \strcmp(\strtr($a->getRealPath(), '\\', '/'), \strtr($b->getRealPath(), '\\', '/'));
         };
 
         $finder = new Finder();
@@ -137,7 +137,7 @@ class Compiler
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_files.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_real.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_static.php'));
-        if (file_exists(__DIR__.'/../../vendor/composer/include_paths.php')) {
+        if (\file_exists(__DIR__.'/../../vendor/composer/include_paths.php')) {
             $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/include_paths.php'));
         }
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/ClassLoader.php'));
@@ -171,28 +171,28 @@ class Compiler
     private function getRelativeFilePath($file)
     {
         $realPath = $file->getRealPath();
-        $pathPrefix = dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR;
+        $pathPrefix = \dirname(\dirname(__DIR__)).DIRECTORY_SEPARATOR;
 
-        $pos = strpos($realPath, $pathPrefix);
-        $relativePath = ($pos !== false) ? substr_replace($realPath, '', $pos, strlen($pathPrefix)) : $realPath;
+        $pos = \strpos($realPath, $pathPrefix);
+        $relativePath = ($pos !== false) ? \substr_replace($realPath, '', $pos, \strlen($pathPrefix)) : $realPath;
 
-        return strtr($relativePath, '\\', '/');
+        return \strtr($relativePath, '\\', '/');
     }
 
     private function addFile($phar, $file, $strip = true)
     {
         $path = $this->getRelativeFilePath($file);
-        $content = file_get_contents($file);
+        $content = \file_get_contents($file);
         if ($strip) {
             $content = $this->stripWhitespace($content);
-        } elseif ('LICENSE' === basename($file)) {
+        } elseif ('LICENSE' === \basename($file)) {
             $content = "\n".$content."\n";
         }
 
         if ($path === 'src/Composer/Composer.php') {
-            $content = str_replace('@package_version@', $this->version, $content);
-            $content = str_replace('@package_branch_alias_version@', $this->branchAliasVersion, $content);
-            $content = str_replace('@release_date@', $this->versionDate->format('Y-m-d H:i:s'), $content);
+            $content = \str_replace('@package_version@', $this->version, $content);
+            $content = \str_replace('@package_branch_alias_version@', $this->branchAliasVersion, $content);
+            $content = \str_replace('@release_date@', $this->versionDate->format('Y-m-d H:i:s'), $content);
         }
 
         $phar->addFromString($path, $content);
@@ -200,8 +200,8 @@ class Compiler
 
     private function addComposerBin($phar)
     {
-        $content = file_get_contents(__DIR__.'/../../bin/composer');
-        $content = preg_replace('{^#!/usr/bin/env php\s*}', '', $content);
+        $content = \file_get_contents(__DIR__.'/../../bin/composer');
+        $content = \preg_replace('{^#!/usr/bin/env php\s*}', '', $content);
         $phar->addFromString('bin/composer', $content);
     }
 
@@ -213,23 +213,23 @@ class Compiler
      */
     private function stripWhitespace($source)
     {
-        if (!function_exists('token_get_all')) {
+        if (!\function_exists('token_get_all')) {
             return $source;
         }
 
         $output = '';
-        foreach (token_get_all($source) as $token) {
-            if (is_string($token)) {
+        foreach (\token_get_all($source) as $token) {
+            if (\is_string($token)) {
                 $output .= $token;
-            } elseif (in_array($token[0], array(T_COMMENT, T_DOC_COMMENT))) {
-                $output .= str_repeat("\n", substr_count($token[1], "\n"));
+            } elseif (\in_array($token[0], array(T_COMMENT, T_DOC_COMMENT))) {
+                $output .= \str_repeat("\n", \substr_count($token[1], "\n"));
             } elseif (T_WHITESPACE === $token[0]) {
                 // reduce wide spaces
-                $whitespace = preg_replace('{[ \t]+}', ' ', $token[1]);
+                $whitespace = \preg_replace('{[ \t]+}', ' ', $token[1]);
                 // normalize newlines to \n
-                $whitespace = preg_replace('{(?:\r\n|\r|\n)}', "\n", $whitespace);
+                $whitespace = \preg_replace('{(?:\r\n|\r|\n)}', "\n", $whitespace);
                 // trim leading spaces
-                $whitespace = preg_replace('{\n +}', "\n", $whitespace);
+                $whitespace = \preg_replace('{\n +}', "\n", $whitespace);
                 $output .= $whitespace;
             } else {
                 $output .= $token[1];
@@ -269,7 +269,7 @@ Phar::mapPhar('composer.phar');
 EOF;
 
         // add warning once the phar is older than 60 days
-        if (preg_match('{^[a-f0-9]+$}', $this->version)) {
+        if (\preg_match('{^[a-f0-9]+$}', $this->version)) {
             $warningTime = $this->versionDate->format('U') + 60 * 86400;
             $stub .= "define('COMPOSER_DEV_WARNING_TIME', $warningTime);\n";
         }

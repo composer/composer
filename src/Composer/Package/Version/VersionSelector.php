@@ -49,11 +49,11 @@ class VersionSelector
     public function findBestCandidate($packageName, $targetPackageVersion = null, $targetPhpVersion = null, $preferredStability = 'stable')
     {
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
-        $candidates = $this->pool->whatProvides(strtolower($packageName), $constraint, true);
+        $candidates = $this->pool->whatProvides(\strtolower($packageName), $constraint, true);
 
         if ($targetPhpVersion) {
             $phpConstraint = new Constraint('==', $this->getParser()->normalize($targetPhpVersion));
-            $candidates = array_filter($candidates, function ($pkg) use ($phpConstraint) {
+            $candidates = \array_filter($candidates, function ($pkg) use ($phpConstraint) {
                 $reqs = $pkg->getRequires();
 
                 return !isset($reqs['php']) || $reqs['php']->getConstraint()->matches($phpConstraint);
@@ -65,7 +65,7 @@ class VersionSelector
         }
 
         // select highest version if we have many
-        $package = reset($candidates);
+        $package = \reset($candidates);
         $minPriority = BasePackage::$stabilities[$preferredStability];
         foreach ($candidates as $candidate) {
             $candidatePriority = $candidate->getStabilityPriority();
@@ -92,7 +92,7 @@ class VersionSelector
             }
 
             // select highest version of the two
-            if (version_compare($package->getVersion(), $candidate->getVersion(), '<')) {
+            if (\version_compare($package->getVersion(), $candidate->getVersion(), '<')) {
                 $package = $candidate;
             }
         }
@@ -126,9 +126,9 @@ class VersionSelector
         $dumper = new ArrayDumper();
         $extra = $loader->getBranchAlias($dumper->dump($package));
         if ($extra) {
-            $extra = preg_replace('{^(\d+\.\d+\.\d+)(\.9999999)-dev$}', '$1.0', $extra, -1, $count);
+            $extra = \preg_replace('{^(\d+\.\d+\.\d+)(\.9999999)-dev$}', '$1.0', $extra, -1, $count);
             if ($count) {
-                $extra = str_replace('.9999999', '.0', $extra);
+                $extra = \str_replace('.9999999', '.0', $extra);
 
                 return $this->transformVersion($extra, $extra, 'dev');
             }
@@ -141,17 +141,17 @@ class VersionSelector
     {
         // attempt to transform 2.1.1 to 2.1
         // this allows you to upgrade through minor versions
-        $semanticVersionParts = explode('.', $version);
+        $semanticVersionParts = \explode('.', $version);
 
         // check to see if we have a semver-looking version
-        if (count($semanticVersionParts) == 4 && preg_match('{^0\D?}', $semanticVersionParts[3])) {
+        if (\count($semanticVersionParts) == 4 && \preg_match('{^0\D?}', $semanticVersionParts[3])) {
             // remove the last parts (i.e. the patch version number and any extra)
             if ($semanticVersionParts[0] === '0') {
                 unset($semanticVersionParts[3]);
             } else {
                 unset($semanticVersionParts[2], $semanticVersionParts[3]);
             }
-            $version = implode('.', $semanticVersionParts);
+            $version = \implode('.', $semanticVersionParts);
         } else {
             return $prettyVersion;
         }

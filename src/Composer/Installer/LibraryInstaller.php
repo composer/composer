@@ -54,8 +54,8 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $this->type = $type;
 
         $this->filesystem = $filesystem ?: new Filesystem();
-        $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
-        $this->binaryInstaller = $binaryInstaller ?: new BinaryInstaller($this->io, rtrim($composer->getConfig()->get('bin-dir'), '/'), $composer->getConfig()->get('bin-compat'), $this->filesystem);
+        $this->vendorDir = \rtrim($composer->getConfig()->get('vendor-dir'), '/');
+        $this->binaryInstaller = $binaryInstaller ?: new BinaryInstaller($this->io, \rtrim($composer->getConfig()->get('bin-dir'), '/'), $composer->getConfig()->get('bin-compat'), $this->filesystem);
     }
 
     /**
@@ -71,7 +71,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
      */
     public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        return $repo->hasPackage($package) && is_readable($this->getInstallPath($package));
+        return $repo->hasPackage($package) && \is_readable($this->getInstallPath($package));
     }
 
     /**
@@ -83,7 +83,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $downloadPath = $this->getInstallPath($package);
 
         // remove the binaries if it appears the package files are missing
-        if (!is_readable($downloadPath) && $repo->hasPackage($package)) {
+        if (!\is_readable($downloadPath) && $repo->hasPackage($package)) {
             $this->binaryInstaller->removeBinaries($package);
         }
 
@@ -128,9 +128,9 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $repo->removePackage($package);
 
         $downloadPath = $this->getPackageBasePath($package);
-        if (strpos($package->getName(), '/')) {
-            $packageVendorDir = dirname($downloadPath);
-            if (is_dir($packageVendorDir) && $this->filesystem->isDirEmpty($packageVendorDir)) {
+        if (\strpos($package->getName(), '/')) {
+            $packageVendorDir = \dirname($downloadPath);
+            if (\is_dir($packageVendorDir) && $this->filesystem->isDirEmpty($packageVendorDir)) {
                 Silencer::call('rmdir', $packageVendorDir);
             }
         }
@@ -174,7 +174,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $targetDir = $package->getTargetDir();
 
         if ($targetDir) {
-            return preg_replace('{/*'.str_replace('/', '/+', preg_quote($targetDir)).'/?$}', '', $installPath);
+            return \preg_replace('{/*'.\str_replace('/', '/+', \preg_quote($targetDir)).'/?$}', '', $installPath);
         }
 
         return $installPath;
@@ -193,8 +193,8 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         if ($targetDownloadPath !== $initialDownloadPath) {
             // if the target and initial dirs intersect, we force a remove + install
             // to avoid the rename wiping the target dir as part of the initial dir cleanup
-            if (substr($initialDownloadPath, 0, strlen($targetDownloadPath)) === $targetDownloadPath
-                || substr($targetDownloadPath, 0, strlen($initialDownloadPath)) === $initialDownloadPath
+            if (\substr($initialDownloadPath, 0, \strlen($targetDownloadPath)) === $targetDownloadPath
+                || \substr($targetDownloadPath, 0, \strlen($initialDownloadPath)) === $initialDownloadPath
             ) {
                 $this->removeCode($initial);
                 $this->installCode($target);
@@ -216,6 +216,6 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     protected function initializeVendorDir()
     {
         $this->filesystem->ensureDirectoryExists($this->vendorDir);
-        $this->vendorDir = realpath($this->vendorDir);
+        $this->vendorDir = \realpath($this->vendorDir);
     }
 }

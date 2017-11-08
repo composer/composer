@@ -74,36 +74,36 @@ EOT
         $file = Factory::getComposerFile();
         $io = $this->getIO();
 
-        $newlyCreated = !file_exists($file);
-        if ($newlyCreated && !file_put_contents($file, "{\n}\n")) {
+        $newlyCreated = !\file_exists($file);
+        if ($newlyCreated && !\file_put_contents($file, "{\n}\n")) {
             $io->writeError('<error>'.$file.' could not be created.</error>');
 
             return 1;
         }
-        if (!is_readable($file)) {
+        if (!\is_readable($file)) {
             $io->writeError('<error>'.$file.' is not readable.</error>');
 
             return 1;
         }
-        if (!is_writable($file)) {
+        if (!\is_writable($file)) {
             $io->writeError('<error>'.$file.' is not writable.</error>');
 
             return 1;
         }
 
-        if (filesize($file) === 0) {
-            file_put_contents($file, "{\n}\n");
+        if (\filesize($file) === 0) {
+            \file_put_contents($file, "{\n}\n");
         }
 
         $json = new JsonFile($file);
-        $composerBackup = file_get_contents($json->getPath());
+        $composerBackup = \file_get_contents($json->getPath());
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $repos = $composer->getRepositoryManager()->getRepositories();
 
         $platformOverrides = $composer->getConfig()->get('platform') ?: array();
         // initialize $this->repos as it is used by the parent InitCommand
-        $this->repos = new CompositeRepository(array_merge(
+        $this->repos = new CompositeRepository(\array_merge(
             array(new PlatformRepository(array(), $platformOverrides)),
             $repos
         ));
@@ -169,7 +169,7 @@ EOT
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
-            ->setUpdateWhitelist(array_keys($requirements))
+            ->setUpdateWhitelist(\array_keys($requirements))
             ->setWhitelistTransitiveDependencies($input->getOption('update-with-dependencies'))
             ->setWhitelistAllDependencies($input->getOption('update-with-all-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
@@ -186,10 +186,10 @@ EOT
         if ($status !== 0) {
             if ($newlyCreated) {
                 $io->writeError("\n".'<error>Installation failed, deleting '.$file.'.</error>');
-                unlink($json->getPath());
+                \unlink($json->getPath());
             } else {
                 $io->writeError("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
-                file_put_contents($json->getPath(), $composerBackup);
+                \file_put_contents($json->getPath(), $composerBackup);
             }
         }
         if ($exception) {
@@ -201,7 +201,7 @@ EOT
 
     private function updateFileCleanly($json, array $new, $requireKey, $removeKey, $sortPackages)
     {
-        $contents = file_get_contents($json->getPath());
+        $contents = \file_get_contents($json->getPath());
 
         $manipulator = new JsonManipulator($contents);
 
@@ -214,7 +214,7 @@ EOT
             }
         }
 
-        file_put_contents($json->getPath(), $manipulator->getContents());
+        \file_put_contents($json->getPath(), $manipulator->getContents());
 
         return true;
     }

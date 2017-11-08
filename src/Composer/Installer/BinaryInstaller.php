@@ -55,7 +55,7 @@ class BinaryInstaller
         }
         foreach ($binaries as $bin) {
             $binPath = $installPath.'/'.$bin;
-            if (!file_exists($binPath)) {
+            if (!\file_exists($binPath)) {
                 $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': file not found in package</warning>');
                 continue;
             }
@@ -64,16 +64,16 @@ class BinaryInstaller
             // $package, we can now safely turn it into a absolute path (as we
             // already checked the binary's existence). The following helpers
             // will require absolute paths to work properly.
-            $binPath = realpath($binPath);
+            $binPath = \realpath($binPath);
 
             $this->initializeBinDir();
-            $link = $this->binDir.'/'.basename($bin);
-            if (file_exists($link)) {
-                if (is_link($link)) {
+            $link = $this->binDir.'/'.\basename($bin);
+            if (\file_exists($link)) {
+                if (\is_link($link)) {
                     // likely leftover from a previous install, make sure
                     // that the target is still executable in case this
                     // is a fresh install of the vendor.
-                    Silencer::call('chmod', $link, 0777 & ~umask());
+                    Silencer::call('chmod', $link, 0777 & ~\umask());
                 }
                 if ($warnOnOverwrite) {
                     $this->io->writeError('    Skipped installation of bin '.$bin.' for package '.$package->getName().': name conflicts with an existing file');
@@ -90,7 +90,7 @@ class BinaryInstaller
             } elseif ($this->binCompat === "full") {
                 $this->installFullBinaries($binPath, $link, $bin, $package);
             }
-            Silencer::call('chmod', $link, 0777 & ~umask());
+            Silencer::call('chmod', $link, 0777 & ~\umask());
         }
     }
 
@@ -103,32 +103,32 @@ class BinaryInstaller
             return;
         }
         foreach ($binaries as $bin) {
-            $link = $this->binDir.'/'.basename($bin);
-            if (is_link($link) || file_exists($link)) {
+            $link = $this->binDir.'/'.\basename($bin);
+            if (\is_link($link) || \file_exists($link)) {
                 $this->filesystem->unlink($link);
             }
-            if (file_exists($link.'.bat')) {
+            if (\file_exists($link.'.bat')) {
                 $this->filesystem->unlink($link.'.bat');
             }
         }
 
         // attempt removing the bin dir in case it is left empty
-        if ((is_dir($this->binDir)) && ($this->filesystem->isDirEmpty($this->binDir))) {
+        if ((\is_dir($this->binDir)) && ($this->filesystem->isDirEmpty($this->binDir))) {
             Silencer::call('rmdir', $this->binDir);
         }
     }
 
     public static function determineBinaryCaller($bin)
     {
-        if ('.bat' === substr($bin, -4) || '.exe' === substr($bin, -4)) {
+        if ('.bat' === \substr($bin, -4) || '.exe' === \substr($bin, -4)) {
             return 'call';
         }
 
-        $handle = fopen($bin, 'r');
-        $line = fgets($handle);
-        fclose($handle);
-        if (preg_match('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
-            return trim($match[1]);
+        $handle = \fopen($bin, 'r');
+        $line = \fgets($handle);
+        \fclose($handle);
+        if (\preg_match('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
+            return \trim($match[1]);
         }
 
         return 'php';
@@ -142,16 +142,16 @@ class BinaryInstaller
     protected function installFullBinaries($binPath, $link, $bin, PackageInterface $package)
     {
         // add unixy support for cygwin and similar environments
-        if ('.bat' !== substr($binPath, -4)) {
+        if ('.bat' !== \substr($binPath, -4)) {
             $this->installUnixyProxyBinaries($binPath, $link);
-            @chmod($link, 0777 & ~umask());
+            @\chmod($link, 0777 & ~\umask());
             $link .= '.bat';
-            if (file_exists($link)) {
+            if (\file_exists($link)) {
                 $this->io->writeError('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
             }
         }
-        if (!file_exists($link)) {
-            file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+        if (!\file_exists($link)) {
+            \file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
         }
     }
 
@@ -164,13 +164,13 @@ class BinaryInstaller
 
     protected function installUnixyProxyBinaries($binPath, $link)
     {
-        file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
+        \file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
     }
 
     protected function initializeBinDir()
     {
         $this->filesystem->ensureDirectoryExists($this->binDir);
-        $this->binDir = realpath($this->binDir);
+        $this->binDir = \realpath($this->binDir);
     }
 
     protected function generateWindowsProxyCode($bin, $link)
@@ -180,7 +180,7 @@ class BinaryInstaller
 
         return "@ECHO OFF\r\n".
             "setlocal DISABLEDELAYEDEXPANSION\r\n".
-            "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape($binPath), '"\'')."\r\n".
+            "SET BIN_TARGET=%~dp0/".\trim(ProcessExecutor::escape($binPath), '"\'')."\r\n".
             "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 
@@ -188,8 +188,8 @@ class BinaryInstaller
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
 
-        $binDir = ProcessExecutor::escape(dirname($binPath));
-        $binFile = basename($binPath);
+        $binDir = ProcessExecutor::escape(\dirname($binPath));
+        $binFile = \basename($binPath);
 
         $proxyCode = <<<PROXY
 #!/usr/bin/env sh

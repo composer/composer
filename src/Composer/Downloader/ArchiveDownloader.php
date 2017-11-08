@@ -30,7 +30,7 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     public function download(PackageInterface $package, $path, $output = true)
     {
-        $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
+        $temporaryDir = $this->config->get('vendor-dir').'/composer/'.\substr(\md5(\uniqid('', true)), 0, 8);
         $retries = 3;
         while ($retries--) {
             $fileName = parent::download($package, $path, $output);
@@ -52,14 +52,14 @@ abstract class ArchiveDownloader extends FileDownloader
                 $contentDir = $this->getFolderContent($temporaryDir);
 
                 // only one dir in the archive, extract its contents out of it
-                if (1 === count($contentDir) && is_dir(reset($contentDir))) {
-                    $contentDir = $this->getFolderContent((string) reset($contentDir));
+                if (1 === \count($contentDir) && \is_dir(\reset($contentDir))) {
+                    $contentDir = $this->getFolderContent((string) \reset($contentDir));
                 }
 
                 // move files back out of the temp dir
                 foreach ($contentDir as $file) {
                     $file = (string) $file;
-                    $this->filesystem->rename($file, $path . '/' . basename($file));
+                    $this->filesystem->rename($file, $path . '/' . \basename($file));
                 }
 
                 $this->filesystem->removeDirectory($temporaryDir);
@@ -75,14 +75,14 @@ abstract class ArchiveDownloader extends FileDownloader
                 $this->filesystem->removeDirectory($temporaryDir);
 
                 // retry downloading if we have an invalid zip file
-                if ($retries && $e instanceof \UnexpectedValueException && class_exists('ZipArchive') && $e->getCode() === \ZipArchive::ER_NOZIP) {
+                if ($retries && $e instanceof \UnexpectedValueException && \class_exists('ZipArchive') && $e->getCode() === \ZipArchive::ER_NOZIP) {
                     $this->io->writeError('');
                     if ($this->io->isDebug()) {
                         $this->io->writeError('    Invalid zip file ('.$e->getMessage().'), retrying...');
                     } else {
                         $this->io->writeError('    Invalid zip file, retrying...');
                     }
-                    usleep(500000);
+                    \usleep(500000);
                     continue;
                 }
 
@@ -98,7 +98,7 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return rtrim($path.'/'.md5($path.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
+        return \rtrim($path.'/'.\md5($path.\spl_object_hash($package)).'.'.\pathinfo(\parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
     }
 
     /**
@@ -106,19 +106,19 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     protected function processUrl(PackageInterface $package, $url)
     {
-        if ($package->getDistReference() && strpos($url, 'github.com')) {
-            if (preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/(zip|tar)ball/(.+)$}i', $url, $match)) {
+        if ($package->getDistReference() && \strpos($url, 'github.com')) {
+            if (\preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/(zip|tar)ball/(.+)$}i', $url, $match)) {
                 // update legacy github archives to API calls with the proper reference
                 $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
-            } elseif ($package->getDistReference() && preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/archive/.+\.(zip|tar)(?:\.gz)?$}i', $url, $match)) {
+            } elseif ($package->getDistReference() && \preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/archive/.+\.(zip|tar)(?:\.gz)?$}i', $url, $match)) {
                 // update current github web archives to API calls with the proper reference
                 $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
-            } elseif ($package->getDistReference() && preg_match('{^https?://api\.github\.com/repos/([^/]+)/([^/]+)/(zip|tar)ball(?:/.+)?$}i', $url, $match)) {
+            } elseif ($package->getDistReference() && \preg_match('{^https?://api\.github\.com/repos/([^/]+)/([^/]+)/(zip|tar)ball(?:/.+)?$}i', $url, $match)) {
                 // update api archives to the proper reference
                 $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
             }
-        } elseif ($package->getDistReference() && strpos($url, 'bitbucket.org')) {
-            if (preg_match('{^https?://(?:www\.)?bitbucket\.org/([^/]+)/([^/]+)/get/(.+)\.(zip|tar\.gz|tar\.bz2)$}i', $url, $match)) {
+        } elseif ($package->getDistReference() && \strpos($url, 'bitbucket.org')) {
+            if (\preg_match('{^https?://(?:www\.)?bitbucket\.org/([^/]+)/([^/]+)/get/(.+)\.(zip|tar\.gz|tar\.bz2)$}i', $url, $match)) {
                 // update Bitbucket archives to the proper reference
                 $url = 'https://bitbucket.org/' . $match[1] . '/'. $match[2] . '/get/' . $package->getDistReference() . '.' . $match[4];
             }
@@ -151,6 +151,6 @@ abstract class ArchiveDownloader extends FileDownloader
             ->depth(0)
             ->in($dir);
 
-        return iterator_to_array($finder);
+        return \iterator_to_array($finder);
     }
 }

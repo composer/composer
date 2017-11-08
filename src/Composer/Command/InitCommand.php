@@ -60,7 +60,7 @@ class InitCommand extends BaseCommand
                 new InputOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
-                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
+                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.\implode(', ', \array_keys(BasePackage::$stabilities)).')'),
                 new InputOption('license', 'l', InputOption::VALUE_REQUIRED, 'License of package'),
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories, either by URL or using JSON arrays'),
             ))
@@ -83,7 +83,7 @@ EOT
         $io = $this->getIO();
 
         $whitelist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license');
-        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
+        $options = \array_filter(\array_intersect_key($input->getOptions(), \array_flip($whitelist)));
 
         if (isset($options['author'])) {
             $options['authors'] = $this->formatAuthors($options['author']);
@@ -129,11 +129,11 @@ EOT
 
         $file->write($options);
 
-        if ($input->isInteractive() && is_dir('.git')) {
-            $ignoreFile = realpath('.gitignore');
+        if ($input->isInteractive() && \is_dir('.git')) {
+            $ignoreFile = \realpath('.gitignore');
 
             if (false === $ignoreFile) {
-                $ignoreFile = realpath('.') . '/.gitignore';
+                $ignoreFile = \realpath('.') . '/.gitignore';
             }
 
             if (!$this->hasVendorIgnore($ignoreFile)) {
@@ -185,27 +185,27 @@ EOT
             '',
         ));
 
-        $cwd = realpath(".");
+        $cwd = \realpath(".");
 
         if (!$name = $input->getOption('name')) {
-            $name = basename($cwd);
-            $name = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
-            $name = strtolower($name);
+            $name = \basename($cwd);
+            $name = \preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
+            $name = \strtolower($name);
             if (isset($git['github.user'])) {
                 $name = $git['github.user'] . '/' . $name;
             } elseif (!empty($_SERVER['USERNAME'])) {
                 $name = $_SERVER['USERNAME'] . '/' . $name;
             } elseif (!empty($_SERVER['USER'])) {
                 $name = $_SERVER['USER'] . '/' . $name;
-            } elseif (get_current_user()) {
-                $name = get_current_user() . '/' . $name;
+            } elseif (\get_current_user()) {
+                $name = \get_current_user() . '/' . $name;
             } else {
                 // package names must be in the format foo/bar
                 $name = $name . '/' . $name;
             }
-            $name = strtolower($name);
+            $name = \strtolower($name);
         } else {
-            if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}', $name)) {
+            if (!\preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}', $name)) {
                 throw new \InvalidArgumentException(
                     'The package name '.$name.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
                 );
@@ -219,7 +219,7 @@ EOT
                     return $name;
                 }
 
-                if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}', $value)) {
+                if (!\preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}', $value)) {
                     throw new \InvalidArgumentException(
                         'The package name '.$value.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
                     );
@@ -241,7 +241,7 @@ EOT
 
         if (null === $author = $input->getOption('author')) {
             if (isset($git['user.name']) && isset($git['user.email'])) {
-                $author = sprintf('%s <%s>', $git['user.name'], $git['user.email']);
+                $author = \sprintf('%s <%s>', $git['user.name'], $git['user.email']);
             }
         }
 
@@ -255,7 +255,7 @@ EOT
                 $value = $value ?: $author;
                 $author = $self->parseAuthorString($value);
 
-                return sprintf('%s <%s>', $author['name'], $author['email']);
+                return \sprintf('%s <%s>', $author['name'], $author['email']);
             },
             null,
             $author
@@ -273,7 +273,7 @@ EOT
                 if (!isset(BasePackage::$stabilities[$value])) {
                     throw new \InvalidArgumentException(
                         'Invalid minimum stability "'.$value.'". Must be empty or one of: '.
-                        implode(', ', array_keys(BasePackage::$stabilities))
+                        \implode(', ', \array_keys(BasePackage::$stabilities))
                     );
                 }
 
@@ -324,10 +324,10 @@ EOT
      */
     public function parseAuthorString($author)
     {
-        if (preg_match('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+) <(?P<email>.+?)>$/u', $author, $match)) {
+        if (\preg_match('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+) <(?P<email>.+?)>$/u', $author, $match)) {
             if ($this->isValidEmail($match['email'])) {
                 return array(
-                    'name' => trim($match['name']),
+                    'name' => \trim($match['name']),
                     'email' => $match['email'],
                 );
             }
@@ -347,7 +347,7 @@ EOT
     protected function getRepos()
     {
         if (!$this->repos) {
-            $this->repos = new CompositeRepository(array_merge(
+            $this->repos = new CompositeRepository(\array_merge(
                 array(new PlatformRepository),
                 RepositoryFactory::defaultRepos($this->getIO())
             ));
@@ -369,7 +369,7 @@ EOT
                     $version = $this->findBestVersionForPackage($input, $requirement['name'], $phpVersion, $preferredStability);
                     $requirement['version'] = $version;
 
-                    $io->writeError(sprintf(
+                    $io->writeError(\sprintf(
                         'Using version <info>%s</info> for <info>%s</info>',
                         $requirement['version'],
                         $requirement['name']
@@ -387,11 +387,11 @@ EOT
         while (null !== $package = $io->ask('Search for a package: ')) {
             $matches = $this->findPackages($package);
 
-            if (count($matches)) {
+            if (\count($matches)) {
                 $exactMatch = null;
                 $choices = array();
                 foreach ($matches as $position => $foundPackage) {
-                    $choices[] = sprintf(' <info>%5s</info> %s', "[$position]", $foundPackage['name']);
+                    $choices[] = \sprintf(' <info>%5s</info> %s', "[$position]", $foundPackage['name']);
                     if ($foundPackage['name'] === $package) {
                         $exactMatch = true;
                         break;
@@ -402,7 +402,7 @@ EOT
                 if (!$exactMatch) {
                     $io->writeError(array(
                         '',
-                        sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
+                        \sprintf('Found <info>%s</info> packages matching <info>%s</info>', \count($matches), $package),
                         '',
                     ));
 
@@ -414,13 +414,13 @@ EOT
                             return false;
                         }
 
-                        if (is_numeric($selection) && isset($matches[(int) $selection])) {
+                        if (\is_numeric($selection) && isset($matches[(int) $selection])) {
                             $package = $matches[(int) $selection];
 
                             return $package['name'];
                         }
 
-                        if (preg_match('{^\s*(?P<name>[\S/]+)(?:\s+(?P<version>\S+))?\s*$}', $selection, $packageMatches)) {
+                        if (\preg_match('{^\s*(?P<name>[\S/]+)(?:\s+(?P<version>\S+))?\s*$}', $selection, $packageMatches)) {
                             if (isset($packageMatches['version'])) {
                                 // parsing `acme/example ~2.3`
 
@@ -446,9 +446,9 @@ EOT
                 }
 
                 // no constraint yet, determine the best version automatically
-                if (false !== $package && false === strpos($package, ' ')) {
+                if (false !== $package && false === \strpos($package, ' ')) {
                     $validator = function ($input) {
-                        $input = trim($input);
+                        $input = \trim($input);
 
                         return $input ?: false;
                     };
@@ -463,7 +463,7 @@ EOT
                     if (false === $constraint) {
                         $constraint = $this->findBestVersionForPackage($input, $package, $phpVersion, $preferredStability);
 
-                        $io->writeError(sprintf(
+                        $io->writeError(\sprintf(
                             'Using version <info>%s</info> for <info>%s</info>',
                             $constraint,
                             $package
@@ -507,12 +507,12 @@ EOT
         $finder = new ExecutableFinder();
         $gitBin = $finder->find('git');
 
-        $cmd = new Process(sprintf('%s config -l', ProcessExecutor::escape($gitBin)));
+        $cmd = new Process(\sprintf('%s config -l', ProcessExecutor::escape($gitBin)));
         $cmd->run();
 
         if ($cmd->isSuccessful()) {
             $this->gitConfig = array();
-            preg_match_all('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches, PREG_SET_ORDER);
+            \preg_match_all('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches, PREG_SET_ORDER);
             foreach ($matches as $match) {
                 $this->gitConfig[$match[1]] = $match[2];
             }
@@ -541,15 +541,15 @@ EOT
      */
     protected function hasVendorIgnore($ignoreFile, $vendor = 'vendor')
     {
-        if (!file_exists($ignoreFile)) {
+        if (!\file_exists($ignoreFile)) {
             return false;
         }
 
-        $pattern = sprintf('{^/?%s(/\*?)?$}', preg_quote($vendor));
+        $pattern = \sprintf('{^/?%s(/\*?)?$}', \preg_quote($vendor));
 
-        $lines = file($ignoreFile, FILE_IGNORE_NEW_LINES);
+        $lines = \file($ignoreFile, FILE_IGNORE_NEW_LINES);
         foreach ($lines as $line) {
-            if (preg_match($pattern, $line)) {
+            if (\preg_match($pattern, $line)) {
                 return true;
             }
         }
@@ -567,21 +567,21 @@ EOT
     protected function addVendorIgnore($ignoreFile, $vendor = '/vendor/')
     {
         $contents = "";
-        if (file_exists($ignoreFile)) {
-            $contents = file_get_contents($ignoreFile);
+        if (\file_exists($ignoreFile)) {
+            $contents = \file_get_contents($ignoreFile);
 
-            if ("\n" !== substr($contents, 0, -1)) {
+            if ("\n" !== \substr($contents, 0, -1)) {
                 $contents .= "\n";
             }
         }
 
-        file_put_contents($ignoreFile, $contents . $vendor. "\n");
+        \file_put_contents($ignoreFile, $contents . $vendor. "\n");
     }
 
     protected function isValidEmail($email)
     {
         // assume it's valid if we can't validate it
-        if (!function_exists('filter_var')) {
+        if (!\function_exists('filter_var')) {
             return true;
         }
 
@@ -590,7 +590,7 @@ EOT
             return true;
         }
 
-        return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
+        return false !== \filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 
     private function getPool(InputInterface $input)
@@ -610,7 +610,7 @@ EOT
         }
 
         $file = Factory::getComposerFile();
-        if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
+        if (\is_file($file) && \is_readable($file) && \is_array($composer = \json_decode(\file_get_contents($file), true))) {
             if (!empty($composer['minimum-stability'])) {
                 return $composer['minimum-stability'];
             }
@@ -640,21 +640,21 @@ EOT
         if (!$package) {
             // Check whether the PHP version was the problem
             if ($phpVersion && $versionSelector->findBestCandidate($name)) {
-                throw new \InvalidArgumentException(sprintf(
+                throw new \InvalidArgumentException(\sprintf(
                     'Could not find package %s at any version matching your PHP version %s', $name, $phpVersion
                 ));
             }
 
             $similar = $this->findSimilar($name);
             if ($similar) {
-                throw new \InvalidArgumentException(sprintf(
-                    "Could not find package %s.\n\nDid you mean " . (count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
+                throw new \InvalidArgumentException(\sprintf(
+                    "Could not find package %s.\n\nDid you mean " . (\count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
                     $name,
-                    implode("\n    ", $similar)
+                    \implode("\n    ", $similar)
                 ));
             }
 
-            throw new \InvalidArgumentException(sprintf(
+            throw new \InvalidArgumentException(\sprintf(
                 'Could not find package %s at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
                 $name,
                 $this->getMinimumStability($input)
@@ -675,10 +675,10 @@ EOT
         $similarPackages = array();
 
         foreach ($results as $result) {
-            $similarPackages[$result['name']] = levenshtein($package, $result['name']);
+            $similarPackages[$result['name']] = \levenshtein($package, $result['name']);
         }
-        asort($similarPackages);
+        \asort($similarPackages);
 
-        return array_keys(array_slice($similarPackages, 0, 5));
+        return \array_keys(\array_slice($similarPackages, 0, 5));
     }
 }

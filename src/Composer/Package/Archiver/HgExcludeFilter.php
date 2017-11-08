@@ -41,9 +41,9 @@ class HgExcludeFilter extends BaseExcludeFilter
 
         $this->patternMode = self::HG_IGNORE_REGEX;
 
-        if (file_exists($sourcePath.'/.hgignore')) {
+        if (\file_exists($sourcePath.'/.hgignore')) {
             $this->excludePatterns = $this->parseLines(
-                file($sourcePath.'/.hgignore'),
+                \file($sourcePath.'/.hgignore'),
                 array($this, 'parseHgIgnoreLine')
             );
         }
@@ -58,7 +58,7 @@ class HgExcludeFilter extends BaseExcludeFilter
      */
     public function parseHgIgnoreLine($line)
     {
-        if (preg_match('#^syntax\s*:\s*(glob|regexp)$#', $line, $matches)) {
+        if (\preg_match('#^syntax\s*:\s*(glob|regexp)$#', $line, $matches)) {
             if ($matches[1] === 'glob') {
                 $this->patternMode = self::HG_IGNORE_GLOB;
             } else {
@@ -84,8 +84,8 @@ class HgExcludeFilter extends BaseExcludeFilter
      */
     protected function patternFromGlob($line)
     {
-        $pattern = '#'.substr(Finder\Glob::toRegex($line), 2, -1).'#';
-        $pattern = str_replace('[^/]*', '.*', $pattern);
+        $pattern = '#'.\substr(Finder\Glob::toRegex($line), 2, -1).'#';
+        $pattern = \str_replace('[^/]*', '.*', $pattern);
 
         return array($pattern, false, true);
     }
@@ -100,7 +100,7 @@ class HgExcludeFilter extends BaseExcludeFilter
     public function patternFromRegex($line)
     {
         // WTF need to escape the delimiter safely
-        $pattern = '#'.preg_replace('/((?:\\\\\\\\)*)(\\\\?)#/', '\1\2\2\\#', $line).'#';
+        $pattern = '#'.\preg_replace('/((?:\\\\\\\\)*)(\\\\?)#/', '\1\2\2\\#', $line).'#';
 
         return array($pattern, false, true);
     }

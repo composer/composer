@@ -38,8 +38,8 @@ final class TlsHelper
             return false;
         }
 
-        $combinedNames = array_merge($names['san'], array($names['cn']));
-        $hostname = strtolower($hostname);
+        $combinedNames = \array_merge($names['san'], array($names['cn']));
+        $hostname = \strtolower($hostname);
 
         foreach ($combinedNames as $certName) {
             $matcher = self::certNameMatcher($certName);
@@ -63,29 +63,29 @@ final class TlsHelper
      */
     public static function getCertificateNames($certificate)
     {
-        if (is_array($certificate)) {
+        if (\is_array($certificate)) {
             $info = $certificate;
         } elseif (CaBundle::isOpensslParseSafe()) {
-            $info = openssl_x509_parse($certificate, false);
+            $info = \openssl_x509_parse($certificate, false);
         }
 
         if (!isset($info['subject']['commonName'])) {
             return null;
         }
 
-        $commonName = strtolower($info['subject']['commonName']);
+        $commonName = \strtolower($info['subject']['commonName']);
         $subjectAltNames = array();
 
         if (isset($info['extensions']['subjectAltName'])) {
-            $subjectAltNames = preg_split('{\s*,\s*}', $info['extensions']['subjectAltName']);
-            $subjectAltNames = array_filter(array_map(function ($name) {
-                if (0 === strpos($name, 'DNS:')) {
-                    return strtolower(ltrim(substr($name, 4)));
+            $subjectAltNames = \preg_split('{\s*,\s*}', $info['extensions']['subjectAltName']);
+            $subjectAltNames = \array_filter(\array_map(function ($name) {
+                if (0 === \strpos($name, 'DNS:')) {
+                    return \strtolower(\ltrim(\substr($name, 4)));
                 }
 
                 return null;
             }, $subjectAltNames));
-            $subjectAltNames = array_values($subjectAltNames);
+            $subjectAltNames = \array_values($subjectAltNames);
         }
 
         return array(
@@ -135,15 +135,15 @@ final class TlsHelper
      */
     public static function getCertificateFingerprint($certificate)
     {
-        $pubkeydetails = openssl_pkey_get_details(openssl_get_publickey($certificate));
+        $pubkeydetails = \openssl_pkey_get_details(\openssl_get_publickey($certificate));
         $pubkeypem = $pubkeydetails['key'];
         //Convert PEM to DER before SHA1'ing
         $start = '-----BEGIN PUBLIC KEY-----';
         $end = '-----END PUBLIC KEY-----';
-        $pemtrim = substr($pubkeypem, (strpos($pubkeypem, $start) + strlen($start)), (strlen($pubkeypem) - strpos($pubkeypem, $end)) * (-1));
-        $der = base64_decode($pemtrim);
+        $pemtrim = \substr($pubkeypem, (\strpos($pubkeypem, $start) + \strlen($start)), (\strlen($pubkeypem) - \strpos($pubkeypem, $end)) * (-1));
+        $der = \base64_decode($pemtrim);
 
-        return sha1($der);
+        return \sha1($der);
     }
 
     /**
@@ -168,7 +168,7 @@ final class TlsHelper
      */
     private static function certNameMatcher($certName)
     {
-        $wildcards = substr_count($certName, '*');
+        $wildcards = \substr_count($certName, '*');
 
         if (0 === $wildcards) {
             // Literal match.
@@ -178,9 +178,9 @@ final class TlsHelper
         }
 
         if (1 === $wildcards) {
-            $components = explode('.', $certName);
+            $components = \explode('.', $certName);
 
-            if (3 > count($components)) {
+            if (3 > \count($components)) {
                 // Must have 3+ components
                 return;
             }
@@ -188,16 +188,16 @@ final class TlsHelper
             $firstComponent = $components[0];
 
             // Wildcard must be the last character.
-            if ('*' !== $firstComponent[strlen($firstComponent) - 1]) {
+            if ('*' !== $firstComponent[\strlen($firstComponent) - 1]) {
                 return;
             }
 
-            $wildcardRegex = preg_quote($certName);
-            $wildcardRegex = str_replace('\\*', '[a-z0-9-]+', $wildcardRegex);
+            $wildcardRegex = \preg_quote($certName);
+            $wildcardRegex = \str_replace('\\*', '[a-z0-9-]+', $wildcardRegex);
             $wildcardRegex = "{^{$wildcardRegex}$}";
 
             return function ($hostname) use ($wildcardRegex) {
-                return 1 === preg_match($wildcardRegex, $hostname);
+                return 1 === \preg_match($wildcardRegex, $hostname);
             };
         }
     }

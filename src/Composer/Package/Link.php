@@ -57,8 +57,8 @@ class Link
      */
     public function __construct($source, $target, ConstraintInterface $constraint = null, $description = 'relates to', $prettyConstraint = null)
     {
-        $this->source = strtolower($source);
-        $this->target = strtolower($target);
+        $this->source = \strtolower($source);
+        $this->target = \strtolower($target);
         $this->constraint = $constraint;
         $this->description = $description;
         $this->prettyConstraint = $prettyConstraint;
@@ -103,7 +103,7 @@ class Link
     public function getPrettyConstraint()
     {
         if (null === $this->prettyConstraint) {
-            throw new \UnexpectedValueException(sprintf('Link %s has been misconfigured and had no prettyConstraint given.', $this));
+            throw new \UnexpectedValueException(\sprintf('Link %s has been misconfigured and had no prettyConstraint given.', $this));
         }
 
         return $this->prettyConstraint;

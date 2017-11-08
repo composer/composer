@@ -50,7 +50,7 @@ class JsonFile
     {
         $this->path = $path;
 
-        if (null === $rfs && preg_match('{^https?://}i', $path)) {
+        if (null === $rfs && \preg_match('{^https?://}i', $path)) {
             throw new \InvalidArgumentException('http urls require a RemoteFilesystem instance to be passed');
         }
         $this->rfs = $rfs;
@@ -72,7 +72,7 @@ class JsonFile
      */
     public function exists()
     {
-        return is_file($this->path);
+        return \is_file($this->path);
     }
 
     /**
@@ -90,7 +90,7 @@ class JsonFile
                 if ($this->io && $this->io->isDebug()) {
                     $this->io->writeError('Reading ' . $this->path);
                 }
-                $json = file_get_contents($this->path);
+                $json = \file_get_contents($this->path);
             }
         } catch (TransportException $e) {
             throw new \RuntimeException($e->getMessage(), 0, $e);
@@ -110,14 +110,14 @@ class JsonFile
      */
     public function write(array $hash, $options = 448)
     {
-        $dir = dirname($this->path);
-        if (!is_dir($dir)) {
-            if (file_exists($dir)) {
+        $dir = \dirname($this->path);
+        if (!\is_dir($dir)) {
+            if (\file_exists($dir)) {
                 throw new \UnexpectedValueException(
                     $dir.' exists and is not a directory.'
                 );
             }
-            if (!@mkdir($dir, 0777, true)) {
+            if (!@\mkdir($dir, 0777, true)) {
                 throw new \UnexpectedValueException(
                     $dir.' does not exist and could not be created.'
                 );
@@ -127,11 +127,11 @@ class JsonFile
         $retries = 3;
         while ($retries--) {
             try {
-                file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                \file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
                 break;
             } catch (\Exception $e) {
                 if ($retries) {
-                    usleep(500000);
+                    \usleep(500000);
                     continue;
                 }
 
@@ -149,8 +149,8 @@ class JsonFile
      */
     public function validateSchema($schema = self::STRICT_SCHEMA)
     {
-        $content = file_get_contents($this->path);
-        $data = json_decode($content);
+        $content = \file_get_contents($this->path);
+        $data = \json_decode($content);
 
         if (null === $data && 'null' !== $content) {
             self::validateSyntax($content, $this->path);
@@ -159,7 +159,7 @@ class JsonFile
         $schemaFile = __DIR__ . '/../../../res/composer-schema.json';
 
         // Prepend with file:// only when not using a special schema already (e.g. in the phar)
-        if (false === strpos($schemaFile, '://')) {
+        if (false === \strpos($schemaFile, '://')) {
             $schemaFile = 'file://' . $schemaFile;
         }
 
@@ -196,23 +196,23 @@ class JsonFile
     public static function encode($data, $options = 448)
     {
         if (PHP_VERSION_ID >= 50400) {
-            $json = json_encode($data, $options);
+            $json = \json_encode($data, $options);
             if (false === $json) {
-                self::throwEncodeError(json_last_error());
+                self::throwEncodeError(\json_last_error());
             }
 
             //  compact brackets to follow recent php versions
-            if (PHP_VERSION_ID < 50428 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50512) || (defined('JSON_C_VERSION') && version_compare(phpversion('json'), '1.3.6', '<'))) {
-                $json = preg_replace('/\[\s+\]/', '[]', $json);
-                $json = preg_replace('/\{\s+\}/', '{}', $json);
+            if (PHP_VERSION_ID < 50428 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50512) || (\defined('JSON_C_VERSION') && \version_compare(\phpversion('json'), '1.3.6', '<'))) {
+                $json = \preg_replace('/\[\s+\]/', '[]', $json);
+                $json = \preg_replace('/\{\s+\}/', '{}', $json);
             }
 
             return $json;
         }
 
-        $json = json_encode($data);
+        $json = \json_encode($data);
         if (false === $json) {
-            self::throwEncodeError(json_last_error());
+            self::throwEncodeError(\json_last_error());
         }
 
         $prettyPrint = (bool) ($options & self::JSON_PRETTY_PRINT);
@@ -267,8 +267,8 @@ class JsonFile
         if (null === $json) {
             return;
         }
-        $data = json_decode($json, true);
-        if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
+        $data = \json_decode($json, true);
+        if (null === $data && JSON_ERROR_NONE !== \json_last_error()) {
             self::validateSyntax($json, $file);
         }
 
@@ -290,7 +290,7 @@ class JsonFile
         $parser = new JsonParser();
         $result = $parser->lint($json);
         if (null === $result) {
-            if (defined('JSON_ERROR_UTF8') && JSON_ERROR_UTF8 === json_last_error()) {
+            if (\defined('JSON_ERROR_UTF8') && JSON_ERROR_UTF8 === \json_last_error()) {
                 throw new \UnexpectedValueException('"'.$file.'" is not UTF-8, could not parse as JSON');
             }
 

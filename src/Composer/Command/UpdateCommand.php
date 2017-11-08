@@ -106,14 +106,14 @@ EOT
         }
 
         if ($input->getOption('root-reqs')) {
-            $require = array_keys($composer->getPackage()->getRequires());
+            $require = \array_keys($composer->getPackage()->getRequires());
             if (!$input->getOption('no-dev')) {
-                $requireDev = array_keys($composer->getPackage()->getDevRequires());
-                $require = array_merge($require, $requireDev);
+                $requireDev = \array_keys($composer->getPackage()->getDevRequires());
+                $require = \array_merge($require, $requireDev);
             }
 
             if (!empty($packages)) {
-                $packages = array_intersect($packages, $require);
+                $packages = \array_intersect($packages, $require);
             } else {
                 $packages = $require;
             }
@@ -167,14 +167,14 @@ EOT
             throw new \InvalidArgumentException('--interactive cannot be used in non-interactive terminals.');
         }
 
-        $requires = array_merge(
+        $requires = \array_merge(
             $composer->getPackage()->getRequires(),
             $composer->getPackage()->getDevRequires()
         );
         $autocompleterValues = array();
         foreach ($requires as $require) {
             $target = $require->getTarget();
-            $autocompleterValues[strtolower($target)] = $target;
+            $autocompleterValues[\strtolower($target)] = $target;
         }
 
         $installedPackages = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
@@ -188,21 +188,21 @@ EOT
         $io->writeError('<info>Press enter without value to end submission</info>');
 
         do {
-            $autocompleterValues = array_diff($autocompleterValues, $packages);
+            $autocompleterValues = \array_diff($autocompleterValues, $packages);
             $question->setAutocompleterValues($autocompleterValues);
             $addedPackage = $helper->ask($input, $output, $question);
 
-            if (!is_string($addedPackage) || empty($addedPackage)) {
+            if (!\is_string($addedPackage) || empty($addedPackage)) {
                 break;
             }
 
-            $addedPackage = strtolower($addedPackage);
-            if (!in_array($addedPackage, $packages)) {
+            $addedPackage = \strtolower($addedPackage);
+            if (!\in_array($addedPackage, $packages)) {
                 $packages[] = $addedPackage;
             }
         } while (true);
 
-        $packages = array_filter($packages);
+        $packages = \array_filter($packages);
         if (!$packages) {
             throw new \InvalidArgumentException('You must enter minimum one package.');
         }
@@ -214,9 +214,9 @@ EOT
         }
         $table->render();
 
-        if ($io->askConfirmation(sprintf(
+        if ($io->askConfirmation(\sprintf(
             'Would you like to continue and update the above package%s [<comment>yes</comment>]? ',
-            1 === count($packages) ? '' : 's'
+            1 === \count($packages) ? '' : 's'
         ), true)) {
             return $packages;
         }

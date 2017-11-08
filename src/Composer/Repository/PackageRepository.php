@@ -35,7 +35,7 @@ class PackageRepository extends ArrayRepository
         $this->config = $config['package'];
 
         // make sure we have an array of package definitions
-        if (!is_numeric(key($this->config))) {
+        if (!\is_numeric(\key($this->config))) {
             $this->config = array($this->config);
         }
     }
@@ -52,7 +52,7 @@ class PackageRepository extends ArrayRepository
             try {
                 $package = $loader->load($package);
             } catch (\Exception $e) {
-                throw new InvalidRepositoryException('A repository of type "package" contains an invalid package definition: '.$e->getMessage()."\n\nInvalid package definition:\n".json_encode($package));
+                throw new InvalidRepositoryException('A repository of type "package" contains an invalid package definition: '.$e->getMessage()."\n\nInvalid package definition:\n".\json_encode($package));
             }
 
             $this->addPackage($package);

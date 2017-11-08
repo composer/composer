@@ -146,7 +146,7 @@ EOT
 
     public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true)
     {
-        $oldCwd = getcwd();
+        $oldCwd = \getcwd();
 
         // we need to manually load the configuration to pass the auth credentials to the io interface!
         $io->loadConfiguration($config);
@@ -199,13 +199,13 @@ EOT
             )
         ) {
             $finder = new Finder();
-            $finder->depth(0)->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
+            $finder->depth(0)->directories()->in(\getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
             foreach (array('.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg', '.fslckout', '_FOSSIL_') as $vcsName) {
                 $finder->name($vcsName);
             }
 
             try {
-                $dirs = iterator_to_array($finder);
+                $dirs = \iterator_to_array($finder);
                 unset($finder);
                 foreach ($dirs as $dir) {
                     if (!$fs->removeDirectory($dir)) {
@@ -237,12 +237,12 @@ EOT
             $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
         }
 
-        chdir($oldCwd);
+        \chdir($oldCwd);
         $vendorComposerDir = $composer->getConfig()->get('vendor-dir').'/composer';
-        if (is_dir($vendorComposerDir) && $fs->isDirEmpty($vendorComposerDir)) {
+        if (\is_dir($vendorComposerDir) && $fs->isDirEmpty($vendorComposerDir)) {
             Silencer::call('rmdir', $vendorComposerDir);
             $vendorDir = $composer->getConfig()->get('vendor-dir');
-            if (is_dir($vendorDir) && $fs->isDirEmpty($vendorDir)) {
+            if (\is_dir($vendorDir) && $fs->isDirEmpty($vendorDir)) {
                 Silencer::call('rmdir', $vendorDir);
             }
         }
@@ -264,13 +264,13 @@ EOT
 
         $parser = new VersionParser();
         $requirements = $parser->parseNameVersionPairs(array($packageName));
-        $name = strtolower($requirements[0]['name']);
+        $name = \strtolower($requirements[0]['name']);
         if (!$packageVersion && isset($requirements[0]['version'])) {
             $packageVersion = $requirements[0]['version'];
         }
 
         if (null === $stability) {
-            if (preg_match('{^[^,\s]*?@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $packageVersion, $match)) {
+            if (\preg_match('{^[^,\s]*?@('.\implode('|', \array_keys(BasePackage::$stabilities)).')$}i', $packageVersion, $match)) {
                 $stability = $match[1];
             } else {
                 $stability = VersionParser::parseStability($packageVersion);
@@ -280,7 +280,7 @@ EOT
         $stability = VersionParser::normalizeStability($stability);
 
         if (!isset(BasePackage::$stabilities[$stability])) {
-            throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
+            throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.\implode(', ', \array_keys(BasePackage::$stabilities)));
         }
 
         $pool = new Pool($stability);
@@ -311,14 +311,14 @@ EOT
         }
 
         if (null === $directory) {
-            $parts = explode("/", $name, 2);
-            $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
+            $parts = \explode("/", $name, 2);
+            $directory = \getcwd() . DIRECTORY_SEPARATOR . \array_pop($parts);
         }
 
         // handler Ctrl+C for unix-like systems
-        if (function_exists('pcntl_signal')) {
+        if (\function_exists('pcntl_signal')) {
             declare(ticks=100);
-            pcntl_signal(SIGINT, function () use ($directory) {
+            \pcntl_signal(SIGINT, function () use ($directory) {
                 $fs = new Filesystem();
                 $fs->removeDirectory($directory);
                 exit(130);
@@ -335,8 +335,8 @@ EOT
             $package = $package->getAliasOf();
         }
 
-        if (0 === strpos($package->getPrettyVersion(), 'dev-') && in_array($package->getSourceType(), array('git', 'hg'))) {
-            $package->setSourceReference(substr($package->getPrettyVersion(), 4));
+        if (0 === \strpos($package->getPrettyVersion(), 'dev-') && \in_array($package->getSourceType(), array('git', 'hg'))) {
+            $package->setSourceReference(\substr($package->getPrettyVersion(), 4));
         }
 
         $dm = $this->createDownloadManager($io, $config);
@@ -356,10 +356,10 @@ EOT
         $installedFromVcs = 'source' === $package->getInstallationSource();
 
         $io->writeError('<info>Created project in ' . $directory . '</info>');
-        chdir($directory);
+        \chdir($directory);
 
         $_SERVER['COMPOSER_ROOT_VERSION'] = $package->getPrettyVersion();
-        putenv('COMPOSER_ROOT_VERSION='.$_SERVER['COMPOSER_ROOT_VERSION']);
+        \putenv('COMPOSER_ROOT_VERSION='.$_SERVER['COMPOSER_ROOT_VERSION']);
 
         return $installedFromVcs;
     }

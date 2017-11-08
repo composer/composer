@@ -26,7 +26,7 @@ class InvalidPackageException extends \Exception
         $this->errors = $errors;
         $this->warnings = $warnings;
         $this->data = $data;
-        parent::__construct("Invalid package information: \n".implode("\n", array_merge($errors, $warnings)));
+        parent::__construct("Invalid package information: \n".\implode("\n", \array_merge($errors, $warnings)));
     }
 
     public function getData()

@@ -38,7 +38,7 @@ class PearInstaller extends LibraryInstaller
     public function __construct(IOInterface $io, Composer $composer, $type = 'pear-library')
     {
         $filesystem = new Filesystem();
-        $binaryInstaller = new PearBinaryInstaller($io, rtrim($composer->getConfig()->get('bin-dir'), '/'), rtrim($composer->getConfig()->get('vendor-dir'), '/'), $composer->getConfig()->get('bin-compat'), $filesystem, $this);
+        $binaryInstaller = new PearBinaryInstaller($io, \rtrim($composer->getConfig()->get('bin-dir'), '/'), \rtrim($composer->getConfig()->get('vendor-dir'), '/'), $composer->getConfig()->get('bin-compat'), $filesystem, $this);
 
         parent::__construct($io, $composer, $type, $filesystem, $binaryInstaller);
     }
@@ -74,7 +74,7 @@ class PearInstaller extends LibraryInstaller
             'version' => $package->getPrettyVersion(),
         );
 
-        $packageArchive = $this->getInstallPath($package).'/'.pathinfo($package->getDistUrl(), PATHINFO_BASENAME);
+        $packageArchive = $this->getInstallPath($package).'/'.\pathinfo($package->getDistUrl(), PATHINFO_BASENAME);
         $pearExtractor = new PearPackageExtractor($packageArchive);
         $pearExtractor->extractTo($this->getInstallPath($package), array('php' => '/', 'script' => '/bin', 'data' => '/data'), $vars);
 

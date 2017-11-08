@@ -38,7 +38,7 @@ class JsonFormatter
     {
         $result = '';
         $pos = 0;
-        $strLen = strlen($json);
+        $strLen = \strlen($json);
         $indentStr = '    ';
         $newLine = "\n";
         $outOfQuotes = true;
@@ -47,7 +47,7 @@ class JsonFormatter
 
         for ($i = 0; $i < $strLen; $i++) {
             // Grab the next character in the string
-            $char = substr($json, $i, 1);
+            $char = \substr($json, $i, 1);
 
             // Are we inside a quoted string?
             if ('"' === $char && $noescape) {
@@ -60,17 +60,17 @@ class JsonFormatter
                 continue;
             } elseif ('' !== $buffer) {
                 if ($unescapeSlashes) {
-                    $buffer = str_replace('\\/', '/', $buffer);
+                    $buffer = \str_replace('\\/', '/', $buffer);
                 }
 
-                if ($unescapeUnicode && function_exists('mb_convert_encoding')) {
+                if ($unescapeUnicode && \function_exists('mb_convert_encoding')) {
                     // https://stackoverflow.com/questions/2934563/how-to-decode-unicode-escape-sequences-like-u00ed-to-proper-utf-8-encoded-cha
-                    $buffer = preg_replace_callback('/(\\\\+)u([0-9a-f]{4})/i', function ($match) {
-                        $l = strlen($match[1]);
+                    $buffer = \preg_replace_callback('/(\\\\+)u([0-9a-f]{4})/i', function ($match) {
+                        $l = \strlen($match[1]);
 
                         if ($l % 2) {
-                            return str_repeat('\\', $l - 1) . mb_convert_encoding(
-                                pack('H*', $match[2]),
+                            return \str_repeat('\\', $l - 1) . \mb_convert_encoding(
+                                \pack('H*', $match[2]),
                                 'UTF-8',
                                 'UCS-2BE'
                             );
@@ -90,7 +90,7 @@ class JsonFormatter
                 $char .= ' ';
             } elseif (('}' === $char || ']' === $char)) {
                 $pos--;
-                $prevChar = substr($json, $i - 1, 1);
+                $prevChar = \substr($json, $i - 1, 1);
 
                 if ('{' !== $prevChar && '[' !== $prevChar) {
                     // If this character is the end of an element,
@@ -101,7 +101,7 @@ class JsonFormatter
                     }
                 } else {
                     // Collapse empty {} and []
-                    $result = rtrim($result);
+                    $result = \rtrim($result);
                 }
             }
 

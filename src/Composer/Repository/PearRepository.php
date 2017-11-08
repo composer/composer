@@ -50,16 +50,16 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, RemoteFilesystem $rfs = null)
     {
         parent::__construct();
-        if (!preg_match('{^https?://}', $repoConfig['url'])) {
+        if (!\preg_match('{^https?://}', $repoConfig['url'])) {
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
 
-        $urlBits = parse_url($repoConfig['url']);
+        $urlBits = \parse_url($repoConfig['url']);
         if (empty($urlBits['scheme']) || empty($urlBits['host'])) {
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$repoConfig['url']);
         }
 
-        $this->url = rtrim($repoConfig['url'], '/');
+        $this->url = \rtrim($repoConfig['url'], '/');
         $this->io = $io;
         $this->rfs = $rfs ?: Factory::createRemoteFilesystem($this->io, $config);
         $this->vendorAlias = isset($repoConfig['vendor-alias']) ? $repoConfig['vendor-alias'] : null;
@@ -115,8 +115,8 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
                 // distribution url must be read from /r/{packageName}/{version}.xml::/r/g:text()
                 // but this location is 'de-facto' standard
-                $urlBits = parse_url($this->url);
-                $scheme = (isset($urlBits['scheme']) && 'https' === $urlBits['scheme'] && extension_loaded('openssl')) ? 'https' : 'http';
+                $urlBits = \parse_url($this->url);
+                $scheme = (isset($urlBits['scheme']) && 'https' === $urlBits['scheme'] && \extension_loaded('openssl')) ? 'https' : 'http';
                 $distUrl = "{$scheme}://{$packageDefinition->getChannelName()}/get/{$packageDefinition->getPackageName()}-{$version}.tgz";
 
                 $requires = array();

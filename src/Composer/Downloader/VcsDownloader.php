@@ -64,24 +64,24 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         $this->filesystem->emptyDirectory($path);
 
         $urls = $package->getSourceUrls();
-        while ($url = array_shift($urls)) {
+        while ($url = \array_shift($urls)) {
             try {
                 if (Filesystem::isLocalPath($url)) {
                     // realpath() below will not understand
                     // url that starts with "file://"
                     $needle = 'file://';
                     $isFileProtocol = false;
-                    if (0 === strpos($url, $needle)) {
-                        $url = substr($url, strlen($needle));
+                    if (0 === \strpos($url, $needle)) {
+                        $url = \substr($url, \strlen($needle));
                         $isFileProtocol = true;
                     }
 
                     // realpath() below will not understand %20 spaces etc.
-                    if (false !== strpos($url, '%')) {
-                        $url = rawurldecode($url);
+                    if (false !== \strpos($url, '%')) {
+                        $url = \rawurldecode($url);
                     }
 
-                    $url = realpath($url);
+                    $url = \realpath($url);
 
                     if ($isFileProtocol) {
                         $url = $needle . $url;
@@ -95,11 +95,11 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     throw $e;
                 }
                 if ($this->io->isDebug()) {
-                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
-                } elseif (count($urls)) {
+                    $this->io->writeError('Failed: ['.\get_class($e).'] '.$e->getMessage());
+                } elseif (\count($urls)) {
                     $this->io->writeError('    Failed, trying the next URL');
                 }
-                if (!count($urls)) {
+                if (!\count($urls)) {
                     throw $e;
                 }
             }
@@ -121,8 +121,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 $from = $initial->getSourceReference();
                 $to = $target->getSourceReference();
             } else {
-                $from = substr($initial->getSourceReference(), 0, 7);
-                $to = substr($target->getSourceReference(), 0, 7);
+                $from = \substr($initial->getSourceReference(), 0, 7);
+                $to = \substr($target->getSourceReference(), 0, 7);
             }
             $name .= ' '.$initial->getPrettyVersion();
         } else {
@@ -136,10 +136,10 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         $urls = $target->getSourceUrls();
 
         $exception = null;
-        while ($url = array_shift($urls)) {
+        while ($url = \array_shift($urls)) {
             try {
                 if (Filesystem::isLocalPath($url)) {
-                    $url = realpath($url);
+                    $url = \realpath($url);
                 }
                 $this->doUpdate($initial, $target, $path, $url);
 
@@ -151,8 +151,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     throw $exception;
                 }
                 if ($this->io->isDebug()) {
-                    $this->io->writeError('Failed: ['.get_class($exception).'] '.$exception->getMessage());
-                } elseif (count($urls)) {
+                    $this->io->writeError('Failed: ['.\get_class($exception).'] '.$exception->getMessage());
+                } elseif (\count($urls)) {
                     $this->io->writeError('    Failed, trying the next URL');
                 }
             }
@@ -166,18 +166,18 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             $message = 'Pulling in changes:';
             $logs = $this->getCommitLogs($initial->getSourceReference(), $target->getSourceReference(), $path);
 
-            if (!trim($logs)) {
+            if (!\trim($logs)) {
                 $message = 'Rolling back changes:';
                 $logs = $this->getCommitLogs($target->getSourceReference(), $initial->getSourceReference(), $path);
             }
 
-            if (trim($logs)) {
-                $logs = implode("\n", array_map(function ($line) {
+            if (\trim($logs)) {
+                $logs = \implode("\n", \array_map(function ($line) {
                     return '      ' . $line;
-                }, explode("\n", $logs)));
+                }, \explode("\n", $logs)));
 
                 // escape angle brackets for proper output in the console
-                $logs = str_replace('<', '\<', $logs);
+                $logs = \str_replace('<', '\<', $logs);
 
                 $this->io->writeError('    '.$message);
                 $this->io->writeError($logs);

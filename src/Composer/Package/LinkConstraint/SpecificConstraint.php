@@ -14,7 +14,7 @@ namespace Composer\Package\LinkConstraint;
 
 use Composer\Semver\Constraint\AbstractConstraint;
 
-trigger_error('The ' . __NAMESPACE__ . '\SpecificConstraint abstract class is deprecated, there is no replacement for it.', E_USER_DEPRECATED);
+\trigger_error('The ' . __NAMESPACE__ . '\SpecificConstraint abstract class is deprecated, there is no replacement for it.', E_USER_DEPRECATED);
 
 /**
  * @deprecated use Composer\Semver\Constraint\AbstractConstraint instead

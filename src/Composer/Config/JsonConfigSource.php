@@ -67,7 +67,7 @@ class JsonConfigSource implements ConfigSourceInterface
                     if ($index === $repo) {
                         continue;
                     }
-                    if (is_numeric($index) && ($val === array('packagist' => false) || $val === array('packagist.org' => false))) {
+                    if (\is_numeric($index) && ($val === array('packagist' => false) || $val === array('packagist.org' => false))) {
                         unset($config['repositories'][$index]);
                         $config['repositories']['packagist.org'] = false;
                         break;
@@ -96,8 +96,8 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) use ($authConfig) {
-            if (preg_match('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic|platform)\.}', $key)) {
-                list($key, $host) = explode('.', $key, 2);
+            if (\preg_match('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic|platform)\.}', $key)) {
+                list($key, $host) = \explode('.', $key, 2);
                 if ($authConfig) {
                     $config[$key][$host] = $val;
                 } else {
@@ -116,8 +116,8 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) use ($authConfig) {
-            if (preg_match('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic|platform)\.}', $key)) {
-                list($key, $host) = explode('.', $key, 2);
+            if (\preg_match('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic|platform)\.}', $key)) {
+                list($key, $host) = \explode('.', $key, 2);
                 if ($authConfig) {
                     unset($config[$key][$host]);
                 } else {
@@ -135,9 +135,9 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addProperty($name, $value)
     {
         $this->manipulateJson('addProperty', $name, $value, function (&$config, $key, $val) {
-            if (substr($key, 0, 6) === 'extra.') {
-                $bits = explode('.', $key);
-                $last = array_pop($bits);
+            if (\substr($key, 0, 6) === 'extra.') {
+                $bits = \explode('.', $key);
+                $last = \array_pop($bits);
                 $arr = &$config['extra'];
                 foreach ($bits as $bit) {
                     if (!isset($arr[$bit])) {
@@ -159,9 +159,9 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('removeProperty', $name, function (&$config, $key) {
-            if (substr($key, 0, 6) === 'extra.') {
-                $bits = explode('.', $key);
-                $last = array_pop($bits);
+            if (\substr($key, 0, 6) === 'extra.') {
+                $bits = \explode('.', $key);
+                $last = \array_pop($bits);
                 $arr = &$config['extra'];
                 foreach ($bits as $bit) {
                     if (!isset($arr[$bit])) {
@@ -198,21 +198,21 @@ class JsonConfigSource implements ConfigSourceInterface
 
     protected function manipulateJson($method, $args, $fallback)
     {
-        $args = func_get_args();
+        $args = \func_get_args();
         // remove method & fallback
-        array_shift($args);
-        $fallback = array_pop($args);
+        \array_shift($args);
+        $fallback = \array_pop($args);
 
         if ($this->file->exists()) {
-            if (!is_writable($this->file->getPath())) {
-                throw new \RuntimeException(sprintf('The file "%s" is not writable.', $this->file->getPath()));
+            if (!\is_writable($this->file->getPath())) {
+                throw new \RuntimeException(\sprintf('The file "%s" is not writable.', $this->file->getPath()));
             }
 
-            if (!is_readable($this->file->getPath())) {
-                throw new \RuntimeException(sprintf('The file "%s" is not readable.', $this->file->getPath()));
+            if (!\is_readable($this->file->getPath())) {
+                throw new \RuntimeException(\sprintf('The file "%s" is not readable.', $this->file->getPath()));
             }
 
-            $contents = file_get_contents($this->file->getPath());
+            $contents = \file_get_contents($this->file->getPath());
         } elseif ($this->authConfig) {
             $contents = "{\n}\n";
         } else {
@@ -226,22 +226,22 @@ class JsonConfigSource implements ConfigSourceInterface
         // override manipulator method for auth config files
         if ($this->authConfig && $method === 'addConfigSetting') {
             $method = 'addSubNode';
-            list($mainNode, $name) = explode('.', $args[0], 2);
+            list($mainNode, $name) = \explode('.', $args[0], 2);
             $args = array($mainNode, $name, $args[1]);
         } elseif ($this->authConfig && $method === 'removeConfigSetting') {
             $method = 'removeSubNode';
-            list($mainNode, $name) = explode('.', $args[0], 2);
+            list($mainNode, $name) = \explode('.', $args[0], 2);
             $args = array($mainNode, $name);
         }
 
         // try to update cleanly
-        if (call_user_func_array(array($manipulator, $method), $args)) {
-            file_put_contents($this->file->getPath(), $manipulator->getContents());
+        if (\call_user_func_array(array($manipulator, $method), $args)) {
+            \file_put_contents($this->file->getPath(), $manipulator->getContents());
         } else {
             // on failed clean update, call the fallback and rewrite the whole file
             $config = $this->file->read();
             $this->arrayUnshiftRef($args, $config);
-            call_user_func_array($fallback, $args);
+            \call_user_func_array($fallback, $args);
             $this->file->write($config);
         }
 
@@ -259,7 +259,7 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     private function arrayUnshiftRef(&$array, &$value)
     {
-        $return = array_unshift($array, '');
+        $return = \array_unshift($array, '');
         $array[0] = &$value;
 
         return $return;

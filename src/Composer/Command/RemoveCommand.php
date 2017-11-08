@@ -62,13 +62,13 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $packages = $input->getArgument('packages');
-        $packages = array_map('strtolower', $packages);
+        $packages = \array_map('strtolower', $packages);
 
         $file = Factory::getComposerFile();
 
         $jsonFile = new JsonFile($file);
         $composer = $jsonFile->read();
-        $composerBackup = file_get_contents($jsonFile->getPath());
+        $composerBackup = \file_get_contents($jsonFile->getPath());
 
         $json = new JsonConfigSource($jsonFile);
 
@@ -84,7 +84,7 @@ EOT
         foreach (array('require', 'require-dev') as $linkType) {
             if (isset($composer[$linkType])) {
                 foreach ($composer[$linkType] as $name => $version) {
-                    $composer[$linkType][strtolower($name)] = $name;
+                    $composer[$linkType][\strtolower($name)] = $name;
                 }
             }
         }
@@ -144,7 +144,7 @@ EOT
         }
         if ($status !== 0) {
             $io->writeError("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
-            file_put_contents($jsonFile->getPath(), $composerBackup);
+            \file_put_contents($jsonFile->getPath(), $composerBackup);
         }
         if ($exception) {
             throw $exception;

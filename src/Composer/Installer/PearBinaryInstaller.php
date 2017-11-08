@@ -46,7 +46,7 @@ class PearBinaryInstaller extends BinaryInstaller
     {
         $binariesPath = $this->installer->getInstallPath($package) . '/bin/';
         $binaries = array();
-        if (file_exists($binariesPath)) {
+        if (\file_exists($binariesPath)) {
             foreach (new \FilesystemIterator($binariesPath, \FilesystemIterator::KEY_AS_FILENAME | \FilesystemIterator::CURRENT_AS_FILEINFO) as $fileName => $value) {
                 if (!$value->isDir()) {
                     $binaries[] = 'bin/'.$fileName;
@@ -60,23 +60,23 @@ class PearBinaryInstaller extends BinaryInstaller
     protected function initializeBinDir()
     {
         parent::initializeBinDir();
-        file_put_contents($this->binDir.'/composer-php', $this->generateUnixyPhpProxyCode());
-        @chmod($this->binDir.'/composer-php', 0777);
-        file_put_contents($this->binDir.'/composer-php.bat', $this->generateWindowsPhpProxyCode());
-        @chmod($this->binDir.'/composer-php.bat', 0777);
+        \file_put_contents($this->binDir.'/composer-php', $this->generateUnixyPhpProxyCode());
+        @\chmod($this->binDir.'/composer-php', 0777);
+        \file_put_contents($this->binDir.'/composer-php.bat', $this->generateWindowsPhpProxyCode());
+        @\chmod($this->binDir.'/composer-php.bat', 0777);
     }
 
     protected function generateWindowsProxyCode($bin, $link)
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
-        if ('.bat' === substr($bin, -4)) {
+        if ('.bat' === \substr($bin, -4)) {
             $caller = 'call';
         } else {
-            $handle = fopen($bin, 'r');
-            $line = fgets($handle);
-            fclose($handle);
-            if (preg_match('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
-                $caller = trim($match[1]);
+            $handle = \fopen($bin, 'r');
+            $line = \fgets($handle);
+            \fclose($handle);
+            if (\preg_match('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
+                $caller = \trim($match[1]);
             } else {
                 $caller = 'php';
             }
@@ -86,8 +86,8 @@ class PearBinaryInstaller extends BinaryInstaller
                     "pushd .\r\n".
                     "cd %~dp0\r\n".
                     "set PHP_PROXY=%CD%\\composer-php.bat\r\n".
-                    "cd ".ProcessExecutor::escape(dirname($binPath))."\r\n".
-                    "set BIN_TARGET=%CD%\\".basename($binPath)."\r\n".
+                    "cd ".ProcessExecutor::escape(\dirname($binPath))."\r\n".
+                    "set BIN_TARGET=%CD%\\".\basename($binPath)."\r\n".
                     "popd\r\n".
                     "%PHP_PROXY% \"%BIN_TARGET%\" %*\r\n";
             }
@@ -96,8 +96,8 @@ class PearBinaryInstaller extends BinaryInstaller
         return "@echo off\r\n".
             "pushd .\r\n".
             "cd %~dp0\r\n".
-            "cd ".ProcessExecutor::escape(dirname($binPath))."\r\n".
-            "set BIN_TARGET=%CD%\\".basename($binPath)."\r\n".
+            "cd ".ProcessExecutor::escape(\dirname($binPath))."\r\n".
+            "set BIN_TARGET=%CD%\\".\basename($binPath)."\r\n".
             "popd\r\n".
             $caller." \"%BIN_TARGET%\" %*\r\n";
     }
@@ -128,7 +128,7 @@ class PearBinaryInstaller extends BinaryInstaller
             "#!/usr/bin/env sh\n".
             "SRC_DIR=`pwd`\n".
             "BIN_DIR=`dirname $0`\n".
-            "VENDOR_DIR=\$BIN_DIR/".escapeshellarg($binToVendor)."\n".
+            "VENDOR_DIR=\$BIN_DIR/".\escapeshellarg($binToVendor)."\n".
             "DIRS=\"\"\n".
             "for vendor in \$VENDOR_DIR/*; do\n".
             "    if [ -d \"\$vendor\" ]; then\n".

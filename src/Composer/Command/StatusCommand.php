@@ -84,7 +84,7 @@ EOT
             $targetDir = $im->getInstallPath($package);
 
             if ($downloader instanceof ChangeReportInterface) {
-                if (is_link($targetDir)) {
+                if (\is_link($targetDir)) {
                     $errors[$targetDir] = $targetDir . ' is a symbolic link.';
                 }
 
@@ -142,9 +142,9 @@ EOT
 
             foreach ($errors as $path => $changes) {
                 if ($input->getOption('verbose')) {
-                    $indentedChanges = implode("\n", array_map(function ($line) {
-                        return '    ' . ltrim($line);
-                    }, explode("\n", $changes)));
+                    $indentedChanges = \implode("\n", \array_map(function ($line) {
+                        return '    ' . \ltrim($line);
+                    }, \explode("\n", $changes)));
                     $io->write('<info>'.$path.'</info>:');
                     $io->write($indentedChanges);
                 } else {
@@ -158,9 +158,9 @@ EOT
 
             foreach ($unpushedChanges as $path => $changes) {
                 if ($input->getOption('verbose')) {
-                    $indentedChanges = implode("\n", array_map(function ($line) {
-                        return '    ' . ltrim($line);
-                    }, explode("\n", $changes)));
+                    $indentedChanges = \implode("\n", \array_map(function ($line) {
+                        return '    ' . \ltrim($line);
+                    }, \explode("\n", $changes)));
                     $io->write('<info>'.$path.'</info>:');
                     $io->write($indentedChanges);
                 } else {
@@ -180,12 +180,12 @@ EOT
 
                     if ($io->isVeryVerbose()) {
                         // Output the ref regardless of whether or not it's being used as the version
-                        $currentVersion .= sprintf(' (%s)', $changes['current']['ref']);
-                        $previousVersion .= sprintf(' (%s)', $changes['previous']['ref']);
+                        $currentVersion .= \sprintf(' (%s)', $changes['current']['ref']);
+                        $previousVersion .= \sprintf(' (%s)', $changes['previous']['ref']);
                     }
 
                     $io->write('<info>'.$path.'</info>:');
-                    $io->write(sprintf('    From <comment>%s</comment> to <comment>%s</comment>', $previousVersion, $currentVersion));
+                    $io->write(\sprintf('    From <comment>%s</comment> to <comment>%s</comment>', $previousVersion, $currentVersion));
                 } else {
                     $io->write($path);
                 }

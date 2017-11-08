@@ -69,16 +69,16 @@ class ArrayDumper
         }
 
         foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
-            if ($links = $package->{'get'.ucfirst($opts['method'])}()) {
+            if ($links = $package->{'get'.\ucfirst($opts['method'])}()) {
                 foreach ($links as $link) {
                     $data[$type][$link->getTarget()] = $link->getPrettyConstraint();
                 }
-                ksort($data[$type]);
+                \ksort($data[$type]);
             }
         }
 
         if ($packages = $package->getSuggests()) {
-            ksort($packages);
+            \ksort($packages);
             $data['suggest'] = $packages;
         }
 
@@ -102,8 +102,8 @@ class ArrayDumper
 
             $data = $this->dumpValues($package, $keys, $data);
 
-            if (isset($data['keywords']) && is_array($data['keywords'])) {
-                sort($data['keywords']);
+            if (isset($data['keywords']) && \is_array($data['keywords'])) {
+                \sort($data['keywords']);
             }
 
             if ($package->isAbandoned()) {
@@ -118,7 +118,7 @@ class ArrayDumper
             }
         }
 
-        if (count($package->getTransportOptions()) > 0) {
+        if (\count($package->getTransportOptions()) > 0) {
             $data['transport-options'] = $package->getTransportOptions();
         }
 
@@ -128,14 +128,14 @@ class ArrayDumper
     private function dumpValues(PackageInterface $package, array $keys, array $data)
     {
         foreach ($keys as $method => $key) {
-            if (is_numeric($method)) {
+            if (\is_numeric($method)) {
                 $method = $key;
             }
 
-            $getter = 'get'.ucfirst($method);
+            $getter = 'get'.\ucfirst($method);
             $value = $package->$getter();
 
-            if (null !== $value && !(is_array($value) && 0 === count($value))) {
+            if (null !== $value && !(\is_array($value) && 0 === \count($value))) {
                 $data[$key] = $value;
             }
         }

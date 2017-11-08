@@ -61,13 +61,13 @@ class HtmlOutputFormatter extends OutputFormatter
 
         $clearEscapeCodes = '(?:39|49|0|22|24|25|27|28)';
 
-        return preg_replace_callback("{\033\[([0-9;]+)m(.*?)\033\[(?:".$clearEscapeCodes.";)*?".$clearEscapeCodes."m}s", array($this, 'formatHtml'), $formatted);
+        return \preg_replace_callback("{\033\[([0-9;]+)m(.*?)\033\[(?:".$clearEscapeCodes.";)*?".$clearEscapeCodes."m}s", array($this, 'formatHtml'), $formatted);
     }
 
     private function formatHtml($matches)
     {
         $out = '<span style="';
-        foreach (explode(';', $matches[1]) as $code) {
+        foreach (\explode(';', $matches[1]) as $code) {
             if (isset(self::$availableForegroundColors[$code])) {
                 $out .= 'color:'.self::$availableForegroundColors[$code].';';
             } elseif (isset(self::$availableBackgroundColors[$code])) {

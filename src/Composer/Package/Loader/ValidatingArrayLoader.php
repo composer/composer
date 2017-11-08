@@ -84,7 +84,7 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->validateFlatArray('keywords', '[\p{N}\p{L} ._-]+');
 
         if (isset($this->config['license'])) {
-            if (is_string($this->config['license'])) {
+            if (\is_string($this->config['license'])) {
                 $this->validateRegex('license', '[A-Za-z0-9+. ()-]+');
             } else {
                 $this->validateFlatArray('license', '[A-Za-z0-9+. ()-]+');
@@ -103,13 +103,13 @@ class ValidatingArrayLoader implements LoaderInterface
 
         if ($this->validateArray('authors') && !empty($this->config['authors'])) {
             foreach ($this->config['authors'] as $key => $author) {
-                if (!is_array($author)) {
-                    $this->errors[] = 'authors.'.$key.' : should be an array, '.gettype($author).' given';
+                if (!\is_array($author)) {
+                    $this->errors[] = 'authors.'.$key.' : should be an array, '.\gettype($author).' given';
                     unset($this->config['authors'][$key]);
                     continue;
                 }
                 foreach (array('homepage', 'email', 'name', 'role') as $authorData) {
-                    if (isset($author[$authorData]) && !is_string($author[$authorData])) {
+                    if (isset($author[$authorData]) && !\is_string($author[$authorData])) {
                         $this->errors[] = 'authors.'.$key.'.'.$authorData.' : invalid value, must be a string';
                         unset($this->config['authors'][$key][$authorData]);
                     }
@@ -118,7 +118,7 @@ class ValidatingArrayLoader implements LoaderInterface
                     $this->warnings[] = 'authors.'.$key.'.homepage : invalid value ('.$author['homepage'].'), must be an http/https URL';
                     unset($this->config['authors'][$key]['homepage']);
                 }
-                if (isset($author['email']) && !filter_var($author['email'], FILTER_VALIDATE_EMAIL)) {
+                if (isset($author['email']) && !\filter_var($author['email'], FILTER_VALIDATE_EMAIL)) {
                     $this->warnings[] = 'authors.'.$key.'.email : invalid value ('.$author['email'].'), must be a valid email address';
                     unset($this->config['authors'][$key]['email']);
                 }
@@ -133,13 +133,13 @@ class ValidatingArrayLoader implements LoaderInterface
 
         if ($this->validateArray('support') && !empty($this->config['support'])) {
             foreach (array('issues', 'forum', 'wiki', 'source', 'email', 'irc', 'docs', 'rss') as $key) {
-                if (isset($this->config['support'][$key]) && !is_string($this->config['support'][$key])) {
+                if (isset($this->config['support'][$key]) && !\is_string($this->config['support'][$key])) {
                     $this->errors[] = 'support.'.$key.' : invalid value, must be a string';
                     unset($this->config['support'][$key]);
                 }
             }
 
-            if (isset($this->config['support']['email']) && !filter_var($this->config['support']['email'], FILTER_VALIDATE_EMAIL)) {
+            if (isset($this->config['support']['email']) && !\filter_var($this->config['support']['email'], FILTER_VALIDATE_EMAIL)) {
                 $this->warnings[] = 'support.email : invalid value ('.$this->config['support']['email'].'), must be a valid email address';
                 unset($this->config['support']['email']);
             }
@@ -163,13 +163,13 @@ class ValidatingArrayLoader implements LoaderInterface
         $unboundConstraint = new Constraint('=', $this->versionParser->normalize('dev-master'));
         $stableConstraint = new Constraint('=', '1.0.0');
 
-        foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
+        foreach (\array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
             if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
                 foreach ($this->config[$linkType] as $package => $constraint) {
-                    if (!preg_match('{^[A-Za-z0-9_./-]+$}', $package)) {
+                    if (!\preg_match('{^[A-Za-z0-9_./-]+$}', $package)) {
                         $this->warnings[] = $linkType.'.'.$package.' : invalid key, package names must be strings containing only [A-Za-z0-9_./-]';
                     }
-                    if (!is_string($constraint)) {
+                    if (!\is_string($constraint)) {
                         $this->errors[] = $linkType.'.'.$package.' : invalid value, must be a string containing a version constraint';
                         unset($this->config[$linkType][$package]);
                     } elseif ('self.version' !== $constraint) {
@@ -186,14 +186,14 @@ class ValidatingArrayLoader implements LoaderInterface
                             ($this->flags & self::CHECK_UNBOUND_CONSTRAINTS)
                             && 'require' === $linkType
                             && $linkConstraint->matches($unboundConstraint)
-                            && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $package)
+                            && !\preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $package)
                         ) {
                             $this->warnings[] = $linkType.'.'.$package.' : unbound version constraints ('.$constraint.') should be avoided';
                         } elseif (
                             // check requires for exact constraints
                             ($this->flags & self::CHECK_STRICT_CONSTRAINTS)
                             && 'require' === $linkType
-                            && substr($linkConstraint, 0, 1) === '='
+                            && \substr($linkConstraint, 0, 1) === '='
                             && $stableConstraint->versionCompare($stableConstraint, $linkConstraint, '<=')
                         ) {
                             $this->warnings[] = $linkType.'.'.$package.' : exact version constraints ('.$constraint.') should be avoided if the package follows semantic versioning';
@@ -205,7 +205,7 @@ class ValidatingArrayLoader implements LoaderInterface
 
         if ($this->validateArray('suggest') && !empty($this->config['suggest'])) {
             foreach ($this->config['suggest'] as $package => $description) {
-                if (!is_string($description)) {
+                if (!\is_string($description)) {
                     $this->errors[] = 'suggest.'.$package.' : invalid value, must be a string describing why the package is suggested';
                     unset($this->config['suggest'][$package]);
                 }
@@ -214,7 +214,7 @@ class ValidatingArrayLoader implements LoaderInterface
 
         if ($this->validateString('minimum-stability') && !empty($this->config['minimum-stability'])) {
             if (!isset(BasePackage::$stabilities[$this->config['minimum-stability']])) {
-                $this->errors[] = 'minimum-stability : invalid value ('.$this->config['minimum-stability'].'), must be one of '.implode(', ', array_keys(BasePackage::$stabilities));
+                $this->errors[] = 'minimum-stability : invalid value ('.$this->config['minimum-stability'].'), must be one of '.\implode(', ', \array_keys(BasePackage::$stabilities));
                 unset($this->config['minimum-stability']);
             }
         }
@@ -222,13 +222,13 @@ class ValidatingArrayLoader implements LoaderInterface
         if ($this->validateArray('autoload') && !empty($this->config['autoload'])) {
             $types = array('psr-0', 'psr-4', 'classmap', 'files', 'exclude-from-classmap');
             foreach ($this->config['autoload'] as $type => $typeConfig) {
-                if (!in_array($type, $types)) {
-                    $this->errors[] = 'autoload : invalid value ('.$type.'), must be one of '.implode(', ', $types);
+                if (!\in_array($type, $types)) {
+                    $this->errors[] = 'autoload : invalid value ('.$type.'), must be one of '.\implode(', ', $types);
                     unset($this->config['autoload'][$type]);
                 }
                 if ($type === 'psr-4') {
                     foreach ($typeConfig as $namespace => $dirs) {
-                        if ($namespace !== '' && '\\' !== substr($namespace, -1)) {
+                        if ($namespace !== '' && '\\' !== \substr($namespace, -1)) {
                             $this->errors[] = 'autoload.psr-4 : invalid value ('.$namespace.'), namespaces must end with a namespace separator, should be '.$namespace.'\\\\';
                         }
                     }
@@ -254,12 +254,12 @@ class ValidatingArrayLoader implements LoaderInterface
 
         // branch alias validation
         if (isset($this->config['extra']['branch-alias'])) {
-            if (!is_array($this->config['extra']['branch-alias'])) {
+            if (!\is_array($this->config['extra']['branch-alias'])) {
                 $this->errors[] = 'extra.branch-alias : must be an array of versions => aliases';
             } else {
                 foreach ($this->config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
                     // ensure it is an alias to a -dev package
-                    if ('-dev' !== substr($targetBranch, -4)) {
+                    if ('-dev' !== \substr($targetBranch, -4)) {
                         $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must end in -dev';
                         unset($this->config['extra']['branch-alias'][$sourceBranch]);
 
@@ -267,8 +267,8 @@ class ValidatingArrayLoader implements LoaderInterface
                     }
 
                     // normalize without -dev and ensure it's a numeric branch that is parseable
-                    $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
-                    if ('-dev' !== substr($validatedTargetBranch, -4)) {
+                    $validatedTargetBranch = $this->versionParser->normalizeBranch(\substr($targetBranch, 0, -4));
+                    if ('-dev' !== \substr($validatedTargetBranch, -4)) {
                         $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must be a parseable number like 2.0-dev';
                         unset($this->config['extra']['branch-alias'][$sourceBranch]);
 
@@ -278,7 +278,7 @@ class ValidatingArrayLoader implements LoaderInterface
                     // If using numeric aliases ensure the alias is a valid subversion
                     if (($sourcePrefix = $this->versionParser->parseNumericAliasPrefix($sourceBranch))
                         && ($targetPrefix = $this->versionParser->parseNumericAliasPrefix($targetBranch))
-                        && (stripos($targetPrefix, $sourcePrefix) !== 0)
+                        && (\stripos($targetPrefix, $sourcePrefix) !== 0)
                     ) {
                         $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') is not a valid numeric alias for this version';
                         unset($this->config['extra']['branch-alias'][$sourceBranch]);
@@ -313,7 +313,7 @@ class ValidatingArrayLoader implements LoaderInterface
             return false;
         }
 
-        if (!preg_match('{^'.$regex.'$}u', $this->config[$property])) {
+        if (!\preg_match('{^'.$regex.'$}u', $this->config[$property])) {
             $message = $property.' : invalid value ('.$this->config[$property].'), must match '.$regex;
             if ($mandatory) {
                 $this->errors[] = $message;
@@ -330,14 +330,14 @@ class ValidatingArrayLoader implements LoaderInterface
 
     private function validateString($property, $mandatory = false)
     {
-        if (isset($this->config[$property]) && !is_string($this->config[$property])) {
-            $this->errors[] = $property.' : should be a string, '.gettype($this->config[$property]).' given';
+        if (isset($this->config[$property]) && !\is_string($this->config[$property])) {
+            $this->errors[] = $property.' : should be a string, '.\gettype($this->config[$property]).' given';
             unset($this->config[$property]);
 
             return false;
         }
 
-        if (!isset($this->config[$property]) || trim($this->config[$property]) === '') {
+        if (!isset($this->config[$property]) || \trim($this->config[$property]) === '') {
             if ($mandatory) {
                 $this->errors[] = $property.' : must be present';
             }
@@ -351,14 +351,14 @@ class ValidatingArrayLoader implements LoaderInterface
 
     private function validateArray($property, $mandatory = false)
     {
-        if (isset($this->config[$property]) && !is_array($this->config[$property])) {
-            $this->errors[] = $property.' : should be an array, '.gettype($this->config[$property]).' given';
+        if (isset($this->config[$property]) && !\is_array($this->config[$property])) {
+            $this->errors[] = $property.' : should be an array, '.\gettype($this->config[$property]).' given';
             unset($this->config[$property]);
 
             return false;
         }
 
-        if (!isset($this->config[$property]) || !count($this->config[$property])) {
+        if (!isset($this->config[$property]) || !\count($this->config[$property])) {
             if ($mandatory) {
                 $this->errors[] = $property.' : must be present and contain at least one element';
             }
@@ -378,15 +378,15 @@ class ValidatingArrayLoader implements LoaderInterface
 
         $pass = true;
         foreach ($this->config[$property] as $key => $value) {
-            if (!is_string($value) && !is_numeric($value)) {
-                $this->errors[] = $property.'.'.$key.' : must be a string or int, '.gettype($value).' given';
+            if (!\is_string($value) && !\is_numeric($value)) {
+                $this->errors[] = $property.'.'.$key.' : must be a string or int, '.\gettype($value).' given';
                 unset($this->config[$property][$key]);
                 $pass = false;
 
                 continue;
             }
 
-            if ($regex && !preg_match('{^'.$regex.'$}u', $value)) {
+            if ($regex && !\preg_match('{^'.$regex.'$}u', $value)) {
                 $this->warnings[] = $property.'.'.$key.' : invalid value ('.$value.'), must match '.$regex;
                 unset($this->config[$property][$key]);
                 $pass = false;
@@ -418,12 +418,12 @@ class ValidatingArrayLoader implements LoaderInterface
             return true;
         }
 
-        $bits = parse_url($value);
+        $bits = \parse_url($value);
         if (empty($bits['scheme']) || empty($bits['host'])) {
             return false;
         }
 
-        if (!in_array($bits['scheme'], $schemes, true)) {
+        if (!\in_array($bits['scheme'], $schemes, true)) {
             return false;
         }
 

@@ -119,10 +119,10 @@ EOT
         $io->writeError('<info>Creating the archive into "'.$dest.'".</info>');
         $packagePath = $archiveManager->archive($package, $format, $dest, $fileName, $ignoreFilters);
         $fs = new Filesystem;
-        $shortPath = $fs->findShortestPath(getcwd(), $packagePath, true);
+        $shortPath = $fs->findShortestPath(\getcwd(), $packagePath, true);
 
         $io->writeError('Created: ', false);
-        $io->write(strlen($shortPath) < strlen($packagePath) ? $shortPath : $packagePath);
+        $io->write(\strlen($shortPath) < \strlen($packagePath) ? $shortPath : $packagePath);
 
         return 0;
     }
@@ -133,24 +133,24 @@ EOT
 
         if ($composer = $this->getComposer(false)) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-            $repo = new CompositeRepository(array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
+            $repo = new CompositeRepository(\array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
             $defaultRepos = RepositoryFactory::defaultRepos($this->getIO());
-            $io->writeError('No composer.json found in the current directory, searching packages from ' . implode(', ', array_keys($defaultRepos)));
+            $io->writeError('No composer.json found in the current directory, searching packages from ' . \implode(', ', \array_keys($defaultRepos)));
             $repo = new CompositeRepository($defaultRepos);
         }
 
         $packages = $repo->findPackages($packageName, $version);
 
-        if (count($packages) > 1) {
-            $package = reset($packages);
+        if (\count($packages) > 1) {
+            $package = \reset($packages);
             $io->writeError('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
-            $io->writeError('Alternatives were '.implode(', ', array_map(function ($p) {
+            $io->writeError('Alternatives were '.\implode(', ', \array_map(function ($p) {
                 return $p->getPrettyString();
             }, $packages)).'.');
             $io->writeError('<comment>Please use a more specific constraint to pick a different package.</comment>');
         } elseif ($packages) {
-            $package = reset($packages);
+            $package = \reset($packages);
             $io->writeError('<info>Found an exact match '.$package->getPrettyString().'.</info>');
         } else {
             $io->writeError('<error>Could not find a package matching '.$packageName.'.</error>');

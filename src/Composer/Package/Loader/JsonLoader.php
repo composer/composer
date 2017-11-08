@@ -34,9 +34,9 @@ class JsonLoader
     {
         if ($json instanceof JsonFile) {
             $config = $json->read();
-        } elseif (file_exists($json)) {
-            $config = JsonFile::parseJson(file_get_contents($json), $json);
-        } elseif (is_string($json)) {
+        } elseif (\file_exists($json)) {
+            $config = JsonFile::parseJson(\file_get_contents($json), $json);
+        } elseif (\is_string($json)) {
             $config = JsonFile::parseJson($json);
         }
 

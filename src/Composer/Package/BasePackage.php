@@ -66,7 +66,7 @@ abstract class BasePackage implements PackageInterface
     public function __construct($name)
     {
         $this->prettyName = $name;
-        $this->name = strtolower($name);
+        $this->name = \strtolower($name);
         $this->id = -1;
     }
 
@@ -103,7 +103,7 @@ abstract class BasePackage implements PackageInterface
             $names[$link->getTarget()] = true;
         }
 
-        return array_keys($names);
+        return \array_keys($names);
     }
 
     /**
@@ -212,13 +212,13 @@ abstract class BasePackage implements PackageInterface
      */
     public function getFullPrettyVersion($truncate = true)
     {
-        if (!$this->isDev() || !in_array($this->getSourceType(), array('hg', 'git'))) {
+        if (!$this->isDev() || !\in_array($this->getSourceType(), array('hg', 'git'))) {
             return $this->getPrettyVersion();
         }
 
         // if source reference is a sha1 hash -- truncate
-        if ($truncate && strlen($this->getSourceReference()) === 40) {
-            return $this->getPrettyVersion() . ' ' . substr($this->getSourceReference(), 0, 7);
+        if ($truncate && \strlen($this->getSourceReference()) === 40) {
+            return $this->getPrettyVersion() . ' ' . \substr($this->getSourceReference(), 0, 7);
         }
 
         return $this->getPrettyVersion() . ' ' . $this->getSourceReference();

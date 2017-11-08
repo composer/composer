@@ -37,7 +37,7 @@ class ArchivableFilesFilter extends FilterIterator
     public function addEmptyDir(PharData $phar, $sources)
     {
         foreach ($this->dirs as $filepath) {
-            $localname = str_replace($sources . "/", '', $filepath);
+            $localname = \str_replace($sources . "/", '', $filepath);
             $phar->addEmptyDir($localname);
         }
     }

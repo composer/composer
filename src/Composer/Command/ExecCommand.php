@@ -44,8 +44,8 @@ class ExecCommand extends BaseCommand
         $composer = $this->getComposer();
         $binDir = $composer->getConfig()->get('bin-dir');
         if ($input->getOption('list') || !$input->getArgument('binary')) {
-            $bins = glob($binDir . '/*');
-            $bins = array_merge($bins, array_map(function ($e) {
+            $bins = \glob($binDir . '/*');
+            $bins = \array_merge($bins, \array_map(function ($e) {
                 return "$e (local)";
             }, $composer->getPackage()->getBinaries()));
 
@@ -65,7 +65,7 @@ EOT
                 }
 
                 $previousBin = $bin;
-                $bin = basename($bin);
+                $bin = \basename($bin);
                 $this->getIO()->write(<<<EOT
 <info>- $bin</info>
 EOT

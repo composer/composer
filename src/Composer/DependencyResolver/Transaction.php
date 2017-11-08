@@ -54,8 +54,8 @@ class Transaction
             }
 
             if ($literal > 0) {
-                if (isset($installMeansUpdateMap[abs($literal)]) && !$package instanceof AliasPackage) {
-                    $source = $installMeansUpdateMap[abs($literal)];
+                if (isset($installMeansUpdateMap[\abs($literal)]) && !$package instanceof AliasPackage) {
+                    $source = $installMeansUpdateMap[\abs($literal)];
 
                     $updateMap[$package->id] = array(
                         'package' => $package,
@@ -64,7 +64,7 @@ class Transaction
                     );
 
                     // avoid updates to one package from multiple origins
-                    unset($installMeansUpdateMap[abs($literal)]);
+                    unset($installMeansUpdateMap[\abs($literal)]);
                     $ignoreRemove[$source->id] = true;
                 } else {
                     $installMap[$package->id] = array(
@@ -97,7 +97,7 @@ class Transaction
 
     protected function transactionFromMaps($installMap, $updateMap, $uninstallMap)
     {
-        $queue = array_map(
+        $queue = \array_map(
             function ($operation) {
                 return $operation['package'];
             },
@@ -107,7 +107,7 @@ class Transaction
         $visited = array();
 
         while (!empty($queue)) {
-            $package = array_pop($queue);
+            $package = \array_pop($queue);
             $packageId = $package->id;
 
             if (!isset($visited[$packageId])) {
@@ -200,7 +200,7 @@ class Transaction
 
                 foreach ($literals as $updateLiteral) {
                     if ($updateLiteral !== $literal) {
-                        $installMeansUpdateMap[abs($updateLiteral)] = $package;
+                        $installMeansUpdateMap[\abs($updateLiteral)] = $package;
                     }
                 }
             }

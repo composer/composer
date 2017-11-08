@@ -53,27 +53,27 @@ class Factory
      */
     protected static function getHomeDir()
     {
-        $home = getenv('COMPOSER_HOME');
+        $home = \getenv('COMPOSER_HOME');
         if ($home) {
             return $home;
         }
 
         if (Platform::isWindows()) {
-            if (!getenv('APPDATA')) {
+            if (!\getenv('APPDATA')) {
                 throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
             }
 
-            return rtrim(strtr(getenv('APPDATA'), '\\', '/'), '/') . '/Composer';
+            return \rtrim(\strtr(\getenv('APPDATA'), '\\', '/'), '/') . '/Composer';
         }
 
         $userDir = self::getUserDir();
-        if (is_dir($userDir . '/.composer')) {
+        if (\is_dir($userDir . '/.composer')) {
             return $userDir . '/.composer';
         }
 
         if (self::useXdg()) {
             // XDG Base Directory Specifications
-            $xdgConfig = getenv('XDG_CONFIG_HOME') ?: $userDir . '/.config';
+            $xdgConfig = \getenv('XDG_CONFIG_HOME') ?: $userDir . '/.config';
 
             return $xdgConfig . '/composer';
         }
@@ -87,33 +87,33 @@ class Factory
      */
     protected static function getCacheDir($home)
     {
-        $cacheDir = getenv('COMPOSER_CACHE_DIR');
+        $cacheDir = \getenv('COMPOSER_CACHE_DIR');
         if ($cacheDir) {
             return $cacheDir;
         }
 
-        $homeEnv = getenv('COMPOSER_HOME');
+        $homeEnv = \getenv('COMPOSER_HOME');
         if ($homeEnv) {
             return $homeEnv . '/cache';
         }
 
         if (Platform::isWindows()) {
-            if ($cacheDir = getenv('LOCALAPPDATA')) {
+            if ($cacheDir = \getenv('LOCALAPPDATA')) {
                 $cacheDir .= '/Composer';
             } else {
                 $cacheDir = $home . '/cache';
             }
 
-            return rtrim(strtr($cacheDir, '\\', '/'), '/');
+            return \rtrim(\strtr($cacheDir, '\\', '/'), '/');
         }
 
         $userDir = self::getUserDir();
-        if ($home === $userDir . '/.composer' && is_dir($home . '/cache')) {
+        if ($home === $userDir . '/.composer' && \is_dir($home . '/cache')) {
             return $home . '/cache';
         }
 
         if (self::useXdg()) {
-            $xdgCache = getenv('XDG_CACHE_HOME') ?: $userDir . '/.cache';
+            $xdgCache = \getenv('XDG_CACHE_HOME') ?: $userDir . '/.cache';
 
             return $xdgCache . '/composer';
         }
@@ -127,18 +127,18 @@ class Factory
      */
     protected static function getDataDir($home)
     {
-        $homeEnv = getenv('COMPOSER_HOME');
+        $homeEnv = \getenv('COMPOSER_HOME');
         if ($homeEnv) {
             return $homeEnv;
         }
 
         if (Platform::isWindows()) {
-            return strtr($home, '\\', '/');
+            return \strtr($home, '\\', '/');
         }
 
         $userDir = self::getUserDir();
         if ($home !== $userDir . '/.composer' && self::useXdg()) {
-            $xdgData = getenv('XDG_DATA_HOME') ?: $userDir . '/.local/share';
+            $xdgData = \getenv('XDG_DATA_HOME') ?: $userDir . '/.local/share';
 
             return $xdgData . '/composer';
         }
@@ -152,7 +152,7 @@ class Factory
      */
     public static function createConfig(IOInterface $io = null, $cwd = null)
     {
-        $cwd = $cwd ?: getcwd();
+        $cwd = $cwd ?: \getcwd();
 
         $config = new Config(true, $cwd);
 
@@ -171,8 +171,8 @@ class Factory
             // potential security risk
             $dirs = array($config->get('home'), $config->get('cache-dir'), $config->get('data-dir'));
             foreach ($dirs as $dir) {
-                if (!file_exists($dir . '/.htaccess')) {
-                    if (!is_dir($dir)) {
+                if (!\file_exists($dir . '/.htaccess')) {
+                    if (!\is_dir($dir)) {
                         Silencer::call('mkdir', $dir, 0777, true);
                     }
                     Silencer::call('file_put_contents', $dir . '/.htaccess', 'Deny from all');
@@ -201,8 +201,8 @@ class Factory
         $config->setAuthConfigSource(new JsonConfigSource($file, true));
 
         // load COMPOSER_AUTH environment variable if set
-        if ($composerAuthEnv = getenv('COMPOSER_AUTH')) {
-            $authData = json_decode($composerAuthEnv, true);
+        if ($composerAuthEnv = \getenv('COMPOSER_AUTH')) {
+            $authData = \json_decode($composerAuthEnv, true);
 
             if (null === $authData) {
                 throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed, should be a valid JSON object');
@@ -219,7 +219,7 @@ class Factory
 
     public static function getComposerFile()
     {
-        return trim(getenv('COMPOSER')) ?: './composer.json';
+        return \trim(\getenv('COMPOSER')) ?: './composer.json';
     }
 
     public static function createAdditionalStyles()
@@ -265,14 +265,14 @@ class Factory
      */
     public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true)
     {
-        $cwd = $cwd ?: getcwd();
+        $cwd = $cwd ?: \getcwd();
 
         // load Composer configuration
         if (null === $localConfig) {
             $localConfig = static::getComposerFile();
         }
 
-        if (is_string($localConfig)) {
+        if (\is_string($localConfig)) {
             $composerFile = $localConfig;
 
             $file = new JsonFile($localConfig, null, $io);
@@ -290,7 +290,7 @@ class Factory
             $file->validateSchema(JsonFile::LAX_SCHEMA);
             $jsonParser = new JsonParser;
             try {
-                $jsonParser->parse(file_get_contents($localConfig), JsonParser::DETECT_KEY_CONFLICTS);
+                $jsonParser->parse(\file_get_contents($localConfig), JsonParser::DETECT_KEY_CONFLICTS);
             } catch (DuplicateKeyException $e) {
                 $details = $e->getDetails();
                 $io->writeError('<warning>Key '.$details['key'].' is a duplicate in '.$localConfig.' at line '.$details['line'].'</warning>');
@@ -304,9 +304,9 @@ class Factory
         $config->merge($localConfig);
         if (isset($composerFile)) {
             $io->writeError('Loading config file ' . $composerFile, true, IOInterface::DEBUG);
-            $config->setConfigSource(new JsonConfigSource(new JsonFile(realpath($composerFile), null, $io)));
+            $config->setConfigSource(new JsonConfigSource(new JsonFile(\realpath($composerFile), null, $io)));
 
-            $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json', null, $io);
+            $localAuthFile = new JsonFile(\dirname(\realpath($composerFile)) . '/auth.json', null, $io);
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 $config->merge(array('config' => $localAuthFile->read()));
@@ -374,7 +374,7 @@ class Factory
 
         if ($fullLoad) {
             $globalComposer = null;
-            if (realpath($config->get('home')) !== $cwd) {
+            if (\realpath($config->get('home')) !== $cwd) {
                 $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
             }
 
@@ -386,11 +386,11 @@ class Factory
 
         // init locker if possible
         if ($fullLoad && isset($composerFile)) {
-            $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
-                ? substr($composerFile, 0, -4).'lock'
+            $lockFile = "json" === \pathinfo($composerFile, PATHINFO_EXTENSION)
+                ? \substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
 
-            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($composerFile));
+            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, \file_get_contents($composerFile));
             $composer->setLocker($locker);
         }
 
@@ -472,7 +472,7 @@ class Factory
                 break;
         }
 
-        if (is_array($preferred)) {
+        if (\is_array($preferred)) {
             $dm->setPreferences($preferred);
         }
 
@@ -592,7 +592,7 @@ class Factory
             }
             $warned = true;
             $disableTls = true;
-        } elseif (!extension_loaded('openssl')) {
+        } elseif (!\extension_loaded('openssl')) {
             throw new Exception\NoSslException('The openssl extension is required for SSL/TLS protection but is not available. '
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
         }
@@ -604,12 +604,12 @@ class Factory
             if ($config && $config->get('capath')) {
                 $remoteFilesystemOptions['ssl']['capath'] = $config->get('capath');
             }
-            $remoteFilesystemOptions = array_replace_recursive($remoteFilesystemOptions, $options);
+            $remoteFilesystemOptions = \array_replace_recursive($remoteFilesystemOptions, $options);
         }
         try {
             $remoteFilesystem = new RemoteFilesystem($io, $config, $remoteFilesystemOptions, $disableTls);
         } catch (TransportException $e) {
-            if (false !== strpos($e->getMessage(), 'cafile')) {
+            if (false !== \strpos($e->getMessage(), 'cafile')) {
                 $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
                 $io->write('<error>A valid CA certificate file is required for SSL/TLS protection.</error>');
                 if (PHP_VERSION_ID < 50600) {
@@ -628,8 +628,8 @@ class Factory
      */
     private static function useXdg()
     {
-        foreach (array_keys($_SERVER) as $key) {
-            if (substr($key, 0, 4) === 'XDG_') {
+        foreach (\array_keys($_SERVER) as $key) {
+            if (\substr($key, 0, 4) === 'XDG_') {
                 return true;
             }
         }
@@ -643,11 +643,11 @@ class Factory
      */
     private static function getUserDir()
     {
-        $home = getenv('HOME');
+        $home = \getenv('HOME');
         if (!$home) {
             throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
         }
 
-        return rtrim(strtr($home, '\\', '/'), '/');
+        return \rtrim(\strtr($home, '\\', '/'), '/');
     }
 }

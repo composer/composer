@@ -93,17 +93,17 @@ EOT
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('data-dir');
         $home = $config->get('home');
-        $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
+        $localFilename = \realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
 
         if ($input->getOption('update-keys')) {
             return $this->fetchKeys($io, $config);
         }
 
         // check if current dir is writable and if not try the cache dir from settings
-        $tmpDir = is_writable(dirname($localFilename)) ? dirname($localFilename) : $cacheDir;
+        $tmpDir = \is_writable(\dirname($localFilename)) ? \dirname($localFilename) : $cacheDir;
 
         // check for permissions in local filesystem before start connection process
-        if (!is_writable($tmpDir)) {
+        if (!\is_writable($tmpDir)) {
             throw new FilesystemException('Composer update failed: the "'.$tmpDir.'" directory used to download the temp file could not be written');
         }
 
@@ -115,14 +115,14 @@ EOT
         $latestVersion = $latest['version'];
         $updateVersion = $input->getArgument('version') ?: $latestVersion;
 
-        if (preg_match('{^[0-9a-f]{40}$}', $updateVersion) && $updateVersion !== $latestVersion) {
+        if (\preg_match('{^[0-9a-f]{40}$}', $updateVersion) && $updateVersion !== $latestVersion) {
             $io->writeError('<error>You can not update to a specific SHA-1 as those phars are not available for download</error>');
 
             return 1;
         }
 
         if (Composer::VERSION === $updateVersion) {
-            $io->writeError(sprintf('<info>You are already using composer version %s (%s channel).</info>', $updateVersion, $versionsUtil->getChannel()));
+            $io->writeError(\sprintf('<info>You are already using composer version %s (%s channel).</info>', $updateVersion, $versionsUtil->getChannel()));
 
             // remove all backups except for the most recent, if any
             if ($input->getOption('clean-backups')) {
@@ -132,42 +132,42 @@ EOT
             return 0;
         }
 
-        $tempFilename = $tmpDir . '/' . basename($localFilename, '.phar').'-temp.phar';
-        $backupFile = sprintf(
+        $tempFilename = $tmpDir . '/' . \basename($localFilename, '.phar').'-temp.phar';
+        $backupFile = \sprintf(
             '%s/%s-%s%s',
             $rollbackDir,
-            strtr(Composer::RELEASE_DATE, ' :', '_-'),
-            preg_replace('{^([0-9a-f]{7})[0-9a-f]{33}$}', '$1', Composer::VERSION),
+            \strtr(Composer::RELEASE_DATE, ' :', '_-'),
+            \preg_replace('{^([0-9a-f]{7})[0-9a-f]{33}$}', '$1', Composer::VERSION),
             self::OLD_INSTALL_EXT
         );
 
-        $updatingToTag = !preg_match('{^[0-9a-f]{40}$}', $updateVersion);
+        $updatingToTag = !\preg_match('{^[0-9a-f]{40}$}', $updateVersion);
 
-        $io->write(sprintf("Updating to version <info>%s</info> (%s channel).", $updateVersion, $versionsUtil->getChannel()));
+        $io->write(\sprintf("Updating to version <info>%s</info> (%s channel).", $updateVersion, $versionsUtil->getChannel()));
         $remoteFilename = $baseUrl . ($updatingToTag ? "/download/{$updateVersion}/composer.phar" : '/composer.phar');
         $signature = $remoteFilesystem->getContents(self::HOMEPAGE, $remoteFilename.'.sig', false);
         $io->writeError('   ', false);
         $remoteFilesystem->copy(self::HOMEPAGE, $remoteFilename, $tempFilename, !$input->getOption('no-progress'));
         $io->writeError('');
 
-        if (!file_exists($tempFilename) || !$signature) {
+        if (!\file_exists($tempFilename) || !$signature) {
             $io->writeError('<error>The download of the new composer version failed for an unexpected reason</error>');
 
             return 1;
         }
 
         // verify phar signature
-        if (!extension_loaded('openssl') && $config->get('disable-tls')) {
+        if (!\extension_loaded('openssl') && $config->get('disable-tls')) {
             $io->writeError('<warning>Skipping phar signature verification as you have disabled OpenSSL via config.disable-tls</warning>');
         } else {
-            if (!extension_loaded('openssl')) {
+            if (!\extension_loaded('openssl')) {
                 throw new \RuntimeException('The openssl extension is required for phar signatures to be verified but it is not available. '
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
             }
 
             $sigFile = 'file://'.$home.'/' . ($updatingToTag ? 'keys.tags.pub' : 'keys.dev.pub');
-            if (!file_exists($sigFile)) {
-                file_put_contents($home.'/keys.dev.pub', <<<DEVPUBKEY
+            if (!\file_exists($sigFile)) {
+                \file_put_contents($home.'/keys.dev.pub', <<<DEVPUBKEY
 -----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAnBDHjZS6e0ZMoK3xTD7f
 FNCzlXjX/Aie2dit8QXA03pSrOTbaMnxON3hUL47Lz3g1SC6YJEMVHr0zYq4elWi
@@ -184,7 +184,7 @@ wSEuAuRm+pRqi8BRnQ/GKUcCAwEAAQ==
 -----END PUBLIC KEY-----
 DEVPUBKEY
 );
-                file_put_contents($home.'/keys.tags.pub', <<<TAGSPUBKEY
+                \file_put_contents($home.'/keys.tags.pub', <<<TAGSPUBKEY
 -----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0Vi/2K6apCVj76nCnCl2
 MQUPdK+A9eqkYBacXo2wQBYmyVlXm2/n/ZsX6pCLYPQTHyr5jXbkQzBw8SKqPdlh
@@ -203,15 +203,15 @@ TAGSPUBKEY
 );
             }
 
-            $pubkeyid = openssl_pkey_get_public($sigFile);
-            $algo = defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
-            if (!in_array('SHA384', openssl_get_md_methods())) {
+            $pubkeyid = \openssl_pkey_get_public($sigFile);
+            $algo = \defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
+            if (!\in_array('SHA384', \openssl_get_md_methods())) {
                 throw new \RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
             }
-            $signature = json_decode($signature, true);
-            $signature = base64_decode($signature['sha384']);
-            $verified = 1 === openssl_verify(file_get_contents($tempFilename), $signature, $pubkeyid, $algo);
-            openssl_free_key($pubkeyid);
+            $signature = \json_decode($signature, true);
+            $signature = \base64_decode($signature['sha384']);
+            $verified = 1 === \openssl_verify(\file_get_contents($tempFilename), $signature, $pubkeyid, $algo);
+            \openssl_free_key($pubkeyid);
             if (!$verified) {
                 throw new \RuntimeException('The phar signature did not match the file you downloaded, this means your public keys are outdated or that the phar file is corrupt/has been modified');
             }
@@ -223,14 +223,14 @@ TAGSPUBKEY
         }
 
         if ($err = $this->setLocalPhar($localFilename, $tempFilename, $backupFile)) {
-            @unlink($tempFilename);
+            @\unlink($tempFilename);
             $io->writeError('<error>The file is corrupted ('.$err->getMessage().').</error>');
             $io->writeError('<error>Please re-run the self-update command to try again.</error>');
 
             return 1;
         }
 
-        if (file_exists($backupFile)) {
+        if (\file_exists($backupFile)) {
             $io->writeError('Use <info>composer self-update --rollback</info> to return to version '.Composer::VERSION);
         } else {
             $io->writeError('<warning>A backup of the current version could not be written to '.$backupFile.', no rollback possible</warning>');
@@ -246,37 +246,37 @@ TAGSPUBKEY
         $io->write('Open <info>https://composer.github.io/pubkeys.html</info> to find the latest keys');
 
         $validator = function ($value) {
-            if (!preg_match('{^-----BEGIN PUBLIC KEY-----$}', trim($value))) {
+            if (!\preg_match('{^-----BEGIN PUBLIC KEY-----$}', \trim($value))) {
                 throw new \UnexpectedValueException('Invalid input');
             }
 
-            return trim($value)."\n";
+            return \trim($value)."\n";
         };
 
         $devKey = '';
-        while (!preg_match('{(-----BEGIN PUBLIC KEY-----.+?-----END PUBLIC KEY-----)}s', $devKey, $match)) {
+        while (!\preg_match('{(-----BEGIN PUBLIC KEY-----.+?-----END PUBLIC KEY-----)}s', $devKey, $match)) {
             $devKey = $io->askAndValidate('Enter Dev / Snapshot Public Key (including lines with -----): ', $validator);
             while ($line = $io->ask('')) {
-                $devKey .= trim($line)."\n";
-                if (trim($line) === '-----END PUBLIC KEY-----') {
+                $devKey .= \trim($line)."\n";
+                if (\trim($line) === '-----END PUBLIC KEY-----') {
                     break;
                 }
             }
         }
-        file_put_contents($keyPath = $config->get('home').'/keys.dev.pub', $match[0]);
+        \file_put_contents($keyPath = $config->get('home').'/keys.dev.pub', $match[0]);
         $io->write('Stored key with fingerprint: ' . Keys::fingerprint($keyPath));
 
         $tagsKey = '';
-        while (!preg_match('{(-----BEGIN PUBLIC KEY-----.+?-----END PUBLIC KEY-----)}s', $tagsKey, $match)) {
+        while (!\preg_match('{(-----BEGIN PUBLIC KEY-----.+?-----END PUBLIC KEY-----)}s', $tagsKey, $match)) {
             $tagsKey = $io->askAndValidate('Enter Tags Public Key (including lines with -----): ', $validator);
             while ($line = $io->ask('')) {
-                $tagsKey .= trim($line)."\n";
-                if (trim($line) === '-----END PUBLIC KEY-----') {
+                $tagsKey .= \trim($line)."\n";
+                if (\trim($line) === '-----END PUBLIC KEY-----') {
                     break;
                 }
             }
         }
-        file_put_contents($keyPath = $config->get('home').'/keys.tags.pub', $match[0]);
+        \file_put_contents($keyPath = $config->get('home').'/keys.tags.pub', $match[0]);
         $io->write('Stored key with fingerprint: ' . Keys::fingerprint($keyPath));
 
         $io->write('Public keys stored in '.$config->get('home'));
@@ -291,15 +291,15 @@ TAGSPUBKEY
 
         $oldFile = $rollbackDir . '/' . $rollbackVersion . self::OLD_INSTALL_EXT;
 
-        if (!is_file($oldFile)) {
+        if (!\is_file($oldFile)) {
             throw new FilesystemException('Composer rollback failed: "'.$oldFile.'" could not be found');
         }
-        if (!is_readable($oldFile)) {
+        if (!\is_readable($oldFile)) {
             throw new FilesystemException('Composer rollback failed: "'.$oldFile.'" could not be read');
         }
 
         $io = $this->getIO();
-        $io->writeError(sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
+        $io->writeError(\sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
         if ($err = $this->setLocalPhar($localFilename, $oldFile)) {
             $io->writeError('<error>The backup file was corrupted ('.$err->getMessage().').</error>');
 
@@ -319,8 +319,8 @@ TAGSPUBKEY
     protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
     {
         try {
-            @chmod($newFilename, fileperms($localFilename));
-            if (!ini_get('phar.readonly')) {
+            @\chmod($newFilename, \fileperms($localFilename));
+            if (!\ini_get('phar.readonly')) {
                 // test the phar validity
                 $phar = new \Phar($newFilename);
                 // free the variable to unlock the file
@@ -328,11 +328,11 @@ TAGSPUBKEY
             }
 
             // copy current file into installations dir
-            if ($backupTarget && file_exists($localFilename)) {
-                @copy($localFilename, $backupTarget);
+            if ($backupTarget && \file_exists($localFilename)) {
+                @\copy($localFilename, $backupTarget);
             }
 
-            rename($newFilename, $localFilename);
+            \rename($newFilename, $localFilename);
 
             return null;
         } catch (\Exception $e) {
@@ -364,10 +364,10 @@ TAGSPUBKEY
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
         $finder->sortByName();
-        $files = iterator_to_array($finder);
+        $files = \iterator_to_array($finder);
 
-        if (count($files)) {
-            return basename(end($files), self::OLD_INSTALL_EXT);
+        if (\count($files)) {
+            return \basename(\end($files), self::OLD_INSTALL_EXT);
         }
 
         return false;

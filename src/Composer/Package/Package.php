@@ -126,7 +126,7 @@ class Package extends BasePackage
             return;
         }
 
-        return ltrim(preg_replace('{ (?:^|[\\\\/]+) \.\.? (?:[\\\\/]+|$) (?:\.\.? (?:[\\\\/]+|$) )*}x', '/', $this->targetDir), '/');
+        return \ltrim(\preg_replace('{ (?:^|[\\\\/]+) \.\.? (?:[\\\\/]+|$) (?:\.\.? (?:[\\\\/]+|$) )*}x', '/', $this->targetDir), '/');
     }
 
     /**
@@ -600,7 +600,7 @@ class Package extends BasePackage
                 } elseif ($urlType === 'source' && $type === 'hg') {
                     $mirrorUrl = ComposerMirror::processHgUrl($mirror['url'], $this->name, $url, $type);
                 }
-                if (!in_array($mirrorUrl, $urls)) {
+                if (!\in_array($mirrorUrl, $urls)) {
                     $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';
                     $func($urls, $mirrorUrl);
                 }

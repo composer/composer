@@ -150,7 +150,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             }
 
             // strip the release- prefix from tags if present
-            $tag = str_replace('release-', '', $tag);
+            $tag = \str_replace('release-', '', $tag);
 
             if (!$parsedTag = $this->validateTag($tag)) {
                 if ($verbose) {
@@ -177,8 +177,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 }
 
                 // make sure tag packages have no -dev flag
-                $data['version'] = preg_replace('{[.-]?dev$}i', '', $data['version']);
-                $data['version_normalized'] = preg_replace('{(^dev-|[.-]?dev$)}i', '', $data['version_normalized']);
+                $data['version'] = \preg_replace('{[.-]?dev$}i', '', $data['version']);
+                $data['version_normalized'] = \preg_replace('{(^dev-|[.-]?dev$)}i', '', $data['version_normalized']);
 
                 // broken package, version doesn't match tag
                 if ($data['version_normalized'] !== $parsedTag) {
@@ -233,11 +233,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $data['version_normalized'] = $parsedBranch;
 
                 // make sure branch packages have a dev flag
-                if ('dev-' === substr($parsedBranch, 0, 4) || '9999999-dev' === $parsedBranch) {
+                if ('dev-' === \substr($parsedBranch, 0, 4) || '9999999-dev' === $parsedBranch) {
                     $data['version'] = 'dev-' . $data['version'];
                 } else {
-                    $prefix = substr($branch, 0, 1) === 'v' ? 'v' : '';
-                    $data['version'] = $prefix . preg_replace('{(\.9{7})+}', '.x', $parsedBranch);
+                    $prefix = \substr($branch, 0, 1) === 'v' ? 'v' : '';
+                    $data['version'] = $prefix . \preg_replace('{(\.9{7})+}', '.x', $parsedBranch);
                 }
 
                 if ($verbose) {
