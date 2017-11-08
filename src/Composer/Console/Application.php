@@ -62,24 +62,24 @@ class Application extends BaseApplication
     {
         static $shutdownRegistered = false;
 
-        if (function_exists('ini_set') && extension_loaded('xdebug')) {
-            ini_set('xdebug.show_exception_trace', false);
-            ini_set('xdebug.scream', false);
+        if (\function_exists('ini_set') && \extension_loaded('xdebug')) {
+            \ini_set('xdebug.show_exception_trace', false);
+            \ini_set('xdebug.scream', false);
         }
 
-        if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
-            date_default_timezone_set(Silencer::call('date_default_timezone_get'));
+        if (\function_exists('date_default_timezone_set') && \function_exists('date_default_timezone_get')) {
+            \date_default_timezone_set(Silencer::call('date_default_timezone_get'));
         }
 
         if (!$shutdownRegistered) {
             $shutdownRegistered = true;
 
-            register_shutdown_function(function () {
-                $lastError = error_get_last();
+            \register_shutdown_function(function () {
+                $lastError = \error_get_last();
 
                 if ($lastError && $lastError['message'] &&
-                   (strpos($lastError['message'], 'Allowed memory') !== false /*Zend PHP out of memory error*/ ||
-                    strpos($lastError['message'], 'exceeded memory') !== false /*HHVM out of memory errors*/)) {
+                   (\strpos($lastError['message'], 'Allowed memory') !== false /*Zend PHP out of memory error*/ ||
+                    \strpos($lastError['message'], 'exceeded memory') !== false /*HHVM out of memory errors*/)) {
                     echo "\n". 'Check https://getcomposer.org/doc/articles/troubleshooting.md#memory-limit-errors for more info on how to handle out of memory errors.';
                 }
             });
@@ -112,9 +112,9 @@ class Application extends BaseApplication
 
         // switch working dir
         if ($newWorkDir = $this->getNewWorkingDir($input)) {
-            $oldWorkingDir = getcwd();
-            chdir($newWorkDir);
-            $io->writeError('Changed CWD to ' . getcwd(), true, IOInterface::DEBUG);
+            $oldWorkingDir = \getcwd();
+            \chdir($newWorkDir);
+            $io->writeError('Changed CWD to ' . \getcwd(), true, IOInterface::DEBUG);
         }
 
         // determine command name to be executed without including plugin commands
@@ -127,20 +127,20 @@ class Application extends BaseApplication
         }
 
         // prompt user for dir change if no composer.json is present in current dir
-        if ($io->isInteractive() && !$newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project'), true) && !file_exists(Factory::getComposerFile())) {
-            $dir = dirname(getcwd());
-            $home = realpath(getenv('HOME') ?: getenv('USERPROFILE') ?: '/');
+        if ($io->isInteractive() && !$newWorkDir && !\in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project'), true) && !\file_exists(Factory::getComposerFile())) {
+            $dir = \dirname(\getcwd());
+            $home = \realpath(\getenv('HOME') ?: \getenv('USERPROFILE') ?: '/');
 
             // abort when we reach the home dir or top of the filesystem
-            while (dirname($dir) !== $dir && $dir !== $home) {
-                if (file_exists($dir.'/'.Factory::getComposerFile())) {
+            while (\dirname($dir) !== $dir && $dir !== $home) {
+                if (\file_exists($dir.'/'.Factory::getComposerFile())) {
                     if ($io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ', true)) {
-                        $oldWorkingDir = getcwd();
-                        chdir($dir);
+                        $oldWorkingDir = \getcwd();
+                        \chdir($dir);
                     }
                     break;
                 }
-                $dir = dirname($dir);
+                $dir = \dirname($dir);
             }
         }
 
@@ -148,7 +148,7 @@ class Application extends BaseApplication
             try {
                 foreach ($this->getPluginCommands() as $command) {
                     if ($this->has($command->getName())) {
-                        $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
+                        $io->writeError('<warning>Plugin command '.$command->getName().' ('.\get_class($command).') would override a Composer command and has been skipped</warning>');
                     } else {
                         $this->add($command);
                     }
@@ -172,36 +172,36 @@ class Application extends BaseApplication
         }
 
         if (!$isProxyCommand) {
-            $io->writeError(sprintf(
+            $io->writeError(\sprintf(
                 'Running %s (%s) with %s on %s',
                 Composer::VERSION,
                 Composer::RELEASE_DATE,
-                defined('HHVM_VERSION') ? 'HHVM '.HHVM_VERSION : 'PHP '.PHP_VERSION,
-                function_exists('php_uname') ? php_uname('s') . ' / ' . php_uname('r') : 'Unknown OS'
+                \defined('HHVM_VERSION') ? 'HHVM '.HHVM_VERSION : 'PHP '.PHP_VERSION,
+                \function_exists('php_uname') ? \php_uname('s') . ' / ' . \php_uname('r') : 'Unknown OS'
             ), true, IOInterface::DEBUG);
 
             if (PHP_VERSION_ID < 50302) {
                 $io->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
             }
 
-            if (extension_loaded('xdebug') && !getenv('COMPOSER_DISABLE_XDEBUG_WARN')) {
+            if (\extension_loaded('xdebug') && !\getenv('COMPOSER_DISABLE_XDEBUG_WARN')) {
                 $io->writeError('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>');
             }
 
-            if (defined('COMPOSER_DEV_WARNING_TIME') && $commandName !== 'self-update' && $commandName !== 'selfupdate' && time() > COMPOSER_DEV_WARNING_TIME) {
-                $io->writeError(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
+            if (\defined('COMPOSER_DEV_WARNING_TIME') && $commandName !== 'self-update' && $commandName !== 'selfupdate' && \time() > COMPOSER_DEV_WARNING_TIME) {
+                $io->writeError(\sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
             }
 
-            if (getenv('COMPOSER_NO_INTERACTION')) {
+            if (\getenv('COMPOSER_NO_INTERACTION')) {
                 $input->setInteractive(false);
             }
 
-            if (!Platform::isWindows() && function_exists('exec') && !getenv('COMPOSER_ALLOW_SUPERUSER')) {
-                if (function_exists('posix_getuid') && posix_getuid() === 0) {
+            if (!Platform::isWindows() && \function_exists('exec') && !\getenv('COMPOSER_ALLOW_SUPERUSER')) {
+                if (\function_exists('posix_getuid') && \posix_getuid() === 0) {
                     if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                         $io->writeError('<warning>Do not run Composer as root/super user! See https://getcomposer.org/root for details</warning>');
                     }
-                    if ($uid = (int) getenv('SUDO_UID')) {
+                    if ($uid = (int) \getenv('SUDO_UID')) {
                         // Silently clobber any sudo credentials on the invoking user to avoid privilege escalations later on
                         // ref. https://github.com/composer/composer/issues/5119
                         Silencer::call('exec', "sudo -u \\#{$uid} sudo -K > /dev/null 2>&1");
@@ -213,18 +213,18 @@ class Application extends BaseApplication
 
             // Check system temp folder for usability as it can cause weird runtime issues otherwise
             Silencer::call(function () use ($io) {
-                $tempfile = sys_get_temp_dir() . '/temp-' . md5(microtime());
-                if (!(file_put_contents($tempfile, __FILE__) && (file_get_contents($tempfile) == __FILE__) && unlink($tempfile) && !file_exists($tempfile))) {
-                    $io->writeError(sprintf('<error>PHP temp directory (%s) does not exist or is not writable to Composer. Set sys_temp_dir in your php.ini</error>', sys_get_temp_dir()));
+                $tempfile = \sys_get_temp_dir() . '/temp-' . \md5(\microtime());
+                if (!(\file_put_contents($tempfile, __FILE__) && (\file_get_contents($tempfile) == __FILE__) && \unlink($tempfile) && !\file_exists($tempfile))) {
+                    $io->writeError(\sprintf('<error>PHP temp directory (%s) does not exist or is not writable to Composer. Set sys_temp_dir in your php.ini</error>', \sys_get_temp_dir()));
                 }
             });
 
             // add non-standard scripts as own commands
             $file = Factory::getComposerFile();
-            if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
-                if (isset($composer['scripts']) && is_array($composer['scripts'])) {
+            if (\is_file($file) && \is_readable($file) && \is_array($composer = \json_decode(\file_get_contents($file), true))) {
+                if (isset($composer['scripts']) && \is_array($composer['scripts'])) {
                     foreach ($composer['scripts'] as $script => $dummy) {
-                        if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
+                        if (!\defined('Composer\Script\ScriptEvents::'.\str_replace('-', '_', \strtoupper($script)))) {
                             if ($this->has($script)) {
                                 $io->writeError('<warning>A script named '.$script.' would override a Composer command and has been skipped</warning>');
                             } else {
@@ -239,28 +239,28 @@ class Application extends BaseApplication
 
         try {
             if ($input->hasParameterOption('--profile')) {
-                $startTime = microtime(true);
+                $startTime = \microtime(true);
                 $this->io->enableDebugging($startTime);
             }
 
             $result = parent::doRun($input, $output);
 
             if (isset($oldWorkingDir)) {
-                chdir($oldWorkingDir);
+                \chdir($oldWorkingDir);
             }
 
             if (isset($startTime)) {
-                $io->writeError('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MB), time: '.round(microtime(true) - $startTime, 2).'s');
+                $io->writeError('<info>Memory usage: '.\round(\memory_get_usage() / 1024 / 1024, 2).'MB (peak: '.\round(\memory_get_peak_usage() / 1024 / 1024, 2).'MB), time: '.\round(\microtime(true) - $startTime, 2).'s');
             }
 
-            restore_error_handler();
+            \restore_error_handler();
 
             return $result;
         } catch (ScriptExecutionException $e) {
             return $e->getCode();
         } catch (\Exception $e) {
             $this->hintCommonErrors($e);
-            restore_error_handler();
+            \restore_error_handler();
             throw $e;
         }
     }
@@ -273,7 +273,7 @@ class Application extends BaseApplication
     private function getNewWorkingDir(InputInterface $input)
     {
         $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
-        if (false !== $workingDir && !is_dir($workingDir)) {
+        if (false !== $workingDir && !\is_dir($workingDir)) {
             throw new \RuntimeException('Invalid working directory specified, '.$workingDir.' does not exist.');
         }
 
@@ -294,9 +294,9 @@ class Application extends BaseApplication
                 $config = $composer->getConfig();
 
                 $minSpaceFree = 1024 * 1024;
-                if ((($df = disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
-                    || (($df = disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
-                    || (($df = disk_free_space($dir = sys_get_temp_dir())) !== false && $df < $minSpaceFree)
+                if ((($df = \disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
+                    || (($df = \disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+                    || (($df = \disk_free_space($dir = \sys_get_temp_dir())) !== false && $df < $minSpaceFree)
                 ) {
                     $io->writeError('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>', true, IOInterface::QUIET);
                 }
@@ -305,12 +305,12 @@ class Application extends BaseApplication
         }
         Silencer::restore();
 
-        if (Platform::isWindows() && false !== strpos($exception->getMessage(), 'The system cannot find the path specified')) {
+        if (Platform::isWindows() && false !== \strpos($exception->getMessage(), 'The system cannot find the path specified')) {
             $io->writeError('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>', true, IOInterface::QUIET);
             $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#-the-system-cannot-find-the-path-specified-windows- for details</error>', true, IOInterface::QUIET);
         }
 
-        if (false !== strpos($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
+        if (false !== \strpos($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
             $io->writeError('<error>The following exception is caused by a lack of memory or swap, or not having swap configured</error>', true, IOInterface::QUIET);
             $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>', true, IOInterface::QUIET);
         }
@@ -337,7 +337,7 @@ class Application extends BaseApplication
                     exit(1);
                 }
             } catch (JsonValidationException $e) {
-                $errors = ' - ' . implode(PHP_EOL . ' - ', $e->getErrors());
+                $errors = ' - ' . \implode(PHP_EOL . ' - ', $e->getErrors());
                 $message = $e->getMessage() . ':' . PHP_EOL . $errors;
                 throw new JsonValidationException($message);
             }
@@ -372,7 +372,7 @@ class Application extends BaseApplication
      */
     protected function getDefaultCommands()
     {
-        $commands = array_merge(parent::getDefaultCommands(), array(
+        $commands = \array_merge(parent::getDefaultCommands(), array(
             new Command\AboutCommand(),
             new Command\ConfigCommand(),
             new Command\DependsCommand(),
@@ -400,7 +400,7 @@ class Application extends BaseApplication
             new Command\OutdatedCommand(),
         ));
 
-        if ('phar:' === substr(__FILE__, 0, 5)) {
+        if ('phar:' === \substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();
         }
 
@@ -413,7 +413,7 @@ class Application extends BaseApplication
     public function getLongVersion()
     {
         if (Composer::BRANCH_ALIAS_VERSION) {
-            return sprintf(
+            return \sprintf(
                 '<info>%s</info> version <comment>%s (%s)</comment> %s',
                 $this->getName(),
                 Composer::BRANCH_ALIAS_VERSION,
@@ -451,15 +451,15 @@ class Application extends BaseApplication
             $pm = $composer->getPluginManager();
             foreach ($pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', array('composer' => $composer, 'io' => $this->io)) as $capability) {
                 $newCommands = $capability->getCommands();
-                if (!is_array($newCommands)) {
-                    throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' failed to return an array from getCommands');
+                if (!\is_array($newCommands)) {
+                    throw new \UnexpectedValueException('Plugin capability '.\get_class($capability).' failed to return an array from getCommands');
                 }
                 foreach ($newCommands as $command) {
                     if (!$command instanceof Command\BaseCommand) {
-                        throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' returned an invalid value, we expected an array of Composer\Command\BaseCommand objects');
+                        throw new \UnexpectedValueException('Plugin capability '.\get_class($capability).' returned an invalid value, we expected an array of Composer\Command\BaseCommand objects');
                     }
                 }
-                $commands = array_merge($commands, $newCommands);
+                $commands = \array_merge($commands, $newCommands);
             }
         }
 

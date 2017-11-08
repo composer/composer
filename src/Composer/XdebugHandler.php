@@ -36,12 +36,12 @@ class XdebugHandler
     public function __construct(OutputInterface $output)
     {
         $this->output = $output;
-        $this->loaded = extension_loaded('xdebug');
-        $this->envScanDir = getenv('PHP_INI_SCAN_DIR');
+        $this->loaded = \extension_loaded('xdebug');
+        $this->envScanDir = \getenv('PHP_INI_SCAN_DIR');
 
         if ($this->loaded) {
             $ext = new \ReflectionExtension('xdebug');
-            $this->version = strval($ext->getVersion());
+            $this->version = \strval($ext->getVersion());
         }
     }
 
@@ -60,7 +60,7 @@ class XdebugHandler
      */
     public function check()
     {
-        $args = explode('|', strval(getenv(self::ENV_ALLOW)), 2);
+        $args = \explode('|', \strval(\getenv(self::ENV_ALLOW)), 2);
 
         if ($this->needsRestart($args[0])) {
             if ($this->prepareRestart()) {
@@ -73,20 +73,20 @@ class XdebugHandler
 
         // Restore environment variables if we are restarting
         if (self::RESTART_ID === $args[0]) {
-            putenv(self::ENV_ALLOW);
+            \putenv(self::ENV_ALLOW);
 
             if (false !== $this->envScanDir) {
                 // $args[1] contains the original value
                 if (isset($args[1])) {
-                    putenv('PHP_INI_SCAN_DIR='.$args[1]);
+                    \putenv('PHP_INI_SCAN_DIR='.$args[1]);
                 } else {
-                    putenv('PHP_INI_SCAN_DIR');
+                    \putenv('PHP_INI_SCAN_DIR');
                 }
             }
 
             // Clear version if the restart failed to disable xdebug
             if ($this->loaded) {
-                putenv(self::ENV_VERSION);
+                \putenv(self::ENV_VERSION);
             }
         }
     }
@@ -98,10 +98,10 @@ class XdebugHandler
      */
     protected function restart($command)
     {
-        passthru($command, $exitCode);
+        \passthru($command, $exitCode);
 
         if (!empty($this->tmpIni)) {
-            @unlink($this->tmpIni);
+            @\unlink($this->tmpIni);
         }
 
         exit($exitCode);
@@ -116,7 +116,7 @@ class XdebugHandler
      */
     private function needsRestart($allow)
     {
-        if (PHP_SAPI !== 'cli' || !defined('PHP_BINARY')) {
+        if (PHP_SAPI !== 'cli' || !\defined('PHP_BINARY')) {
             return false;
         }
 
@@ -137,7 +137,7 @@ class XdebugHandler
     {
         $this->tmpIni = '';
         $iniPaths = IniHelper::getAll();
-        $additional = count($iniPaths) > 1;
+        $additional = \count($iniPaths) > 1;
 
         if ($this->writeTmpIni($iniPaths)) {
             return $this->setEnvironment($additional, $iniPaths);
@@ -157,33 +157,33 @@ class XdebugHandler
      */
     private function writeTmpIni(array $iniPaths)
     {
-        if (!$this->tmpIni = tempnam(sys_get_temp_dir(), '')) {
+        if (!$this->tmpIni = \tempnam(\sys_get_temp_dir(), '')) {
             return false;
         }
 
         // $iniPaths has at least one item and it may be empty
         if (empty($iniPaths[0])) {
-            array_shift($iniPaths);
+            \array_shift($iniPaths);
         }
 
         $content = '';
         $regex = '/^\s*(zend_extension\s*=.*xdebug.*)$/mi';
 
         foreach ($iniPaths as $file) {
-            $data = preg_replace($regex, ';$1', file_get_contents($file));
+            $data = \preg_replace($regex, ';$1', \file_get_contents($file));
             $content .= $data.PHP_EOL;
         }
 
-        $content .= 'allow_url_fopen='.ini_get('allow_url_fopen').PHP_EOL;
-        $content .= 'disable_functions="'.ini_get('disable_functions').'"'.PHP_EOL;
-        $content .= 'memory_limit='.ini_get('memory_limit').PHP_EOL;
+        $content .= 'allow_url_fopen='.\ini_get('allow_url_fopen').PHP_EOL;
+        $content .= 'disable_functions="'.\ini_get('disable_functions').'"'.PHP_EOL;
+        $content .= 'memory_limit='.\ini_get('memory_limit').PHP_EOL;
 
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
             // Work-around for PHP windows bug, see issue #6052
             $content .= 'opcache.enable_cli=0'.PHP_EOL;
         }
 
-        return @file_put_contents($this->tmpIni, $content);
+        return @\file_put_contents($this->tmpIni, $content);
     }
 
     /**
@@ -194,9 +194,9 @@ class XdebugHandler
     private function getCommand()
     {
         $phpArgs = array(PHP_BINARY, '-c', $this->tmpIni);
-        $params = array_merge($phpArgs, $this->getScriptArgs($_SERVER['argv']));
+        $params = \array_merge($phpArgs, $this->getScriptArgs($_SERVER['argv']));
 
-        return implode(' ', array_map(array($this, 'escape'), $params));
+        return \implode(' ', \array_map(array($this, 'escape'), $params));
     }
 
     /**
@@ -210,17 +210,17 @@ class XdebugHandler
     private function setEnvironment($additional, array $iniPaths)
     {
         // Set scan dir to an empty value if additional ini files were used
-        if ($additional && !putenv('PHP_INI_SCAN_DIR=')) {
+        if ($additional && !\putenv('PHP_INI_SCAN_DIR=')) {
             return false;
         }
 
         // Make original inis available to restarted process
-        if (!putenv(IniHelper::ENV_ORIGINAL.'='.implode(PATH_SEPARATOR, $iniPaths))) {
+        if (!\putenv(IniHelper::ENV_ORIGINAL.'='.\implode(PATH_SEPARATOR, $iniPaths))) {
             return false;
         }
 
         // Make xdebug version available to restarted process
-        if (!putenv(self::ENV_VERSION.'='.$this->version)) {
+        if (!\putenv(self::ENV_VERSION.'='.$this->version)) {
             return false;
         }
 
@@ -232,7 +232,7 @@ class XdebugHandler
             $args[] = $this->envScanDir;
         }
 
-        return putenv(self::ENV_ALLOW.'='.implode('|', $args));
+        return \putenv(self::ENV_ALLOW.'='.\implode('|', $args));
     }
 
     /**
@@ -247,13 +247,13 @@ class XdebugHandler
      */
     private function getScriptArgs(array $args)
     {
-        if (in_array('--no-ansi', $args) || in_array('--ansi', $args)) {
+        if (\in_array('--no-ansi', $args) || \in_array('--ansi', $args)) {
             return $args;
         }
 
         if ($this->output->isDecorated()) {
-            $offset = count($args) > 1 ? 2 : 1;
-            array_splice($args, $offset, 0, '--ansi');
+            $offset = \count($args) > 1 ? 2 : 1;
+            \array_splice($args, $offset, 0, '--ansi');
         }
 
         return $args;
@@ -272,28 +272,28 @@ class XdebugHandler
      */
     private function escape($arg, $meta = true)
     {
-        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            return escapeshellarg($arg);
+        if (!\defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return \escapeshellarg($arg);
         }
 
-        $quote = strpbrk($arg, " \t") !== false || $arg === '';
-        $arg = preg_replace('/(\\\\*)"/', '$1$1\\"', $arg, -1, $dquotes);
+        $quote = \strpbrk($arg, " \t") !== false || $arg === '';
+        $arg = \preg_replace('/(\\\\*)"/', '$1$1\\"', $arg, -1, $dquotes);
 
         if ($meta) {
-            $meta = $dquotes || preg_match('/%[^%]+%/', $arg);
+            $meta = $dquotes || \preg_match('/%[^%]+%/', $arg);
 
             if (!$meta && !$quote) {
-                $quote = strpbrk($arg, '^&|<>()') !== false;
+                $quote = \strpbrk($arg, '^&|<>()') !== false;
             }
         }
 
         if ($quote) {
-            $arg = preg_replace('/(\\\\*)$/', '$1$1', $arg);
+            $arg = \preg_replace('/(\\\\*)$/', '$1$1', $arg);
             $arg = '"'.$arg.'"';
         }
 
         if ($meta) {
-            $arg = preg_replace('/(["^&|<>()%])/', '^$1', $arg);
+            $arg = \preg_replace('/(["^&|<>()%])/', '^$1', $arg);
         }
 
         return $arg;

@@ -38,7 +38,7 @@ class GzipDownloader extends ArchiveDownloader
 
     protected function extract($file, $path)
     {
-        $targetFilepath = $path . DIRECTORY_SEPARATOR . basename(substr($file, 0, -3));
+        $targetFilepath = $path . DIRECTORY_SEPARATOR . \basename(\substr($file, 0, -3));
 
         // Try to use gunzip on *nix
         if (!Platform::isWindows()) {
@@ -48,7 +48,7 @@ class GzipDownloader extends ArchiveDownloader
                 return;
             }
 
-            if (extension_loaded('zlib')) {
+            if (\extension_loaded('zlib')) {
                 // Fallback to using the PHP extension.
                 $this->extractUsingExt($file, $targetFilepath);
 
@@ -68,17 +68,17 @@ class GzipDownloader extends ArchiveDownloader
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
+        return $path.'/'.\pathinfo(\parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
     }
 
     private function extractUsingExt($file, $targetFilepath)
     {
-        $archiveFile = gzopen($file, 'rb');
-        $targetFile = fopen($targetFilepath, 'wb');
-        while ($string = gzread($archiveFile, 4096)) {
-            fwrite($targetFile, $string, Platform::strlen($string));
+        $archiveFile = \gzopen($file, 'rb');
+        $targetFile = \fopen($targetFilepath, 'wb');
+        while ($string = \gzread($archiveFile, 4096)) {
+            \fwrite($targetFile, $string, Platform::strlen($string));
         }
-        gzclose($archiveFile);
-        fclose($targetFile);
+        \gzclose($archiveFile);
+        \fclose($targetFile);
     }
 }

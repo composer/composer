@@ -36,15 +36,15 @@ class PharArchiver implements ArchiverInterface
      */
     public function archive($sources, $target, $format, array $excludes = array(), $ignoreFilters = false)
     {
-        $sources = realpath($sources);
+        $sources = \realpath($sources);
 
         // Phar would otherwise load the file which we don't want
-        if (file_exists($target)) {
-            unlink($target);
+        if (\file_exists($target)) {
+            \unlink($target);
         }
 
         try {
-            $filename = substr($target, 0, strrpos($target, $format) - 1);
+            $filename = \substr($target, 0, \strrpos($target, $format) - 1);
 
             // Check if compress format
             if (isset(static::$compressFormats[$format])) {
@@ -61,11 +61,11 @@ class PharArchiver implements ArchiverInterface
             if (isset(static::$compressFormats[$format])) {
                 // Check can be compressed?
                 if (!$phar->canCompress(static::$compressFormats[$format])) {
-                    throw new \RuntimeException(sprintf('Can not compress to %s format', $format));
+                    throw new \RuntimeException(\sprintf('Can not compress to %s format', $format));
                 }
 
                 // Delete old tar
-                unlink($target);
+                \unlink($target);
 
                 // Compress the new tar
                 $phar->compress(static::$compressFormats[$format]);
@@ -76,7 +76,7 @@ class PharArchiver implements ArchiverInterface
 
             return $target;
         } catch (\UnexpectedValueException $e) {
-            $message = sprintf("Could not create archive '%s' from '%s': %s",
+            $message = \sprintf("Could not create archive '%s' from '%s': %s",
                 $target,
                 $sources,
                 $e->getMessage()

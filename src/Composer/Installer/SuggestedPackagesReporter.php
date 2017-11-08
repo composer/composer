@@ -102,7 +102,7 @@ class SuggestedPackagesReporter
         $installedPackages = array();
         if (null !== $installedRepo && ! empty($suggestedPackages)) {
             foreach ($installedRepo->getPackages() as $package) {
-                $installedPackages = array_merge(
+                $installedPackages = \array_merge(
                     $installedPackages,
                     $package->getNames()
                 );
@@ -110,11 +110,11 @@ class SuggestedPackagesReporter
         }
 
         foreach ($suggestedPackages as $suggestion) {
-            if (in_array($suggestion['target'], $installedPackages)) {
+            if (\in_array($suggestion['target'], $installedPackages)) {
                 continue;
             }
 
-            $this->io->writeError(sprintf(
+            $this->io->writeError(\sprintf(
                 '%s suggests installing %s (%s)',
                 $suggestion['source'],
                 $this->escapeOutput($suggestion['target']),
@@ -142,10 +142,10 @@ class SuggestedPackagesReporter
      */
     private function removeControlCharacters($string)
     {
-        return preg_replace(
+        return \preg_replace(
             '/[[:cntrl:]]/',
             '',
-            str_replace("\n", ' ', $string)
+            \str_replace("\n", ' ', $string)
         );
     }
 }

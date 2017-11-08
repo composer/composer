@@ -49,7 +49,7 @@ EOT
         );
 
         foreach ($cachePaths as $key => $cachePath) {
-            $cachePath = realpath($cachePath);
+            $cachePath = \realpath($cachePath);
             if (!$cachePath) {
                 $io->writeError("<info>Cache directory does not exist ($key): $cachePath</info>");
 

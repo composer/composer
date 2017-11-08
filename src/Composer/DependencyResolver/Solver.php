@@ -80,16 +80,16 @@ class Solver
      */
     public function getRuleSetSize()
     {
-        return count($this->rules);
+        return \count($this->rules);
     }
 
     // aka solver_makeruledecisions
 
     private function makeAssertionRuleDecisions()
     {
-        $decisionStart = count($this->decisions) - 1;
+        $decisionStart = \count($this->decisions) - 1;
 
-        $rulesCount = count($this->rules);
+        $rulesCount = \count($this->rules);
         for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
             $rule = $this->rules->ruleById[$ruleIndex];
 
@@ -100,7 +100,7 @@ class Solver
             $literals = $rule->getLiterals();
             $literal = $literals[0];
 
-            if (!$this->decisions->decided(abs($literal))) {
+            if (!$this->decisions->decided(\abs($literal))) {
                 $this->decisions->decide($literal, 1, $rule);
                 continue;
             }
@@ -142,7 +142,7 @@ class Solver
                 $assertRuleLiterals = $assertRule->getLiterals();
                 $assertRuleLiteral = $assertRuleLiterals[0];
 
-                if (abs($literal) !== abs($assertRuleLiteral)) {
+                if (\abs($literal) !== \abs($assertRuleLiteral)) {
                     continue;
                 }
 
@@ -187,7 +187,7 @@ class Solver
                     break;
 
                 case 'install':
-                    if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
+                    if ($ignorePlatformReqs && \preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
                         break;
                     }
 
@@ -224,9 +224,9 @@ class Solver
         $this->makeAssertionRuleDecisions();
 
         $this->io->writeError('Resolving dependencies through SAT', true, IOInterface::DEBUG);
-        $before = microtime(true);
+        $before = \microtime(true);
         $this->runSat(true);
-        $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
+        $this->io->writeError(\sprintf('Dependency resolution completed in %.3f seconds', \microtime(true) - $before), true, IOInterface::VERBOSE);
 
         // decide to remove everything that's installed and undecided
         foreach ($this->installedMap as $packageId => $void) {
@@ -295,11 +295,11 @@ class Solver
             }
 
             $this->decisions->revertLast();
-            $this->propagateIndex = count($this->decisions);
+            $this->propagateIndex = \count($this->decisions);
         }
 
-        while (!empty($this->branches) && $this->branches[count($this->branches) - 1][self::BRANCH_LEVEL] >= $level) {
-            array_pop($this->branches);
+        while (!empty($this->branches) && $this->branches[\count($this->branches) - 1][self::BRANCH_LEVEL] >= $level) {
+            \array_pop($this->branches);
         }
     }
 
@@ -358,7 +358,7 @@ class Solver
 
             $this->rules->add($newRule, RuleSet::TYPE_LEARNED);
 
-            $this->learnedWhy[spl_object_hash($newRule)] = $why;
+            $this->learnedWhy[\spl_object_hash($newRule)] = $why;
 
             $ruleNode = new RuleWatchNode($newRule);
             $ruleNode->watch2OnHighest($this->decisions);
@@ -382,10 +382,10 @@ class Solver
         // choose best package to install from decisionQueue
         $literals = $this->policy->selectPreferredPackages($this->pool, $this->installedMap, $decisionQueue, $rule->getRequiredPackage());
 
-        $selectedLiteral = array_shift($literals);
+        $selectedLiteral = \array_shift($literals);
 
         // if there are multiple candidates, then branch
-        if (count($literals)) {
+        if (\count($literals)) {
             $this->branches[] = array($literals, $level);
         }
 
@@ -406,12 +406,12 @@ class Solver
         $seen = array();
         $learnedLiterals = array(null);
 
-        $decisionId = count($this->decisions);
+        $decisionId = \count($this->decisions);
 
         $this->learnedPool[] = array();
 
         while (true) {
-            $this->learnedPool[count($this->learnedPool) - 1][] = $rule;
+            $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
 
             foreach ($rule->getLiterals() as $literal) {
                 // skip the one true literal
@@ -419,10 +419,10 @@ class Solver
                     continue;
                 }
 
-                if (isset($seen[abs($literal)])) {
+                if (isset($seen[\abs($literal)])) {
                     continue;
                 }
-                $seen[abs($literal)] = true;
+                $seen[\abs($literal)] = true;
 
                 $l = $this->decisions->decisionLevel($literal);
 
@@ -461,15 +461,15 @@ class Solver
                     $decision = $this->decisions->atOffset($decisionId);
                     $literal = $decision[Decisions::DECISION_LITERAL];
 
-                    if (isset($seen[abs($literal)])) {
+                    if (isset($seen[\abs($literal)])) {
                         break;
                     }
                 }
 
-                unset($seen[abs($literal)]);
+                unset($seen[\abs($literal)]);
 
                 if ($num && 0 === --$num) {
-                    $learnedLiterals[0] = -abs($literal);
+                    $learnedLiterals[0] = -\abs($literal);
 
                     if (!$l1num) {
                         break 2;
@@ -477,7 +477,7 @@ class Solver
 
                     foreach ($learnedLiterals as $i => $learnedLiteral) {
                         if ($i !== 0) {
-                            unset($seen[abs($learnedLiteral)]);
+                            unset($seen[\abs($learnedLiteral)]);
                         }
                     }
                     // only level 1 marks left
@@ -490,7 +490,7 @@ class Solver
             $rule = $decision[Decisions::DECISION_REASON];
         }
 
-        $why = count($this->learnedPool) - 1;
+        $why = \count($this->learnedPool) - 1;
 
         if (!$learnedLiterals[0]) {
             throw new SolverBugException(
@@ -509,7 +509,7 @@ class Solver
      */
     private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule)
     {
-        $why = spl_object_hash($conflictRule);
+        $why = \spl_object_hash($conflictRule);
 
         if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
             $learnedWhy = $this->learnedWhy[$why];
@@ -553,14 +553,14 @@ class Solver
             if ($this->decisions->satisfy($literal)) {
                 continue;
             }
-            $seen[abs($literal)] = true;
+            $seen[\abs($literal)] = true;
         }
 
         foreach ($this->decisions as $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
 
             // skip literals that are not in this rule
-            if (!isset($seen[abs($literal)])) {
+            if (!isset($seen[\abs($literal)])) {
                 continue;
             }
 
@@ -576,12 +576,12 @@ class Solver
                 if ($this->decisions->satisfy($literal)) {
                     continue;
                 }
-                $seen[abs($literal)] = true;
+                $seen[\abs($literal)] = true;
             }
         }
 
         if ($disableRules) {
-            foreach ($this->problems[count($this->problems) - 1] as $reason) {
+            foreach ($this->problems[\count($this->problems) - 1] as $reason) {
                 $this->disableProblem($reason['rule']);
             }
 
@@ -636,7 +636,7 @@ class Solver
     private function enableDisableLearnedRules()
     {
         foreach ($this->rules->getIteratorFor(RuleSet::TYPE_LEARNED) as $rule) {
-            $why = $this->learnedWhy[spl_object_hash($rule)];
+            $why = $this->learnedWhy[\spl_object_hash($rule)];
             $problemRules = $this->learnedPool[$why];
 
             $foundDisabled = false;
@@ -713,15 +713,15 @@ class Solver
                             }
                         }
 
-                        if ($noneSatisfied && count($decisionQueue)) {
+                        if ($noneSatisfied && \count($decisionQueue)) {
                             // prune all update packages until installed version
                             // except for requested updates
-                            if (count($this->installed) != count($this->updateMap)) {
+                            if (\count($this->installed) != \count($this->updateMap)) {
                                 $prunedQueue = array();
                                 foreach ($decisionQueue as $literal) {
-                                    if (isset($this->installedMap[abs($literal)])) {
+                                    if (isset($this->installedMap[\abs($literal)])) {
                                         $prunedQueue[] = $literal;
-                                        if (isset($this->updateMap[abs($literal)])) {
+                                        if (isset($this->updateMap[\abs($literal)])) {
                                             $prunedQueue = $decisionQueue;
                                             break;
                                         }
@@ -731,7 +731,7 @@ class Solver
                             }
                         }
 
-                        if ($noneSatisfied && count($decisionQueue)) {
+                        if ($noneSatisfied && \count($decisionQueue)) {
                             $oLevel = $level;
                             $level = $this->selectAndInstall($level, $decisionQueue, $disableRules, $rule);
 
@@ -758,7 +758,7 @@ class Solver
                 $systemLevel = $level;
             }
 
-            $rulesCount = count($this->rules);
+            $rulesCount = \count($this->rules);
 
             for ($i = 0, $n = 0; $n < $rulesCount; $i++, $n++) {
                 if ($i == $rulesCount) {
@@ -782,21 +782,21 @@ class Solver
                 //
                 foreach ($literals as $literal) {
                     if ($literal <= 0) {
-                        if (!$this->decisions->decidedInstall(abs($literal))) {
+                        if (!$this->decisions->decidedInstall(\abs($literal))) {
                             continue 2; // next rule
                         }
                     } else {
-                        if ($this->decisions->decidedInstall(abs($literal))) {
+                        if ($this->decisions->decidedInstall(\abs($literal))) {
                             continue 2; // next rule
                         }
-                        if ($this->decisions->undecided(abs($literal))) {
+                        if ($this->decisions->undecided(\abs($literal))) {
                             $decisionQueue[] = $literal;
                         }
                     }
                 }
 
                 // need to have at least 2 item to pick from
-                if (count($decisionQueue) < 2) {
+                if (\count($decisionQueue) < 2) {
                     continue;
                 }
 
@@ -807,7 +807,7 @@ class Solver
                 }
 
                 // something changed, so look at all rules again
-                $rulesCount = count($this->rules);
+                $rulesCount = \count($this->rules);
                 $n = -1;
             }
 
@@ -816,13 +816,13 @@ class Solver
             }
 
             // minimization step
-            if (count($this->branches)) {
+            if (\count($this->branches)) {
                 $lastLiteral = null;
                 $lastLevel = null;
                 $lastBranchIndex = 0;
                 $lastBranchOffset = 0;
 
-                for ($i = count($this->branches) - 1; $i >= 0; $i--) {
+                for ($i = \count($this->branches) - 1; $i >= 0; $i--) {
                     list($literals, $l) = $this->branches[$i];
 
                     foreach ($literals as $offset => $literal) {

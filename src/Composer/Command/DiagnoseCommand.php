@@ -98,7 +98,7 @@ EOT
         $io->write('Checking https connectivity to packagist: ', false);
         $this->outputResult($this->checkHttp('https', $config));
 
-        $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
+        $opts = \stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
         if (!empty($opts['http']['proxy'])) {
             $io->write('Checking HTTP proxy: ', false);
             $this->outputResult($this->checkHttpProxy());
@@ -120,7 +120,7 @@ EOT
                 $this->outputResult(true);
                 if (10 > $rate['remaining']) {
                     $io->write('<warning>WARNING</warning>');
-                    $io->write(sprintf(
+                    $io->write(\sprintf(
                         '<comment>Github has a rate limit on their API. '
                         . 'You currently have <options=bold>%u</options=bold> '
                         . 'out of <options=bold>%u</options=bold> requests left.' . PHP_EOL
@@ -142,7 +142,7 @@ EOT
         $io->write('Checking disk free space: ', false);
         $this->outputResult($this->checkDiskSpace($config));
 
-        if ('phar:' === substr(__FILE__, 0, 5)) {
+        if ('phar:' === \substr(__FILE__, 0, 5)) {
             $io->write('Checking pubkeys: ', false);
             $this->outputResult($this->checkPubKeys($config));
 
@@ -150,12 +150,12 @@ EOT
             $this->outputResult($this->checkVersion($config));
         }
 
-        $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::VERSION));
+        $io->write(\sprintf('Composer version: <comment>%s</comment>', Composer::VERSION));
 
-        $io->write(sprintf('PHP version: <comment>%s</comment>', PHP_VERSION));
+        $io->write(\sprintf('PHP version: <comment>%s</comment>', PHP_VERSION));
 
-        if (defined('PHP_BINARY')) {
-            $io->write(sprintf('PHP binary path: <comment>%s</comment>', PHP_BINARY));
+        if (\defined('PHP_BINARY')) {
+            $io->write(\sprintf('PHP binary path: <comment>%s</comment>', PHP_BINARY));
         }
 
         return $this->exitCode;
@@ -179,7 +179,7 @@ EOT
                 }
             }
 
-            return rtrim($output);
+            return \rtrim($output);
         }
 
         return true;
@@ -188,7 +188,7 @@ EOT
     private function checkGit()
     {
         $this->process->execute('git config color.ui', $output);
-        if (strtolower(trim($output)) === 'always') {
+        if (\strtolower(\trim($output)) === 'always') {
             return '<comment>Your git color.ui setting is set to always, this is known to create issues. Use "git config --global color.ui true" to set it correctly.</comment>';
         }
 
@@ -203,23 +203,23 @@ EOT
             $disableTls = true;
             $result[] = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
         }
-        if ($proto === 'https' && !extension_loaded('openssl') && !$disableTls) {
+        if ($proto === 'https' && !\extension_loaded('openssl') && !$disableTls) {
             $result[] = '<error>Composer is configured to use SSL/TLS protection but the openssl extension is not available.</error>';
         }
 
         try {
             $this->rfs->getContents('packagist.org', $proto . '://packagist.org/packages.json', false);
         } catch (TransportException $e) {
-            if (false !== strpos($e->getMessage(), 'cafile')) {
-                $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
+            if (false !== \strpos($e->getMessage(), 'cafile')) {
+                $result[] = '<error>[' . \get_class($e) . '] ' . $e->getMessage() . '</error>';
                 $result[] = '<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>';
                 $result[] = '<error>You can alternatively disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>';
             } else {
-                array_unshift($result, '[' . get_class($e) . '] ' . $e->getMessage());
+                \array_unshift($result, '[' . \get_class($e) . '] ' . $e->getMessage());
             }
         }
 
-        if (count($result) > 0) {
+        if (\count($result) > 0) {
             return $result;
         }
 
@@ -228,15 +228,15 @@ EOT
 
     private function checkHttpProxy()
     {
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
+        $protocol = \extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $json = json_decode($this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false), true);
-            $hash = reset($json['provider-includes']);
+            $json = \json_decode($this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false), true);
+            $hash = \reset($json['provider-includes']);
             $hash = $hash['sha256'];
-            $path = str_replace('%hash%', $hash, key($json['provider-includes']));
+            $path = \str_replace('%hash%', $hash, \key($json['provider-includes']));
             $provider = $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/'.$path, false);
 
-            if (hash('sha256', $provider) !== $hash) {
+            if (\hash('sha256', $provider) !== $hash) {
                 return 'It seems that your proxy is modifying http traffic on the fly';
             }
         } catch (\Exception $e) {
@@ -280,7 +280,7 @@ EOT
      */
     private function checkHttpsProxyFullUriRequestParam()
     {
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             return 'You need the openssl extension installed for this check';
         }
 
@@ -332,7 +332,7 @@ EOT
 
         $url = $domain === 'github.com' ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
         $json = $this->rfs->getContents($domain, $url, false, array('retry-auth-failure' => false));
-        $data = json_decode($json, true);
+        $data = \json_decode($json, true);
 
         return $data['resources']['core'];
     }
@@ -340,8 +340,8 @@ EOT
     private function checkDiskSpace($config)
     {
         $minSpaceFree = 1024 * 1024;
-        if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
-            || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+        if ((($df = @\disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
+            || (($df = @\disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
         ) {
             return '<error>The disk hosting '.$dir.' is full</error>';
         }
@@ -355,17 +355,17 @@ EOT
         $errors = array();
         $io = $this->getIO();
 
-        if (file_exists($home.'/keys.tags.pub') && file_exists($home.'/keys.dev.pub')) {
+        if (\file_exists($home.'/keys.tags.pub') && \file_exists($home.'/keys.dev.pub')) {
             $io->write('');
         }
 
-        if (file_exists($home.'/keys.tags.pub')) {
+        if (\file_exists($home.'/keys.tags.pub')) {
             $io->write('Tags Public Key Fingerprint: ' . Keys::fingerprint($home.'/keys.tags.pub'));
         } else {
             $errors[] = '<error>Missing pubkey for tags verification</error>';
         }
 
-        if (file_exists($home.'/keys.dev.pub')) {
+        if (\file_exists($home.'/keys.dev.pub')) {
             $io->write('Dev Public Key Fingerprint: ' . Keys::fingerprint($home.'/keys.dev.pub'));
         } else {
             $errors[] = '<error>Missing pubkey for dev verification</error>';
@@ -404,18 +404,18 @@ EOT
 
         $hadError = false;
         if ($result instanceof \Exception) {
-            $result = '<error>['.get_class($result).'] '.$result->getMessage().'</error>';
+            $result = '<error>['.\get_class($result).'] '.$result->getMessage().'</error>';
         }
 
         if (!$result) {
             // falsey results should be considered as an error, even if there is nothing to output
             $hadError = true;
         } else {
-            if (!is_array($result)) {
+            if (!\is_array($result)) {
                 $result = array($result);
             }
             foreach ($result as $message) {
-                if (false !== strpos($message, '<error>')) {
+                if (false !== \strpos($message, '<error>')) {
                     $hadError = true;
                 }
             }
@@ -451,31 +451,31 @@ EOT
         $iniMessage = PHP_EOL.PHP_EOL.IniHelper::getMessage();
         $iniMessage .= PHP_EOL.'If you can not modify the ini file, you can also run `php -d option=value` to modify ini values on the fly. You can use -d multiple times.';
 
-        if (!function_exists('json_decode')) {
+        if (!\function_exists('json_decode')) {
             $errors['json'] = true;
         }
 
-        if (!extension_loaded('Phar')) {
+        if (!\extension_loaded('Phar')) {
             $errors['phar'] = true;
         }
 
-        if (!extension_loaded('filter')) {
+        if (!\extension_loaded('filter')) {
             $errors['filter'] = true;
         }
 
-        if (!extension_loaded('hash')) {
+        if (!\extension_loaded('hash')) {
             $errors['hash'] = true;
         }
 
-        if (!extension_loaded('iconv') && !extension_loaded('mbstring')) {
+        if (!\extension_loaded('iconv') && !\extension_loaded('mbstring')) {
             $errors['iconv_mbstring'] = true;
         }
 
-        if (!ini_get('allow_url_fopen')) {
+        if (!\ini_get('allow_url_fopen')) {
             $errors['allow_url_fopen'] = true;
         }
 
-        if (extension_loaded('ionCube Loader') && ioncube_loader_iversion() < 40009) {
+        if (\extension_loaded('ionCube Loader') && ioncube_loader_iversion() < 40009) {
             $errors['ioncube'] = ioncube_loader_version();
         }
 
@@ -487,40 +487,40 @@ EOT
             $warnings['php'] = PHP_VERSION;
         }
 
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             $errors['openssl'] = true;
         }
 
-        if (extension_loaded('openssl') && OPENSSL_VERSION_NUMBER < 0x1000100f) {
+        if (\extension_loaded('openssl') && OPENSSL_VERSION_NUMBER < 0x1000100f) {
             $warnings['openssl_version'] = true;
         }
 
-        if (!defined('HHVM_VERSION') && !extension_loaded('apcu') && ini_get('apc.enable_cli')) {
+        if (!\defined('HHVM_VERSION') && !\extension_loaded('apcu') && \ini_get('apc.enable_cli')) {
             $warnings['apc_cli'] = true;
         }
 
-        if (!extension_loaded('zlib')) {
+        if (!\extension_loaded('zlib')) {
             $warnings['zlib'] = true;
         }
 
-        ob_start();
-        phpinfo(INFO_GENERAL);
-        $phpinfo = ob_get_clean();
-        if (preg_match('{Configure Command(?: *</td><td class="v">| *=> *)(.*?)(?:</td>|$)}m', $phpinfo, $match)) {
+        \ob_start();
+        \phpinfo(INFO_GENERAL);
+        $phpinfo = \ob_get_clean();
+        if (\preg_match('{Configure Command(?: *</td><td class="v">| *=> *)(.*?)(?:</td>|$)}m', $phpinfo, $match)) {
             $configure = $match[1];
 
-            if (false !== strpos($configure, '--enable-sigchild')) {
+            if (false !== \strpos($configure, '--enable-sigchild')) {
                 $warnings['sigchild'] = true;
             }
 
-            if (false !== strpos($configure, '--with-curlwrappers')) {
+            if (false !== \strpos($configure, '--with-curlwrappers')) {
                 $warnings['curlwrappers'] = true;
             }
         }
 
-        if (ini_get('xdebug.profiler_enabled')) {
+        if (\ini_get('xdebug.profiler_enabled')) {
             $warnings['xdebug_profile'] = true;
-        } elseif (extension_loaded('xdebug')) {
+        } elseif (\extension_loaded('xdebug')) {
             $warnings['xdebug_loaded'] = true;
         }
 
@@ -629,7 +629,7 @@ EOT
 
                     case 'openssl_version':
                         // Attempt to parse version number out, fallback to whole string value.
-                        $opensslVersion = strstr(trim(strstr(OPENSSL_VERSION_TEXT, ' ')), ' ', true);
+                        $opensslVersion = \strstr(\trim(\strstr(OPENSSL_VERSION_TEXT, ' ')), ' ', true);
                         $opensslVersion = $opensslVersion ?: OPENSSL_VERSION_TEXT;
 
                         $text = "The OpenSSL library ({$opensslVersion}) used by PHP does not support TLSv1.2 or TLSv1.1.".PHP_EOL;

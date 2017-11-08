@@ -65,7 +65,7 @@ class Pool implements \Countable
         $this->stabilityFlags = $stabilityFlags;
         $this->filterRequires = $filterRequires;
         foreach ($filterRequires as $name => $constraint) {
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
+            if (\preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
                 unset($this->filterRequires[$name]);
             }
         }
@@ -140,7 +140,7 @@ class Pool implements \Countable
 
     public function getPriority(RepositoryInterface $repo)
     {
-        $priority = array_search($repo, $this->repositories, true);
+        $priority = \array_search($repo, $this->repositories, true);
 
         if (false === $priority) {
             throw new \RuntimeException("Could not determine repository priority. The repository was not registered in the pool.");
@@ -165,7 +165,7 @@ class Pool implements \Countable
      */
     public function count()
     {
-        return count($this->packages);
+        return \count($this->packages);
     }
 
     /**
@@ -211,14 +211,14 @@ class Pool implements \Countable
         }
 
         if ($mustMatchName) {
-            $candidates = array_filter($candidates, function ($candidate) use ($name) {
+            $candidates = \array_filter($candidates, function ($candidate) use ($name) {
                 return $candidate->getName() == $name;
             });
             if (isset($this->packageByExactName[$name])) {
-                $candidates = array_merge($candidates, $this->packageByExactName[$name]);
+                $candidates = \array_merge($candidates, $this->packageByExactName[$name]);
             }
         } elseif (isset($this->packageByName[$name])) {
-            $candidates = array_merge($candidates, $this->packageByName[$name]);
+            $candidates = \array_merge($candidates, $this->packageByName[$name]);
         }
 
         $matches = $provideMatches = array();
@@ -273,12 +273,12 @@ class Pool implements \Countable
             return $matches;
         }
 
-        return array_merge($matches, $provideMatches);
+        return \array_merge($matches, $provideMatches);
     }
 
     public function literalToPackage($literal)
     {
-        $packageId = abs($literal);
+        $packageId = \abs($literal);
 
         return $this->packageById($packageId);
     }

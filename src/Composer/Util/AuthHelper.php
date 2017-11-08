@@ -39,8 +39,8 @@ class AuthHelper
             $answer = $this->io->askAndValidate(
                 'Do you want to store credentials for '.$originUrl.' in '.$configSource->getName().' ? [Yn] ',
                 function ($value) {
-                    $input = strtolower(substr(trim($value), 0, 1));
-                    if (in_array($input, array('y','n'))) {
+                    $input = \strtolower(\substr(\trim($value), 0, 1));
+                    if (\in_array($input, array('y','n'))) {
                         return $input;
                     }
                     throw new \RuntimeException('Please answer (y)es or (n)o');

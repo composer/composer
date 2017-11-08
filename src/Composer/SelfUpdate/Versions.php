@@ -38,9 +38,9 @@ class Versions
         }
 
         $channelFile = $this->config->get('home').'/update-channel';
-        if (file_exists($channelFile)) {
-            $channel = trim(file_get_contents($channelFile));
-            if (in_array($channel, array('stable', 'preview', 'snapshot'), true)) {
+        if (\file_exists($channelFile)) {
+            $channel = \trim(\file_get_contents($channelFile));
+            if (\in_array($channel, array('stable', 'preview', 'snapshot'), true)) {
                 return $this->channel = $channel;
             }
         }
@@ -50,18 +50,18 @@ class Versions
 
     public function setChannel($channel)
     {
-        if (!in_array($channel, array('stable', 'preview', 'snapshot'), true)) {
+        if (!\in_array($channel, array('stable', 'preview', 'snapshot'), true)) {
             throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: stable, preview, snapshot');
         }
 
         $channelFile = $this->config->get('home').'/update-channel';
         $this->channel = $channel;
-        file_put_contents($channelFile, $channel.PHP_EOL);
+        \file_put_contents($channelFile, $channel.PHP_EOL);
     }
 
     public function getLatest()
     {
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
+        $protocol = \extension_loaded('openssl') ? 'https' : 'http';
         $versions = JsonFile::parseJson($this->rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/versions', false));
 
         foreach ($versions[$this->getChannel()] as $version) {

@@ -44,8 +44,8 @@ class ProcessExecutor
     public function execute($command, &$output = null, $cwd = null)
     {
         if ($this->io && $this->io->isDebug()) {
-            $safeCommand = preg_replace_callback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
-                if (preg_match('{^[a-f0-9]{12,}$}', $m['user'])) {
+            $safeCommand = \preg_replace_callback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
+                if (\preg_match('{^[a-f0-9]{12,}$}', $m['user'])) {
                     return '://***:***@';
                 }
 
@@ -56,18 +56,18 @@ class ProcessExecutor
 
         // make sure that null translate to the proper directory in case the dir is a symlink
         // and we call a git command, because msysgit does not handle symlinks properly
-        if (null === $cwd && Platform::isWindows() && false !== strpos($command, 'git') && getcwd()) {
-            $cwd = realpath(getcwd());
+        if (null === $cwd && Platform::isWindows() && false !== \strpos($command, 'git') && \getcwd()) {
+            $cwd = \realpath(\getcwd());
         }
 
-        $this->captureOutput = count(func_get_args()) > 1;
+        $this->captureOutput = \count(\func_get_args()) > 1;
         $this->errorOutput = null;
         $process = new Process($command, $cwd, null, null, static::getTimeout());
 
-        $callback = is_callable($output) ? $output : array($this, 'outputHandler');
+        $callback = \is_callable($output) ? $output : array($this, 'outputHandler');
         $process->run($callback);
 
-        if ($this->captureOutput && !is_callable($output)) {
+        if ($this->captureOutput && !\is_callable($output)) {
             $output = $process->getOutput();
         }
 
@@ -78,9 +78,9 @@ class ProcessExecutor
 
     public function splitLines($output)
     {
-        $output = trim($output);
+        $output = \trim($output);
 
-        return ((string) $output === '') ? array() : preg_split('{\r?\n}', $output);
+        return ((string) $output === '') ? array() : \preg_split('{\r?\n}', $output);
     }
 
     /**

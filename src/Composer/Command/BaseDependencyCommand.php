@@ -82,8 +82,8 @@ class BaseDependencyCommand extends BaseCommand
         $pool->addRepository($repository);
 
         // Parse package name and constraint
-        list($needle, $textConstraint) = array_pad(
-            explode(':', $input->getArgument(self::ARGUMENT_PACKAGE)),
+        list($needle, $textConstraint) = \array_pad(
+            \explode(':', $input->getArgument(self::ARGUMENT_PACKAGE)),
             2,
             $input->getArgument(self::ARGUMENT_CONSTRAINT)
         );
@@ -91,7 +91,7 @@ class BaseDependencyCommand extends BaseCommand
         // Find packages that are or provide the requested package first
         $packages = $pool->whatProvides($needle);
         if (empty($packages)) {
-            throw new \InvalidArgumentException(sprintf('Could not find package "%s" in your project', $needle));
+            throw new \InvalidArgumentException(\sprintf('Could not find package "%s" in your project', $needle));
         }
 
         // If the version we ask for is not installed then we need to locate it in remote repos and add it.
@@ -107,7 +107,7 @@ class BaseDependencyCommand extends BaseCommand
         $needles = array($needle);
         if ($inverted) {
             foreach ($packages as $package) {
-                $needles = array_merge($needles, array_map(function (Link $link) {
+                $needles = \array_merge($needles, \array_map(function (Link $link) {
                     return $link->getTarget();
                 }, $package->getReplaces()));
             }
@@ -128,13 +128,13 @@ class BaseDependencyCommand extends BaseCommand
         // Resolve dependencies
         $results = $repository->getDependents($needles, $constraint, $inverted, $recursive);
         if (empty($results)) {
-            $extra = (null !== $constraint) ? sprintf(' in versions %smatching %s', $inverted ? 'not ' : '', $textConstraint) : '';
-            $this->getIO()->writeError(sprintf('<info>There is no installed package depending on "%s"%s</info>',
+            $extra = (null !== $constraint) ? \sprintf(' in versions %smatching %s', $inverted ? 'not ' : '', $textConstraint) : '';
+            $this->getIO()->writeError(\sprintf('<info>There is no installed package depending on "%s"%s</info>',
                 $needle, $extra));
         } elseif ($renderTree) {
             $this->initStyles($output);
             $root = $packages[0];
-            $this->getIO()->write(sprintf('<info>%s</info> %s %s', $root->getPrettyName(), $root->getPrettyVersion(), $root->getDescription()));
+            $this->getIO()->write(\sprintf('<info>%s</info> %s %s', $root->getPrettyName(), $root->getPrettyVersion(), $root->getDescription()));
             $this->printTree($results);
         } else {
             $this->printTable($output, $results);
@@ -167,14 +167,14 @@ class BaseDependencyCommand extends BaseCommand
                     continue;
                 }
                 $doubles[$unique] = true;
-                $version = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '-' : $package->getPrettyVersion();
-                $rows[] = array($package->getPrettyName(), $version, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint()));
+                $version = (\strpos($package->getPrettyVersion(), 'No version set') === 0) ? '-' : $package->getPrettyVersion();
+                $rows[] = array($package->getPrettyName(), $version, $link->getDescription(), \sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint()));
                 if ($children) {
-                    $queue = array_merge($queue, $children);
+                    $queue = \array_merge($queue, $children);
                 }
             }
             $results = $queue;
-            $table = array_merge($rows, $table);
+            $table = \array_merge($rows, $table);
         } while (!empty($results));
 
         // Render table
@@ -215,7 +215,7 @@ class BaseDependencyCommand extends BaseCommand
      */
     protected function printTree($results, $prefix = '', $level = 1)
     {
-        $count = count($results);
+        $count = \count($results);
         $idx = 0;
         foreach ($results as $result) {
             /**
@@ -225,14 +225,14 @@ class BaseDependencyCommand extends BaseCommand
              */
             list($package, $link, $children) = $result;
 
-            $color = $this->colors[$level % count($this->colors)];
-            $prevColor = $this->colors[($level - 1) % count($this->colors)];
+            $color = $this->colors[$level % \count($this->colors)];
+            $prevColor = $this->colors[($level - 1) % \count($this->colors)];
             $isLast = (++$idx == $count);
-            $versionText = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '' : $package->getPrettyVersion();
-            $packageText = rtrim(sprintf('<%s>%s</%1$s> %s', $color, $package->getPrettyName(), $versionText));
-            $linkText = sprintf('%s <%s>%s</%2$s> %s', $link->getDescription(), $prevColor, $link->getTarget(), $link->getPrettyConstraint());
+            $versionText = (\strpos($package->getPrettyVersion(), 'No version set') === 0) ? '' : $package->getPrettyVersion();
+            $packageText = \rtrim(\sprintf('<%s>%s</%1$s> %s', $color, $package->getPrettyName(), $versionText));
+            $linkText = \sprintf('%s <%s>%s</%2$s> %s', $link->getDescription(), $prevColor, $link->getTarget(), $link->getPrettyConstraint());
             $circularWarn = $children === false ? '(circular dependency aborted here)' : '';
-            $this->writeTreeLine(rtrim(sprintf("%s%s%s (%s) %s", $prefix, $isLast ? '└──' : '├──', $packageText, $linkText, $circularWarn)));
+            $this->writeTreeLine(\rtrim(\sprintf("%s%s%s (%s) %s", $prefix, $isLast ? '└──' : '├──', $packageText, $linkText, $circularWarn)));
             if ($children) {
                 $this->printTree($children, $prefix . ($isLast ? '   ' : '│  '), $level + 1);
             }
@@ -243,7 +243,7 @@ class BaseDependencyCommand extends BaseCommand
     {
         $io = $this->getIO();
         if (!$io->isDecorated()) {
-            $line = str_replace(array('└', '├', '──', '│'), array('`-', '|-', '-', '|'), $line);
+            $line = \str_replace(array('└', '├', '──', '│'), array('`-', '|-', '-', '|'), $line);
         }
 
         $io->write($line);

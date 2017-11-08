@@ -31,7 +31,7 @@ class ProjectInstaller implements InstallerInterface
 
     public function __construct($installPath, DownloadManager $dm)
     {
-        $this->installPath = rtrim(strtr($installPath, '\\', '/'), '/').'/';
+        $this->installPath = \rtrim(\strtr($installPath, '\\', '/'), '/').'/';
         $this->downloadManager = $dm;
         $this->filesystem = new Filesystem;
     }
@@ -61,11 +61,11 @@ class ProjectInstaller implements InstallerInterface
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $installPath = $this->installPath;
-        if (file_exists($installPath) && !$this->filesystem->isDirEmpty($installPath)) {
+        if (\file_exists($installPath) && !$this->filesystem->isDirEmpty($installPath)) {
             throw new \InvalidArgumentException("Project directory $installPath is not empty.");
         }
-        if (!is_dir($installPath)) {
-            mkdir($installPath, 0777, true);
+        if (!\is_dir($installPath)) {
+            \mkdir($installPath, 0777, true);
         }
         $this->downloadManager->download($package, $installPath);
     }

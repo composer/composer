@@ -50,7 +50,7 @@ class Rule2Literals extends Rule
 
     public function getHash()
     {
-        $data = unpack('ihash', md5($this->literal1.','.$this->literal2, true));
+        $data = \unpack('ihash', \md5($this->literal1.','.$this->literal2, true));
 
         return $data['hash'];
     }
@@ -66,7 +66,7 @@ class Rule2Literals extends Rule
     public function equals(Rule $rule)
     {
         $literals = $rule->getLiterals();
-        if (2 != count($literals)) {
+        if (2 != \count($literals)) {
             return false;
         }
 

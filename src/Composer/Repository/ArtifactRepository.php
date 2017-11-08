@@ -32,7 +32,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     public function __construct(array $repoConfig, IOInterface $io)
     {
         parent::__construct();
-        if (!extension_loaded('zip')) {
+        if (!\extension_loaded('zip')) {
             throw new \RuntimeException('The artifact repository requires PHP\'s zip extension');
         }
 
@@ -74,7 +74,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $template = 'Found package <info>%s</info> (<comment>%s</comment>) in file <info>%s</info>';
-            $io->writeError(sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename()), true, IOInterface::VERBOSE);
+            $io->writeError(\sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename()), true, IOInterface::VERBOSE);
 
             $this->addPackage($package);
         }
@@ -94,21 +94,21 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $stat = $zip->statIndex($i);
-            if (strcmp(basename($stat['name']), $filename) === 0) {
-                $directoryName = dirname($stat['name']);
+            if (\strcmp(\basename($stat['name']), $filename) === 0) {
+                $directoryName = \dirname($stat['name']);
                 if ($directoryName == '.') {
                     //if composer.json is in root directory
                     //it has to be the one to use.
                     return $i;
                 }
 
-                if (strpos($directoryName, '\\') !== false ||
-                   strpos($directoryName, '/') !== false) {
+                if (\strpos($directoryName, '\\') !== false ||
+                   \strpos($directoryName, '/') !== false) {
                     //composer.json files below first directory are rejected
                     continue;
                 }
 
-                $length = strlen($stat['name']);
+                $length = \strlen($stat['name']);
                 if ($indexOfShortestMatch === false || $length < $lengthOfShortestMatch) {
                     //Check it's not a directory.
                     $contents = $zip->getFromIndex($i);
@@ -140,13 +140,13 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         $configurationFileName = $zip->getNameIndex($foundFileIndex);
 
         $composerFile = "zip://{$file->getPathname()}#$configurationFileName";
-        $json = file_get_contents($composerFile);
+        $json = \file_get_contents($composerFile);
 
         $package = JsonFile::parseJson($json, $composerFile);
         $package['dist'] = array(
             'type' => 'zip',
-            'url' => strtr($file->getPathname(), '\\', '/'),
-            'shasum' => sha1_file($file->getRealPath()),
+            'url' => \strtr($file->getPathname(), '\\', '/'),
+            'shasum' => \sha1_file($file->getRealPath()),
         );
 
         try {

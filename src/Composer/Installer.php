@@ -176,8 +176,8 @@ class Installer
         // of PHP objects, the GC can spend quite some time walking the tree of references looking
         // for stuff to collect while there is nothing to collect. This slows things down dramatically
         // and turning it off results in much better performance. Do not try this at home however.
-        gc_collect_cycles();
-        gc_disable();
+        \gc_collect_cycles();
+        \gc_disable();
 
         // Force update if there is no lock file present
         if (!$this->update && !$this->locker->isLocked()) {
@@ -247,12 +247,12 @@ class Installer
                 continue;
             }
 
-            $replacement = (is_string($package->getReplacementPackage()))
+            $replacement = (\is_string($package->getReplacementPackage()))
                 ? 'Use ' . $package->getReplacementPackage() . ' instead'
                 : 'No replacement was suggested';
 
             $this->io->writeError(
-                sprintf(
+                \sprintf(
                     "<warning>Package %s is abandoned, you should avoid using it. %s.</warning>",
                     $package->getPrettyName(),
                     $replacement
@@ -268,7 +268,7 @@ class Installer
             $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
 
             $updatedLock = $this->locker->setLockData(
-                array_diff($localRepo->getCanonicalPackages(), $devPackages),
+                \array_diff($localRepo->getCanonicalPackages(), $devPackages),
                 $devPackages,
                 $platformReqs,
                 $platformDevReqs,
@@ -301,7 +301,7 @@ class Installer
 
         if ($this->runScripts) {
             $devMode = (int) $this->devMode;
-            putenv("COMPOSER_DEV_MODE=$devMode");
+            \putenv("COMPOSER_DEV_MODE=$devMode");
 
             // dispatch post event
             $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
@@ -315,16 +315,16 @@ class Installer
             }
 
             $vendorDir = $this->config->get('vendor-dir');
-            if (is_dir($vendorDir)) {
+            if (\is_dir($vendorDir)) {
                 // suppress errors as this fails sometimes on OSX for no apparent reason
                 // see https://github.com/composer/composer/issues/4070#issuecomment-129792748
-                @touch($vendorDir);
+                @\touch($vendorDir);
             }
         }
 
         // re-enable GC except on HHVM which triggers a warning here
-        if (!defined('HHVM_VERSION')) {
-            gc_enable();
+        if (!\defined('HHVM_VERSION')) {
+            \gc_enable();
         }
 
         return 0;
@@ -404,7 +404,7 @@ class Installer
 
             $request->updateAll();
 
-            $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
+            $links = \array_merge($this->package->getRequires(), $this->package->getDevRequires());
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
@@ -478,7 +478,7 @@ class Installer
                 $this->io->writeError('<warning>Running update with --no-dev does not mean require-dev is ignored, it just means the packages will not be installed. If dev requirements are blocking the update you have to resolve those problems.</warning>', true, IOInterface::QUIET);
             }
 
-            return array(max(1, $e->getCode()), array());
+            return array(\max(1, $e->getCode()), array());
         }
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
@@ -486,7 +486,7 @@ class Installer
 
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
 
-        $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
+        $this->io->writeError("Analyzed ".\count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
         $this->io->writeError("Analyzed ".$solver->getRuleSetSize()." rules to resolve dependencies", true, IOInterface::VERBOSE);
 
         // execute operations
@@ -521,22 +521,22 @@ class Installer
             }
 
             $this->io->writeError(
-                sprintf("<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
-                count($installs),
-                1 === count($installs) ? '' : 's',
-                count($updates),
-                1 === count($updates) ? '' : 's',
-                count($uninstalls),
-                1 === count($uninstalls) ? '' : 's')
+                \sprintf("<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
+                \count($installs),
+                1 === \count($installs) ? '' : 's',
+                \count($updates),
+                1 === \count($updates) ? '' : 's',
+                \count($uninstalls),
+                1 === \count($uninstalls) ? '' : 's')
             );
             if ($installs) {
-                $this->io->writeError("Installs: ".implode(', ', $installs), true, IOInterface::VERBOSE);
+                $this->io->writeError("Installs: ".\implode(', ', $installs), true, IOInterface::VERBOSE);
             }
             if ($updates) {
-                $this->io->writeError("Updates: ".implode(', ', $updates), true, IOInterface::VERBOSE);
+                $this->io->writeError("Updates: ".\implode(', ', $updates), true, IOInterface::VERBOSE);
             }
             if ($uninstalls) {
-                $this->io->writeError("Removals: ".implode(', ', $uninstalls), true, IOInterface::VERBOSE);
+                $this->io->writeError("Removals: ".\implode(', ', $uninstalls), true, IOInterface::VERBOSE);
             }
         }
 
@@ -573,22 +573,22 @@ class Installer
                 }
             }
 
-            $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
-            if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
+            $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.\strtoupper($operation->getJobType());
+            if (\defined($event) && $this->runScripts) {
+                $this->eventDispatcher->dispatchPackageEvent(\constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
             // output non-alias ops when not executing operations (i.e. dry run), output alias ops in debug verbosity
-            if (!$this->executeOperations && false === strpos($operation->getJobType(), 'Alias')) {
+            if (!$this->executeOperations && false === \strpos($operation->getJobType(), 'Alias')) {
                 $this->io->writeError('  - ' . $operation);
-            } elseif ($this->io->isDebug() && false !== strpos($operation->getJobType(), 'Alias')) {
+            } elseif ($this->io->isDebug() && false !== \strpos($operation->getJobType(), 'Alias')) {
                 $this->io->writeError('  - ' . $operation);
             }
 
             $this->installationManager->execute($localRepo, $operation);
 
             // output reasons why the operation was ran, only for install/update operations
-            if ($this->verbose && $this->io->isVeryVerbose() && in_array($operation->getJobType(), array('install', 'update'))) {
+            if ($this->verbose && $this->io->isVeryVerbose() && \in_array($operation->getJobType(), array('install', 'update'))) {
                 $reason = $operation->getReason();
                 if ($reason instanceof Rule) {
                     switch ($reason->getReason()) {
@@ -604,9 +604,9 @@ class Installer
                 }
             }
 
-            $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
-            if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
+            $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.\strtoupper($operation->getJobType());
+            if (\defined($event) && $this->runScripts) {
+                $this->eventDispatcher->dispatchPackageEvent(\constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
             if ($this->executeOperations || $this->writeLock) {
@@ -752,7 +752,7 @@ class Installer
         $pluginsWithDeps = array();
         $pluginRequires = array();
 
-        foreach (array_reverse($operations, true) as $idx => $op) {
+        foreach (\array_reverse($operations, true) as $idx => $op) {
             if ($op instanceof InstallOperation) {
                 $package = $op->getPackage();
             } elseif ($op instanceof UpdateOperation) {
@@ -765,28 +765,28 @@ class Installer
             $isPlugin = $package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer';
 
             // is this a plugin or a dependency of a plugin?
-            if ($isPlugin || count(array_intersect($package->getNames(), $pluginRequires))) {
+            if ($isPlugin || \count(\array_intersect($package->getNames(), $pluginRequires))) {
                 // get the package's requires, but filter out any platform requirements or 'composer-plugin-api'
-                $requires = array_filter(array_keys($package->getRequires()), function($req) {
-                    return $req !== 'composer-plugin-api' && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+                $requires = \array_filter(\array_keys($package->getRequires()), function($req) {
+                    return $req !== 'composer-plugin-api' && !\preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
                 });
 
                 // is this a plugin with no meaningful dependencies?
-                if ($isPlugin && !count($requires)) {
+                if ($isPlugin && !\count($requires)) {
                     // plugins with no dependencies go to the very front
-                    array_unshift($pluginsNoDeps, $op);
+                    \array_unshift($pluginsNoDeps, $op);
                 } else {
                     // capture the requirements for this package so those packages will be moved up as well
-                    $pluginRequires = array_merge($pluginRequires, $requires);
+                    $pluginRequires = \array_merge($pluginRequires, $requires);
                     // move the operation to the front
-                    array_unshift($pluginsWithDeps, $op);
+                    \array_unshift($pluginsWithDeps, $op);
                 }
 
                 unset($operations[$idx]);
             }
         }
 
-        return array_merge($pluginsNoDeps, $pluginsWithDeps, $operations);
+        return \array_merge($pluginsNoDeps, $pluginsWithDeps, $operations);
     }
 
     /**
@@ -806,7 +806,7 @@ class Installer
             }
         }
 
-        return array_merge($uninstOps, $operations);
+        return \array_merge($uninstOps, $operations);
     }
 
     /**
@@ -844,7 +844,7 @@ class Installer
             $minimumStability = $this->package->getMinimumStability();
             $stabilityFlags = $this->package->getStabilityFlags();
 
-            $requires = array_merge($this->package->getRequires(), $this->package->getDevRequires());
+            $requires = \array_merge($this->package->getRequires(), $this->package->getDevRequires());
         } else {
             $minimumStability = $this->locker->getMinimumStability();
             $stabilityFlags = $this->locker->getStabilityFlags();
@@ -860,7 +860,7 @@ class Installer
         $rootConstraints = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
-            if ($this->ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
+            if ($this->ignorePlatformReqs && \preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
                 continue;
             }
             if ($constraint instanceof Link) {
@@ -912,7 +912,7 @@ class Installer
         $fixedPackages = $platformRepo->getPackages();
         if ($this->additionalInstalledRepository) {
             $additionalFixedPackages = $this->additionalInstalledRepository->getPackages();
-            $fixedPackages = array_merge($fixedPackages, $additionalFixedPackages);
+            $fixedPackages = \array_merge($fixedPackages, $additionalFixedPackages);
         }
 
         // fix the version of all platform packages + additionally installed packages
@@ -1003,7 +1003,7 @@ class Installer
                 $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()));
                 foreach ($matches as $index => $match) {
                     // skip local packages
-                    if (!in_array($match->getRepository(), $repositories, true)) {
+                    if (!\in_array($match->getRepository(), $repositories, true)) {
                         unset($matches[$index]);
                         continue;
                     }
@@ -1135,7 +1135,7 @@ class Installer
             $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()));
             foreach ($matches as $index => $match) {
                 // skip local packages
-                if (!in_array($match->getRepository(), $repositories, true)) {
+                if (!\in_array($match->getRepository(), $repositories, true)) {
                     unset($matches[$index]);
                     continue;
                 }
@@ -1186,7 +1186,7 @@ class Installer
 
         // only update dist url for github/bitbucket dists as they use a combination of dist url + dist reference to install
         // but for other urls this is ambiguous and could result in bad outcomes
-        if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}i', $distUrl)) {
+        if (\preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}i', $distUrl)) {
             $package->setDistUrl($distUrl);
             $this->updateInstallReferences($package, $sourceReference);
         }
@@ -1204,9 +1204,9 @@ class Installer
 
         $package->setSourceReference($reference);
 
-        if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}i', $package->getDistUrl())) {
+        if (\preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}i', $package->getDistUrl())) {
             $package->setDistReference($reference);
-            $package->setDistUrl(preg_replace('{(?<=/)[a-f0-9]{40}(?=/|$)}i', $reference, $package->getDistUrl()));
+            $package->setDistUrl(\preg_replace('{(?<=/)[a-f0-9]{40}(?=/|$)}i', $reference, $package->getDistUrl()));
         } else if ($package->getDistReference()) { // update the dist reference if there was one, but if none was provided ignore it
             $package->setDistReference($reference);
         }
@@ -1242,7 +1242,7 @@ class Installer
 
         foreach ($this->updateWhitelist as $whiteListedPattern => $void) {
             $patternRegexp = $this->packageNameToRegexp($whiteListedPattern);
-            if (preg_match($patternRegexp, $package->getName())) {
+            if (\preg_match($patternRegexp, $package->getName())) {
                 return true;
             }
         }
@@ -1258,7 +1258,7 @@ class Installer
      */
     private function packageNameToRegexp($whiteListedPattern)
     {
-        $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern));
+        $cleanedWhiteListedPattern = \str_replace('\\*', '.*', \preg_quote($whiteListedPattern));
 
         return "{^" . $cleanedWhiteListedPattern . "$}i";
     }
@@ -1271,7 +1271,7 @@ class Installer
     {
         $platformReqs = array();
         foreach ($links as $link) {
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+            if (\preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
                 $platformReqs[$link->getTarget()] = $link->getPrettyConstraint();
             }
         }
@@ -1298,7 +1298,7 @@ class Installer
             return;
         }
 
-        $rootRequires = array_merge($rootRequires, $rootDevRequires);
+        $rootRequires = \array_merge($rootRequires, $rootDevRequires);
 
         $requiredPackageNames = array();
         foreach ($rootRequires as $require) {
@@ -1317,27 +1317,27 @@ class Installer
 
         $seen = array();
 
-        $rootRequiredPackageNames = array_keys($rootRequires);
+        $rootRequiredPackageNames = \array_keys($rootRequires);
 
         foreach ($this->updateWhitelist as $packageName => $void) {
             $packageQueue = new \SplQueue;
 
             $depPackages = $pool->whatProvides($packageName);
 
-            $nameMatchesRequiredPackage = in_array($packageName, $requiredPackageNames, true);
+            $nameMatchesRequiredPackage = \in_array($packageName, $requiredPackageNames, true);
 
             // check if the name is a glob pattern that did not match directly
             if (!$nameMatchesRequiredPackage) {
                 $whitelistPatternRegexp = $this->packageNameToRegexp($packageName);
                 foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
-                    if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
+                    if (\preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
                         $nameMatchesRequiredPackage = true;
                         break;
                     }
                 }
             }
 
-            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
+            if (\count($depPackages) == 0 && !$nameMatchesRequiredPackage && !\in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
                 $this->io->writeError('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 
@@ -1649,7 +1649,7 @@ class Installer
      */
     public function setUpdateWhitelist(array $packages)
     {
-        $this->updateWhitelist = array_flip(array_map('strtolower', $packages));
+        $this->updateWhitelist = \array_flip(\array_map('strtolower', $packages));
 
         return $this;
     }

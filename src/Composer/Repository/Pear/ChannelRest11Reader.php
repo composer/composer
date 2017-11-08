@@ -60,7 +60,7 @@ class ChannelRest11Reader extends BaseChannelReader
         foreach ($xml->xpath('ns:c') as $node) {
             $categoryName = (string) $node;
             $categoryPackages = $this->readCategoryPackages($baseUrl, $categoryName);
-            $result = array_merge($result, $categoryPackages);
+            $result = \array_merge($result, $categoryPackages);
         }
 
         return $result;
@@ -78,7 +78,7 @@ class ChannelRest11Reader extends BaseChannelReader
     {
         $result = array();
 
-        $categoryPath = '/c/'.urlencode($categoryName).'/packagesinfo.xml';
+        $categoryPath = '/c/'.\urlencode($categoryName).'/packagesinfo.xml';
         $xml = $this->requestXml($baseUrl, $categoryPath);
         $xml->registerXPathNamespace('ns', self::CATEGORY_PACKAGES_INFO_NS);
         foreach ($xml->xpath('ns:pi') as $node) {
@@ -107,7 +107,7 @@ class ChannelRest11Reader extends BaseChannelReader
         $dependencies = array();
         foreach ($packageInfo->xpath('ns:deps') as $node) {
             $dependencyVersion = (string) $node->v;
-            $dependencyArray = unserialize((string) $node->d);
+            $dependencyArray = \unserialize((string) $node->d);
 
             $dependencyInfo = $this->dependencyReader->buildDependencyInfo($dependencyArray);
 

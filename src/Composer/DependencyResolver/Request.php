@@ -56,7 +56,7 @@ class Request
 
     protected function addJob($packageName, $cmd, ConstraintInterface $constraint = null, $fixed = false)
     {
-        $packageName = strtolower($packageName);
+        $packageName = \strtolower($packageName);
 
         $this->jobs[] = array(
             'cmd' => $cmd,

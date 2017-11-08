@@ -68,7 +68,7 @@ class DefaultPolicy implements PolicyInterface
 
         foreach ($packages as &$literals) {
             $policy = $this;
-            usort($literals, function ($a, $b) use ($policy, $pool, $installedMap, $requiredPackage) {
+            \usort($literals, function ($a, $b) use ($policy, $pool, $installedMap, $requiredPackage) {
                 return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage, true);
             });
         }
@@ -81,10 +81,10 @@ class DefaultPolicy implements PolicyInterface
             $literals = $this->pruneRemoteAliases($pool, $literals);
         }
 
-        $selected = call_user_func_array('array_merge', $packages);
+        $selected = \call_user_func_array('array_merge', $packages);
 
         // now sort the result across all packages to respect replaces across packages
-        usort($selected, function ($a, $b) use ($policy, $pool, $installedMap, $requiredPackage) {
+        \usort($selected, function ($a, $b) use ($policy, $pool, $installedMap, $requiredPackage) {
             return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage);
         });
 
@@ -101,8 +101,8 @@ class DefaultPolicy implements PolicyInterface
                 $packages[$packageName] = array();
             }
 
-            if (isset($installedMap[abs($literal)])) {
-                array_unshift($packages[$packageName], $literal);
+            if (isset($installedMap[\abs($literal)])) {
+                \array_unshift($packages[$packageName], $literal);
             } else {
                 $packages[$packageName][] = $literal;
             }
@@ -140,11 +140,11 @@ class DefaultPolicy implements PolicyInterface
 
                 // for replacers not replacing each other, put a higher prio on replacing
                 // packages with the same vendor as the required package
-                if ($requiredPackage && false !== ($pos = strpos($requiredPackage, '/'))) {
-                    $requiredVendor = substr($requiredPackage, 0, $pos);
+                if ($requiredPackage && false !== ($pos = \strpos($requiredPackage, '/'))) {
+                    $requiredVendor = \substr($requiredPackage, 0, $pos);
 
-                    $aIsSameVendor = substr($a->getName(), 0, $pos) === $requiredVendor;
-                    $bIsSameVendor = substr($b->getName(), 0, $pos) === $requiredVendor;
+                    $aIsSameVendor = \substr($a->getName(), 0, $pos) === $requiredVendor;
+                    $bIsSameVendor = \substr($b->getName(), 0, $pos) === $requiredVendor;
 
                     if ($bIsSameVendor !== $aIsSameVendor) {
                         return $aIsSameVendor ? -1 : 1;

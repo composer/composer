@@ -55,10 +55,10 @@ class ChannelReader extends BaseChannelReader
         $channelName = (string) $xml->name;
         $channelAlias = (string) $xml->suggestedalias;
 
-        $supportedVersions = array_keys($this->readerMap);
+        $supportedVersions = \array_keys($this->readerMap);
         $selectedRestVersion = $this->selectRestVersion($xml, $supportedVersions);
         if (!$selectedRestVersion) {
-            throw new \UnexpectedValueException(sprintf('PEAR repository %s does not supports any of %s protocols.', $url, implode(', ', $supportedVersions)));
+            throw new \UnexpectedValueException(\sprintf('PEAR repository %s does not supports any of %s protocols.', $url, \implode(', ', $supportedVersions)));
         }
 
         $reader = $this->readerMap[$selectedRestVersion['version']];
@@ -85,13 +85,13 @@ class ChannelReader extends BaseChannelReader
             foreach ($testResult as $result) {
                 // Choose first https:// option.
                 $result = (string) $result;
-                if (preg_match('{^https://}i', $result)) {
+                if (\preg_match('{^https://}i', $result)) {
                     return array('version' => $version, 'baseUrl' => $result);
                 }
             }
 
             // Fallback to non-https if it does not exist.
-            if (count($testResult) > 0) {
+            if (\count($testResult) > 0) {
                 return array('version' => $version, 'baseUrl' => (string) $testResult[0]);
             }
         }

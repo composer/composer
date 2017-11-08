@@ -47,7 +47,7 @@ class Problem
      */
     public function addRule(Rule $rule)
     {
-        $this->addReason(spl_object_hash($rule), array(
+        $this->addReason(\spl_object_hash($rule), array(
             'rule' => $rule,
             'job' => $rule->getJob(),
         ));
@@ -71,11 +71,11 @@ class Problem
      */
     public function getPrettyString(array $installedMap = array())
     {
-        $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
+        $reasons = \call_user_func_array('array_merge', \array_reverse($this->reasons));
 
-        if (count($reasons) === 1) {
-            reset($reasons);
-            $reason = current($reasons);
+        if (\count($reasons) === 1) {
+            \reset($reasons);
+            $reason = \current($reasons);
 
             $rule = $reason['rule'];
             $job = $reason['job'];
@@ -91,11 +91,11 @@ class Problem
                 // handle php/hhvm
                 if ($job['packageName'] === 'php' || $job['packageName'] === 'php-64bit' || $job['packageName'] === 'hhvm') {
                     $available = $this->pool->whatProvides($job['packageName']);
-                    $version = count($available) ? $available[0]->getPrettyVersion() : phpversion();
+                    $version = \count($available) ? $available[0]->getPrettyVersion() : \phpversion();
 
                     $msg = "\n    - This package requires ".$job['packageName'].$this->constraintToText($job['constraint']).' but ';
 
-                    if (defined('HHVM_VERSION')) {
+                    if (\defined('HHVM_VERSION')) {
                         return $msg . 'your HHVM version does not satisfy that requirement.';
                     }
 
@@ -107,17 +107,17 @@ class Problem
                 }
 
                 // handle php extensions
-                if (0 === stripos($job['packageName'], 'ext-')) {
-                    $ext = substr($job['packageName'], 4);
-                    $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
+                if (0 === \stripos($job['packageName'], 'ext-')) {
+                    $ext = \substr($job['packageName'], 4);
+                    $error = \extension_loaded($ext) ? 'has the wrong version ('.(\phpversion($ext) ?: '0').') installed' : 'is missing from your system';
 
                     return "\n    - The requested PHP extension ".$job['packageName'].$this->constraintToText($job['constraint']).' '.$error.'. Install or enable PHP\'s '.$ext.' extension.';
                 }
 
                 // handle linked libs
-                if (0 === stripos($job['packageName'], 'lib-')) {
-                    if (strtolower($job['packageName']) === 'lib-icu') {
-                        $error = extension_loaded('intl') ? 'has the wrong version installed, try upgrading the intl extension.' : 'is missing from your system, make sure the intl extension is loaded.';
+                if (0 === \stripos($job['packageName'], 'lib-')) {
+                    if (\strtolower($job['packageName']) === 'lib-icu') {
+                        $error = \extension_loaded('intl') ? 'has the wrong version installed, try upgrading the intl extension.' : 'is missing from your system, make sure the intl extension is loaded.';
 
                         return "\n    - The requested linked library ".$job['packageName'].$this->constraintToText($job['constraint']).' '.$error;
                     }
@@ -125,8 +125,8 @@ class Problem
                     return "\n    - The requested linked library ".$job['packageName'].$this->constraintToText($job['constraint']).' has the wrong version installed or is missing from your system, make sure to load the extension providing it.';
                 }
 
-                if (!preg_match('{^[A-Za-z0-9_./-]+$}', $job['packageName'])) {
-                    $illegalChars = preg_replace('{[A-Za-z0-9_./-]+}', '', $job['packageName']);
+                if (!\preg_match('{^[A-Za-z0-9_./-]+$}', $job['packageName'])) {
+                    $illegalChars = \preg_replace('{[A-Za-z0-9_./-]+}', '', $job['packageName']);
 
                     return "\n    - The requested package ".$job['packageName'].' could not be found, it looks like its name is invalid, "'.$illegalChars.'" is not allowed in package names.';
                 }
@@ -158,7 +158,7 @@ class Problem
             }
         }
 
-        return "\n    - ".implode("\n    - ", $messages);
+        return "\n    - ".\implode("\n    - ", $messages);
     }
 
     /**
@@ -219,10 +219,10 @@ class Problem
             $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion();
         }
         foreach ($prepared as $name => $package) {
-            $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
+            $prepared[$name] = $package['name'].'['.\implode(', ', $package['versions']).']';
         }
 
-        return implode(', ', $prepared);
+        return \implode(', ', $prepared);
     }
 
     /**

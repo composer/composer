@@ -27,7 +27,7 @@ class NoProxyPattern
      */
     public function __construct($pattern)
     {
-        $this->rules = preg_split("/[\s,]+/", $pattern);
+        $this->rules = \preg_split("/[\s,]+/", $pattern);
     }
 
     /**
@@ -39,11 +39,11 @@ class NoProxyPattern
      */
     public function test($url)
     {
-        $host = parse_url($url, PHP_URL_HOST);
-        $port = parse_url($url, PHP_URL_PORT);
+        $host = \parse_url($url, PHP_URL_HOST);
+        $port = \parse_url($url, PHP_URL_PORT);
 
         if (empty($port)) {
-            switch (parse_url($url, PHP_URL_SCHEME)) {
+            switch (\parse_url($url, PHP_URL_SCHEME)) {
                 case 'http':
                     $port = 80;
                     break;
@@ -60,17 +60,17 @@ class NoProxyPattern
 
             $match = false;
 
-            list($ruleHost) = explode(':', $rule);
-            list($base) = explode('/', $ruleHost);
+            list($ruleHost) = \explode(':', $rule);
+            list($base) = \explode('/', $ruleHost);
 
-            if (filter_var($base, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            if (\filter_var($base, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
                 // ip or cidr match
 
                 if (!isset($ip)) {
-                    $ip = gethostbyname($host);
+                    $ip = \gethostbyname($host);
                 }
 
-                if (strpos($ruleHost, '/') === false) {
+                if (\strpos($ruleHost, '/') === false) {
                     $match = $ip === $ruleHost;
                 } else {
                     // gethostbyname() failed to resolve $host to an ip, so we assume
@@ -85,14 +85,14 @@ class NoProxyPattern
             } else {
                 // match end of domain
 
-                $haystack = '.' . trim($host, '.') . '.';
-                $needle = '.'. trim($ruleHost, '.') .'.';
-                $match = stripos(strrev($haystack), strrev($needle)) === 0;
+                $haystack = '.' . \trim($host, '.') . '.';
+                $needle = '.'. \trim($ruleHost, '.') .'.';
+                $match = \stripos(\strrev($haystack), \strrev($needle)) === 0;
             }
 
             // final port check
-            if ($match && strpos($rule, ':') !== false) {
-                list(, $rulePort) = explode(':', $rule);
+            if ($match && \strpos($rule, ':') !== false) {
+                list(, $rulePort) = \explode(':', $rule);
                 if (!empty($rulePort) && $port != $rulePort) {
                     $match = false;
                 }
@@ -119,10 +119,10 @@ class NoProxyPattern
     private static function inCIDRBlock($cidr, $ip)
     {
         // Get the base and the bits from the CIDR
-        list($base, $bits) = explode('/', $cidr);
+        list($base, $bits) = \explode('/', $cidr);
 
         // Now split it up into it's classes
-        list($a, $b, $c, $d) = explode('.', $base);
+        list($a, $b, $c, $d) = \explode('.', $base);
 
         // Now do some bit shifting/switching to convert to ints
         $i = ($a << 24) + ($b << 16) + ($c << 8) + $d;
@@ -135,7 +135,7 @@ class NoProxyPattern
         $high = $i | (~$mask & 0xFFFFFFFF);
 
         // Now split the ip we're checking against up into classes
-        list($a, $b, $c, $d) = explode('.', $ip);
+        list($a, $b, $c, $d) = \explode('.', $ip);
 
         // Now convert the ip we're checking against to an int
         $check = ($a << 24) + ($b << 16) + ($c << 8) + $d;

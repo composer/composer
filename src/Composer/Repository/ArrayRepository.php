@@ -41,7 +41,7 @@ class ArrayRepository extends BaseRepository
      */
     public function findPackage($name, $constraint)
     {
-        $name = strtolower($name);
+        $name = \strtolower($name);
 
         if (!$constraint instanceof ConstraintInterface) {
             $versionParser = new VersionParser();
@@ -66,7 +66,7 @@ class ArrayRepository extends BaseRepository
     public function findPackages($name, $constraint = null)
     {
         // normalize name
-        $name = strtolower($name);
+        $name = \strtolower($name);
         $packages = array();
 
         if (null !== $constraint && !$constraint instanceof ConstraintInterface) {
@@ -91,7 +91,7 @@ class ArrayRepository extends BaseRepository
      */
     public function search($query, $mode = 0, $type = null)
     {
-        $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
+        $regex = '{(?:'.\implode('|', \preg_split('{\s+}', $query)).')}i';
 
         $matches = array();
         foreach ($this->getPackages() as $package) {
@@ -99,8 +99,8 @@ class ArrayRepository extends BaseRepository
             if (isset($matches[$name])) {
                 continue;
             }
-            if (preg_match($regex, $name)
-                || ($mode === self::SEARCH_FULLTEXT && $package instanceof CompletePackageInterface && preg_match($regex, implode(' ', (array) $package->getKeywords()) . ' ' . $package->getDescription()))
+            if (\preg_match($regex, $name)
+                || ($mode === self::SEARCH_FULLTEXT && $package instanceof CompletePackageInterface && \preg_match($regex, \implode(' ', (array) $package->getKeywords()) . ' ' . $package->getDescription()))
             ) {
                 if (null !== $type && $package->getType() !== $type) {
                     continue;
@@ -113,7 +113,7 @@ class ArrayRepository extends BaseRepository
             }
         }
 
-        return array_values($matches);
+        return \array_values($matches);
     }
 
     /**
@@ -169,7 +169,7 @@ class ArrayRepository extends BaseRepository
 
         foreach ($this->getPackages() as $key => $repoPackage) {
             if ($packageId === $repoPackage->getUniqueName()) {
-                array_splice($this->packages, $key, 1);
+                \array_splice($this->packages, $key, 1);
 
                 return;
             }
@@ -195,7 +195,7 @@ class ArrayRepository extends BaseRepository
      */
     public function count()
     {
-        return count($this->packages);
+        return \count($this->packages);
     }
 
     /**

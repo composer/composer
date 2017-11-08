@@ -37,12 +37,12 @@ class HgDriver extends VcsDriver
             $this->repoDir = $this->url;
         } else {
             $cacheDir = $this->config->get('cache-vcs-dir');
-            $this->repoDir = $cacheDir . '/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
+            $this->repoDir = $cacheDir . '/' . \preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
 
             $fs = new Filesystem();
             $fs->ensureDirectoryExists($cacheDir);
 
-            if (!is_writable(dirname($this->repoDir))) {
+            if (!\is_writable(\dirname($this->repoDir))) {
                 throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$cacheDir.'" directory is not writable by the current user.');
             }
 
@@ -50,7 +50,7 @@ class HgDriver extends VcsDriver
             $this->config->prohibitUrlByConfig($this->url, $this->io);
 
             // update the repo if it is a valid hg repository
-            if (is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {
+            if (\is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {
                 if (0 !== $this->process->execute('hg pull', $output, $this->repoDir)) {
                     $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
                 }
@@ -58,7 +58,7 @@ class HgDriver extends VcsDriver
                 // clean up directory and do a fresh clone into it
                 $fs->removeDirectory($this->repoDir);
 
-                if (0 !== $this->process->execute(sprintf('hg clone --noupdate %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoDir)), $output, $cacheDir)) {
+                if (0 !== $this->process->execute(\sprintf('hg clone --noupdate %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoDir)), $output, $cacheDir)) {
                     $output = $this->process->getErrorOutput();
 
                     if (0 !== $this->process->execute('hg --version', $ignoredOutput)) {
@@ -80,7 +80,7 @@ class HgDriver extends VcsDriver
     public function getRootIdentifier()
     {
         if (null === $this->rootIdentifier) {
-            $this->process->execute(sprintf('hg tip --template "{node}"'), $output, $this->repoDir);
+            $this->process->execute(\sprintf('hg tip --template "{node}"'), $output, $this->repoDir);
             $output = $this->process->splitLines($output);
             $this->rootIdentifier = $output[0];
         }
@@ -117,10 +117,10 @@ class HgDriver extends VcsDriver
      */
     public function getFileContent($file, $identifier)
     {
-        $resource = sprintf('hg cat -r %s %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
+        $resource = \sprintf('hg cat -r %s %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
         $this->process->execute($resource, $content, $this->repoDir);
 
-        if (!trim($content)) {
+        if (!\trim($content)) {
             return;
         }
 
@@ -133,7 +133,7 @@ class HgDriver extends VcsDriver
     public function getChangeDate($identifier)
     {
         $this->process->execute(
-            sprintf(
+            \sprintf(
                 'hg log --template "{date|rfc3339date}" -r %s',
                 ProcessExecutor::escape($identifier)
             ),
@@ -141,7 +141,7 @@ class HgDriver extends VcsDriver
             $this->repoDir
         );
 
-        return new \DateTime(trim($output), new \DateTimeZone('UTC'));
+        return new \DateTime(\trim($output), new \DateTimeZone('UTC'));
     }
 
     /**
@@ -154,7 +154,7 @@ class HgDriver extends VcsDriver
 
             $this->process->execute('hg tags', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $tag) {
-                if ($tag && preg_match('(^([^\s]+)\s+\d+:(.*)$)', $tag, $match)) {
+                if ($tag && \preg_match('(^([^\s]+)\s+\d+:(.*)$)', $tag, $match)) {
                     $tags[$match[1]] = $match[2];
                 }
             }
@@ -177,20 +177,20 @@ class HgDriver extends VcsDriver
 
             $this->process->execute('hg branches', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('(^([^\s]+)\s+\d+:([a-f0-9]+))', $branch, $match)) {
+                if ($branch && \preg_match('(^([^\s]+)\s+\d+:([a-f0-9]+))', $branch, $match)) {
                     $branches[$match[1]] = $match[2];
                 }
             }
 
             $this->process->execute('hg bookmarks', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('(^(?:[\s*]*)([^\s]+)\s+\d+:(.*)$)', $branch, $match)) {
+                if ($branch && \preg_match('(^(?:[\s*]*)([^\s]+)\s+\d+:(.*)$)', $branch, $match)) {
                     $bookmarks[$match[1]] = $match[2];
                 }
             }
 
             // Branches will have preference over bookmarks
-            $this->branches = array_merge($bookmarks, $branches);
+            $this->branches = \array_merge($bookmarks, $branches);
         }
 
         return $this->branches;
@@ -201,14 +201,14 @@ class HgDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (preg_match('#(^(?:https?|ssh)://(?:[^@]+@)?bitbucket.org|https://(?:.*?)\.kilnhg.com)#i', $url)) {
+        if (\preg_match('#(^(?:https?|ssh)://(?:[^@]+@)?bitbucket.org|https://(?:.*?)\.kilnhg.com)#i', $url)) {
             return true;
         }
 
         // local filesystem
         if (Filesystem::isLocalPath($url)) {
             $url = Filesystem::getPlatformPath($url);
-            if (!is_dir($url)) {
+            if (!\is_dir($url)) {
                 return false;
             }
 
@@ -224,7 +224,7 @@ class HgDriver extends VcsDriver
         }
 
         $processExecutor = new ProcessExecutor();
-        $exit = $processExecutor->execute(sprintf('hg identify %s', ProcessExecutor::escape($url)), $ignored);
+        $exit = $processExecutor->execute(\sprintf('hg identify %s', ProcessExecutor::escape($url)), $ignored);
 
         return $exit === 0;
     }

@@ -54,7 +54,7 @@ class RarDownloader extends ArchiveDownloader
             $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
         }
 
-        if (!class_exists('RarArchive')) {
+        if (!\class_exists('RarArchive')) {
             // php.ini path is added to the error message to help users find the correct file
             $iniMessage = IniHelper::getMessage();
 

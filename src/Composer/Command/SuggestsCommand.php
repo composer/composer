@@ -64,17 +64,17 @@ EOT
             $installed[] = $package['name'];
 
             if (!empty($package['provide'])) {
-                $installed = array_merge($installed, array_keys($package['provide']));
+                $installed = \array_merge($installed, \array_keys($package['provide']));
             }
 
             if (!empty($package['replace'])) {
-                $installed = array_merge($installed, array_keys($package['replace']));
+                $installed = \array_merge($installed, \array_keys($package['replace']));
             }
         }
 
         // Undub and sort the install list into a sorted lookup array
-        $installed = array_flip($installed);
-        ksort($installed);
+        $installed = \array_flip($installed);
+        \ksort($installed);
 
         // Init platform repo
         $platform = new PlatformRepository(array(), $this->getComposer()->getConfig()->get('platform') ?: array());
@@ -84,11 +84,11 @@ EOT
         $suggested = array();
         foreach ($packages as $package) {
             $packageName = $package['name'];
-            if ((!empty($filter) && !in_array($packageName, $filter)) || empty($package['suggest'])) {
+            if ((!empty($filter) && !\in_array($packageName, $filter)) || empty($package['suggest'])) {
                 continue;
             }
             foreach ($package['suggest'] as $suggestion => $reason) {
-                if (false === strpos('/', $suggestion) && null !== $platform->findPackage($suggestion, '*')) {
+                if (false === \strpos('/', $suggestion) && null !== $platform->findPackage($suggestion, '*')) {
                     continue;
                 }
                 if (!isset($installed[$suggestion])) {
@@ -97,8 +97,8 @@ EOT
                 }
             }
         }
-        ksort($suggesters);
-        ksort($suggested);
+        \ksort($suggesters);
+        \ksort($suggested);
 
         // Determine output mode
         $mode = 0;
@@ -112,8 +112,8 @@ EOT
 
         // Simple mode
         if ($mode === 0) {
-            foreach (array_keys($suggested) as $suggestion) {
-                $io->write(sprintf('<info>%s</info>', $suggestion));
+            foreach (\array_keys($suggested) as $suggestion) {
+                $io->write(\sprintf('<info>%s</info>', $suggestion));
             }
 
             return;
@@ -122,10 +122,10 @@ EOT
         // Grouped by package
         if ($mode & 1) {
             foreach ($suggesters as $suggester => $suggestions) {
-                $io->write(sprintf('<comment>%s</comment> suggests:', $suggester));
+                $io->write(\sprintf('<comment>%s</comment> suggests:', $suggester));
 
                 foreach ($suggestions as $suggestion => $reason) {
-                    $io->write(sprintf(' - <info>%s</info>: %s', $suggestion, $reason ?: '*'));
+                    $io->write(\sprintf(' - <info>%s</info>: %s', $suggestion, $reason ?: '*'));
                 }
                 $io->write('');
             }
@@ -135,13 +135,13 @@ EOT
         if ($mode & 2) {
             // Improve readability in full mode
             if ($mode & 1) {
-                $io->write(str_repeat('-', 78));
+                $io->write(\str_repeat('-', 78));
             }
             foreach ($suggested as $suggestion => $suggesters) {
-                $io->write(sprintf('<comment>%s</comment> is suggested by:', $suggestion));
+                $io->write(\sprintf('<comment>%s</comment> is suggested by:', $suggestion));
 
                 foreach ($suggesters as $suggester => $reason) {
-                    $io->write(sprintf(' - <info>%s</info>: %s', $suggester, $reason ?: '*'));
+                    $io->write(\sprintf(' - <info>%s</info>: %s', $suggester, $reason ?: '*'));
                 }
                 $io->write('');
             }

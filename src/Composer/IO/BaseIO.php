@@ -73,7 +73,7 @@ abstract class BaseIO implements IOInterface, LoggerInterface
             }
 
             $this->writeError(
-                sprintf(
+                \sprintf(
                     "<warning>Warning: You should avoid overwriting already defined auth settings for %s.</warning>",
                     $repositoryName
                 )
@@ -100,7 +100,7 @@ abstract class BaseIO implements IOInterface, LoggerInterface
         }
 
         foreach ($githubOauth as $domain => $token) {
-            if (!preg_match('{^[.a-z0-9]+$}', $token)) {
+            if (!\preg_match('{^[.a-z0-9]+$}', $token)) {
                 throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
             }
             $this->checkAndSetAuthentication($domain, $token, 'x-oauth-basic');
@@ -240,7 +240,7 @@ abstract class BaseIO implements IOInterface, LoggerInterface
      */
     public function log($level, $message, array $context = array())
     {
-        if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
+        if (\in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
             $this->writeError('<error>'.$message.'</error>', true, self::NORMAL);
         } elseif ($level === LogLevel::WARNING) {
             $this->writeError('<warning>'.$message.'</warning>', true, self::NORMAL);

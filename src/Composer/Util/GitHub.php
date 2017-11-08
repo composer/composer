@@ -51,13 +51,13 @@ class GitHub
      */
     public function authorizeOAuth($originUrl)
     {
-        if (!in_array($originUrl, $this->config->get('github-domains'))) {
+        if (!\in_array($originUrl, $this->config->get('github-domains'))) {
             return false;
         }
 
         // if available use token from git config
         if (0 === $this->process->execute('git config github.accesstoken', $output)) {
-            $this->io->setAuthentication($originUrl, trim($output), 'x-oauth-basic');
+            $this->io->setAuthentication($originUrl, \trim($output), 'x-oauth-basic');
 
             return true;
         }
@@ -82,15 +82,15 @@ class GitHub
 
         $note = 'Composer';
         if ($this->config->get('github-expose-hostname') === true && 0 === $this->process->execute('hostname', $output)) {
-            $note .= ' on ' . trim($output);
+            $note .= ' on ' . \trim($output);
         }
-        $note .= ' ' . date('Y-m-d Hi');
+        $note .= ' ' . \date('Y-m-d Hi');
 
-        $url = 'https://'.$originUrl.'/settings/tokens/new?scopes=repo&description=' . str_replace('%20', '+', rawurlencode($note));
-        $this->io->writeError(sprintf('Head to %s', $url));
-        $this->io->writeError(sprintf('to retrieve a token. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
+        $url = 'https://'.$originUrl.'/settings/tokens/new?scopes=repo&description=' . \str_replace('%20', '+', \rawurlencode($note));
+        $this->io->writeError(\sprintf('Head to %s', $url));
+        $this->io->writeError(\sprintf('to retrieve a token. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
 
-        $token = trim($this->io->askAndHideAnswer('Token (hidden): '));
+        $token = \trim($this->io->askAndHideAnswer('Token (hidden): '));
 
         if (!$token) {
             $this->io->writeError('<warning>No token given, aborting.</warning>');
@@ -108,7 +108,7 @@ class GitHub
                 'retry-auth-failure' => false,
             ));
         } catch (TransportException $e) {
-            if (in_array($e->getCode(), array(403, 401))) {
+            if (\in_array($e->getCode(), array(403, 401))) {
                 $this->io->writeError('<error>Invalid token provided.</error>');
                 $this->io->writeError('You can also add it manually later by using "composer config --global --auth github-oauth.github.com <token>"');
 

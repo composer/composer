@@ -91,7 +91,7 @@ class CompositeRepository extends BaseRepository
             $packages[] = $repository->findPackages($name, $constraint);
         }
 
-        return $packages ? call_user_func_array('array_merge', $packages) : array();
+        return $packages ? \call_user_func_array('array_merge', $packages) : array();
     }
 
     /**
@@ -105,7 +105,7 @@ class CompositeRepository extends BaseRepository
             $matches[] = $repository->search($query, $mode, $type);
         }
 
-        return $matches ? call_user_func_array('array_merge', $matches) : array();
+        return $matches ? \call_user_func_array('array_merge', $matches) : array();
     }
 
     /**
@@ -119,7 +119,7 @@ class CompositeRepository extends BaseRepository
             $packages[] = $repository->getPackages();
         }
 
-        return $packages ? call_user_func_array('array_merge', $packages) : array();
+        return $packages ? \call_user_func_array('array_merge', $packages) : array();
     }
 
     /**

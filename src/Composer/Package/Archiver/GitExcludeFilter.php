@@ -30,17 +30,17 @@ class GitExcludeFilter extends BaseExcludeFilter
     {
         parent::__construct($sourcePath);
 
-        if (file_exists($sourcePath.'/.gitignore')) {
+        if (\file_exists($sourcePath.'/.gitignore')) {
             $this->excludePatterns = $this->parseLines(
-                file($sourcePath.'/.gitignore'),
+                \file($sourcePath.'/.gitignore'),
                 array($this, 'parseGitIgnoreLine')
             );
         }
-        if (file_exists($sourcePath.'/.gitattributes')) {
-            $this->excludePatterns = array_merge(
+        if (\file_exists($sourcePath.'/.gitattributes')) {
+            $this->excludePatterns = \array_merge(
                 $this->excludePatterns,
                 $this->parseLines(
-                    file($sourcePath.'/.gitattributes'),
+                    \file($sourcePath.'/.gitattributes'),
                     array($this, 'parseGitAttributesLine')
             ));
         }
@@ -67,9 +67,9 @@ class GitExcludeFilter extends BaseExcludeFilter
      */
     public function parseGitAttributesLine($line)
     {
-        $parts = preg_split('#\s+#', $line);
+        $parts = \preg_split('#\s+#', $line);
 
-        if (count($parts) == 2 && $parts[1] === 'export-ignore') {
+        if (\count($parts) == 2 && $parts[1] === 'export-ignore') {
             return $this->generatePattern($parts[0]);
         }
 

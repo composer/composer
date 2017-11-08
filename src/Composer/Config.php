@@ -128,19 +128,19 @@ class Config
     public function merge($config)
     {
         // override defaults with given config
-        if (!empty($config['config']) && is_array($config['config'])) {
+        if (!empty($config['config']) && \is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic')) && isset($this->config[$key])) {
-                    $this->config[$key] = array_merge($this->config[$key], $val);
+                if (\in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic')) && isset($this->config[$key])) {
+                    $this->config[$key] = \array_merge($this->config[$key], $val);
                 } elseif ('preferred-install' === $key && isset($this->config[$key])) {
-                    if (is_array($val) || is_array($this->config[$key])) {
-                        if (is_string($val)) {
+                    if (\is_array($val) || \is_array($this->config[$key])) {
+                        if (\is_string($val)) {
                             $val = array('*' => $val);
                         }
-                        if (is_string($this->config[$key])) {
+                        if (\is_string($this->config[$key])) {
                             $this->config[$key] = array('*' => $this->config[$key]);
                         }
-                        $this->config[$key] = array_merge($this->config[$key], $val);
+                        $this->config[$key] = \array_merge($this->config[$key], $val);
                         // the full match pattern needs to be last
                         if (isset($this->config[$key]['*'])) {
                             $wildcard = $this->config[$key]['*'];
@@ -156,9 +156,9 @@ class Config
             }
         }
 
-        if (!empty($config['repositories']) && is_array($config['repositories'])) {
-            $this->repositories = array_reverse($this->repositories, true);
-            $newRepos = array_reverse($config['repositories'], true);
+        if (!empty($config['repositories']) && \is_array($config['repositories'])) {
+            $this->repositories = \array_reverse($this->repositories, true);
+            $newRepos = \array_reverse($config['repositories'], true);
             foreach ($newRepos as $name => $repository) {
                 // disable a repository by name
                 if (false === $repository) {
@@ -167,13 +167,13 @@ class Config
                 }
 
                 // disable a repository with an anonymous {"name": false} repo
-                if (is_array($repository) && 1 === count($repository) && false === current($repository)) {
-                    $this->disableRepoByName(key($repository));
+                if (\is_array($repository) && 1 === \count($repository) && false === \current($repository)) {
+                    $this->disableRepoByName(\key($repository));
                     continue;
                 }
 
                 // store repo
-                if (is_int($name)) {
+                if (\is_int($name)) {
                     $this->repositories[] = $repository;
                 } else {
                     if ($name === 'packagist') { // BC support for default "packagist" named repo
@@ -183,7 +183,7 @@ class Config
                     }
                 }
             }
-            $this->repositories = array_reverse($this->repositories, true);
+            $this->repositories = \array_reverse($this->repositories, true);
         }
     }
 
@@ -218,13 +218,13 @@ class Config
             case 'capath':
             case 'htaccess-protect':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
-                $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
+                $env = 'COMPOSER_' . \strtoupper(\strtr($key, '-', '_'));
 
                 $val = $this->getComposerEnv($env);
-                $val = rtrim((string) $this->process(false !== $val ? $val : $this->config[$key], $flags), '/\\');
+                $val = \rtrim((string) $this->process(false !== $val ? $val : $this->config[$key], $flags), '/\\');
                 $val = Platform::expandPath($val);
 
-                if (substr($key, -4) !== '-dir') {
+                if (\substr($key, -4) !== '-dir') {
                     return $val;
                 }
 
@@ -234,14 +234,14 @@ class Config
                 return (int) $this->config[$key];
 
             case 'cache-files-maxsize':
-                if (!preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
+                if (!\preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
                     throw new \RuntimeException(
                         "Could not parse the value of 'cache-files-maxsize': {$this->config[$key]}"
                     );
                 }
                 $size = $matches[1];
                 if (isset($matches[2])) {
-                    switch (strtolower($matches[2])) {
+                    switch (\strtolower($matches[2])) {
                         case 'g':
                             $size *= 1024;
                             // intentional fallthrough
@@ -264,14 +264,14 @@ class Config
                 return (int) $this->config['cache-ttl'];
 
             case 'home':
-                $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $this->config[$key]);
+                $val = \preg_replace('#^(\$HOME|~)(/|$)#', \rtrim(\getenv('HOME') ?: \getenv('USERPROFILE'), '/\\') . '/', $this->config[$key]);
 
-                return rtrim($this->process($val, $flags), '/\\');
+                return \rtrim($this->process($val, $flags), '/\\');
 
             case 'bin-compat':
                 $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
 
-                if (!in_array($value, array('auto', 'full'))) {
+                if (!\in_array($value, array('auto', 'full'))) {
                     throw new \RuntimeException(
                         "Invalid value for 'bin-compat': {$value}. Expected auto, full"
                     );
@@ -281,7 +281,7 @@ class Config
 
             case 'discard-changes':
                 if ($env = $this->getComposerEnv('COMPOSER_DISCARD_CHANGES')) {
-                    if (!in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
+                    if (!\in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
                         throw new \RuntimeException(
                             "Invalid value for COMPOSER_DISCARD_CHANGES: {$env}. Expected 1, 0, true, false or stash"
                         );
@@ -294,7 +294,7 @@ class Config
                     return $env !== 'false' && (bool) $env;
                 }
 
-                if (!in_array($this->config[$key], array(true, false, 'stash'), true)) {
+                if (!\in_array($this->config[$key], array(true, false, 'stash'), true)) {
                     throw new \RuntimeException(
                         "Invalid value for 'discard-changes': {$this->config[$key]}. Expected true, false or stash"
                     );
@@ -304,10 +304,10 @@ class Config
 
             case 'github-protocols':
                 $protos = $this->config['github-protocols'];
-                if ($this->config['secure-http'] && false !== ($index = array_search('git', $protos))) {
+                if ($this->config['secure-http'] && false !== ($index = \array_search('git', $protos))) {
                     unset($protos[$index]);
                 }
-                if (reset($protos) === 'http') {
+                if (\reset($protos) === 'http') {
                     throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https", "git" or "ssh"');
                 }
 
@@ -333,7 +333,7 @@ class Config
         $all = array(
             'repositories' => $this->getRepositories(),
         );
-        foreach (array_keys($this->config) as $key) {
+        foreach (\array_keys($this->config) as $key) {
             $all['config'][$key] = $this->get($key, $flags);
         }
 
@@ -356,7 +356,7 @@ class Config
      */
     public function has($key)
     {
-        return array_key_exists($key, $this->config);
+        return \array_key_exists($key, $this->config);
     }
 
     /**
@@ -370,11 +370,11 @@ class Config
     {
         $config = $this;
 
-        if (!is_string($value)) {
+        if (!\is_string($value)) {
             return $value;
         }
 
-        return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config, $flags) {
+        return \preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config, $flags) {
             return $config->get($match[1], $flags);
         }, $value);
     }
@@ -389,7 +389,7 @@ class Config
      */
     private function realpath($path)
     {
-        if (preg_match('{^(?:/|[a-z]:|[a-z0-9.]+://)}i', $path)) {
+        if (\preg_match('{^(?:/|[a-z]:|[a-z0-9.]+://)}i', $path)) {
             return $path;
         }
 
@@ -408,7 +408,7 @@ class Config
     private function getComposerEnv($var)
     {
         if ($this->useEnvironment) {
-            return getenv($var);
+            return \getenv($var);
         }
 
         return false;
@@ -432,17 +432,17 @@ class Config
     public function prohibitUrlByConfig($url, IOInterface $io = null)
     {
         // Return right away if the URL is malformed or custom (see issue #5173)
-        if (false === filter_var($url, FILTER_VALIDATE_URL)) {
+        if (false === \filter_var($url, FILTER_VALIDATE_URL)) {
             return;
         }
 
         // Extract scheme and throw exception on known insecure protocols
-        $scheme = parse_url($url, PHP_URL_SCHEME);
-        if (in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
+        $scheme = \parse_url($url, PHP_URL_SCHEME);
+        if (\in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
             if ($this->get('secure-http')) {
                 throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             } elseif ($io) {
-                $host = parse_url($url, PHP_URL_HOST);
+                $host = \parse_url($url, PHP_URL_HOST);
                 if (!isset($this->warnedHosts[$host])) {
                     $io->writeError("<warning>Warning: Accessing $host over $scheme which is an insecure protocol.</warning>");
                 }

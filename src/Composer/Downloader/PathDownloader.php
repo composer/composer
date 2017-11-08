@@ -40,21 +40,21 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     public function download(PackageInterface $package, $path, $output = true)
     {
         $url = $package->getDistUrl();
-        $realUrl = realpath($url);
-        if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
-            throw new \RuntimeException(sprintf(
+        $realUrl = \realpath($url);
+        if (false === $realUrl || !\file_exists($realUrl) || !\is_dir($realUrl)) {
+            throw new \RuntimeException(\sprintf(
                 'Source path "%s" is not found for package %s', $url, $package->getName()
             ));
         }
 
-        if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
+        if (\strpos(\realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
             // IMPORTANT NOTICE: If you wish to change this, don't. You are wasting your time and ours.
             //
             // Please see https://github.com/composer/composer/pull/5974 and https://github.com/composer/composer/pull/6174
             // for previous attempts that were shut down because they did not work well enough or introduced too many risks.
-            throw new \RuntimeException(sprintf(
+            throw new \RuntimeException(\sprintf(
                 'Package %s cannot install to "%s" inside its source at "%s"',
-                $package->getName(), realpath($path), $realUrl
+                $package->getName(), \realpath($path), $realUrl
             ));
         }
 
@@ -65,7 +65,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         $currentStrategy = self::STRATEGY_SYMLINK;
         $allowedStrategies = array(self::STRATEGY_SYMLINK, self::STRATEGY_MIRROR);
 
-        $mirrorPathRepos = getenv('COMPOSER_MIRROR_PATH_REPOS');
+        $mirrorPathRepos = \getenv('COMPOSER_MIRROR_PATH_REPOS');
         if ($mirrorPathRepos) {
             $currentStrategy = self::STRATEGY_MIRROR;
         }
@@ -82,7 +82,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         $this->filesystem->removeDirectory($path);
 
         if ($output) {
-            $this->io->writeError(sprintf(
+            $this->io->writeError(\sprintf(
                 '  - Installing <info>%s</info> (<comment>%s</comment>): ',
                 $package->getName(),
                 $package->getFullPrettyVersion()
@@ -94,26 +94,26 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             try {
                 if (Platform::isWindows()) {
                     // Implement symlinks as NTFS junctions on Windows
-                    $this->io->writeError(sprintf('Junctioning from %s', $url), false);
+                    $this->io->writeError(\sprintf('Junctioning from %s', $url), false);
                     $this->filesystem->junction($realUrl, $path);
                 } else {
                     $absolutePath = $path;
                     if (!$this->filesystem->isAbsolutePath($absolutePath)) {
-                        $absolutePath = getcwd() . DIRECTORY_SEPARATOR . $path;
+                        $absolutePath = \getcwd() . DIRECTORY_SEPARATOR . $path;
                     }
                     $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
-                    $path = rtrim($path, "/");
-                    $this->io->writeError(sprintf('Symlinking from %s', $url), false);
+                    $path = \rtrim($path, "/");
+                    $this->io->writeError(\sprintf('Symlinking from %s', $url), false);
                     $fileSystem->symlink($shortestPath, $path);
                 }
             } catch (IOException $e) {
-                if (in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
+                if (\in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
                     $this->io->writeError('');
                     $this->io->writeError('    <error>Symlink failed, fallback to use mirroring!</error>');
                     $currentStrategy = self::STRATEGY_MIRROR;
                     $isFallback = true;
                 } else {
-                    throw new \RuntimeException(sprintf('Symlink from "%s" to "%s" failed!', $realUrl, $path));
+                    throw new \RuntimeException(\sprintf('Symlink from "%s" to "%s" failed!', $realUrl, $path));
                 }
             }
         }
@@ -123,7 +123,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             $fs = new ComposerFilesystem();
             $realUrl = $fs->normalizePath($realUrl);
 
-            $this->io->writeError(sprintf('%sMirroring from %s', $isFallback ? '    ' : '', $url), false);
+            $this->io->writeError(\sprintf('%sMirroring from %s', $isFallback ? '    ' : '', $url), false);
             $iterator = new ArchivableFilesFinder($realUrl, array());
             $fileSystem->mirror($realUrl, $path, $iterator);
         }

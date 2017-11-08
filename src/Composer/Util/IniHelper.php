@@ -33,14 +33,14 @@ class IniHelper
      */
     public static function getAll()
     {
-        if ($env = strval(getenv(self::ENV_ORIGINAL))) {
-            return explode(PATH_SEPARATOR, $env);
+        if ($env = \strval(\getenv(self::ENV_ORIGINAL))) {
+            return \explode(PATH_SEPARATOR, $env);
         }
 
-        $paths = array(strval(php_ini_loaded_file()));
+        $paths = array(\strval(\php_ini_loaded_file()));
 
-        if ($scanned = php_ini_scanned_files()) {
-            $paths = array_merge($paths, array_map('trim', explode(',', $scanned)));
+        if ($scanned = \php_ini_scanned_files()) {
+            $paths = \array_merge($paths, \array_map('trim', \explode(',', $scanned)));
         }
 
         return $paths;

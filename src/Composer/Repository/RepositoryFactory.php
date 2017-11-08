@@ -33,19 +33,19 @@ class RepositoryFactory
      */
     public static function configFromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false)
     {
-        if (0 === strpos($repository, 'http')) {
+        if (0 === \strpos($repository, 'http')) {
             $repoConfig = array('type' => 'composer', 'url' => $repository);
-        } elseif ("json" === pathinfo($repository, PATHINFO_EXTENSION)) {
+        } elseif ("json" === \pathinfo($repository, PATHINFO_EXTENSION)) {
             $json = new JsonFile($repository, Factory::createRemoteFilesystem($io, $config));
             $data = $json->read();
             if (!empty($data['packages']) || !empty($data['includes']) || !empty($data['provider-includes'])) {
-                $repoConfig = array('type' => 'composer', 'url' => 'file://' . strtr(realpath($repository), '\\', '/'));
+                $repoConfig = array('type' => 'composer', 'url' => 'file://' . \strtr(\realpath($repository), '\\', '/'));
             } elseif ($allowFilesystem) {
                 $repoConfig = array('type' => 'filesystem', 'json' => $json);
             } else {
                 throw new \InvalidArgumentException("Invalid repository URL ($repository) given. This file does not contain a valid composer repository.");
             }
-        } elseif ('{' === substr($repository, 0, 1)) {
+        } elseif ('{' === \substr($repository, 0, 1)) {
             // assume it is a json object that makes a repo config
             $repoConfig = JsonFile::parseJson($repository);
         } else {
@@ -80,7 +80,7 @@ class RepositoryFactory
         $rm = static::manager($io, $config, null, Factory::createRemoteFilesystem($io, $config));
         $repos = static::createRepos($rm, array($repoConfig));
 
-        return reset($repos);
+        return \reset($repos);
     }
 
     /**
@@ -139,16 +139,16 @@ class RepositoryFactory
         $repos = array();
 
         foreach ($repoConfigs as $index => $repo) {
-            if (is_string($repo)) {
+            if (\is_string($repo)) {
                 throw new \UnexpectedValueException('"repositories" should be an array of repository definitions, only a single repository was given');
             }
-            if (!is_array($repo)) {
-                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
+            if (!\is_array($repo)) {
+                throw new \UnexpectedValueException('Repository "'.$index.'" ('.\json_encode($repo).') should be an array, '.\gettype($repo).' given');
             }
             if (!isset($repo['type'])) {
-                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') must have a type defined');
+                throw new \UnexpectedValueException('Repository "'.$index.'" ('.\json_encode($repo).') must have a type defined');
             }
-            $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
+            $name = \is_int($index) && isset($repo['url']) ? \preg_replace('{^https?://}i', '', $repo['url']) : $index;
             while (isset($repos[$name])) {
                 $name .= '2';
             }

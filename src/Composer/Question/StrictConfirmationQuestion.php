@@ -57,18 +57,18 @@ class StrictConfirmationQuestion extends Question
         $falseRegex = $this->falseAnswerRegex;
 
         return function ($answer) use ($default, $trueRegex, $falseRegex) {
-            if (is_bool($answer)) {
+            if (\is_bool($answer)) {
                 return $answer;
             }
             if (empty($answer) && !empty($default)) {
                 return $default;
             }
 
-            if (preg_match($trueRegex, $answer)) {
+            if (\preg_match($trueRegex, $answer)) {
                 return true;
             }
 
-            if (preg_match($falseRegex, $answer)) {
+            if (\preg_match($falseRegex, $answer)) {
                 return false;
             }
 
@@ -84,7 +84,7 @@ class StrictConfirmationQuestion extends Question
     private function getDefaultValidator()
     {
         return function ($answer) {
-            if (!is_bool($answer)) {
+            if (!\is_bool($answer)) {
                 throw new InvalidArgumentException('Please answer yes, y, no, or n.');
             }
 

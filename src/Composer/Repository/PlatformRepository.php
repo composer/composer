@@ -40,7 +40,7 @@ class PlatformRepository extends ArrayRepository
     public function __construct(array $packages = array(), array $overrides = array())
     {
         foreach ($overrides as $name => $version) {
-            $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
+            $this->overrides[\strtolower($name)] = array('name' => $name, 'version' => $version);
         }
         parent::__construct($packages);
     }
@@ -55,7 +55,7 @@ class PlatformRepository extends ArrayRepository
         // Later we might even replace the extensions instead.
         foreach ($this->overrides as $override) {
             // Check that it's a platform package.
-            if (!preg_match(self::PLATFORM_PACKAGE_REGEX, $override['name'])) {
+            if (!\preg_match(self::PLATFORM_PACKAGE_REGEX, $override['name'])) {
                 throw new \InvalidArgumentException('Invalid platform package name in config.platform: '.$override['name']);
             }
 
@@ -72,7 +72,7 @@ class PlatformRepository extends ArrayRepository
             $prettyVersion = PHP_VERSION;
             $version = $this->versionParser->normalize($prettyVersion);
         } catch (\UnexpectedValueException $e) {
-            $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', PHP_VERSION);
+            $prettyVersion = \preg_replace('#^([^~+-]+).*$#', '$1', PHP_VERSION);
             $version = $this->versionParser->normalize($prettyVersion);
         }
 
@@ -86,7 +86,7 @@ class PlatformRepository extends ArrayRepository
             $this->addPackage($phpdebug);
         }
 
-        if (defined('PHP_ZTS') && PHP_ZTS) {
+        if (\defined('PHP_ZTS') && PHP_ZTS) {
             $phpzts = new CompletePackage('php-zts', $version, $prettyVersion);
             $phpzts->setDescription('The PHP interpreter, with Zend Thread Safety');
             $this->addPackage($phpzts);
@@ -100,17 +100,17 @@ class PlatformRepository extends ArrayRepository
 
         // The AF_INET6 constant is only defined if ext-sockets is available but
         // IPv6 support might still be available.
-        if (defined('AF_INET6') || Silencer::call('inet_pton', '::') !== false) {
+        if (\defined('AF_INET6') || Silencer::call('inet_pton', '::') !== false) {
             $phpIpv6 = new CompletePackage('php-ipv6', $version, $prettyVersion);
             $phpIpv6->setDescription('The PHP interpreter, with IPv6 support');
             $this->addPackage($phpIpv6);
         }
 
-        $loadedExtensions = get_loaded_extensions();
+        $loadedExtensions = \get_loaded_extensions();
 
         // Extensions scanning
         foreach ($loadedExtensions as $name) {
-            if (in_array($name, array('standard', 'Core'))) {
+            if (\in_array($name, array('standard', 'Core'))) {
                 continue;
             }
 
@@ -120,7 +120,7 @@ class PlatformRepository extends ArrayRepository
         }
 
         // Check for xdebug in a restarted process
-        if (!in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = strval(getenv(XdebugHandler::ENV_VERSION)))) {
+        if (!\in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = \strval(\getenv(XdebugHandler::ENV_VERSION)))) {
             $this->addExtension('xdebug', $prettyVersion);
         }
 
@@ -132,7 +132,7 @@ class PlatformRepository extends ArrayRepository
             $description = 'The '.$name.' PHP library';
             switch ($name) {
                 case 'curl':
-                    $curlVersion = curl_version();
+                    $curlVersion = \curl_version();
                     $prettyVersion = $curlVersion['version'];
                     break;
 
@@ -142,16 +142,16 @@ class PlatformRepository extends ArrayRepository
 
                 case 'intl':
                     $name = 'ICU';
-                    if (defined('INTL_ICU_VERSION')) {
+                    if (\defined('INTL_ICU_VERSION')) {
                         $prettyVersion = INTL_ICU_VERSION;
                     } else {
                         $reflector = new \ReflectionExtension('intl');
 
-                        ob_start();
+                        \ob_start();
                         $reflector->info();
-                        $output = ob_get_clean();
+                        $output = \ob_get_clean();
 
-                        preg_match('/^ICU version => (.*)$/m', $output, $matches);
+                        \preg_match('/^ICU version => (.*)$/m', $output, $matches);
                         $prettyVersion = $matches[1];
                     }
 
@@ -162,7 +162,7 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'openssl':
-                    $prettyVersion = preg_replace_callback('{^(?:OpenSSL|LibreSSL)?\s*([0-9.]+)([a-z]*).*}i', function ($match) {
+                    $prettyVersion = \preg_replace_callback('{^(?:OpenSSL|LibreSSL)?\s*([0-9.]+)([a-z]*).*}i', function ($match) {
                         if (empty($match[2])) {
                             return $match[1];
                         }
@@ -170,14 +170,14 @@ class PlatformRepository extends ArrayRepository
                         // OpenSSL versions add another letter when they reach Z.
                         // e.g. OpenSSL 0.9.8zh 3 Dec 2015
 
-                        if (!preg_match('{^z*[a-z]$}', $match[2])) {
+                        if (!\preg_match('{^z*[a-z]$}', $match[2])) {
                             // 0.9.8abc is garbage
                             return 0;
                         }
 
-                        $len = strlen($match[2]);
+                        $len = \strlen($match[2]);
                         $patchVersion = ($len - 1) * 26; // All Z
-                        $patchVersion += ord($match[2][$len - 1]) - 96;
+                        $patchVersion += \ord($match[2][$len - 1]) - 96;
 
                         return $match[1].'.'.$patchVersion;
                     }, OPENSSL_VERSION_TEXT);
@@ -186,11 +186,11 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'pcre':
-                    $prettyVersion = preg_replace('{^(\S+).*}', '$1', PCRE_VERSION);
+                    $prettyVersion = \preg_replace('{^(\S+).*}', '$1', PCRE_VERSION);
                     break;
 
                 case 'uuid':
-                    $prettyVersion = phpversion('uuid');
+                    $prettyVersion = \phpversion('uuid');
                     break;
 
                 case 'xsl':
@@ -213,12 +213,12 @@ class PlatformRepository extends ArrayRepository
             $this->addPackage($lib);
         }
 
-        if (defined('HHVM_VERSION')) {
+        if (\defined('HHVM_VERSION')) {
             try {
                 $prettyVersion = HHVM_VERSION;
                 $version = $this->versionParser->normalize($prettyVersion);
             } catch (\UnexpectedValueException $e) {
-                $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', HHVM_VERSION);
+                $prettyVersion = \preg_replace('#^([^~+-]+).*$#', '$1', HHVM_VERSION);
                 $version = $this->versionParser->normalize($prettyVersion);
             }
 
@@ -242,7 +242,7 @@ class PlatformRepository extends ArrayRepository
         }
 
         // Skip if PHP is overridden and we are adding a php-* package
-        if (isset($this->overrides['php']) && 0 === strpos($package->getName(), 'php-')) {
+        if (isset($this->overrides['php']) && 0 === \strpos($package->getName(), 'php-')) {
             $overrider = $this->addOverriddenPackage($this->overrides['php'], $package->getPrettyName());
             $overrider->setDescription($overrider->getDescription().' (actual: '.$package->getPrettyVersion().')');
 
@@ -277,7 +277,7 @@ class PlatformRepository extends ArrayRepository
             $version = $this->versionParser->normalize($prettyVersion);
         } catch (\UnexpectedValueException $e) {
             $extraDescription = ' (actual version: '.$prettyVersion.')';
-            if (preg_match('{^(\d+\.\d+\.\d+(?:\.\d+)?)}', $prettyVersion, $match)) {
+            if (\preg_match('{^(\d+\.\d+\.\d+(?:\.\d+)?)}', $prettyVersion, $match)) {
                 $prettyVersion = $match[1];
             } else {
                 $prettyVersion = '0';
@@ -293,6 +293,6 @@ class PlatformRepository extends ArrayRepository
 
     private function buildPackageName($name)
     {
-        return 'ext-' . str_replace(' ', '-', $name);
+        return 'ext-' . \str_replace(' ', '-', $name);
     }
 }

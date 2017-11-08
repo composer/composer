@@ -63,7 +63,7 @@ EOT
         }
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
-        $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
+        $repos = new CompositeRepository(\array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'search', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -72,7 +72,7 @@ EOT
         $type = $input->getOption('type') ?: null;
 
         $flags = $onlyName ? RepositoryInterface::SEARCH_NAME : RepositoryInterface::SEARCH_FULLTEXT;
-        $results = $repos->search(implode(' ', $input->getArgument('tokens')), $flags, $type);
+        $results = $repos->search(\implode(' ', $input->getArgument('tokens')), $flags, $type);
 
         foreach ($results as $result) {
             $io->write($result['name'] . (isset($result['description']) ? ' '. $result['description'] : ''));

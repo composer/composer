@@ -108,7 +108,7 @@ class DownloadManager
      */
     public function setDownloader($type, DownloaderInterface $downloader)
     {
-        $type = strtolower($type);
+        $type = \strtolower($type);
         $this->downloaders[$type] = $downloader;
 
         return $this;
@@ -123,9 +123,9 @@ class DownloadManager
      */
     public function getDownloader($type)
     {
-        $type = strtolower($type);
+        $type = \strtolower($type);
         if (!isset($this->downloaders[$type])) {
-            throw new \InvalidArgumentException(sprintf('Unknown downloader type: %s. Available types: %s.', $type, implode(', ', array_keys($this->downloaders))));
+            throw new \InvalidArgumentException(\sprintf('Unknown downloader type: %s. Available types: %s.', $type, \implode(', ', \array_keys($this->downloaders))));
         }
 
         return $this->downloaders[$type];
@@ -159,9 +159,9 @@ class DownloadManager
         }
 
         if ($installationSource !== $downloader->getInstallationSource()) {
-            throw new \LogicException(sprintf(
+            throw new \LogicException(\sprintf(
                 'Downloader "%s" is a %s type downloader and can not be used to download %s',
-                get_class($downloader), $downloader->getInstallationSource(), $installationSource
+                \get_class($downloader), $downloader->getInstallationSource(), $installationSource
             ));
         }
 
@@ -197,7 +197,7 @@ class DownloadManager
         }
 
         if (!$preferSource && ($this->preferDist || 'dist' === $this->resolvePackageInstallPreference($package))) {
-            $sources = array_reverse($sources);
+            $sources = \array_reverse($sources);
         }
 
         $this->filesystem->ensureDirectoryExists($targetDir);
@@ -214,7 +214,7 @@ class DownloadManager
                 }
                 break;
             } catch (\RuntimeException $e) {
-                if ($i === count($sources) - 1) {
+                if ($i === \count($sources) - 1) {
                     throw $e;
                 }
 
@@ -307,8 +307,8 @@ class DownloadManager
     protected function resolvePackageInstallPreference(PackageInterface $package)
     {
         foreach ($this->packagePreferences as $pattern => $preference) {
-            $pattern = '{^'.str_replace('\\*', '.*', preg_quote($pattern)).'$}i';
-            if (preg_match($pattern, $package->getName())) {
+            $pattern = '{^'.\str_replace('\\*', '.*', \preg_quote($pattern)).'$}i';
+            if (\preg_match($pattern, $package->getName())) {
                 if ('dist' === $preference || (!$package->isDev() && 'auto' === $preference)) {
                     return 'dist';
                 }

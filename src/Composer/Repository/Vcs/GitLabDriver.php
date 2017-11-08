@@ -77,21 +77,21 @@ class GitLabDriver extends VcsDriver
      */
     public function initialize()
     {
-        if (!preg_match(self::URL_REGEX, $this->url, $match)) {
+        if (!\preg_match(self::URL_REGEX, $this->url, $match)) {
             throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
         }
 
         $guessedDomain = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
         $configuredDomains = $this->config->get('gitlab-domains');
-        $urlParts = explode('/', $match['parts']);
+        $urlParts = \explode('/', $match['parts']);
 
         $this->scheme = !empty($match['scheme'])
             ? $match['scheme']
             : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https')
         ;
         $this->originUrl = $this->determineOrigin($configuredDomains, $guessedDomain, $urlParts);
-        $this->namespace = implode('/', $urlParts);
-        $this->repository = preg_replace('#(\.git)$#', '', $match['repo']);
+        $this->namespace = \implode('/', $urlParts);
+        $this->repository = \preg_replace('#(\.git)$#', '', $match['repo']);
 
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->namespace.'/'.$this->repository);
 
@@ -119,7 +119,7 @@ class GitLabDriver extends VcsDriver
         }
 
         // Convert the root identifier to a cachable commit id
-        if (!preg_match('{[a-f0-9]{40}}i', $identifier)) {
+        if (!\preg_match('{[a-f0-9]{40}}i', $identifier)) {
             $branches = $this->getBranches();
             if (isset($branches[$identifier])) {
                 $identifier = $branches[$identifier];
@@ -262,8 +262,8 @@ class GitLabDriver extends VcsDriver
         $encoded = '';
         for ($i = 0; isset($string[$i]); $i++) {
             $character = $string[$i];
-            if (!ctype_alnum($character) && !in_array($character, array('-', '_'), true)) {
-                $character = '%' . sprintf('%02X', ord($character));
+            if (!\ctype_alnum($character) && !\in_array($character, array('-', '_'), true)) {
+                $character = '%' . \sprintf('%02X', \ord($character));
             }
             $encoded .= $character;
         }
@@ -293,7 +293,7 @@ class GitLabDriver extends VcsDriver
                 $this->commits[$datum['commit']['id']] = $datum['commit'];
             }
 
-            if (count($data) >= $perPage) {
+            if (\count($data) >= $perPage) {
                 $resource = $this->getNextPage();
             } else {
                 $resource = false;
@@ -436,19 +436,19 @@ class GitLabDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match(self::URL_REGEX, $url, $match)) {
+        if (!\preg_match(self::URL_REGEX, $url, $match)) {
             return false;
         }
 
         $scheme = !empty($match['scheme']) ? $match['scheme'] : null;
         $guessedDomain = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
-        $urlParts = explode('/', $match['parts']);
+        $urlParts = \explode('/', $match['parts']);
 
         if (false === self::determineOrigin((array) $config->get('gitlab-domains'), $guessedDomain, $urlParts)) {
             return false;
         }
 
-        if ('https' === $scheme && !extension_loaded('openssl')) {
+        if ('https' === $scheme && !\extension_loaded('openssl')) {
             $io->writeError('Skipping GitLab driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
 
             return false;
@@ -461,10 +461,10 @@ class GitLabDriver extends VcsDriver
     {
         $headers = $this->remoteFilesystem->getLastHeaders();
         foreach ($headers as $header) {
-            if (preg_match('{^link:\s*(.+?)\s*$}i', $header, $match)) {
-                $links = explode(',', $match[1]);
+            if (\preg_match('{^link:\s*(.+?)\s*$}i', $header, $match)) {
+                $links = \explode(',', $match[1]);
                 foreach ($links as $link) {
-                    if (preg_match('{<(.+?)>; *rel="next"}', $link, $match)) {
+                    if (\preg_match('{<(.+?)>; *rel="next"}', $link, $match)) {
                         return $match[1];
                     }
                 }
@@ -480,14 +480,14 @@ class GitLabDriver extends VcsDriver
      */
     private static function determineOrigin(array $configuredDomains, $guessedDomain, array &$urlParts)
     {
-        if (in_array($guessedDomain, $configuredDomains)) {
+        if (\in_array($guessedDomain, $configuredDomains)) {
             return $guessedDomain;
         }
 
-        while (null !== ($part = array_shift($urlParts))) {
+        while (null !== ($part = \array_shift($urlParts))) {
             $guessedDomain .= '/' . $part;
 
-            if (in_array($guessedDomain, $configuredDomains)) {
+            if (\in_array($guessedDomain, $configuredDomains)) {
                 return $guessedDomain;
             }
         }

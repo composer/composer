@@ -46,13 +46,13 @@ abstract class BitbucketDriver extends VcsDriver
      */
     public function initialize()
     {
-        preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)$#', $this->url, $match);
+        \preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)$#', $this->url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'bitbucket.org';
         $this->cache = new Cache(
             $this->io,
-            implode('/', array(
+            \implode('/', array(
                 $this->config->get('cache-repo-dir'),
                 $this->originUrl,
                 $this->owner,
@@ -81,11 +81,11 @@ abstract class BitbucketDriver extends VcsDriver
      */
     protected function getRepoData()
     {
-        $resource = sprintf(
+        $resource = \sprintf(
             'https://api.bitbucket.org/2.0/repositories/%s/%s?%s',
             $this->owner,
             $this->repository,
-            http_build_query(
+            \http_build_query(
                 array('fields' => '-project,-owner'),
                 null,
                 '&'
@@ -126,29 +126,29 @@ abstract class BitbucketDriver extends VcsDriver
 
             // specials for bitbucket
             if (!isset($composer['support']['source'])) {
-                $label = array_search(
+                $label = \array_search(
                     $identifier,
                     $this->getTags()
-                ) ?: array_search(
+                ) ?: \array_search(
                     $identifier,
                     $this->getBranches()
                 ) ?: $identifier;
 
-                if (array_key_exists($label, $tags = $this->getTags())) {
+                if (\array_key_exists($label, $tags = $this->getTags())) {
                     $hash = $tags[$label];
-                } elseif (array_key_exists($label, $branches = $this->getBranches())) {
+                } elseif (\array_key_exists($label, $branches = $this->getBranches())) {
                     $hash = $branches[$label];
                 }
 
                 if (! isset($hash)) {
-                    $composer['support']['source'] = sprintf(
+                    $composer['support']['source'] = \sprintf(
                         'https://%s/%s/%s/src',
                         $this->originUrl,
                         $this->owner,
                         $this->repository
                     );
                 } else {
-                    $composer['support']['source'] = sprintf(
+                    $composer['support']['source'] = \sprintf(
                         'https://%s/%s/%s/src/%s/?at=%s',
                         $this->originUrl,
                         $this->owner,
@@ -159,7 +159,7 @@ abstract class BitbucketDriver extends VcsDriver
                 }
             }
             if (!isset($composer['support']['issues']) && $this->hasIssues) {
-                $composer['support']['issues'] = sprintf(
+                $composer['support']['issues'] = \sprintf(
                     'https://%s/%s/%s/issues',
                     $this->originUrl,
                     $this->owner,
@@ -173,7 +173,7 @@ abstract class BitbucketDriver extends VcsDriver
             $this->infoCache[$identifier] = $composer;
 
             if ($this->shouldCache($identifier)) {
-                $this->cache->write($identifier, json_encode($composer));
+                $this->cache->write($identifier, \json_encode($composer));
             }
         }
 
@@ -189,7 +189,7 @@ abstract class BitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getFileContent($file, $identifier);
         }
 
-        $resource = sprintf(
+        $resource = \sprintf(
             'https://api.bitbucket.org/1.0/repositories/%s/%s/raw/%s/%s',
             $this->owner,
             $this->repository,
@@ -209,7 +209,7 @@ abstract class BitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getChangeDate($identifier);
         }
 
-        $resource = sprintf(
+        $resource = \sprintf(
             'https://api.bitbucket.org/2.0/repositories/%s/%s/commit/%s?fields=date',
             $this->owner,
             $this->repository,
@@ -241,7 +241,7 @@ abstract class BitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getDist($identifier);
         }
 
-        $url = sprintf(
+        $url = \sprintf(
             'https://bitbucket.org/%s/%s/get/%s.zip',
             $this->owner,
             $this->repository,
@@ -262,10 +262,10 @@ abstract class BitbucketDriver extends VcsDriver
 
         if (null === $this->tags) {
             $this->tags = array();
-            $resource = sprintf(
+            $resource = \sprintf(
                 '%s?%s',
                 $this->tagsUrl,
-                http_build_query(
+                \http_build_query(
                     array(
                         'pagelen' => 100,
                         'fields' => 'values.name,values.target.hash,next',
@@ -306,10 +306,10 @@ abstract class BitbucketDriver extends VcsDriver
 
         if (null === $this->branches) {
             $this->branches = array();
-            $resource = sprintf(
+            $resource = \sprintf(
                 '%s?%s',
                 $this->branchesUrl,
-                http_build_query(
+                \http_build_query(
                     array(
                         'pagelen' => 100,
                         'fields' => 'values.name,values.target.hash,values.heads,next',
@@ -356,7 +356,7 @@ abstract class BitbucketDriver extends VcsDriver
         } catch (TransportException $e) {
             $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process, $this->remoteFilesystem);
 
-            if (403 === $e->getCode() || (401 === $e->getCode() && strpos($e->getMessage(), 'Could not authenticate against') === 0)) {
+            if (403 === $e->getCode() || (401 === $e->getCode() && \strpos($e->getMessage(), 'Could not authenticate against') === 0)) {
                 if (!$this->io->hasAuthentication($this->originUrl)
                     && $bitbucketUtil->authorizeOAuth($this->originUrl)
                 ) {
@@ -410,7 +410,7 @@ abstract class BitbucketDriver extends VcsDriver
             if ($cloneLink['name'] === 'https') {
                 // Format: https://(user@)bitbucket.org/{user}/{repo}
                 // Strip username from URL (only present in clone URL's for private repositories)
-                $this->cloneHttpsUrl = preg_replace('/https:\/\/([^@]+@)?/', 'https://', $cloneLink['href']);
+                $this->cloneHttpsUrl = \preg_replace('/https:\/\/([^@]+@)?/', 'https://', $cloneLink['href']);
             }
         }
     }
@@ -420,7 +420,7 @@ abstract class BitbucketDriver extends VcsDriver
      */
     protected function getMainBranchData()
     {
-        $resource = sprintf(
+        $resource = \sprintf(
             'https://api.bitbucket.org/1.0/repositories/%s/%s/main-branch',
             $this->owner,
             $this->repository

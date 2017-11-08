@@ -118,8 +118,8 @@ EOT
         }
 
         $format = $input->getOption('format');
-        if (!in_array($format, array('text', 'json'))) {
-            $io->writeError(sprintf('Unsupported format "%s". See help for supported formats.', $format));
+        if (!\in_array($format, array('text', 'json'))) {
+            $io->writeError(\sprintf('Unsupported format "%s". See help for supported formats.', $format));
 
             return 1;
         }
@@ -144,17 +144,17 @@ EOT
             } else {
                 $defaultRepos = RepositoryFactory::defaultRepos($io);
                 $repos = new CompositeRepository($defaultRepos);
-                $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
+                $io->writeError('No composer.json found in the current directory, showing available packages from ' . \implode(', ', \array_keys($defaultRepos)));
             }
         } elseif ($input->getOption('all') && $composer) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
-            $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
+            $repos = new CompositeRepository(\array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } elseif ($input->getOption('all')) {
             $defaultRepos = RepositoryFactory::defaultRepos($io);
-            $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
+            $io->writeError('No composer.json found in the current directory, showing available packages from ' . \implode(', ', \array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
-            $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
+            $repos = new CompositeRepository(\array_merge(array($installedRepo), $defaultRepos));
         } else {
             $repos = $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
         }
@@ -172,7 +172,7 @@ EOT
         $packageFilter = $input->getArgument('package');
 
         // show single package or single version
-        if (($packageFilter && false === strpos($packageFilter, '*')) || !empty($package)) {
+        if (($packageFilter && false === \strpos($packageFilter, '*')) || !empty($package)) {
             if ('json' === $format) {
                 $io->writeError('Format "json" is only supported for package listings, falling back to format "text"');
             }
@@ -181,7 +181,7 @@ EOT
 
                 if (empty($package)) {
                     $options = $input->getOptions();
-                    if (!isset($options['working-dir']) || !file_exists('composer.json')) {
+                    if (!isset($options['working-dir']) || !\file_exists('composer.json')) {
                         throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found');
                     }
 
@@ -228,9 +228,9 @@ EOT
             }
             $rootRequires = $this->getRootRequires();
             $packages = $installedRepo->getPackages();
-            usort($packages, 'strcmp');
+            \usort($packages, 'strcmp');
             foreach ($packages as $package) {
-                if (in_array($package->getName(), $rootRequires, true)) {
+                if (\in_array($package->getName(), $rootRequires, true)) {
                     $this->displayPackageTree($package, $installedRepo, $repos);
                 }
             }
@@ -240,14 +240,14 @@ EOT
 
         if ($repos instanceof CompositeRepository) {
             $repos = $repos->getRepositories();
-        } elseif (!is_array($repos)) {
+        } elseif (!\is_array($repos)) {
             $repos = array($repos);
         }
 
         // list packages
         $packages = array();
         if (null !== $packageFilter) {
-            $packageFilter = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
+            $packageFilter = '{^'.\str_replace('\\*', '.*?', \preg_quote($packageFilter)).'$}i';
         }
 
         $packageListFilter = array();
@@ -264,7 +264,7 @@ EOT
         if (Platform::isWindows()) {
             $width--;
         } else {
-            $width = max(80, $width);
+            $width = \max(80, $width);
         }
 
         if ($input->getOption('path') && null === $composer) {
@@ -277,7 +277,7 @@ EOT
                 $type = 'platform';
             } elseif (
                 $repo === $installedRepo
-                || ($installedRepo instanceof CompositeRepository && in_array($repo, $installedRepo->getRepositories(), true))
+                || ($installedRepo instanceof CompositeRepository && \in_array($repo, $installedRepo->getRepositories(), true))
             ) {
                 $type = 'installed';
             } else {
@@ -285,18 +285,18 @@ EOT
             }
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
                 foreach ($repo->getProviderNames() as $name) {
-                    if (!$packageFilter || preg_match($packageFilter, $name)) {
+                    if (!$packageFilter || \preg_match($packageFilter, $name)) {
                         $packages[$type][$name] = $name;
                     }
                 }
             } else {
                 foreach ($repo->getPackages() as $package) {
                     if (!isset($packages[$type][$package->getName()])
-                        || !is_object($packages[$type][$package->getName()])
-                        || version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '<')
+                        || !\is_object($packages[$type][$package->getName()])
+                        || \version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '<')
                     ) {
-                        if (!$packageFilter || preg_match($packageFilter, $package->getName())) {
-                            if (!$packageListFilter || in_array($package->getName(), $packageListFilter, true)) {
+                        if (!$packageFilter || \preg_match($packageFilter, $package->getName())) {
+                            if (!$packageListFilter || \in_array($package->getName(), $packageListFilter, true)) {
                                 $packages[$type][$package->getName()] = $package;
                             }
                         }
@@ -315,14 +315,14 @@ EOT
         $viewMetaData = array();
         foreach (array('platform' => true, 'available' => false, 'installed' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
-                ksort($packages[$type]);
+                \ksort($packages[$type]);
 
                 $nameLength = $versionLength = $latestLength = 0;
                 foreach ($packages[$type] as $package) {
-                    if (is_object($package)) {
-                        $nameLength = max($nameLength, strlen($package->getPrettyName()));
+                    if (\is_object($package)) {
+                        $nameLength = \max($nameLength, \strlen($package->getPrettyName()));
                         if ($showVersion) {
-                            $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
+                            $versionLength = \max($versionLength, \strlen($package->getFullPrettyVersion()));
                             if ($showLatest) {
                                 $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly);
                                 if ($latestPackage === false) {
@@ -330,11 +330,11 @@ EOT
                                 }
 
                                 $latestPackages[$package->getPrettyName()] = $latestPackage;
-                                $latestLength = max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
+                                $latestLength = \max($latestLength, \strlen($latestPackage->getFullPrettyVersion()));
                             }
                         }
                     } else {
-                        $nameLength = max($nameLength, strlen($package));
+                        $nameLength = \max($nameLength, \strlen($package));
                     }
                 }
 
@@ -353,7 +353,7 @@ EOT
                 );
                 foreach ($packages[$type] as $package) {
                     $packageViewData = array();
-                    if (is_object($package)) {
+                    if (\is_object($package)) {
                         $latestPackage = null;
                         if ($showLatest && isset($latestPackages[$package->getPrettyName()])) {
                             $latestPackage = $latestPackages[$package->getPrettyName()];
@@ -376,14 +376,14 @@ EOT
                             $packageViewData['description'] = $package->getDescription();
                         }
                         if ($writePath) {
-                            $packageViewData['path'] = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
+                            $packageViewData['path'] = \strtok(\realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
                         }
 
                         if ($latestPackage && $latestPackage->isAbandoned()) {
-                            $replacement = (is_string($latestPackage->getReplacementPackage()))
+                            $replacement = (\is_string($latestPackage->getReplacementPackage()))
                                 ? 'Use ' . $latestPackage->getReplacementPackage() . ' instead'
                                 : 'No replacement was suggested';
-                            $packageWarning = sprintf(
+                            $packageWarning = \sprintf(
                                 'Package %s is abandoned, you should avoid using it. %s.',
                                 $package->getPrettyName(),
                                 $replacement
@@ -427,27 +427,27 @@ EOT
                 }
 
                 foreach ($packages as $package) {
-                    $io->write($indent . str_pad($package['name'], $nameLength, ' '), false);
+                    $io->write($indent . \str_pad($package['name'], $nameLength, ' '), false);
                     if (isset($package['version']) && $writeVersion) {
-                        $io->write(' ' . str_pad($package['version'], $versionLength, ' '), false);
+                        $io->write(' ' . \str_pad($package['version'], $versionLength, ' '), false);
                     }
                     if (isset($package['latest']) && $writeLatest) {
                         $latestVersion = $package['latest'];
                         $updateStatus = $package['latest-status'];
                         $style = $this->updateStatusToVersionStyle($updateStatus);
                         if (!$io->isDecorated()) {
-                            $latestVersion = str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('=', '!', '~'), $updateStatus) . ' ' . $latestVersion;
+                            $latestVersion = \str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('=', '!', '~'), $updateStatus) . ' ' . $latestVersion;
                         }
-                        $io->write(' <' . $style . '>' . str_pad($latestVersion, $latestLength, ' ') . '</' . $style . '>', false);
+                        $io->write(' <' . $style . '>' . \str_pad($latestVersion, $latestLength, ' ') . '</' . $style . '>', false);
                     }
                     if (isset($package['description']) && $writeDescription) {
-                        $description = strtok($package['description'], "\r\n");
+                        $description = \strtok($package['description'], "\r\n");
                         $remaining = $width - $nameLength - $versionLength - 4;
                         if ($writeLatest) {
                             $remaining -= $latestLength;
                         }
-                        if (strlen($description) > $remaining) {
-                            $description = substr($description, 0, $remaining - 3) . '...';
+                        if (\strlen($description) > $remaining) {
+                            $description = \substr($description, 0, $remaining - 3) . '...';
                         }
                         $io->write(' ' . $description, false);
                     }
@@ -473,9 +473,9 @@ EOT
     {
         $rootPackage = $this->getComposer()->getPackage();
 
-        return array_map(
+        return \array_map(
             'strtolower',
-            array_keys(array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()))
+            \array_keys(\array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()))
         );
     }
 
@@ -496,8 +496,8 @@ EOT
      */
     protected function getPackage(RepositoryInterface $installedRepo, RepositoryInterface $repos, $name, $version = null)
     {
-        $name = strtolower($name);
-        $constraint = is_string($version) ? $this->versionParser->parseConstraints($version) : $version;
+        $name = \strtolower($name);
+        $constraint = \is_string($version) ? $this->versionParser->parseConstraints($version) : $version;
 
         $policy = new DefaultPolicy();
         $pool = new Pool('dev');
@@ -542,7 +542,7 @@ EOT
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
         $io->write('<info>descrip.</info> : ' . $package->getDescription());
-        $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: array()));
+        $io->write('<info>keywords</info> : ' . \implode(', ', $package->getKeywords() ?: array()));
         $this->printVersions($package, $versions, $installedRepo);
         if ($latestPackage) {
             $style = $this->getVersionStyle($latestPackage, $package);
@@ -552,9 +552,9 @@ EOT
         }
         $io->write('<info>type</info>     : ' . $package->getType());
         $this->printLicenses($package);
-        $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
-        $io->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
-        $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
+        $io->write('<info>source</info>   : ' . \sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
+        $io->write('<info>dist</info>     : ' . \sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
+        $io->write('<info>names</info>    : ' . \implode(', ', $package->getNames()));
 
         if ($latestPackage->isAbandoned()) {
             $replacement = ($latestPackage->getReplacementPackage() !== null)
@@ -562,7 +562,7 @@ EOT
                 : null;
 
             $io->writeError(
-                sprintf('<warning>Attention: This package is abandoned and no longer maintained.%s</warning>', $replacement)
+                \sprintf('<warning>Attention: This package is abandoned and no longer maintained.%s</warning>', $replacement)
             );
         }
 
@@ -580,19 +580,19 @@ EOT
 
                 if ($type === 'psr-0') {
                     foreach ($autoloads as $name => $path) {
-                        $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
+                        $io->write(($name ?: '*') . ' => ' . (\is_array($path) ? \implode(', ', $path) : ($path ?: '.')));
                     }
                 } elseif ($type === 'psr-4') {
                     foreach ($autoloads as $name => $path) {
-                        $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
+                        $io->write(($name ?: '*') . ' => ' . (\is_array($path) ? \implode(', ', $path) : ($path ?: '.')));
                     }
                 } elseif ($type === 'classmap') {
-                    $io->write(implode(', ', $autoloads));
+                    $io->write(\implode(', ', $autoloads));
                 }
             }
             if ($package->getIncludePaths()) {
                 $io->write('<comment>include-path</comment>');
-                $io->write(implode(', ', $package->getIncludePaths()));
+                $io->write(\implode(', ', $package->getIncludePaths()));
             }
         }
     }
@@ -606,19 +606,19 @@ EOT
      */
     protected function printVersions(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo)
     {
-        uasort($versions, 'version_compare');
-        $versions = array_keys(array_reverse($versions));
+        \uasort($versions, 'version_compare');
+        $versions = \array_keys(\array_reverse($versions));
 
         // highlight installed version
         if ($installedRepo->hasPackage($package)) {
             $installedVersion = $package->getPrettyVersion();
-            $key = array_search($installedVersion, $versions);
+            $key = \array_search($installedVersion, $versions);
             if (false !== $key) {
                 $versions[$key] = '<info>* ' . $installedVersion . '</info>';
             }
         }
 
-        $versions = implode(', ', $versions);
+        $versions = \implode(', ', $versions);
 
         $this->getIO()->write('<info>versions</info> : ' . $versions);
     }
@@ -634,7 +634,7 @@ EOT
     {
         $title = $title ?: $linkType;
         $io = $this->getIO();
-        if ($links = $package->{'get'.ucfirst($linkType)}()) {
+        if ($links = $package->{'get'.\ucfirst($linkType)}()) {
             $io->write("\n<info>" . $title . "</info>");
 
             foreach ($links as $link) {
@@ -663,9 +663,9 @@ EOT
             } else {
                 // is license OSI approved?
                 if ($license[1] === true) {
-                    $out = sprintf('%s (%s) (OSI approved) %s', $license[0], $licenseId, $license[2]);
+                    $out = \sprintf('%s (%s) (OSI approved) %s', $license[0], $licenseId, $license[2]);
                 } else {
-                    $out = sprintf('%s (%s) %s', $license[0], $licenseId, $license[2]);
+                    $out = \sprintf('%s (%s) %s', $license[0], $licenseId, $license[2]);
                 }
             }
 
@@ -704,16 +704,16 @@ EOT
     protected function displayPackageTree(PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos)
     {
         $io = $this->getIO();
-        $io->write(sprintf('<info>%s</info>', $package->getPrettyName()), false);
+        $io->write(\sprintf('<info>%s</info>', $package->getPrettyName()), false);
         $io->write(' ' . $package->getPrettyVersion(), false);
-        $io->write(' ' . strtok($package->getDescription(), "\r\n"));
+        $io->write(' ' . \strtok($package->getDescription(), "\r\n"));
 
-        if (is_object($package)) {
+        if (\is_object($package)) {
             $requires = $package->getRequires();
-            ksort($requires);
+            \ksort($requires);
             $treeBar = '├';
             $j = 0;
-            $total = count($requires);
+            $total = \count($requires);
             foreach ($requires as $requireName => $require) {
                 $j++;
                 if ($j == 0) {
@@ -724,10 +724,10 @@ EOT
                 }
                 $level = 1;
                 $color = $this->colors[$level];
-                $info = sprintf('%s──<%s>%s</%s> %s', $treeBar, $color, $requireName, $color, $require->getPrettyConstraint());
+                $info = \sprintf('%s──<%s>%s</%s> %s', $treeBar, $color, $requireName, $color, $require->getPrettyConstraint());
                 $this->writeTreeLine($info);
 
-                $treeBar = str_replace('└', ' ', $treeBar);
+                $treeBar = \str_replace('└', ' ', $treeBar);
                 $packagesInTree = array($package->getName(), $requireName);
 
                 $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $treeBar, $level + 1);
@@ -748,29 +748,29 @@ EOT
      */
     protected function displayTree($name, $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, array $packagesInTree, $previousTreeBar = '├', $level = 1)
     {
-        $previousTreeBar = str_replace('├', '│', $previousTreeBar);
+        $previousTreeBar = \str_replace('├', '│', $previousTreeBar);
         list($package, $versions) = $this->getPackage($installedRepo, $distantRepos, $name, $package->getPrettyConstraint() === 'self.version' ? $package->getConstraint() : $package->getPrettyConstraint());
-        if (is_object($package)) {
+        if (\is_object($package)) {
             $requires = $package->getRequires();
-            ksort($requires);
+            \ksort($requires);
             $treeBar = $previousTreeBar . '  ├';
             $i = 0;
-            $total = count($requires);
+            $total = \count($requires);
             foreach ($requires as $requireName => $require) {
                 $currentTree = $packagesInTree;
                 $i++;
                 if ($i == $total) {
                     $treeBar = $previousTreeBar . '  └';
                 }
-                $colorIdent = $level % count($this->colors);
+                $colorIdent = $level % \count($this->colors);
                 $color = $this->colors[$colorIdent];
 
-                $circularWarn = in_array($requireName, $currentTree) ? '(circular dependency aborted here)' : '';
-                $info = rtrim(sprintf('%s──<%s>%s</%s> %s %s', $treeBar, $color, $requireName, $color, $require->getPrettyConstraint(), $circularWarn));
+                $circularWarn = \in_array($requireName, $currentTree) ? '(circular dependency aborted here)' : '';
+                $info = \rtrim(\sprintf('%s──<%s>%s</%s> %s %s', $treeBar, $color, $requireName, $color, $require->getPrettyConstraint(), $circularWarn));
                 $this->writeTreeLine($info);
 
-                $treeBar = str_replace('└', ' ', $treeBar);
-                if (!in_array($requireName, $currentTree)) {
+                $treeBar = \str_replace('└', ' ', $treeBar);
+                if (!\in_array($requireName, $currentTree)) {
                     $currentTree[] = $requireName;
                     $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $currentTree, $treeBar, $level + 1);
                 }
@@ -783,7 +783,7 @@ EOT
         // 'up-to-date' is printed green
         // 'semver-safe-update' is printed red
         // 'update-possible' is printed yellow
-        return str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('info', 'highlight', 'comment'), $updateStatus);
+        return \str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('info', 'highlight', 'comment'), $updateStatus);
     }
 
     private function getUpdateStatus(PackageInterface $latestPackage, PackageInterface $package)
@@ -793,7 +793,7 @@ EOT
         }
 
         $constraint = $package->getVersion();
-        if (0 !== strpos($constraint, 'dev-')) {
+        if (0 !== \strpos($constraint, 'dev-')) {
             $constraint = '^'.$constraint;
         }
         if ($latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), $constraint)) {
@@ -809,7 +809,7 @@ EOT
     {
         $io = $this->getIO();
         if (!$io->isDecorated()) {
-            $line = str_replace(array('└', '├', '──', '│'), array('`-', '|-', '-', '|'), $line);
+            $line = \str_replace(array('└', '├', '──', '│'), array('`-', '|-', '-', '|'), $line);
         }
 
         $io->write($line);
@@ -833,7 +833,7 @@ EOT
         $stability = $composer->getPackage()->getMinimumStability();
         $flags = $composer->getPackage()->getStabilityFlags();
         if (isset($flags[$name])) {
-            $stability = array_search($flags[$name], BasePackage::$stabilities, true);
+            $stability = \array_search($flags[$name], BasePackage::$stabilities, true);
         }
 
         $bestStability = $stability;
@@ -842,7 +842,7 @@ EOT
         }
 
         $targetVersion = null;
-        if (0 === strpos($package->getVersion(), 'dev-')) {
+        if (0 === \strpos($package->getVersion(), 'dev-')) {
             $targetVersion = $package->getVersion();
         }
 

@@ -69,11 +69,11 @@ class RootPackageLoader extends ArrayLoader
         $autoVersioned = false;
         if (!isset($config['version'])) {
             // override with env var if available
-            if (getenv('COMPOSER_ROOT_VERSION')) {
-                $version = getenv('COMPOSER_ROOT_VERSION');
+            if (\getenv('COMPOSER_ROOT_VERSION')) {
+                $version = \getenv('COMPOSER_ROOT_VERSION');
                 $commit = null;
             } else {
-                $versionData = $this->versionGuesser->guessVersion($config, $cwd ?: getcwd());
+                $versionData = $this->versionGuesser->guessVersion($config, $cwd ?: \getcwd());
                 $version = $versionData['version'];
                 $commit = $versionData['commit'];
             }
@@ -117,7 +117,7 @@ class RootPackageLoader extends ArrayLoader
         foreach (array('require', 'require-dev') as $linkType) {
             if (isset($config[$linkType])) {
                 $linkInfo = BasePackage::$supportedLinkTypes[$linkType];
-                $method = 'get'.ucfirst($linkInfo['method']);
+                $method = 'get'.\ucfirst($linkInfo['method']);
                 $links = array();
                 foreach ($realPackage->$method() as $link) {
                     $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
@@ -129,7 +129,7 @@ class RootPackageLoader extends ArrayLoader
         }
 
         if (isset($links[$config['name']])) {
-            throw new \InvalidArgumentException(sprintf('Root package \'%s\' cannot require itself in its composer.json' . PHP_EOL .
+            throw new \InvalidArgumentException(\sprintf('Root package \'%s\' cannot require itself in its composer.json' . PHP_EOL .
                         'Did you accidentally name your root package after an external package?', $config['name']));
         }
 
@@ -157,9 +157,9 @@ class RootPackageLoader extends ArrayLoader
     private function extractAliases(array $requires, array $aliases)
     {
         foreach ($requires as $reqName => $reqVersion) {
-            if (preg_match('{^([^,\s#]+)(?:#[^ ]+)? +as +([^,\s]+)$}', $reqVersion, $match)) {
+            if (\preg_match('{^([^,\s#]+)(?:#[^ ]+)? +as +([^,\s]+)$}', $reqVersion, $match)) {
                 $aliases[] = array(
-                    'package' => strtolower($reqName),
+                    'package' => \strtolower($reqName),
                     'version' => $this->versionParser->normalize($match[1], $reqVersion),
                     'alias' => $match[2],
                     'alias_normalized' => $this->versionParser->normalize($match[2], $reqVersion),
@@ -178,9 +178,9 @@ class RootPackageLoader extends ArrayLoader
             $constraints = array();
 
             // extract all sub-constraints in case it is an OR/AND multi-constraint
-            $orSplit = preg_split('{\s*\|\|?\s*}', trim($reqVersion));
+            $orSplit = \preg_split('{\s*\|\|?\s*}', \trim($reqVersion));
             foreach ($orSplit as $orConstraint) {
-                $andSplit = preg_split('{(?<!^|as|[=>< ,]) *(?<!-)[, ](?!-) *(?!,|as|$)}', $orConstraint);
+                $andSplit = \preg_split('{(?<!^|as|[=>< ,]) *(?<!-)[, ](?!-) *(?!,|as|$)}', $orConstraint);
                 foreach ($andSplit as $andConstraint) {
                     $constraints[] = $andConstraint;
                 }
@@ -189,8 +189,8 @@ class RootPackageLoader extends ArrayLoader
             // parse explicit stability flags to the most unstable
             $match = false;
             foreach ($constraints as $constraint) {
-                if (preg_match('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $constraint, $match)) {
-                    $name = strtolower($reqName);
+                if (\preg_match('{^[^@]*?@('.\implode('|', \array_keys($stabilities)).')$}i', $constraint, $match)) {
+                    $name = \strtolower($reqName);
                     $stability = $stabilities[VersionParser::normalizeStability($match[1])];
 
                     if (isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) {
@@ -208,9 +208,9 @@ class RootPackageLoader extends ArrayLoader
             foreach ($constraints as $constraint) {
                 // infer flags for requirements that have an explicit -dev or -beta version specified but only
                 // for those that are more unstable than the minimumStability or existing flags
-                $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $constraint);
-                if (preg_match('{^[^,\s@]+$}', $reqVersion) && 'stable' !== ($stabilityName = VersionParser::parseStability($reqVersion))) {
-                    $name = strtolower($reqName);
+                $reqVersion = \preg_replace('{^([^,\s@]+) as .+$}', '$1', $constraint);
+                if (\preg_match('{^[^,\s@]+$}', $reqVersion) && 'stable' !== ($stabilityName = VersionParser::parseStability($reqVersion))) {
+                    $name = \strtolower($reqName);
                     $stability = $stabilities[$stabilityName];
                     if ((isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) || ($minimumStability > $stability)) {
                         continue;
@@ -226,9 +226,9 @@ class RootPackageLoader extends ArrayLoader
     private function extractReferences(array $requires, array $references)
     {
         foreach ($requires as $reqName => $reqVersion) {
-            $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
-            if (preg_match('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === ($stabilityName = VersionParser::parseStability($reqVersion))) {
-                $name = strtolower($reqName);
+            $reqVersion = \preg_replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
+            if (\preg_match('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === ($stabilityName = VersionParser::parseStability($reqVersion))) {
+                $name = \strtolower($reqName);
                 $references[$name] = $match[1];
             }
         }

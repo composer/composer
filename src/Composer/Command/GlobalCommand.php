@@ -56,29 +56,29 @@ EOT
     public function run(InputInterface $input, OutputInterface $output)
     {
         // extract real command name
-        $tokens = preg_split('{\s+}', $input->__toString());
+        $tokens = \preg_split('{\s+}', $input->__toString());
         $args = array();
         foreach ($tokens as $token) {
             if ($token && $token[0] !== '-') {
                 $args[] = $token;
-                if (count($args) >= 2) {
+                if (\count($args) >= 2) {
                     break;
                 }
             }
         }
 
         // show help for this command if no command was found
-        if (count($args) < 2) {
+        if (\count($args) < 2) {
             return parent::run($input, $output);
         }
 
         // change to global dir
         $config = Factory::createConfig();
-        chdir($config->get('home'));
+        \chdir($config->get('home'));
         $this->getIO()->writeError('<info>Changed current directory to '.$config->get('home').'</info>');
 
         // create new input without "global" command prefix
-        $input = new StringInput(preg_replace('{\bg(?:l(?:o(?:b(?:a(?:l)?)?)?)?)?\b}', '', $input->__toString(), 1));
+        $input = new StringInput(\preg_replace('{\bg(?:l(?:o(?:b(?:a(?:l)?)?)?)?)?\b}', '', $input->__toString(), 1));
         $this->getApplication()->resetComposer();
 
         return $this->getApplication()->run($input, $output);

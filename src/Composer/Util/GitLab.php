@@ -53,13 +53,13 @@ class GitLab
      */
     public function authorizeOAuth($originUrl)
     {
-        if (!in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
+        if (!\in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
             return false;
         }
 
         // if available use token from git config
         if (0 === $this->process->execute('git config gitlab.accesstoken', $output)) {
-            $this->io->setAuthentication($originUrl, trim($output), 'oauth2');
+            $this->io->setAuthentication($originUrl, \trim($output), 'oauth2');
 
             return true;
         }
@@ -94,7 +94,7 @@ class GitLab
             $this->io->writeError($message);
         }
 
-        $this->io->writeError(sprintf('A token will be created and stored in "%s", your password will never be stored', $this->config->getAuthConfigSource()->getName()));
+        $this->io->writeError(\sprintf('A token will be created and stored in "%s", your password will never be stored', $this->config->getAuthConfigSource()->getName()));
         $this->io->writeError('To revoke access to this token you can visit '.$originUrl.'/profile/applications');
 
         $attemptCounter = 0;
@@ -105,7 +105,7 @@ class GitLab
             } catch (TransportException $e) {
                 // 401 is bad credentials,
                 // 403 is max login attempts exceeded
-                if (in_array($e->getCode(), array(403, 401))) {
+                if (\in_array($e->getCode(), array(403, 401))) {
                     if (401 === $e->getCode()) {
                         $this->io->writeError('Bad credentials.');
                     } else {
@@ -140,7 +140,7 @@ class GitLab
         $headers = array('Content-Type: application/x-www-form-urlencoded');
 
         $apiUrl = $originUrl;
-        $data = http_build_query(array(
+        $data = \http_build_query(array(
             'username' => $username,
             'password' => $password,
             'grant_type' => 'password',

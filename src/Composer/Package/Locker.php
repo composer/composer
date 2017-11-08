@@ -55,7 +55,7 @@ class Locker
         $this->lockFile = $lockFile;
         $this->repositoryManager = $repositoryManager;
         $this->installationManager = $installationManager;
-        $this->hash = md5($composerFileContents);
+        $this->hash = \md5($composerFileContents);
         $this->contentHash = self::getContentHash($composerFileContents);
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
@@ -71,7 +71,7 @@ class Locker
      */
     public static function getContentHash($composerFileContents)
     {
-        $content = json_decode($composerFileContents, true);
+        $content = \json_decode($composerFileContents, true);
 
         $relevantKeys = array(
             'name',
@@ -89,16 +89,16 @@ class Locker
 
         $relevantContent = array();
 
-        foreach (array_intersect($relevantKeys, array_keys($content)) as $key) {
+        foreach (\array_intersect($relevantKeys, \array_keys($content)) as $key) {
             $relevantContent[$key] = $content[$key];
         }
         if (isset($content['config']['platform'])) {
             $relevantContent['config']['platform'] = $content['config']['platform'];
         }
 
-        ksort($relevantContent);
+        \ksort($relevantContent);
 
-        return md5(json_encode($relevantContent));
+        return \md5(\json_encode($relevantContent));
     }
 
     /**
@@ -155,7 +155,7 @@ class Locker
         $lockedPackages = $lockData['packages'];
         if ($withDevReqs) {
             if (isset($lockData['packages-dev'])) {
-                $lockedPackages = array_merge($lockedPackages, $lockData['packages-dev']);
+                $lockedPackages = \array_merge($lockedPackages, $lockData['packages-dev']);
             } else {
                 throw new \RuntimeException('The lock file does not contain require-dev information, run install with the --no-dev option or run update to install those packages.');
             }
@@ -204,7 +204,7 @@ class Locker
                 isset($lockData['platform-dev']) ? $lockData['platform-dev'] : array()
             );
 
-            $requirements = array_merge($requirements, $devRequirements);
+            $requirements = \array_merge($requirements, $devRequirements);
         }
 
         return $requirements;
@@ -325,7 +325,7 @@ class Locker
 
         if (empty($lock['packages']) && empty($lock['packages-dev']) && empty($lock['platform']) && empty($lock['platform-dev'])) {
             if ($this->lockFile->exists()) {
-                unlink($this->lockFile->getPath());
+                \unlink($this->lockFile->getPath());
             }
 
             return false;
@@ -359,7 +359,7 @@ class Locker
             $version = $package->getPrettyVersion();
 
             if (!$name || !$version) {
-                throw new \LogicException(sprintf(
+                throw new \LogicException(\sprintf(
                     'Package "%s" has no version or name and can not be locked', $package
                 ));
             }
@@ -383,15 +383,15 @@ class Locker
             $locked[] = $spec;
         }
 
-        usort($locked, function ($a, $b) {
-            $comparison = strcmp($a['name'], $b['name']);
+        \usort($locked, function ($a, $b) {
+            $comparison = \strcmp($a['name'], $b['name']);
 
             if (0 !== $comparison) {
                 return $comparison;
             }
 
             // If it is the same package, compare the versions to make the order deterministic
-            return strcmp($a['version'], $b['version']);
+            return \strcmp($a['version'], $b['version']);
         });
 
         return $locked;
@@ -405,27 +405,27 @@ class Locker
      */
     private function getPackageTime(PackageInterface $package)
     {
-        if (!function_exists('proc_open')) {
+        if (!\function_exists('proc_open')) {
             return null;
         }
 
-        $path = realpath($this->installationManager->getInstallPath($package));
+        $path = \realpath($this->installationManager->getInstallPath($package));
         $sourceType = $package->getSourceType();
         $datetime = null;
 
-        if ($path && in_array($sourceType, array('git', 'hg'))) {
+        if ($path && \in_array($sourceType, array('git', 'hg'))) {
             $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
             switch ($sourceType) {
                 case 'git':
                     GitUtil::cleanEnv();
 
-                    if (0 === $this->process->execute('git log -n1 --pretty=%ct '.ProcessExecutor::escape($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
-                        $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
+                    if (0 === $this->process->execute('git log -n1 --pretty=%ct '.ProcessExecutor::escape($sourceRef), $output, $path) && \preg_match('{^\s*\d+\s*$}', $output)) {
+                        $datetime = new \DateTime('@'.\trim($output), new \DateTimeZone('UTC'));
                     }
                     break;
 
                 case 'hg':
-                    if (0 === $this->process->execute('hg log --template "{date|hgdate}" -r '.ProcessExecutor::escape($sourceRef), $output, $path) && preg_match('{^\s*(\d+)\s*}', $output, $match)) {
+                    if (0 === $this->process->execute('hg log --template "{date|hgdate}" -r '.ProcessExecutor::escape($sourceRef), $output, $path) && \preg_match('{^\s*(\d+)\s*}', $output, $match)) {
                         $datetime = new \DateTime('@'.$match[1], new \DateTimeZone('UTC'));
                     }
                     break;

@@ -80,7 +80,7 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     protected function shouldCache($identifier)
     {
-        return $this->cache && preg_match('{[a-f0-9]{40}}i', $identifier);
+        return $this->cache && \preg_match('{[a-f0-9]{40}}i', $identifier);
     }
 
     /**
@@ -96,7 +96,7 @@ abstract class VcsDriver implements VcsDriverInterface
             $composer = $this->getBaseComposerInformation($identifier);
 
             if ($this->shouldCache($identifier)) {
-                $this->cache->write($identifier, json_encode($composer));
+                $this->cache->write($identifier, \json_encode($composer));
             }
 
             $this->infoCache[$identifier] = $composer;
@@ -144,7 +144,7 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     protected function getScheme()
     {
-        if (extension_loaded('openssl')) {
+        if (\extension_loaded('openssl')) {
             return 'https';
         }
 
