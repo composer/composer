@@ -641,7 +641,7 @@ EOT
                 ));
             }
             throw new \InvalidArgumentException(sprintf(
-                'Could not find package %s at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
+                'Could not find a matching version of package %s. Check the package spelling, your version constraint and that the package is available in a stability which matches your minimum-stability (%s).',
                 $name,
                 $this->getMinimumStability($input)
             ));
