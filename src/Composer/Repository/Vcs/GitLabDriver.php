@@ -311,7 +311,7 @@ class GitLabDriver extends VcsDriver
         if (isset($this->project['visibility'])) {
             $this->isPrivate = $this->project['visibility'] !== 'public';
         } else {
-            // client is not authendicated, therefore repository has to be public 
+            // client is not authendicated, therefore repository has to be public
             $this->isPrivate = false;
         }
     }

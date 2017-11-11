@@ -83,7 +83,8 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $installOperation = new InstallOperation($this->createPackageMock());
         $removeOperation = new UninstallOperation($this->createPackageMock());
         $updateOperation = new UpdateOperation(
-            $this->createPackageMock(), $this->createPackageMock()
+            $this->createPackageMock(),
+            $this->createPackageMock()
         );
 
         $manager

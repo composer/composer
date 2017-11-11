@@ -43,7 +43,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         $realUrl = realpath($url);
         if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
             throw new \RuntimeException(sprintf(
-                'Source path "%s" is not found for package %s', $url, $package->getName()
+                'Source path "%s" is not found for package %s',
+                $url,
+                $package->getName()
             ));
         }
 
@@ -54,7 +56,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             // for previous attempts that were shut down because they did not work well enough or introduced too many risks.
             throw new \RuntimeException(sprintf(
                 'Package %s cannot install to "%s" inside its source at "%s"',
-                $package->getName(), realpath($path), $realUrl
+                $package->getName(),
+                realpath($path),
+                $realUrl
             ));
         }
 

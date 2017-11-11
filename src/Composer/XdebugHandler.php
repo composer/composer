@@ -203,7 +203,7 @@ class XdebugHandler
      * Returns true if the restart environment variables were set
      *
      * @param bool  $additional Whether there were additional inis
-     * @param array $iniPaths Locations reported by the current process
+     * @param array $iniPaths   Locations reported by the current process
      *
      * @return bool
      */
