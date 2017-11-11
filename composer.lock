@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "809b291b5f9da41a8bdd414a058e3f07",
+    "content-hash": "46761e27f7506ec18e09cb51dffa730e",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1685,16 +1685,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.8.27",
+            "version": "v2.8.29",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "4c29dec8d489c4e37cf87ccd7166cd0b0e6a45c5"
+                "reference": "d819bf267e901727141fe828ae888486fd21236e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/4c29dec8d489c4e37cf87ccd7166cd0b0e6a45c5",
-                "reference": "4c29dec8d489c4e37cf87ccd7166cd0b0e6a45c5",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/d819bf267e901727141fe828ae888486fd21236e",
+                "reference": "d819bf267e901727141fe828ae888486fd21236e",
                 "shasum": ""
             },
             "require": {
@@ -1730,7 +1730,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2017-06-01T20:52:29+00:00"
+            "time": "2017-11-05T15:25:56+00:00"
         }
     ],
     "aliases": [],

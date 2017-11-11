@@ -17,7 +17,7 @@ use Composer\Autoload\ClassLoader;
 /**
  * Tests the Composer\Autoload\ClassLoader class.
  */
-class ClassLoaderTest extends \PHPUnit_Framework_TestCase
+class ClassLoaderTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * Tests regular PSR-0 and PSR-4 class loading.

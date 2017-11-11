@@ -17,7 +17,7 @@ use Composer\Util\Perforce;
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
  */
-class PerforceTest extends \PHPUnit_Framework_TestCase
+class PerforceTest extends \PHPUnit\Framework\TestCase
 {
     protected $perforce;
     protected $processExecutor;

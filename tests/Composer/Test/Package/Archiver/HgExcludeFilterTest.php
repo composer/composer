@@ -14,7 +14,7 @@ namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\HgExcludeFilter;
 
-class HgExcludeFilterTest extends \PHPUnit_Framework_TestCase
+class HgExcludeFilterTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @dataProvider patterns

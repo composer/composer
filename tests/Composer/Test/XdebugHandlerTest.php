@@ -21,7 +21,7 @@ use Composer\Util\IniHelper;
  * We use PHP_BINARY which only became available in PHP 5.4 *
  * @requires PHP 5.4
  */
-class XdebugHandlerTest extends \PHPUnit_Framework_TestCase
+class XdebugHandlerTest extends \PHPUnit\Framework\TestCase
 {
     public static $env = array();
 

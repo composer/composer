@@ -16,7 +16,7 @@ use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
 
-class ArrayDumperTest extends \PHPUnit_Framework_TestCase
+class ArrayDumperTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var ArrayDumper

@@ -17,7 +17,7 @@ use JsonSchema\Validator;
 /**
  * @author Rob Bast <rob.bast@gmail.com>
  */
-class ComposerSchemaTest extends \PHPUnit_Framework_TestCase
+class ComposerSchemaTest extends \PHPUnit\Framework\TestCase
 {
     public function testRequiredProperties()
     {

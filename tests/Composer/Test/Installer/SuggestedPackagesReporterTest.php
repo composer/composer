@@ -17,7 +17,7 @@ use Composer\Installer\SuggestedPackagesReporter;
 /**
  * @coversDefaultClass Composer\Installer\SuggestedPackagesReporter
  */
-class SuggestedPackagesReporterTest extends \PHPUnit_Framework_TestCase
+class SuggestedPackagesReporterTest extends \PHPUnit\Framework\TestCase
 {
     private $io;
     private $suggestedPackagesReporter;

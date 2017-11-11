@@ -17,7 +17,7 @@ use Composer\Util\IniHelper;
 /**
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
  */
-class IniHelperTest extends \PHPUnit_Framework_TestCase
+class IniHelperTest extends \PHPUnit\Framework\TestCase
 {
     public static $envOriginal;
 

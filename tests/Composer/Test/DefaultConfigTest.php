@@ -14,7 +14,7 @@ namespace Composer\Test;
 
 use Composer\Config;
 
-class DefaultConfigTest extends \PHPUnit_Framework_TestCase
+class DefaultConfigTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @group TLS

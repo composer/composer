@@ -19,7 +19,7 @@ use Composer\Util\Platform;
  *
  * @author Niels Keurentjes <niels.keurentjes@omines.com>
  */
-class PlatformTest extends \PHPUnit_Framework_TestCase
+class PlatformTest extends \PHPUnit\Framework\TestCase
 {
     public function testExpandPath()
     {

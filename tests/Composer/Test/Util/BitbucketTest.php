@@ -17,7 +17,7 @@ use Composer\Util\Bitbucket;
 /**
  * @author Paul Wenke <wenke.paul@gmail.com>
  */
-class BitbucketTest extends \PHPUnit_Framework_TestCase
+class BitbucketTest extends \PHPUnit\Framework\TestCase
 {
     private $username = 'username';
     private $password = 'password';

@@ -15,7 +15,7 @@ namespace Composer;
 use Composer\Console\HtmlOutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
-class HtmlOutputFormatterTest extends \PHPUnit_Framework_TestCase
+class HtmlOutputFormatterTest extends \PHPUnit\Framework\TestCase
 {
     public function testFormatting()
     {

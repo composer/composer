@@ -14,7 +14,7 @@ namespace Composer\Test;
 
 use Composer\Config;
 
-class ConfigTest extends \PHPUnit_Framework_TestCase
+class ConfigTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @dataProvider dataAddPackagistRepository

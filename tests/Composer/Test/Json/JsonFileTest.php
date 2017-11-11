@@ -15,7 +15,7 @@ namespace Composer\Test\Json;
 use Seld\JsonLint\ParsingException;
 use Composer\Json\JsonFile;
 
-class JsonFileTest extends \PHPUnit_Framework_TestCase
+class JsonFileTest extends \PHPUnit\Framework\TestCase
 {
     public function testParseErrorDetectExtraComma()
     {

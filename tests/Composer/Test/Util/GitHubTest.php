@@ -20,7 +20,7 @@ use RecursiveIteratorIterator;
 /**
  * @author Rob Bast <rob.bast@gmail.com>
  */
-class GitHubTest extends \PHPUnit_Framework_TestCase
+class GitHubTest extends \PHPUnit\Framework\TestCase
 {
     private $username = 'username';
     private $password = 'password';

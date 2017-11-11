@@ -14,7 +14,7 @@ namespace Composer\Test\Package\Version;
 
 use Composer\Package\Version\VersionParser;
 
-class VersionParserTest extends \PHPUnit_Framework_TestCase
+class VersionParserTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @dataProvider getParseNameVersionPairsData

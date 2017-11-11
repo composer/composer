@@ -14,7 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Util\StreamContextFactory;
 
-class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
+class StreamContextFactoryTest extends \PHPUnit\Framework\TestCase
 {
     protected function setUp()
     {
