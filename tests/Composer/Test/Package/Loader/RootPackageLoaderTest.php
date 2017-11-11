@@ -18,7 +18,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
 
-class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
+class RootPackageLoaderTest extends \PHPUnit\Framework\TestCase
 {
     protected function loadPackage($data)
     {

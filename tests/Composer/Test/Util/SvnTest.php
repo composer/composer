@@ -17,7 +17,7 @@ use Composer\IO\NullIO;
 use Composer\Util\Platform;
 use Composer\Util\Svn;
 
-class SvnTest extends \PHPUnit_Framework_TestCase
+class SvnTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * Test the credential string.

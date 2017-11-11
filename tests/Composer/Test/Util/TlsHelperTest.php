@@ -14,7 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Util\TlsHelper;
 
-class TlsHelperTest extends \PHPUnit_Framework_TestCase
+class TlsHelperTest extends \PHPUnit\Framework\TestCase
 {
     /** @dataProvider dataCheckCertificateHost */
     public function testCheckCertificateHost($expectedResult, $hostname, $certNames)

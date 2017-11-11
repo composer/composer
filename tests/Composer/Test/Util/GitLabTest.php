@@ -18,7 +18,7 @@ use Composer\Util\GitLab;
 /**
  * @author Jérôme Tamarelle <jerome@tamarelle.net>
  */
-class GitLabTest extends \PHPUnit_Framework_TestCase
+class GitLabTest extends \PHPUnit\Framework\TestCase
 {
     private $username = 'username';
     private $password = 'password';

@@ -14,7 +14,7 @@ namespace Composer\Test\Installer;
 
 use Composer\Installer\InstallerEvent;
 
-class InstallerEventTest extends \PHPUnit_Framework_TestCase
+class InstallerEventTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetter()
     {

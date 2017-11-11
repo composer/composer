@@ -14,7 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Util\RemoteFilesystem;
 
-class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
+class RemoteFilesystemTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetOptionsForUrl()
     {

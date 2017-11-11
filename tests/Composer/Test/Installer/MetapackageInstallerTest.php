@@ -14,7 +14,7 @@ namespace Composer\Test\Installer;
 
 use Composer\Installer\MetapackageInstaller;
 
-class MetapackageInstallerTest extends \PHPUnit_Framework_TestCase
+class MetapackageInstallerTest extends \PHPUnit\Framework\TestCase
 {
     private $repository;
     private $installer;

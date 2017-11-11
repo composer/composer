@@ -16,7 +16,7 @@ use Composer\Config;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
 
-class VersionGuesserTest extends \PHPUnit_Framework_TestCase
+class VersionGuesserTest extends \PHPUnit\Framework\TestCase
 {
     public function setUp()
     {

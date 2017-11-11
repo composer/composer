@@ -14,7 +14,7 @@ namespace Composer\Test\Json;
 
 use Composer\Json\JsonValidationException;
 
-class JsonValidationExceptionTest extends \PHPUnit_Framework_TestCase
+class JsonValidationExceptionTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @dataProvider errorProvider

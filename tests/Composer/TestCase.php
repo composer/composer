@@ -19,7 +19,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
 use Symfony\Component\Process\ExecutableFinder;
 
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     private static $parser;
     private static $executableCache = array();

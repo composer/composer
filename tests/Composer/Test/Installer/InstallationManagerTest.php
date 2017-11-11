@@ -17,7 +17,7 @@ use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 
-class InstallationManagerTest extends \PHPUnit_Framework_TestCase
+class InstallationManagerTest extends \PHPUnit\Framework\TestCase
 {
     public function setUp()
     {

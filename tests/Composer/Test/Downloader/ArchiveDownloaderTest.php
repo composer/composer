@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Downloader;
 
-class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
+class ArchiveDownloaderTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetFileName()
     {

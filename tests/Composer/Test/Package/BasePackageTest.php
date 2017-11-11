@@ -14,7 +14,7 @@ namespace Composer\Test\Package;
 
 use Composer\Package\BasePackage;
 
-class BasePackageTest extends \PHPUnit_Framework_TestCase
+class BasePackageTest extends \PHPUnit\Framework\TestCase
 {
     public function testSetSameRepository()
     {
