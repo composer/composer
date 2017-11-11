@@ -110,7 +110,6 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 ',
             ),
 
-
             array(
                 '{
     "require":
@@ -2359,6 +2358,5 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     }
 }
 ', $manipulator->getContents());
-
     }
 }

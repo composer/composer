@@ -641,7 +641,9 @@ EOT
             // Check whether the PHP version was the problem
             if ($phpVersion && $versionSelector->findBestCandidate($name)) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Could not find package %s at any version matching your PHP version %s', $name, $phpVersion
+                    'Could not find package %s at any version matching your PHP version %s',
+                    $name,
+                    $phpVersion
                 ));
             }
 

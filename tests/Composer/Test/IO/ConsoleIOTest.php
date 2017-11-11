@@ -219,7 +219,7 @@ class ConsoleIOTest extends TestCase
         ;
 
         $validator = function ($value) {
-             return true;
+            return true;
         };
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);
         $consoleIO->askAndValidate('Why?', $validator, 10, 'default');
@@ -237,13 +237,15 @@ class ConsoleIOTest extends TestCase
             ->will($this->returnValue(true));
         $dialogMock->expects($this->once())
             ->method('select')
-            ->with($this->isInstanceOf('Symfony\Component\Console\Output\OutputInterface'),
+            ->with(
+                $this->isInstanceOf('Symfony\Component\Console\Output\OutputInterface'),
                 $this->equalTo('Select item'),
                 $this->equalTo(array("item1", "item2")),
                 $this->equalTo(null),
                 $this->equalTo(false),
                 $this->equalTo("Error message"),
-                $this->equalTo(true));
+                $this->equalTo(true)
+            );
         $helperMock->expects($this->once())
             ->method('get')
             ->with($this->equalTo('dialog'))

@@ -48,7 +48,8 @@ class PearRepositoryTest extends TestCase
 
         foreach ($expectedPackages as $expectedPackage) {
             $package = $this->repository->findPackage($expectedPackage['name'], $expectedPackage['version']);
-            $this->assertInstanceOf('Composer\Package\PackageInterface',
+            $this->assertInstanceOf(
+                'Composer\Package\PackageInterface',
                 $package,
                 'Expected package ' . $expectedPackage['name'] . ', version ' . $expectedPackage['version'] .
                 ' not found in pear channel ' . $url
@@ -74,7 +75,8 @@ class PearRepositoryTest extends TestCase
 
         $this->createRepository($repoConfig);
         foreach ($expectedPackages as $expectedPackage) {
-            $this->assertInstanceOf('Composer\Package\PackageInterface',
+            $this->assertInstanceOf(
+                'Composer\Package\PackageInterface',
                 $this->repository->findPackage($expectedPackage['name'], $expectedPackage['version']),
                 'Expected package ' . $expectedPackage['name'] . ', version ' . $expectedPackage['version'] .
                 ' not found in pear channel ' . $url

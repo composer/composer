@@ -521,13 +521,15 @@ class Installer
             }
 
             $this->io->writeError(
-                sprintf("<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
-                count($installs),
-                1 === count($installs) ? '' : 's',
-                count($updates),
-                1 === count($updates) ? '' : 's',
-                count($uninstalls),
-                1 === count($uninstalls) ? '' : 's')
+                sprintf(
+                    "<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
+                    count($installs),
+                    1 === count($installs) ? '' : 's',
+                    count($updates),
+                    1 === count($updates) ? '' : 's',
+                    count($uninstalls),
+                    1 === count($uninstalls) ? '' : 's'
+                )
             );
             if ($installs) {
                 $this->io->writeError("Installs: ".implode(', ', $installs), true, IOInterface::VERBOSE);
@@ -767,7 +769,7 @@ class Installer
             // is this a plugin or a dependency of a plugin?
             if ($isPlugin || count(array_intersect($package->getNames(), $pluginRequires))) {
                 // get the package's requires, but filter out any platform requirements or 'composer-plugin-api'
-                $requires = array_filter(array_keys($package->getRequires()), function($req) {
+                $requires = array_filter(array_keys($package->getRequires()), function ($req) {
                     return $req !== 'composer-plugin-api' && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
                 });
 
@@ -1029,7 +1031,8 @@ class Installer
                     }
 
                     if ($task === 'force-updates' && $newPackage && (
-                        (($newPackage->getSourceReference() && $newPackage->getSourceReference() !== $package->getSourceReference())
+                        (
+                            ($newPackage->getSourceReference() && $newPackage->getSourceReference() !== $package->getSourceReference())
                             || ($newPackage->getDistReference() && $newPackage->getDistReference() !== $package->getDistReference())
                         )
                     )) {
@@ -1207,7 +1210,7 @@ class Installer
         if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}i', $package->getDistUrl())) {
             $package->setDistReference($reference);
             $package->setDistUrl(preg_replace('{(?<=/)[a-f0-9]{40}(?=/|$)}i', $reference, $package->getDistUrl()));
-        } else if ($package->getDistReference()) { // update the dist reference if there was one, but if none was provided ignore it
+        } elseif ($package->getDistReference()) { // update the dist reference if there was one, but if none was provided ignore it
             $package->setDistReference($reference);
         }
     }
