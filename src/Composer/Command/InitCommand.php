@@ -154,12 +154,11 @@ EOT
         $git = $this->getGitConfig();
         $io = $this->getIO();
         $formatter = $this->getHelperSet()->get('formatter');
-        $config = Factory::createConfig($io);
-        $defaults = $config->get('defaults');
-        
+
         // initialize repos if configured
         $repositories = $input->getOption('repository');
         if ($repositories) {
+            $config = Factory::createConfig($io);
             $repos = array(new PlatformRepository);
             foreach ($repositories as $repo) {
                 $repos[] = RepositoryFactory::fromString($io, $config, $repo);
@@ -192,8 +191,8 @@ EOT
             $name = basename($cwd);
             $name = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
             $name = strtolower($name);
-            if ( isset($defaults['vendor']) ) {
-                $name = $defaults['vendor'] . '/' . $name;
+            if ( !empty($_SERVER['COMPOSER_DEFAULT_VENDOR']) ) {
+                $name = $_SERVER['COMPOSER_DEFAULT_VENDOR'] . '/' . $name;
             } elseif (isset($git['github.user'])) {
                 $name = $git['github.user'] . '/' . $name;
             } elseif (!empty($_SERVER['USERNAME'])) {
@@ -243,10 +242,20 @@ EOT
         $input->setOption('description', $description);
 
         if (null === $author = $input->getOption('author')) {
-            if ( isset($defaults['author']) && isset($defaults['author']['name']) && isset($defaults['author']['email']) ) {
-                $author = sprintf('%s <%s>', $defaults['author']['name'], $defaults['author']['email']);
-            } elseif (isset($git['user.name']) && isset($git['user.email'])) {
-                $author = sprintf('%s <%s>', $git['user.name'], $git['user.email']);
+            if ( !empty($_SERVER['COMPOSER_DEFAULT_AUTHOR']) ) {
+                $author_name = $_SERVER['COMPOSER_DEFAULT_AUTHOR'];
+            } elseif ( isset($git['user.name']) ) {
+                $author_name = $git['user.name'];
+            }
+
+            if ( !empty($_SERVER['COMPOSER_DEFAULT_EMAIL']) ) {
+                $author_email = $_SERVER['COMPOSER_DEFAULT_EMAIL'];
+            } elseif ( isset($git['user.email']) ) {
+                $author_email = $git['user.email'];
+            }
+
+            if (isset($author_name) && isset($author_email)) {
+                $author = sprintf('%s <%s>', $author_name, $author_email);
             }
         }
 
@@ -297,8 +306,8 @@ EOT
         $input->setOption('type', $type);
 
         if (null === $license = $input->getOption('license')) {
-            if ( isset($defaults['license']) ) {
-                $license = $defaults['license'];
+            if ( !empty($_SERVER['COMPOSER_DEFAULT_LICENSE']) ) {
+                $license = $_SERVER['COMPOSER_DEFAULT_LICENSE'];
             }
         }
 
