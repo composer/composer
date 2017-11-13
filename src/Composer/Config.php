@@ -84,7 +84,6 @@ class Config
     private $configSource;
     /** @var ConfigSourceInterface */
     private $authConfigSource;
-    private $defaultsConfigSource;
     private $useEnvironment;
     private $warnedHosts = array();
 
@@ -119,16 +118,6 @@ class Config
     public function getAuthConfigSource()
     {
         return $this->authConfigSource;
-    }
-
-    public function setDefaultsConfigSource(ConfigSourceInterface $source)
-    {
-        $this->defaultsConfigSource = $source;
-    }
-
-    public function getDefaultsConfigSource()
-    {
-        return $this->defaultsConfigSource;
     }
 
     /**
