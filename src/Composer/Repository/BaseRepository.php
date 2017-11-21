@@ -24,6 +24,12 @@ use Composer\Package\Link;
  */
 abstract class BaseRepository implements RepositoryInterface
 {
+
+    /**
+     * @var bool
+     */
+    protected $trustReplace = false;
+
     /**
      * Returns a list of links causing the requested needle packages to be installed, as an associative array with the
      * dependent's name as key, and an array containing in order the PackageInterface and Link describing the relationship
@@ -153,5 +159,21 @@ abstract class BaseRepository implements RepositoryInterface
         ksort($results);
 
         return $results;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTrustReplace()
+    {
+        return $this->trustReplace;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTrustReplace($trustReplace)
+    {
+        $this->trustReplace = (bool) $trustReplace;
     }
 }

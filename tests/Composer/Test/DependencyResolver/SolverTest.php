@@ -101,6 +101,41 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testSolverInstallReplacedPackageFromDifferentRepositories() {
+        $repo1 = new ArrayRepository;
+        $repo1->setTrustReplace(true);
+        $repo2 = new ArrayRepository;
+
+        $repo1->addPackage($package1 = $this->getPackage('ltsvendor/A', '1.0'));
+        $repo2->addPackage($package2 = $this->getPackage('upstreamvendor/A', '1.0'));
+        $package1->setReplaces(array(new Link('ltsvendor/A', 'upstreamvendor/A', $this->getVersionConstraint('==', '1.0'))));
+
+        $applicationPackage = $this->getPackage('ltsvendor/app', '1.2.3');
+        $applicationPackage->setRequires(
+          array('a' => new Link('ltsvendor/app', 'upstreamvendor/A', $this->getVersionConstraint('>=', '1.0'), 'requires'))
+        );
+        $repo1->addPackage($applicationPackage);
+
+        $this->pool->addRepository($this->repoInstalled);
+        /*
+         * This test passes because the order in which repositories are added
+         * to the pool should affect the prioritization of the packages they
+         * contain. If $repo1 and $repo2 both contain a package named "x", the
+         * package from $repo1 will always be selected. It should follow that if
+         * $repo1 contains a package by a different name but that replaces "x",
+         * it should still be selected.
+         */
+        $this->pool->addRepository($repo1);
+        $this->pool->addRepository($repo2);
+
+        $this->request->install('ltsvendor/app');
+
+        $this->checkSolverResult(array(
+          array('job' => 'install', 'package' => $package1),
+          array('job' => 'install', 'package' => $applicationPackage),
+        ));
+    }
+
     public function testSolverInstallWithDeps()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));

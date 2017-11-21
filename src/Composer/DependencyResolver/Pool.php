@@ -202,6 +202,14 @@ class Pool implements \Countable
 
         foreach ($this->providerRepos as $repo) {
             foreach ($repo->whatProvides($this, $name, $bypassFilters) as $candidate) {
+                if (
+                  !$repo->getTrustReplace()
+                  && $mustMatchName
+                  && $candidate->getName() !== $name)
+                {
+                    continue;
+                }
+
                 $candidates[] = $candidate;
                 if ($candidate->id < 1) {
                     $candidate->setId($this->id++);
@@ -210,15 +218,19 @@ class Pool implements \Countable
             }
         }
 
-        if ($mustMatchName) {
-            $candidates = array_filter($candidates, function ($candidate) use ($name) {
-                return $candidate->getName() == $name;
-            });
-            if (isset($this->packageByExactName[$name])) {
-                $candidates = array_merge($candidates, $this->packageByExactName[$name]);
+        if (isset($this->packageByName[$name])) {
+            /**
+             * @var PackageInterface $candidate
+             */
+            foreach ($this->packageByName[$name] as $candidate) {
+                if (
+                  $candidate->getName() === $name
+                  || !$mustMatchName
+                  || $mustMatchName && $candidate->getRepository()->getTrustReplace()
+                ) {
+                    $candidates[] = $candidate;
+                }
             }
-        } elseif (isset($this->packageByName[$name])) {
-            $candidates = array_merge($candidates, $this->packageByName[$name]);
         }
 
         $matches = $provideMatches = array();
