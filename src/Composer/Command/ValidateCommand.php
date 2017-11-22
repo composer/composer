@@ -66,7 +66,11 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $file = $input->getArgument('file');
+        if ($input->hasArgument('file)) {
+            $file = $input->getArgument('file');
+        } else {
+            $file = Factory::getComposerFile();
+        }
         $io = $this->getIO();
 
         if (!file_exists($file)) {
