@@ -122,6 +122,7 @@ class Compiler
             ->in(__DIR__.'/../../vendor/composer/spdx-licenses/')
             ->in(__DIR__.'/../../vendor/composer/semver/')
             ->in(__DIR__.'/../../vendor/composer/ca-bundle/')
+            ->in(__DIR__.'/../../vendor/composer/xdebug-handler/')
             ->in(__DIR__.'/../../vendor/psr/')
             ->sort($finderSort)
         ;
