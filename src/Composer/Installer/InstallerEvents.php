@@ -40,4 +40,15 @@ class InstallerEvents
      * @var string
      */
     const POST_DEPENDENCIES_SOLVING = 'post-dependencies-solving';
+
+    /**
+     * The INSTALLER_ERROR event occurs if the installer fails
+     * with an uncaught \Throwable.
+     *
+     * The event listener method receives a
+     * Composer\Installer\InstallerErrorEvent instance.
+     *
+     * @var string
+     */
+    const INSTALLER_ERROR = 'installer-error';
 }

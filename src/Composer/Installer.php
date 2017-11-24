@@ -28,6 +28,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\InstallerEvents;
+use Composer\Installer\InstallerErrorEvent;
 use Composer\Installer\NoopInstaller;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
@@ -171,6 +172,28 @@ class Installer
      * @return int        0 on success or a positive error code on failure
      */
     public function run()
+    {
+        try {
+            $e = null;
+            return $this->doRun();
+        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+        }
+
+        if (null !== $e) {
+            $event = new InstallerErrorEvent(InstallerEvents::INSTALLER_ERROR, $e, $this->io);
+            $this->eventDispatcher->dispatch($event->getName(), $event);
+
+            // if the status code is set to non-zero, do not fail
+            if (0 === $event->getStatusCode()) {
+                return $event->getStatusCode();
+            }
+
+            throw $e;
+        }
+    }
+
+    private function doRun()
     {
         // Disable GC to save CPU cycles, as the dependency solver can create hundreds of thousands
         // of PHP objects, the GC can spend quite some time walking the tree of references looking
