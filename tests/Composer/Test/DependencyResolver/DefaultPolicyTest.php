@@ -261,10 +261,10 @@ class DefaultPolicyTest extends TestCase
 
     public function testPreferNonReplacingFromSameRepo()
     {
-        $this->repo->addPackage($packageA = $this->getPackage('A', '2.0'));
-        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
 
-        $packageB->setReplaces(array(new Link('B', 'A', new Constraint('==', '2.0'), 'replaces')));
+        $packageB->setReplaces(array(new Link('B', 'A', new Constraint('==', '1.0'), 'replaces')));
 
         $this->pool->addRepository($this->repo);
 
