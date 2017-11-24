@@ -122,6 +122,10 @@ class RepositoryManager
             $this->io->writeError('<warning>Repository "'.$name.'" ('.json_encode($config).') has a packagist key which should be in its own repository definition</warning>');
         }
 
+        if ($type === 'composer' && !empty($config['options']['trust-replace']) && strtolower(parse_url($config['url'], PHP_URL_HOST) === 'packagist.org')) {
+            $this->io->writeError('<warning>Repository "'.$name.'" ('.json_encode($config).') uses packagist.org and trusts packages that claim to replace other packages. This is a security risk.</warning>');
+        }
+
         $class = $this->repositoryClasses[$type];
 
         $reflMethod = new \ReflectionMethod($class, '__construct');

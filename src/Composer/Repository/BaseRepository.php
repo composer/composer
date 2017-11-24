@@ -166,6 +166,13 @@ abstract class BaseRepository implements RepositoryInterface
      */
     public function getTrustReplace()
     {
+        // composer.json configuration always rules if present.
+        if ($this instanceof ConfigurableRepositoryInterface) {
+            $repoConfig = $this->getRepoConfig();
+            if (isset($repoConfig['options']['trust-replace'])) {
+                return (bool)$repoConfig['options']['trust-replace'];
+            }
+        }
         return $this->trustReplace;
     }
 

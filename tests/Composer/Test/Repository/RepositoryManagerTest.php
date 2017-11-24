@@ -106,4 +106,35 @@ class RepositoryManagerTest extends TestCase
 
         return $cases;
     }
+
+    public function testRepoCreationUsingPackagistAndTrustReplaceWarns()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $io
+            ->expects($this->exactly(1))
+            ->method('writeError')
+            ->with($this->stringContains('uses packagist.org and trusts packages that claim to replace other packages. This is a security risk.'));
+
+        $rm = new RepositoryManager(
+            $io,
+            $config = $this->getMock('Composer\Config', array('get')),
+            $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
+        );
+
+        $tmpdir = $this->tmpdir;
+        $config
+            ->expects($this->any())
+            ->method('get')
+            ->will($this->returnCallback(function ($arg) use ($tmpdir) {
+                return 'cache-repo-dir' === $arg ? $tmpdir : null;
+            }))
+        ;
+
+        $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
+
+        $rm->createRepository('composer', array(
+            'url' => 'http://packagist.org',
+            'options' => array('trust-replace' => 'hola!')
+        ));
+    }
 }

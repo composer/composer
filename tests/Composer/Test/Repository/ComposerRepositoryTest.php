@@ -208,4 +208,89 @@ class ComposerRepositoryTest extends TestCase
             $repository->search('foo', RepositoryInterface::SEARCH_FULLTEXT, 'library')
         );
     }
+
+    /**
+     * @dataProvider trustRequireProvider
+     */
+    public function testTrustRequire($expected, $repoConfig, $packagesJson) {
+        $repository = $this->getMock(
+            'Composer\Repository\ComposerRepository',
+            array(
+                'fetchFile'
+            ),
+            array(
+                $repoConfig,
+                new NullIO,
+                FactoryMock::createConfig(),
+            )
+        );
+
+        $repository
+            ->expects($this->exactly(1))
+            ->method('fetchFile')
+            ->will($this->returnValue($packagesJson));
+
+        $this->assertEquals(
+            $expected,
+            $repository->getTrustReplace()
+        );
+    }
+
+    public function trustRequireProvider() {
+        return array(
+            'packages.json true' => array(
+                true,
+                array(
+                    'url' => 'http://example.org',
+                ),
+                array (
+                    'trust-replace' => true
+                )
+            ),
+            'packages.json unspecified, composer.json unspecified' => array(
+                false,
+                array(
+                    'url' => 'http://example.org',
+                ),
+                array ()
+            ),
+            'packages.json false' => array(
+                false,
+                array(
+                    'url' => 'http://example.org',
+                ),
+                array (
+                    'trust-replace' => false
+                )
+            ),
+            'packages.json true, composer.json false' => array(
+                false,
+                array(
+                    'url' => 'http://example.org',
+                    'options' => array('trust-replace' => false)
+                ),
+                array (
+                    'trust-replace' => true
+                )
+            ),
+            'packages.json unspecified, composer.json true' => array(
+                true,
+                array(
+                    'url' => 'http://example.org',
+                    'options' => array('trust-replace' => true)
+                ),
+                array ()
+            ),
+            'packages.json false, composer.json true' => array(
+                true,
+                array(
+                    'url' => 'http://example.org',
+                    'options' => array('trust-replace' => true)
+                ),
+                array (
+                    'trust-replace' => false
+                )
+            ),
+        );
+    }
 }

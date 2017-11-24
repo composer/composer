@@ -101,20 +101,49 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverInstallReplacedPackageFromDifferentRepositories() {
+    /**
+     * @dataProvider solverInstallReplacedPackageWithRepoTrustProvider
+     */
+    public function testSolverInstallReplacedPackageWithRepoTrust($repo1Data, $repo2Data, $installRequests) {
+        $expectedJobs = array();
+
         $repo1 = new ArrayRepository;
-        $repo1->setTrustReplace(true);
-        $repo2 = new ArrayRepository;
-
-        $repo1->addPackage($package1 = $this->getPackage('ltsvendor/A', '1.0'));
-        $repo2->addPackage($package2 = $this->getPackage('upstreamvendor/A', '1.0'));
-        $package1->setReplaces(array(new Link('ltsvendor/A', 'upstreamvendor/A', $this->getVersionConstraint('==', '1.0'))));
-
-        $applicationPackage = $this->getPackage('ltsvendor/app', '1.2.3');
-        $applicationPackage->setRequires(
-          array('a' => new Link('ltsvendor/app', 'upstreamvendor/A', $this->getVersionConstraint('>=', '1.0'), 'requires'))
+        if ($repo1Data['trust-replace']) {
+            $repo1->setTrustReplace(true);
+        }
+        $setupStruct = array(
+            array(
+                $repo1, $repo1Data
+            )
         );
-        $repo1->addPackage($applicationPackage);
+        if ($repo2Data != null) {
+            $repo2 = new ArrayRepository;
+            if ($repo2Data['trust-replace']) {
+                $repo2->setTrustReplace(true);
+            }
+            $setupStruct[] = array(
+                $repo2, $repo2Data
+            );
+        }
+
+        foreach ($setupStruct as $repoSetup) {
+            $repo = $repoSetup[0];
+            $packageData = $repoSetup[1]['packages'];
+
+            foreach ($packageData as $packageDatum) {
+                $repo->addPackage($thePackage = $this->getPackage($packageDatum['name'], $packageDatum['version']));
+                if (!empty($packageDatum['expectInstalled'])) {
+                    $expectedJobs[] = array('job' => 'install', 'package' => $thePackage);
+                }
+
+                if (isset($packageDatum['require'])) {
+                    $thePackage->setRequires($packageDatum['require']);
+                }
+                if (isset($packageDatum['replace'])) {
+                    $thePackage->setReplaces($packageDatum['replace']);
+                }
+            }
+        }
 
         $this->pool->addRepository($this->repoInstalled);
         /*
@@ -126,14 +155,113 @@ class SolverTest extends TestCase
          * it should still be selected.
          */
         $this->pool->addRepository($repo1);
-        $this->pool->addRepository($repo2);
+        if (isset($repo2)) {
+            $this->pool->addRepository($repo2);
+        }
 
-        $this->request->install('ltsvendor/app');
+        foreach ($installRequests as $installRequest) {
+            $this->request->install($installRequest);
+        }
 
-        $this->checkSolverResult(array(
-          array('job' => 'install', 'package' => $package1),
-          array('job' => 'install', 'package' => $applicationPackage),
-        ));
+        $this->checkSolverResult($expectedJobs, true);
+    }
+
+    public function solverInstallReplacedPackageWithRepoTrustProvider() {
+        $data = array(
+            'require replaced by older version in trusted prioritized repo' => array(
+                'repo1Data' => array(
+                    'trust-replace' => true,
+                    'packages' => array(
+                        array(
+                            'name' => 'ltsvendor/A',
+                            'version' => '1.0',
+                            'replace' => array(new Link('ltsvendor/A', 'upstreamvendor/A', $this->getVersionConstraint('==', '1.0'))),
+                            'expectInstalled' => true
+                        ),
+                        array(
+                            'name' => 'ltsvendor/app',
+                            'version' => '1.2.3',
+                            'require' => array('a' => new Link('ltsvendor/app', 'upstreamvendor/A', $this->getVersionConstraint('>=', '1.0'), 'requires')),
+                            'expectInstalled' => true
+                        )
+                    )
+                ),
+                'repo2Data' => array(
+                    'trust-replace' => false,
+                    'packages' => array(
+                        array(
+                            'name' => 'upstreamvendor/A',
+                            'version' => '1.1',
+                        )
+                    )
+                ),
+                'installRequests' => array('ltsvendor/app')
+            )
+        );
+
+        $data['require replaced by equal version in trusted prioritized repo'] = $data['require replaced by older version in trusted prioritized repo'];
+        $data['require replaced by equal version in trusted prioritized repo']['repo1Data']['packages'][0]['version'] = '1.1';
+
+        $data['require replaced by newer version in trusted prioritized repo'] = $data['require replaced by older version in trusted prioritized repo'];
+        $data['require replaced by newer version in trusted prioritized repo']['repo1Data']['packages'][0]['version'] = '1.2';
+
+        $r = $data['require replaced by older version in trusted prioritized repo'];
+        $r['repo1Data']['trust-replace'] = false;
+        $r['repo1Data']['packages'][0]['expectInstalled'] = false;
+        $r['repo2Data']['packages'][0]['expectInstalled'] = true;
+        $data['require does not use replaced package when prioritized repo is not trusted'] = $r;
+
+        $data['user install request does not use replace in trusted repo'] = array(
+            'repo1Data' => array(
+                'trust-replace' => true,
+                'packages' => array(
+                    array(
+                        'name' => 'vendor/original',
+                        'version' => '1.0',
+                        'expectInstalled' => true,
+                    ),
+                    array(
+                        'name' => 'vendor/replaced',
+                        'version' => '0.5',
+                        'replace' => array(new Link('vendor/replaced', 'vendor/original', $this->getVersionConstraint('==', '1.0'))),
+                    )
+                )
+            ),
+            'repo2Data' => null,
+            'installRequests' => array('vendor/original'),
+        );
+
+        $data['vendor replacement preferred when multiple choices in trusted repo'] = array(
+            'repo1Data' => array(
+                'trust-replace' => true,
+                'packages' => array(
+                    array(
+                        'name' => 'vendor/replaced',
+                        'version' => '0.5',
+                        'replace' => array(new Link('vendor/replaced', 'vendor/original', $this->getVersionConstraint('==', '1.0'))),
+                        'expectInstalled' => true,
+                    ),
+                    array(
+                        'name' => 'ltsvendor/replaced',
+                        'version' => '0.5',
+                        'replace' => array(new Link('ltsvendor/replaced', 'vendor/original', $this->getVersionConstraint('==', '1.0'))),
+                    ),
+                    array(
+                        'name' => 'app',
+                        'version' => '1',
+                        'require' => array('a' => new Link('app', 'vendor/original', $this->getVersionConstraint('>=', '1.0'), 'requires')),
+                        'expectInstalled' => true,
+                    )
+                )
+            ),
+            'repo2Data' => null,
+            'installRequests' => array('app'),
+        );
+        $r = $data['vendor replacement preferred when multiple choices in trusted repo'];
+        $r['repo1Data']['packages'] = array_reverse($r['repo1Data']['packages']);
+        $data['vendor replacement preferred when multiple choices in trusted repo.2'] = $r;
+
+        return $data;
     }
 
     public function testSolverInstallWithDeps()
@@ -877,7 +1005,7 @@ class SolverTest extends TestCase
         $this->pool->addRepository($this->repo);
     }
 
-    protected function checkSolverResult(array $expected)
+    protected function checkSolverResult(array $expected, $allowDifferentOrder = false)
     {
         $transaction = $this->solver->solve($this->request);
 
@@ -896,6 +1024,25 @@ class SolverTest extends TestCase
                     'package' => $operation->getPackage(),
                 );
             }
+        }
+
+        if ($allowDifferentOrder) {
+            $sorter = function($a, $b) {
+                $sortKeys = array('job', 'from', 'to', 'package');
+                $sortStringA = "";
+                $sortStringB = "";
+                foreach ($sortKeys as $key) {
+                    if (array_key_exists($key, $a)) {
+                        $sortStringA .= $a[$key];
+                    }
+                    if (array_key_exists($key, $b)) {
+                        $sortStringB .= $b[$key];
+                    }
+                }
+                return strcmp($sortStringA, $sortStringB);
+            };
+            usort($expected, $sorter);
+            usort($result, $sorter);
         }
 
         $this->assertEquals($expected, $result);
