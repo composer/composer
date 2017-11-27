@@ -93,7 +93,7 @@ class AllFunctionalTest extends TestCase
             $this->fail($proc->getOutput());
         }
 
-        $this->assertTrue(file_exists(self::$pharPath));
+        $this->assertFileExists(self::$pharPath);
     }
 
     /**

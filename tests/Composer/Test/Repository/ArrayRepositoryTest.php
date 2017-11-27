@@ -23,7 +23,7 @@ class ArrayRepositoryTest extends TestCase
         $repo = new ArrayRepository;
         $repo->addPackage($this->getPackage('foo', '1'));
 
-        $this->assertEquals(1, count($repo));
+        $this->assertCount(1, $repo);
     }
 
     public function testRemovePackage()
@@ -34,11 +34,11 @@ class ArrayRepositoryTest extends TestCase
         $repo->addPackage($this->getPackage('foo', '1'));
         $repo->addPackage($package);
 
-        $this->assertEquals(2, count($repo));
+        $this->assertCount(2, $repo);
 
         $repo->removePackage($this->getPackage('foo', '1'));
 
-        $this->assertEquals(1, count($repo));
+        $this->assertCount(1, $repo);
         $this->assertEquals(array($package), $repo->getPackages());
     }
 
@@ -77,7 +77,7 @@ class ArrayRepositoryTest extends TestCase
 
         $repo->addPackage($alias);
 
-        $this->assertEquals(2, count($repo));
+        $this->assertCount(2, $repo);
         $this->assertTrue($repo->hasPackage($this->getPackage('foo', '1')));
         $this->assertTrue($repo->hasPackage($this->getPackage('foo', '2')));
     }

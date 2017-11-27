@@ -45,7 +45,7 @@ class ChannelReaderTest extends TestCase
         $this->assertEquals('MDB2', $packages[2]->getPackageName());
 
         $mdb2releases = $packages[2]->getReleases();
-        $this->assertEquals(9, count($mdb2releases['2.4.0']->getDependencyInfo()->getOptionals()));
+        $this->assertCount(9, $mdb2releases['2.4.0']->getDependencyInfo()->getOptionals());
     }
 
     public function testShouldSelectCorrectReader()
