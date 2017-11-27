@@ -47,13 +47,18 @@ class ArrayLoader implements LoaderInterface
             throw new \UnexpectedValueException('Package '.$config['name'].' has no version defined.');
         }
 
+        $prettyVersion = $config['version'];
+        if (isset($config['pretty_version'])) {
+            $prettyVersion = $config['pretty_version'];
+        }
+
         // handle already normalized versions
         if (isset($config['version_normalized'])) {
             $version = $config['version_normalized'];
         } else {
             $version = $this->versionParser->normalize($config['version']);
         }
-        $package = new $class($config['name'], $version, $config['version']);
+        $package = new $class($config['name'], $version, $prettyVersion);
         $package->setType(isset($config['type']) ? strtolower($config['type']) : 'library');
 
         if (isset($config['target-dir'])) {
