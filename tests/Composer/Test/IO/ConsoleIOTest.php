@@ -229,27 +229,27 @@ class ConsoleIOTest extends TestCase
     {
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
-        $dialogMock = $this->getMock('Symfony\Component\Console\Helper\DialogHelper');
-        $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
+        $helperMock = $this->getMock('Symfony\Component\Console\Helper\QuestionHelper');
+        $setMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
 
-        $inputMock->expects($this->once())
-            ->method('isInteractive')
-            ->will($this->returnValue(true));
-        $dialogMock->expects($this->once())
-            ->method('select')
-            ->with($this->isInstanceOf('Symfony\Component\Console\Output\OutputInterface'),
-                $this->equalTo('Select item'),
-                $this->equalTo(array("item1", "item2")),
-                $this->equalTo(null),
-                $this->equalTo(false),
-                $this->equalTo("Error message"),
-                $this->equalTo(true));
-        $helperMock->expects($this->once())
+        $helperMock
+            ->expects($this->once())
+            ->method('ask')
+            ->with(
+                $this->isInstanceOf('Symfony\Component\Console\Input\InputInterface'),
+                $this->isInstanceOf('Symfony\Component\Console\Output\OutputInterface'),
+                $this->isInstanceOf('Symfony\Component\Console\Question\Question')
+            )
+        ;
+
+        $setMock
+            ->expects($this->once())
             ->method('get')
-            ->with($this->equalTo('dialog'))
-            ->will($this->returnValue($dialogMock));
+            ->with($this->equalTo('question'))
+            ->will($this->returnValue($helperMock))
+        ;
 
-        $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
+        $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);
         $consoleIO->select('Select item', array("item1", "item2"), null, false, "Error message", true);
     }
 

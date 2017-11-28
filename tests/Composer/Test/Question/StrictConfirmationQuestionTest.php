@@ -16,6 +16,8 @@ use Composer\Question\StrictConfirmationQuestion;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\StreamableInputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 
 /**
@@ -42,11 +44,11 @@ class StrictConfirmationQuestionTest extends TestCase
      */
     public function testAskConfirmationBadAnswer($answer)
     {
-        $dialog = new QuestionHelper();
-        $dialog->setInputStream($this->getInputStream($answer."\n"));
+        list($input, $dialog) = $this->createInput($answer."\n");
+
         $question = new StrictConfirmationQuestion('Do you like French fries?');
         $question->setMaxAttempts(1);
-        $dialog->ask($this->createInputInterfaceMock(), $this->createOutputInterface(), $question);
+        $dialog->ask($input, $this->createOutputInterface(), $question);
     }
 
     /**
@@ -54,11 +56,10 @@ class StrictConfirmationQuestionTest extends TestCase
      */
     public function testAskConfirmation($question, $expected, $default = true)
     {
-        $dialog = new QuestionHelper();
+        list($input, $dialog) = $this->createInput($question."\n");
 
-        $dialog->setInputStream($this->getInputStream($question."\n"));
         $question = new StrictConfirmationQuestion('Do you like French fries?', $default);
-        $this->assertEquals($expected, $dialog->ask($this->createInputInterfaceMock(), $this->createOutputInterface(), $question), 'confirmation question should '.($expected ? 'pass' : 'cancel'));
+        $this->assertEquals($expected, $dialog->ask($input, $this->createOutputInterface(), $question), 'confirmation question should '.($expected ? 'pass' : 'cancel'));
     }
 
     public function getAskConfirmationData()
@@ -75,13 +76,13 @@ class StrictConfirmationQuestionTest extends TestCase
 
     public function testAskConfirmationWithCustomTrueAndFalseAnswer()
     {
-        $dialog = new QuestionHelper();
-
         $question = new StrictConfirmationQuestion('Do you like French fries?', false, '/^ja$/i', '/^nein$/i');
-        $dialog->setInputStream($this->getInputStream("ja\n"));
-        $this->assertTrue($dialog->ask($this->createInputInterfaceMock(), $this->createOutputInterface(), $question));
-        $dialog->setInputStream($this->getInputStream("nein\n"));
-        $this->assertFalse($dialog->ask($this->createInputInterfaceMock(), $this->createOutputInterface(), $question));
+
+        list($input, $dialog) = $this->createInput("ja\n");
+        $this->assertTrue($dialog->ask($input, $this->createOutputInterface(), $question));
+
+        list($input, $dialog) = $this->createInput("nein\n");
+        $this->assertFalse($dialog->ask($input, $this->createOutputInterface(), $question));
     }
 
     protected function getInputStream($input)
@@ -98,13 +99,19 @@ class StrictConfirmationQuestionTest extends TestCase
         return new StreamOutput(fopen('php://memory', 'r+', false));
     }
 
-    protected function createInputInterfaceMock($interactive = true)
+    protected function createInput($entry)
     {
-        $mock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
-        $mock->expects($this->any())
-            ->method('isInteractive')
-            ->will($this->returnValue($interactive));
+        $stream = $this->getInputStream($entry);
+        $input = new ArrayInput(array('--no-interaction'));
+        $dialog = new QuestionHelper();
 
-        return $mock;
+        if (method_exists($dialog, 'setInputStream')) {
+            $dialog->setInputStream($stream);
+        }
+        if ($input instanceof StreamableInputInterface) {
+            $input->setStream($stream);
+        }
+
+        return array($input, $dialog);
     }
 }
