@@ -337,6 +337,62 @@ class InstallerTest extends TestCase
         return $tests;
     }
 
+    /**
+     * @dataProvider getFailureEventErrorTests
+     */
+    public function testInstallerDispatchedEventOnFailure($errorObject)
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+
+        $downloadManager = $this->getMock('Composer\Downloader\DownloadManager', array(), array($io));
+        $config = $this->getMock('Composer\Config');
+
+        $repositoryManager = new RepositoryManager($io, $config);
+        $repositoryManager->setLocalRepository(new InstalledArrayRepository());
+
+        $locker = $this->getMockBuilder('Composer\Package\Locker')->disableOriginalConstructor()->getMock();
+        $installationManager = new InstallationManagerMock();
+
+        $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
+        // throw an error during run()
+        $eventDispatcher->expects($this->any())
+            ->method('dispatchScript')
+            // not using willThrowException() because it does not
+            // support the \Error object in older versions
+            ->willReturnCallback(function() use ($errorObject) {
+                throw $errorObject;
+            });
+
+        // mock that we have some event listener that changes the status code to 0
+        $eventDispatcher->expects($this->once())
+            ->method('dispatch')
+            ->with(Installer\InstallerEvents::INSTALLER_ERROR, $this->isInstanceOf('Composer\Installer\InstallerErrorEvent'))
+            ->willReturnCallback(function($eventName, $event) {
+                /** @var Installer\InstallerErrorEvent $event */
+                $event->setStatusCode(0);
+            });
+
+        $autoloadGenerator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')->disableOriginalConstructor()->getMock();
+
+        $rootPackage = $this->getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
+        $installer = new Installer($io, $config, clone $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
+        $result = $installer->run();
+        $this->assertSame(0, $result);
+    }
+
+    public function getFailureEventErrorTests()
+    {
+        $tests = array();
+
+        $tests[] = array(new \Exception('something went wrong!'));
+
+        if (class_exists('\Error')) {
+            $tests[] = array(new \Error('something went wrong!'));
+        }
+
+        return $tests;
+    }
+
     protected function readTestFile(\SplFileInfo $file, $fixturesDir)
     {
         $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), null, PREG_SPLIT_DELIM_CAPTURE);
