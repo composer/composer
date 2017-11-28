@@ -55,6 +55,7 @@ Potential causes:
  - A typo in the package name
  - The package is not available in a stable-enough version according to your minimum-stability setting
    see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.
+ - It's a private package and you forgot to add a custom repository to find it
 
 Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
 
