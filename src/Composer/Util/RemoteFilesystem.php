@@ -224,7 +224,7 @@ class RemoteFilesystem
         $this->redirects = 1; // The first request counts.
 
         // capture username/password from URL if there is one
-        if (preg_match('{^https?://([^:]+):([^@]+)@([^/]+)}i', $fileUrl, $match)) {
+        if (preg_match('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $fileUrl, $match)) {
             $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
         }
 
