@@ -194,6 +194,9 @@ class Installer
         }
 
         if ($this->runScripts) {
+            $devMode = (int) $this->devMode;
+            putenv("COMPOSER_DEV_MODE=$devMode");
+
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
             $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
@@ -299,9 +302,6 @@ class Installer
         }
 
         if ($this->runScripts) {
-            $devMode = (int) $this->devMode;
-            putenv("COMPOSER_DEV_MODE=$devMode");
-
             // dispatch post event
             $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
             $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
