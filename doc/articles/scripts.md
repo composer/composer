@@ -274,6 +274,8 @@ JSON array of commands.
 
 ## Custom descriptions.
 
+> Only available in the nightly build for the moment.
+
 You can set custom script descriptions with the following extra in your composer.json:
 
  ```json
