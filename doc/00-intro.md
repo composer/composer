@@ -52,6 +52,7 @@ or review it on [GitHub](https://github.com/composer/getcomposer.org/blob/master
 if you wish to know more about the inner workings of the installer. The source
 is plain PHP.
 
+
 There are in short, two ways to install Composer. Locally as part of your
 project, or globally as a system wide executable.
 
