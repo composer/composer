@@ -374,6 +374,9 @@ EOT
                         $requirement['version'],
                         $requirement['name']
                     ));
+                } else {
+                    // check that the specified version/constraint exists before we proceed
+                    $this->findBestVersionForPackage($input, $requirement['name'], $phpVersion, $preferredStability, $requirement['version']);
                 }
 
                 $result[] = $requirement['name'] . ' ' . $requirement['version'];
@@ -631,13 +634,18 @@ EOT
      * @throws \InvalidArgumentException
      * @return string
      */
-    private function findBestVersionForPackage(InputInterface $input, $name, $phpVersion, $preferredStability = 'stable')
+    private function findBestVersionForPackage(InputInterface $input, $name, $phpVersion, $preferredStability = 'stable', $requiredVersion = null)
     {
         // find the latest version allowed in this pool
         $versionSelector = new VersionSelector($this->getPool($input));
-        $package = $versionSelector->findBestCandidate($name, null, $phpVersion, $preferredStability);
+        $package = $versionSelector->findBestCandidate($name, $requiredVersion, $phpVersion, $preferredStability);
 
         if (!$package) {
+            if ($requiredVersion && $versionSelector->findBestCandidate($name, null, $phpVersion, $preferredStability)) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Could not find package %s in a version matching %s', $name, $requiredVersion
+                ));
+            }
             // Check whether the PHP version was the problem
             if ($phpVersion && $versionSelector->findBestCandidate($name)) {
                 throw new \InvalidArgumentException(sprintf(
@@ -655,7 +663,7 @@ EOT
             }
 
             throw new \InvalidArgumentException(sprintf(
-                'Could not find package %s at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
+                'Could not find a matching version of package %s. Check the package spelling, your version constraint and that the package is available in a stability which matches your minimum-stability (%s).',
                 $name,
                 $this->getMinimumStability($input)
             ));

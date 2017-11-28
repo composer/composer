@@ -195,6 +195,9 @@ class Installer
         }
 
         if ($this->runScripts) {
+            $devMode = (int) $this->devMode;
+            putenv("COMPOSER_DEV_MODE=$devMode");
+
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
             $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
@@ -299,15 +302,6 @@ class Installer
             $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
         }
 
-        if ($this->runScripts) {
-            $devMode = (int) $this->devMode;
-            putenv("COMPOSER_DEV_MODE=$devMode");
-
-            // dispatch post event
-            $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-            $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
-        }
-
         if ($this->executeOperations) {
             // force binaries re-generation in case they are missing
             foreach ($localRepo->getPackages() as $package) {
@@ -320,6 +314,12 @@ class Installer
                 // see https://github.com/composer/composer/issues/4070#issuecomment-129792748
                 @touch($vendorDir);
             }
+        }
+
+        if ($this->runScripts) {
+            // dispatch post event
+            $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
+            $this->eventDispatcher->dispatchScript($eventName, $this->devMode);
         }
 
         // re-enable GC except on HHVM which triggers a warning here

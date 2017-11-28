@@ -710,7 +710,8 @@ class SolverTest extends TestCase
             $msg .= "Potential causes:\n";
             $msg .= " - A typo in the package name\n";
             $msg .= " - The package is not available in a stable-enough version according to your minimum-stability setting\n";
-            $msg .= "   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n\n";
+            $msg .= "   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n";
+            $msg .= " - It's a private package and you forgot to add a custom repository to find it\n\n";
             $msg .= "Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
             $this->assertEquals($msg, $e->getMessage());
         }
