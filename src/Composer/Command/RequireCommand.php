@@ -175,12 +175,7 @@ EOT
             ->setPreferLowest($input->getOption('prefer-lowest'))
         ;
 
-        $exception = null;
-        try {
-            $status = $install->run();
-        } catch (\Exception $exception) {
-            $status = 1;
-        }
+        $status = $install->run();
         if ($status !== 0) {
             if ($newlyCreated) {
                 $io->writeError("\n".'<error>Installation failed, deleting '.$file.'.</error>');
@@ -189,9 +184,6 @@ EOT
                 $io->writeError("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
                 file_put_contents($json->getPath(), $composerBackup);
             }
-        }
-        if ($exception) {
-            throw $exception;
         }
 
         return $status;
