@@ -38,7 +38,7 @@ class HomeCommand extends BaseCommand
             ->setAliases(array('home'))
             ->setDescription('Opens the package\'s repository URL or homepage in your browser.')
             ->setDefinition(array(
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Package(s) to browse to.'),
+                new InputArgument('packages', InputArgument::IS_ARRAY, 'Package(s) to browse to.'),
                 new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL.'),
                 new InputOption('show', 's', InputOption::VALUE_NONE, 'Only show the homepage or repository URL.'),
             ))
@@ -61,7 +61,13 @@ EOT
         $io = $this->getIO();
         $return = 0;
 
-        foreach ($input->getArgument('packages') as $packageName) {
+        $packages = $input->getArgument('packages');
+        if (!$packages) {
+            $io->writeError('No package specified, opening homepage for the root package');
+            $packages = [$this->getComposer()->getPackage()->getName()];
+        }
+
+        foreach ($packages as $packageName) {
             $handled = false;
             $packageExists = false;
             foreach ($repos as $repo) {
