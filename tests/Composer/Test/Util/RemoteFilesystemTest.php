@@ -247,11 +247,17 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
             ->withAnyParameters()
             ->willReturn(array());
 
+        $domains = array();
         $io
+            ->expects($this->any())
             ->method('hasAuthentication')
-            ->with('bitbucket.org')
-            ->willReturn(true);
+            ->will($this->returnCallback(function($arg) use (&$domains) {
+                $domains[] = $arg;
+                // first time is called with bitbucket.org, then it redirects to bbuseruploads.s3.amazonaws.com so next time we have no auth configured
+                return $arg === 'bitbucket.org';
+            }));
         $io
+            ->expects($this->at(1))
             ->method('getAuthentication')
             ->with('bitbucket.org')
             ->willReturn(array(
@@ -266,6 +272,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $result = $rfs->getContents($hostname, $url, false);
 
         $this->assertEquals($contents, $result);
+        $this->assertEquals(array('bitbucket.org', 'bbuseruploads.s3.amazonaws.com'), $domains);
     }
 
     protected function callGetOptionsForUrl($io, array $args = array(), array $options = array(), $fileUrl = '')
