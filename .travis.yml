@@ -57,6 +57,8 @@ before_script:
 script:
     # run test suite directories in parallel using GNU parallel
     - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && exit 1);'
+
+before_deploy:
     - php -d phar.readonly=0 bin/compile
 
 deploy:
@@ -67,4 +69,4 @@ deploy:
   on:
     tags: true
     repo: composer/composer
-    php:  '5.3'
+    php:  '7.1'
