@@ -64,7 +64,7 @@ EOT
         $packages = $input->getArgument('packages');
         if (!$packages) {
             $io->writeError('No package specified, opening homepage for the root package');
-            $packages = [$this->getComposer()->getPackage()->getName()];
+            $packages = array($this->getComposer()->getPackage()->getName());
         }
 
         foreach ($packages as $packageName) {
