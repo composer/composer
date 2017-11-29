@@ -251,7 +251,7 @@ uninstalled.
 
 ## global
 
-The global command allows you to run other commands like `install`, `require`
+The global command allows you to run other commands like `install`, `remove`, `require`
 or `update` as if you were running them from the [COMPOSER_HOME](#composer-home)
 directory.
 
