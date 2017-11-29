@@ -245,7 +245,6 @@ class RemoteFilesystem
 
         $options = $this->getOptionsForUrl($originUrl, $tempAdditionalOptions);
         unset($tempAdditionalOptions);
-        $userlandFollow = isset($options['http']['follow_location']) && !$options['http']['follow_location'];
 
         $origFileUrl = $fileUrl;
 
@@ -382,9 +381,9 @@ class RemoteFilesystem
             }
         }
 
-        // handle 3xx redirects for php<5.6, 304 Not Modified is excluded
+        // handle 3xx redirects, 304 Not Modified is excluded
         $hasFollowedRedirect = false;
-        if ($userlandFollow && $statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $this->redirects < $this->maxRedirects) {
+        if ($statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $this->redirects < $this->maxRedirects) {
             $hasFollowedRedirect = true;
             $result = $this->handleRedirect($http_response_header, $additionalOptions, $result);
         }
@@ -694,11 +693,7 @@ class RemoteFilesystem
         if ($this->disableTls === false && PHP_VERSION_ID < 50600 && !stream_is_local($this->fileUrl)) {
             $host = parse_url($this->fileUrl, PHP_URL_HOST);
 
-            if (PHP_VERSION_ID >= 50304) {
-                // Must manually follow when setting CN_match because this causes all
-                // redirects to be validated against the same CN_match value.
-                $userlandFollow = true;
-            } else {
+            if (PHP_VERSION_ID < 50304) {
                 // PHP < 5.3.4 does not support follow_location, for those people
                 // do some really nasty hard coded transformations. These will
                 // still breakdown if the site redirects to a domain we don't
@@ -764,12 +759,9 @@ class RemoteFilesystem
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
             }
-            $userlandFollow = true; // always perform userland follow (to be able to change Authorization headers when redirected)
         }
 
-        if (isset($userlandFollow)) {
-            $options['http']['follow_location'] = 0;
-        }
+        $options['http']['follow_location'] = 0;
 
         if (isset($options['http']['header']) && !is_array($options['http']['header'])) {
             $options['http']['header'] = explode("\r\n", trim($options['http']['header'], "\r\n"));
