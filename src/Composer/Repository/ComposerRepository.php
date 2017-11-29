@@ -526,12 +526,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->hasProviders = true;
         }
 
+        if (!empty($data['trust-replace'])) {
+            $this->setTrustReplace(true);
+        }
+
         // force values for packagist
         if (preg_match('{^https?://packagist.org/?$}i', $this->url) && !empty($this->repoConfig['force-lazy-providers'])) {
             $this->url = 'https://packagist.org';
             $this->baseUrl = 'https://packagist.org';
             $this->lazyProvidersUrl = $this->canonicalizeUrl('https://packagist.org/p/%package%.json');
             $this->providersUrl = null;
+            $this->setTrustReplace(false);
         } elseif (!empty($this->repoConfig['force-lazy-providers'])) {
             $this->lazyProvidersUrl = $this->canonicalizeUrl('/p/%package%.json');
             $this->providersUrl = null;
@@ -816,5 +821,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         // wipe rootData as it is fully consumed at this point and this saves some memory
         $this->rootData = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTrustReplace()
+    {
+        if ($this->rootData === null) {
+            $this->loadRootServerFile();
+        }
+        return parent::getTrustReplace();
     }
 }

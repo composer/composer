@@ -174,6 +174,44 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
+    public function testRepositoryOrderingAffectsReplacePriority()
+    {
+        $repo1 = new ArrayRepository;
+        $repo2 = new ArrayRepository;
+
+        $repo1->addPackage($package1 = $this->getPackage('ltsvendor/A', '1.0'));
+        $repo2->addPackage($package2 = $this->getPackage('upstreamvendor/A', '1.0'));
+
+        $package1->setReplaces(array(new Link('ltsvendor/A', 'upstreamvendor/A', new Constraint('==', '1.0'))));
+
+        $this->pool->addRepository($repo1);
+        $this->pool->addRepository($repo2);
+
+        $literals = array($package1->getId(), $package2->getId());
+        $expected = $literals;
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+
+        $this->assertSame($expected, $selected);
+
+        // test with repository add order reversed.
+        $this->pool = new Pool('dev');
+        $repo1 = new ArrayRepository;
+        $repo2 = new ArrayRepository;
+
+        $repo1->addPackage($package1 = $this->getPackage('ltsvendor/A', '1.0'));
+        $repo2->addPackage($package2 = $this->getPackage('upstreamvendor/A', '1.0'));
+
+        $package1->setReplaces(array(new Link('ltsvendor/A', 'upstreamvendor/A', new Constraint('==', '1.0'))));
+
+        $this->pool->addRepository($repo2);
+        $this->pool->addRepository($repo1);
+        $literals = array($package1->getId(), $package2->getId());
+        $expected = array($package2->getId(), $package1->getId());
+
+        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+        $this->assertSame($expected, $selected);
+    }
+
     public function testSelectLocalReposFirst()
     {
         $repoImportant = new ArrayRepository;

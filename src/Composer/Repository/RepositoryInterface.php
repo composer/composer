@@ -71,4 +71,23 @@ interface RepositoryInterface extends \Countable
      * @return \array[] an array of array('name' => '...', 'description' => '...')
      */
     public function search($query, $mode = 0);
+
+    /**
+     * Gets whether to trust arbitrary replace assertions from packages.
+     *
+     * @return bool
+     */
+    public function getTrustReplace();
+
+    /**
+     * Sets whether to trust arbitrary replace assertions from packages.
+     *
+     * Repositories that accept public contributions like Packagist should not
+     * be given this trust.
+     *
+     * @param bool $trustReplace
+     *
+     * @return void
+     */
+    public function setTrustReplace($trustReplace);
 }
