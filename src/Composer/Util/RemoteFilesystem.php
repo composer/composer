@@ -744,10 +744,6 @@ class RemoteFilesystem
             $headers[] = 'Connection: close';
         }
 
-        if (isset($userlandFollow)) {
-            $options['http']['follow_location'] = 0;
-        }
-
         if ($this->io->hasAuthentication($originUrl)) {
             $auth = $this->io->getAuthentication($originUrl);
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
@@ -768,6 +764,11 @@ class RemoteFilesystem
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
             }
+            $userlandFollow = true; // always perform userland follow (to be able to change Authorization headers when redirected)
+        }
+
+        if (isset($userlandFollow)) {
+            $options['http']['follow_location'] = 0;
         }
 
         if (isset($options['http']['header']) && !is_array($options['http']['header'])) {
@@ -810,7 +811,7 @@ class RemoteFilesystem
 
             $additionalOptions['redirects'] = $this->redirects;
 
-            return $this->get($this->originUrl, $targetUrl, $additionalOptions, $this->fileName, $this->progress);
+            return $this->get(parse_url($targetUrl, PHP_URL_HOST), $targetUrl, $additionalOptions, $this->fileName, $this->progress);
         }
 
         if (!$this->retry) {
