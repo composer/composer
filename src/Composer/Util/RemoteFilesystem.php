@@ -247,17 +247,6 @@ class RemoteFilesystem
         unset($tempAdditionalOptions);
         $userlandFollow = isset($options['http']['follow_location']) && !$options['http']['follow_location'];
 
-        if ($isRedirect && $this->io->hasAuthentication($this->originUrl)) {
-            // Redirecting away from originUrl domain? Then remove the auth headers.
-            $redirectHost = parse_url($this->fileUrl, PHP_URL_HOST);
-            if ($this->originUrl != $redirectHost && stripos($redirectHost, '.' . $this->originUrl) === false) {
-                // Strip off authentication
-                $options['http']['header'] = array_filter($options['http']['header'], function($value){
-                    return stripos($value, 'Authorization') !== 0;
-                });
-            }
-        }
-
         $origFileUrl = $fileUrl;
 
         if (isset($options['github-token'])) {
@@ -775,7 +764,7 @@ class RemoteFilesystem
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
             }
-            $userlandFollow = true; // always perform userland follow (to be able to change headers when redirected)
+            $userlandFollow = true; // always perform userland follow (to be able to change Authorization headers when redirected)
         }
 
         if (isset($userlandFollow)) {
@@ -822,7 +811,7 @@ class RemoteFilesystem
 
             $additionalOptions['redirects'] = $this->redirects;
 
-            return $this->get($this->originUrl, $targetUrl, $additionalOptions, $this->fileName, $this->progress);
+            return $this->get(parse_url($targetUrl, PHP_URL_HOST), $targetUrl, $additionalOptions, $this->fileName, $this->progress);
         }
 
         if (!$this->retry) {
