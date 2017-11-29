@@ -576,6 +576,9 @@ EOT
 
             return $this->configSource->addConfigSetting($settingKey, $values[0]);
         }
+        if ($settingKey === 'platform' && $input->getOption('unset')) {
+            return $this->configSource->removeConfigSetting($settingKey);
+        }
 
         // handle auth
         if (preg_match('/^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic)\.(.+)/', $settingKey, $matches)) {
