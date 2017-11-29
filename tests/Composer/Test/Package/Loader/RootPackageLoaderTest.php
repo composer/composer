@@ -96,7 +96,7 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
     {
         // see #6845
         $manager = $this->prophesize('\\Composer\\Repository\\RepositoryManager');
-        $versionGuesser = $this->prophesize('Composer\Package\Version\VersionGuesser');
+        $versionGuesser = $this->prophesize('\\Composer\\Package\\Version\\VersionGuesser');
         $versionGuesser->guessVersion(Argument::cetera())
             ->willReturn(array(
                 'name' => 'A',
