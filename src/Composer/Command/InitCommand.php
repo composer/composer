@@ -191,7 +191,9 @@ EOT
             $name = basename($cwd);
             $name = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
             $name = strtolower($name);
-            if (isset($git['github.user'])) {
+            if ( !empty($_SERVER['COMPOSER_DEFAULT_VENDOR']) ) {
+                $name = $_SERVER['COMPOSER_DEFAULT_VENDOR'] . '/' . $name;
+            } elseif (isset($git['github.user'])) {
                 $name = $git['github.user'] . '/' . $name;
             } elseif (!empty($_SERVER['USERNAME'])) {
                 $name = $_SERVER['USERNAME'] . '/' . $name;
@@ -240,8 +242,20 @@ EOT
         $input->setOption('description', $description);
 
         if (null === $author = $input->getOption('author')) {
-            if (isset($git['user.name']) && isset($git['user.email'])) {
-                $author = sprintf('%s <%s>', $git['user.name'], $git['user.email']);
+            if ( !empty($_SERVER['COMPOSER_DEFAULT_AUTHOR']) ) {
+                $author_name = $_SERVER['COMPOSER_DEFAULT_AUTHOR'];
+            } elseif ( isset($git['user.name']) ) {
+                $author_name = $git['user.name'];
+            }
+
+            if ( !empty($_SERVER['COMPOSER_DEFAULT_EMAIL']) ) {
+                $author_email = $_SERVER['COMPOSER_DEFAULT_EMAIL'];
+            } elseif ( isset($git['user.email']) ) {
+                $author_email = $git['user.email'];
+            }
+
+            if (isset($author_name) && isset($author_email)) {
+                $author = sprintf('%s <%s>', $author_name, $author_email);
             }
         }
 
@@ -291,7 +305,12 @@ EOT
         );
         $input->setOption('type', $type);
 
-        $license = $input->getOption('license') ?: false;
+        if (null === $license = $input->getOption('license')) {
+            if ( !empty($_SERVER['COMPOSER_DEFAULT_LICENSE']) ) {
+                $license = $_SERVER['COMPOSER_DEFAULT_LICENSE'];
+            }
+        }
+
         $license = $io->ask(
             'License [<comment>'.$license.'</comment>]: ',
             $license
