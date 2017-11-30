@@ -17,6 +17,7 @@ use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
+use Prophecy\Argument;
 
 class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -89,6 +90,26 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("1.0.0.0", $package->getVersion());
         $this->assertEquals("No version set (parsed as 1.0.0)", $package->getPrettyVersion());
+    }
+
+    public function testPrettyVersionForRootPackageInVersionBranch()
+    {
+        // see #6845
+        $manager = $this->prophesize('\\Composer\\Repository\\RepositoryManager');
+        $versionGuesser = $this->prophesize('\\Composer\\Package\\Version\\VersionGuesser');
+        $versionGuesser->guessVersion(Argument::cetera())
+            ->willReturn(array(
+                'name' => 'A',
+                'version' => '3.0.9999999.9999999-dev',
+                'pretty_version' => '3.0-dev',
+                'commit' => 'aabbccddee',
+            ));
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $loader = new RootPackageLoader($manager->reveal(), $config, null, $versionGuesser->reveal());
+        $package = $loader->load(array());
+
+        $this->assertEquals('3.0-dev', $package->getPrettyVersion());
     }
 
     public function testFeatureBranchPrettyVersion()

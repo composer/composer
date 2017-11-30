@@ -311,7 +311,7 @@ class GitLabDriver extends VcsDriver
         if (isset($this->project['visibility'])) {
             $this->isPrivate = $this->project['visibility'] !== 'public';
         } else {
-            // client is not authendicated, therefore repository has to be public 
+            // client is not authendicated, therefore repository has to be public
             $this->isPrivate = false;
         }
     }
@@ -351,7 +351,7 @@ class GitLabDriver extends VcsDriver
 
     protected function generatePublicUrl()
     {
-        return 'https://' . $this->originUrl . '/'.$this->namespace.'/'.$this->repository.'.git';
+        return $this->scheme . '://' . $this->originUrl . '/'.$this->namespace.'/'.$this->repository.'.git';
     }
 
     protected function setupGitDriver($url)
