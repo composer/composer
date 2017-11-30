@@ -157,6 +157,10 @@ EOT
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         } else {
             $repos = $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+            $rootPkg = $this->getComposer()->getPackage();
+            if (!$installedRepo->getPackages() && ($rootPkg->getRequires() || $rootPkg->getDevRequires())) {
+                $io->writeError('<warning>No dependencies installed. Try running composer install or update.</warning>');
+            }
         }
 
         if ($composer) {
