@@ -76,7 +76,7 @@ class SolverTest extends TestCase
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
-            $this->assertEquals(1, count($problems));
+            $this->assertCount(1, $problems);
             $this->assertEquals(2, $e->getCode());
             $this->assertEquals("\n    - The requested package b could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString());
         }
@@ -671,7 +671,7 @@ class SolverTest extends TestCase
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
-            $this->assertEquals(1, count($problems));
+            $this->assertCount(1, $problems);
 
             $msg = "\n";
             $msg .= "  Problem 1\n";
@@ -700,7 +700,7 @@ class SolverTest extends TestCase
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
-            $this->assertEquals(1, count($problems));
+            $this->assertCount(1, $problems);
             // TODO assert problem properties
 
             $msg = "\n";
@@ -747,7 +747,7 @@ class SolverTest extends TestCase
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
-            $this->assertEquals(1, count($problems));
+            $this->assertCount(1, $problems);
 
             $msg = "\n";
             $msg .= "  Problem 1\n";

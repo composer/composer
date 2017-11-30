@@ -47,10 +47,7 @@ class SuggestedPackagesReporterTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetPackagesEmptyByDefault()
     {
-        $this->assertSame(
-            array(),
-            $this->suggestedPackagesReporter->getPackages()
-        );
+        $this->assertEmpty($this->suggestedPackagesReporter->getPackages());
     }
 
     /**
