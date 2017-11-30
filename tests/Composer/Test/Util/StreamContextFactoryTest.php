@@ -13,8 +13,9 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\StreamContextFactory;
+use PHPUnit\Framework\TestCase;
 
-class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
+class StreamContextFactoryTest extends TestCase
 {
     protected function setUp()
     {

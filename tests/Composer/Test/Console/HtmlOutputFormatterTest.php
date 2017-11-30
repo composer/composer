@@ -10,12 +10,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer;
+namespace Composer\Test\Console;
 
 use Composer\Console\HtmlOutputFormatter;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
-class HtmlOutputFormatterTest extends \PHPUnit_Framework_TestCase
+class HtmlOutputFormatterTest extends TestCase
 {
     public function testFormatting()
     {

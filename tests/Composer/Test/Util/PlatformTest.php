@@ -13,13 +13,14 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Platform;
+use PHPUnit\Framework\TestCase;
 
 /**
  * PlatformTest
  *
  * @author Niels Keurentjes <niels.keurentjes@omines.com>
  */
-class PlatformTest extends \PHPUnit_Framework_TestCase
+class PlatformTest extends TestCase
 {
     public function testExpandPath()
     {

@@ -13,8 +13,9 @@
 namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\GitExcludeFilter;
+use PHPUnit\Framework\TestCase;
 
-class GitExcludeFilterTest extends \PHPUnit_Framework_TestCase
+class GitExcludeFilterTest extends TestCase
 {
     /**
      * @dataProvider patterns

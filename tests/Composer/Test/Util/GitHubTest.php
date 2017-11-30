@@ -14,13 +14,14 @@ namespace Composer\Test\Util;
 
 use Composer\Downloader\TransportException;
 use Composer\Util\GitHub;
+use PHPUnit\Framework\TestCase;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 
 /**
  * @author Rob Bast <rob.bast@gmail.com>
  */
-class GitHubTest extends \PHPUnit_Framework_TestCase
+class GitHubTest extends TestCase
 {
     private $username = 'username';
     private $password = 'password';

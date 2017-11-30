@@ -13,11 +13,12 @@
 namespace Composer\Test\Autoload;
 
 use Composer\Autoload\ClassLoader;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests the Composer\Autoload\ClassLoader class.
  */
-class ClassLoaderTest extends \PHPUnit_Framework_TestCase
+class ClassLoaderTest extends TestCase
 {
     /**
      * Tests regular PSR-0 and PSR-4 class loading.

@@ -13,8 +13,9 @@
 namespace Composer\Test\Package\Version;
 
 use Composer\Package\Version\VersionParser;
+use PHPUnit\Framework\TestCase;
 
-class VersionParserTest extends \PHPUnit_Framework_TestCase
+class VersionParserTest extends TestCase
 {
     /**
      * @dataProvider getParseNameVersionPairsData

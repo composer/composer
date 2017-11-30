@@ -13,8 +13,9 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\DownloadManager;
+use PHPUnit\Framework\TestCase;
 
-class DownloadManagerTest extends \PHPUnit_Framework_TestCase
+class DownloadManagerTest extends TestCase
 {
     protected $filesystem;
     protected $io;

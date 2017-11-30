@@ -13,8 +13,9 @@
 namespace Composer\Test;
 
 use Composer\Config;
+use PHPUnit\Framework\TestCase;
 
-class DefaultConfigTest extends \PHPUnit_Framework_TestCase
+class DefaultConfigTest extends TestCase
 {
     /**
      * @group TLS
