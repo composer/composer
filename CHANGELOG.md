@@ -1,3 +1,11 @@
+### [1.5.3] - 2017-11-30
+
+  * Fixed require/remove commands reverting the composer.json change when a non-solver-related error occurs
+  * Fixed GitLabDriver to support installations of GitLab not at the root of the domain
+  * Fixed create-project not following the optimize-autoloader flag of the root package
+  * Fixed Authorization header being forwarded across domains after a redirect
+  * Improved some error messages for clarity
+
 ### [1.5.2] - 2017-09-11
 
   * Fixed GitLabDriver looping endlessly in some conditions
