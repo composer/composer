@@ -68,22 +68,25 @@ class RootPackageLoader extends ArrayLoader
         }
         $autoVersioned = false;
         if (!isset($config['version'])) {
+            $commit = null;
+
             // override with env var if available
             if (getenv('COMPOSER_ROOT_VERSION')) {
-                $version = getenv('COMPOSER_ROOT_VERSION');
-                $commit = null;
+                $config['version'] = getenv('COMPOSER_ROOT_VERSION');
             } else {
                 $versionData = $this->versionGuesser->guessVersion($config, $cwd ?: getcwd());
-                $version = $versionData['version'];
-                $commit = $versionData['commit'];
+                if ($versionData) {
+                    $config['version'] = $versionData['pretty_version'];
+                    $config['version_normalized'] = $versionData['version'];
+                    $commit = $versionData['commit'];
+                }
             }
 
-            if (!$version) {
-                $version = '1.0.0';
+            if (!isset($config['version'])) {
+                $config['version'] = '1.0.0';
                 $autoVersioned = true;
             }
 
-            $config['version'] = $version;
             if ($commit) {
                 $config['source'] = array(
                     'type' => '',
