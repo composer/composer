@@ -63,12 +63,11 @@ class XdebugHandler
         $args = explode('|', strval(getenv(self::ENV_ALLOW)), 2);
 
         if ($this->needsRestart($args[0])) {
-            if ($this->prepareRestart()) {
-                $command = $this->getCommand();
-                $this->restart($command);
+            if (! $this->prepareRestart()) {
+                return ;
             }
 
-            return;
+            $this->restart($this->getCommand());
         }
 
         // Restore environment variables if we are restarting
@@ -77,11 +76,7 @@ class XdebugHandler
 
             if (false !== $this->envScanDir) {
                 // $args[1] contains the original value
-                if (isset($args[1])) {
-                    putenv('PHP_INI_SCAN_DIR='.$args[1]);
-                } else {
-                    putenv('PHP_INI_SCAN_DIR');
-                }
+                putenv(isset($args[1]) ? 'PHP_INI_SCAN_DIR='.$args[1] : 'PHP_INI_SCAN_DIR');
             }
 
             // Clear version if the restart failed to disable xdebug
