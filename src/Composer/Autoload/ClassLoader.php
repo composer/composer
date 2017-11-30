@@ -379,8 +379,8 @@ class ClassLoader
                 $subPath = substr($subPath, 0, $lastPos);
                 $search = $subPath.'\\';
                 if (isset($this->prefixDirsPsr4[$search])) {
+                    $length = $this->prefixLengthsPsr4[$first][$search];
                     foreach ($this->prefixDirsPsr4[$search] as $dir) {
-                        $length = $this->prefixLengthsPsr4[$first][$search];
                         if (file_exists($file = $dir . DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $length))) {
                             return $file;
                         }
