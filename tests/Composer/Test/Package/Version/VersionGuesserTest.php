@@ -412,4 +412,35 @@ class VersionGuesserTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("dev-foo", $versionData['version']);
     }
+
+    public function testNumericBranchesShowNicely()
+    {
+        $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
+            ->setMethods(array('execute'))
+            ->disableArgumentCloning()
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+
+        $self = $this;
+
+        $executor
+            ->expects($this->at(0))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self) {
+                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $output = "* 1.5 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n";
+
+                return 0;
+            })
+        ;
+
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $guesser = new VersionGuesser($config, $executor, new VersionParser());
+        $versionData = $guesser->guessVersion(array(), 'dummy/path');
+
+        $this->assertEquals("1.5.x-dev", $versionData['pretty_version']);
+        $this->assertEquals("1.5.9999999.9999999-dev", $versionData['version']);
+    }
 }
