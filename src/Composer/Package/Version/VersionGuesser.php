@@ -59,7 +59,7 @@ class VersionGuesser
      * @param array  $packageConfig
      * @param string $path          Path to guess into
      *
-     * @return array versionData, 'version', 'pretty_version' and 'commit' keys
+     * @return null|array versionData, 'version', 'pretty_version' and 'commit' keys
      */
     public function guessVersion(array $packageConfig, $path)
     {
