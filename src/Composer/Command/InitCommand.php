@@ -376,7 +376,7 @@ EOT
                     ));
                 } else {
                     // check that the specified version/constraint exists before we proceed
-                    $this->findBestVersionForPackage($input, $requirement['name'], $phpVersion, $preferredStability, $requirement['version']);
+                    $this->findBestVersionForPackage($input, $requirement['name'], $phpVersion, 'dev', $requirement['version']);
                 }
 
                 $result[] = $requirement['name'] . ' ' . $requirement['version'];
@@ -642,6 +642,12 @@ EOT
 
         if (!$package) {
             if ($requiredVersion && $versionSelector->findBestCandidate($name, null, $phpVersion, $preferredStability)) {
+                // Check whether the PHP version was the problem
+                if ($phpVersion && $versionSelector->findBestCandidate($name, null, null, $preferredStability)) {
+                    throw new \InvalidArgumentException(sprintf(
+                        'Package %s at version %s has a PHP requirement incompatible with your PHP version (%s)', $name, $requiredVersion, $phpVersion
+                    ));
+                }
                 throw new \InvalidArgumentException(sprintf(
                     'Could not find package %s in a version matching %s', $name, $requiredVersion
                 ));
@@ -649,7 +655,7 @@ EOT
             // Check whether the PHP version was the problem
             if ($phpVersion && $versionSelector->findBestCandidate($name)) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Could not find package %s at any version matching your PHP version %s', $name, $phpVersion
+                    'Could not find package %s in any version matching your PHP version (%s)', $name, $phpVersion
                 ));
             }
             throw new \InvalidArgumentException(sprintf(
