@@ -5,6 +5,7 @@ namespace Composer\Command;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\MultiConstraint;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -28,20 +29,24 @@ EOT
 
         $repos = $composer->getRepositoryManager()->getLocalRepository();
 
-        $allPackages = array_merge($repos->getPackages(), array($composer->getPackage()));
-        $requires    = array();
+        $allPackages = array_merge(array($composer->getPackage()), $repos->getPackages());
+        $requires = $composer->getPackage()->getDevRequires();
+        foreach ($requires as $require => $link) {
+            $requires[$require] = array($link);
+        }
 
         /**
          * @var PackageInterface $package
          */
         foreach ($allPackages as $package) {
-            $requires = array_merge($requires, $package->getRequires());
+            foreach ($package->getRequires() as $require => $link) {
+                $requires[$require][] = $link;
+            }
         }
+        ksort($requires);
 
         $platformRepo = new PlatformRepository(array(), array());
-
         $currentPlatformPackages = $platformRepo->getPackages();
-
         $currentPlatformPackageMap = array();
 
         /**
@@ -53,39 +58,55 @@ EOT
 
         $results = array();
 
+        $exitCode = 0;
+
         /**
          * @var Link $require
          */
-        foreach ($requires as $key => $require) {
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $key)) {
-                if (isset($currentPlatformPackageMap[$key])) {
-                    // 检查版本
-                    $version = $currentPlatformPackageMap[$key]->getVersion();
-                    if (!$require->getConstraint()->matches(new Constraint('<=', $version))) {
+        foreach ($requires as $require => $links) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $require)) {
+                if (isset($currentPlatformPackageMap[$require])) {
+                    $pass = true;
+                    $version = $currentPlatformPackageMap[$require]->getVersion();
+
+                    foreach ($links as $link) {
+                        if (!$link->getConstraint()->matches(new Constraint('<=', $version))) {
+                            $results[] = array(
+                                $currentPlatformPackageMap[$require]->getPrettyName(),
+                                $currentPlatformPackageMap[$require]->getPrettyVersion(),
+                                $link,
+                                '<error>failed</error>',
+                            );
+                            $pass = false;
+
+                            $exitCode = max($exitCode, 1);
+                        }
+                    }
+
+                    if ($pass) {
                         $results[] = array(
-                            $require,
-                            $currentPlatformPackageMap[$key],
-                            'failed',
-                        );
-                    } else {
-                        $results[] = array(
-                            $require,
-                            $currentPlatformPackageMap[$key],
-                            'success',
+                            $currentPlatformPackageMap[$require]->getPrettyName(),
+                            $currentPlatformPackageMap[$require]->getPrettyVersion(),
+                            null,
+                            '<info>success</info>',
                         );
                     }
                 } else {
                     $results[] = array(
                         $require,
-                        null,
-                        'miss',
+                        'n/a',
+                        $links[0],
+                        '<error>missing</error>',
                     );
+
+                    $exitCode = max($exitCode, 2);
                 }
             }
         }
 
         $this->printTable($output, $results);
 
+        return $exitCode;
     }
 
     protected function printTable(OutputInterface $output, $results)
@@ -94,17 +115,14 @@ EOT
         $rows  = array();
         foreach ($results as $result) {
             /**
-             * @var PackageInterface $platformPackage
-             * @var Link             $require
+             * @var Link|null $link
              */
-            list($require, $platformPackage, $reason) = $result;
-            $version = (strpos($platformPackage->getPrettyVersion(), 'No version set') === 0) ? '-' : $platformPackage->getPrettyVersion();
+            list($platformPackage, $version, $link, $status) = $result;
             $rows[]  = array(
-                $platformPackage->getPrettyName(),
+                $platformPackage,
                 $version,
-                $require->getDescription(),
-                sprintf('%s (%s)', $require->getTarget(), $require->getPrettyConstraint()),
-                $reason
+                $link ? sprintf('%s %s %s (%s)', $link->getSource(), $link->getDescription(), $link->getTarget(), $link->getPrettyConstraint()) : '',
+                $status
             );
         }
         $table = array_merge($rows, $table);
