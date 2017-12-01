@@ -1,3 +1,7 @@
+### [1.5.4] - 2017-12-01
+
+  * Fixed regression in require command when requiring unstable packages
+
 ### [1.5.3] - 2017-11-30
 
   * Fixed require/remove commands reverting the composer.json change when a non-solver-related error occurs
