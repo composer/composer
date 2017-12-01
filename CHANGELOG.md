@@ -579,6 +579,8 @@
 
   * Initial release
 
+[1.5.4]: https://github.com/composer/composer/compare/1.5.3...1.5.4
+[1.5.3]: https://github.com/composer/composer/compare/1.5.2...1.5.3
 [1.5.2]: https://github.com/composer/composer/compare/1.5.1...1.5.2
 [1.5.1]: https://github.com/composer/composer/compare/1.5.0...1.5.1
 [1.5.0]: https://github.com/composer/composer/compare/1.4.3...1.5.0
