@@ -395,7 +395,7 @@ EOT
                     ));
                 } else {
                     // check that the specified version/constraint exists before we proceed
-                    $this->findBestVersionForPackage($input, $requirement['name'], $phpVersion, 'dev', $requirement['version']);
+                    $this->findBestVersionForPackage($input, $requirement['name'], $phpVersion, $preferredStability, $requirement['version'], 'dev');
                 }
 
                 $result[] = $requirement['name'] . ' ' . $requirement['version'];
@@ -625,10 +625,10 @@ EOT
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 
-    private function getPool(InputInterface $input)
+    private function getPool(InputInterface $input, $minimumStability = null)
     {
         if (!$this->pool) {
-            $this->pool = new Pool($this->getMinimumStability($input));
+            $this->pool = new Pool($minimumStability ?: $this->getMinimumStability($input));
             $this->pool->addRepository($this->getRepos());
         }
 
@@ -660,13 +660,14 @@ EOT
      * @param  string                    $name
      * @param  string                    $phpVersion
      * @param  string                    $preferredStability
+     * @param  string                    $minimumStability
      * @throws \InvalidArgumentException
      * @return string
      */
-    private function findBestVersionForPackage(InputInterface $input, $name, $phpVersion, $preferredStability = 'stable', $requiredVersion = null)
+    private function findBestVersionForPackage(InputInterface $input, $name, $phpVersion, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null)
     {
         // find the latest version allowed in this pool
-        $versionSelector = new VersionSelector($this->getPool($input));
+        $versionSelector = new VersionSelector($this->getPool($input, $minimumStability));
         $package = $versionSelector->findBestCandidate($name, $requiredVersion, $phpVersion, $preferredStability);
 
         if (!$package) {
