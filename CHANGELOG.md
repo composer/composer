@@ -1,3 +1,7 @@
+### [1.5.5] - 2017-12-01
+
+  * Fixed regression in require command when requiring unstable packages, part 2
+
 ### [1.5.4] - 2017-12-01
 
   * Fixed regression in require command when requiring unstable packages
@@ -579,6 +583,7 @@
 
   * Initial release
 
+[1.5.5]: https://github.com/composer/composer/compare/1.5.4...1.5.5
 [1.5.4]: https://github.com/composer/composer/compare/1.5.3...1.5.4
 [1.5.3]: https://github.com/composer/composer/compare/1.5.2...1.5.3
 [1.5.2]: https://github.com/composer/composer/compare/1.5.1...1.5.2
