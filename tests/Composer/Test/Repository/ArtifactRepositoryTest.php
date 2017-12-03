@@ -61,7 +61,7 @@ class ArtifactRepositoryTest extends TestCase
         $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
 
         foreach ($repo->getPackages() as $package) {
-            $this->assertTrue(strpos($package->getDistUrl(), strtr($absolutePath, '\\', '/')) === 0);
+            $this->assertSame(strpos($package->getDistUrl(), strtr($absolutePath, '\\', '/')), 0);
         }
     }
 
@@ -72,7 +72,7 @@ class ArtifactRepositoryTest extends TestCase
         $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
 
         foreach ($repo->getPackages() as $package) {
-            $this->assertTrue(strpos($package->getDistUrl(), $relativePath) === 0);
+            $this->assertSame(strpos($package->getDistUrl(), $relativePath), 0);
         }
     }
 }

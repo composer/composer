@@ -29,9 +29,9 @@ class ConfigValidatorTest extends TestCase
         $configValidator = new ConfigValidator(new NullIO());
         list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_commit-ref.json');
 
-        $this->assertEquals(true, in_array(
+        $this->assertContains(
             'The package "some/package" is pointing to a commit-ref, this is bad practice and can cause unforeseen issues.',
             $warnings
-        ));
+        );
     }
 }
