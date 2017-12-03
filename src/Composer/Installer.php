@@ -467,11 +467,18 @@ class Installer
         $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, 'force-links');
 
         // solve dependencies
-        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request);
-        $solver = new Solver($policy, $pool, $installedRepo, $this->io);
-        try {
-            $operations = $solver->solve($request, $this->ignorePlatformReqs);
-        } catch (SolverProblemsException $e) {
+        for ($runSolver = true, $solverRuns = 0; $runSolver && $solverRuns < 5; $solverRuns++) {
+            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request);
+            $solver = new Solver($policy, $pool, $installedRepo, $this->io);
+            try {
+                $operations = $solver->solve($request, $this->ignorePlatformReqs);
+                $e = null;
+                $runSolver = false;
+            } catch (SolverProblemsException $e) {
+                $runSolver = $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::DEPENDENCIES_SOLVING_PROBLEM, $this->devMode, $policy, $pool, $installedRepo, $request);
+            }
+        }
+        if ($e) {
             $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
             $this->io->writeError($e->getMessage());
             if ($this->update && !$this->devMode) {

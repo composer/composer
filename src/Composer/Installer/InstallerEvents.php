@@ -40,4 +40,19 @@ class InstallerEvents
      * @var string
      */
     const POST_DEPENDENCIES_SOLVING = 'post-dependencies-solving';
+
+    /**
+     * The DEPENDENCIES_SOLVING_PROBLEM event occurs after resolve operations
+     * when an installable set of packages was not found.
+     *
+     * The event listener method receives a
+     * Composer\Installer\InstallerEvent instance.
+     *
+     * If the listener returns TRUE, it indicates that the listener has made
+     * modifications to Composer's state that may allow an installable set of
+     * packages to be found, and resolve operations should be retried.
+     *
+     * @var string
+     */
+    const DEPENDENCIES_SOLVING_PROBLEM = 'dependencies-solving-problem';
 }
