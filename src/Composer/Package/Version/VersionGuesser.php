@@ -88,8 +88,7 @@ class VersionGuesser
 
     private function postprocess(array $versionData)
     {
-        // make sure that e.g. dev-1.5 gets converted to 1.5.x-dev
-        if ('dev-' !== substr($versionData['version'], 0, 4)) {
+        if ('-dev' === substr($versionData['version'], -4)) {
             $versionData['pretty_version'] = preg_replace('{(\.9{7})+}', '.x', $versionData['version']);
         }
 
