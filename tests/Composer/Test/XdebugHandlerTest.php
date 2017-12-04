@@ -128,7 +128,7 @@ class XdebugHandlerTest extends TestCase
 
         $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
-        $this->assertEquals(false, getenv(XdebugHandlerMock::ENV_VERSION));
+        $this->assertFalse(getenv(XdebugHandlerMock::ENV_VERSION));
     }
 
     public function testEnvVersionWhenRestartFails()
@@ -141,7 +141,7 @@ class XdebugHandlerTest extends TestCase
         // Mimic failed restart
         $xdebug = new XdebugHandlerMock($loaded);
         $xdebug->check();
-        $this->assertEquals(false, getenv(XdebugHandlerMock::ENV_VERSION));
+        $this->assertFalse(getenv(XdebugHandlerMock::ENV_VERSION));
     }
 
     public static function setUpBeforeClass()

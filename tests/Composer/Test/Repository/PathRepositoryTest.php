@@ -55,7 +55,7 @@ class PathRepositoryTest extends TestCase
         $this->assertEquals('test/path-unversioned', $package->getName());
 
         $packageVersion = $package->getVersion();
-        $this->assertTrue(!empty($packageVersion));
+        $this->assertNotEmpty($packageVersion);
     }
 
     public function testLoadPackageFromFileSystemWithWildcard()

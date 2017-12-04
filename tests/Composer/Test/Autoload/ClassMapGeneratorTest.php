@@ -175,7 +175,7 @@ class ClassMapGeneratorTest extends TestCase
 
         ClassMapGenerator::createMap($finder, null, $io);
 
-        $this->assertTrue(in_array($msg, $messages, true), $msg . ' not found in expected messages (' . var_export($messages, true) . ')');
+        $this->assertContains($msg, $messages, $msg . ' not found in expected messages (' . var_export($messages, true) . ')');
 
         $fs = new Filesystem();
         $fs->removeDirectory($tempDir);
@@ -242,7 +242,7 @@ class ClassMapGeneratorTest extends TestCase
         ClassMapGenerator::dump(array($tempDir), $resultFile);
 
         $fileInDirectory = str_replace('\\', '\\\\', $fileInDirectory);
-        $this->assertEquals("<?php return array (\n  'TestClass' => '$fileInDirectory',\n);", file_get_contents($resultFile));
+        $this->assertStringEqualsFile($resultFile, "<?php return array (\n  'TestClass' => '$fileInDirectory',\n);");
 
         $fs = new Filesystem();
         $fs->removeDirectory($tempDir);
