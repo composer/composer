@@ -29,6 +29,7 @@ matrix:
   include:
     - dist: precise
       php: 5.3
+      env: CS_CHECK=1
   fast_finish: true
   allow_failures:
     - php: nightly
@@ -48,6 +49,7 @@ install:
     - composer install $flags
     # install dependencies using composer from source
     - bin/composer install $flags
+    - if [ "$CS_CHECK" = 1 ]; then wget https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.2.12/php-cs-fixer.phar -O php-cs-fixer; fi
 
 before_script:
     # make sure git tests do not complain about user/email not being set
@@ -57,6 +59,7 @@ before_script:
 script:
     # run test suite directories in parallel using GNU parallel
     - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && exit 1);'
+    - if [ "$CS_CHECK" = 1 ]; then php php-cs-fixer fix --verbose --diff --dry-run; fi
 
 before_deploy:
     - php -d phar.readonly=0 bin/compile
