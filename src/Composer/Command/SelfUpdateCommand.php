@@ -231,7 +231,10 @@ TAGSPUBKEY
         }
 
         if (file_exists($backupFile)) {
-            $io->writeError('Use <info>composer self-update --rollback</info> to return to version '.Composer::VERSION);
+            $io->writeError(sprintf(
+                'Use <info>composer self-update --rollback</info> to return to version <comment>%s</comment>',
+                Composer::VERSION
+            ));
         } else {
             $io->writeError('<warning>A backup of the current version could not be written to '.$backupFile.', no rollback possible</warning>');
         }
