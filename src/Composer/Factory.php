@@ -238,7 +238,7 @@ class Factory
     public static function createOutput()
     {
         $styles = self::createAdditionalStyles();
-        $formatter = new OutputFormatter(null, $styles);
+        $formatter = new OutputFormatter(false, $styles);
 
         return new ConsoleOutput(ConsoleOutput::VERBOSITY_NORMAL, null, $formatter);
     }
