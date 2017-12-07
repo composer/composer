@@ -210,6 +210,10 @@ simply running `composer test`:
 }
 ```
 
+Similar to the `run-script` command you can give additional arguments to scripts,
+e.g. `composer test -- --filter <pattern>` will pass `--filter <pattern>` along
+to the `phpunit` script.
+
 > **Note:** Before executing scripts, Composer's bin-dir is temporarily pushed
 > on top of the PATH environment variable so that binaries of dependencies
 > are easily accessible. In this example no matter if the `phpunit` binary is
