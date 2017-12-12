@@ -38,6 +38,7 @@ class GitLabDriverTest extends TestCase
                 'home' => $this->home,
                 'gitlab-domains' => array(
                     'mycompany.com/gitlab',
+                    'gitlab.mycompany.com',
                     'othercompany.com/nested/gitlab',
                     'gitlab.com',
                 ),
@@ -178,6 +179,45 @@ JSON;
         $this->assertEquals('https://gitlab.com/mygroup/myproject', $driver->getUrl());
 
         return $driver;
+    }
+
+    /**
+     * Also support repositories over HTTP (TLS) and has a port number.
+     *
+     * @group gitlabHttpPort
+     */
+    public function testInitializeWithPortNumber()
+    {
+        $domain = 'gitlab.mycompany.com';
+        $port = '5443';
+        $namespace = 'mygroup/myproject';
+        $url = sprintf('https://%1$s:%2$s/%3$s', $domain, $port, $namespace);
+        $apiUrl = sprintf('https://%1$s:%2$s/api/v4/projects/%3$s', $domain, $port, urlencode($namespace));
+
+        // An incomplete single project API response payload.
+        // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
+        $projectData = <<<'JSON'
+{
+    "default_branch": "1.0.x",
+    "http_url_to_repo": "https://%1$s:%2$s/%3$s.git",
+    "path": "myproject",
+    "path_with_namespace": "%3$s",
+    "web_url": "https://%1$s:%2$s/%3$s"
+}
+JSON;
+
+        $this->remoteFilesystem
+            ->getContents($domain, $apiUrl, false, array())
+            ->willReturn(sprintf($projectData, $domain, $port, $namespace))
+            ->shouldBeCalledTimes(1);
+
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver->initialize();
+
+        $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
+        $this->assertEquals('1.0.x', $driver->getRootIdentifier(), 'Root identifier is the default branch in GitLab');
+        $this->assertEquals($url.'.git', $driver->getRepositoryUrl(), 'The repository URL is the SSH one by default');
+        $this->assertEquals($url, $driver->getUrl());
     }
 
     public function testGetDist()
@@ -380,6 +420,7 @@ JSON;
     }
 
     /**
+     * @group gitlabHttpPort
      * @dataProvider dataForTestSupports
      */
     public function testSupports($url, $expected)
@@ -391,10 +432,14 @@ JSON;
     {
         return array(
             array('http://gitlab.com/foo/bar', true),
+            array('http://gitlab.mycompany.com:5443/foo/bar', true),
             array('http://gitlab.com/foo/bar/', true),
+            array('http://gitlab.com/foo/bar/', true),
+            array('http://gitlab.com/foo/bar.git', true),
             array('http://gitlab.com/foo/bar.git', true),
             array('http://gitlab.com/foo/bar.baz.git', true),
             array('https://gitlab.com/foo/bar', extension_loaded('openssl')), // Platform requirement
+            array('https://gitlab.mycompany.com:5443/foo/bar', extension_loaded('openssl')), // Platform requirement
             array('git@gitlab.com:foo/bar.git', extension_loaded('openssl')),
             array('git@example.com:foo/bar.git', false),
             array('http://example.com/foo/bar', false),
