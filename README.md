@@ -1,7 +1,7 @@
 Composer - Dependency Management for PHP
 ========================================
 
-Composer helps you declare, manage and install dependencies of PHP projects.
+Composer helps you declare, manage, and install dependencies of PHP projects.
 
 See [https://getcomposer.org/](https://getcomposer.org/) for more information and documentation.
 
