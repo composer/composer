@@ -36,13 +36,13 @@ class RepositoryManagerTest extends TestCase
     public function testPrepend()
     {
         $rm = new RepositoryManager(
-            $this->getMock('Composer\IO\IOInterface'),
-            $this->getMock('Composer\Config'),
+            $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
+            $this->getMockBuilder('Composer\Config')->getMock(),
             $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
 
-        $repository1 = $this->getMock('Composer\Repository\RepositoryInterface');
-        $repository2 = $this->getMock('Composer\Repository\RepositoryInterface');
+        $repository1 = $this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock();
+        $repository2 = $this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock();
         $rm->addRepository($repository1);
         $rm->prependRepository($repository2);
 
@@ -59,8 +59,8 @@ class RepositoryManagerTest extends TestCase
         }
 
         $rm = new RepositoryManager(
-            $this->getMock('Composer\IO\IOInterface'),
-            $config = $this->getMock('Composer\Config', array('get')),
+            $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
+            $config = $this->getMockBuilder('Composer\Config')->setMethods(array('get'))->getMock(),
             $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
 

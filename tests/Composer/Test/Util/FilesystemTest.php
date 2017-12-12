@@ -283,6 +283,10 @@ class FilesystemTest extends TestCase
         $this->assertFileNotExists($symlinked);
     }
 
+    /**
+     * @expectedException LogicException
+     * @expectedExceptionMessage not available on non-Windows platform
+     */
     public function testJunctions()
     {
         @mkdir($this->workingDir . '/real/nesting/testing', 0777, true);
@@ -292,7 +296,6 @@ class FilesystemTest extends TestCase
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
             $this->assertFalse($fs->isJunction($this->workingDir));
             $this->assertFalse($fs->removeJunction($this->workingDir));
-            $this->setExpectedException('LogicException', 'not available on non-Windows platform');
         }
 
         $target = $this->workingDir . '/real/../real/nesting';

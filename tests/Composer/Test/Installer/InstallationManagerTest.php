@@ -24,9 +24,12 @@ class InstallationManagerTest extends TestCase
 
     public function setUp()
     {
-        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
+        $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     */
     public function testAddGetInstaller()
     {
         $installer = $this->createInstallerMock();
@@ -43,7 +46,6 @@ class InstallationManagerTest extends TestCase
         $manager->addInstaller($installer);
         $this->assertSame($installer, $manager->getInstaller('vendor'));
 
-        $this->setExpectedException('InvalidArgumentException');
         $manager->getInstaller('unregistered');
     }
 

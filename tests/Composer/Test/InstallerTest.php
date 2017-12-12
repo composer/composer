@@ -57,10 +57,10 @@ class InstallerTest extends TestCase
      */
     public function testInstaller(RootPackageInterface $rootPackage, $repositories, array $options)
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
-        $downloadManager = $this->getMock('Composer\Downloader\DownloadManager', array(), array($io));
-        $config = $this->getMock('Composer\Config');
+        $downloadManager = $this->getMockBuilder('Composer\Downloader\DownloadManager')->setConstructorArgs(array($io))->getMock();
+        $config = $this->getMockBuilder('Composer\Config')->getMock();
 
         $repositoryManager = new RepositoryManager($io, $config);
         $repositoryManager->setLocalRepository(new InstalledArrayRepository());
@@ -202,7 +202,7 @@ class InstallerTest extends TestCase
         $composer->setLocker($locker);
 
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
-        $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator', array(), array($eventDispatcher));
+        $autoloadGenerator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')->setConstructorArgs(array($eventDispatcher))->getMock();
         $composer->setAutoloadGenerator($autoloadGenerator);
         $composer->setEventDispatcher($eventDispatcher);
 

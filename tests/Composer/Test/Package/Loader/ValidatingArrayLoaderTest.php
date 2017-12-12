@@ -23,7 +23,7 @@ class ValidatingArrayLoaderTest extends TestCase
      */
     public function testLoadSuccess($config)
     {
-        $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
+        $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $internalLoader
             ->expects($this->once())
             ->method('load')
@@ -171,7 +171,7 @@ class ValidatingArrayLoaderTest extends TestCase
      */
     public function testLoadFailureThrowsException($config, $expectedErrors)
     {
-        $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
+        $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
         try {
             $loader->load($config);
@@ -189,7 +189,7 @@ class ValidatingArrayLoaderTest extends TestCase
      */
     public function testLoadWarnings($config, $expectedWarnings)
     {
-        $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
+        $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
 
         $loader->load($config);
@@ -209,7 +209,7 @@ class ValidatingArrayLoaderTest extends TestCase
 
             return;
         }
-        $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
+        $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $internalLoader
             ->expects($this->once())
             ->method('load')

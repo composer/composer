@@ -23,9 +23,9 @@ class MetapackageInstallerTest extends TestCase
 
     protected function setUp()
     {
-        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
+        $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
 
-        $this->io = $this->getMock('Composer\IO\IOInterface');
+        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
         $this->installer = new MetapackageInstaller();
     }
@@ -42,6 +42,9 @@ class MetapackageInstallerTest extends TestCase
         $this->installer->install($this->repository, $package);
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     */
     public function testUpdate()
     {
         $initial = $this->createPackageMock();
@@ -65,11 +68,12 @@ class MetapackageInstallerTest extends TestCase
 
         $this->installer->update($this->repository, $initial, $target);
 
-        $this->setExpectedException('InvalidArgumentException');
-
         $this->installer->update($this->repository, $initial, $target);
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     */
     public function testUninstall()
     {
         $package = $this->createPackageMock();
@@ -86,8 +90,6 @@ class MetapackageInstallerTest extends TestCase
             ->with($package);
 
         $this->installer->uninstall($this->repository, $package);
-
-        $this->setExpectedException('InvalidArgumentException');
 
         $this->installer->uninstall($this->repository, $package);
     }

@@ -20,26 +20,26 @@ use Composer\TestCase;
  */
 class ErrorHandlerTest extends TestCase
 {
-    /**
-     * Test ErrorHandler handles notices
-     */
+     /**
+      * Test ErrorHandler handles notices
+      * @expectedException ErrorException
+      * @expectedExceptionMessage Undefined index: baz
+      */
     public function testErrorHandlerCaptureNotice()
     {
-        $this->setExpectedException('\ErrorException', 'Undefined index: baz');
-
         ErrorHandler::register();
 
         $array = array('foo' => 'bar');
         $array['baz'];
     }
 
-    /**
-     * Test ErrorHandler handles warnings
-     */
+     /**
+      * Test ErrorHandler handles warnings
+      * @expectedException ErrorException
+      * @expectedExceptionMessage array_merge
+      */
     public function testErrorHandlerCaptureWarning()
     {
-        $this->setExpectedException('\ErrorException', 'array_merge');
-
         ErrorHandler::register();
 
         array_merge(array(), 'string');

@@ -22,10 +22,13 @@ class DownloadManagerTest extends TestCase
 
     public function setUp()
     {
-        $this->filesystem = $this->getMock('Composer\Util\Filesystem');
-        $this->io = $this->getMock('Composer\IO\IOInterface');
+        $this->filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
+        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     */
     public function testSetGetDownloader()
     {
         $downloader = $this->createDownloaderMock();
@@ -34,10 +37,12 @@ class DownloadManagerTest extends TestCase
         $manager->setDownloader('test', $downloader);
         $this->assertSame($downloader, $manager->getDownloader('test'));
 
-        $this->setExpectedException('InvalidArgumentException');
         $manager->getDownloader('unregistered');
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     */
     public function testGetDownloaderForIncorrectlyInstalledPackage()
     {
         $package = $this->createPackageMock();
@@ -47,8 +52,6 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(null));
 
         $manager = new DownloadManager($this->io, false, $this->filesystem);
-
-        $this->setExpectedException('InvalidArgumentException');
 
         $manager->getDownloaderForInstalledPackage($package);
     }
@@ -85,6 +88,9 @@ class DownloadManagerTest extends TestCase
         $this->assertSame($downloader, $manager->getDownloaderForInstalledPackage($package));
     }
 
+    /**
+     * @expectedException LogicException
+     */
     public function testGetDownloaderForIncorrectlyInstalledDistPackage()
     {
         $package = $this->createPackageMock();
@@ -113,8 +119,6 @@ class DownloadManagerTest extends TestCase
             ->method('getDownloader')
             ->with('git')
             ->will($this->returnValue($downloader));
-
-        $this->setExpectedException('LogicException');
 
         $manager->getDownloaderForInstalledPackage($package);
     }
@@ -151,6 +155,9 @@ class DownloadManagerTest extends TestCase
         $this->assertSame($downloader, $manager->getDownloaderForInstalledPackage($package));
     }
 
+    /**
+     * @expectedException LogicException
+     */
     public function testGetDownloaderForIncorrectlyInstalledSourcePackage()
     {
         $package = $this->createPackageMock();
@@ -179,8 +186,6 @@ class DownloadManagerTest extends TestCase
             ->method('getDownloader')
             ->with('pear')
             ->will($this->returnValue($downloader));
-
-        $this->setExpectedException('LogicException');
 
         $manager->getDownloaderForInstalledPackage($package);
     }
@@ -290,6 +295,9 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     */
     public function testBadPackageDownload()
     {
         $package = $this->createPackageMock();
@@ -304,7 +312,6 @@ class DownloadManagerTest extends TestCase
 
         $manager = new DownloadManager($this->io, false, $this->filesystem);
 
-        $this->setExpectedException('InvalidArgumentException');
         $manager->download($package, 'target_dir');
     }
 
@@ -521,6 +528,9 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     */
     public function testBadPackageDownloadWithSourcePreferred()
     {
         $package = $this->createPackageMock();
@@ -536,7 +546,6 @@ class DownloadManagerTest extends TestCase
         $manager = new DownloadManager($this->io, false, $this->filesystem);
         $manager->setPreferSource(true);
 
-        $this->setExpectedException('InvalidArgumentException');
         $manager->download($package, 'target_dir');
     }
 
