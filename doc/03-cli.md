@@ -866,7 +866,7 @@ configuration in the project's `composer.json` always wins.
 The `COMPOSER_CACHE_DIR` var allows you to change the Composer cache directory,
 which is also configurable via the [`cache-dir`](06-config.md#cache-dir) option.
 
-By default it points to $COMPOSER_HOME/cache on \*nix and OSX, and
+By default it points to `$COMPOSER_HOME/cache` on \*nix and OSX, and
 `C:\Users\<user>\AppData\Local\Composer` (or `%LOCALAPPDATA%/Composer`) on Windows.
 
 ### COMPOSER_PROCESS_TIMEOUT
