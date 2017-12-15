@@ -197,11 +197,11 @@ EOT
                 $versions = array($package->getPrettyVersion() => $package->getVersion());
             }
 
+            $exitCode = 0;
             if ($input->getOption('tree')) {
                 $this->displayPackageTree($package, $installedRepo, $repos);
             } else {
                 $latestPackage = null;
-                $exitCode = 0;
                 if ($input->getOption('latest')) {
                     $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion);
                 }
