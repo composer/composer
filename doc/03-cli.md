@@ -249,6 +249,13 @@ uninstalled.
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 
+## check-platform-reqs
+
+The check-platform-reqs command checks that your PHP and extensions versions
+match the platform requirements of the installed packages. This can be used
+to verify that a production server has all the extensions needed to run a
+project after installing it for example.
+
 ## global
 
 The global command allows you to run other commands like `install`, `remove`, `require`
