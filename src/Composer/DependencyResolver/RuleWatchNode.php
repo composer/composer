@@ -90,9 +90,9 @@ class RuleWatchNode
     {
         if ($this->watch1 == $literal) {
             return $this->watch2;
-        } else {
-            return $this->watch1;
         }
+
+        return $this->watch1;
     }
 
     /**

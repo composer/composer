@@ -70,9 +70,9 @@ class HgExcludeFilter extends BaseExcludeFilter
 
         if ($this->patternMode == self::HG_IGNORE_GLOB) {
             return $this->patternFromGlob($line);
-        } else {
-            return $this->patternFromRegex($line);
         }
+
+        return $this->patternFromRegex($line);
     }
 
     /**
