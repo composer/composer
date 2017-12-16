@@ -76,8 +76,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 
 ## I have a dependency which contains a "repositories" definition in its composer.json, but it seems to be ignored.
 
-The [`repositories`](../04-schema.md#repositories) configuration property is defined as [root-only]
-(../04-schema.md#root-package). It is not inherited. You can read more about the reasons behind this in the "[why can't
+The [`repositories`](../04-schema.md#repositories) configuration property is defined as [root-only](../04-schema.md#root-package). It is not inherited. You can read more about the reasons behind this in the "[why can't
 composer load repositories recursively?](../faqs/why-can't-composer-load-repositories-recursively.md)" article.
 The simplest work-around to this limitation, is moving or duplicating the `repositories` definition into your root
 composer.json.
