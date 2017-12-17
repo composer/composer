@@ -71,7 +71,7 @@ class GitLabDriver extends VcsDriver
      */
     protected $portNumber;
 
-    const URL_REGEX = '#^(?:(?P<scheme>https?)://(?P<domain>.+?)\:?(?P<port>[0-9]+)?/|git@(?P<domain2>[^:]+):)(?P<parts>.+)/(?P<repo>[^/]+?)(?:\.git|/)?$#';
+    const URL_REGEX = '#^(?:(?P<scheme>https?)://(?P<domain>.+?)(?::(?P<port>[0-9]+))?/|git@(?P<domain2>[^:]+):)(?P<parts>.+)/(?P<repo>[^/]+?)(?:\.git|/)?$#';
 
     /**
      * Extracts information from the repository url.
