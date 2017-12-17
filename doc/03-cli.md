@@ -191,6 +191,8 @@ to the command.
 php composer.phar require vendor/package:2.* vendor/package2:dev-master
 ```
 
+If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of  matches to require.
+
 ### Options
 
 * **--dev:** Add packages to `require-dev`.

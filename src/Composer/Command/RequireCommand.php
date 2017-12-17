@@ -38,7 +38,7 @@ class RequireCommand extends InitCommand
             ->setName('require')
             ->setDescription('Adds required packages to your composer.json and installs them.')
             ->setDefinition(array(
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Required package name optionally including a version constraint, e.g. foo/bar or foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
+                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Optional package name can also include a version constraint, e.g. foo/bar or foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
@@ -59,6 +59,9 @@ class RequireCommand extends InitCommand
             ))
             ->setHelp(<<<EOT
 The require command adds required packages to your composer.json and installs them.
+
+If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of 
+matches to require.
 
 If you do not specify a version constraint, composer will choose a suitable one based on the available package versions.
 
