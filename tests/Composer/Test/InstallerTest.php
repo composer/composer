@@ -239,7 +239,9 @@ class InstallerTest extends TestCase
 
         $application->setAutoExit(false);
         $appOutput = fopen('php://memory', 'w+');
-        $result = $application->run(new StringInput($run), new StreamOutput($appOutput));
+        $input = new StringInput($run);
+        $input->setInteractive(false);
+        $result = $application->run($input, new StreamOutput($appOutput));
         fseek($appOutput, 0);
 
         // Shouldn't check output and results if an exception was expected by this point
