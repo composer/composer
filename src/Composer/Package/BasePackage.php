@@ -12,6 +12,7 @@
 
 namespace Composer\Package;
 
+use Composer\Package\Archiver\ArchiveManager;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
 
