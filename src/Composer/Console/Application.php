@@ -232,9 +232,6 @@ class Application extends BaseApplication
 
                                 if (isset($composer['scripts-descriptions'][$script])) {
                                     $description = $composer['scripts-descriptions'][$script];
-                                } elseif (isset($composer['extra']['scripts-description'][$script])) {
-                                    $io->writeError('<warning>You are using "scripts-description" in "extra" which is deprecated. Use "scripts-descriptions" on the topmost level next to "scripts" instead.</warning>');
-                                    $description = $composer['extra']['scripts-description'][$script];
                                 }
 
                                 $this->add(new Command\ScriptAliasCommand($script, $description));
