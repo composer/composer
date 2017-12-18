@@ -1,5 +1,5 @@
 build: false
-shallow_clone: true
+clone_depth: 5
 platform:
   - x86
   - x64
