@@ -148,11 +148,7 @@ abstract class ArchiveDownloader extends FileDownloader
         $finder = Finder::create()
             ->ignoreVCS(false)
             ->ignoreDotFiles(false)
-            ->filter(function ($file) {
-                /** @var \SplFileInfo $file */
-                // Filter macOS' .DS_Store file.
-                return $file->getFilename() != '.DS_Store';
-            })
+            ->notName('.DS_Store')
             ->depth(0)
             ->in($dir);
 
