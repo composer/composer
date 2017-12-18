@@ -447,6 +447,10 @@
                 }
             }
         },
+        "scripts-description": {
+            "type": ["object"],
+            "description": "Descriptions for scripts listeners, shown in console help."
+        },
         "support": {
             "type": "object",
             "properties": {
