@@ -1,3 +1,9 @@
+### [1.5.6] - 2017-12-18
+
+  * Fixed root package version guessed when a tag is checked out
+  * Fixed support for GitLab reposhosted on non-standard ports
+  * Fixed regression in require command when requiring unstable packages, part 3
+
 ### [1.5.5] - 2017-12-01
 
   * Fixed regression in require command when requiring unstable packages, part 2
@@ -583,6 +589,7 @@
 
   * Initial release
 
+[1.5.6]: https://github.com/composer/composer/compare/1.5.5...1.5.6
 [1.5.5]: https://github.com/composer/composer/compare/1.5.4...1.5.5
 [1.5.4]: https://github.com/composer/composer/compare/1.5.3...1.5.4
 [1.5.3]: https://github.com/composer/composer/compare/1.5.2...1.5.3
