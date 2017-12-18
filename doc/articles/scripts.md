@@ -282,7 +282,7 @@ You can set custom script descriptions with the following in your `composer.json
 
 ```json
 {
-    "scripts-description": {
+    "scripts-descriptions": {
         "test": "Run all tests!"
     }
 }

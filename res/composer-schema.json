@@ -447,7 +447,7 @@
                 }
             }
         },
-        "scripts-description": {
+        "scripts-descriptions": {
             "type": ["object"],
             "description": "Descriptions for scripts listeners, shown in console help.",
             "additionalProperties": {

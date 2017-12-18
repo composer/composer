@@ -230,10 +230,10 @@ class Application extends BaseApplication
                             } else {
                                 $description = null;
 
-                                if (isset($composer['scripts-description'][$script])) {
-                                    $description = $composer['scripts-description'][$script];
+                                if (isset($composer['scripts-descriptions'][$script])) {
+                                    $description = $composer['scripts-descriptions'][$script];
                                 } elseif (isset($composer['extra']['scripts-description'][$script])) {
-                                    $io->writeError('<warning>You are using "scripts-description" in "extra" which is deprecated. Move "scripts-description" to the topmost level next to "scripts" instead.</warning>');
+                                    $io->writeError('<warning>You are using "scripts-description" in "extra" which is deprecated. Use "scripts-descriptions" on the topmost level next to "scripts" instead.</warning>');
                                     $description = $composer['extra']['scripts-description'][$script];
                                 }
 
