@@ -449,7 +449,10 @@
         },
         "scripts-description": {
             "type": ["object"],
-            "description": "Descriptions for scripts listeners, shown in console help."
+            "description": "Descriptions for scripts listeners, shown in console help.",
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "support": {
             "type": "object",
