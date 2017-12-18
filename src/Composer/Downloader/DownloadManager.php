@@ -184,6 +184,10 @@ class DownloadManager
         $sourceType = $package->getSourceType();
         $distType = $package->getDistType();
 
+        if ('metapackage' === $package->getType()) {
+            return;
+        }
+
         $sources = array();
         if ($sourceType) {
             $sources[] = 'source';
