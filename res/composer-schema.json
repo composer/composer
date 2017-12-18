@@ -379,7 +379,7 @@
         },
         "scripts": {
             "type": ["object"],
-            "description": "Scripts listeners that will be executed before/after some events.",
+            "description": "Script listeners that will be executed before/after some events.",
             "properties": {
                 "pre-install-cmd": {
                     "type": ["array", "string"],
@@ -449,7 +449,7 @@
         },
         "scripts-descriptions": {
             "type": ["object"],
-            "description": "Descriptions for scripts listeners, shown in console help.",
+            "description": "Descriptions for custom commands, shown in console help.",
             "additionalProperties": {
                 "type": "string"
             }
