@@ -40,8 +40,8 @@ class InitCommand extends BaseCommand
     /** @var array */
     private $gitConfig;
 
-    /** @var Pool */
-    private $pool;
+    /** @var Pool[] */
+    private $pools;
 
     /**
      * {@inheritdoc}
@@ -598,12 +598,14 @@ EOT
 
     private function getPool(InputInterface $input, $minimumStability = null)
     {
-        if (!$this->pool) {
-            $this->pool = new Pool($minimumStability ?: $this->getMinimumStability($input));
-            $this->pool->addRepository($this->getRepos());
+        $key = $minimumStability ?: 'default';
+
+        if (!isset($this->pools[$key])) {
+            $this->pools[$key] = $pool = new Pool($minimumStability ?: $this->getMinimumStability($input));
+            $pool->addRepository($this->getRepos());
         }
 
-        return $this->pool;
+        return $this->pools[$key];
     }
 
     private function getMinimumStability(InputInterface $input)
@@ -642,13 +644,14 @@ EOT
         $package = $versionSelector->findBestCandidate($name, $requiredVersion, $phpVersion, $preferredStability);
 
         if (!$package) {
+            // Check whether the PHP version was the problem
+            if ($phpVersion && $versionSelector->findBestCandidate($name, $requiredVersion, null, $preferredStability)) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Package %s at version %s has a PHP requirement incompatible with your PHP version (%s)', $name, $requiredVersion, $phpVersion
+                ));
+            }
+            // Check whether the required version was the problem
             if ($requiredVersion && $versionSelector->findBestCandidate($name, null, $phpVersion, $preferredStability)) {
-                // Check whether the PHP version was the problem
-                if ($phpVersion && $versionSelector->findBestCandidate($name, null, null, $preferredStability)) {
-                    throw new \InvalidArgumentException(sprintf(
-                        'Package %s at version %s has a PHP requirement incompatible with your PHP version (%s)', $name, $requiredVersion, $phpVersion
-                    ));
-                }
                 throw new \InvalidArgumentException(sprintf(
                     'Could not find package %s in a version matching %s', $name, $requiredVersion
                 ));

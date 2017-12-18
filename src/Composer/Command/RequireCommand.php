@@ -113,7 +113,7 @@ EOT
             $preferredStability = $composer->getPackage()->getMinimumStability();
         }
 
-        $phpVersion = $this->repos->findPackage('php', '*')->getVersion();
+        $phpVersion = $this->repos->findPackage('php', '*')->getPrettyVersion();
         $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion, $preferredStability);
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
