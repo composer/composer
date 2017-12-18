@@ -134,6 +134,7 @@ class ProcessExecutor
         if (method_exists('Symfony\Component\Process\ProcessUtils', 'escapeArgument')) {
             return ProcessUtils::escapeArgument($argument);
         }
+
         return self::escapeArgument($argument);
     }
 

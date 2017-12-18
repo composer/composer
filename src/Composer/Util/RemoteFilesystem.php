@@ -1013,6 +1013,7 @@ class RemoteFilesystem
         // Path for a public download follows this pattern /{user}/{repo}/downloads/{whatever}
         // {@link https://blog.bitbucket.org/2009/04/12/new-feature-downloads/}
         $pathParts = explode('/', $path);
+
         return count($pathParts) >= 4 && $pathParts[3] == 'downloads';
     }
 }

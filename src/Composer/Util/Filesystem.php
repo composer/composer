@@ -264,7 +264,8 @@ class Filesystem
      * @param $target
      * @return bool
      */
-    public function copy($source, $target) {
+    public function copy($source, $target)
+    {
         if (!is_dir($source)) {
             return copy($source, $target);
         }
@@ -273,7 +274,7 @@ class Filesystem
         $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
         $this->ensureDirectoryExists($target);
 
-        $result=true;
+        $result = true;
         foreach ($ri as $file) {
             $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
             if ($file->isDir()) {

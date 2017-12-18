@@ -252,7 +252,7 @@ class RemoteFilesystemTest extends TestCase
         $io
             ->expects($this->any())
             ->method('hasAuthentication')
-            ->will($this->returnCallback(function($arg) use (&$domains) {
+            ->will($this->returnCallback(function ($arg) use (&$domains) {
                 $domains[] = $arg;
                 // first time is called with bitbucket.org, then it redirects to bbuseruploads.s3.amazonaws.com so next time we have no auth configured
                 return $arg === 'bitbucket.org';

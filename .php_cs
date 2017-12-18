@@ -12,10 +12,10 @@ EOF;
 
 $finder = PhpCsFixer\Finder::create()
     ->files()
-    ->name('*.php')
-    ->exclude('Fixtures')
     ->in(__DIR__.'/src')
     ->in(__DIR__.'/tests')
+    ->name('*.php')
+    ->notPath('Fixtures')
 ;
 
 return PhpCsFixer\Config::create()

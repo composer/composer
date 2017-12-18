@@ -1,11 +1,20 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Command;
 
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\Constraint\MultiConstraint;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -115,17 +124,17 @@ EOT
     protected function printTable(OutputInterface $output, $results)
     {
         $table = array();
-        $rows  = array();
+        $rows = array();
         foreach ($results as $result) {
             /**
              * @var Link|null $link
              */
             list($platformPackage, $version, $link, $status) = $result;
-            $rows[]  = array(
+            $rows[] = array(
                 $platformPackage,
                 $version,
                 $link ? sprintf('%s %s %s (%s)', $link->getSource(), $link->getDescription(), $link->getTarget(), $link->getPrettyConstraint()) : '',
-                $status
+                $status,
             );
         }
         $table = array_merge($rows, $table);

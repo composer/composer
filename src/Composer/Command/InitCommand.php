@@ -191,7 +191,7 @@ EOT
             $name = basename($cwd);
             $name = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
             $name = strtolower($name);
-            if ( !empty($_SERVER['COMPOSER_DEFAULT_VENDOR']) ) {
+            if (!empty($_SERVER['COMPOSER_DEFAULT_VENDOR'])) {
                 $name = $_SERVER['COMPOSER_DEFAULT_VENDOR'] . '/' . $name;
             } elseif (isset($git['github.user'])) {
                 $name = $git['github.user'] . '/' . $name;
@@ -242,15 +242,15 @@ EOT
         $input->setOption('description', $description);
 
         if (null === $author = $input->getOption('author')) {
-            if ( !empty($_SERVER['COMPOSER_DEFAULT_AUTHOR']) ) {
+            if (!empty($_SERVER['COMPOSER_DEFAULT_AUTHOR'])) {
                 $author_name = $_SERVER['COMPOSER_DEFAULT_AUTHOR'];
-            } elseif ( isset($git['user.name']) ) {
+            } elseif (isset($git['user.name'])) {
                 $author_name = $git['user.name'];
             }
 
-            if ( !empty($_SERVER['COMPOSER_DEFAULT_EMAIL']) ) {
+            if (!empty($_SERVER['COMPOSER_DEFAULT_EMAIL'])) {
                 $author_email = $_SERVER['COMPOSER_DEFAULT_EMAIL'];
-            } elseif ( isset($git['user.email']) ) {
+            } elseif (isset($git['user.email'])) {
                 $author_email = $git['user.email'];
             }
 
@@ -306,7 +306,7 @@ EOT
         $input->setOption('type', $type);
 
         if (null === $license = $input->getOption('license')) {
-            if ( !empty($_SERVER['COMPOSER_DEFAULT_LICENSE']) ) {
+            if (!empty($_SERVER['COMPOSER_DEFAULT_LICENSE'])) {
                 $license = $_SERVER['COMPOSER_DEFAULT_LICENSE'];
             }
         }
@@ -423,7 +423,7 @@ EOT
                         $abandoned = sprintf('<warning>Abandoned. %s.</warning>', $replacement);
                     }
 
-                    $choices[] = sprintf(' <info>%5s</info> %s %s',"[$position]", $foundPackage['name'], $abandoned);
+                    $choices[] = sprintf(' <info>%5s</info> %s %s', "[$position]", $foundPackage['name'], $abandoned);
                     if ($foundPackage['name'] === $package) {
                         $exactMatch = true;
                         break;

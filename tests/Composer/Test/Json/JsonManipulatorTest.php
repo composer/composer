@@ -111,7 +111,6 @@ class JsonManipulatorTest extends TestCase
 ',
             ),
 
-
             array(
                 '{
     "require":
@@ -2360,6 +2359,5 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ', $manipulator->getContents());
-
     }
 }

@@ -165,7 +165,7 @@ class Compiler
     }
 
     /**
-     * @param \SplFileInfo $file
+     * @param  \SplFileInfo $file
      * @return string
      */
     private function getRelativeFilePath($file)

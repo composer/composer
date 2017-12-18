@@ -219,7 +219,7 @@ class ConsoleIOTest extends TestCase
         ;
 
         $validator = function ($value) {
-             return true;
+            return true;
         };
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);
         $consoleIO->askAndValidate('Why?', $validator, 10, 'default');

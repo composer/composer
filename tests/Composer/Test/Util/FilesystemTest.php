@@ -324,7 +324,7 @@ class FilesystemTest extends TestCase
         $fs = new Filesystem();
 
         $result1 = $fs->copy($this->workingDir . '/foo', $this->workingDir . '/foop');
-        $this->assertTrue($result1,'Copying directory failed.');
+        $this->assertTrue($result1, 'Copying directory failed.');
         $this->assertTrue(is_dir($this->workingDir . '/foop'), 'Not a directory: ' . $this->workingDir . '/foop');
         $this->assertTrue(is_dir($this->workingDir . '/foop/bar'), 'Not a directory: ' . $this->workingDir . '/foop/bar');
         $this->assertTrue(is_dir($this->workingDir . '/foop/baz'), 'Not a directory: ' . $this->workingDir . '/foop/baz');

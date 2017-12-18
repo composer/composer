@@ -261,6 +261,7 @@ class GitLabDriver extends VcsDriver
     {
         $domainName = $this->originUrl;
         $portNumber = (true === is_numeric($this->portNumber)) ? sprintf(':%s', $this->portNumber) : '';
+
         return $this->scheme.'://'.$domainName.$portNumber.'/api/v4/projects/'.$this->urlEncodeAll($this->namespace).'%2F'.$this->urlEncodeAll($this->repository);
     }
 
@@ -449,7 +450,6 @@ class GitLabDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-
         if (!preg_match(self::URL_REGEX, $url, $match)) {
             return false;
         }

@@ -117,6 +117,7 @@ class Perforce
     protected function executeCommand($command)
     {
         $this->commandResult = '';
+
         return $this->process->execute($command, $this->commandResult);
     }
 

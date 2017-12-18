@@ -143,13 +143,13 @@ JSON;
         return $driver;
     }
 
-        /**
-         * @dataProvider getInitializeUrls
-         */
-        public function testInitializePublicProjectAsAnonymous($url, $apiUrl)
-        {
-            // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
-            $projectData = <<<JSON
+    /**
+     * @dataProvider getInitializeUrls
+     */
+    public function testInitializePublicProjectAsAnonymous($url, $apiUrl)
+    {
+        // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
+        $projectData = <<<JSON
 {
     "id": 17,
     "default_branch": "mymaster",
@@ -308,7 +308,8 @@ JSON;
         $this->assertEquals($expected, $driver->getTags(), 'Tags are cached');
     }
 
-    public function testGetPaginatedRefs() {
+    public function testGetPaginatedRefs()
+    {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
         $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/branches?per_page=100';
@@ -319,15 +320,15 @@ JSON;
                "name" => "mymaster",
                 "commit" => array(
                     "id" => "97eda36b5c1dd953a3792865c222d4e85e5f302e",
-                    "committed_date" => "2013-01-03T21:04:07.000+01:00"
-                )
+                    "committed_date" => "2013-01-03T21:04:07.000+01:00",
+                ),
             ),
             array(
                 "name" => "staging",
                 "commit" => array(
                     "id" => "502cffe49f136443f2059803f2e7192d1ac066cd",
-                    "committed_date" => "2013-03-09T16:35:23.000+01:00"
-                )
+                    "committed_date" => "2013-03-09T16:35:23.000+01:00",
+                ),
             ),
         );
 
@@ -336,8 +337,8 @@ JSON;
                 "name" => "stagingdupe",
                 "commit" => array(
                     "id" => "502cffe49f136443f2059803f2e7192d1ac066cd",
-                    "committed_date" => "2013-03-09T16:35:23.000+01:00"
-                )
+                    "committed_date" => "2013-03-09T16:35:23.000+01:00",
+                ),
             );
         }
 
@@ -349,7 +350,7 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
 
-         $this->remoteFilesystem
+        $this->remoteFilesystem
             ->getContents('gitlab.com', "http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20", false, array())
             ->willReturn($branchData)
             ->shouldBeCalledTimes(1)
@@ -372,8 +373,8 @@ JSON;
 
         $this->assertEquals($expected, $driver->getBranches());
         $this->assertEquals($expected, $driver->getBranches(), 'Branches are cached');
-
     }
+
     public function testGetBranches()
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
