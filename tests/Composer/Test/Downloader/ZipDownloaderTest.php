@@ -110,6 +110,10 @@ class ZipDownloaderTest extends TestCase
      */
     public function testZipArchiveOnlyFailed()
     {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+
         $this->setPrivateProperty('hasSystemUnzip', false);
         $this->setPrivateProperty('hasZipArchive', true);
         $downloader = new MockedZipDownloader($this->io, $this->config);
@@ -132,6 +136,10 @@ class ZipDownloaderTest extends TestCase
      */
     public function testZipArchiveExtractOnlyFailed()
     {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+
         $this->setPrivateProperty('hasSystemUnzip', false);
         $this->setPrivateProperty('hasZipArchive', true);
         $downloader = new MockedZipDownloader($this->io, $this->config);
@@ -153,6 +161,10 @@ class ZipDownloaderTest extends TestCase
      */
     public function testZipArchiveOnlyGood()
     {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+
         $this->setPrivateProperty('hasSystemUnzip', false);
         $this->setPrivateProperty('hasZipArchive', true);
         $downloader = new MockedZipDownloader($this->io, $this->config);
@@ -175,6 +187,10 @@ class ZipDownloaderTest extends TestCase
      */
     public function testSystemUnzipOnlyFailed()
     {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', false);
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
@@ -188,6 +204,10 @@ class ZipDownloaderTest extends TestCase
 
     public function testSystemUnzipOnlyGood()
     {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', false);
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
@@ -201,6 +221,10 @@ class ZipDownloaderTest extends TestCase
 
     public function testNonWindowsFallbackGood()
     {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+
         $this->setPrivateProperty('isWindows', false);
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', true);
@@ -229,6 +253,10 @@ class ZipDownloaderTest extends TestCase
      */
     public function testNonWindowsFallbackFailed()
     {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+
         $this->setPrivateProperty('isWindows', false);
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', true);
@@ -253,6 +281,10 @@ class ZipDownloaderTest extends TestCase
 
     public function testWindowsFallbackGood()
     {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+
         $this->setPrivateProperty('isWindows', true);
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', true);
@@ -281,6 +313,10 @@ class ZipDownloaderTest extends TestCase
      */
     public function testWindowsFallbackFailed()
     {
+        if (!class_exists('ZipArchive')) {
+            $this->markTestSkipped('zip extension missing');
+        }
+
         $this->setPrivateProperty('isWindows', true);
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', true);
