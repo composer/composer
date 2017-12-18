@@ -278,16 +278,14 @@ JSON array of commands.
 
 ## Custom descriptions.
 
-You can set custom script descriptions with the following extra in your composer.json:
+You can set custom script descriptions with the following in your `composer.json`:
 
- ```json
- {
-     "extra": {
-        "scripts-description": {
-            "test": "Run all tests!"
-        }
-     }
- }
- ```
+```json
+{
+    "scripts-descriptions": {
+        "test": "Run all tests!"
+    }
+}
+```
 
 > **Note:** You can only set custom descriptions of custom commands.

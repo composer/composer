@@ -379,7 +379,7 @@
         },
         "scripts": {
             "type": ["object"],
-            "description": "Scripts listeners that will be executed before/after some events.",
+            "description": "Script listeners that will be executed before/after some events.",
             "properties": {
                 "pre-install-cmd": {
                     "type": ["array", "string"],
@@ -445,6 +445,13 @@
                     "type": ["array", "string"],
                     "description": "Occurs after the create-project command is executed, contains one or more Class::method callables or shell commands."
                 }
+            }
+        },
+        "scripts-descriptions": {
+            "type": ["object"],
+            "description": "Descriptions for custom commands, shown in console help.",
+            "additionalProperties": {
+                "type": "string"
             }
         },
         "support": {
