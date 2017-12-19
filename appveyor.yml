@@ -1,8 +1,5 @@
 build: false
 clone_depth: 5
-platform:
-  - x86
-  - x64
 
 environment:
   PHP_CHOCO_VERSION: 7.2.0
@@ -13,6 +10,7 @@ cache:
 
 init:
   - SET PATH=%PHP_CACHE_DIR%;%PATH%
+  - SET COMPOSER_CACHE_DIR=%PHP_CACHE_DIR%
   - SET COMPOSER_NO_INTERACTION=1
   - SET PHP=0
   - SET ANSICON=121x90 (121x90)
