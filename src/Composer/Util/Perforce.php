@@ -243,13 +243,13 @@ class Perforce
             }
 
             return null;
-        } else {
-            $command = 'echo $' . $name;
-            $this->executeCommand($command);
-            $result = trim($this->commandResult);
-
-            return $result;
         }
+
+        $command = 'echo $' . $name;
+        $this->executeCommand($command);
+        $result = trim($this->commandResult);
+
+        return $result;
     }
 
     public function queryP4Password()
