@@ -1,8 +1,5 @@
 build: false
 clone_depth: 5
-platform:
-  - x86
-  - x64
 
 environment:
   PHP_CHOCO_VERSION: 7.2.0
