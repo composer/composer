@@ -228,6 +228,36 @@ class Git
         return true;
     }
 
+    public function fetchRef($url, $dir, $ref)
+    {
+        if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
+            try {
+                $isTag = $isRef = $actualCommit = false;
+                $escapedRef = ProcessExecutor::escape($ref);
+                $exitCode = $this->process->execute(sprintf('git show-ref --tags %s', $escapedRef), $output, $dir);
+                if (!$exitCode)
+                    $isTag = true;
+                $exitCode = $this->process->execute(sprintf('git show-ref %s', $escapedRef), $output, $dir);
+                if (!$exitCode)
+                    $isRef = true;
+                $exitCode = $this->process->execute(sprintf('git cat-file -t %s', $escapedRef), $output, $dir);
+                if (!$exitCode && trim($output) == "commit")
+                    $actualCommit = true;
+
+                if ($isTag){
+                    return true;
+                }
+                if (!$isRef && $actualCommit) {
+                    return true;
+                }
+            } catch (\Exception $e) {
+            }
+        }
+
+        $this->syncMirror($url, $dir);
+        return false;
+    }
+
     private function isAuthenticationFailure($url, &$match)
     {
         if (!preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match)) {
