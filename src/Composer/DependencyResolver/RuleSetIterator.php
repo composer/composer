@@ -88,7 +88,6 @@ class RuleSetIterator implements \Iterator
 
     public function valid()
     {
-        return isset($this->rules[$this->currentType])
-               && isset($this->rules[$this->currentType][$this->currentOffset]);
+        return isset($this->rules[$this->currentType], $this->rules[$this->currentType][$this->currentOffset]);
     }
 }

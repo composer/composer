@@ -121,7 +121,7 @@ class ConfigValidator
         }
 
         // check for require-dev overrides
-        if (isset($manifest['require']) && isset($manifest['require-dev'])) {
+        if (isset($manifest['require'], $manifest['require-dev'])) {
             $requireOverrides = array_intersect_key($manifest['require'], $manifest['require-dev']);
 
             if (!empty($requireOverrides)) {
