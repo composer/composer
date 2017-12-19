@@ -711,10 +711,10 @@ EOT
             ));
         }
 
-        return [
+        return array(
             $package->getPrettyName(),
             $versionSelector->findRecommendedRequireVersion($package)
-        ];
+        );
     }
 
     private function findSimilar($package)
