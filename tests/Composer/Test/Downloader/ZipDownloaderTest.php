@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Downloader;
 
-use Composer\Downloader\ZipDownloader;
+use Composer\Downloader\ZipDownloader;;
 use Composer\Package\PackageInterface;
 use Composer\TestCase;
 use Composer\Util\Filesystem;
