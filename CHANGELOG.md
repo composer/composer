@@ -1,3 +1,16 @@
+### [1.6.0-RC] 2017-12-19
+
+  * Improved performance of installs and updates from git clones when checking out known commits
+  * Added `check-platform-reqs` command that checks that your PHP and extensions versions match the platform requirements of the installed packages
+  * Added `--with-all-dependencies` to the `update` and `require` commands which updates all dependencies of the listed packages, including those that are direct root requirements
+  * Added `scripts-descriptions` key to composer.json to customize the description and document your custom commands
+  * Added support for the uppercase NO_PROXY env var
+  * Added support for COMPOSER_DEFAULT_{AUTHOR,LICENSE,EMAIL,VENDOR} env vars to pre-populate init command values
+  * Added support for local fossil repositories
+  * Added suggestions for alternative spellings when entering packages in `init` and `require` commands and nothing can be found
+  * Fixed installed.json data to be sorted alphabetically by package name
+  * Fixed compatibility with Symfony 4.x components that Composer uses
+
 ### [1.5.6] - 2017-12-18
 
   * Fixed root package version guessed when a tag is checked out
@@ -589,6 +602,7 @@
 
   * Initial release
 
+[1.6.0-RC]: https://github.com/composer/composer/compare/1.5.6...1.6.0-RC
 [1.5.6]: https://github.com/composer/composer/compare/1.5.5...1.5.6
 [1.5.5]: https://github.com/composer/composer/compare/1.5.4...1.5.5
 [1.5.4]: https://github.com/composer/composer/compare/1.5.3...1.5.4
