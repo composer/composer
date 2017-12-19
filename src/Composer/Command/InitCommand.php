@@ -254,7 +254,7 @@ EOT
                 $author_email = $git['user.email'];
             }
 
-            if (isset($author_name) && isset($author_email)) {
+            if (isset($author_name, $author_email)) {
                 $author = sprintf('%s <%s>', $author_name, $author_email);
             }
         }

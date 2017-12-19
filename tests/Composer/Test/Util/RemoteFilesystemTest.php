@@ -69,7 +69,7 @@ class RemoteFilesystemTest extends TestCase
         ));
 
         $res = $this->callGetOptionsForUrl($io, array('https://example.org', array()), $streamOptions);
-        $this->assertTrue(isset($res['ssl']) && isset($res['ssl']['allow_self_signed']) && true === $res['ssl']['allow_self_signed'], 'getOptions must return an array with a allow_self_signed set to true');
+        $this->assertTrue(isset($res['ssl'], $res['ssl']['allow_self_signed']) && true === $res['ssl']['allow_self_signed'], 'getOptions must return an array with a allow_self_signed set to true');
     }
 
     public function testGetOptionsForUrlWithCallOptionsKeepsHeader()

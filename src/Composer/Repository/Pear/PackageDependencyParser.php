@@ -265,9 +265,9 @@ class PackageDependencyParser
         if (0 == count($values)) {
             return '*';
         }
-        if (isset($values['min']) && isset($values['exclude']) && $data['min'] == $data['exclude']) {
+        if (isset($values['min'], $values['exclude']) && $data['min'] == $data['exclude']) {
             $versions[] = '>' . $this->parseVersion($values['min']);
-        } elseif (isset($values['max']) && isset($values['exclude']) && $data['max'] == $data['exclude']) {
+        } elseif (isset($values['max'], $values['exclude']) && $data['max'] == $data['exclude']) {
             $versions[] = '<' . $this->parseVersion($values['max']);
         } else {
             foreach ($values as $op => $version) {

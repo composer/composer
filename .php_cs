@@ -27,6 +27,7 @@ return PhpCsFixer\Config::create()
         'binary_operator_spaces' => true,
         'blank_line_before_return' => true,
         'cast_spaces' => true,
+        'combine_consecutive_issets' => true,
         'header_comment' => array('header' => $header),
         'include' => true,
         'array_syntax' => array('syntax' => 'long'),
