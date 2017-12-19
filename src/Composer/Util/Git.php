@@ -228,33 +228,18 @@ class Git
         return true;
     }
 
-    public function fetchRef($url, $dir, $ref)
+    public function fetchRefOrSyncMirror($url, $dir, $ref)
     {
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
-            try {
-                $isTag = $isRef = $actualCommit = false;
-                $escapedRef = ProcessExecutor::escape($ref);
-                $exitCode = $this->process->execute(sprintf('git show-ref --tags %s', $escapedRef), $output, $dir);
-                if (!$exitCode)
-                    $isTag = true;
-                $exitCode = $this->process->execute(sprintf('git show-ref %s', $escapedRef), $output, $dir);
-                if (!$exitCode)
-                    $isRef = true;
-                $exitCode = $this->process->execute(sprintf('git cat-file -t %s', $escapedRef), $output, $dir);
-                if (!$exitCode && trim($output) == "commit")
-                    $actualCommit = true;
-
-                if ($isTag){
-                    return true;
-                }
-                if (!$isRef && $actualCommit) {
-                    return true;
-                }
-            } catch (\Exception $e) {
+            $escapedRef = ProcessExecutor::escape($ref.'^{commit}');
+            $exitCode = $this->process->execute(sprintf('git rev-parse --quiet --verify %s', $escapedRef), $output, $dir);
+            if ($exitCode === 0) {
+                return true;
             }
         }
 
         $this->syncMirror($url, $dir);
+
         return false;
     }
 

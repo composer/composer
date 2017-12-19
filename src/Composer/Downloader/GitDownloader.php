@@ -55,14 +55,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $this->io->writeError('', true, IOInterface::DEBUG);
             $this->io->writeError(sprintf('    Cloning to cache at %s', ProcessExecutor::escape($cachePath)), true, IOInterface::DEBUG);
             try {
-                $cached = $this->gitUtil->fetchRef($url, $cachePath, $ref);
+                $this->gitUtil->fetchRefOrSyncMirror($url, $cachePath, $ref);
                 if (is_dir($cachePath)) {
                     $command =
                         'git clone --no-checkout %cachePath% %path% --dissociate --reference %cachePath% '
                         . '&& cd '.$flag.'%path% '
                         . '&& git remote set-url origin %url% && git remote add composer %url%';
-                    if (!$cached)
-                        $command .= ' && git fetch composer';
                     $msg = "Cloning ".$this->getShortHash($ref).' from cache';
                 }
             } catch (\RuntimeException $e) {
@@ -120,10 +118,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $ref = $target->getSourceReference();
         $this->io->writeError(" Checking out ".$this->getShortHash($ref));
-        $command = 'git remote set-url composer %s && git rev-parse --quiet --verify %s^{commit} || (git fetch composer && git fetch --tags composer)';
+        $command = 'git remote set-url composer %s && git rev-parse --quiet --verify %s || (git fetch composer && git fetch --tags composer)';
 
         $commandCallable = function ($url) use ($command, $ref) {
-            return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($ref));
+            return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($ref.'^{commit}'));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
