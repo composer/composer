@@ -82,7 +82,7 @@ EOT
                     $version = $currentPlatformPackageMap[$require]->getVersion();
 
                     foreach ($links as $link) {
-                        if (!$link->getConstraint()->matches(new Constraint('<=', $version))) {
+                        if (!$link->getConstraint()->matches(new Constraint('=', $version))) {
                             $results[] = array(
                                 $currentPlatformPackageMap[$require]->getPrettyName(),
                                 $currentPlatformPackageMap[$require]->getPrettyVersion(),
