@@ -2310,6 +2310,22 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testRemoveMainKeyRemovesKeyWhereValueIsNull()
+    {
+        $manipulator = new JsonManipulator(json_encode(array(
+            'foo' => 9000,
+            'bar' => null,
+        )));
+
+        $manipulator->removeMainKey('bar');
+
+        $expected = json_encode(array(
+            'foo' => 9000,
+        ));
+
+        $this->assertJsonStringEqualsJsonString($expected, $manipulator->getContents());
+    }
+
     public function testIndentDetection()
     {
         $manipulator = new JsonManipulator('{
