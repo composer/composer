@@ -417,7 +417,7 @@ class JsonManipulator
     {
         $decoded = JsonFile::parseJson($this->contents);
 
-        if (!isset($decoded[$key])) {
+        if (!array_key_exists($key, $decoded)) {
             return true;
         }
 
