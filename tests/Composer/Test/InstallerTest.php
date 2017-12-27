@@ -198,7 +198,7 @@ class InstallerTest extends TestCase
         }
 
         $contents = json_encode($composerConfig);
-        $locker = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), $contents);
+        $locker = new Locker($io, $lockJsonMock, $composer->getInstallationManager(), $contents);
         $composer->setLocker($locker);
 
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();

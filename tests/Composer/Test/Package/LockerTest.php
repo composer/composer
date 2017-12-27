@@ -21,7 +21,7 @@ class LockerTest extends TestCase
     public function testIsLocked()
     {
         $json = $this->createJsonFileMock();
-        $locker = new Locker(new NullIO, $json, $this->createRepositoryManagerMock(), $this->createInstallationManagerMock(),
+        $locker = new Locker(new NullIO, $json, $this->createInstallationManagerMock(),
             $this->getJsonContent());
 
         $json
@@ -39,10 +39,9 @@ class LockerTest extends TestCase
     public function testGetNotLockedPackages()
     {
         $json = $this->createJsonFileMock();
-        $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker(new NullIO, $json, $repo, $inst, $this->getJsonContent());
+        $locker = new Locker(new NullIO, $json, $inst, $this->getJsonContent());
 
         $json
             ->expects($this->once())
@@ -57,10 +56,9 @@ class LockerTest extends TestCase
     public function testGetLockedPackages()
     {
         $json = $this->createJsonFileMock();
-        $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker(new NullIO, $json, $repo, $inst, $this->getJsonContent());
+        $locker = new Locker(new NullIO, $json, $inst, $this->getJsonContent());
 
         $json
             ->expects($this->once())
@@ -84,11 +82,10 @@ class LockerTest extends TestCase
     public function testSetLockData()
     {
         $json = $this->createJsonFileMock();
-        $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
         $jsonContent = $this->getJsonContent() . '  ';
-        $locker = new Locker(new NullIO, $json, $repo, $inst, $jsonContent);
+        $locker = new Locker(new NullIO, $json, $inst, $jsonContent);
 
         $package1 = $this->createPackageMock();
         $package2 = $this->createPackageMock();
@@ -157,10 +154,9 @@ class LockerTest extends TestCase
     public function testLockBadPackages()
     {
         $json = $this->createJsonFileMock();
-        $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker(new NullIO, $json, $repo, $inst, $this->getJsonContent());
+        $locker = new Locker(new NullIO, $json, $inst, $this->getJsonContent());
 
         $package1 = $this->createPackageMock();
         $package1
@@ -176,11 +172,10 @@ class LockerTest extends TestCase
     public function testIsFresh()
     {
         $json = $this->createJsonFileMock();
-        $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
         $jsonContent = $this->getJsonContent();
-        $locker = new Locker(new NullIO, $json, $repo, $inst, $jsonContent);
+        $locker = new Locker(new NullIO, $json, $inst, $jsonContent);
 
         $json
             ->expects($this->once())
@@ -193,10 +188,9 @@ class LockerTest extends TestCase
     public function testIsFreshFalse()
     {
         $json = $this->createJsonFileMock();
-        $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker(new NullIO, $json, $repo, $inst, $this->getJsonContent());
+        $locker = new Locker(new NullIO, $json, $inst, $this->getJsonContent());
 
         $json
             ->expects($this->once())
@@ -209,11 +203,10 @@ class LockerTest extends TestCase
     public function testIsFreshWithContentHash()
     {
         $json = $this->createJsonFileMock();
-        $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
         $jsonContent = $this->getJsonContent();
-        $locker = new Locker(new NullIO, $json, $repo, $inst, $jsonContent);
+        $locker = new Locker(new NullIO, $json, $inst, $jsonContent);
 
         $json
             ->expects($this->once())
@@ -226,11 +219,10 @@ class LockerTest extends TestCase
     public function testIsFreshWithContentHashAndNoHash()
     {
         $json = $this->createJsonFileMock();
-        $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
         $jsonContent = $this->getJsonContent();
-        $locker = new Locker(new NullIO, $json, $repo, $inst, $jsonContent);
+        $locker = new Locker(new NullIO, $json, $inst, $jsonContent);
 
         $json
             ->expects($this->once())
@@ -243,10 +235,9 @@ class LockerTest extends TestCase
     public function testIsFreshFalseWithContentHash()
     {
         $json = $this->createJsonFileMock();
-        $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker(new NullIO, $json, $repo, $inst, $this->getJsonContent());
+        $locker = new Locker(new NullIO, $json, $inst, $this->getJsonContent());
 
         $differentHash = md5($this->getJsonContent(array('name' => 'test2')));
 
@@ -264,20 +255,7 @@ class LockerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
     }
-
-    private function createRepositoryManagerMock()
-    {
-        $mock = $this->getMockBuilder('Composer\Repository\RepositoryManager')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $mock->expects($this->any())
-            ->method('getLocalRepository')
-            ->will($this->returnValue($this->getMockBuilder('Composer\Repository\ArrayRepository')->getMock()));
-
-        return $mock;
-    }
-
+    
     private function createInstallationManagerMock()
     {
         $mock = $this->getMockBuilder('Composer\Installer\InstallationManager')

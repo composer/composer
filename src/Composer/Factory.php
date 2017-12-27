@@ -390,7 +390,7 @@ class Factory
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
 
-            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($composerFile));
+            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $im, file_get_contents($composerFile));
             $composer->setLocker($locker);
         }
 
