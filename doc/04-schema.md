@@ -152,7 +152,7 @@ The recommended notation for the most common licenses is (alphabetical):
 - MIT
 
 Optional, but it is highly recommended to supply this. More identifiers are
-listed at the [SPDX Open Source License Registry](https://www.spdx.org/licenses/).
+listed at the [SPDX Open Source License Registry](https://spdx.org/licenses/).
 
 For closed-source software, you may use `"proprietary"` as the license identifier.
 

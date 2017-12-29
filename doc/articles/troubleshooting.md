@@ -146,7 +146,7 @@ Or, you can increase the limit with a command-line argument:
 php -d memory_limit=-1 composer.phar <...>
 ```
 
-This issue can also happen on cPanel instances, when the shell fork bomb protection is activated. For more information, see the [documentation](https://documentation.cpanel.net/display/ALD/Shell+Fork+Bomb+Protection) of the fork bomb feature on the cPanel site.
+This issue can also happen on cPanel instances, when the shell fork bomb protection is activated. For more information, see the [documentation](https://documentation.cpanel.net/display/68Docs/Shell+Fork+Bomb+Protection) of the fork bomb feature on the cPanel site.
 
 ## Xdebug impact on Composer
 

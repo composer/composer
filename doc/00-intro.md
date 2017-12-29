@@ -14,7 +14,7 @@ manager. It does however support a "global" project for convenience via the
 [global](03-cli.md#global) command.
 
 This idea is not new and Composer is strongly inspired by node's
-[npm](https://npmjs.org/) and ruby's [bundler](https://bundler.io/).
+[npm](https://www.npmjs.com/) and ruby's [bundler](https://bundler.io/).
 
 Suppose:
 
