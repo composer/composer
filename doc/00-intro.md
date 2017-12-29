@@ -14,7 +14,7 @@ manager. It does however support a "global" project for convenience via the
 [global](03-cli.md#global) command.
 
 This idea is not new and Composer is strongly inspired by node's
-[npm](https://npmjs.org/) and ruby's [bundler](http://bundler.io/).
+[npm](https://www.npmjs.com/) and ruby's [bundler](https://bundler.io/).
 
 Suppose:
 
@@ -135,7 +135,7 @@ C:\bin>echo @php "%~dp0composer.phar" %*>composer.bat
 
 Add the directory to your PATH environment variable if it isn't already.
 For information on changing your PATH variable, please see
-[this article](http://www.computerhope.com/issues/ch000549.htm) and/or
+[this article](https://www.computerhope.com/issues/ch000549.htm) and/or
 use Google.
 
 Close your current terminal. Test usage with a new terminal:

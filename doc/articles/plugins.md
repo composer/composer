@@ -282,4 +282,4 @@ local project plugins are loaded.
 [7]: ../01-basic-usage.md#package-versions
 [8]: https://github.com/composer/composer/blob/master/src/Composer/Plugin/Capable.php
 [9]: https://github.com/composer/composer/blob/master/src/Composer/Plugin/Capability/CommandProvider.php
-[10]: http://symfony.com/doc/current/components/console/introduction.html
+[10]: https://symfony.com/doc/current/components/console.html

@@ -339,6 +339,6 @@ is set to true.
 
 [ssh2 context options]: https://secure.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options
 [ssl context options]: https://secure.php.net/manual/en/context.ssl.php
-[Twig]: http://twig.sensiolabs.org/
+[Twig]: https://twig.sensiolabs.org/
 [config schema]: https://getcomposer.org/doc/04-schema.md#config
 [notify-batch]: https://getcomposer.org/doc/05-repositories.md#notify-batch
