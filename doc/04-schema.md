@@ -214,7 +214,7 @@ An example:
         {
             "name": "Jordi Boggiano",
             "email": "j.boggiano@seld.be",
-            "homepage": "http://seld.be",
+            "homepage": "https://seld.be",
             "role": "Developer"
         }
     ]
@@ -768,7 +768,7 @@ Example:
                 "name": "smarty/smarty",
                 "version": "3.1.7",
                 "dist": {
-                    "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+                    "url": "https://www.smarty.net/files/Smarty-3.1.7.zip",
                     "type": "zip"
                 },
                 "source": {

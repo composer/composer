@@ -93,7 +93,7 @@ Here is a minimal package definition:
     "name": "smarty/smarty",
     "version": "3.1.7",
     "dist": {
-        "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+        "url": "https://www.smarty.net/files/Smarty-3.1.7.zip",
         "type": "zip"
     }
 }
@@ -488,7 +488,7 @@ Here is an example for the smarty template engine:
                 "name": "smarty/smarty",
                 "version": "3.1.7",
                 "dist": {
-                    "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+                    "url": "https://www.smarty.net/files/Smarty-3.1.7.zip",
                     "type": "zip"
                 },
                 "source": {
