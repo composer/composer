@@ -192,7 +192,7 @@ includes PHP itself, PHP extensions and some system libraries.
   require the `php-64bit` package.
 
 * `hhvm` represents the version of the HHVM runtime and allows you to apply
-  a constraint, e.g., '>=2.3.3'.
+  a constraint, e.g., `>=2.3.3`.
 
 * `ext-<name>` allows you to require PHP extensions (includes core
   extensions). Versioning can be quite inconsistent here, so it's often
@@ -255,7 +255,7 @@ In addition to PSR-4 autoloading, Composer also supports PSR-0, classmap and
 files autoloading. See the [`autoload`](04-schema.md#autoload) reference for
 more information.
 
-See also the docs on [`optimizing the autoloader`](articles/autoloader-optimization.md).
+See also the docs on [optimizing the autoloader](articles/autoloader-optimization.md).
 
 > **Note:** Composer provides its own autoloader. If you don't want to use that
 > one, you can just include `vendor/composer/autoload_*.php` files, which return
