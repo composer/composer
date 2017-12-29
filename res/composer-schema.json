@@ -278,6 +278,10 @@
                 "htaccess-protect": {
                     "type": "boolean",
                     "description": "Defaults to true. If set to false, Composer will not create .htaccess files in the composer home, cache, and data directories."
+                },
+                "sort-packages": {
+                    "type": "boolean",
+                    "description": "Defaults to false. If set to true, Composer will sort packages when adding/updating a new dependency."
                 }
             }
         },
