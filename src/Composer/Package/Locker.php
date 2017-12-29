@@ -102,7 +102,7 @@ class Locker
     }
 
     /**
-     * Checks whether locker were been locked (lockfile found).
+     * Checks whether locker has been locked (lockfile found).
      *
      * @return bool
      */
