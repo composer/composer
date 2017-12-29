@@ -571,7 +571,7 @@ Example:
 #### Files
 
 If you want to require certain files explicitly on every request then you can use
-the 'files' autoloading mechanism. This is useful if your package includes PHP functions
+the `files` autoloading mechanism. This is useful if your package includes PHP functions
 that cannot be autoloaded by PHP.
 
 Example:
@@ -586,7 +586,7 @@ Example:
 
 #### Exclude files from classmaps
 
-If you want to exclude some files or folders from the classmap you can use the 'exclude-from-classmap' property.
+If you want to exclude some files or folders from the classmap you can use the `exclude-from-classmap` property.
 This might be useful to exclude test classes in your live environment, for example, as those will be skipped
 from the classmap even when building an optimized autoloader.
 
@@ -608,7 +608,7 @@ Example:
 
 The autoloader can have quite a substantial impact on your request time
 (50-100ms per request in large frameworks using a lot of classes). See the
-[`article about optimizing the autoloader`](articles/autoloader-optimization.md)
+[article about optimizing the autoloader](articles/autoloader-optimization.md)
 for more details on how to reduce this impact.
 
 ### autoload-dev <span>([root-only](04-schema.md#root-package))</span>
@@ -883,7 +883,7 @@ but the same branch is installed (in the example: latest-testing).
 An example:
 
 If you have a testing branch, that is heavily maintained during a testing phase and is
-deployed to your staging environment, normally "composer show -s" will give you `versions : * dev-master`.
+deployed to your staging environment, normally `composer show -s` will give you `versions : * dev-master`.
 
 If you configure `latest-.*` as a pattern for non-feature-branches like this:
 
@@ -893,7 +893,7 @@ If you configure `latest-.*` as a pattern for non-feature-branches like this:
 }
 ```
 
-Then "composer show -s" will give you `versions : * dev-latest-testing`.
+Then `composer show -s` will give you `versions : * dev-latest-testing`.
 
 Optional.
 

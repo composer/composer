@@ -625,7 +625,7 @@ would set `"extra": { "foo": { "bar": "value" } }`.
 ## create-project
 
 You can use Composer to create new projects from an existing package. This is
-the equivalent of doing a git clone/svn checkout followed by a "composer install"
+the equivalent of doing a git clone/svn checkout followed by a `composer install`
 of the vendors.
 
 There are several applications for this:
@@ -635,7 +635,7 @@ There are several applications for this:
 3. Projects with multiple developers can use this feature to bootstrap the
    initial application for development.
 
-To create a new project using Composer you can use the "create-project" command.
+To create a new project using Composer you can use the `create-project` command.
 Pass it a package name, and the directory to create the project in. You can also
 provide a version as third argument, otherwise the latest version is used.
 
@@ -677,7 +677,7 @@ By default the command checks for the packages on packagist.org.
 ## dump-autoload (dumpautoload)
 
 If you need to update the autoloader because of new classes in a classmap
-package for example, you can use "dump-autoload" to do that without having to
+package for example, you can use `dump-autoload` to do that without having to
 go through an install or update.
 
 Additionally, it can dump an optimized autoloader that converts PSR-0/4 packages
@@ -688,7 +688,7 @@ using this option you can still use PSR-0/4 for convenience and classmaps for
 performance.
 
 ### Options
-* **--no-scripts:** Skips the execution of all scripts defined in composer.json file.
+* **--no-scripts:** Skips the execution of all scripts defined in `composer.json` file.
 * **--optimize (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
