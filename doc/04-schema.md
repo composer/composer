@@ -356,7 +356,6 @@ Example:
 > use and require. Alternatively you may use third party tools to analyze
 > your project for the list of extensions used.
 
-
 #### require
 
 Lists packages required by this package. The package will not be installed
