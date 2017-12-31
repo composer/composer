@@ -93,7 +93,9 @@ EOT
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('data-dir');
         $home = $config->get('home');
+        $homeOwner = posix_getpwuid(fileowner($home));
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
+        $composeUser = posix_getpwuid(posix_geteuid());
 
         if ($input->getOption('update-keys')) {
             return $this->fetchKeys($io, $config);
@@ -105,6 +107,11 @@ EOT
         // check for permissions in local filesystem before start connection process
         if (!is_writable($tmpDir)) {
             throw new FilesystemException('Composer update failed: the "'.$tmpDir.'" directory used to download the temp file could not be written');
+        }
+
+        // check if composer is running as the same user that owns the directory root
+        if ($composeUser !== $homeOwner) {
+          $io->writeError('<warning>You are running composer as "'.$composeUser.'", while "'.$home.'" is owned by "'.$homeOwner.'"</warning>');
         }
 
         if ($input->getOption('rollback')) {
