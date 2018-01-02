@@ -126,10 +126,17 @@ class SvnDownloader extends VcsDownloader
         $changes = array_map(function ($elem) {
             return '    '.$elem;
         }, preg_split('{\s*\r?\n\s*}', $changes));
-        $this->io->writeError('    <error>The package has modified files:</error>');
+        $countChanges = count($changes);
+        $this->io->writeError(sprintf('    <error>The package has modified file%s:</error>', $countChanges === 1 ? '' : 's'));
         $this->io->writeError(array_slice($changes, 0, 10));
-        if (count($changes) > 10) {
-            $this->io->writeError('    <info>'.count($changes) - 10 . ' more files modified, choose "v" to view the full list</info>');
+        if ($countChanges > 10) {
+            $remaingChanges = $countChanges - 10;
+            $this->io->writeError(
+                sprintf(
+                    '    <info>'.$remaingChanges.' more file%s modified, choose "v" to view the full list</info>',
+                    $remaingChanges === 1 ? '' : 's'
+                )
+            );
         }
 
         while (true) {
