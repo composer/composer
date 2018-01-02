@@ -368,8 +368,8 @@
             "description": "If set to true, stable packages will be preferred to dev packages when possible, even if the minimum-stability allows unstable packages."
         },
         "bin": {
-            "type": ["array"],
-            "description": "A set of files that should be treated as binaries and symlinked into bin-dir (from config).",
+            "type": ["string", "array"],
+            "description": "A set of files, or a single file, that should be treated as binaries and symlinked into bin-dir (from config).",
             "items": {
                 "type": "string"
             }
@@ -776,8 +776,8 @@
                     }
                 },
                 "bin": {
-                    "type": ["array"],
-                    "description": "A set of files that should be treated as binaries and symlinked into bin-dir (from config).",
+                    "type": ["string", "array"],
+                    "description": "A set of files, or a single file, that should be treated as binaries and symlinked into bin-dir (from config).",
                     "items": {
                         "type": "string"
                     }

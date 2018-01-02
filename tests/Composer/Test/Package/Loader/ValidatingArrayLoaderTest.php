@@ -151,10 +151,16 @@ class ValidatingArrayLoaderTest extends TestCase
                     'transport-options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem')),
                 ),
             ),
-            array( // test as array
+            array( // test licenses as array
                 array(
                     'name' => 'foo/bar',
                     'license' => array('MIT', 'WTFPL'),
+                ),
+            ),
+            array( // test bin as string
+                array(
+                    'name' => 'foo/bar',
+                    'bin' => 'bin1',
                 ),
             ),
         );
