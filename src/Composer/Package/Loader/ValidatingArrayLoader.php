@@ -77,7 +77,15 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->validateRegex('type', '[A-Za-z0-9-]+');
         $this->validateString('target-dir');
         $this->validateArray('extra');
-        $this->validateFlatArray('bin');
+
+        if (isset($this->config['bin'])) {
+            if (is_string($this->config['bin'])) {
+                $this->validateString('bin');
+            } else {
+                $this->validateFlatArray('bin');
+            }
+        }
+
         $this->validateArray('scripts'); // TODO validate event names & listener syntax
         $this->validateString('description');
         $this->validateUrl('homepage');
