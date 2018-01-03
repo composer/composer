@@ -244,7 +244,7 @@ following workarounds:
 On linux, it seems that running this command helps to make ipv4 traffic have a
 higher prio than ipv6, which is a better alternative than disabling ipv6 entirely:
 
-```Bash
+```bash
 sudo sh -c "echo 'precedence ::ffff:0:0/96 100' >> /etc/gai.conf"
 ```
 
@@ -256,13 +256,13 @@ On windows the only way is to disable ipv6 entirely I am afraid (either in windo
 
 Get name of your network device:
 
-```
+```bash
 networksetup -listallnetworkservices
 ```
 
 Disable IPv6 on that device (in this case "Wi-Fi"):
 
-```
+```bash
 networksetup -setv6off Wi-Fi
 ```
 
@@ -270,7 +270,7 @@ Run composer ...
 
 You can enable IPv6 again with:
 
-```
+```bash
 networksetup -setv6automatic Wi-Fi
 ```
 
@@ -288,7 +288,7 @@ The reason for this is a SSH Bug: https://bugzilla.mindrot.org/show_bug.cgi?id=1
 
 As a workaround, open a SSH connection to your Git host before running Composer:
 
-```
+```bash
 ssh -t git@mygitserver.tld
 composer update
 ```

@@ -220,7 +220,6 @@ If you do not specify a package, composer will prompt you to search for a packag
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 
-
 ## remove
 
 The `remove` command removes packages from the `composer.json` file from

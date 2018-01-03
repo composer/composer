@@ -53,7 +53,6 @@ result in slow filesystem checks. To solve this issue two Level 2 optimization
 options exist, and you can decide to enable either if you have a lot of
 class_exists checks that are done for classes that do not exist in your project.
 
-
 ## Optimization Level 2/A: Authoritative class maps
 
 ### How to run it?
@@ -81,7 +80,6 @@ then you might experience "class not found" issues in production. Enable this wi
 
 > Note: This can not be combined with Level 2/B optimizations. You have to choose one as
 > they address the same issue in different ways.
-
 
 ## Optimization Level 2/B: APCu cache
 

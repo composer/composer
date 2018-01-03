@@ -15,7 +15,6 @@ the Composer execution process.
 > executed. If a dependency of the root package specifies its own scripts,
 > Composer does not execute those additional scripts.
 
-
 ## Event names
 
 Composer fires the following named events during its execution process:

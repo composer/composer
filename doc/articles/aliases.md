@@ -65,8 +65,8 @@ is a dependency of your local project.
 
 For this reason, you can alias packages in your `require` and `require-dev`
 fields. Let's say you found a bug in the `monolog/monolog` package. You cloned
-[Monolog](https://github.com/Seldaek/monolog) on GitHub and fixed the issue in 
-a branch named `bugfix`. Now you want to install that version of monolog in your 
+[Monolog](https://github.com/Seldaek/monolog) on GitHub and fixed the issue in
+a branch named `bugfix`. Now you want to install that version of monolog in your
 local project.
 
 You are using `symfony/monolog-bundle` which requires `monolog/monolog` version

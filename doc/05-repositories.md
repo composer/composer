@@ -205,7 +205,7 @@ project to use the patched version. If the library is on GitHub (this is the
 case most of the time), you can simply fork it there and push your changes to
 your fork. After that you update the project's `composer.json`. All you have
 to do is add your fork as a repository and update the version constraint to
-point to your custom branch. In `composer.json`, you should prefix your custom 
+point to your custom branch. In `composer.json`, you should prefix your custom
 branch name with `"dev-"`. For version constraint naming conventions see
 [Libraries](02-libraries.md) for more information.
 
@@ -300,18 +300,17 @@ Please note:
 
 The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs and you will need to create an OAuth consumer to use the driver, please refer to [Atlassian's Documentation](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). You will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and is not used by Composer.
 
-After creating an OAuth consumer in the BitBucket control panel, you need to setup your auth.json file with 
+After creating an OAuth consumer in the BitBucket control panel, you need to setup your auth.json file with
 the credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
 ```json
 {
     "config": {
         "bitbucket-oauth": {
             "bitbucket.org": {
-                "consumer-key": "myKey", 
+                "consumer-key": "myKey",
                 "consumer-secret": "mySecret"
             }
         }
-        
     }
 }
 ```
@@ -518,7 +517,7 @@ Typically you would leave the source part off, as you don't really need it.
 >   reference you will have to delete the package to force an update, and will
 >   have to deal with an unstable lock file.
 
-The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:  
+The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:
 
 ```json
 {
@@ -708,7 +707,7 @@ You can disable the default Packagist.org repository by adding this to your
 
 You can disable Packagist.org globally by using the global config flag:
 
-```
+```bash
 composer config -g repo.packagist false
 ```
 
