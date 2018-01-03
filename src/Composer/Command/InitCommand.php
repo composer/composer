@@ -660,8 +660,9 @@ EOT
      *
      * @param  InputInterface            $input
      * @param  string                    $name
-     * @param  string                    $phpVersion
+     * @param  string|null               $phpVersion
      * @param  string                    $preferredStability
+     * @param  string|null               $requiredVersion
      * @param  string                    $minimumStability
      * @throws \InvalidArgumentException
      * @return string
@@ -671,6 +672,12 @@ EOT
         // find the latest version allowed in this pool
         $versionSelector = new VersionSelector($this->getPool($input, $minimumStability));
         $package = $versionSelector->findBestCandidate($name, $requiredVersion, $phpVersion, $preferredStability);
+
+        // retry without phpVersion if platform requirements are ignored in case nothing was found
+        if ($input->hasOption('ignore-platform-reqs') && $input->getOption('ignore-platform-reqs')) {
+            $phpVersion = null;
+            $package = $versionSelector->findBestCandidate($name, $requiredVersion, $phpVersion, $preferredStability);
+        }
 
         if (!$package) {
             // Check whether the PHP version was the problem
