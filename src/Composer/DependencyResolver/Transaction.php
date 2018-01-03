@@ -194,9 +194,9 @@ class Transaction
 
                 $literals = array($package->id);
 
-                foreach ($updates as $update) {
-                    $literals[] = $update->id;
-                }
+                $literals = array_map(function ($update) {
+                    return $update->id;
+                }, $updates);
 
                 foreach ($literals as $updateLiteral) {
                     if ($updateLiteral !== $literal) {

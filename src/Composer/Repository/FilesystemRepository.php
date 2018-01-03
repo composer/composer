@@ -76,12 +76,11 @@ class FilesystemRepository extends WritableArrayRepository
      */
     public function write()
     {
-        $data = array();
         $dumper = new ArrayDumper();
 
-        foreach ($this->getCanonicalPackages() as $package) {
-            $data[] = $dumper->dump($package);
-        }
+        $data = array_map(function ($package) use ($dumper) {
+            return $dumper->dump($package);
+        }, $this->getCanonicalPackages());
 
         usort($data, function ($a, $b) {
             return strcmp($a['name'], $b['name']);

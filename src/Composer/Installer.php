@@ -696,14 +696,11 @@ class Installer
         $ops = $solver->solve($request, $this->ignorePlatformReqs);
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request, $ops);
 
-        $devPackages = array();
-        foreach ($ops as $op) {
-            if ($op->getJobType() === 'uninstall') {
-                $devPackages[] = $op->getPackage();
-            }
-        }
-
-        return $devPackages;
+        return array_map(function($filter) {
+            return $filter->getPackage();
+        }, array_filter($ops, function ($op) {
+            return $op->getJobType() === 'uninstall';
+        }));
     }
 
     /**
@@ -1300,10 +1297,9 @@ class Installer
 
         $rootRequires = array_merge($rootRequires, $rootDevRequires);
 
-        $requiredPackageNames = array();
-        foreach ($rootRequires as $require) {
-            $requiredPackageNames[] = $require->getTarget();
-        }
+        $requiredPackageNames = array_map(function ($require) {
+            return $require->getTarget();
+        }, $rootRequires);
 
         $skipPackages = array();
         if (!$this->whitelistAllDependencies) {

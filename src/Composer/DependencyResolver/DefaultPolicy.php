@@ -46,15 +46,9 @@ class DefaultPolicy implements PolicyInterface
 
     public function findUpdatePackages(Pool $pool, array $installedMap, PackageInterface $package, $mustMatchName = false)
     {
-        $packages = array();
-
-        foreach ($pool->whatProvides($package->getName(), null, $mustMatchName) as $candidate) {
-            if ($candidate !== $package) {
-                $packages[] = $candidate;
-            }
-        }
-
-        return $packages;
+        return array_filter($pool->whatProvides($package->getName(), null, $mustMatchName), function ($candidate) use ($package) {
+            return $candidate !== $package;
+        });
     }
 
     public function getPriority(Pool $pool, PackageInterface $package)
@@ -271,15 +265,10 @@ class DefaultPolicy implements PolicyInterface
             return $literals;
         }
 
-        $selected = array();
-        foreach ($literals as $literal) {
+        return array_filter($literals, function ($literal) use ($pool) {
             $package = $pool->literalToPackage($literal);
 
-            if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
-                $selected[] = $literal;
-            }
-        }
-
-        return $selected;
+            return $package instanceof AliasPackage && $package->isRootPackageAlias();
+        });
     }
 }

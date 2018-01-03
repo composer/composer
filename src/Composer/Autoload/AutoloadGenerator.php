@@ -982,13 +982,9 @@ INITIALIZER;
 
         $stable_sort($weightList);
 
-        $sortedPackageMap = array();
-
-        foreach (array_keys($weightList) as $name) {
-            $sortedPackageMap[] = array($packages[$name], $paths[$name]);
-        }
-
-        return $sortedPackageMap;
+        return array_map(function ($name) use ($packages, $paths) {
+            return array($packages[$name], $paths[$name]);
+        }, array_keys($weightList));
     }
 
     /**
