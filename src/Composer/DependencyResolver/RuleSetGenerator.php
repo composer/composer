@@ -78,10 +78,9 @@ class RuleSetGenerator
      */
     protected function createInstallOneOfRule(array $packages, $reason, $job)
     {
-        $literals = array();
-        foreach ($packages as $package) {
-            $literals[] = $package->id;
-        }
+        $literals = array_map(function ($package) {
+            return $package->id;
+        }, $packages);
 
         return new GenericRule($literals, $reason, $job['packageName'], $job);
     }

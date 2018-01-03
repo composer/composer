@@ -157,10 +157,9 @@ abstract class Rule
                 $sourceLiteral = array_shift($literals);
                 $sourcePackage = $pool->literalToPackage($sourceLiteral);
 
-                $requires = array();
-                foreach ($literals as $literal) {
-                    $requires[] = $pool->literalToPackage($literal);
-                }
+                $requires = array_map(function ($literal) use ($pool) {
+                    return $pool->literalToPackage($literal);
+                }, $literals);
 
                 $text = $this->reasonData->getPrettyString($sourcePackage);
                 if ($requires) {

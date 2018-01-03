@@ -176,10 +176,9 @@ class JsonFile
         // TODO add more validation like check version constraints and such, perhaps build that into the arrayloader?
 
         if (!$validator->isValid()) {
-            $errors = array();
-            foreach ((array) $validator->getErrors() as $error) {
-                $errors[] = ($error['property'] ? $error['property'].' : ' : '').$error['message'];
-            }
+            $errors = array_map(function ($error) {
+                return ($error['property'] ? $error['property'].' : ' : '').$error['message'];
+            }, $validator->getErrors());
             throw new JsonValidationException('"'.$this->path.'" does not match the expected JSON schema', $errors);
         }
 

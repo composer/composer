@@ -50,17 +50,13 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
             }
         }
 
-        $canonicalPackages = array();
-
         // unfold aliased packages
-        foreach ($packagesByName as $package) {
+        return array_map(function ($package) {
             while ($package instanceof AliasPackage) {
                 $package = $package->getAliasOf();
             }
 
-            $canonicalPackages[] = $package;
-        }
-
-        return $canonicalPackages;
+            return $package;
+        }, $packagesByName);
     }
 }

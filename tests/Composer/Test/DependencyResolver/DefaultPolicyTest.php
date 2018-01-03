@@ -190,11 +190,9 @@ class DefaultPolicyTest extends TestCase
         $this->pool->addRepository($repoImportant);
         $this->pool->addRepository($this->repo);
 
-        $packages = $this->pool->whatProvides('a', new Constraint('=', '2.1.9999999.9999999-dev'));
-        $literals = array();
-        foreach ($packages as $package) {
-            $literals[] = $package->getId();
-        }
+        $literals = array_map(function ($package) {
+            return $package->getId();
+        }, $this->pool->whatProvides('a', new Constraint('=', '2.1.9999999.9999999-dev')));
 
         $expected = array($packageAAliasImportant->getId());
 

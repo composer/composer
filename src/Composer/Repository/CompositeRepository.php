@@ -85,11 +85,10 @@ class CompositeRepository extends BaseRepository
      */
     public function findPackages($name, $constraint = null)
     {
-        $packages = array();
-        foreach ($this->repositories as $repository) {
+        $packages = array_map(function ($repository) use ($name, $constraint) {
             /* @var $repository RepositoryInterface */
-            $packages[] = $repository->findPackages($name, $constraint);
-        }
+            return $repository->findPackages($name, $constraint);
+        }, $this->repositories);
 
         return $packages ? call_user_func_array('array_merge', $packages) : array();
     }
@@ -99,11 +98,10 @@ class CompositeRepository extends BaseRepository
      */
     public function search($query, $mode = 0, $type = null)
     {
-        $matches = array();
-        foreach ($this->repositories as $repository) {
+        $matches = array_map(function ($repository) use ($query, $mode, $type) {
             /* @var $repository RepositoryInterface */
-            $matches[] = $repository->search($query, $mode, $type);
-        }
+            return $repository->search($query, $mode, $type);
+        }, $this->repositories);
 
         return $matches ? call_user_func_array('array_merge', $matches) : array();
     }
@@ -113,11 +111,10 @@ class CompositeRepository extends BaseRepository
      */
     public function getPackages()
     {
-        $packages = array();
-        foreach ($this->repositories as $repository) {
+        $packages = array_map(function ($repository) {
             /* @var $repository RepositoryInterface */
-            $packages[] = $repository->getPackages();
-        }
+            return $repository->getPackages();
+        }, $this->repositories);
 
         return $packages ? call_user_func_array('array_merge', $packages) : array();
     }

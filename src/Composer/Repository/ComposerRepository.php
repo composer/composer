@@ -207,16 +207,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if ($this->hasProviders()) {
-            $results = array();
             $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
 
-            foreach ($this->getProviderNames() as $name) {
-                if (preg_match($regex, $name)) {
-                    $results[] = array('name' => $name);
-                }
-            }
-
-            return $results;
+            return array_map(function ($name) {
+                return compact('name');
+            }, array_filter($this->getProviderNames(), function ($name) use ($regex) {
+                return preg_match($regex, $name);
+            }));
         }
 
         return parent::search($query, $mode);
