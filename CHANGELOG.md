@@ -14,7 +14,7 @@
 ### [1.5.6] - 2017-12-18
 
   * Fixed root package version guessed when a tag is checked out
-  * Fixed support for GitLab reposhosted on non-standard ports
+  * Fixed support for GitLab repos hosted on non-standard ports
   * Fixed regression in require command when requiring unstable packages, part 3
 
 ### [1.5.5] - 2017-12-01
