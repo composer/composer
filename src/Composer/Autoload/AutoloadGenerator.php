@@ -785,10 +785,7 @@ HEADER;
 
         // BC handling when converting to a new ClassLoader
         if (isset($maps['prefixLengthsPsr4'])) {
-            $maps['firstCharsPsr4'] = array_map(function () {
-                return true;
-            }, $maps['prefixLengthsPsr4']);
-            unset($maps['prefixLengthsPsr4']);
+            $maps['firstCharsPsr4'] = array_map('is_array', $maps['prefixLengthsPsr4']);
         }
 
         foreach ($maps as $prop => $value) {
