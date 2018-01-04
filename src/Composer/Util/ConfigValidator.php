@@ -18,7 +18,6 @@ use Composer\Package\Loader\InvalidPackageException;
 use Composer\Json\JsonValidationException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
-use Composer\Spdx\SpdxLicenses;
 
 /**
  * Validates a composer configuration.
@@ -73,31 +72,7 @@ class ConfigValidator
         }
 
         // validate actual data
-        if (!empty($manifest['license'])) {
-            // strip proprietary since it's not a valid SPDX identifier, but is accepted by composer
-            if (is_array($manifest['license'])) {
-                foreach ($manifest['license'] as $key => $license) {
-                    if ('proprietary' === $license) {
-                        unset($manifest['license'][$key]);
-                    }
-                }
-            }
-
-            $licenseValidator = new SpdxLicenses();
-            if ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license']) && $licenseValidator->validate(trim($manifest['license']))) {
-                $warnings[] = sprintf(
-                    'License %s must not contain extra spaces, make sure to trim it.',
-                    json_encode($manifest['license'])
-                );
-            } elseif ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license'])) {
-                $warnings[] = sprintf(
-                    'License %s is not a valid SPDX license identifier, see https://spdx.org/licenses/ if you use an open license.'
-                    . PHP_EOL .
-                    'If the software is closed-source, you may use "proprietary" as license.',
-                    json_encode($manifest['license'])
-                );
-            }
-        } else {
+        if (empty($manifest['license'])) {
             $warnings[] = 'No license specified, it is recommended to do so. For closed-source software you may use "proprietary" as license.';
         }
 

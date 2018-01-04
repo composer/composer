@@ -17,6 +17,7 @@ use Composer\Package\BasePackage;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\PlatformRepository;
+use Composer\Spdx\SpdxLicenses;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -96,6 +97,48 @@ class ValidatingArrayLoader implements LoaderInterface
                 $this->validateRegex('license', '[A-Za-z0-9+. ()-]+');
             } else {
                 $this->validateFlatArray('license', '[A-Za-z0-9+. ()-]+');
+            }
+
+            if (is_array($this->config['license']) || is_string($this->config['license'])) {
+                $licenses = (array) $this->config['license'];
+
+                // strip proprietary since it's not a valid SPDX identifier, but is accepted by composer
+                foreach ($licenses as $key => $license) {
+                    if ('proprietary' === $license) {
+                        unset($licenses[$key]);
+                    }
+                }
+
+                $licenseValidator = new SpdxLicenses();
+                if (count($licenses) === 1 && !$licenseValidator->validate($licenses) && $licenseValidator->validate(trim($licenses[0]))) {
+                    $this->warnings[] = sprintf(
+                        'License %s must not contain extra spaces, make sure to trim it.',
+                        json_encode($this->config['license'])
+                    );
+                } elseif (array() !== $licenses && !$licenseValidator->validate($licenses)) {
+                    $this->warnings[] = sprintf(
+                        'License %s is not a valid SPDX license identifier, see https://spdx.org/licenses/ if you use an open license.' . PHP_EOL .
+                        'If the software is closed-source, you may use "proprietary" as license.',
+                        json_encode($this->config['license'])
+                    );
+                } else {
+                    foreach ($licenses as $license) {
+                        $spdxLicense = $licenseValidator->getLicenseByIdentifier($license);
+                        if ($spdxLicense && $spdxLicense[3]) {
+                            if (preg_match('{^[AL]?GPL-[123](\.[01])?\+?$}i', $license)) {
+                                $this->warnings[] = sprintf(
+                                    'License "%s" is a deprecated SPDX license identifier, use "'.$license.'-only" or "'.$license.'-or-later" instead',
+                                    $license
+                                );
+                            } else {
+                                $this->warnings[] = sprintf(
+                                    'License "%s" is a deprecated SPDX license identifier, see https://spdx.org/licenses/',
+                                    $license
+                                );
+                            }
+                        }
+                    }
+                }
             }
         }
 
