@@ -1,3 +1,8 @@
+### [1.6.1] 2018-01-04
+
+  * Fixed upgrade regression due to some autoloader cleanups
+  * Fixed some overly loose version constraints
+
 ### [1.6.0] 2018-01-04
 
   * Added support for SPDX license identifiers v3.0, deprecates GPL/LGPL/AGPL identifiers, which should now have a `-only` or `-or-later` suffix added.
@@ -609,6 +614,7 @@
 
   * Initial release
 
+[1.6.1]: https://github.com/composer/composer/compare/1.6.0...1.6.1
 [1.6.0]: https://github.com/composer/composer/compare/1.6.0-RC...1.6.0
 [1.6.0-RC]: https://github.com/composer/composer/compare/1.5.6...1.6.0-RC
 [1.5.6]: https://github.com/composer/composer/compare/1.5.5...1.5.6
