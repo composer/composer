@@ -44,6 +44,7 @@ class ClassLoader
 {
     // PSR-4
     private $firstCharsPsr4 = array();
+    private $prefixLengthsPsr4 = array(); // For BC with legacy static maps
     private $prefixDirsPsr4 = array();
     private $fallbackDirsPsr4 = array();
 
@@ -371,15 +372,15 @@ class ClassLoader
         $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . $ext;
 
         $first = $class[0];
-        if (isset($this->firstCharsPsr4[$first])) {
+        if (isset($this->firstCharsPsr4[$first]) || isset($this->prefixLengthsPsr4[$first])) {
             $subPath = $class;
             while (false !== $lastPos = strrpos($subPath, '\\')) {
                 $subPath = substr($subPath, 0, $lastPos);
                 $search = $subPath.'\\';
                 if (isset($this->prefixDirsPsr4[$search])) {
-                    $pathEnd = substr($logicalPathPsr4, $lastPos + 1);
+                    $pathEnd = DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $lastPos + 1);
                     foreach ($this->prefixDirsPsr4[$search] as $dir) {
-                        if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $pathEnd)) {
+                        if (file_exists($file = $dir . $pathEnd)) {
                             return $file;
                         }
                     }
