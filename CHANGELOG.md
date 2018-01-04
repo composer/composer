@@ -1,3 +1,10 @@
+### [1.6.0] 2018-01-04
+
+  * Added support for SPDX license identifiers v3.0, deprecates GPL/LGPL/AGPL identifiers, which should now have a `-only` or `-or-later` suffix added.
+  * Added support for COMPOSER_MEMORY_LIMIT env var to make Composer set the PHP memory limit explicitly
+  * Added support for simple strings for the `bin`
+  * Fixed `check-platform-reqs` bug in version checking
+
 ### [1.6.0-RC] 2017-12-19
 
   * Improved performance of installs and updates from git clones when checking out known commits
@@ -602,6 +609,7 @@
 
   * Initial release
 
+[1.6.0]: https://github.com/composer/composer/compare/1.6.0-RC...1.6.0
 [1.6.0-RC]: https://github.com/composer/composer/compare/1.5.6...1.6.0-RC
 [1.5.6]: https://github.com/composer/composer/compare/1.5.5...1.5.6
 [1.5.5]: https://github.com/composer/composer/compare/1.5.4...1.5.5
