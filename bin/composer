@@ -45,6 +45,10 @@ if (function_exists('ini_set')) {
     if ($memoryLimit != -1 && $memoryInBytes($memoryLimit) < 1024 * 1024 * 1536) {
         @ini_set('memory_limit', '1536M');
     }
+    // Set user defined memory limit
+    if ($memoryLimit = getenv('COMPOSER_MEMORY_LIMIT')) {
+        @ini_set('memory_limit', $memoryLimit);
+    }
     unset($memoryInBytes, $memoryLimit);
 }
 

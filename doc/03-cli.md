@@ -909,6 +909,10 @@ If set to 1, this env disables the warning about running commands as root/super 
 It also disables automatic clearing of sudo sessions, so you should really only set this
 if you use Composer as super user at all times like in docker containers.
 
+### COMPOSER_MEMORY_LIMIT
+
+If set, the value is used as php's memory_limit.
+
 ### COMPOSER_MIRROR_PATH_REPOS
 
 If set to 1, this env changes the default path repository strategy to `mirror` instead
