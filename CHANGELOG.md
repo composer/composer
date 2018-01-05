@@ -1,3 +1,8 @@
+### [1.6.2] 2018-01-05
+
+  * Fixed more autoloader regressions
+  * Fixed support for updating dist refs in gitlab URLs
+
 ### [1.6.1] 2018-01-04
 
   * Fixed upgrade regression due to some autoloader cleanups
@@ -614,6 +619,7 @@
 
   * Initial release
 
+[1.6.2]: https://github.com/composer/composer/compare/1.6.1...1.6.2
 [1.6.1]: https://github.com/composer/composer/compare/1.6.0...1.6.1
 [1.6.0]: https://github.com/composer/composer/compare/1.6.0-RC...1.6.0
 [1.6.0-RC]: https://github.com/composer/composer/compare/1.5.6...1.6.0-RC
