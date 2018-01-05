@@ -22,6 +22,7 @@ use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\Url as UrlUtil;
 
 /**
  * Base downloader for files
@@ -258,6 +259,10 @@ class FileDownloader implements DownloaderInterface
     {
         if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
             throw new \RuntimeException('You must enable the openssl extension to download files via https');
+        }
+
+        if ($package->getDistReference()) {
+            $url = UrlUtil::updateDistReference($this->config, $url, $package->getDistReference());
         }
 
         return $url;
