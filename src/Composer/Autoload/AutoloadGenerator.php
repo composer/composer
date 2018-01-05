@@ -783,11 +783,6 @@ HEADER;
             }
         }
 
-        // BC handling when converting to a new ClassLoader
-        if (isset($maps['prefixLengthsPsr4'])) {
-            $maps['firstCharsPsr4'] = array_map('is_array', $maps['prefixLengthsPsr4']);
-        }
-
         foreach ($maps as $prop => $value) {
             if (count($value) > 32767) {
                 // Static arrays are limited to 32767 values on PHP 5.6
