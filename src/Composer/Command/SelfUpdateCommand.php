@@ -93,9 +93,7 @@ EOT
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('data-dir');
         $home = $config->get('home');
-        $homeOwner = posix_getpwuid(fileowner($home));
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
-        $composeUser = posix_getpwuid(posix_geteuid());
 
         if ($input->getOption('update-keys')) {
             return $this->fetchKeys($io, $config);
@@ -109,9 +107,13 @@ EOT
             throw new FilesystemException('Composer update failed: the "'.$tmpDir.'" directory used to download the temp file could not be written');
         }
 
-        // check if composer is running as the same user that owns the directory root
-        if ($composeUser !== $homeOwner) {
-          $io->writeError('<warning>You are running composer as "'.$composeUser.'", while "'.$home.'" is owned by "'.$homeOwner.'"</warning>');
+        // check if composer is running as the same user that owns the directory root, only if POSIX is defined and callable
+        if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
+            $composeUser = posix_getpwuid(posix_geteuid());
+            $homeOwner = posix_getpwuid(fileowner($home));
+            if ($composeUser !== $homeOwner) {
+              $io->writeError('<warning>You are running composer as "'.$composeUser.'", while "'.$home.'" is owned by "'.$homeOwner.'"</warning>');
+            }
         }
 
         if ($input->getOption('rollback')) {
