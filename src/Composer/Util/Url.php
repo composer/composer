@@ -48,7 +48,7 @@ class Url
         } elseif (in_array($host, $config->get('github-domains'), true)) {
             $url = preg_replace('{(/repos/[^/]+/[^/]+/(zip|tar)ball)(?:/.+)?$}i', '$1/'.$ref, $url);
         } elseif (in_array($host, $config->get('gitlab-domains'), true)) {
-            $url = preg_replace('{(/api/v[34]/projects/[^/]+/repository/archive\.(?:zip|tar\.gz|tar\.bz2|tar)\?sha=).+$}i', '$1'.$ref, $url);
+            $url = preg_replace('{(/api/v[34]/projects/[^/]+/repository/archive\.(?:zip|tar\.gz|tar\.bz2|tar)\?sha=).+$}i', '${1}'.$ref, $url);
         }
 
         return $url;
