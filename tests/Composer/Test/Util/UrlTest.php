@@ -21,12 +21,12 @@ class UrlTest extends TestCase
     /**
      * @dataProvider distRefsProvider
      */
-    public function testUpdateDistReference($url, $expectedUrl, $conf = array())
+    public function testUpdateDistReference($url, $expectedUrl, $conf = array(), $ref = 'newref')
     {
         $config = new Config();
         $config->merge(array('config' => $conf));
 
-        $this->assertSame($expectedUrl, Url::updateDistReference($config, $url, 'newref'));
+        $this->assertSame($expectedUrl, Url::updateDistReference($config, $url, $ref));
     }
 
     public static function distRefsProvider()
@@ -55,6 +55,7 @@ class UrlTest extends TestCase
             // gitlab enterprise
             array('https://mygitlab.com/api/v4/projects/foo%2Fbar/repository/archive.tar.gz?sha=abcd',  'https://mygitlab.com/api/v4/projects/foo%2Fbar/repository/archive.tar.gz?sha=newref', array('gitlab-domains' => array('mygitlab.com'))),
             array('https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=abcd', 'https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=newref', array('gitlab-domains' => array('mygitlab.com'))),
+	        array('https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=abcd', 'https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=65', array('gitlab-domains' => array('mygitlab.com')), '65'),
         );
     }
 }
