@@ -125,7 +125,12 @@ class ValidatingArrayLoader implements LoaderInterface
                     foreach ($licenses as $license) {
                         $spdxLicense = $licenseValidator->getLicenseByIdentifier($license);
                         if ($spdxLicense && $spdxLicense[3]) {
-                            if (preg_match('{^[AL]?GPL-[123](\.[01])?\+?$}i', $license)) {
+                            if (preg_match('{^[AL]?GPL-[123](\.[01])?\+$}i', $license)) {
+                                $this->warnings[] = sprintf(
+                                    'License "%s" is a deprecated SPDX license identifier, use "'.str_replace('+', '', $license).'-or-later" instead',
+                                    $license
+                                );
+                            } elseif (preg_match('{^[AL]?GPL-[123](\.[01])?$}i', $license)) {
                                 $this->warnings[] = sprintf(
                                     'License "%s" is a deprecated SPDX license identifier, use "'.$license.'-only" or "'.$license.'-or-later" instead',
                                     $license
