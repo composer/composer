@@ -212,7 +212,7 @@ abstract class BasePackage implements PackageInterface
      */
     public function getFullPrettyVersion($truncate = true)
     {
-        if (!$this->isDev() || !in_array($this->getSourceType(), array('hg', 'git'))) {
+        if (!$this->isDev() || !in_array($this->getSourceType(), array('hg', 'git'), true)) {
             return $this->getPrettyVersion();
         }
 

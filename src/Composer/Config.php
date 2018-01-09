@@ -130,7 +130,7 @@ class Config
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic')) && isset($this->config[$key])) {
+                if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic'), true) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
                 } elseif ('preferred-install' === $key && isset($this->config[$key])) {
                     if (is_array($val) || is_array($this->config[$key])) {
@@ -271,7 +271,7 @@ class Config
             case 'bin-compat':
                 $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
 
-                if (!in_array($value, array('auto', 'full'))) {
+                if (!in_array($value, array('auto', 'full'), true)) {
                     throw new \RuntimeException(
                         "Invalid value for 'bin-compat': {$value}. Expected auto, full"
                     );
@@ -304,7 +304,7 @@ class Config
 
             case 'github-protocols':
                 $protos = $this->config['github-protocols'];
-                if ($this->config['secure-http'] && false !== ($index = array_search('git', $protos))) {
+                if ($this->config['secure-http'] && false !== ($index = array_search('git', $protos, true))) {
                     unset($protos[$index]);
                 }
                 if (reset($protos) === 'http') {
@@ -438,7 +438,7 @@ class Config
 
         // Extract scheme and throw exception on known insecure protocols
         $scheme = parse_url($url, PHP_URL_SCHEME);
-        if (in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
+        if (in_array($scheme, array('http', 'git', 'ftp', 'svn'), true)) {
             if ($this->get('secure-http')) {
                 throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             } elseif ($io) {

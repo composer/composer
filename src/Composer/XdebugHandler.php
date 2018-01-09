@@ -247,7 +247,7 @@ class XdebugHandler
      */
     private function getScriptArgs(array $args)
     {
-        if (in_array('--no-ansi', $args) || in_array('--ansi', $args)) {
+        if (in_array('--no-ansi', $args, true) || in_array('--ansi', $args, true)) {
             return $args;
         }
 

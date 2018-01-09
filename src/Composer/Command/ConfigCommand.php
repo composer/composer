@@ -361,7 +361,7 @@ EOT
             ),
             'bin-compat' => array(
                 function ($val) {
-                    return in_array($val, array('auto', 'full'));
+                    return in_array($val, array('auto', 'full'), true);
                 },
                 function ($val) {
                     return $val;
@@ -416,7 +416,7 @@ EOT
                     }
 
                     foreach ($vals as $val) {
-                        if (!in_array($val, array('git', 'https', 'ssh'))) {
+                        if (!in_array($val, array('git', 'https', 'ssh'), true)) {
                             return 'valid protocols include: git, https, ssh';
                         }
                     }
@@ -658,7 +658,7 @@ EOT
         $origK = $k;
         $io = $this->getIO();
         foreach ($contents as $key => $value) {
-            if ($k === null && !in_array($key, array('config', 'repositories'))) {
+            if ($k === null && !in_array($key, array('config', 'repositories'), true)) {
                 continue;
             }
 

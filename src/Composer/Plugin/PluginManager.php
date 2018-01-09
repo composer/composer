@@ -144,7 +144,7 @@ class PluginManager
 
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
 
-        if (in_array($package->getName(), $this->registeredPlugins)) {
+        if (in_array($package->getName(), $this->registeredPlugins, true)) {
             return;
         }
 

@@ -229,7 +229,7 @@ class ArchivableFilesFinderTest extends TestCase
         );
 
         // Remove .hg_archival.txt from the expectedFiles
-        $archiveKey = array_search('/.hg_archival.txt', $expectedFiles);
+        $archiveKey = array_search('/.hg_archival.txt', $expectedFiles, true);
         array_splice($expectedFiles, $archiveKey, 1);
 
         $this->assertArchivableFiles($expectedFiles);

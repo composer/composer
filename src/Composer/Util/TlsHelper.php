@@ -141,7 +141,7 @@ final class TlsHelper
         $start = '-----BEGIN PUBLIC KEY-----';
         $end = '-----END PUBLIC KEY-----';
         $pemtrim = substr($pubkeypem, (strpos($pubkeypem, $start) + strlen($start)), (strlen($pubkeypem) - strpos($pubkeypem, $end)) * (-1));
-        $der = base64_decode($pemtrim);
+        $der = base64_decode($pemtrim, true);
 
         return sha1($der);
     }

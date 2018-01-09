@@ -156,7 +156,7 @@ class GitHubDriver extends VcsDriver
 
                 // specials for github
                 if (!isset($composer['support']['source'])) {
-                    $label = array_search($identifier, $this->getTags()) ?: array_search($identifier, $this->getBranches()) ?: $identifier;
+                    $label = array_search($identifier, $this->getTags(), true) ?: array_search($identifier, $this->getBranches(), true) ?: $identifier;
                     $composer['support']['source'] = sprintf('https://%s/%s/%s/tree/%s', $this->originUrl, $this->owner, $this->repository, $label);
                 }
                 if (!isset($composer['support']['issues']) && $this->hasIssues) {
@@ -188,7 +188,7 @@ class GitHubDriver extends VcsDriver
             try {
                 $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/' . $file . '?ref='.urlencode($identifier);
                 $resource = JsonFile::parseJson($this->getContents($resource));
-                if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($content = base64_decode($resource['content']))) {
+                if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($content = base64_decode($resource['content'], true))) {
                     throw new \RuntimeException('Could not retrieve ' . $file . ' for '.$identifier);
                 }
 
@@ -267,7 +267,7 @@ class GitHubDriver extends VcsDriver
                 $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
                 foreach ($branchData as $branch) {
                     $name = substr($branch['ref'], 11);
-                    if (!in_array($name, $branchBlacklist)) {
+                    if (!in_array($name, $branchBlacklist, true)) {
                         $this->branches[$name] = $branch['object']['sha'];
                     }
                 }
@@ -289,7 +289,7 @@ class GitHubDriver extends VcsDriver
         }
 
         $originUrl = !empty($matches[2]) ? $matches[2] : $matches[3];
-        if (!in_array(preg_replace('{^www\.}i', '', $originUrl), $config->get('github-domains'))) {
+        if (!in_array(preg_replace('{^www\.}i', '', $originUrl), $config->get('github-domains'), true)) {
             return false;
         }
 

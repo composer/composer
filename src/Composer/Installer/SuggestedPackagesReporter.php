@@ -110,7 +110,7 @@ class SuggestedPackagesReporter
         }
 
         foreach ($suggestedPackages as $suggestion) {
-            if (in_array($suggestion['target'], $installedPackages)) {
+            if (in_array($suggestion['target'], $installedPackages, true)) {
                 continue;
             }
 

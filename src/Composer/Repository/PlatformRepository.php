@@ -110,7 +110,7 @@ class PlatformRepository extends ArrayRepository
 
         // Extensions scanning
         foreach ($loadedExtensions as $name) {
-            if (in_array($name, array('standard', 'Core'))) {
+            if (in_array($name, array('standard', 'Core'), true)) {
                 continue;
             }
 

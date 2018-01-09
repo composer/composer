@@ -213,7 +213,7 @@ class PearPackageExtractor
                     $fileName = (string) ($child['name'] ?: $child[0]); // $child[0] means text content
                     $fileSource = $this->combine($source, $fileName);
                     $fileTarget = $this->combine((string) $child['baseinstalldir'] ?: $target, $fileName);
-                    if (!in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
+                    if (!in_array($fileRole, self::$rolesWithoutPackageNamePrefix, true)) {
                         $fileTarget = $packageName . '/' . $fileTarget;
                     }
                     $result[(string) $child['name']] = array('from' => $fileSource, 'to' => $fileTarget, 'role' => $fileRole, 'tasks' => array());
@@ -248,7 +248,7 @@ class PearPackageExtractor
                             $fileTasks[] = array('from' => (string) $taskNode->attributes()->from, 'to' => (string) $taskNode->attributes()->to);
                         }
                     }
-                    if (!in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
+                    if (!in_array($fileRole, self::$rolesWithoutPackageNamePrefix, true)) {
                         $fileTarget = $packageName . '/' . $fileTarget;
                     }
                     $result[(string) $child['name']] = array('from' => $fileSource, 'to' => $fileTarget, 'role' => $fileRole, 'tasks' => $fileTasks);

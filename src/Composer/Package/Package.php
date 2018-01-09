@@ -600,7 +600,7 @@ class Package extends BasePackage
                 } elseif ($urlType === 'source' && $type === 'hg') {
                     $mirrorUrl = ComposerMirror::processHgUrl($mirror['url'], $this->name, $url, $type);
                 }
-                if (!in_array($mirrorUrl, $urls)) {
+                if (!in_array($mirrorUrl, $urls, true)) {
                     $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';
                     $func($urls, $mirrorUrl);
                 }
