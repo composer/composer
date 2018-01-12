@@ -85,7 +85,7 @@ class Svn
     }
 
     /**
-     * Execute an SVN command and try to fix up the process with credentials
+     * Execute an SVN remote command and try to fix up the process with credentials
      * if necessary.
      *
      * @param string $command SVN command to run
@@ -103,6 +103,36 @@ class Svn
         $this->config->prohibitUrlByConfig($url, $this->io);
 
         $svnCommand = $this->getCommand($command, $url, $path);
+
+        return $this->executeWithAuthRetry($svnCommand, $cwd, $path, $verbose);
+    }
+
+    /**
+     * Execute an SVN local command and try to fix up the process with credentials
+     * if necessary.
+     *
+     * @param string $command SVN command to run
+     * @param string $path    Path argument passed thru to the command
+     * @param string $cwd     Working directory
+     * @param bool   $verbose Output all output to the user
+     *
+     * @throws \RuntimeException
+     * @return string
+     */
+    public function executeLocal($command, $path, $cwd = null, $verbose = false)
+    {
+        $svnCommand = sprintf('%s %s%s %s',
+            $command,
+            '--non-interactive ',
+            $this->getCredentialString(),
+            ProcessExecutor::escape($path)
+        );
+
+        return $this->executeWithAuthRetry($svnCommand, $cwd, $path, $verbose);
+    }
+
+    private function executeWithAuthRetry($command, $cwd, $path, $verbose)
+    {
         $output = null;
         $io = $this->io;
         $handler = function ($type, $buffer) use (&$output, $io, $verbose) {
@@ -117,7 +147,7 @@ class Svn
                 $io->writeError($buffer, false);
             }
         };
-        $status = $this->process->execute($svnCommand, $handler, $cwd);
+        $status = $this->process->execute($command, $handler, $cwd);
         if (0 === $status) {
             return $output;
         }
@@ -140,7 +170,7 @@ class Svn
         // try to authenticate if maximum quantity of tries not reached
         if ($this->qtyAuthTries++ < self::MAX_QTY_AUTH_TRIES) {
             // restart the process
-            return $this->execute($command, $url, $cwd, $path, $verbose);
+            return $this->executeWithAuthRetry($command, $cwd, $path, $verbose);
         }
 
         throw new \RuntimeException(
