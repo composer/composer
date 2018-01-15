@@ -166,14 +166,21 @@ class SvnDownloader extends VcsDownloader
     {
         if (preg_match('{.*@(\d+)$}', $fromReference) && preg_match('{.*@(\d+)$}', $toReference)) {
             // retrieve the svn base url from the checkout folder
-            $command = sprintf('svn info %s | grep ^URL:', ProcessExecutor::escape($path));
+            $command = sprintf('svn info --non-interactive --xml %s', ProcessExecutor::escape($path));
             if (0 !== $this->process->execute($command, $output, $path)) {
                 throw new \RuntimeException(
                     'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()
                 );
             }
-            // parse info line like 'URL: https://example.com/my/svn/url'
-            list ($prefix, $baseUrl) = explode(" ", $output, 2);
+
+            $urlPattern = '#<url>(.*)</url>#';
+            if (preg_match($urlPattern, $output, $matches)) {
+                $baseUrl = $matches[1];
+            } else {
+                throw new \RuntimeException(
+                    'Unable to determine svn url for path '. $path
+                );
+            }
 
             // strip paths from references and only keep the actual revision
             $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
