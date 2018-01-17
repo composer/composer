@@ -1,0 +1,10 @@
+{
+    "scripts": {
+        "test": "phpunit",
+        "phpcs": "phpcs --standard=PSR2 src"
+    },
+    "scripts-descriptions": {
+        "test": "Launches the preconfigured PHPUnit",
+        "phpcsxxx": "Checks that the application code conforms to coding standard"
+    }
+}
