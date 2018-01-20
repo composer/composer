@@ -161,8 +161,8 @@ EOT
         $this->configSource = new JsonConfigSource($this->configFile);
 
         $authConfigFile = $input->getOption('global')
-            ? ($this->config->get('home') . '/auth.json')
-            : dirname(realpath($configFile)) . '/auth.json';
+            ? ($this->config->get('home') . DIRECTORY_SEPARATOR . 'auth.json')
+            : dirname(realpath($configFile)) . DIRECTORY_SEPARATOR . 'auth.json';
 
         $this->authConfigFile = new JsonFile($authConfigFile, null, $io);
         $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);

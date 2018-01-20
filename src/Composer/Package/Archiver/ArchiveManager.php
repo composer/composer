@@ -133,7 +133,7 @@ class ArchiveManager
 
         // Archive filename
         $filesystem->ensureDirectoryExists($targetDir);
-        $target = realpath($targetDir).'/'.$packageName.'.'.$format;
+        $target = realpath($targetDir). DIRECTORY_SEPARATOR .$packageName.'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($target));
 
         if (!$this->overwriteFiles && file_exists($target)) {
