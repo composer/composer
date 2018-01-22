@@ -172,8 +172,8 @@ An Example for disjunctive licenses:
 ```json
 {
     "license": [
-       "LGPL-2.1",
-       "GPL-3.0+"
+       "LGPL-2.1-only",
+       "GPL-3.0-or-later"
     ]
 }
 ```
@@ -182,7 +182,7 @@ Alternatively they can be separated with "or" and enclosed in parenthesis;
 
 ```json
 {
-    "license": "(LGPL-2.1 or GPL-3.0+)"
+    "license": "(LGPL-2.1-only or GPL-3.0-or-later)"
 }
 ```
 
