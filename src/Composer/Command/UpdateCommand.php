@@ -197,7 +197,7 @@ EOT
             }
 
             $addedPackage = strtolower($addedPackage);
-            if (!in_array($addedPackage, $packages)) {
+            if (!in_array($addedPackage, $packages, true)) {
                 $packages[] = $addedPackage;
             }
         } while (true);

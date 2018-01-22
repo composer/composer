@@ -107,7 +107,7 @@ class Bitbucket
                 $this->io->writeError('2. You are using an OAuth consumer, but didn\'t configure a (dummy) callback url');
 
                 return false;
-            } elseif (in_array($e->getCode(), array(403, 401))) {
+            } elseif (in_array($e->getCode(), array(403, 401), true)) {
                 $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
                 $this->io->writeError('You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
 

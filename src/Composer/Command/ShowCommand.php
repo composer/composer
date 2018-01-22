@@ -119,7 +119,7 @@ EOT
         }
 
         $format = $input->getOption('format');
-        if (!in_array($format, array('text', 'json'))) {
+        if (!in_array($format, array('text', 'json'), true)) {
             $io->writeError(sprintf('Unsupported format "%s". See help for supported formats.', $format));
 
             return 1;
@@ -623,7 +623,7 @@ EOT
         // highlight installed version
         if ($installedRepo->hasPackage($package)) {
             $installedVersion = $package->getPrettyVersion();
-            $key = array_search($installedVersion, $versions);
+            $key = array_search($installedVersion, $versions, true);
             if (false !== $key) {
                 $versions[$key] = '<info>* ' . $installedVersion . '</info>';
             }
@@ -776,12 +776,12 @@ EOT
                 $colorIdent = $level % count($this->colors);
                 $color = $this->colors[$colorIdent];
 
-                $circularWarn = in_array($requireName, $currentTree) ? '(circular dependency aborted here)' : '';
+                $circularWarn = in_array($requireName, $currentTree, true) ? '(circular dependency aborted here)' : '';
                 $info = rtrim(sprintf('%s──<%s>%s</%s> %s %s', $treeBar, $color, $requireName, $color, $require->getPrettyConstraint(), $circularWarn));
                 $this->writeTreeLine($info);
 
                 $treeBar = str_replace('└', ' ', $treeBar);
-                if (!in_array($requireName, $currentTree)) {
+                if (!in_array($requireName, $currentTree, true)) {
                     $currentTree[] = $requireName;
                     $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $currentTree, $treeBar, $level + 1);
                 }

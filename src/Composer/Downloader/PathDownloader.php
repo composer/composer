@@ -107,7 +107,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     $fileSystem->symlink($shortestPath, $path);
                 }
             } catch (IOException $e) {
-                if (in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
+                if (in_array(self::STRATEGY_MIRROR, $allowedStrategies, true)) {
                     $this->io->writeError('');
                     $this->io->writeError('    <error>Symlink failed, fallback to use mirroring!</error>');
                     $currentStrategy = self::STRATEGY_MIRROR;

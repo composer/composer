@@ -413,7 +413,7 @@ class Locker
         $sourceType = $package->getSourceType();
         $datetime = null;
 
-        if ($path && in_array($sourceType, array('git', 'hg'))) {
+        if ($path && in_array($sourceType, array('git', 'hg'), true)) {
             $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
             switch ($sourceType) {
                 case 'git':

@@ -128,10 +128,10 @@ abstract class BitbucketDriver extends VcsDriver
             if (!isset($composer['support']['source'])) {
                 $label = array_search(
                     $identifier,
-                    $this->getTags()
+                    $this->getTags(), true
                 ) ?: array_search(
                     $identifier,
-                    $this->getBranches()
+                    $this->getBranches(), true
                 ) ?: $identifier;
 
                 if (array_key_exists($label, $tags = $this->getTags())) {

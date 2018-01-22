@@ -487,7 +487,7 @@ class EventDispatcher
     protected function pushEvent(Event $event)
     {
         $eventName = $event->getName();
-        if (in_array($eventName, $this->eventStack)) {
+        if (in_array($eventName, $this->eventStack, true)) {
             throw new \RuntimeException(sprintf("Circular call to script handler '%s' detected", $eventName));
         }
 

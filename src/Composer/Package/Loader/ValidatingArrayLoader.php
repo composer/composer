@@ -279,7 +279,7 @@ class ValidatingArrayLoader implements LoaderInterface
         if ($this->validateArray('autoload') && !empty($this->config['autoload'])) {
             $types = array('psr-0', 'psr-4', 'classmap', 'files', 'exclude-from-classmap');
             foreach ($this->config['autoload'] as $type => $typeConfig) {
-                if (!in_array($type, $types)) {
+                if (!in_array($type, $types, true)) {
                     $this->errors[] = 'autoload : invalid value ('.$type.'), must be one of '.implode(', ', $types);
                     unset($this->config['autoload'][$type]);
                 }

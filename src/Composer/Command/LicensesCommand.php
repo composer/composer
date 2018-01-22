@@ -125,7 +125,7 @@ EOT
         $packages = array_filter(
             $repo->getPackages(),
             function ($package) use ($requires, $packageListNames) {
-                return in_array($package->getName(), $requires) && !in_array($package->getName(), $packageListNames);
+                return in_array($package->getName(), $requires, true) && !in_array($package->getName(), $packageListNames, true);
             }
         );
 

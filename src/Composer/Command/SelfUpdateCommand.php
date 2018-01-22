@@ -205,11 +205,11 @@ TAGSPUBKEY
 
             $pubkeyid = openssl_pkey_get_public($sigFile);
             $algo = defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
-            if (!in_array('SHA384', openssl_get_md_methods())) {
+            if (!in_array('SHA384', openssl_get_md_methods(), true)) {
                 throw new \RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
             }
             $signature = json_decode($signature, true);
-            $signature = base64_decode($signature['sha384']);
+            $signature = base64_decode($signature['sha384'], true);
             $verified = 1 === openssl_verify(file_get_contents($tempFilename), $signature, $pubkeyid, $algo);
             openssl_free_key($pubkeyid);
             if (!$verified) {

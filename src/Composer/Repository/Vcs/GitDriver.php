@@ -81,7 +81,7 @@ class GitDriver extends VcsDriver
             // select currently checked out branch if master is not available
             $this->process->execute('git branch --no-color', $output, $this->repoDir);
             $branches = $this->process->splitLines($output);
-            if (!in_array('* master', $branches)) {
+            if (!in_array('* master', $branches, true)) {
                 foreach ($branches as $branch) {
                     if ($branch && preg_match('{^\* +(\S+)}', $branch, $match)) {
                         $this->rootIdentifier = $match[1];

@@ -341,7 +341,7 @@ EOT
             $package = $package->getAliasOf();
         }
 
-        if (0 === strpos($package->getPrettyVersion(), 'dev-') && in_array($package->getSourceType(), array('git', 'hg'))) {
+        if (0 === strpos($package->getPrettyVersion(), 'dev-') && in_array($package->getSourceType(), array('git', 'hg'), true)) {
             $package->setSourceReference(substr($package->getPrettyVersion(), 4));
         }
 

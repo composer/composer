@@ -240,7 +240,7 @@ abstract class BaseIO implements IOInterface, LoggerInterface
      */
     public function log($level, $message, array $context = array())
     {
-        if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
+        if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR), true)) {
             $this->writeError('<error>'.$message.'</error>', true, self::NORMAL);
         } elseif ($level === LogLevel::WARNING) {
             $this->writeError('<warning>'.$message.'</warning>', true, self::NORMAL);

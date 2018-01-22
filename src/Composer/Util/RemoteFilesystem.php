@@ -201,7 +201,7 @@ class RemoteFilesystem
             $this->config
             && is_array($this->config->get('gitlab-domains'))
             && false === strpos($originUrl, '/')
-            && !in_array($originUrl, $this->config->get('gitlab-domains'))
+            && !in_array($originUrl, $this->config->get('gitlab-domains'), true)
         ) {
             foreach ($this->config->get('gitlab-domains') as $gitlabDomain) {
                 if (0 === strpos($gitlabDomain, $originUrl)) {

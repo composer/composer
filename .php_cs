@@ -53,6 +53,7 @@ return PhpCsFixer\Config::create()
         'psr0' => true,
         'single_blank_line_before_namespace' => true,
         'short_scalar_cast' => true,
+        'strict_param' => true,
         'standardize_not_equals' => true,
         'ternary_operator_spaces' => true,
         'trailing_comma_in_multiline_array' => true,
