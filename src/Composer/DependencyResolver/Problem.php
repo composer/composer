@@ -108,6 +108,10 @@ class Problem
 
                 // handle php extensions
                 if (0 === stripos($job['packageName'], 'ext-')) {
+                    if (false !== strpos($job['packageName'], ' ')) {
+                        return "\n    - The requested PHP extension ".$job['packageName'].' should be required as '.str_replace(' ', '-', $job['packageName']).'.';
+                    }
+
                     $ext = substr($job['packageName'], 4);
                     $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
 
