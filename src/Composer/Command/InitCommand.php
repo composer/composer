@@ -279,7 +279,7 @@ EOT
         $minimumStability = $input->getOption('stability') ?: null;
         $minimumStability = $io->askAndValidate(
             'Minimum Stability [<comment>'.$minimumStability.'</comment>]: ',
-            function ($value) use ($self, $minimumStability) {
+            function ($value) use ($minimumStability) {
                 if (null === $value) {
                     return $minimumStability;
                 }
