@@ -133,7 +133,7 @@ EOT
             $ignoreFile = realpath('.gitignore');
 
             if (false === $ignoreFile) {
-                $ignoreFile = realpath('.') . '/.gitignore';
+                $ignoreFile = realpath('.') . DIRECTORY_SEPARATOR . '.gitignore';
             }
 
             if (!$this->hasVendorIgnore($ignoreFile)) {
