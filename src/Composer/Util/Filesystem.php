@@ -663,9 +663,6 @@ class Filesystem
          * #define	_S_IFREG	0x8000
          *
          * Stat cache should be cleared before to avoid accidentally reading wrong information from previous installs.
-         
-         * n.b. now clearing the entire stat cache, for its troubles in php7.1-windows, appearing and
-         * diagnosed in composer github issue #7025 -- @narrationsd 22 Jan 2018
          */
         clearstatcache(false);
         $stat = lstat($junction);
