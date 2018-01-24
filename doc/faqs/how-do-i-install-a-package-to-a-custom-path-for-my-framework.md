@@ -23,7 +23,7 @@ WordPress theme:
 
 Now when your theme is installed with Composer it will be placed into
 `wp-content/themes/themename/` folder. Check the
-[current supported types](https://github.com/composer/installers#current-supported-types)
+[current supported types](https://github.com/composer/installers#current-supported-package-types)
 for your package.
 
 As a **package consumer** you can set or override the install path for a package
