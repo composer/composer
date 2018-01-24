@@ -131,8 +131,10 @@ abstract class BaseCommand extends Command
         if (null === $composer) {
             $composer = Factory::createGlobal($this->getIO(), false);
         }
-        $preCommandRunEvent = new PreCommandRunEvent(PluginEvents::PRE_COMMAND_RUN, $input, $this->getName());
-        $composer->getEventDispatcher()->dispatch($preCommandRunEvent->getName(), $preCommandRunEvent);
+        if ($composer) {
+            $preCommandRunEvent = new PreCommandRunEvent(PluginEvents::PRE_COMMAND_RUN, $input, $this->getName());
+            $composer->getEventDispatcher()->dispatch($preCommandRunEvent->getName(), $preCommandRunEvent);
+        }
 
         if (true === $input->hasParameterOption(array('--no-ansi')) && $input->hasOption('no-progress')) {
             $input->setOption('no-progress', true);
