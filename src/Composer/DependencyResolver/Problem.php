@@ -11,6 +11,7 @@
  */
 
 namespace Composer\DependencyResolver;
+use Composer\Package\CompletePackageInterface;
 
 /**
  * Represents a problem detected while solving dependencies
@@ -90,8 +91,17 @@ class Problem
 
                 // handle php/hhvm
                 if ($job['packageName'] === 'php' || $job['packageName'] === 'php-64bit' || $job['packageName'] === 'hhvm') {
+                    $version = phpversion();
                     $available = $this->pool->whatProvides($job['packageName']);
-                    $version = count($available) ? $available[0]->getPrettyVersion() : phpversion();
+
+                    if (count($available)) {
+                        $firstAvailable = reset($available);
+                        $version = $firstAvailable->getPrettyVersion();
+                        $extra = $firstAvailable->getExtra();
+                        if ($firstAvailable instanceof CompletePackageInterface && isset($extra['config.platform']) && $extra['config.platform'] === true) {
+                            $version .= '; ' . $firstAvailable->getDescription();
+                        }
+                    }
 
                     $msg = "\n    - This package requires ".$job['packageName'].$this->constraintToText($job['constraint']).' but ';
 
