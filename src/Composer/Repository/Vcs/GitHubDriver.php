@@ -361,7 +361,9 @@ class GitHubDriver extends VcsDriver
                         }
                     }
                     $scopesFailed = array_diff($scopesNeeded, $scopesIssued);
-                    if (!$headers || count($scopesFailed)) {
+                    // non-authenticated requests get no scopesNeeded, so ask for credentials
+                    // authenticated requests which failed some scopes should ask for new credentials too
+                    if (!$headers || !count($scopesNeeded) || count($scopesFailed)) {
                         $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
                     }
 
