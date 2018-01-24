@@ -240,6 +240,7 @@ class ConsoleIOTest extends TestCase
                 $this->isInstanceOf('Symfony\Component\Console\Output\OutputInterface'),
                 $this->isInstanceOf('Symfony\Component\Console\Question\Question')
             )
+            ->will($this->returnValue(array('item2')));
         ;
 
         $setMock
@@ -250,7 +251,8 @@ class ConsoleIOTest extends TestCase
         ;
 
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);
-        $consoleIO->select('Select item', array("item1", "item2"), null, false, "Error message", true);
+        $result = $consoleIO->select('Select item', array("item1", "item2"), null, false, "Error message", true);
+        $this->assertEquals(array('1'), $result);
     }
 
     public function testSetAndgetAuthentication()
