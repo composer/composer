@@ -169,7 +169,7 @@ final class StreamContextFactory
             $header = explode("\r\n", $header);
         }
         uasort($header, function ($el) {
-            return preg_match('{^content-type}i', $el) ? 1 : -1;
+            return stripos($el, 'content-type') === 0 ? 1 : -1;
         });
 
         return $header;
