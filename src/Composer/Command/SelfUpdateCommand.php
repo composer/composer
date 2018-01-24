@@ -112,7 +112,7 @@ EOT
             $composeUser = posix_getpwuid(posix_geteuid());
             $homeOwner = posix_getpwuid(fileowner($home));
             if ($composeUser !== $homeOwner) {
-              $io->writeError('<warning>You are running composer as "'.$composeUser.'", while "'.$home.'" is owned by "'.$homeOwner.'"</warning>');
+                $io->writeError('<warning>You are running composer as "'.$composeUser.'", while "'.$home.'" is owned by "'.$homeOwner.'"</warning>');
             }
         }
 
