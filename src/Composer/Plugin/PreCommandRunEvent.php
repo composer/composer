@@ -28,15 +28,22 @@ class PreCommandRunEvent extends Event
     private $input;
 
     /**
+     * @var string
+     */
+    private $command;
+
+    /**
      * Constructor.
      *
-     * @param string         $name         The event name
+     * @param string         $name    The event name
      * @param InputInterface $input
+     * @param string         $command The command about to be executed
      */
-    public function __construct($name, InputInterface $input)
+    public function __construct($name, InputInterface $input, $command)
     {
         parent::__construct($name);
         $this->input = $input;
+        $this->command = $command;
     }
 
     /**
@@ -47,5 +54,15 @@ class PreCommandRunEvent extends Event
     public function getInput()
     {
         return $this->input;
+    }
+
+    /**
+     * Returns the command about to be executed
+     *
+     * @return string
+     */
+    public function getCommand()
+    {
+        return $this->command;
     }
 }
