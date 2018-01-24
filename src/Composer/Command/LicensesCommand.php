@@ -74,8 +74,9 @@ EOT
 
                 $table = new Table($output);
                 $table->setStyle('compact');
-                $table->getStyle()->setVerticalBorderChar('');
-                $table->getStyle()->setCellRowContentFormat('%s  ');
+                $tableStyle = $table->getStyle();
+                $tableStyle->setVerticalBorderChar('');
+                $tableStyle->setCellRowContentFormat('%s  ');
                 $table->setHeaders(array('Name', 'Version', 'License'));
                 foreach ($packages as $package) {
                     $table->addRow(array(
