@@ -47,13 +47,15 @@ class Application extends BaseApplication
      */
     protected $io;
 
-    private static $logo = '   ______
+    private static $logo = <<<LOGO
+   ______
   / ____/___  ____ ___  ____  ____  ________  _____
  / /   / __ \/ __ `__ \/ __ \/ __ \/ ___/ _ \/ ___/
 / /___/ /_/ / / / / / / /_/ / /_/ (__  )  __/ /
 \____/\____/_/ /_/ /_/ .___/\____/____/\___/_/
                     /_/
-';
+
+LOGO;
 
     private $hasPluginCommands = false;
     private $disablePluginsByDefault = false;

@@ -48,11 +48,11 @@ class JsonFile
      */
     public function __construct($path, RemoteFilesystem $rfs = null, IOInterface $io = null)
     {
-        $this->path = $path;
-
         if (null === $rfs && preg_match('{^https?://}i', $path)) {
             throw new \InvalidArgumentException('http urls require a RemoteFilesystem instance to be passed');
         }
+
+        $this->path = $path;
         $this->rfs = $rfs;
         $this->io = $io;
     }

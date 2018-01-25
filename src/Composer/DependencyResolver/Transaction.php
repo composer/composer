@@ -97,12 +97,10 @@ class Transaction
 
     protected function transactionFromMaps($installMap, $updateMap, $uninstallMap)
     {
-        $queue = array_map(
-            function ($operation) {
-                return $operation['package'];
-            },
-            $this->findRootPackages($installMap, $updateMap)
-        );
+        $queue = array();
+        foreach ($this->findRootPackages($installMap, $updateMap) as $operation) {
+            $queue[] = $operation['package'];
+        }
 
         $visited = array();
 

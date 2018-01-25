@@ -78,7 +78,6 @@ class Problem
             reset($reasons);
             $reason = current($reasons);
 
-            $rule = $reason['rule'];
             $job = $reason['job'];
 
             if (isset($job['constraint'])) {
