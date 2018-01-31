@@ -1,3 +1,12 @@
+### [1.6.3] 2018-01-31
+
+  * Fixed GitLab downloads failing in some edge cases
+  * Fixed ctrl-C handling during create-project
+  * Fixed GitHub VCS repositories not prompting for a token in some conditions
+  * Fixed SPDX license identifiers being case sensitive
+  * Fixed and clarified a few dependency resolution error reporting strings
+  * Fixed SVN commit log fetching in verbose mode when using private repositories
+
 ### [1.6.2] 2018-01-05
 
   * Fixed more autoloader regressions
@@ -619,6 +628,7 @@
 
   * Initial release
 
+[1.6.3]: https://github.com/composer/composer/compare/1.6.2...1.6.3
 [1.6.2]: https://github.com/composer/composer/compare/1.6.1...1.6.2
 [1.6.1]: https://github.com/composer/composer/compare/1.6.0...1.6.1
 [1.6.0]: https://github.com/composer/composer/compare/1.6.0-RC...1.6.0
