@@ -149,8 +149,8 @@ class Factory
     }
 
     /**
-     * @param  IOInterface|null $io
-     * @param null              $cwd
+     * @param IOInterface|null $io
+     * @param null|string       $cwd
      * @return \Composer\Config
      * @throws \Exception
      * @throws \InvalidArgumentException
