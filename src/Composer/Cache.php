@@ -52,8 +52,8 @@ class Cache
         }
 
         if (
-            !is_writable($this->root) ||
-            (!is_dir($this->root) && !Silencer::call('mkdir', $this->root, 0777, true))
+            (!is_dir($this->root) && !Silencer::call('mkdir', $this->root, 0777, true)) ||
+            !is_writable($this->root)
         ) {
             $this->io->writeError('<warning>Cannot create cache directory ' . $this->root . ', or directory is not writable. Proceeding without cache</warning>');
             $this->enabled = false;
@@ -77,7 +77,7 @@ class Cache
     }
 
     /**
-     * @param $file
+     * @param string $file
      * @return bool|string
      */
     public function read($file)
@@ -93,8 +93,8 @@ class Cache
     }
 
     /**
-     * @param $file
-     * @param $contents
+     * @param string $file
+     * @param string $contents
      * @return bool|int
      * @throws \ErrorException
      */
@@ -187,13 +187,16 @@ class Cache
         return false;
     }
 
+    /**
+     * @return bool
+     */
     public function gcIsNecessary()
     {
         return (!self::$cacheCollected && !mt_rand(0, 50));
     }
 
     /**
-     * @param $file
+     * @param string $file
      * @return bool
      * @throws \RuntimeException
      */
@@ -221,8 +224,8 @@ class Cache
     }
 
     /**
-     * @param $ttl
-     * @param $maxSize
+     * @param int $ttl
+     * @param int $maxSize
      * @return bool
      * @throws \LogicException
      * @throws \RuntimeException
@@ -258,7 +261,7 @@ class Cache
     }
 
     /**
-     * @param $file
+     * @param string $file
      * @return bool|string
      */
     public function sha1($file)
@@ -272,7 +275,7 @@ class Cache
     }
 
     /**
-     * @param $file
+     * @param string $file
      * @return bool|string
      */
     public function sha256($file)
