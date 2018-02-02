@@ -34,7 +34,12 @@ class Compiler
     /**
      * Compiles composer into a single phar file
      *
-     * @param  string            $pharFile The full path to the file to create
+     * @param  string $pharFile The full path to the file to create
+     * @throws \Symfony\Component\Process\Exception\RuntimeException
+     * @throws \UnexpectedValueException
+     * @throws \Symfony\Component\Process\Exception\LogicException
+     * @throws \BadMethodCallException
+     * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */
     public function compile($pharFile = 'composer.phar')
@@ -44,13 +49,13 @@ class Compiler
         }
 
         $process = new Process('git log --pretty="%H" -n1 HEAD', __DIR__);
-        if ($process->run() != 0) {
+        if ($process->run() !== 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($process->getOutput());
 
         $process = new Process('git log -n1 --pretty=%ci HEAD', __DIR__);
-        if ($process->run() != 0) {
+        if ($process->run() !== 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
 
@@ -58,7 +63,7 @@ class Compiler
         $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
         $process = new Process('git describe --tags --exact-match HEAD');
-        if ($process->run() == 0) {
+        if ($process->run() === 0) {
             $this->version = trim($process->getOutput());
         } else {
             // get branch-alias defined in composer.json for dev-master (if any)
@@ -76,7 +81,9 @@ class Compiler
         $phar->startBuffering();
 
         $finderSort = function ($a, $b) {
-            return strcmp(strtr($a->getRealPath(), '\\', '/'), strtr($b->getRealPath(), '\\', '/'));
+            /** @var \SplFileInfo $a */
+            /** @var \SplFileInfo $b */
+            return strcmp(str_replace('\\', '/', $a->getRealPath()), str_replace('\\', '/', $b->getRealPath()));
         };
 
         $finder = new Finder();
@@ -176,7 +183,7 @@ class Compiler
         $pos = strpos($realPath, $pathPrefix);
         $relativePath = ($pos !== false) ? substr_replace($realPath, '', $pos, strlen($pathPrefix)) : $realPath;
 
-        return strtr($relativePath, '\\', '/');
+        return str_replace('\\', '/', $relativePath);
     }
 
     private function addFile($phar, $file, $strip = true)
@@ -221,7 +228,7 @@ class Compiler
         foreach (token_get_all($source) as $token) {
             if (is_string($token)) {
                 $output .= $token;
-            } elseif (in_array($token[0], array(T_COMMENT, T_DOC_COMMENT))) {
+            } elseif (in_array($token[0], array(T_COMMENT, T_DOC_COMMENT), false)) {
                 $output .= str_repeat("\n", substr_count($token[1], "\n"));
             } elseif (T_WHITESPACE === $token[0]) {
                 // reduce wide spaces
