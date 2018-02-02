@@ -664,7 +664,7 @@ class Factory
     private static function useXdg()
     {
         foreach (array_keys($_SERVER) as $key) {
-            if (0 === strpos($key, 'XDG_')) {
+            if (substr($key, 0, 4) === 'XDG_') {
                 return true;
             }
         }
