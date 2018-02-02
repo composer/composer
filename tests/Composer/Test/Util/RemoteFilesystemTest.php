@@ -86,7 +86,7 @@ class RemoteFilesystemTest extends TestCase
         ));
 
         $res = $this->callGetOptionsForUrl($io, array('https://example.org', $streamOptions));
-        $this->assertTrue(isset($res['http']['header']), 'getOptions must return an array with a http.header key');
+        $this->assertArrayHasKey('header', $res['http'], 'getOptions must return an array with a http.header key');
 
         $found = false;
         foreach ($res['http']['header'] as $header) {
@@ -175,7 +175,7 @@ class RemoteFilesystemTest extends TestCase
 
         $res = $this->callGetOptionsForUrl($io, array('example.org', array('ssl' => array('cafile' => '/some/path/file.crt'))), array(), 'http://www.example.org');
 
-        $this->assertTrue(isset($res['ssl']['ciphers']));
+        $this->assertArrayHasKey('ciphers', $res['ssl']);
         $this->assertRegExp("|!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA|", $res['ssl']['ciphers']);
         $this->assertTrue($res['ssl']['verify_peer']);
         $this->assertTrue($res['ssl']['SNI_enabled']);
@@ -188,7 +188,7 @@ class RemoteFilesystemTest extends TestCase
         if (version_compare(PHP_VERSION, '5.4.13') >= 0) {
             $this->assertTrue($res['ssl']['disable_compression']);
         } else {
-            $this->assertFalse(isset($res['ssl']['disable_compression']));
+            $this->assertArrayNotHasKey('disable_compression', $res['ssl']);
         }
     }
 
