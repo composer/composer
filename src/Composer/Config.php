@@ -130,7 +130,7 @@ class Config
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic')) && isset($this->config[$key])) {
+                if (isset($this->config[$key]) && in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic'), false)) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
                 } elseif ('preferred-install' === $key && isset($this->config[$key])) {
                     if (is_array($val) || is_array($this->config[$key])) {
@@ -218,7 +218,7 @@ class Config
             case 'capath':
             case 'htaccess-protect':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
-                $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
+                $env = 'COMPOSER_' . strtoupper(str_replace('-', '_', $key));
 
                 $val = $this->getComposerEnv($env);
                 $val = rtrim((string) $this->process(false !== $val ? $val : $this->config[$key], $flags), '/\\');
@@ -228,7 +228,7 @@ class Config
                     return $val;
                 }
 
-                return (($flags & self::RELATIVE_PATHS) == self::RELATIVE_PATHS) ? $val : $this->realpath($val);
+                return (($flags & self::RELATIVE_PATHS) === self::RELATIVE_PATHS) ? $val : $this->realpath($val);
 
             case 'cache-ttl':
                 return (int) $this->config[$key];
@@ -271,7 +271,7 @@ class Config
             case 'bin-compat':
                 $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
 
-                if (!in_array($value, array('auto', 'full'))) {
+                if (!in_array($value, array('auto', 'full'), false)) {
                     throw new \RuntimeException(
                         "Invalid value for 'bin-compat': {$value}. Expected auto, full"
                     );
@@ -304,7 +304,7 @@ class Config
 
             case 'github-protocols':
                 $protos = $this->config['github-protocols'];
-                if ($this->config['secure-http'] && false !== ($index = array_search('git', $protos))) {
+                if ($this->config['secure-http'] && false !== ($index = array_search('git', $protos, false))) {
                     unset($protos[$index]);
                 }
                 if (reset($protos) === 'http') {
@@ -328,6 +328,11 @@ class Config
         }
     }
 
+    /**
+     * @param int $flags
+     * @return array
+     * @throws \RuntimeException
+     */
     public function all($flags = 0)
     {
         $all = array(
@@ -365,6 +370,7 @@ class Config
      * @param  string|int|null $value a config string that can contain {$refs-to-other-config}
      * @param  int             $flags Options (see class constants)
      * @return string|int|null
+     * @throws \RuntimeException
      */
     private function process($value, $flags)
     {
@@ -428,6 +434,8 @@ class Config
      *
      * @param string      $url
      * @param IOInterface $io
+     * @throws \RuntimeException
+     * @throws \Composer\Downloader\TransportException
      */
     public function prohibitUrlByConfig($url, IOInterface $io = null)
     {
@@ -438,7 +446,7 @@ class Config
 
         // Extract scheme and throw exception on known insecure protocols
         $scheme = parse_url($url, PHP_URL_SCHEME);
-        if (in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
+        if (in_array($scheme, array('http', 'git', 'ftp', 'svn'), false)) {
             if ($this->get('secure-http')) {
                 throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             } elseif ($io) {

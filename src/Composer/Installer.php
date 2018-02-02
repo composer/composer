@@ -250,13 +250,13 @@ class Installer
                 continue;
             }
 
-            $replacement = (is_string($package->getReplacementPackage()))
+            $replacement = is_string($package->getReplacementPackage())
                 ? 'Use ' . $package->getReplacementPackage() . ' instead'
                 : 'No replacement was suggested';
 
             $this->io->writeError(
                 sprintf(
-                    "<warning>Package %s is abandoned, you should avoid using it. %s.</warning>",
+                    '<warning>Package %s is abandoned, you should avoid using it. %s.</warning>',
                     $package->getPrettyName(),
                     $replacement
                 )
@@ -336,6 +336,10 @@ class Installer
      * @param  PlatformRepository  $platformRepo
      * @param  array               $aliases
      * @return array               [int, PackageInterfaces[]|null] with the exit code and an array of dev packages on update, or null on install
+     * @throws \UnexpectedValueException
+     * @throws \LogicException
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      */
     protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases)
     {
@@ -486,8 +490,8 @@ class Installer
 
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
 
-        $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
-        $this->io->writeError("Analyzed ".$solver->getRuleSetSize()." rules to resolve dependencies", true, IOInterface::VERBOSE);
+        $this->io->writeError('Analyzed ' .count($pool). ' packages to resolve dependencies', true, IOInterface::VERBOSE);
+        $this->io->writeError('Analyzed ' .$solver->getRuleSetSize(). ' rules to resolve dependencies', true, IOInterface::VERBOSE);
 
         // execute operations
         if (!$operations) {
@@ -521,7 +525,7 @@ class Installer
             }
 
             $this->io->writeError(
-                sprintf("<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
+                sprintf('<info>Package operations: %d install%s, %d update%s, %d removal%s</info>',
                 count($installs),
                 1 === count($installs) ? '' : 's',
                 count($updates),
@@ -530,13 +534,13 @@ class Installer
                 1 === count($uninstalls) ? '' : 's')
             );
             if ($installs) {
-                $this->io->writeError("Installs: ".implode(', ', $installs), true, IOInterface::VERBOSE);
+                $this->io->writeError('Installs: ' .implode(', ', $installs), true, IOInterface::VERBOSE);
             }
             if ($updates) {
-                $this->io->writeError("Updates: ".implode(', ', $updates), true, IOInterface::VERBOSE);
+                $this->io->writeError('Updates: ' .implode(', ', $updates), true, IOInterface::VERBOSE);
             }
             if ($uninstalls) {
-                $this->io->writeError("Removals: ".implode(', ', $uninstalls), true, IOInterface::VERBOSE);
+                $this->io->writeError('Removals: ' .implode(', ', $uninstalls), true, IOInterface::VERBOSE);
             }
         }
 
@@ -588,7 +592,7 @@ class Installer
             $this->installationManager->execute($localRepo, $operation);
 
             // output reasons why the operation was ran, only for install/update operations
-            if ($this->verbose && $this->io->isVeryVerbose() && in_array($operation->getJobType(), array('install', 'update'))) {
+            if ($this->verbose && $this->io->isVeryVerbose() && in_array($operation->getJobType(), array('install', 'update'), false)) {
                 $reason = $operation->getReason();
                 if ($reason instanceof Rule) {
                     switch ($reason->getReason()) {
@@ -625,13 +629,19 @@ class Installer
 
     /**
      * Extracts the dev packages out of the localRepo
-     *
      * This works by faking the operations so we can see what the dev packages
      * would be at the end of the operation execution. This lets us then remove
      * the dev packages from the list of operations accordingly if we are in a
      * --no-dev install or update.
      *
+     * @param array                                    $operations
+     * @param \Composer\Repository\RepositoryInterface $localRepo
+     * @param \Composer\Repository\PlatformRepository  $platformRepo
+     * @param array                                    $aliases
      * @return array
+     * @throws \InvalidArgumentException
+     * @throws \UnexpectedValueException
+     * @throws \LogicException
      */
     private function extractDevPackages(array $operations, RepositoryInterface $localRepo, PlatformRepository $platformRepo, array $aliases)
     {
@@ -707,7 +717,10 @@ class Installer
     }
 
     /**
-     * @return OperationInterface[] filtered operations, dev packages are uninstalled and all operations on them ignored
+     * @param array                                    $devPackages
+     * @param array                                    $operations
+     * @param \Composer\Repository\RepositoryInterface $localRepo
+     * @return \Composer\DependencyResolver\Operation\OperationInterface[] filtered operations, dev packages are uninstalled and all operations on them ignored
      */
     private function filterDevPackageOperations(array $devPackages, array $operations, RepositoryInterface $localRepo)
     {
@@ -810,7 +823,9 @@ class Installer
     }
 
     /**
-     * @return RepositoryInterface
+     * @param \Composer\Repository\RepositoryInterface $localRepo
+     * @param \Composer\Repository\PlatformRepository  $platformRepo
+     * @return \Composer\Repository\RepositoryInterface
      */
     private function createInstalledRepo(RepositoryInterface $localRepo, PlatformRepository $platformRepo)
     {
@@ -837,6 +852,7 @@ class Installer
     /**
      * @param  RepositoryInterface|null $lockedRepository
      * @return Pool
+     * @throws \InvalidArgumentException
      */
     private function createPool(RepositoryInterface $lockedRepository = null)
     {
@@ -900,6 +916,7 @@ class Installer
      * @param  RootPackageInterface $rootPackage
      * @param  PlatformRepository   $platformRepo
      * @return Request
+     * @throws \InvalidArgumentException
      */
     private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
     {
@@ -944,6 +961,9 @@ class Installer
      * @param  string                      $task
      * @param  array|null                  $operations
      * @return array
+     * @throws \RuntimeException
+     * @throws \LogicException
+     * @throws \InvalidArgumentException
      */
     private function processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $task, array $operations = null)
     {
@@ -1028,10 +1048,10 @@ class Installer
                         $package->setReplaces($newPackage->getReplaces());
                     }
 
-                    if ($task === 'force-updates' && $newPackage && (
+                    if ($task === 'force-updates' &&
+                        $newPackage &&
                         (($newPackage->getSourceReference() && $newPackage->getSourceReference() !== $package->getSourceReference())
-                            || ($newPackage->getDistReference() && $newPackage->getDistReference() !== $package->getDistReference())
-                        )
+                        || ($newPackage->getDistReference() && $newPackage->getDistReference() !== $package->getDistReference())
                     )) {
                         $operations[] = new UpdateOperation($package, $newPackage);
 
@@ -1076,8 +1096,10 @@ class Installer
 
     /**
      * Loads the most "current" list of packages that are installed meaning from lock ideally or from installed repo as fallback
+     *
      * @param  RepositoryInterface $installedRepo
      * @return array
+     * @throws \RuntimeException
      */
     private function getCurrentPackages($installedRepo)
     {
@@ -1121,6 +1143,7 @@ class Installer
      * @param PolicyInterface             $policy
      * @param WritableRepositoryInterface $localRepo
      * @param array                       $repositories
+     * @throws \InvalidArgumentException
      */
     private function processPackageUrls($pool, $policy, $localRepo, $repositories)
     {
@@ -1174,6 +1197,14 @@ class Installer
         }
     }
 
+    /**
+     * @param \Composer\Package\PackageInterface $package
+     * @param                                    $sourceUrl
+     * @param                                    $sourceType
+     * @param                                    $sourceReference
+     * @param                                    $distUrl
+     * @throws \LogicException
+     */
     private function updatePackageUrl(PackageInterface $package, $sourceUrl, $sourceType, $sourceReference, $distUrl)
     {
         $oldSourceRef = $package->getSourceReference();
@@ -1196,6 +1227,10 @@ class Installer
         }
     }
 
+    /**
+     * @param \Composer\Package\PackageInterface $package
+     * @param                                    $reference
+     */
     private function updateInstallReferences(PackageInterface $package, $reference)
     {
         if (!$reference) {
@@ -1233,6 +1268,7 @@ class Installer
     /**
      * @param  PackageInterface $package
      * @return bool
+     * @throws \LogicException
      */
     private function isUpdateable(PackageInterface $package)
     {
@@ -1258,9 +1294,9 @@ class Installer
      */
     private function packageNameToRegexp($whiteListedPattern)
     {
-        $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern));
+        $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern, null));
 
-        return "{^" . $cleanedWhiteListedPattern . "$}i";
+        return '{^' . $cleanedWhiteListedPattern . '$}i';
     }
 
     /**
@@ -1337,7 +1373,7 @@ class Installer
                 }
             }
 
-            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
+            if (!$nameMatchesRequiredPackage && count($depPackages) === 0 && !in_array($packageName, array('nothing', 'lock', 'mirrors'), false)) {
                 $this->io->writeError('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 
@@ -1656,6 +1692,8 @@ class Installer
 
     /**
      * @deprecated use setWhitelistTransitiveDependencies instead
+     * @param bool $updateDependencies
+     * @return \Composer\Installer
      */
     public function setWhitelistDependencies($updateDependencies = true)
     {
