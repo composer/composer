@@ -398,7 +398,7 @@ class Factory
         }
 
         // init locker if possible
-        if ($fullLoad && null !== $composerFile) {
+        if ($fullLoad && isset($composerFile)) {
             $lockFile = 'json' === pathinfo($composerFile, PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
