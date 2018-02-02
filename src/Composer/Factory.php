@@ -150,12 +150,12 @@ class Factory
 
     /**
      * @param IOInterface|null $io
-     * @param null|string       $cwd
+     * @param null|string      $cwd
      * @return \Composer\Config
-     * @throws \Exception
-     * @throws \InvalidArgumentException
-     * @throws \RuntimeException
-     * @throws \UnexpectedValueException
+     * @throws \RuntimeException When necessary environment variable missing, such as APPDATA, HOME
+     * @throws \InvalidArgumentException When JsonFile $rfs is malformed
+     * @throws \UnexpectedValueException When COMPOSER_AUTH environment variable is malformed
+     * @throws \Exception When Silencer::call() execution failure
      */
     public static function createConfig(IOInterface $io = null, $cwd = null)
     {
