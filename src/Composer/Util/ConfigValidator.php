@@ -18,6 +18,7 @@ use Composer\Package\Loader\InvalidPackageException;
 use Composer\Json\JsonValidationException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Spdx\SpdxLicenses;
 
 /**
  * Validates a composer configuration.
@@ -74,6 +75,38 @@ class ConfigValidator
         // validate actual data
         if (empty($manifest['license'])) {
             $warnings[] = 'No license specified, it is recommended to do so. For closed-source software you may use "proprietary" as license.';
+        } else {
+            $licenses = (array) $manifest['license'];
+
+            // strip proprietary since it's not a valid SPDX identifier, but is accepted by composer
+            foreach ($licenses as $key => $license) {
+                if ('proprietary' === $license) {
+                    unset($licenses[$key]);
+                }
+            }
+
+            $licenseValidator = new SpdxLicenses();
+            foreach ($licenses as $license) {
+                $spdxLicense = $licenseValidator->getLicenseByIdentifier($license);
+                if ($spdxLicense && $spdxLicense[3]) {
+                    if (preg_match('{^[AL]?GPL-[123](\.[01])?\+$}i', $license)) {
+                        $warnings[] = sprintf(
+                            'License "%s" is a deprecated SPDX license identifier, use "'.str_replace('+', '', $license).'-or-later" instead',
+                            $license
+                        );
+                    } elseif (preg_match('{^[AL]?GPL-[123](\.[01])?$}i', $license)) {
+                        $warnings[] = sprintf(
+                            'License "%s" is a deprecated SPDX license identifier, use "'.$license.'-only" or "'.$license.'-or-later" instead',
+                            $license
+                        );
+                    } else {
+                        $warnings[] = sprintf(
+                            'License "%s" is a deprecated SPDX license identifier, see https://spdx.org/licenses/',
+                            $license
+                        );
+                    }
+                }
+            }
         }
 
         if (isset($manifest['version'])) {
