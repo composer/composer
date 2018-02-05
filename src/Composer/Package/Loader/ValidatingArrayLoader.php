@@ -104,12 +104,6 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if (isset($this->config['license'])) {
-            if (is_string($this->config['license'])) {
-                $this->validateRegex('license', '[A-Za-z0-9+. ()-]+');
-            } else {
-                $this->validateFlatArray('license', '[A-Za-z0-9+. ()-]+');
-            }
-
             if (is_array($this->config['license']) || is_string($this->config['license'])) {
                 $licenses = (array) $this->config['license'];
 
