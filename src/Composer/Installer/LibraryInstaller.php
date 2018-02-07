@@ -119,6 +119,9 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
+        if ($package->isVirtualPackage()) {
+            return;
+        }
         if (!$repo->hasPackage($package)) {
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
