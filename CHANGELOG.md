@@ -169,7 +169,7 @@
   * Added `COMPOSER_MIRROR_PATH_REPOS` env var to force mirroring of path repositories vs symlinking
   * Added `COMPOSER_DEV_MODE` env var that is set by Composer to forward the dev mode to script handlers
   * Fixed support for git 2.11
-  * Fixed output from zip and rar leaking out when an error occured
+  * Fixed output from zip and rar leaking out when an error occurred
   * Removed `hash` from composer.lock, only `content-hash` is now used which should reduce conflicts
   * Minor fixes and performance improvements
 
