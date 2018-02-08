@@ -64,7 +64,8 @@ class InitCommand extends BaseCommand
                 new InputOption('license', 'l', InputOption::VALUE_REQUIRED, 'License of package'),
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories, either by URL or using JSON arrays'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The <info>init</info> command creates a basic composer.json file
 in the current directory.
 
@@ -671,7 +672,7 @@ EOT
      * @param  string|null               $requiredVersion
      * @param  string                    $minimumStability
      * @throws \InvalidArgumentException
-     * @return array name version
+     * @return array                     name version
      */
     private function findBestVersionAndNameForPackage(InputInterface $input, $name, $phpVersion, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null)
     {
@@ -689,19 +690,26 @@ EOT
             // Check whether the PHP version was the problem
             if ($phpVersion && $versionSelector->findBestCandidate($name, $requiredVersion, null, $preferredStability)) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Package %s at version %s has a PHP requirement incompatible with your PHP version (%s)', $name, $requiredVersion, $phpVersion
+                    'Package %s at version %s has a PHP requirement incompatible with your PHP version (%s)',
+                    $name,
+                    $requiredVersion,
+                    $phpVersion
                 ));
             }
             // Check whether the required version was the problem
             if ($requiredVersion && $versionSelector->findBestCandidate($name, null, $phpVersion, $preferredStability)) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Could not find package %s in a version matching %s', $name, $requiredVersion
+                    'Could not find package %s in a version matching %s',
+                    $name,
+                    $requiredVersion
                 ));
             }
             // Check whether the PHP version was the problem
             if ($phpVersion && $versionSelector->findBestCandidate($name)) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Could not find package %s in any version matching your PHP version (%s)', $name, $phpVersion
+                    'Could not find package %s in any version matching your PHP version (%s)',
+                    $name,
+                    $phpVersion
                 ));
             }
 
@@ -733,7 +741,7 @@ EOT
 
         return array(
             $package->getPrettyName(),
-            $versionSelector->findRecommendedRequireVersion($package)
+            $versionSelector->findRecommendedRequireVersion($package),
         );
     }
 

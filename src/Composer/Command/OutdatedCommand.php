@@ -37,7 +37,8 @@ class OutdatedCommand extends ShowCommand
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The outdated command is just a proxy for `composer show -l`
 
 The color coding (or signage if you have ANSI colors disabled) for dependency versions is as such:

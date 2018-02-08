@@ -521,13 +521,15 @@ class Installer
             }
 
             $this->io->writeError(
-                sprintf("<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
+                sprintf(
+                    "<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
                 count($installs),
                 1 === count($installs) ? '' : 's',
                 count($updates),
                 1 === count($updates) ? '' : 's',
                 count($uninstalls),
-                1 === count($uninstalls) ? '' : 's')
+                1 === count($uninstalls) ? '' : 's'
+                )
             );
             if ($installs) {
                 $this->io->writeError("Installs: ".implode(', ', $installs), true, IOInterface::VERBOSE);
@@ -1029,7 +1031,8 @@ class Installer
                     }
 
                     if ($task === 'force-updates' && $newPackage && (
-                        (($newPackage->getSourceReference() && $newPackage->getSourceReference() !== $package->getSourceReference())
+                        (
+                            ($newPackage->getSourceReference() && $newPackage->getSourceReference() !== $package->getSourceReference())
                             || ($newPackage->getDistReference() && $newPackage->getDistReference() !== $package->getDistReference())
                         )
                     )) {

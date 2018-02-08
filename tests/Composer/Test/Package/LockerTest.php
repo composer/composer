@@ -21,8 +21,13 @@ class LockerTest extends TestCase
     public function testIsLocked()
     {
         $json = $this->createJsonFileMock();
-        $locker = new Locker(new NullIO, $json, $this->createRepositoryManagerMock(), $this->createInstallationManagerMock(),
-            $this->getJsonContent());
+        $locker = new Locker(
+            new NullIO,
+            $json,
+            $this->createRepositoryManagerMock(),
+            $this->createInstallationManagerMock(),
+            $this->getJsonContent()
+        );
 
         $json
             ->expects($this->any())

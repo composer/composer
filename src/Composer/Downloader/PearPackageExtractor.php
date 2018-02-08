@@ -185,9 +185,8 @@ class PearPackageExtractor
                     } elseif ('ignore' == $action->getName()) {
                         $name = (string) $action['name'];
                         unset($actions[$name]);
-                    } else {
-                        // unknown action
                     }
+                    // unknown action
                 }
             }
             break;

@@ -61,7 +61,8 @@ class UpdateCommand extends BaseCommand
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The <info>update</info> command reads the composer.json file from the
 current directory, processes it, and updates, removes or installs all the
 dependencies.

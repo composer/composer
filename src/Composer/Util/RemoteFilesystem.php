@@ -577,6 +577,7 @@ class RemoteFilesystem
                 // intentional fallthrough to the next case as the notificationCode
                 // isn't always consistent and we should inspect the messageCode for 401s
 
+                // no break
             case STREAM_NOTIFY_AUTH_REQUIRED:
                 if (401 === $messageCode) {
                     // Bail if the caller is going to handle authentication failures itself.

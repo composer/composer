@@ -31,7 +31,8 @@ class DependsCommand extends BaseDependencyCommand
             ->setName('depends')
             ->setAliases(array('why'))
             ->setDescription('Shows which packages cause the given package to be installed.')
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 Displays detailed information about where a package is referenced.
 
 <info>php composer.phar depends composer/composer</info>

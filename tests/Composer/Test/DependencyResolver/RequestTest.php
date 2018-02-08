@@ -40,7 +40,8 @@ class RequestTest extends TestCase
                 array('cmd' => 'install', 'packageName' => 'bar', 'constraint' => null, 'fixed' => true),
                 array('cmd' => 'remove', 'packageName' => 'foobar', 'constraint' => null, 'fixed' => false),
             ),
-            $request->getJobs());
+            $request->getJobs()
+        );
     }
 
     public function testRequestInstallSamePackageFromDifferentRepositories()
@@ -73,6 +74,7 @@ class RequestTest extends TestCase
 
         $this->assertEquals(
             array(array('cmd' => 'update-all')),
-            $request->getJobs());
+            $request->getJobs()
+        );
     }
 }

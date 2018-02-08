@@ -79,7 +79,8 @@ class ShowCommand extends BaseCommand
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The show command displays detailed information about a package, or
 lists all packages available.
 
