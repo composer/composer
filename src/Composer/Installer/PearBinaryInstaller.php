@@ -61,9 +61,9 @@ class PearBinaryInstaller extends BinaryInstaller
     {
         parent::initializeBinDir();
         file_put_contents($this->binDir.'/composer-php', $this->generateUnixyPhpProxyCode());
-        @chmod($this->binDir.'/composer-php', 0777);
+        @chmod($this->binDir.'/composer-php', 0777 & ~umask());
         file_put_contents($this->binDir.'/composer-php.bat', $this->generateWindowsPhpProxyCode());
-        @chmod($this->binDir.'/composer-php.bat', 0777);
+        @chmod($this->binDir.'/composer-php.bat', 0777 & ~umask());
     }
 
     protected function generateWindowsProxyCode($bin, $link)
