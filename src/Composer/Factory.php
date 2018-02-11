@@ -63,7 +63,7 @@ class Factory
                 throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
             }
 
-            return rtrim(strtr(getenv('APPDATA'), '\\', '/'), '/') . '/Composer';
+            return rtrim(str_replace('\\', '/', getenv('APPDATA')), '/') . '/Composer';
         }
 
         $userDir = self::getUserDir();
@@ -84,6 +84,7 @@ class Factory
     /**
      * @param  string $home
      * @return string
+     * @throws \RuntimeException
      */
     protected static function getCacheDir($home)
     {
@@ -104,7 +105,7 @@ class Factory
                 $cacheDir = $home . '/cache';
             }
 
-            return rtrim(strtr($cacheDir, '\\', '/'), '/');
+            return rtrim(str_replace('\\', '/', $cacheDir), '/');
         }
 
         $userDir = self::getUserDir();
@@ -124,6 +125,7 @@ class Factory
     /**
      * @param  string $home
      * @return string
+     * @throws \RuntimeException
      */
     protected static function getDataDir($home)
     {
@@ -133,7 +135,7 @@ class Factory
         }
 
         if (Platform::isWindows()) {
-            return strtr($home, '\\', '/');
+            return str_replace('\\', '/', $home);
         }
 
         $userDir = self::getUserDir();
@@ -147,8 +149,13 @@ class Factory
     }
 
     /**
-     * @param  IOInterface|null $io
-     * @return Config
+     * @param IOInterface|null $io
+     * @param null|string      $cwd
+     * @return \Composer\Config
+     * @throws \RuntimeException When necessary environment variable missing, such as APPDATA, HOME
+     * @throws \InvalidArgumentException When JsonFile $rfs is malformed
+     * @throws \UnexpectedValueException When COMPOSER_AUTH environment variable is malformed
+     * @throws \Exception When Silencer::call() execution failure
      */
     public static function createConfig(IOInterface $io = null, $cwd = null)
     {
@@ -254,11 +261,17 @@ class Factory
     /**
      * Creates a Composer instance
      *
-     * @param  IOInterface               $io             IO instance
-     * @param  array|string|null         $localConfig    either a configuration array or a filename to read from, if null it will
+     * @param  IOInterface       $io                     IO instance
+     * @param  array|string|null $localConfig            either a configuration array or a filename to read from, if null it will
      *                                                   read from the default filename
-     * @param  bool                      $disablePlugins Whether plugins should not be loaded
-     * @param  bool                      $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
+     * @param  bool              $disablePlugins         Whether plugins should not be loaded
+     * @param  bool              $fullLoad               Whether to initialize everything or only main project stuff (used when loading the global composer)
+     * @throws \Composer\Exception\NoSslException
+     * @throws \Composer\Downloader\TransportException
+     * @throws \Exception
+     * @throws \Composer\Json\JsonValidationException
+     * @throws \Seld\JsonLint\ParsingException
+     * @throws \RuntimeException
      * @throws \InvalidArgumentException
      * @throws \UnexpectedValueException
      * @return Composer
@@ -348,7 +361,7 @@ class Factory
         $parser = new VersionParser;
         $guesser = new VersionGuesser($config, new ProcessExecutor($io), $parser);
         $loader = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser);
-        $package = $loader->load($localConfig, 'Composer\Package\RootPackage', $cwd);
+        $package = $loader->load($localConfig, Package\RootPackage::class, $cwd);
         $composer->setPackage($package);
 
         // initialize installation manager
@@ -386,7 +399,7 @@ class Factory
 
         // init locker if possible
         if ($fullLoad && isset($composerFile)) {
-            $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
+            $lockFile = 'json' === pathinfo($composerFile, PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
 
@@ -412,6 +425,7 @@ class Factory
      * @param  IOInterface $io             IO instance
      * @param  bool        $disablePlugins Whether plugins should not be loaded
      * @return Composer
+     * @throws \Exception
      */
     public static function createGlobal(IOInterface $io, $disablePlugins = false)
     {
@@ -421,8 +435,10 @@ class Factory
     }
 
     /**
+     * @param \Composer\IO\IOInterface     $io
      * @param Repository\RepositoryManager $rm
      * @param string                       $vendorDir
+     * @throws \InvalidArgumentException
      */
     protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir)
     {
@@ -430,8 +446,11 @@ class Factory
     }
 
     /**
-     * @param  Config        $config
-     * @return Composer|null
+     * @param \Composer\IO\IOInterface $io
+     * @param  Config                  $config
+     * @param                          $disablePlugins
+     * @param bool                     $fullLoad
+     * @return \Composer\Composer|null
      */
     protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins, $fullLoad = false)
     {
@@ -446,10 +465,13 @@ class Factory
     }
 
     /**
-     * @param  IO\IOInterface             $io
-     * @param  Config                     $config
-     * @param  EventDispatcher            $eventDispatcher
-     * @return Downloader\DownloadManager
+     * @param  IO\IOInterface                      $io
+     * @param  Config                              $config
+     * @param  EventDispatcher                     $eventDispatcher
+     * @param \Composer\Util\RemoteFilesystem|null $rfs
+     * @return \Composer\Downloader\DownloadManager
+     * @throws \Exception
+     * @throws \RuntimeException
      */
     public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
@@ -500,6 +522,8 @@ class Factory
      * @param  Config                     $config The configuration
      * @param  Downloader\DownloadManager $dm     Manager use to download sources
      * @return Archiver\ArchiveManager
+     * @throws \RuntimeException
+     * @throws \Exception
      */
     public function createArchiveManager(Config $config, Downloader\DownloadManager $dm = null)
     {
@@ -568,6 +592,14 @@ class Factory
      *                                     the default filename
      * @param  bool        $disablePlugins Whether plugins should not be loaded
      * @return Composer
+     * @throws \Composer\Exception\NoSslException
+     * @throws \Composer\Downloader\TransportException
+     * @throws \Seld\JsonLint\ParsingException
+     * @throws \RuntimeException
+     * @throws \Composer\Json\JsonValidationException
+     * @throws \UnexpectedValueException
+     * @throws \InvalidArgumentException
+     * @throws \Exception
      */
     public static function create(IOInterface $io, $config = null, $disablePlugins = false)
     {
@@ -577,12 +609,15 @@ class Factory
     }
 
     /**
-     * @param  IOInterface      $io      IO instance
-     * @param  Config           $config  Config instance
-     * @param  array            $options Array of options passed directly to RemoteFilesystem constructor
+     * @param  IOInterface $io      IO instance
+     * @param  Config      $config  Config instance
+     * @param  array       $options Array of options passed directly to RemoteFilesystem constructor
      * @return RemoteFilesystem
+     * @throws \Composer\Exception\NoSslException
+     * @throws \RuntimeException
+     * @throws \Composer\Downloader\TransportException
      */
-    public static function createRemoteFilesystem(IOInterface $io, Config $config = null, $options = array())
+    public static function createRemoteFilesystem(IOInterface $io, Config $config = null, array $options = array())
     {
         static $warned = false;
         $disableTls = false;
@@ -648,6 +683,6 @@ class Factory
             throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
         }
 
-        return rtrim(strtr($home, '\\', '/'), '/');
+        return rtrim(str_replace('\\', '/', $home), '/');
     }
 }

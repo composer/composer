@@ -36,6 +36,7 @@ class Cache
      * @param string      $cacheDir   location of the cache
      * @param string      $whitelist  List of characters that are allowed in path names (used in a regex character class)
      * @param Filesystem  $filesystem optional filesystem instance
+     * @throws \Exception
      */
     public function __construct(IOInterface $io, $cacheDir, $whitelist = 'a-z0-9.', Filesystem $filesystem = null)
     {
@@ -51,24 +52,34 @@ class Cache
         }
 
         if (
-            (!is_dir($this->root) && !Silencer::call('mkdir', $this->root, 0777, true))
-            || !is_writable($this->root)
+            (!is_dir($this->root) && !Silencer::call('mkdir', $this->root, 0777, true)) ||
+            !is_writable($this->root)
         ) {
             $this->io->writeError('<warning>Cannot create cache directory ' . $this->root . ', or directory is not writable. Proceeding without cache</warning>');
             $this->enabled = false;
         }
     }
 
+    /**
+     * @return bool
+     */
     public function isEnabled()
     {
         return $this->enabled;
     }
 
+    /**
+     * @return string
+     */
     public function getRoot()
     {
         return $this->root;
     }
 
+    /**
+     * @param string $file
+     * @return bool|string
+     */
     public function read($file)
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
@@ -81,6 +92,12 @@ class Cache
         return false;
     }
 
+    /**
+     * @param string $file
+     * @param string $contents
+     * @return bool|int
+     * @throws \ErrorException
+     */
     public function write($file, $contents)
     {
         if ($this->enabled) {
@@ -92,7 +109,7 @@ class Cache
                 return file_put_contents($this->root . $file, $contents);
             } catch (\ErrorException $e) {
                 $this->io->writeError('<warning>Failed to write into cache: '.$e->getMessage().'</warning>', true, IOInterface::DEBUG);
-                if (preg_match('{^file_put_contents\(\): Only ([0-9]+) of ([0-9]+) bytes written}', $e->getMessage(), $m)) {
+                if (preg_match('{^file_put_contents\(\): Only ([\d]+) of ([\d]+) bytes written}', $e->getMessage(), $m)) {
                     // Remove partial file.
                     unlink($this->root . $file);
 
@@ -118,6 +135,11 @@ class Cache
 
     /**
      * Copy a file into the cache
+     *
+     * @param $file
+     * @param $source
+     * @return bool
+     * @throws \RuntimeException
      */
     public function copyFrom($file, $source)
     {
@@ -139,6 +161,11 @@ class Cache
 
     /**
      * Copy a file out of the cache
+     *
+     * @param $file
+     * @param $target
+     * @return bool
+     * @throws \Exception
      */
     public function copyTo($file, $target)
     {
@@ -160,11 +187,19 @@ class Cache
         return false;
     }
 
+    /**
+     * @return bool
+     */
     public function gcIsNecessary()
     {
         return (!self::$cacheCollected && !mt_rand(0, 50));
     }
 
+    /**
+     * @param string $file
+     * @return bool
+     * @throws \RuntimeException
+     */
     public function remove($file)
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
@@ -175,6 +210,10 @@ class Cache
         return false;
     }
 
+    /**
+     * @return bool
+     * @throws \RuntimeException
+     */
     public function clear()
     {
         if ($this->enabled) {
@@ -184,6 +223,13 @@ class Cache
         return false;
     }
 
+    /**
+     * @param int $ttl
+     * @param int $maxSize
+     * @return bool
+     * @throws \LogicException
+     * @throws \RuntimeException
+     */
     public function gc($ttl, $maxSize)
     {
         if ($this->enabled) {
@@ -214,6 +260,10 @@ class Cache
         return false;
     }
 
+    /**
+     * @param string $file
+     * @return bool|string
+     */
     public function sha1($file)
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
@@ -224,6 +274,10 @@ class Cache
         return false;
     }
 
+    /**
+     * @param string $file
+     * @return bool|string
+     */
     public function sha256($file)
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
