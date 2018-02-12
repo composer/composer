@@ -123,7 +123,7 @@ class CompositeRepositoryTest extends TestCase
 
         $repo = new CompositeRepository(array($arrayRepoOne, $arrayRepoTwo));
 
-        $this->assertEquals(2, count($repo), "Should return '2' for count(\$repo)");
+        $this->assertCount(2, $repo, "Should return '2' for count(\$repo)");
     }
 
     /**
