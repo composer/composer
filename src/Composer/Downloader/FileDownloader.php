@@ -214,7 +214,8 @@ class FileDownloader implements DownloaderInterface
         $from = $initial->getPrettyVersion();
         $to = $target->getPrettyVersion();
 
-        $this->io->writeError("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
+        $actionName = version_compare($from, $to, '<') ? 'Updating' : 'Downgrading';
+        $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
 
         $this->remove($initial, $path, false);
         $this->download($target, $path, false);

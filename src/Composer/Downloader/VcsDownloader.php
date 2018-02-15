@@ -130,7 +130,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             $to = $target->getFullPrettyVersion();
         }
 
-        $this->io->writeError("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
+        $actionName = $this->packageCompare($initial, $target, '>') ? 'Downgrading' : 'Updating';
+        $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
 
         $this->cleanChanges($initial, $path, true);
         $urls = $target->getSourceUrls();
@@ -240,6 +241,23 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         if (null !== $this->getLocalChanges($package, $path)) {
             throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes.');
         }
+    }
+
+    /**
+     * Compare two packages. Always false if both versions are references
+     *
+     * @param  PackageInterface $initial
+     * @param  PackageInterface $target
+     * @param  string           $operation
+     * @return bool
+     */
+    protected function packageCompare(PackageInterface $initial, PackageInterface $target, $operation = '<')
+    {
+        if ($initial->getPrettyVersion() == $target->getPrettyVersion()) {
+            return false;
+        }
+
+        return version_compare($initial->getFullPrettyVersion(), $target->getFullPrettyVersion(), $operation);
     }
 
     /**

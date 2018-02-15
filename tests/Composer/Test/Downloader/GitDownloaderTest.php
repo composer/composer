@@ -596,6 +596,90 @@ composer https://github.com/old/url (push)
         $downloader->update($packageMock, $packageMock, $this->workingDir);
     }
 
+    public function testDowngradeShowsAppropriateMessage()
+    {
+        $oldPackage = $this->getMock('Composer\Package\PackageInterface');
+        $oldPackage->expects($this->any())
+            ->method('getPrettyVersion')
+            ->will($this->returnValue('1.0.0'));
+        $oldPackage->expects($this->any())
+            ->method('getFullPrettyVersion')
+            ->will($this->returnValue('1.0.0'));
+        $oldPackage->expects($this->any())
+            ->method('getSourceReference')
+            ->will($this->returnValue('ref'));
+        $oldPackage->expects($this->any())
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('/foo/bar', 'https://github.com/composer/composer')));
+
+        $newPackage = $this->getMock('Composer\Package\PackageInterface');
+        $newPackage->expects($this->any())
+            ->method('getSourceReference')
+            ->will($this->returnValue('ref'));
+        $newPackage->expects($this->any())
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://github.com/composer/composer')));
+        $newPackage->expects($this->any())
+            ->method('getPrettyVersion')
+            ->will($this->returnValue('1.2.0'));
+        $newPackage->expects($this->any())
+            ->method('getFullPrettyVersion')
+            ->will($this->returnValue('1.2.0'));
+
+        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor->expects($this->any())
+            ->method('execute')
+            ->will($this->returnValue(0));
+
+        $ioMock = $this->getMock('Composer\IO\IOInterface');
+        $ioMock->expects(($this->at(0)))
+            ->method('writeError')
+            ->with($this->stringContains('Downgrading'));
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
+        $downloader = $this->getDownloaderMock($ioMock, null, $processExecutor);
+        $downloader->update($newPackage, $oldPackage, $this->workingDir);
+    }
+
+    public function testNotUsingDowngradingWithReferences()
+    {
+        $oldPackage = $this->getMock('Composer\Package\PackageInterface');
+        $oldPackage->expects($this->any())
+            ->method('getPrettyVersion')
+            ->will($this->returnValue('ref'));
+        $oldPackage->expects($this->any())
+            ->method('getSourceReference')
+            ->will($this->returnValue('ref'));
+        $oldPackage->expects($this->any())
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('/foo/bar', 'https://github.com/composer/composer')));
+
+        $newPackage = $this->getMock('Composer\Package\PackageInterface');
+        $newPackage->expects($this->any())
+            ->method('getSourceReference')
+            ->will($this->returnValue('ref'));
+        $newPackage->expects($this->any())
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://github.com/composer/composer')));
+        $newPackage->expects($this->any())
+            ->method('getPrettyVersion')
+            ->will($this->returnValue('ref'));
+
+        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor->expects($this->any())
+            ->method('execute')
+            ->will($this->returnValue(0));
+
+        $ioMock = $this->getMock('Composer\IO\IOInterface');
+        $ioMock->expects(($this->at(0)))
+            ->method('writeError')
+            ->with($this->stringContains('updating'));
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
+        $downloader = $this->getDownloaderMock($ioMock, null, $processExecutor);
+        $downloader->update($newPackage, $oldPackage, $this->workingDir);
+    }
+
     public function testRemove()
     {
         $expectedGitResetCommand = $this->winCompat("cd 'composerPath' && git status --porcelain --untracked-files=no");
