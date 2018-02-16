@@ -1,18 +1,18 @@
 # INDEX
 
-1. [Introduction](#introduction) 
-2. [Dependency management](#dependency-management)
-3. [System Requirements](#system-requirements)
-4. [Installation - OSX](#installation---osx)
+1. [Introduction](#1-introduction) 
+2. [Dependency management](#2-dependency-management)
+3. [System Requirements](#3-system-requirements)
+4. [Installation - OSX](#4-installation---osx)
    * [Using Homebrew](#using-homebrew)
-5. [Installation - Linux / Unix](#installation---linux--unix)
+5. [Installation - Linux / Unix](#5-installation---linux--unix)
    * [Downloading the Composer Executable](#downloading-the-composer-executable)
      * [Locally](#locally)
      * [Globally](#globally)
-6. [Installation - Windows](#installation---windows)
+6. [Installation - Windows](#6-installation---windows)
    * [Using the Installer](#using-the-installer)
    * [Manual Installation](#manual-installation)
-7. [Using Composer](#using-composer)
+7. [Using Composer](#7-using-composer)
 
 ## 1. Introduction
 
