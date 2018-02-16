@@ -1,10 +1,26 @@
-# Introduction
+# INDEX
+
+1. [Introduction](#introduction) 
+2. [Dependency management](#dependency-management)
+3. [System Requirements](#system-requirements)
+4. [Installation - OSX](#installation---osx)
+   * [Using Homebrew](#using-homebrew)
+5. [Installation - Linux / Unix](#installation---linux--unix)
+   * [Downloading the Composer Executable](#downloading-the-composer-executable)
+     * [Locally](#locally)
+     * [Globally](#globally)
+6. [Installation - Windows](#installation---windows)
+   * [Using the Installer](#using-the-installer)
+   * [Manual Installation](#manual-installation)
+7. [Using Composer](#using-composer)
+
+## 1. Introduction
 
 Composer is a tool for dependency management in PHP. It allows you to declare
 the libraries your project depends on and it will manage (install/update) them
 for you.
 
-## Dependency management
+## 2. Dependency management
 
 Composer is **not** a package manager in the same sense as Yum or Apt are. Yes,
 it deals with "packages" or libraries, but it manages them on a per-project
@@ -30,7 +46,7 @@ Composer:
 See the [Basic usage](01-basic-usage.md) chapter for more details on declaring
 dependencies.
 
-## System Requirements
+## 3. System Requirements
 
 Composer requires PHP 5.3.2+ to run. A few sensitive php settings and compile
 flags are also required, but when using the installer you will be warned about
@@ -42,7 +58,18 @@ git, svn, fossil or hg depending on how the package is version-controlled.
 Composer is multi-platform and we strive to make it run equally well on Windows,
 Linux and OSX.
 
-## Installation - Linux / Unix / OSX
+## 4. Installation - OSX
+
+### Using Homebrew
+
+Installing `composer` via missing package manager for macOS.
+
+```
+brew tap homebrew/php
+brew install composer
+```
+
+## 5. Installation - Linux / Unix
 
 ### Downloading the Composer Executable
 
@@ -107,7 +134,7 @@ mv composer.phar /usr/local/bin/composer
 
 Now just run `composer` in order to run Composer instead of `php composer.phar`.
 
-## Installation - Windows
+## 6. Installation - Windows
 
 ### Using the Installer
 
@@ -145,7 +172,7 @@ C:\Users\username>composer -V
 Composer version 1.0.0 2016-01-10 20:34:53
 ```
 
-## Using Composer
+## 7. Using Composer
 
 Now that you've installed Composer, you are ready to use it! Head on over to the
 next chapter for a short and simple demonstration.
