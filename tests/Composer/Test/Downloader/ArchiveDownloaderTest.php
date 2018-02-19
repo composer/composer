@@ -18,13 +18,13 @@ class ArchiveDownloaderTest extends TestCase
 {
     public function testGetFileName()
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getDistUrl')
             ->will($this->returnValue('http://example.com/script.js'))
         ;
 
-        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMock('Composer\IO\IOInterface'), $this->getMock('Composer\Config')));
+        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getMockBuilder('Composer\Config')->getMock()));
         $method = new \ReflectionMethod($downloader, 'getFileName');
         $method->setAccessible(true);
 
@@ -39,12 +39,12 @@ class ArchiveDownloaderTest extends TestCase
             $this->markTestSkipped('Requires openssl');
         }
 
-        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMock('Composer\IO\IOInterface'), $this->getMock('Composer\Config')));
+        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getMockBuilder('Composer\Config')->getMock()));
         $method = new \ReflectionMethod($downloader, 'processUrl');
         $method->setAccessible(true);
 
         $expected = 'https://github.com/composer/composer/zipball/master';
-        $url = $method->invoke($downloader, $this->getMock('Composer\Package\PackageInterface'), $expected);
+        $url = $method->invoke($downloader, $this->getMockBuilder('Composer\Package\PackageInterface')->getMock(), $expected);
 
         $this->assertEquals($expected, $url);
     }
@@ -55,12 +55,12 @@ class ArchiveDownloaderTest extends TestCase
             $this->markTestSkipped('Requires openssl');
         }
 
-        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMock('Composer\IO\IOInterface'), $this->getMock('Composer\Config')));
+        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getMockBuilder('Composer\Config')->getMock()));
         $method = new \ReflectionMethod($downloader, 'processUrl');
         $method->setAccessible(true);
 
         $expected = 'https://github.com/composer/composer/archive/master.tar.gz';
-        $url = $method->invoke($downloader, $this->getMock('Composer\Package\PackageInterface'), $expected);
+        $url = $method->invoke($downloader, $this->getMockBuilder('Composer\Package\PackageInterface')->getMock(), $expected);
 
         $this->assertEquals($expected, $url);
     }
@@ -71,12 +71,12 @@ class ArchiveDownloaderTest extends TestCase
             $this->markTestSkipped('Requires openssl');
         }
 
-        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMock('Composer\IO\IOInterface'), $this->getMock('Composer\Config')));
+        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getMockBuilder('Composer\Config')->getMock()));
         $method = new \ReflectionMethod($downloader, 'processUrl');
         $method->setAccessible(true);
 
         $expected = 'https://api.github.com/repos/composer/composer/zipball/master';
-        $url = $method->invoke($downloader, $this->getMock('Composer\Package\PackageInterface'), $expected);
+        $url = $method->invoke($downloader, $this->getMockBuilder('Composer\Package\PackageInterface')->getMock(), $expected);
 
         $this->assertEquals($expected, $url);
     }
@@ -90,14 +90,14 @@ class ArchiveDownloaderTest extends TestCase
             $this->markTestSkipped('Requires openssl');
         }
 
-        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMock('Composer\IO\IOInterface'), $this->getMock('Composer\Config')));
+        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getMockBuilder('Composer\Config')->getMock()));
         $method = new \ReflectionMethod($downloader, 'processUrl');
         $method->setAccessible(true);
 
         $type = strpos($url, 'tar') ? 'tar' : 'zip';
         $expected = 'https://api.github.com/repos/composer/composer/'.$type.'ball/ref';
 
-        $package = $this->getMock('Composer\Package\PackageInterface');
+        $package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $package->expects($this->any())
             ->method('getDistReference')
             ->will($this->returnValue('ref'));
@@ -127,14 +127,14 @@ class ArchiveDownloaderTest extends TestCase
             $this->markTestSkipped('Requires openssl');
         }
 
-        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMock('Composer\IO\IOInterface'), $this->getMock('Composer\Config')));
+        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getMockBuilder('Composer\Config')->getMock()));
         $method = new \ReflectionMethod($downloader, 'processUrl');
         $method->setAccessible(true);
 
         $url = $url . '.' . $extension;
         $expected = 'https://bitbucket.org/davereid/drush-virtualhost/get/ref.' . $extension;
 
-        $package = $this->getMock('Composer\Package\PackageInterface');
+        $package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $package->expects($this->any())
             ->method('getDistReference')
             ->will($this->returnValue('ref'));

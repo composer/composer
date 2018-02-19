@@ -35,7 +35,7 @@ class GitBitbucketDriverTest extends TestCase
 
     protected function setUp()
     {
-        $this->io = $this->getMock('Composer\IO\IOInterface');
+        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
         $this->home = $this->getUniqueTmpDirectory();
 
@@ -76,13 +76,12 @@ class GitBitbucketDriverTest extends TestCase
         return $driver;
     }
 
+    /**
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage https://bitbucket.org/user/repo.git does not appear to be a git repository, use https://bitbucket.org/user/repo if this is a mercurial bitbucket repository
+     */
     public function testGetRootIdentifierWrongScmType()
     {
-        $this->setExpectedException(
-            '\RuntimeException',
-            'https://bitbucket.org/user/repo.git does not appear to be a git repository, use https://bitbucket.org/user/repo if this is a mercurial bitbucket repository'
-        );
-
         $this->rfs->expects($this->once())
             ->method('getContents')
             ->with(

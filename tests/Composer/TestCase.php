@@ -105,4 +105,28 @@ abstract class TestCase extends BaseTestCase
             $this->markTestSkipped($executableName . ' is not found or not executable.');
         }
     }
+
+    /**
+     * Method to keep PHPUnit 4.x compatibility.
+     *
+     * @param mixed  $exceptionName
+     * @param string $exceptionMessage
+     * @param int    $exceptionCode
+     */
+    public function setExpectedException($exception, $exceptionMessage = '', $exceptionCode = null)
+    {
+        if (method_exists($this, 'expectException')) {
+            $this->expectException($exception);
+
+            if ($exceptionMessage !== '') {
+                $this->expectExceptionMessage($exceptionMessage);
+            }
+
+            if ($exceptionCode !== null) {
+                $this->expectExceptionCode($exceptionCode);
+            }
+        } else {
+            parent::setExpectedException($exception, $exceptionMessage, $exceptionCode);
+        }
+    }
 }

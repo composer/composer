@@ -432,6 +432,9 @@ class SolverTest extends TestCase
         ));
     }
 
+    /**
+     * @expectedException Composer\DependencyResolver\SolverProblemsException
+     */
     public function testInstallProvider()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
@@ -444,7 +447,6 @@ class SolverTest extends TestCase
         $this->request->install('A');
 
         // must explicitly pick the provider, so error in this case
-        $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
         $this->solver->solve($this->request);
     }
 
@@ -466,6 +468,9 @@ class SolverTest extends TestCase
         ));
     }
 
+    /**
+     * @expectedException Composer\DependencyResolver\SolverProblemsException
+     */
     public function testNoInstallReplacerOfMissingPackage()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
@@ -477,7 +482,6 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
-        $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
         $this->solver->solve($this->request);
     }
 
@@ -619,6 +623,9 @@ class SolverTest extends TestCase
         ));
     }
 
+    /**
+     * @expectedException Composer\DependencyResolver\SolverProblemsException
+     */
     public function testIssue265()
     {
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '2.0.999999-dev'));
@@ -647,8 +654,6 @@ class SolverTest extends TestCase
         $this->reposComplete();
 
         $this->request->install('C', $this->getVersionConstraint('==', '2.0.0.0-dev'));
-
-        $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
 
         $this->solver->solve($this->request);
     }

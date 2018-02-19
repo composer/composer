@@ -37,7 +37,7 @@
         "psr/log": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^4.8.35 || ^5.7",
+        "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.5",
         "phpunit/phpunit-mock-objects": "^2.3 || ^3.0"
     },
     "config": {

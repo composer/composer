@@ -36,6 +36,9 @@ class LockerTest extends TestCase
         $this->assertTrue($locker->isLocked());
     }
 
+    /**
+     * @expectedException LogicException
+     */
     public function testGetNotLockedPackages()
     {
         $json = $this->createJsonFileMock();
@@ -48,8 +51,6 @@ class LockerTest extends TestCase
             ->expects($this->once())
             ->method('exists')
             ->will($this->returnValue(false));
-
-        $this->setExpectedException('LogicException');
 
         $locker->getLockedRepository();
     }
@@ -154,6 +155,9 @@ class LockerTest extends TestCase
         $locker->setLockData(array($package1, $package2), array(), array(), array(), array(), 'dev', array(), false, false, array('foo/bar' => '1.0'));
     }
 
+    /**
+     * @expectedException LogicException
+     */
     public function testLockBadPackages()
     {
         $json = $this->createJsonFileMock();
@@ -167,8 +171,6 @@ class LockerTest extends TestCase
             ->expects($this->once())
             ->method('getPrettyName')
             ->will($this->returnValue('pkg1'));
-
-        $this->setExpectedException('LogicException');
 
         $locker->setLockData(array($package1), array(), array(), array(), array(), 'dev', array(), false, false, array());
     }

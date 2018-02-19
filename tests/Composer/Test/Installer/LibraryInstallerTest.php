@@ -57,8 +57,8 @@ class LibraryInstallerTest extends TestCase
             ->getMock();
         $this->composer->setDownloadManager($this->dm);
 
-        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
-        $this->io = $this->getMock('Composer\IO\IOInterface');
+        $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
+        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
     protected function tearDown()
@@ -129,6 +129,7 @@ class LibraryInstallerTest extends TestCase
     /**
      * @depends testInstallerCreationShouldNotCreateVendorDirectory
      * @depends testInstallerCreationShouldNotCreateBinDirectory
+     * @expectedException InvalidArgumentException
      */
     public function testUpdate()
     {
@@ -187,11 +188,12 @@ class LibraryInstallerTest extends TestCase
         $this->assertFileExists($this->vendorDir, 'Vendor dir should be created');
         $this->assertFileExists($this->binDir, 'Bin dir should be created');
 
-        $this->setExpectedException('InvalidArgumentException');
-
         $library->update($this->repository, $initial, $target);
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     */
     public function testUninstall()
     {
         $library = new LibraryInstaller($this->io, $this->composer);
@@ -219,8 +221,6 @@ class LibraryInstallerTest extends TestCase
             ->with($package);
 
         $library->uninstall($this->repository, $package);
-
-        $this->setExpectedException('InvalidArgumentException');
 
         $library->uninstall($this->repository, $package);
     }

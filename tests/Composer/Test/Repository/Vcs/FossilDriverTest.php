@@ -64,7 +64,7 @@ class FossilDriverTest extends TestCase
     public function testSupport($url, $assertion)
     {
         $config = new Config();
-        $result = FossilDriver::supports($this->getMock('Composer\IO\IOInterface'), $config, $url);
+        $result = FossilDriver::supports($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $config, $url);
         $this->assertEquals($assertion, $result);
     }
 }

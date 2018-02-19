@@ -20,8 +20,8 @@ class FileDownloaderTest extends TestCase
 {
     protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $rfs = null, $filesystem = null)
     {
-        $io = $io ?: $this->getMock('Composer\IO\IOInterface');
-        $config = $config ?: $this->getMock('Composer\Config');
+        $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $config = $config ?: $this->getMockBuilder('Composer\Config')->getMock();
         $rfs = $rfs ?: $this->getMockBuilder('Composer\Util\RemoteFilesystem')->disableOriginalConstructor()->getMock();
 
         return new FileDownloader($io, $config, $eventDispatcher, $cache, $rfs, $filesystem);
@@ -32,7 +32,7 @@ class FileDownloaderTest extends TestCase
      */
     public function testDownloadForPackageWithoutDistReference()
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
             ->method('getDistUrl')
             ->will($this->returnValue(null))
@@ -44,7 +44,7 @@ class FileDownloaderTest extends TestCase
 
     public function testDownloadToExistingFile()
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
             ->method('getDistUrl')
             ->will($this->returnValue('url'))
@@ -74,7 +74,7 @@ class FileDownloaderTest extends TestCase
 
     public function testGetFileName()
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
             ->method('getDistUrl')
             ->will($this->returnValue('http://example.com/script.js'))
@@ -89,7 +89,7 @@ class FileDownloaderTest extends TestCase
 
     public function testDownloadButFileIsUnsaved()
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getDistUrl')
             ->will($this->returnValue($distUrl = 'http://example.com/script.js'))
@@ -104,7 +104,7 @@ class FileDownloaderTest extends TestCase
         ;
 
         $path = $this->getUniqueTmpDirectory();
-        $ioMock = $this->getMock('Composer\IO\IOInterface');
+        $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $ioMock->expects($this->any())
             ->method('write')
             ->will($this->returnCallback(function ($messages, $newline = true) use ($path) {
@@ -137,7 +137,7 @@ class FileDownloaderTest extends TestCase
     {
         $expectedTtl = '99999999';
 
-        $configMock = $this->getMock('Composer\Config');
+        $configMock = $this->getMockBuilder('Composer\Config')->getMock();
         $configMock
             ->expects($this->at(0))
             ->method('get')
@@ -166,7 +166,7 @@ class FileDownloaderTest extends TestCase
 
     public function testDownloadFileWithInvalidChecksum()
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getDistUrl')
             ->will($this->returnValue($distUrl = 'http://example.com/script.js'))
@@ -183,7 +183,7 @@ class FileDownloaderTest extends TestCase
             ->method('getDistUrls')
             ->will($this->returnValue(array($distUrl)))
         ;
-        $filesystem = $this->getMock('Composer\Util\Filesystem');
+        $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
 
         $path = $this->getUniqueTmpDirectory();
         $downloader = $this->getDownloader(null, null, null, null, null, $filesystem);

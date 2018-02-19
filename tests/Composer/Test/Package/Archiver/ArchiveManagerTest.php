@@ -34,10 +34,11 @@ class ArchiveManagerTest extends ArchiverTest
         $this->targetDir = $this->testDir.'/composer_archiver_tests';
     }
 
+    /**
+     * @expectedException RuntimeException
+     */
     public function testUnknownFormat()
     {
-        $this->setExpectedException('RuntimeException');
-
         $package = $this->setupPackage();
 
         $this->manager->archive($package, '__unknown_format__', $this->targetDir);
