@@ -665,6 +665,9 @@ By default the command checks for the packages on packagist.org.
   package.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-secure-http:** Disable the secure-http config option temporarily while
+  installing the root package. Use at your own risk. Using this flag is a bad
+  idea.
 * **--keep-vcs:** Skip the deletion of the VCS metadata for the created
   project. This is mostly useful if you run the command in non-interactive
   mode.
