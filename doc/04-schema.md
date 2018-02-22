@@ -861,6 +861,22 @@ The example will include `/dir/foo/bar/file`, `/foo/bar/baz`, `/file.php`,
 
 Optional.
 
+### abandoned
+
+Indicates whether this package has been abandoned.
+
+It can be boolean or a package name/URL pointing to a recommended alternative.
+
+Examples:
+
+Use `"abandoned": true` to indicates this package is abandoned.
+Use `"abandoned": "monolog/monolog"` to indicates this package is abandoned and the
+recommended alternative is  `monolog/monolog`.
+
+Defaults to false.
+
+Optional.
+
 ### non-feature-branches
 
 A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something),
