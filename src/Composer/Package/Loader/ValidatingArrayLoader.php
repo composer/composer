@@ -103,7 +103,8 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        if (isset($this->config['license'])) {
+        // check for license validity on newly updated branches
+        if (isset($this->config['license']) && (!$releaseDate || $releaseDate->getTimestamp() >= strtotime('-8days'))) {
             if (is_array($this->config['license']) || is_string($this->config['license'])) {
                 $licenses = (array) $this->config['license'];
 
