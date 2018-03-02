@@ -359,4 +359,18 @@ class Svn
 
         return $this->hasAuth = true;
     }
+
+    public function binaryVersion() {
+        static $version = null;
+
+        if (!$version) {
+            if (0 === $this->process->execute('svn --version', $output)) {
+                if (preg_match('{(\d+(?:\.\d+)+)}', $output, $match)) {
+                    $version = $match[1];
+                }
+            }
+        }
+
+        return $version;
+    }
 }
