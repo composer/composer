@@ -64,6 +64,11 @@ class Svn
     protected $config;
 
     /**
+     * @var string|null
+     */
+    static private $version;
+
+    /**
      * @param string                   $url
      * @param \Composer\IO\IOInterface $io
      * @param Config                   $config
@@ -358,5 +363,23 @@ class Svn
         }
 
         return $this->hasAuth = true;
+    }
+
+    /**
+     * Returns the version of the svn binary contained in PATH
+     *
+     * @return string|null
+     */
+    public function binaryVersion()
+    {
+        if (!self::$version) {
+            if (0 === $this->process->execute('svn --version', $output)) {
+                if (preg_match('{(\d+(?:\.\d+)+)}', $output, $match)) {
+                    self::$version = $match[1];
+                }
+            }
+        }
+
+        return self::$version;
     }
 }
