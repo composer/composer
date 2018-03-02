@@ -120,7 +120,7 @@ value of this option will let Composer authenticate against example.org.
 
 Lets you fake platform packages (PHP and extensions) so that you can emulate a
 production env or define your target platform in the config. Example: `{"php":
-"5.4", "ext-something": "4.0"}`.
+"7.0.3", "ext-something": "4.0.3"}`.
 
 ## vendor-dir
 

@@ -30,7 +30,7 @@ class Solver
     protected $pool;
     /** @var RepositoryInterface */
     protected $installed;
-    /** @var Ruleset */
+    /** @var RuleSet */
     protected $rules;
     /** @var RuleSetGenerator */
     protected $ruleSetGenerator;

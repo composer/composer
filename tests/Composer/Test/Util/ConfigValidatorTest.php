@@ -34,4 +34,15 @@ class ConfigValidatorTest extends TestCase
             $warnings
         );
     }
+
+    public function testConfigValidatorWarnsOnScriptDescriptionForNonexistentScript()
+    {
+        $configValidator = new ConfigValidator(new NullIO());
+        list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-descriptions.json');
+
+        $this->assertContains(
+            'Description for non-existent script "phpcsxxx" found in "scripts-descriptions"',
+            $warnings
+        );
+    }
 }

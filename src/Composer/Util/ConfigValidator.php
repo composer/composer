@@ -151,6 +151,18 @@ class ConfigValidator
             }
         }
 
+        // report scripts-descriptions for non-existent scripts
+        $scriptsDescriptions = isset($manifest['scripts-descriptions']) ? $manifest['scripts-descriptions'] : array();
+        $scripts = isset($manifest['scripts']) ? $manifest['scripts'] : array();
+        foreach ($scriptsDescriptions as $scriptName => $scriptDescription) {
+            if (!array_key_exists($scriptName, $scripts)) {
+                $warnings[] = sprintf(
+                    'Description for non-existent script "%s" found in "scripts-descriptions"',
+                    $scriptName
+                );
+            }
+        }
+
         // check for empty psr-0/psr-4 namespace prefixes
         if (isset($manifest['autoload']['psr-0'][''])) {
             $warnings[] = "Defining autoload.psr-0 with an empty namespace prefix is a bad idea for performance";

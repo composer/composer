@@ -68,7 +68,7 @@ interface RepositoryInterface extends \Countable
      * @param string $query search query
      * @param int    $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only
      *
-     * @return \array[] an array of array('name' => '...', 'description' => '...')
+     * @return array[] an array of array('name' => '...', 'description' => '...')
      */
     public function search($query, $mode = 0);
 }
