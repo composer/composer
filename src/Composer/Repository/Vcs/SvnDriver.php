@@ -353,7 +353,7 @@ class SvnDriver extends VcsDriver
         try {
             return $this->util->execute($command, $url);
         } catch (\RuntimeException $e) {
-            if (!$this->util->binaryVersion()) {
+            if (null === $this->util->binaryVersion()) {
                 throw new \RuntimeException('Failed to load '.$this->url.', svn was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
             }
 
