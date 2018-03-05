@@ -140,6 +140,12 @@ Debian-like systems):
 memory_limit = -1
 ```
 
+Composer also respects a memory limit defined by the `COMPOSER_MEMORY_LIMIT` environment variable:
+
+```sh
+COMPOSER_MEMORY_LIMIT=-1 composer.phar <...>
+```
+
 Or, you can increase the limit with a command-line argument:
 
 ```sh
