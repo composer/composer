@@ -133,7 +133,16 @@ class SvnDriver extends VcsDriver
                 return $this->infoCache[$identifier] = JsonFile::parseJson($res);
             }
 
-            $composer = $this->getBaseComposerInformation($identifier);
+            try {
+                $composer = $this->getBaseComposerInformation($identifier);
+            } catch(TransportException $e) {
+                $message = $e->getMessage();
+                if (stripos($message, 'path not found') === false && stripos($message, 'svn: warning: W160013') === false) {
+                    throw $e;
+                }
+                // remember a not-existent composer.json
+                $composer = '';
+            }
 
             if ($this->shouldCache($identifier)) {
                 $this->cache->write($identifier.'.json', json_encode($composer));
