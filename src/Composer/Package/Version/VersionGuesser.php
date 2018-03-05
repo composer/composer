@@ -88,7 +88,7 @@ class VersionGuesser
 
     private function postprocess(array $versionData)
     {
-        if ('-dev' === substr($versionData['version'], -4)) {
+        if ('-dev' === substr($versionData['version'], -4) && preg_match('{\.9{7}}', $versionData['version'])) {
             $versionData['pretty_version'] = preg_replace('{(\.9{7})+}', '.x', $versionData['version']);
         }
 
@@ -120,9 +120,6 @@ class VersionGuesser
                         $version = $this->versionParser->normalizeBranch($match[1]);
                         $prettyVersion = 'dev-' . $match[1];
                         $isFeatureBranch = 0 === strpos($version, 'dev-');
-                        if ('9999999-dev' === $version) {
-                            $version = $prettyVersion;
-                        }
                     }
 
                     if ($match[2]) {

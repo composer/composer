@@ -705,8 +705,18 @@ EOT
                 ));
             }
 
+            // Check for similar names/typos
             $similar = $this->findSimilar($name);
             if ($similar) {
+                // Check whether the minimum stability was the problem but the package exists
+                if ($requiredVersion === null && in_array($name, $similar, true)) {
+                    throw new \InvalidArgumentException(sprintf(
+                        'Could not find a version of package %s matching your minimum-stability (%s). Require it with an explicit version constraint allowing its desired stability.',
+                        $name,
+                        $this->getMinimumStability($input)
+                    ));
+                }
+
                 throw new \InvalidArgumentException(sprintf(
                     "Could not find package %s.\n\nDid you mean " . (count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
                     $name,

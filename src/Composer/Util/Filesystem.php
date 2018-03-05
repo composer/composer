@@ -665,6 +665,7 @@ class Filesystem
          * Stat cache should be cleared before to avoid accidentally reading wrong information from previous installs.
          */
         clearstatcache(true, $junction);
+        clearstatcache(false);
         $stat = lstat($junction);
 
         return !($stat['mode'] & 0xC000);

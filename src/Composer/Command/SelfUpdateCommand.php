@@ -107,6 +107,15 @@ EOT
             throw new FilesystemException('Composer update failed: the "'.$tmpDir.'" directory used to download the temp file could not be written');
         }
 
+        // check if composer is running as the same user that owns the directory root, only if POSIX is defined and callable
+        if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
+            $composeUser = posix_getpwuid(posix_geteuid());
+            $homeOwner = posix_getpwuid(fileowner($home));
+            if (isset($composeUser['name']) && isset($homeOwner['name']) && $composeUser['name'] !== $homeOwner['name']) {
+                $io->writeError('<warning>You are running composer as "'.$composeUser['name'].'", while "'.$home.'" is owned by "'.$homeOwner['name'].'"</warning>');
+            }
+        }
+
         if ($input->getOption('rollback')) {
             return $this->rollback($output, $rollbackDir, $localFilename);
         }

@@ -289,7 +289,16 @@ class ConsoleIO extends BaseIO
         $question->setErrorMessage($errorMessage);
         $question->setMultiselect($multiselect);
 
-        return $helper->ask($this->input, $this->getErrorOutput(), $question);
+        $result = $helper->ask($this->input, $this->getErrorOutput(), $question);
+
+        $results = array();
+        foreach ($choices as $index => $choice) {
+            if (in_array($choice, $result, true)) {
+                $results[] = (string) $index;
+            }
+        }
+
+        return $results;
     }
 
     /**

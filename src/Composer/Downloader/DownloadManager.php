@@ -160,8 +160,8 @@ class DownloadManager
 
         if ($installationSource !== $downloader->getInstallationSource()) {
             throw new \LogicException(sprintf(
-                'Downloader "%s" is a %s type downloader and can not be used to download %s',
-                get_class($downloader), $downloader->getInstallationSource(), $installationSource
+                'Downloader "%s" is a %s type downloader and can not be used to download %s for package %s',
+                get_class($downloader), $downloader->getInstallationSource(), $installationSource, $package
             ));
         }
 

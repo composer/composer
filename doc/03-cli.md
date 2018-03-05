@@ -668,6 +668,7 @@ By default the command checks for the packages on packagist.org.
 * **--keep-vcs:** Skip the deletion of the VCS metadata for the created
   project. This is mostly useful if you run the command in non-interactive
   mode.
+* **--remove-vcs:** Force-remove the VCS metadata without prompting.
 * **--no-install:** Disables installation of the vendors.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
