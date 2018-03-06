@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Script\Event as ScriptEvent;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
+use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -114,10 +115,14 @@ EOT
         $io->writeError('<info>scripts:</info>');
         $table = array();
         foreach ($scripts as $name => $script) {
-            $cmd = $this->getApplication()->find($name);
             $description = '';
-            if ($cmd instanceof ScriptAliasCommand) {
-                $description = $cmd->getDescription();
+            try {
+                $cmd = $this->getApplication()->find($name);
+                if ($cmd instanceof ScriptAliasCommand) {
+                    $description = $cmd->getDescription();
+                }
+            } catch (CommandNotFoundException $e) {
+                // script is not known by Composer
             }
             $table[] = array('  '.$name, $description);
         }
