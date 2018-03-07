@@ -683,6 +683,7 @@
             }
         },
         "inline-package": {
+            "type": "object",
             "required": ["name", "version"],
             "properties": {
                 "name": {
