@@ -121,7 +121,8 @@ class Svn
      */
     public function executeLocal($command, $path, $cwd = null, $verbose = false)
     {
-        $svnCommand = sprintf('%s %s%s %s',
+        $svnCommand = sprintf(
+            '%s %s%s %s',
             $command,
             '--non-interactive ',
             $this->getCredentialString(),
@@ -223,7 +224,8 @@ class Svn
      */
     protected function getCommand($cmd, $url, $path = null)
     {
-        $cmd = sprintf('%s %s%s %s',
+        $cmd = sprintf(
+            '%s %s%s %s',
             $cmd,
             '--non-interactive ',
             $this->getCredentialString(),

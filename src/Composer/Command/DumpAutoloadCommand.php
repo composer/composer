@@ -36,7 +36,8 @@ class DumpAutoloadCommand extends BaseCommand
                 new InputOption('apcu', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 <info>php composer.phar dump-autoload</info>
 EOT
             )

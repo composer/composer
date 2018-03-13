@@ -504,6 +504,7 @@ class JsonManipulator
                     }
                     // fallthrough
 
+                    // no break
                 default:
                     throw new \RuntimeException('Failed to execute regex: Unknown error');
             }

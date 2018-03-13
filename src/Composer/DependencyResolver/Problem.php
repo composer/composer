@@ -11,6 +11,7 @@
  */
 
 namespace Composer\DependencyResolver;
+
 use Composer\Package\CompletePackageInterface;
 
 /**

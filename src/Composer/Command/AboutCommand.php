@@ -25,7 +25,8 @@ class AboutCommand extends BaseCommand
         $this
             ->setName('about')
             ->setDescription('Shows the short information about Composer.')
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 <info>php composer.phar about</info>
 EOT
             )
@@ -34,7 +35,8 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->getIO()->write(<<<EOT
+        $this->getIO()->write(
+            <<<EOT
 <info>Composer - Package Management for PHP</info>
 <comment>Composer is a dependency manager tracking local dependencies of your projects and libraries.
 See https://getcomposer.org/ for more information.</comment>

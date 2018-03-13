@@ -35,7 +35,9 @@ abstract class ArchiveDownloader extends FileDownloader
         while ($retries--) {
             $fileName = parent::download($package, $path, $output);
 
-            $this->io->writeError(' Extracting archive', false, IOInterface::VERBOSE);
+            if ($output) {
+                $this->io->writeError(' Extracting archive', false, IOInterface::VERBOSE);
+            }
 
             try {
                 $this->filesystem->ensureDirectoryExists($temporaryDir);
