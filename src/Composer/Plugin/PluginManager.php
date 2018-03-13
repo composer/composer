@@ -177,6 +177,14 @@ class PluginManager
         $classLoader = $generator->createLoader($map);
         $classLoader->register();
 
+        foreach ($map['files'] as $fileIdentifier => $file) {
+            if (empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
+                require $file;
+
+                $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;
+            }
+        }
+
         foreach ($classes as $class) {
             if (class_exists($class, false)) {
                 $class = trim($class, '\\');
