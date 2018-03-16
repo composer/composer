@@ -37,6 +37,9 @@ class StatusCommand extends BaseCommand
     const EXIT_CODE_UNPUSHED_CHANGES = 2;
     const EXIT_CODE_VERSION_CHANGES = 4;
 
+    /**
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     */
     protected function configure()
     {
         $this
@@ -55,6 +58,11 @@ EOT
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|null
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         // init repos
