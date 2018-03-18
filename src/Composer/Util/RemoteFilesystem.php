@@ -504,8 +504,8 @@ class RemoteFilesystem
 
             if ($this->storeAuth && $this->config) {
                 $authHelper = new AuthHelper($this->io, $this->config);
-                $originUrl = $this->io->hasAuthentication($this->originUrl) ? $this->originUrl : $originUrl;
-                $authHelper->storeAuth($originUrl, $this->storeAuth);
+                $authUrl = $this->io->hasAuthentication($this->originUrl) ? $this->originUrl : $originUrl;
+                $authHelper->storeAuth($authUrl, $this->storeAuth);
                 $this->storeAuth = false;
             }
 
