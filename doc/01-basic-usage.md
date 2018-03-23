@@ -44,7 +44,7 @@ about Packagist [below](#packagist), or read more about repositories
 ### Package Names
 
 The package name consists of a vendor name and the project's name. Often these
-will be identical - the vendor name just exists to prevent naming clashes. For
+will be identical - the vendor name only exists to prevent naming clashes. For
 example, it would allow two different people to create a library named `json`.
 One might be named `igorw/json` while the other might be `seldaek/json`.
 
@@ -86,7 +86,7 @@ versions, how versions relate to each other, and on version constraints.
 
 ## Installing Dependencies
 
-To install the defined dependencies for your project, just run the
+To install the defined dependencies for your project, run the
 [`install`](03-cli.md#install) command.
 
 ```sh
@@ -196,7 +196,7 @@ includes PHP itself, PHP extensions and some system libraries.
 
 * `ext-<name>` allows you to require PHP extensions (includes core
   extensions). Versioning can be quite inconsistent here, so it's often
-  a good idea to just set the constraint to `*`.  An example of an extension
+  a good idea to set the constraint to `*`.  An example of an extension
   package name is `ext-gd`.
 
 * `lib-<name>` allows constraints to be made on versions of libraries used by
@@ -258,7 +258,7 @@ more information.
 See also the docs on [optimizing the autoloader](articles/autoloader-optimization.md).
 
 > **Note:** Composer provides its own autoloader. If you don't want to use that
-> one, you can just include `vendor/composer/autoload_*.php` files, which return
+> one, you can include `vendor/composer/autoload_*.php` files, which return
 > associative arrays allowing you to configure your own autoloader.
 
 &larr; [Intro](00-intro.md)  |  [Libraries](02-libraries.md) &rarr;

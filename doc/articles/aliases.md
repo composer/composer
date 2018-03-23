@@ -60,7 +60,7 @@ Branch aliases are great for aliasing main development lines. But in order to
 use them you need to have control over the source repository, and you need to
 commit changes to version control.
 
-This is not really fun when you just want to try a bugfix of some library that
+This is not really fun when you want to try a bugfix of some library that
 is a dependency of your local project.
 
 For this reason, you can alias packages in your `require` and `require-dev`
@@ -72,7 +72,7 @@ local project.
 You are using `symfony/monolog-bundle` which requires `monolog/monolog` version
 `1.*`. So you need your `dev-bugfix` to match that constraint.
 
-Just add this to your project's root `composer.json`:
+Add this to your project's root `composer.json`:
 
 ```json
 {

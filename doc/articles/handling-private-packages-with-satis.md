@@ -77,7 +77,7 @@ or another constraint if you want really specific versions.
 }
 ```
 
-Once you've done this, you just run:
+Once you've done this, you run:
 
     php bin/satis build <configuration file> <build dir>
 
@@ -306,7 +306,7 @@ be marked abandoned as well.
 
 It is possible to make satis automatically resolve and add all dependencies for
 your projects. This can be used with the Downloads functionality to have a
-complete local mirror of packages. Just add the following to your `satis.json`:
+complete local mirror of packages. Add the following to your `satis.json`:
 
 ```json
 {
