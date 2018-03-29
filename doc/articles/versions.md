@@ -74,11 +74,11 @@ correct location in your `vendor` directory.
 
 ### Branches
 
-If you want Composer to check out a branch instead of a tag, you need to point it to the branch using the special `dev-*` prefix (or sometimes suffix; see below). If you're checking out a branch, it's assumed that you want to *work* on the branch and Composer actually clones the repo into the correct place in your `vendor` directory. For tags, it just copies the right files without actually cloning the repo. (You can modify this behavior with --prefer-source and --prefer-dist, see [install options](../03-cli.md#install).)
+If you want Composer to check out a branch instead of a tag, you need to point it to the branch using the special `dev-*` prefix (or sometimes suffix; see below). If you're checking out a branch, it's assumed that you want to *work* on the branch and Composer actually clones the repo into the correct place in your `vendor` directory. For tags, it copies the right files without actually cloning the repo. (You can modify this behavior with --prefer-source and --prefer-dist, see [install options](../03-cli.md#install).)
 
 In the above example, if you wanted to check out the `my-feature` branch, you would specify `dev-my-feature` as the version constraint in your `require` clause. This would result in Composer cloning the `my-library` repository into my `vendor` directory and checking out the `my-feature` branch.
 
-When branch names look like versions, we have to clarify for composer that we're trying to check out a branch and not a tag. In the above example, we have two version branches: `v1` and `v2`. To get Composer to check out one of these branches, you must specify a version constraint that looks like this: `v1.x-dev`. The `.x` is an arbitrary string that Composer requires to tell it that we're talking about the `v1` branch and not a `v1` tag (alternatively, you can just name the branch `v1.x` instead of `v1`). In the case of a branch with a version-like name (`v1`, in this case), you append `-dev` as a suffix, rather than using `dev-` as a prefix.
+When branch names look like versions, we have to clarify for composer that we're trying to check out a branch and not a tag. In the above example, we have two version branches: `v1` and `v2`. To get Composer to check out one of these branches, you must specify a version constraint that looks like this: `v1.x-dev`. The `.x` is an arbitrary string that Composer requires to tell it that we're talking about the `v1` branch and not a `v1` tag (alternatively, you can name the branch `v1.x` instead of `v1`). In the case of a branch with a version-like name (`v1`, in this case), you append `-dev` as a suffix, rather than using `dev-` as a prefix.
 
 ### Minimum Stability
 

@@ -129,7 +129,7 @@ php composer.phar update
 This will resolve all dependencies of the project and write the exact versions
 into `composer.lock`.
 
-If you just want to update a few packages and not all, you can list them as such:
+If you only want to update a few packages and not all, you can list them as such:
 
 ```sh
 php composer.phar update vendor/package vendor/package2
@@ -184,7 +184,7 @@ php composer.phar require
 After adding/changing the requirements, the modified requirements will be
 installed or updated.
 
-If you do not want to choose requirements interactively, you can just pass them
+If you do not want to choose requirements interactively, you can pass them
 to the command.
 
 ```sh
@@ -272,7 +272,7 @@ This can be used to install CLI utilities globally. Here is an example:
 php composer.phar global require friendsofphp/php-cs-fixer
 ```
 
-Now the `php-cs-fixer` binary is available globally. Just make sure your global
+Now the `php-cs-fixer` binary is available globally. Make sure your global
 [vendor binaries](articles/vendor-binaries.md) directory is in your `$PATH`
 environment variable, you can get its location with the following command :
 
@@ -280,7 +280,7 @@ environment variable, you can get its location with the following command :
 php composer.phar global config bin-dir --absolute
 ```
 
-If you wish to update the binary later on you can just run a global update:
+If you wish to update the binary later on you can run a global update:
 
 ```sh
 php composer.phar global update
@@ -289,7 +289,7 @@ php composer.phar global update
 ## search
 
 The search command allows you to search through the current project's package
-repositories. Usually this will be just packagist. You simply pass it the
+repositories. Usually this will be packagist. You simply pass it the
 terms you want to search for.
 
 ```sh
@@ -520,7 +520,7 @@ vendor/seld/jsonlint:
 
 ## self-update (selfupdate)
 
-To update Composer itself to the latest version, just run the `self-update`
+To update Composer itself to the latest version, run the `self-update`
 command. It will replace your `composer.phar` with the latest version.
 
 ```sh
@@ -721,7 +721,7 @@ Lists the name, version and license of every package installed. Use
 * **--list (-l):** List user defined scripts.
 
 To run [scripts](articles/scripts.md) manually you can use this command,
-just give it the script name and optionally any required arguments.
+give it the script name and optionally any required arguments.
 
 ## exec
 
@@ -762,7 +762,7 @@ php composer.phar archive vendor/package 2.0.21 --format=zip
 
 ## help
 
-To get more information about a certain command, just use `help`.
+To get more information about a certain command, you can use `help`.
 
 ```sh
 php composer.phar help install

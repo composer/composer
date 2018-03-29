@@ -43,7 +43,7 @@ Required for published packages (libraries).
 
 ### description
 
-A short description of the package. Usually this is just one line long.
+A short description of the package. Usually this is one line long.
 
 Required for published packages (libraries).
 
@@ -104,7 +104,7 @@ Out of the box, Composer supports four types:
   [dedicated article](articles/custom-installers.md).
 
 Only use a custom type if you need custom logic during installation. It is
-recommended to omit this field and have it just default to `library`.
+recommended to omit this field and have it default to `library`.
 
 ### keywords
 
@@ -272,7 +272,7 @@ All links are optional fields.
 `require` and `require-dev` additionally support stability flags ([root-only](04-schema.md#root-package)).
 These allow you to further restrict or expand the stability of a package beyond
 the scope of the [minimum-stability](#minimum-stability) setting. You can apply
-them to a constraint, or just apply them to an empty constraint if you want to
+them to a constraint, or apply them to an empty constraint if you want to
 allow unstable packages of a dependency for example.
 
 Example:
@@ -406,7 +406,7 @@ simply list it in `provide`.
 #### suggest
 
 Suggested packages that can enhance or work well with this package. These are
-just informational and are displayed after the package is installed, to give
+informational and are displayed after the package is installed, to give
 your users a hint that they could add more packages, even though they are not
 strictly required.
 
@@ -711,7 +711,7 @@ Use `"prefer-stable": true` to enable.
 
 Custom package repositories to use.
 
-By default Composer just uses the packagist repository. By specifying
+By default Composer only uses the packagist repository. By specifying
 repositories you can get packages from elsewhere.
 
 Repositories are not resolved recursively. You can only add them to your main
@@ -731,7 +731,7 @@ The following repository types are supported:
   project.
 * **package:** If you depend on a project that does not have any support for
   composer whatsoever you can define the package inline using a `package`
-  repository. You basically just inline the `composer.json` object.
+  repository. You basically inline the `composer.json` object.
 
 For more information on any of these, see [Repositories](05-repositories.md).
 
