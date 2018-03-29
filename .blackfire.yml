@@ -1,0 +1,8 @@
+metrics:
+  composer.processes: # metric name
+    label: "composer subprocesses"
+    matching_calls:
+      php:
+        - callee:
+            selector: '=Composer\Util\ProcessExecutor::execute' # aggregate the costs of all ProcessExecutor::execute calls
+            argument: { 1: "^" }  # but create separate nodes by the first argument value
