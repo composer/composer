@@ -12,6 +12,7 @@
 
 namespace Composer\Console;
 
+use Composer\IO\NullIO;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Application as BaseApplication;
@@ -84,6 +85,8 @@ class Application extends BaseApplication
                 }
             });
         }
+
+        $this->io = new NullIO();
 
         parent::__construct('Composer', Composer::VERSION);
     }
