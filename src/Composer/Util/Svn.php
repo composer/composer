@@ -102,9 +102,7 @@ class Svn
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
 
-        $svnCommand = $this->getCommand($command, $url, $path);
-
-        return $this->executeWithAuthRetry($svnCommand, $cwd, $path, $verbose);
+        return $this->executeWithAuthRetry($command, $cwd, $url, $path, $verbose);
     }
 
     /**
@@ -121,18 +119,15 @@ class Svn
      */
     public function executeLocal($command, $path, $cwd = null, $verbose = false)
     {
-        $svnCommand = sprintf('%s %s%s %s',
-            $command,
-            '--non-interactive ',
-            $this->getCredentialString(),
-            ProcessExecutor::escape($path)
-        );
-
-        return $this->executeWithAuthRetry($svnCommand, $cwd, $path, $verbose);
+        // A local command has no remote url
+        return $this->executeWithAuthRetry($command, $cwd, '', $path, $verbose);
     }
 
-    private function executeWithAuthRetry($command, $cwd, $path, $verbose)
+    private function executeWithAuthRetry($svnCommand, $cwd, $url, $path, $verbose)
     {
+        // Regenerate the command at each try, to use the newly user-provided credentials
+        $command = $this->getCommand($svnCommand, $url, $path);
+
         $output = null;
         $io = $this->io;
         $handler = function ($type, $buffer) use (&$output, $io, $verbose) {
@@ -170,7 +165,7 @@ class Svn
         // try to authenticate if maximum quantity of tries not reached
         if ($this->qtyAuthTries++ < self::MAX_QTY_AUTH_TRIES) {
             // restart the process
-            return $this->executeWithAuthRetry($command, $cwd, $path, $verbose);
+            return $this->executeWithAuthRetry($svnCommand, $cwd, $url, $path, $verbose);
         }
 
         throw new \RuntimeException(
