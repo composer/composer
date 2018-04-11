@@ -94,6 +94,10 @@ class ClassMapGenerator
             if ($blacklist && preg_match($blacklist, strtr(realpath($filePath), '\\', '/'))) {
                 continue;
             }
+            // check non-realpaatch of file
+            if ($blacklist && preg_match($blacklist, strtr($filePath, '\\', '/'))) {
+                continue;
+            }
 
             $classes = self::findClasses($filePath);
 
