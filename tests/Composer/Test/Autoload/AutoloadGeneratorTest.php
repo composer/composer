@@ -1328,9 +1328,10 @@ EOF;
         file_put_contents($this->workingDir.'/composersrc/long/excluded/excsubpath/foo.php', '<?php class ClassExcludeMapFoo2 {}');
         file_put_contents($this->workingDir.'/composersrc/long/excluded/excsubpath/bar.php', '<?php class ClassExcludeMapBar {}');
 
-        // symlinked classmap folder in project directory in classmap
+        // symlink directory in project directory in classmap
         $this->fs->ensureDirectoryExists($this->workingDir.'/forks/bar/src/exclude');
-		$this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/foo');
+	$this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/foo');
+	    
         file_put_contents($this->workingDir.'/forks/bar/src/exclude/FooExclClass.php', '<?php class FooExclClass {};');
         $target = $this->workingDir.'/forks/bar/';
         $link = $this->workingDir.'/composersrc/foo/bar/';
