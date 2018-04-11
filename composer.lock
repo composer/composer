@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "6f0e4eb8b744ac97ff62245bed9d8aa5",
+    "content-hash": "0d1f37a66bf7821e9aa424785ea8ab52",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -187,16 +187,16 @@
         },
         {
             "name": "composer/xdebug-handler",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/xdebug-handler.git",
-                "reference": "1852e549ad0d6f2910f89c27fec833dda1b25b4a"
+                "reference": "c919dc6c62e221fc6406f861ea13433c0aa24f08"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/1852e549ad0d6f2910f89c27fec833dda1b25b4a",
-                "reference": "1852e549ad0d6f2910f89c27fec833dda1b25b4a",
+                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/c919dc6c62e221fc6406f861ea13433c0aa24f08",
+                "reference": "c919dc6c62e221fc6406f861ea13433c0aa24f08",
                 "shasum": ""
             },
             "require": {
@@ -227,7 +227,7 @@
                 "Xdebug",
                 "performance"
             ],
-            "time": "2018-03-08T13:09:50+00:00"
+            "time": "2018-04-11T15:42:36+00:00"
         },
         {
             "name": "justinrainbow/json-schema",
