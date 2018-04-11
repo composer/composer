@@ -23,6 +23,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Util\Platform;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
 
 class AutoloadGeneratorTest extends TestCase
