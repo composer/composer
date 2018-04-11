@@ -94,7 +94,7 @@ class ClassMapGenerator
             if ($blacklist && preg_match($blacklist, strtr(realpath($filePath), '\\', '/'))) {
                 continue;
             }
-            // check non-realpaatch of file
+            // check non-realpath of file for directories symlink in project dir
             if ($blacklist && preg_match($blacklist, strtr($filePath, '\\', '/'))) {
                 continue;
             }
