@@ -308,7 +308,9 @@ releases for the `doctrine/data-fixtures` package :
 `require` and `require-dev` additionally support explicit references (i.e.
 commit) for dev versions to make sure they are locked to a given state, even
 when you run update. These only work if you explicitly require a dev version
-and append the reference with `#<ref>`.
+and append the reference with `#<ref>`. This is also a
+[root-only](04-schema.md#root-package) feature and will be ignored in
+dependencies.
 
 Example:
 

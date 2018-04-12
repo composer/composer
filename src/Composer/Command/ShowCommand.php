@@ -467,7 +467,7 @@ EOT
                     }
                     $io->write('');
                     if (isset($package['warning'])) {
-                        $io->write('<warning>' . $package['warning'] . '</warning>');
+                        $io->writeError('<warning>' . $package['warning'] . '</warning>');
                     }
                 }
 
