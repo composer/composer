@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\Cache;
 use Composer\Factory;
 use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
 use Composer\Package\Comparer\Comparer;
 use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginEvents;
@@ -288,9 +289,13 @@ class FileDownloader implements DownloaderInterface
      */
     public function getLocalChanges(PackageInterface $package, $targetDir)
     {
-        if ($this->outputProgress) {
-            $this->io->writeError('  - Installing Original <info>' . $package->getName() . '</info> (<comment>' . $package->getFullPrettyVersion() . '</comment>) and Checking: ', true);
-        }
+        $prevIO = $this->io;
+        $prevProgress = $this->outputProgress;
+
+        $this->io = new NullIO;
+        $this->io->loadConfiguration($this->config);
+        $this->outputProgress = false;
+
         $this->download($package, $targetDir.'_compare', false);
 
         $comparer = new Comparer();
@@ -299,6 +304,9 @@ class FileDownloader implements DownloaderInterface
         $comparer->doCompare();
         $output = $comparer->getChanged(true, true);
         $this->filesystem->removeDirectory($targetDir.'_compare');
+
+        $this->io = $prevIO;
+        $this->outputProgress = $prevProgress;
 
         return trim($output);
     }
