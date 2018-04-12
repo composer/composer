@@ -176,6 +176,24 @@ class RemoteFilesystem
     }
 
     /**
+     * @param  array       $headers array of returned headers like from getLastHeaders()
+     * @return string|null
+     */
+    public function findStatusMessage(array $headers)
+    {
+        $value = null;
+        foreach ($headers as $header) {
+            if (preg_match('{^HTTP/\S+ \d+}i', $header)) {
+                // In case of redirects, http_response_headers contains the headers of all responses
+                // so we can not return directly and need to keep iterating
+                $value = $header;
+            }
+        }
+
+        return $value;
+    }
+
+    /**
      * Get file content or copy action.
      *
      * @param string $originUrl         The origin URL
@@ -298,6 +316,20 @@ class RemoteFilesystem
         });
         try {
             $result = file_get_contents($fileUrl, false, $ctx);
+
+            if (!empty($http_response_header[0])) {
+                $statusCode = $this->findStatusCode($http_response_header);
+                if (in_array($statusCode, array(401, 403)) && $this->retryAuthFailure) {
+                    $warning = null;
+                    if ($this->findHeaderValue($http_response_header, 'content-type') === 'application/json') {
+                        $data = json_decode($result, true);
+                        if (!empty($data['warning'])) {
+                            $warning = $data['warning'];
+                        }
+                    }
+                    $this->promptAuthAndRetry($statusCode, $this->findStatusMessage($http_response_header), $warning);
+                }
+            }
 
             $contentLength = !empty($http_response_header[0]) ? $this->findHeaderValue($http_response_header, 'content-length') : null;
             if ($contentLength && Platform::strlen($result) < $contentLength) {
@@ -558,29 +590,6 @@ class RemoteFilesystem
                     // but you do not send an appropriate certificate
                     throw new TransportException("The '" . $this->fileUrl . "' URL could not be accessed: " . $message, $messageCode);
                 }
-                // intentional fallthrough to the next case as the notificationCode
-                // isn't always consistent and we should inspect the messageCode for 401s
-
-            case STREAM_NOTIFY_AUTH_REQUIRED:
-                if (401 === $messageCode) {
-                    // Bail if the caller is going to handle authentication failures itself.
-                    if (!$this->retryAuthFailure) {
-                        break;
-                    }
-
-                    $this->promptAuthAndRetry($messageCode);
-                }
-                break;
-
-            case STREAM_NOTIFY_AUTH_RESULT:
-                if (403 === $messageCode) {
-                    // Bail if the caller is going to handle authentication failures itself.
-                    if (!$this->retryAuthFailure) {
-                        break;
-                    }
-
-                    $this->promptAuthAndRetry($messageCode, $message);
-                }
                 break;
 
             case STREAM_NOTIFY_FILE_SIZE_IS:
@@ -603,7 +612,7 @@ class RemoteFilesystem
         }
     }
 
-    protected function promptAuthAndRetry($httpStatus, $reason = null)
+    protected function promptAuthAndRetry($httpStatus, $reason = null, $warning = null)
     {
         if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
             $message = "\n".'Could not fetch '.$this->fileUrl.', please create a GitHub OAuth token '.($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
@@ -674,6 +683,9 @@ class RemoteFilesystem
             }
 
             $this->io->overwriteError('');
+            if ($warning) {
+                $this->io->writeError('    <warning>'.$warning.'</warning>');
+            }
             $this->io->writeError('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');
