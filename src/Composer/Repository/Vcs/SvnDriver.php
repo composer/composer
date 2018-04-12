@@ -118,16 +118,35 @@ class SvnDriver extends VcsDriver
     /**
      * {@inheritdoc}
      */
+    protected function shouldCache($identifier)
+    {
+        return $this->cache && preg_match('{@\d+$}', $identifier);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            if ($res = $this->cache->read($identifier.'.json')) {
+            if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier.'.json')) {
                 return $this->infoCache[$identifier] = JsonFile::parseJson($res);
             }
 
-            $composer = $this->getBaseComposerInformation($identifier);
+            try {
+                $composer = $this->getBaseComposerInformation($identifier);
+            } catch(TransportException $e) {
+                $message = $e->getMessage();
+                if (stripos($message, 'path not found') === false && stripos($message, 'svn: warning: W160013') === false) {
+                    throw $e;
+                }
+                // remember a not-existent composer.json
+                $composer = '';
+            }
 
-            $this->cache->write($identifier.'.json', json_encode($composer));
+            if ($this->shouldCache($identifier)) {
+                $this->cache->write($identifier.'.json', json_encode($composer));
+            }
 
             $this->infoCache[$identifier] = $composer;
         }
