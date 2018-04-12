@@ -39,7 +39,7 @@ abstract class BaseRepository implements RepositoryInterface
      */
     public function getDependents($needle, $constraint = null, $invert = false, $recurse = true, $packagesFound = null)
     {
-        $needles = (array) $needle;
+        $needles = array_map('strtolower', (array) $needle);
         $results = array();
 
         // initialize the array with the needles before any recursion occurs
