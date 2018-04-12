@@ -319,11 +319,16 @@ EOT
 
         $io->writeError(array('', 'Define your dependencies.', ''));
 
+        // prepare to resolve dependencies
+        $repos = $this->getRepos();
+        $preferredStability = $minimumStability ?: 'stable';
+        $phpVersion = $repos->findPackage('php', '*')->getPrettyVersion();
+
         $question = 'Would you like to define your dependencies (require) interactively [<comment>yes</comment>]? ';
         $require = $input->getOption('require');
         $requirements = array();
         if ($require || $io->askConfirmation($question, true)) {
-            $requirements = $this->determineRequirements($input, $output, $require);
+            $requirements = $this->determineRequirements($input, $output, $require, $phpVersion, $preferredStability);
         }
         $input->setOption('require', $requirements);
 
@@ -331,7 +336,7 @@ EOT
         $requireDev = $input->getOption('require-dev');
         $devRequirements = array();
         if ($requireDev || $io->askConfirmation($question, true)) {
-            $devRequirements = $this->determineRequirements($input, $output, $requireDev);
+            $devRequirements = $this->determineRequirements($input, $output, $requireDev, $phpVersion, $preferredStability);
         }
         $input->setOption('require-dev', $devRequirements);
     }

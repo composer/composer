@@ -184,7 +184,7 @@ class VersionGuesser
             $isFeatureBranch = 0 === strpos($version, 'dev-');
 
             if ('9999999-dev' === $version) {
-                $version = 'dev-' . $branch;
+                return array('version' => $version, 'commit' => null, 'pretty_version' => 'dev-'.$branch);
             }
 
             if (!$isFeatureBranch) {
@@ -240,9 +240,6 @@ class VersionGuesser
                     $length = strlen($output);
                     $version = $this->versionParser->normalizeBranch($candidate);
                     $prettyVersion = 'dev-' . $match[1];
-                    if ('9999999-dev' === $version) {
-                        $version = $prettyVersion;
-                    }
                 }
             }
         }
@@ -260,10 +257,6 @@ class VersionGuesser
             $branch = trim($output);
             $version = $this->versionParser->normalizeBranch($branch);
             $prettyVersion = 'dev-' . $branch;
-
-            if ('9999999-dev' === $version) {
-                $version = $prettyVersion;
-            }
         }
 
         // try to fetch current version from fossil tags
@@ -295,9 +288,6 @@ class VersionGuesser
                     // we are in a branches path
                     $version = $this->versionParser->normalizeBranch($matches[3]);
                     $prettyVersion = 'dev-' . $matches[3];
-                    if ('9999999-dev' === $version) {
-                        $version = $prettyVersion;
-                    }
 
                     return array('version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion);
                 }

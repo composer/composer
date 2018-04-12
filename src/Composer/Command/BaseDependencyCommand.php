@@ -89,7 +89,7 @@ class BaseDependencyCommand extends BaseCommand
         );
 
         // Find packages that are or provide the requested package first
-        $packages = $pool->whatProvides($needle);
+        $packages = $pool->whatProvides(strtolower($needle));
         if (empty($packages)) {
             throw new \InvalidArgumentException(sprintf('Could not find package "%s" in your project', $needle));
         }
