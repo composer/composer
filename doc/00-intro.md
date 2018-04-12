@@ -94,6 +94,10 @@ you can run this to move composer.phar to a directory that is in your path:
 mv composer.phar /usr/local/bin/composer
 ```
 
+If you like to install it only for your user and avoid requiring root permissions,
+you can use `~/.local/bin` instead which is available by default on some
+Linux distributions.
+
 > **Note:** If the above fails due to permissions, you may need to run it again
 > with sudo.
 
