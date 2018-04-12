@@ -192,7 +192,7 @@ class SvnDownloader extends VcsDownloader
             $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
             $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
 
-            $command = sprintf('svn log -r%s:%s --incremental', $fromRevision, $toRevision);
+            $command = sprintf('svn log -r%s:%s --incremental', ProcessExecutor::escape($fromRevision), ProcessExecutor::escape($toRevision));
 
             $util = new SvnUtil($baseUrl, $this->io, $this->config);
             $util->setCacheCredentials($this->cacheCredentials);
