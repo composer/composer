@@ -237,6 +237,7 @@ Support information includes the following:
 * **source:** URL to browse or download the sources.
 * **docs:** URL to the documentation.
 * **rss:** URL to the RSS feed.
+* **readme:** Relative path to the readme document.
 
 An example:
 
