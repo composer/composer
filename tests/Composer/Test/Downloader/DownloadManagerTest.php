@@ -22,8 +22,8 @@ class DownloadManagerTest extends TestCase
 
     public function setUp()
     {
-        $this->filesystem = $this->getMock('Composer\Util\Filesystem');
-        $this->io = $this->getMock('Composer\IO\IOInterface');
+        $this->filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
+        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
     public function testSetGetDownloader()

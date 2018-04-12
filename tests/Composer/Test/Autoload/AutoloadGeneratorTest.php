@@ -23,6 +23,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Util\Platform;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
 
 class AutoloadGeneratorTest extends TestCase
@@ -92,7 +93,7 @@ class AutoloadGeneratorTest extends TestCase
         $this->vendorDir = $this->workingDir.DIRECTORY_SEPARATOR.'composer-test-autoload';
         $this->ensureDirectoryExistsAndClear($this->vendorDir);
 
-        $this->config = $this->getMock('Composer\Config');
+        $this->config = $this->getMockBuilder('Composer\Config')->getMock();
 
         $this->configValueMap = array(
             'vendor-dir' => function () use ($that) {
@@ -127,7 +128,7 @@ class AutoloadGeneratorTest extends TestCase
 
                 return $that->vendorDir.'/'.$package->getName() . ($targetDir ? '/'.$targetDir : '');
             }));
-        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
+        $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
 
         $this->eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->disableOriginalConstructor()
@@ -1292,6 +1293,7 @@ EOF;
             ),
             'classmap' => array('composersrc/'),
             'exclude-from-classmap' => array(
+                '/composersrc/foo/bar/',
                 '/composersrc/excludedTests/',
                 '/composersrc/ClassToExclude.php',
                 '/composersrc/*/excluded/excsubpath',
@@ -1325,6 +1327,18 @@ EOF;
         $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/long/excluded/excsubpath');
         file_put_contents($this->workingDir.'/composersrc/long/excluded/excsubpath/foo.php', '<?php class ClassExcludeMapFoo2 {}');
         file_put_contents($this->workingDir.'/composersrc/long/excluded/excsubpath/bar.php', '<?php class ClassExcludeMapBar {}');
+
+        // symlink directory in project directory in classmap
+        $this->fs->ensureDirectoryExists($this->workingDir.'/forks/bar/src/exclude');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/foo');
+
+        file_put_contents($this->workingDir.'/forks/bar/src/exclude/FooExclClass.php', '<?php class FooExclClass {};');
+        $target = $this->workingDir.'/forks/bar/';
+        $link = $this->workingDir.'/composersrc/foo/bar/';
+        $command = Platform::isWindows()
+            ? 'mklink /j "' . str_replace('/', '\\', $link) . '" "' . str_replace('/', '\\', $target)
+            : 'ln -s "' . $target . '" "' . $link;
+        exec($command);
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
 

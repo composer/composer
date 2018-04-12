@@ -19,7 +19,7 @@ class RemoteFilesystemTest extends TestCase
 {
     public function testGetOptionsForUrl()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
@@ -32,7 +32,7 @@ class RemoteFilesystemTest extends TestCase
 
     public function testGetOptionsForUrlWithAuthorization()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
@@ -57,7 +57,7 @@ class RemoteFilesystemTest extends TestCase
 
     public function testGetOptionsForUrlWithStreamOptions()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
@@ -74,7 +74,7 @@ class RemoteFilesystemTest extends TestCase
 
     public function testGetOptionsForUrlWithCallOptionsKeepsHeader()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
@@ -101,14 +101,14 @@ class RemoteFilesystemTest extends TestCase
 
     public function testCallbackGetFileSize()
     {
-        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
+        $fs = new RemoteFilesystem($this->getMockBuilder('Composer\IO\IOInterface')->getMock());
         $this->callCallbackGet($fs, STREAM_NOTIFY_FILE_SIZE_IS, 0, '', 0, 0, 20);
         $this->assertAttributeEquals(20, 'bytesMax', $fs);
     }
 
     public function testCallbackGetNotifyProgress()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io
             ->expects($this->once())
             ->method('overwriteError')
@@ -124,7 +124,7 @@ class RemoteFilesystemTest extends TestCase
 
     public function testCallbackGetPassesThrough404()
     {
-        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
+        $fs = new RemoteFilesystem($this->getMockBuilder('Composer\IO\IOInterface')->getMock());
 
         $this->assertNull($this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0));
     }
@@ -134,7 +134,7 @@ class RemoteFilesystemTest extends TestCase
      */
     public function testCaptureAuthenticationParamsFromUrl()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io->expects($this->once())
             ->method('setAuthentication')
             ->with($this->equalTo('github.com'), $this->equalTo('user'), $this->equalTo('pass'));
@@ -150,14 +150,14 @@ class RemoteFilesystemTest extends TestCase
 
     public function testGetContents()
     {
-        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
+        $fs = new RemoteFilesystem($this->getMockBuilder('Composer\IO\IOInterface')->getMock());
 
         $this->assertContains('testGetContents', $fs->getContents('http://example.org', 'file://'.__FILE__));
     }
 
     public function testCopy()
     {
-        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
+        $fs = new RemoteFilesystem($this->getMockBuilder('Composer\IO\IOInterface')->getMock());
 
         $file = tempnam(sys_get_temp_dir(), 'c');
         $this->assertTrue($fs->copy('http://example.org', 'file://'.__FILE__, $file));
@@ -171,7 +171,7 @@ class RemoteFilesystemTest extends TestCase
      */
     public function testGetOptionsForUrlCreatesSecureTlsDefaults()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
         $res = $this->callGetOptionsForUrl($io, array('example.org', array('ssl' => array('cafile' => '/some/path/file.crt'))), array(), 'http://www.example.org');
 
