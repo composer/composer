@@ -167,6 +167,13 @@ class ArrayRepository extends BaseRepository
     {
         $packageId = $package->getUniqueName();
 
+        if ($package instanceof AliasPackage) {
+            $aliasedPackage = $package->getAliasOf();
+            if ($this === $aliasedPackage->getRepository()) {
+                $this->removePackage($aliasedPackage);
+            }
+        }
+
         foreach ($this->getPackages() as $key => $repoPackage) {
             if ($packageId === $repoPackage->getUniqueName()) {
                 array_splice($this->packages, $key, 1);
