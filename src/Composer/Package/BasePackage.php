@@ -234,4 +234,20 @@ abstract class BasePackage implements PackageInterface
         $this->repository = null;
         $this->id = -1;
     }
+
+    /**
+     * Return TRUE if this package is a virtual package. (e.g. ext-sodium)
+     *
+     * @return bool
+     */
+    public function isVirtualPackage()
+    {
+        if (\strpos($this->name, '/') !== false) {
+            return false;
+        }
+        if (\strpos($this->name, 'ext-') !== 0) {
+            return false;
+        }
+        return true;
+    }
 }

@@ -358,4 +358,11 @@ interface PackageInterface
      * @return array
      */
     public function getTransportOptions();
+
+    /**
+     * Return TRUE if this package is a virtual package. (e.g. ext-sodium)
+     *
+     * @return bool
+     */
+    public function isVirtualPackage();
 }
