@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Downloader\DownloaderInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -36,6 +37,9 @@ class StatusCommand extends BaseCommand
     const EXIT_CODE_UNPUSHED_CHANGES = 2;
     const EXIT_CODE_VERSION_CHANGES = 4;
 
+    /**
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     */
     protected function configure()
     {
         $this
@@ -44,7 +48,8 @@ class StatusCommand extends BaseCommand
             ->setDefinition(array(
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The status command displays a list of dependencies that have
 been modified locally.
 
@@ -53,6 +58,11 @@ EOT
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|null
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         // init repos
@@ -91,9 +101,7 @@ EOT
                 if ($changes = $downloader->getLocalChanges($package, $targetDir)) {
                     $errors[$targetDir] = $changes;
                 }
-            }
-
-            if ($downloader instanceof VcsCapableDownloaderInterface) {
+            } elseif ($downloader instanceof VcsCapableDownloaderInterface) {
                 if ($currentRef = $downloader->getVcsReference($package, $targetDir)) {
                     switch ($package->getInstallationSource()) {
                         case 'source':
@@ -121,11 +129,13 @@ EOT
                         );
                     }
                 }
-            }
-
-            if ($downloader instanceof DvcsDownloaderInterface) {
+            } elseif ($downloader instanceof DvcsDownloaderInterface) {
                 if ($unpushed = $downloader->getUnpushedChanges($package, $targetDir)) {
                     $unpushedChanges[$targetDir] = $unpushed;
+                }
+            } elseif ($downloader instanceof DownloaderInterface) {
+                if ($changes = $downloader->getLocalChanges($package, $targetDir)) {
+                    $errors[$targetDir] = $changes;
                 }
             }
         }

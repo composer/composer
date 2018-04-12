@@ -16,6 +16,8 @@ use Composer\Config;
 use Composer\Cache;
 use Composer\Factory;
 use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
+use Composer\Package\Comparer\Comparer;
 use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
@@ -166,7 +168,9 @@ class FileDownloader implements DownloaderInterface
                     $this->cache->copyFrom($cacheKey, $fileName);
                 }
             } else {
-                $this->io->writeError('Loading from cache', false);
+                if (!$this->outputProgress) {
+                    $this->io->writeError('Loading from cache', false);
+                }
             }
 
             if (!file_exists($fileName)) {
@@ -277,5 +281,33 @@ class FileDownloader implements DownloaderInterface
         $cacheKey = sha1($processedUrl);
 
         return $package->getName().'/'.$cacheKey.'.'.$package->getDistType();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @throws \RuntimeException
+     */
+    public function getLocalChanges(PackageInterface $package, $targetDir)
+    {
+        $prevIO = $this->io;
+        $prevProgress = $this->outputProgress;
+
+        $this->io = new NullIO;
+        $this->io->loadConfiguration($this->config);
+        $this->outputProgress = false;
+
+        $this->download($package, $targetDir.'_compare', false);
+
+        $comparer = new Comparer();
+        $comparer->setSource($targetDir.'_compare');
+        $comparer->setUpdate($targetDir);
+        $comparer->doCompare();
+        $output = $comparer->getChanged(true, true);
+        $this->filesystem->removeDirectory($targetDir.'_compare');
+
+        $this->io = $prevIO;
+        $this->outputProgress = $prevProgress;
+
+        return trim($output);
     }
 }
