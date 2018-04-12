@@ -551,7 +551,7 @@ class RemoteFilesystem
     {
         $contents = file_get_contents($fileUrl, false, $context);
 
-        return array($http_response_header, $contents);
+        return array(isset($http_response_header) ? $http_response_header : null, $contents);
     }
 
     /**
