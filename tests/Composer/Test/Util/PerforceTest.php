@@ -33,7 +33,7 @@ class PerforceTest extends TestCase
 
     protected function setUp()
     {
-        $this->processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $this->processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $this->repoConfig = $this->getTestRepoConfig();
         $this->io = $this->getMockIOInterface();
         $this->createNewPerforceWithWindowsFlag(true);
@@ -59,7 +59,7 @@ class PerforceTest extends TestCase
 
     public function getMockIOInterface()
     {
-        return $this->getMock('Composer\IO\IOInterface');
+        return $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
     protected function createNewPerforceWithWindowsFlag($flag)
@@ -618,7 +618,7 @@ class PerforceTest extends TestCase
 
     public function testCheckServerExists()
     {
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
         $expectedCommand = 'p4 -p perforce.does.exist:port info -s';
         $processExecutor->expects($this->at(0))
@@ -639,7 +639,7 @@ class PerforceTest extends TestCase
      */
     public function testCheckServerClientError()
     {
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
         $expectedCommand = 'p4 -p perforce.does.exist:port info -s';
         $processExecutor->expects($this->at(0))
@@ -707,7 +707,7 @@ class PerforceTest extends TestCase
 
     public function testCleanupClientSpecShouldDeleteClient()
     {
-        $fs = $this->getMock('Composer\Util\Filesystem');
+        $fs = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $this->perforce->setFilesystem($fs);
 
         $testClient = $this->perforce->getClient();

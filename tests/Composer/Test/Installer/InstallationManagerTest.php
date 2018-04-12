@@ -22,7 +22,7 @@ class InstallationManagerTest extends TestCase
 {
     public function setUp()
     {
-        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
+        $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
     }
 
     public function testAddGetInstaller()
