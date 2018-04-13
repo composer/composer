@@ -101,7 +101,9 @@ EOT
                 if ($changes = $downloader->getLocalChanges($package, $targetDir)) {
                     $errors[$targetDir] = $changes;
                 }
-            } elseif ($downloader instanceof VcsCapableDownloaderInterface) {
+            }
+
+            if ($downloader instanceof VcsCapableDownloaderInterface) {
                 if ($currentRef = $downloader->getVcsReference($package, $targetDir)) {
                     switch ($package->getInstallationSource()) {
                         case 'source':
@@ -129,13 +131,11 @@ EOT
                         );
                     }
                 }
-            } elseif ($downloader instanceof DvcsDownloaderInterface) {
+            }
+
+            if ($downloader instanceof DvcsDownloaderInterface) {
                 if ($unpushed = $downloader->getUnpushedChanges($package, $targetDir)) {
                     $unpushedChanges[$targetDir] = $unpushed;
-                }
-            } elseif ($downloader instanceof DownloaderInterface) {
-                if ($changes = $downloader->getLocalChanges($package, $targetDir)) {
-                    $errors[$targetDir] = $changes;
                 }
             }
         }

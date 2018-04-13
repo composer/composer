@@ -35,7 +35,7 @@ use Composer\Util\Url as UrlUtil;
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Nils Adermann <naderman@naderman.de>
  */
-class FileDownloader implements DownloaderInterface
+class FileDownloader implements DownloaderInterface, ChangeReportInterface
 {
     protected $io;
     protected $config;
