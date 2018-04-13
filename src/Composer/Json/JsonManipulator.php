@@ -171,6 +171,10 @@ class JsonManipulator
             return $this->addSubNode('extra', substr($name, 6), $value);
         }
 
+        if (substr($name, 0, 8) === 'scripts.') {
+            return $this->addSubNode('scripts', substr($name, 8), $value);
+        }
+
         return $this->addMainKey($name, $value);
     }
 
@@ -178,6 +182,10 @@ class JsonManipulator
     {
         if (substr($name, 0, 6) === 'extra.') {
             return $this->removeSubNode('extra', substr($name, 6));
+        }
+
+        if (substr($name, 0, 8) === 'scripts.') {
+            return $this->removeSubNode('scripts', substr($name, 8));
         }
 
         return $this->removeMainKey($name);
@@ -188,7 +196,7 @@ class JsonManipulator
         $decoded = JsonFile::parseJson($this->contents);
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'extra')) && false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
@@ -308,7 +316,7 @@ class JsonManipulator
         }
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'extra')) && false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 

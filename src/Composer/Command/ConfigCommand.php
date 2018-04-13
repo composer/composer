@@ -613,12 +613,12 @@ EOT
         }
 
         // handle script
-        if (preg_match('/^scripts\.(.+)/', $settingKey,$matches)){
+        if (preg_match('/^scripts\.(.+)/', $settingKey, $matches)){
             if ($input->getOption('unset')) {
-                return $this->configSource->removeConfigSetting($settingKey);
+                return $this->configSource->removeProperty($settingKey);
             }
 
-            return $this->configSource->addConfigSetting($settingKey, $values[0]);
+            return $this->configSource->addProperty($settingKey, count($values) > 1 ? $values : $values[0]);
         }
 
         throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
