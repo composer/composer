@@ -36,7 +36,7 @@ class FossilDownloader extends VcsDownloader
         if (0 !== $this->process->execute($command, $ignoredOutput)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
-        $command = sprintf('fossil open %s', ProcessExecutor::escape($repoFile));
+        $command = sprintf('fossil open %s --nested', ProcessExecutor::escape($repoFile));
         if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }

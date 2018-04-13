@@ -76,7 +76,7 @@ class FossilDownloaderTest extends TestCase
             ->with($this->equalTo($expectedFossilCommand))
             ->will($this->returnValue(0));
 
-        $expectedFossilCommand = $this->getCmd('fossil open \'repo.fossil\'');
+        $expectedFossilCommand = $this->getCmd('fossil open \'repo.fossil\' --nested');
         $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedFossilCommand))
