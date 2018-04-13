@@ -205,4 +205,38 @@ class FileDownloaderTest extends TestCase
             $this->assertContains('checksum verification', $e->getMessage());
         }
     }
+
+    public function testDowngradeShowsAppropriateMessage()
+    {
+        $oldPackage = $this->getMock('Composer\Package\PackageInterface');
+        $oldPackage->expects($this->once())
+            ->method('getPrettyVersion')
+            ->will($this->returnValue('1.0.0'));
+        $oldPackage->expects($this->any())
+            ->method('getDistUrl')
+            ->will($this->returnValue($distUrl = 'http://example.com/script.js'));
+        $oldPackage->expects($this->once())
+            ->method('getDistUrls')
+            ->will($this->returnValue(array($distUrl)));
+
+        $newPackage = $this->getMock('Composer\Package\PackageInterface');
+        $newPackage->expects($this->once())
+            ->method('getPrettyVersion')
+            ->will($this->returnValue('1.2.0'));
+
+        $ioMock = $this->getMock('Composer\IO\IOInterface');
+        $ioMock->expects(($this->at(0)))
+            ->method('writeError')
+            ->with($this->stringContains('Downgrading'));
+
+        $path = $this->getUniqueTmpDirectory();
+        touch($path.'/script.js');
+        $filesystem = $this->getMock('Composer\Util\Filesystem');
+        $filesystem->expects($this->once())
+            ->method('removeDirectory')
+            ->will($this->returnValue(true));
+
+        $downloader = $this->getDownloader($ioMock, null, null, null, null, $filesystem);
+        $downloader->update($newPackage, $oldPackage, $path);
+    }
 }
