@@ -612,6 +612,15 @@ EOT
             return;
         }
 
+        // handle script
+        if (preg_match('/^scripts\.(.+)/', $settingKey,$matches)){
+            if ($input->getOption('unset')) {
+                return $this->configSource->removeConfigSetting($settingKey);
+            }
+
+            return $this->configSource->addConfigSetting($settingKey, $values[0]);
+        }
+
         throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
     }
 
