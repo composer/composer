@@ -13,6 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\IniHelper;
+use Composer\XdebugHandler\XdebugHandler;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -41,7 +42,6 @@ class IniHelperTest extends TestCase
 
         $this->setEnv($paths);
         $this->assertContains('loaded.ini', IniHelper::getMessage());
-        $this->assertEquals($paths, IniHelper::getAll());
     }
 
     public function testWithLoadedIniAndAdditional()
@@ -72,22 +72,24 @@ class IniHelperTest extends TestCase
 
     public static function setUpBeforeClass()
     {
+        // Register our name with XdebugHandler
+        $xdebug = new XdebugHandler('composer');
         // Save current state
-        self::$envOriginal = getenv(IniHelper::ENV_ORIGINAL);
+        self::$envOriginal = getenv('COMPOSER_ORIGINAL_INIS');
     }
 
     public static function tearDownAfterClass()
     {
         // Restore original state
         if (false !== self::$envOriginal) {
-            putenv(IniHelper::ENV_ORIGINAL.'='.self::$envOriginal);
+            putenv('COMPOSER_ORIGINAL_INIS='.self::$envOriginal);
         } else {
-            putenv(IniHelper::ENV_ORIGINAL);
+            putenv('COMPOSER_ORIGINAL_INIS');
         }
     }
 
     protected function setEnv(array $paths)
     {
-        putenv(IniHelper::ENV_ORIGINAL.'='.implode(PATH_SEPARATOR, $paths));
+        putenv('COMPOSER_ORIGINAL_INIS='.implode(PATH_SEPARATOR, $paths));
     }
 }
