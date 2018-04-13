@@ -40,3 +40,38 @@ wget https://raw.githubusercontent.com/composer/getcomposer.org/1b137f8bf6db3e79
 
 You may replace the commit hash by whatever the last commit hash is on
 https://github.com/composer/getcomposer.org/commits/master
+
+
+## Windows alternative
+
+Another alternative for windows users is to use this 2 steps script:
+
+```PHP
+<?php
+echo 'Getting installer signature..'."\n";
+$xsig = trim(file_get_contents('https://composer.github.io/installer.sig'));
+echo 'Installer signature:'."\n".$xsig."\n";
+echo 'Getting installer file..'."\n";
+copy('https://getcomposer.org/installer', 'composer-setup.php');
+echo 'Calculating installer signature..'."\n";
+$asig = hash_file('SHA384', 'composer-setup.php');
+echo 'Downloaded installer signature:'."\n".$asig."\n";
+
+if ($xsig != $asig){
+	echo 'ERROR: Invalid installer signature'."\n";
+	unlink('composer-setup.php');
+} else {
+	file_put_contents('install-composer.bat', '@echo off'."\n".
+			'php composer-setup.php'."\n".
+			'php -r unlink(\'composer-setup.php\');'."\n".
+			'php -r unlink(\'install-composer.bat\');');
+	echo 'Installer verified'."\n";
+	echo 'Type "install-composer.bat" to install'."\n";
+}
+?>
+```
+
+Just put the script in your php binary folder, and run "php get-composer.php".
+If the download successfull, then run "install-composer.bat"
+
+note: ignore the batch file not found error at the end, after running "install-composer.bat", because its deleting it self
