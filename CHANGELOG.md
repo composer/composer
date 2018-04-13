@@ -1,3 +1,17 @@
+### [1.6.4] 2018-04-13
+
+  * Security fixes in some edge case scenarios, recommended update for all users
+  * Fixed regression in version guessing of path repositories
+  * Fixed removing aliased packages from the repository, which might resolve some odd update bugs
+  * Fixed updating of package URLs for GitLab
+  * Fixed run-script --list failing when script handlers were defined
+  * Fixed init command not respecting the current php version when selecting package versions
+  * Fixed handling of uppercase package names in why/why-not commands
+  * Fixed exclude-from-classmap symlink handling
+  * Fixed filesystem permissions of PEAR binaries
+  * Improved performance of subversion repos
+  * Other minor fixes
+
 ### [1.6.3] 2018-01-31
 
   * Fixed GitLab downloads failing in some edge cases
@@ -628,6 +642,7 @@
 
   * Initial release
 
+[1.6.4]: https://github.com/composer/composer/compare/1.6.3...1.6.4
 [1.6.3]: https://github.com/composer/composer/compare/1.6.2...1.6.3
 [1.6.2]: https://github.com/composer/composer/compare/1.6.1...1.6.2
 [1.6.1]: https://github.com/composer/composer/compare/1.6.0...1.6.1
