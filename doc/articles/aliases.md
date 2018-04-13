@@ -92,13 +92,14 @@ Just add this to your project's root `composer.json`:
 That will fetch the `dev-bugfix` version of `monolog/monolog` from your GitHub
 and alias it to `1.0.x-dev`.
 
-> **Note:** If a package with inline aliases is required, the alias (right of
-> the `as`) is used as the version constraint. The part left of the `as` is
-> discarded. As a consequence, if A requires B and B requires `monolog/monolog`
-> version `dev-bugfix as 1.0.x-dev`, installing A will make B require
-> `1.0.x-dev`, which may exist as a branch alias or an actual `1.0` branch. If
-> it does not, it must be re-inline-aliased in A's `composer.json`.
+> **Note:** Inline aliasing is a root-only feature. If a package with inline
+> aliases is required, the alias (right of the `as`) is used as the version
+> constraint. The part left of the `as` is discarded. As a consequence, if
+> A requires B and B requires `monolog/monolog` version `dev-bugfix as 1.0.x-dev`,
+> installing A will make B require `1.0.x-dev`, which may exist as a branch
+> alias or an actual `1.0` branch. If it does not, it must be
+> inline-aliased again in A's `composer.json`.
 
 > **Note:** Inline aliasing should be avoided, especially for published
-> packages. If you found a bug, try and get your fix merged upstream. This
-> helps to avoid issues for users of your package.
+> packages/libraries. If you found a bug, try and get your fix merged upstream.
+> This helps to avoid issues for users of your package.
