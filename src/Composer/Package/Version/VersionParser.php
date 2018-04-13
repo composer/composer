@@ -70,6 +70,10 @@ class VersionParser extends SemverVersionParser
      */
     public static function isUpgrade($normalizedFrom, $normalizedTo)
     {
+        if (substr($normalizedFrom, 0, 4) === 'dev-' || substr($normalizedTo, 0, 4) === 'dev-') {
+            return true;
+        }
+
         $sorted = Semver::sort(array($normalizedTo, $normalizedFrom));
 
         return $sorted[0] === $normalizedFrom;
