@@ -19,6 +19,7 @@ use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\Comparer\Comparer;
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
@@ -218,7 +219,7 @@ class FileDownloader implements DownloaderInterface
         $from = $initial->getPrettyVersion();
         $to = $target->getPrettyVersion();
 
-        $actionName = version_compare($from, $to, '<') ? 'Updating' : 'Downgrading';
+        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Updating' : 'Downgrading';
         $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
 
         $this->remove($initial, $path, false);

@@ -211,18 +211,24 @@ class FileDownloaderTest extends TestCase
         $oldPackage = $this->getMock('Composer\Package\PackageInterface');
         $oldPackage->expects($this->once())
             ->method('getPrettyVersion')
-            ->will($this->returnValue('1.0.0'));
-        $oldPackage->expects($this->any())
-            ->method('getDistUrl')
-            ->will($this->returnValue($distUrl = 'http://example.com/script.js'));
+            ->will($this->returnValue('1.2.0'));
         $oldPackage->expects($this->once())
-            ->method('getDistUrls')
-            ->will($this->returnValue(array($distUrl)));
+            ->method('getVersion')
+            ->will($this->returnValue('1.2.0.0'));
 
         $newPackage = $this->getMock('Composer\Package\PackageInterface');
         $newPackage->expects($this->once())
             ->method('getPrettyVersion')
-            ->will($this->returnValue('1.2.0'));
+            ->will($this->returnValue('1.0.0'));
+        $newPackage->expects($this->once())
+            ->method('getVersion')
+            ->will($this->returnValue('1.0.0.0'));
+        $newPackage->expects($this->any())
+            ->method('getDistUrl')
+            ->will($this->returnValue($distUrl = 'http://example.com/script.js'));
+        $newPackage->expects($this->once())
+            ->method('getDistUrls')
+            ->will($this->returnValue(array($distUrl)));
 
         $ioMock = $this->getMock('Composer\IO\IOInterface');
         $ioMock->expects(($this->at(0)))
@@ -237,6 +243,6 @@ class FileDownloaderTest extends TestCase
             ->will($this->returnValue(true));
 
         $downloader = $this->getDownloader($ioMock, null, null, null, null, $filesystem);
-        $downloader->update($newPackage, $oldPackage, $path);
+        $downloader->update($oldPackage, $newPackage, $path);
     }
 }

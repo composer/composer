@@ -123,6 +123,9 @@ class FossilDownloaderTest extends TestCase
         $packageMock->expects($this->any())
             ->method('getSourceUrls')
             ->will($this->returnValue(array('http://fossil.kd2.org/kd2fw/')));
+        $packageMock->expects($this->any())
+            ->method('getVersion')
+            ->will($this->returnValue('1.0.0.0'));
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
         $expectedFossilCommand = $this->getCmd("fossil changes");
