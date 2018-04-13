@@ -329,23 +329,17 @@ EOT
                 ksort($packages[$type]);
 
                 $nameLength = $versionLength = $latestLength = 0;
-                foreach ($packages[$type] as $package) {
-                    if (is_object($package)) {
-                        $nameLength = max($nameLength, strlen($package->getPrettyName()));
-                        if ($showVersion) {
-                            $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
-                            if ($showLatest) {
-                                $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly);
-                                if ($latestPackage === false) {
-                                    continue;
-                                }
 
-                                $latestPackages[$package->getPrettyName()] = $latestPackage;
-                                $latestLength = max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
+                if ($showLatest && $showVersion) {
+                    foreach ($packages[$type] as $package) {
+                        if (is_object($package)) {
+                            $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly);
+                            if ($latestPackage === false) {
+                                continue;
                             }
+
+                            $latestPackages[$package->getPrettyName()] = $latestPackage;
                         }
-                    } else {
-                        $nameLength = max($nameLength, strlen($package));
                     }
                 }
 
@@ -357,11 +351,6 @@ EOT
                 $hasOutdatedPackages = false;
 
                 $viewData[$type] = array();
-                $viewMetaData[$type] = array(
-                    'nameLength' => $nameLength,
-                    'versionLength' => $versionLength,
-                    'latestLength' => $latestLength,
-                );
                 foreach ($packages[$type] as $package) {
                     $packageViewData = array();
                     if (is_object($package)) {
@@ -376,12 +365,15 @@ EOT
                         }
 
                         $packageViewData['name'] = $package->getPrettyName();
+                        $nameLength = max($nameLength, strlen($package->getPrettyName()));
                         if ($writeVersion) {
                             $packageViewData['version'] = $package->getFullPrettyVersion();
+                            $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
                         }
                         if ($writeLatest && $latestPackage) {
                             $packageViewData['latest'] = $latestPackage->getFullPrettyVersion();
                             $packageViewData['latest-status'] = $this->getUpdateStatus($latestPackage, $package);
+                            $latestLength = max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
                         }
                         if ($writeDescription) {
                             $packageViewData['description'] = $package->getDescription();
@@ -403,9 +395,15 @@ EOT
                         }
                     } else {
                         $packageViewData['name'] = $package;
+                        $nameLength = max($nameLength, strlen($package));
                     }
                     $viewData[$type][] = $packageViewData;
                 }
+                $viewMetaData[$type] = array(
+                    'nameLength' => $nameLength,
+                    'versionLength' => $versionLength,
+                    'latestLength' => $latestLength,
+                );
                 if ($input->getOption('strict') && $hasOutdatedPackages) {
                     $exitCode = 1;
                     break;
