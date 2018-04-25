@@ -678,9 +678,7 @@
                         { "$ref": "#/definitions/inline-package" },
                         {
                             "type": "array",
-                            "items": {
-                                "type": { "$ref": "#/definitions/inline-package" }
-                            }
+                            "items": { "$ref": "#/definitions/inline-package" }
                         }
                     ]
                 }
