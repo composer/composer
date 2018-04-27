@@ -135,9 +135,7 @@ class ClassMapGenerator
             $extraTypes .= '|enum';
         }
 
-        // Use @ here instead of Silencer to actively suppress 'unhelpful' output
-        // @link https://github.com/composer/composer/pull/4886
-        $contents = @php_strip_whitespace($path);
+        $contents = @file_get_contents($path);
         if (!$contents) {
             if (!file_exists($path)) {
                 $message = 'File at "%s" does not exist, check your classmap definitions';
@@ -155,9 +153,26 @@ class ClassMapGenerator
             }
             throw new \RuntimeException(sprintf($message, $path));
         }
+        // open tag must be '<?php' or '<?hh'
+        $contents = preg_replace('{(<\?)(?!(php|hh))}i', '<?php ', $contents, -1, $count);
+        if ($count != 0) {
+            $tempfile = tempnam(sys_get_temp_dir(), "classmap.");
+            if (!(file_put_contents($tempfile, $contents))) {
+                throw new \RuntimeException("cannot write to tmpfile ${tempfile}");
+            }
+        } else {
+            $tempfile = $path;
+        }
+
+        // Use @ here instead of Silencer to actively suppress 'unhelpful' output
+        // @link https://github.com/composer/composer/pull/4886
+        $contents = @php_strip_whitespace($tempfile);
+        if ($count != 0) {
+            @unlink($tempfile);
+        }
 
         // return early if there is no chance of matching anything in this file
-        if (!preg_match('{\b(?:class|interface'.$extraTypes.')\s}i', $contents)) {
+        if (!preg_match('{\b(?:class|interface' . $extraTypes . ')\s}i', $contents)) {
             return array();
         }
 
