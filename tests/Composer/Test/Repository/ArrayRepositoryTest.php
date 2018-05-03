@@ -68,7 +68,7 @@ class ArrayRepositoryTest extends TestCase
         $this->assertEquals('bar', $bar[0]->getName());
     }
 
-    public function testAutomaticallyAddAndRemoveAliasedPackage()
+    public function testAutomaticallyAddAliasedPackageButNotRemove()
     {
         $repo = new ArrayRepository();
 
@@ -83,7 +83,7 @@ class ArrayRepositoryTest extends TestCase
 
         $repo->removePackage($alias);
 
-        $this->assertCount(0, $repo);
+        $this->assertCount(1, $repo);
     }
 
     public function testSearch()
