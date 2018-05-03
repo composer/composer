@@ -5,6 +5,7 @@ if (PHP_SAPI !== 'cli') {
     echo 'Warning: Composer should be invoked via the CLI version of PHP, not the '.PHP_SAPI.' SAPI'.PHP_EOL;
 }
 
+setlocale(LC_ALL, 'C');
 require __DIR__.'/../src/bootstrap.php';
 
 use Composer\Factory;
