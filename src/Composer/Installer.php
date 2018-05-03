@@ -17,6 +17,7 @@ use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Pool;
@@ -716,6 +717,10 @@ class Installer
         foreach ($devPackages as $pkg) {
             $packagesToSkip[$pkg->getName()] = true;
             if ($installedDevPkg = $localRepo->findPackage($pkg->getName(), '*')) {
+                if ($installedDevPkg instanceof AliasPackage) {
+                    $finalOps[] = new MarkAliasUninstalledOperation($installedDevPkg, 'non-dev install removing it');
+                    $installedDevPkg = $installedDevPkg->getAliasOf();
+                }
                 $finalOps[] = new UninstallOperation($installedDevPkg, 'non-dev install removing it');
             }
         }
