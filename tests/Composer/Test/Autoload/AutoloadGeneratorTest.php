@@ -1334,10 +1334,10 @@ EOF;
 
         file_put_contents($this->workingDir.'/forks/bar/src/exclude/FooExclClass.php', '<?php class FooExclClass {};');
         $target = $this->workingDir.'/forks/bar/';
-        $link = $this->workingDir.'/composersrc/foo/bar/';
+        $link = $this->workingDir.'/composersrc/foo/bar';
         $command = Platform::isWindows()
-            ? 'mklink /j "' . str_replace('/', '\\', $link) . '" "' . str_replace('/', '\\', $target)
-            : 'ln -s "' . $target . '" "' . $link;
+            ? 'mklink /j "' . str_replace('/', '\\', $link) . '" "' . str_replace('/', '\\', $target) . '"'
+            : 'ln -s "' . $target . '" "' . $link . '"';
         exec($command);
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
