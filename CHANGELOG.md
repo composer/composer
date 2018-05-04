@@ -1,3 +1,12 @@
+### [1.6.5] 2018-05-04
+
+  * Fixed regression in 1.6.4 causing strange update behaviors with dev packages
+  * Fixed regression in 1.6.4 color support detection for Windows
+  * Fixed issues dealing with broken symlinks when switching branches and using path repositories
+  * Fixed JSON schema for package repositories
+  * Fixed issues on computers set to Turkish locale
+  * Fixed classmap parsing of files using short-open-tags when they are disabled in php
+
 ### [1.6.4] 2018-04-13
 
   * Security fixes in some edge case scenarios, recommended update for all users
@@ -642,6 +651,7 @@
 
   * Initial release
 
+[1.6.5]: https://github.com/composer/composer/compare/1.6.4...1.6.5
 [1.6.4]: https://github.com/composer/composer/compare/1.6.3...1.6.4
 [1.6.3]: https://github.com/composer/composer/compare/1.6.2...1.6.3
 [1.6.2]: https://github.com/composer/composer/compare/1.6.1...1.6.2
