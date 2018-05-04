@@ -62,14 +62,6 @@ class ClassMapGeneratorTest extends TestCase
             'ShortOpenTagDocblock' => realpath(__DIR__) . '/Fixtures/classmap/ShortOpenTagDocblock.php',
         );
 
-        /**
-         * @wontfix If short_open_tag is not enabled, we end up parsing the docblock because
-         *  php_strip_whitespace won't recognize the file. Funky edge-case (does not apply to HHVM).
-         */
-        if (!defined('HHVM_VERSION') && !ini_get('short_open_tag')) {
-            $classmap['description'] = realpath(__DIR__) . '/Fixtures/classmap/ShortOpenTagDocblock.php';
-        }
-
         $data = array(
             array(__DIR__ . '/Fixtures/Namespaced', array(
                 'Namespaced\\Bar' => realpath(__DIR__) . '/Fixtures/Namespaced/Bar.inc',

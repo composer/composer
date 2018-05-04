@@ -179,6 +179,10 @@ class ClassMapGenerator
         if (false !== $pos && false === strpos(substr($contents, $pos), '<?')) {
             $contents = substr($contents, 0, $pos);
         }
+        // strip comments if short open tags are in the file
+        if (preg_match('{(<\?)(?!(php|hh))}i', $contents)) {
+            $contents = preg_replace('{//.* | /\*(?:[^*]++|\*(?!/))*\*/}x', '', $contents);
+        }
 
         preg_match_all('{
             (?:
