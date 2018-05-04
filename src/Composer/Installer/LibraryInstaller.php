@@ -18,6 +18,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
+use Composer\Util\Platform;
 
 /**
  * Package installation manager.
@@ -71,7 +72,17 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
      */
     public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        return $repo->hasPackage($package) && is_readable($this->getInstallPath($package));
+        if (!$repo->hasPackage($package)) {
+            return false;
+        }
+
+        $installPath = $this->getInstallPath($package);
+
+        if (is_readable($installPath)) {
+            return true;
+        }
+
+        return (Platform::isWindows() && $this->filesystem->isJunction($installPath)) || is_link($installPath);
     }
 
     /**

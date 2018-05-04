@@ -103,6 +103,10 @@ class Filesystem
             return $this->removeJunction($directory);
         }
 
+        if (is_link($directory)) {
+            return unlink($directory);
+        }
+
         if (!file_exists($directory) || !is_dir($directory)) {
             return true;
         }
