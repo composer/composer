@@ -145,7 +145,7 @@ EOT
             } else {
                 $defaultRepos = RepositoryFactory::defaultRepos($io);
                 $repos = new CompositeRepository($defaultRepos);
-                $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
+                $io->writeError('No '.\Composer\Factory::getComposerFile().' found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             }
         } elseif ($input->getOption('all') && $composer) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
@@ -153,7 +153,7 @@ EOT
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } elseif ($input->getOption('all')) {
             $defaultRepos = RepositoryFactory::defaultRepos($io);
-            $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
+            $io->writeError('No '.\Composer\Factory::getComposerFile().' found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         } else {
@@ -170,7 +170,7 @@ EOT
         }
 
         if ($input->getOption('latest') && null === $composer) {
-            $io->writeError('No composer.json found in the current directory, disabling "latest" option');
+            $io->writeError('No '.\Composer\Factory::getComposerFile().' found in the current directory, disabling "latest" option');
             $input->setOption('latest', false);
         }
 
@@ -186,11 +186,11 @@ EOT
 
                 if (empty($package)) {
                     $options = $input->getOptions();
-                    if (!isset($options['working-dir']) || !file_exists('composer.json')) {
+                    if (!isset($options['working-dir']) || !file_exists(ltrim(\Composer\Factory::getComposerFile(),'/.'))) {
                         throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found');
                     }
 
-                    $io->writeError('Package ' . $packageFilter . ' not found in ' . $options['working-dir'] . '/composer.json');
+                    $io->writeError('Package ' . $packageFilter . ' not found in ' . $options['working-dir'] . '/' . ltrim(\Composer\Factory::getComposerFile(),'/.'));
 
                     return 1;
                 }
@@ -279,7 +279,7 @@ EOT
         }
 
         if ($input->getOption('path') && null === $composer) {
-            $io->writeError('No composer.json found in the current directory, disabling "path" option');
+            $io->writeError('No '.\Composer\Factory::getComposerFile().' found in the current directory, disabling "path" option');
             $input->setOption('path', false);
         }
 

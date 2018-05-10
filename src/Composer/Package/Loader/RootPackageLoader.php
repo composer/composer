@@ -132,7 +132,7 @@ class RootPackageLoader extends ArrayLoader
         }
 
         if (isset($links[$config['name']])) {
-            throw new \InvalidArgumentException(sprintf('Root package \'%s\' cannot require itself in its composer.json' . PHP_EOL .
+            throw new \InvalidArgumentException(sprintf('Root package \'%s\' cannot require itself in its ' . \Composer\Factory::getComposerFile() . PHP_EOL .
                         'Did you accidentally name your root package after an external package?', $config['name']));
         }
 

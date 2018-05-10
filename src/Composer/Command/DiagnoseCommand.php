@@ -70,7 +70,7 @@ EOT
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
-            $io->write('Checking composer.json: ', false);
+            $io->write('Checking ' . \Composer\Factory::getComposerFile() . ': ', false);
             $this->outputResult($this->checkComposerSchema());
         }
 

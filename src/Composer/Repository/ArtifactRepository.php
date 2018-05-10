@@ -132,7 +132,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
             return false;
         }
 
-        $foundFileIndex = $this->locateFile($zip, 'composer.json');
+        $foundFileIndex = $this->locateFile($zip, ltrim(\Composer\Factory::getComposerFile(),'/.'));
         if (false === $foundFileIndex) {
             return false;
         }

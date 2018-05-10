@@ -70,7 +70,7 @@ class ConfigCommand extends BaseCommand
                 new InputOption('auth', 'a', InputOption::VALUE_NONE, 'Affect auth config file (only used for --editor)'),
                 new InputOption('unset', null, InputOption::VALUE_NONE, 'Unset the given setting-key'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
-                new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
+                new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different '.\Composer\Factory::getComposerFile().' or config.json'),
                 new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
@@ -149,8 +149,9 @@ EOT
             : ($input->getOption('file') ?: Factory::getComposerFile());
 
         // Create global composer.json if this was invoked using `composer global config`
+        $configFileTrimmed = ltrim($configFile, '/.');
         if (
-            ($configFile === 'composer.json' || $configFile === './composer.json')
+            $configFileTrimmed === ltrim(\Composer\Factory::getComposerFile(), '/.')
             && !file_exists($configFile)
             && realpath(getcwd()) === realpath($this->config->get('home'))
         ) {
@@ -518,7 +519,7 @@ EOT
         );
 
         if ($input->getOption('global') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]) || substr($settingKey, 0, 6) === 'extra.')) {
-            throw new \InvalidArgumentException('The '.$settingKey.' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global composer.json');
+            throw new \InvalidArgumentException('The '.$settingKey.' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global '.\Composer\Factory::getComposerFile());
         }
         if ($input->getOption('unset') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]))) {
             return $this->configSource->removeProperty($settingKey);
