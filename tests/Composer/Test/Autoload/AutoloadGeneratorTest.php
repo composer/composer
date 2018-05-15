@@ -360,6 +360,10 @@ class AutoloadGeneratorTest extends TestCase
     public function testVendorsAutoloading()
     {
         $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b')
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -406,6 +410,10 @@ class AutoloadGeneratorTest extends TestCase
     public function testVendorsClassMapAutoloading()
     {
         $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b')
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -441,6 +449,10 @@ class AutoloadGeneratorTest extends TestCase
     public function testVendorsClassMapAutoloadingWithTargetDir()
     {
         $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b')
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -476,6 +488,11 @@ class AutoloadGeneratorTest extends TestCase
     public function testClassMapAutoloadingEmptyDirAndExactFile()
     {
         $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b'),
+            new Link('a', 'c/c')
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -515,6 +532,11 @@ class AutoloadGeneratorTest extends TestCase
     public function testClassMapAutoloadingAuthoritativeAndApcu()
     {
         $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b'),
+            new Link('a', 'c/c')
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -559,6 +581,11 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array('files' => array('root.php')));
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b'),
+            new Link('a', 'c/c')
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -603,6 +630,14 @@ class AutoloadGeneratorTest extends TestCase
         $autoloadPackage->setIncludePaths(array('/lib', '/src'));
 
         $notAutoloadPackage = new Package('a', '1.0', '1.0');
+
+        $requires = array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b'),
+            new Link('a', 'c/c')
+        );
+        $autoloadPackage->setRequires($requires);
+        $notAutoloadPackage->setRequires($requires);
 
         $autoloadPackages = array();
         $autoloadPackages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -667,9 +702,12 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array('files' => array('root2.php')));
-        $package->setRequires(array(new Link('a', 'z/foo')));
-        $package->setRequires(array(new Link('a', 'd/d')));
-        $package->setRequires(array(new Link('a', 'e/e')));
+        $package->setRequires(array(
+            new Link('a', 'z/foo'),
+            new Link('a', 'b/bar'),
+            new Link('a', 'd/d'),
+            new Link('a', 'e/e')
+        ));
 
         $packages = array();
         $packages[] = $z = new Package('z/foo', '1.0', '1.0');
@@ -736,7 +774,10 @@ class AutoloadGeneratorTest extends TestCase
             'psr-0' => array('A\\B' => $this->workingDir.'/lib'),
             'classmap' => array($this->workingDir.'/src'),
         ));
-        $mainPackage->setRequires(array(new Link('z', 'a/a')));
+        $mainPackage->setRequires(array(
+            new Link('z', 'a/a'),
+            new Link('z', 'b/b')
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -992,6 +1033,9 @@ EOF;
             'psr-4' => array('Acme\Foo\\' => 'src-psr4'),
             'classmap' => array('classmap'),
             'files' => array('test.php'),
+        ));
+        $package->setRequires(array(
+            new Link('a', 'b/b')
         ));
 
         $vendorPackage = new Package('b/b', '1.0', '1.0');
