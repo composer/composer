@@ -37,14 +37,14 @@ class ValidateCommand extends BaseCommand
     {
         $this
             ->setName('validate')
-            ->setDescription('Validates a composer.json and composer.lock.')
+            ->setDescription('Validates a '.\Composer\Factory::getComposerFile().' and '.str_replace('.json', '.lock', \Composer\Factory::getComposerFile()).'.')
             ->setDefinition(array(
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not make a complete validation'),
                 new InputOption('no-check-lock', null, InputOption::VALUE_NONE, 'Do not check if lock file is up to date'),
                 new InputOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors'),
-                new InputOption('with-dependencies', 'A', InputOption::VALUE_NONE, 'Also validate the composer.json of all installed dependencies'),
+                new InputOption('with-dependencies', 'A', InputOption::VALUE_NONE, 'Also validate the '.\Composer\Factory::getComposerFile().' of all installed dependencies'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code for warnings as well as errors'),
-                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file'),
+                new InputArgument('file', InputArgument::OPTIONAL, 'path to '.\Composer\Factory::getComposerFile().' file'),
             ))
             ->setHelp(<<<EOT
 The validate command validates a given composer.json and composer.lock
@@ -91,7 +91,7 @@ EOT
         $composer = Factory::create($io, $file);
         $locker = $composer->getLocker();
         if ($locker->isLocked() && !$locker->isFresh()) {
-            $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update`.';
+            $lockErrors[] = 'The lock file is not up to date with the latest changes in '.\Composer\Factory::getComposerFile().', it is recommended that you run `composer update`.';
         }
 
         $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true);
@@ -102,7 +102,7 @@ EOT
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             foreach ($localRepo->getPackages() as $package) {
                 $path = $composer->getInstallationManager()->getInstallPath($package);
-                $file = $path . '/composer.json';
+                $file = $path . '/' . ltrim(\Composer\Factory::getComposerFile(),'/.');
                 if (is_dir($path) && file_exists($file)) {
                     list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
                     $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors);

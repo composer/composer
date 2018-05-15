@@ -36,7 +36,7 @@ class RequireCommand extends InitCommand
     {
         $this
             ->setName('require')
-            ->setDescription('Adds required packages to your composer.json and installs them.')
+            ->setDescription('Adds required packages to your '.\Composer\Factory::getComposerFile().' and installs them.')
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Optional package name can also include a version constraint, e.g. foo/bar or foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
@@ -45,7 +45,7 @@ class RequireCommand extends InitCommand
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'Do not show package suggestions.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
-                new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
+                new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in '.\Composer\Factory::getComposerFile().' file.'),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated, except those that are root requirements.'),
                 new InputOption('update-with-all-dependencies', null, InputOption::VALUE_NONE, 'Allows all inherited dependencies to be updated, including those that are root requirements.'),
@@ -60,7 +60,7 @@ class RequireCommand extends InitCommand
             ->setHelp(<<<EOT
 The require command adds required packages to your composer.json and installs them.
 
-If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of 
+If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of
 matches to require.
 
 If you do not specify a version constraint, composer will choose a suitable one based on the available package versions.

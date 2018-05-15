@@ -228,7 +228,7 @@ EOT
         // rewriting self.version dependencies with explicit version numbers if the package's vcs metadata is gone
         if (!$hasVcs) {
             $package = $composer->getPackage();
-            $configSource = new JsonConfigSource(new JsonFile('composer.json'));
+            $configSource = new JsonConfigSource(new JsonFile(ltrim(Factory::getComposerFile(), '/.')));
             foreach (BasePackage::$supportedLinkTypes as $type => $meta) {
                 foreach ($package->{'get'.$meta['method']}() as $link) {
                     if ($link->getPrettyConstraint() === 'self.version') {

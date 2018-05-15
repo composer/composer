@@ -278,12 +278,13 @@ class Factory
             $file = new JsonFile($localConfig, null, $io);
 
             if (!$file->exists()) {
-                if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
-                    $message = 'Composer could not find a composer.json file in '.$cwd;
+                $localConfigTrimmed = ltrim($localConfig, '/.');
+                if ($localConfigTrimmed === ltrim(\Composer\Factory::getComposerFile(),'/.')) {
+                    $message = 'Composer could not find a '.\Composer\Factory::getComposerFile().' file in '.$cwd;
                 } else {
                     $message = 'Composer could not find the config file: '.$localConfig;
                 }
-                $instructions = 'To initialize a project, please create a composer.json file as described in the https://getcomposer.org/ "Getting Started" section';
+                $instructions = 'To initialize a project, please create a '.\Composer\Factory::getComposerFile().' file as described in the https://getcomposer.org/ "Getting Started" section';
                 throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
             }
 
@@ -437,7 +438,7 @@ class Factory
     {
         $composer = null;
         try {
-            $composer = $this->createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), $fullLoad);
+            $composer = $this->createComposer($io, $config->get('home') . '/' . ltrim(\Composer\Factory::getComposerFile(),'/.'), $disablePlugins, $config->get('home'), $fullLoad);
         } catch (\Exception $e) {
             $io->writeError('Failed to initialize global composer: '.$e->getMessage(), true, IOInterface::DEBUG);
         }

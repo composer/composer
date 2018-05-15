@@ -137,7 +137,7 @@ class Application extends BaseApplication
             // abort when we reach the home dir or top of the filesystem
             while (dirname($dir) !== $dir && $dir !== $home) {
                 if (file_exists($dir.'/'.Factory::getComposerFile())) {
-                    if ($io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ', true)) {
+                    if ($io->askConfirmation('<info>No '.\Composer\Factory::getComposerFile().' in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ', true)) {
                         $oldWorkingDir = getcwd();
                         chdir($dir);
                     }

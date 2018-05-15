@@ -458,7 +458,7 @@ class PerforceTest extends TestCase
 
     public function testGetComposerInformationWithoutLabelWithoutStream()
     {
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port  print //depot/composer.json';
+        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port  print //depot/'.ltrim(\Composer\Factory::getComposerFile(),'/.');
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
@@ -484,21 +484,21 @@ class PerforceTest extends TestCase
 
     public function testGetComposerInformationWithLabelWithoutStream()
     {
-        $expectedCommand = 'p4 -u user -p port  files //depot/composer.json@0.0.1';
+        $expectedCommand = 'p4 -u user -p port  files //depot/'.ltrim(\Composer\Factory::getComposerFile(),'/.').'@0.0.1';
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
             ->will(
                 $this->returnCallback(
                     function ($command, &$output) {
-                        $output = '//depot/composer.json#1 - branch change 10001 (text)';
+                        $output = '//depot/'.ltrim(\Composer\Factory::getComposerFile(),'/.').'#1 - branch change 10001 (text)';
 
                         return true;
                     }
                 )
             );
 
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port  print //depot/composer.json@10001';
+        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port  print //depot/'.ltrim(\Composer\Factory::getComposerFile(),'/.').'@10001';
         $this->processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
@@ -527,7 +527,7 @@ class PerforceTest extends TestCase
     {
         $this->setPerforceToStream();
 
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port  print //depot/branch/composer.json';
+        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port  print //depot/branch/'.ltrim(\Composer\Factory::getComposerFile(),'/.');
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
@@ -555,21 +555,21 @@ class PerforceTest extends TestCase
     public function testGetComposerInformationWithLabelWithStream()
     {
         $this->setPerforceToStream();
-        $expectedCommand = 'p4 -u user -p port  files //depot/branch/composer.json@0.0.1';
+        $expectedCommand = 'p4 -u user -p port  files //depot/branch/'.ltrim(\Composer\Factory::getComposerFile(),'/.').'@0.0.1';
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
             ->will(
                 $this->returnCallback(
                     function ($command, &$output) {
-                        $output = '//depot/composer.json#1 - branch change 10001 (text)';
+                        $output = '//depot/'.ltrim(\Composer\Factory::getComposerFile(),'/.').'#1 - branch change 10001 (text)';
 
                         return true;
                     }
                 )
             );
 
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port  print //depot/branch/composer.json@10001';
+        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port  print //depot/branch/'.ltrim(\Composer\Factory::getComposerFile(),'/.').'@10001';
         $this->processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))

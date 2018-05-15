@@ -48,7 +48,7 @@ class RunScriptCommand extends BaseCommand
     {
         $this
             ->setName('run-script')
-            ->setDescription('Runs the scripts defined in composer.json.')
+            ->setDescription('Runs the scripts defined in '.\Composer\Factory::getComposerFile().'.')
             ->setDefinition(array(
                 new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run.'),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),

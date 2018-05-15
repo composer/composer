@@ -50,7 +50,7 @@ class ExecCommand extends BaseCommand
             }, $composer->getPackage()->getBinaries()));
 
             if (!$bins) {
-                throw new \RuntimeException("No binaries found in composer.json or in bin-dir ($binDir)");
+                throw new \RuntimeException("No binaries found in ".\Composer\Factory::getComposerFile()." or in bin-dir ($binDir)");
             }
 
             $this->getIO()->write(<<<EOT

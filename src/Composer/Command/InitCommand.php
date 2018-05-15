@@ -50,7 +50,7 @@ class InitCommand extends BaseCommand
     {
         $this
             ->setName('init')
-            ->setDescription('Creates a basic composer.json file in current directory.')
+            ->setDescription('Creates a basic '.\Composer\Factory::getComposerFile().' file in current directory.')
             ->setDefinition(array(
                 new InputOption('name', null, InputOption::VALUE_REQUIRED, 'Name of the package'),
                 new InputOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package'),
@@ -181,7 +181,7 @@ EOT
         // namespace
         $io->writeError(array(
             '',
-            'This command will guide you through creating your composer.json config.',
+            'This command will guide you through creating your '.\Composer\Factory::getComposerFile().' config.',
             '',
         ));
 

@@ -142,7 +142,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         foreach ($driver->getTags() as $tag => $identifier) {
-            $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $tag . '</comment>)';
+            $msg = 'Reading '.\Composer\Factory::getComposerFile().' of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $tag . '</comment>)';
             if ($verbose) {
                 $this->io->writeError($msg);
             } else {
@@ -183,7 +183,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 // broken package, version doesn't match tag
                 if ($data['version_normalized'] !== $parsedTag) {
                     if ($verbose) {
-                        $this->io->writeError('<warning>Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json</warning>');
+                        $this->io->writeError('<warning>Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in '.\Composer\Factory::getComposerFile().'</warning>');
                     }
                     continue;
                 }
@@ -214,7 +214,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         $branches = $driver->getBranches();
         foreach ($branches as $branch => $identifier) {
-            $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $branch . '</comment>)';
+            $msg = 'Reading '.\Composer\Factory::getComposerFile().' of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $branch . '</comment>)';
             if ($verbose) {
                 $this->io->writeError($msg);
             } else {
@@ -287,7 +287,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         if (!$this->getPackages()) {
-            throw new InvalidRepositoryException('No valid composer.json was found in any branch or tag of '.$this->url.', could not load a package from it.');
+            throw new InvalidRepositoryException('No valid '.\Composer\Factory::getComposerFile().' was found in any branch or tag of '.$this->url.', could not load a package from it.');
         }
     }
 
