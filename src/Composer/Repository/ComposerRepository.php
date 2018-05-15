@@ -203,6 +203,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $json = $this->rfs->getContents($hostname, $url, false);
             $search = JsonFile::parseJson($json, $url);
 
+            if (empty($search['results'])) {
+                return array();
+            }
+
             $results = array();
             foreach ($search['results'] as $result) {
                 // do not show virtual packages in results as they are not directly useful from a composer perspective
