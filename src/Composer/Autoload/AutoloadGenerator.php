@@ -388,6 +388,7 @@ EOF;
     public function parseAutoloads(array $packageMap, PackageInterface $mainPackage)
     {
         $mainPackageMap = array_shift($packageMap);
+        $packageMap = $this->filterPackageMap($packageMap, $mainPackage);
         $sortedPackageMap = $this->sortPackageMap($packageMap);
         $sortedPackageMap[] = $mainPackageMap;
         array_unshift($packageMap, $mainPackageMap);
@@ -897,6 +898,48 @@ INITIALIZER;
     protected function getFileIdentifier(PackageInterface $package, $path)
     {
         return md5($package->getName() . ':' . $path);
+    }
+
+    /**
+     * Filters out dev-dependencies when not in dev-mode
+     * 
+     * @param array $packageMap
+     * @param PackageInterface $mainPackage
+     * @return array
+     */
+    protected function filterPackageMap(array $packageMap, PackageInterface $mainPackage) {
+        if ($this->devMode === true) {
+            return $packageMap;
+        }
+
+        $packages = array();
+        $include = array();
+
+        foreach ($packageMap as $item) {
+            $package = $item[0];
+            $name = $package->getName();
+            $packages[$name] = $package;
+        }
+
+        $add = function (PackageInterface $package) use (&$add, $mainPackage, $packages, &$include) {
+            foreach ($package->getRequires() as $link) {
+                $target = $link->getTarget();
+                $include[$target] = true;
+                if (isset($packages[$target])) {
+                    $add($packages[$target]);
+                }
+            }
+        };
+        $add($mainPackage);
+    
+        return array_filter(
+            $packageMap,
+            function ($item) use ($include) {
+                $package = $item[0];
+                $name = $package->getName();
+                return isset($include[$name]);
+            }
+        );
     }
 
     /**
