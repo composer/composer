@@ -272,9 +272,12 @@ class ConsoleIO extends BaseIO
      */
     public function askAndHideAnswer($question)
     {
-        $this->writeError($question, false);
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        $question = new Question($question);
+        $question->setHidden(true);
 
-        return \Seld\CliPrompt\CliPrompt::hiddenPrompt(true);
+        return $helper->ask($this->input, $this->getErrorOutput(), $question);
     }
 
     /**
