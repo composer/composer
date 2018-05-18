@@ -223,9 +223,10 @@ class Solver
         /* make decisions based on job/update assertions */
         $this->makeAssertionRuleDecisions();
 
-        $this->io->writeError('Resolving dependencies through SAT', true, IOInterface::DEBUG);
+        $this->io->writeError('Resolving dependencies through SAT', false, IOInterface::DEBUG);
         $before = microtime(true);
         $this->runSat(true);
+        $this->io->writeError('', true, IOInterface::DEBUG);
         $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
         // decide to remove everything that's installed and undecided
@@ -762,6 +763,7 @@ class Solver
 
             for ($i = 0, $n = 0; $n < $rulesCount; $i++, $n++) {
                 if ($i == $rulesCount) {
+                    $this->io->writeError('.', false, IOInterface::DEBUG);
                     $i = 0;
                 }
 
