@@ -223,7 +223,7 @@ class Solver
         /* make decisions based on job/update assertions */
         $this->makeAssertionRuleDecisions();
 
-        $this->io->writeError('Resolving dependencies through SAT', false, IOInterface::DEBUG);
+        $this->io->writeError('Resolving dependencies through SAT', true, IOInterface::DEBUG);
         $before = microtime(true);
         $this->runSat(true);
         $this->io->writeError('', true, IOInterface::DEBUG);
@@ -760,11 +760,19 @@ class Solver
             }
 
             $rulesCount = count($this->rules);
+            $pass = 1;
 
+            $this->io->writeError('Looking at all rules.', true, IOInterface::DEBUG);
             for ($i = 0, $n = 0; $n < $rulesCount; $i++, $n++) {
                 if ($i == $rulesCount) {
-                    $this->io->writeError('.', false, IOInterface::DEBUG);
+                    if (1 === $pass) {
+                        $this->io->writeError("Something's changed, looking at all rules again (pass #$pass)", false, IOInterface::DEBUG);
+                    } else {
+                        $this->io->overwriteError("Something's changed, looking at all rules again (pass #$pass)", false, null, IOInterface::DEBUG);
+                    }
+
                     $i = 0;
+                    $pass++;
                 }
 
                 $rule = $this->rules->ruleById[$i];
