@@ -254,6 +254,7 @@ class Git
             'remote error: Invalid username or password.',
             'error: 401 Unauthorized',
             'fatal: unable to access',
+            'fatal: could not read Username',
         );
 
         foreach ($authFailures as $authFailure) {
