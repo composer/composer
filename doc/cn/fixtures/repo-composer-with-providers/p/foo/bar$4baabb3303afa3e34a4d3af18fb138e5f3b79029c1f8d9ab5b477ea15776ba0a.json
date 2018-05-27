@@ -1,0 +1,77 @@
+{
+    "packages": {
+        "foo\/bar": {
+            "1.0.0": {
+                "name": "foo\/bar",
+                "version": "1.0.0",
+                "version_normalized": "1.0.0.0",
+                "source": {
+                    "type": "hg",
+                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "reference": "249dec95a52a"
+                },
+                "time": "2014-10-11 15:42:00",
+                "type": "library",
+                "uid": 3
+            },
+            "1.0.1": {
+                "name": "foo\/bar",
+                "version": "1.0.1",
+                "version_normalized": "1.0.1.0",
+                "source": {
+                    "type": "hg",
+                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "reference": "21e3328295d4"
+                },
+                "time": "2014-10-11 15:45:56",
+                "type": "library",
+                "uid": 4
+            },
+            "1.0.x-dev": {
+                "name": "foo\/bar",
+                "version": "1.0.x-dev",
+                "version_normalized": "1.0.9999999.9999999-dev",
+                "source": {
+                    "type": "hg",
+                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "reference": "14dc17c8e860"
+                },
+                "time": "2014-10-11 15:45:59",
+                "type": "library",
+                "uid": 5
+            },
+            "1.1.0": {
+                "name": "foo\/bar",
+                "version": "1.1.0",
+                "version_normalized": "1.1.0.0",
+                "source": {
+                    "type": "hg",
+                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "reference": "d2fa3e69ad5b"
+                },
+                "require": {
+                    "bar\/baz": "~1.0"
+                },
+                "time": "2014-10-11 15:43:16",
+                "type": "library",
+                "uid": 6
+            },
+            "dev-default": {
+                "name": "foo\/bar",
+                "version": "dev-default",
+                "version_normalized": "9999999-dev",
+                "source": {
+                    "type": "hg",
+                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "reference": "8e5a5c224336"
+                },
+                "require": {
+                    "bar\/baz": "~1.0"
+                },
+                "time": "2014-10-11 15:43:18",
+                "type": "library",
+                "uid": 7
+            }
+        }
+    }
+}
