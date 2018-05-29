@@ -1,62 +1,46 @@
-# The composer.json 架构(Schema)
+# composer.json架构
 
-This chapter will explain all of the fields available in `composer.json`.
+本章将解释所有可用的字段`composer.json`。
 
-## JSON schema
+## JSON模式
 
-We have a [JSON schema](http://json-schema.org) that documents the format and
-can also be used to validate your `composer.json`. In fact, it is used by the
-`validate` command. You can find it at: https://getcomposer.org/schema.json
+我们有一个[JSON模式](http://json-schema.org)来记录格式，也可以用来验证你的`composer.json`。实际上，它被 `validate`命令使用。你可以在https://getcomposer.org/schema.json找到它
 
-## Root Package
+## Root包
 
-The root package is the package defined by the `composer.json` at the root of
-your project. It is the main `composer.json` that defines your project
-requirements.
+根包是由`composer.json`您的项目根目录定义的包。它是`composer.json`定义你的项目需求的主要部分。
 
-Certain fields only apply when in the root package context. One example of
-this is the `config` field. Only the root package can define configuration.
-The config of dependencies is ignored. This makes the `config` field
-`root-only`.
+某些字段仅适用于根包环境中。这方面的一个例子就是这个`config`领域。只有根包可以定义配置。依赖关系的配置被忽略。这使得该`config`领域 `root-only`。
 
-> **Note:** A package can be the root package or not, depending on the context.
-> For example, if your project depends on the `monolog` library, your project
-> is the root package. However, if you clone `monolog` from GitHub in order to
-> fix a bug in it, then `monolog` is the root package.
+> **注意：** 一个包可以是根包，也可以不是，取决于上下文。例如，如果您的项目依赖于`monolog`库，那么您的项目就是根包。但是，如果您`monolog`从GitHub 克隆以修复其中的错误，那么`monolog`是根包。
 
-## Properties
+## 属性
 
-### name
+### 名称
 
-The name of the package. It consists of vendor name and project name,
-separated by `/`. Examples:
+包的名称。它由供应商名称和项目名称分隔`/`。例子：
 
 * monolog/monolog
 * igorw/event-source
 
-The name can contain any character, including white spaces, and it's case
-insensitive (`foo/bar` and `Foo/Bar` are considered the same package). In order
-to simplify its installation, it's recommended to define a short and lowercase
-name that doesn't include non-alphanumeric characters or white spaces.
+该名称可以包含任何字符，包括空格，并且不区分大小写（`foo/bar`并且`Foo/Bar`被视为相同的包）。为了简化安装，建议定义一个不包含非字母数字字符或空格的小写字母名称。
 
-Required for published packages (libraries).
+发布的包（库）需要。
 
-### description
+### 描述
 
-A short description of the package. Usually this is one line long.
+对软件包的简短描述。通常这是一条线。
 
-Required for published packages (libraries).
+发布的包（库）需要。
 
-### version
+### 版本
 
-The version of the package. In most cases this is not required and should
-be omitted (see below).
+包的版本。在大多数情况下，这不是必需的，应该省略（见下文）。
 
-This must follow the format of `X.Y.Z` or `vX.Y.Z` with an optional suffix
-of `-dev`, `-patch` (`-p`), `-alpha` (`-a`), `-beta` (`-b`) or `-RC`.
-The patch, alpha, beta and RC suffixes can also be followed by a number.
+这必须遵循的格式`X.Y.Z`或`vX.Y.Z`用一个可选的后缀`-dev`, `-patch` (`-p`), `-alpha` (`-a`), `-beta` (`-b`) 或 `-RC`.
+补丁，alpha，beta和RC后缀也可以跟一个数字。
 
-Examples:
+例子：
 
 - 1.0.0
 - 1.0.2
@@ -68,50 +52,30 @@ Examples:
 - 1.0.0-RC5
 - v2.0.4-p1
 
-Optional if the package repository can infer the version from somewhere, such
-as the VCS tag name in the VCS repository. In that case it is also recommended
-to omit it.
+如果软件包存储库可以从某个位置推断版本，如VCS存储库中的VCS标签名称，则为optional。在这种情况下，也建议省略它。
 
-> **Note:** Packagist uses VCS repositories, so the statement above is very
-> much true for Packagist as well. Specifying the version yourself will
-> most likely end up creating problems at some point due to human error.
+> **注意：** Packagist使用VCS存储库，所以上述声明对于Packagist也是如此。自己指定版本很可能最终会由于人为错误而在某个时刻造成问题。
 
-### type
+### 类型
 
-The type of the package. It defaults to `library`.
+包的类型。它默认为`library`。
 
-Package types are used for custom installation logic. If you have a package
-that needs some special logic, you can define a custom type. This could be a
-`symfony-bundle`, a `wordpress-plugin` or a `typo3-cms-extension`. These types
-will all be specific to certain projects, and they will need to provide an
-installer capable of installing packages of that type.
+包类型用于自定义安装逻辑。如果你有一个需要一些特殊逻辑的包，你可以定义一个自定义类型。这可能是一个 `symfony-bundle`，一个`wordpress-plugin`或一个`typo3-cms-extension`。这些类型都将特定于某些项目，并且需要提供能够安装该类型包的安装程序。
 
-Out of the box, Composer supports four types:
+开箱即用，Composer支持四种类型：
 
-- **library:** This is the default. It will simply copy the files to `vendor`.
-- **project:** This denotes a project rather than a library. For example
-  application shells like the [Symfony standard edition](https://github.com/symfony/symfony-standard),
-  CMSs like the [SilverStripe installer](https://github.com/silverstripe/silverstripe-installer)
-  or full fledged applications distributed as packages. This can for example
-  be used by IDEs to provide listings of projects to initialize when creating
-  a new workspace.
-- **metapackage:** An empty package that contains requirements and will trigger
-  their installation, but contains no files and will not write anything to the
-  filesystem. As such, it does not require a dist or source key to be
-  installable.
-- **composer-plugin:** A package of type `composer-plugin` may provide an
-  installer for other packages that have a custom type. Read more in the
-  [dedicated article](articles/custom-installers.md).
+- **library:** 这是默认值。它将简单地将文件复制到`vendor`。
+- **project:** 这表示一个项目而不是一个图书馆。例如像[Symfony标准版](https://github.com/symfony/symfony-standard)这样的应用程序外壳，像[SilverStripe安装程序](https://github.com/silverstripe/silverstripe-installer)这样的CMS 或者以软件包的形式分发的完整的应用程序。例如，IDE可以使用它来提供在创建新工作区时初始化的项目列表。
+- **metapackage:** 一个包含需求的空包，将触发它们的安装，但不包含任何文件，也不会向文件系统写入任何内容。因此，它不需要安装dist或source密钥。
+- **composer-plugin:** 类型包`composer-plugin`可以为其他具有自定义类型的包提供安装程序。阅读更多的 [专门文章](articles/custom-installers.md)。
 
-Only use a custom type if you need custom logic during installation. It is
-recommended to omit this field and have it default to `library`.
+如果您在安装期间需要自定义逻辑，请使用自定义类型。建议省略此字段并将其设为默认值`library`。
 
-### keywords
+### 关键字
 
-An array of keywords that the package is related to. These can be used for
-searching and filtering.
+该包与之相关的一组关键字。这些可用于搜索和过滤。
 
-Examples:
+例子：
 
 - logging
 - events
@@ -119,33 +83,33 @@ Examples:
 - redis
 - templating
 
-Optional.
+可选的。
 
-### homepage
+### 主页
 
-An URL to the website of the project.
+项目网站的URL。
 
-Optional.
+可选的。
 
-### readme
+### 自述
 
-A relative path to the readme document.
+自述文档的相对路径。
 
-Optional.
+可选的。
 
 ### time
 
-Release date of the version.
+版本的发布日期。
 
-Must be in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS` format.
+必须在`YYYY-MM-DD`或`YYYY-MM-DD HH:MM:SS`格式。
 
-Optional.
+可选的。
 
-### license
+### 执照
 
-The license of the package. This can be either a string or an array of strings.
+包的许可证。这可以是一个字符串或一串字符串。
 
-The recommended notation for the most common licenses is (alphabetical):
+最常用许可证的推荐标记是（按字母顺序）：
 
 - Apache-2.0
 - BSD-2-Clause
@@ -157,12 +121,11 @@ The recommended notation for the most common licenses is (alphabetical):
 - LGPL-3.0-only / LGPL-3.0-or-later
 - MIT
 
-Optional, but it is highly recommended to supply this. More identifiers are
-listed at the [SPDX Open Source License Registry](https://spdx.org/licenses/).
+可选，但强烈建议提供此选项。[SPDX开源许可证注册表](https://spdx.org/licenses/)中列出了更多标识符。
 
-For closed-source software, you may use `"proprietary"` as the license identifier.
+对于闭源软件，您可以将其`"proprietary"`用作许可证标识符。
 
-An Example:
+一个例子：
 
 ```json
 {
@@ -170,10 +133,9 @@ An Example:
 }
 ```
 
-For a package, when there is a choice between licenses ("disjunctive license"),
-multiple can be specified as array.
+对于软件包，当许可证之间有选择时（“分离许可证”），可以将多个指定为数组。
 
-An Example for disjunctive licenses:
+分离许可示例：
 
 ```json
 {
@@ -184,7 +146,7 @@ An Example for disjunctive licenses:
 }
 ```
 
-Alternatively they can be separated with "or" and enclosed in parenthesis;
+或者，它们可以用 “or” 分开并用括号括起来;
 
 ```json
 {
@@ -192,21 +154,20 @@ Alternatively they can be separated with "or" and enclosed in parenthesis;
 }
 ```
 
-Similarly when multiple licenses need to be applied ("conjunctive license"),
-they should be separated with "and" and enclosed in parenthesis.
+同样，如果需要应用多个许可证（“联合许可证”），则应将它们用“and”分开，并用圆括号括起来。
 
-### authors
+### 作者
 
-The authors of the package. This is an array of objects.
+包的作者。这是一个对象数组。
 
-Each author object can have following properties:
+每个作者对象可以具有以下属性：
 
-* **name:** The author's name. Usually their real name.
-* **email:** The author's email address.
-* **homepage:** An URL to the author's website.
-* **role:** The author's role in the project (e.g. developer or translator)
+* **name:** 作者的名字。通常他们的真实姓名。
+* **email:** 作者的电子邮件地址。
+* **homepage:** 作者网站的URL。
+* **role:** 作者在项目中的角色（例如开发人员或翻译人员）
 
-An example:
+一个例子：
 
 ```json
 {
@@ -227,24 +188,24 @@ An example:
 }
 ```
 
-Optional, but highly recommended.
+可选，但强烈推荐。
 
-### support
+### 支持
 
-Various information to get support about the project.
+获取关于项目支持的各种信息。
 
-Support information includes the following:
+支持信息包括以下内容：
 
-* **email:** Email address for support.
-* **issues:** URL to the issue tracker.
-* **forum:** URL to the forum.
-* **wiki:** URL to the wiki.
-* **irc:** IRC channel for support, as irc://server/channel.
-* **source:** URL to browse or download the sources.
-* **docs:** URL to the documentation.
-* **rss:** URL to the RSS feed.
+* **email:** 电子邮件地址以获得支持
+* **issues:** 问题跟踪器的网址。
+* **forum:** 论坛的 URL。
+* **wiki:** wiki的 URL。
+* **irc:** 支持的IRC频道，如irc//server/channel。
+* **source:** 浏览或下载来源的网址。
+* **docs:** 文档的 URL。
+* **rss:** RSS源的URL。
 
-An example:
+一个例子：
 
 ```json
 {
@@ -255,15 +216,13 @@ An example:
 }
 ```
 
-Optional.
+可选的。
 
-### Package links
+### 包链接
 
-All of the following take an object which maps package names to
-versions of the package via version constraints. Read more about
-versions [here](articles/versions.md).
+以下所有对象都通过版本约束将包名称映射到包的版本。在[这里](articles/versions.md)阅读更多关于版本。
 
-Example:
+例：
 
 ```json
 {
@@ -273,15 +232,11 @@ Example:
 }
 ```
 
-All links are optional fields.
+所有链接都是可选字段。
 
-`require` and `require-dev` additionally support stability flags ([root-only](04-schema.md#root-package)).
-These allow you to further restrict or expand the stability of a package beyond
-the scope of the [minimum-stability](#minimum-stability) setting. You can apply
-them to a constraint, or apply them to an empty constraint if you want to
-allow unstable packages of a dependency for example.
+`require`并且`require-dev`还支持稳定性标志([仅限根](04-schema.md#root-package))。这些允许您进一步限制或扩大包装的稳定性，超出[最小稳定性](#minimum-stability)设置的范围。例如，如果您想允许不稳定的依赖包，可以将它们应用于约束，或将它们应用于空约束。
 
-Example:
+例：
 
 ```json
 {
@@ -292,14 +247,11 @@ Example:
 }
 ```
 
-If one of your dependencies has a dependency on an unstable package you need to
-explicitly require it as well, along with its sufficient stability flag.
+如果你的一个依赖关系依赖于一个不稳定的包，你还需要明确地要求它以及足够的稳定性标志。
 
-Example:
+例：
 
-Assuming `doctrine/doctrine-fixtures-bundle` requires `"doctrine/data-fixtures": "dev-master"`
-then inside the root composer.json you need to add the second line below to allow dev
-releases for the `doctrine/data-fixtures` package :
+假设`doctrine/doctrine-fixtures-bundle`需要`"doctrine/data-fixtures": "dev-master"` 在根composer.json中，您需要添加下面的第二行以允许`doctrine/data-fixtures`软件包的dev版本：
 
 ```json
 {
@@ -310,14 +262,9 @@ releases for the `doctrine/data-fixtures` package :
 }
 ```
 
-`require` and `require-dev` additionally support explicit references (i.e.
-commit) for dev versions to make sure they are locked to a given state, even
-when you run update. These only work if you explicitly require a dev version
-and append the reference with `#<ref>`. This is also a
-[root-only](04-schema.md#root-package) feature and will be ignored in
-dependencies.
+`require`并`require-dev`支持dev版本的明确引用（即提交），以确保它们被锁定到给定状态，即使在运行更新时也是如此。这些仅在您明确需要开发版本并附加引用时才有效`#<ref>`。这也是一个 [仅限根](04-schema.md#root-package)的功能，在依赖关系中将被忽略。
 
-Example:
+例：
 
 ```json
 {
@@ -328,21 +275,13 @@ Example:
 }
 ```
 
-> **Note:** This feature has severe technical limitations, as the
-> composer.json metadata will still be read from the branch name you specify
-> before the hash. You should therefore only use this as a temporary solution
-> during development to remediate transient issues, until you can switch to
-> tagged releases. The Composer team does not actively support this feature
-> and will not accept bug reports related to it.
+> **注意：** 此功能具有严格的技术限制，因为composer.json元数据仍将从散列前指定的分支名称中读取。因此，您只能在开发过程中将其作为临时解决方案来解决暂时性问题，直到您可以切换到已标记的发布。Composer团队不主动支持此功能，并且不会接受与其相关的错误报告。
 
-It is also possible to inline-alias a package constraint so that it matches
-a constraint that it otherwise would not. For more information [see the
-aliases article](articles/aliases.md).
+也可以内联别名包约束，以便它匹配否则不会包含的约束。欲了解更多信息，请[参阅别名文章](articles/aliases.md)。
 
-`require` and `require-dev` also support references to specific PHP versions
-and PHP extensions your project needs to run successfully.
+`require`并且`require-dev`还支持提及具体的PHP版本和PHP扩展你的项目需要成功运行。
 
-Example:
+例：
 
 ```json
 {
@@ -353,75 +292,41 @@ Example:
 }
 ```
 
-> **Note:** It is important to list PHP extensions your project requires.
-> Not all PHP installations are created equal: some may miss extensions you
-> may consider as standard (such as `ext-mysqli` which is not installed by
-> default in Fedora/CentOS minimal installation systems). Failure to list
-> required PHP extensions may lead to a bad user experience: Composer will
-> install your package without any errors but it will then fail at run-time.
-> The `composer show --platform` command lists all PHP extensions available on
-> your system. You may use it to help you compile the list of extensions you
-> use and require. Alternatively you may use third party tools to analyze
-> your project for the list of extensions used.
+> **Note:** 列出项目所需的PHP扩展很重要。并非所有的PHP安装都是相同的：有些可能会遗漏你可能认为是标准的扩展（比如`ext-mysqli` Fedora/CentOS最低安装系统默认安装的扩展）。未能列出所需的PHP扩展可能会导致不良的用户体验：Composer将毫无错误地安装软件包，但在运行时会失败。该`composer show --platform`命令列出了系统中可用的所有PHP扩展。您可以使用它来帮助您编译您使用和需要的扩展列表。或者，您可以使用第三方工具来分析您的项目以获取所用扩展名列表。
 
-#### require
+#### 要求
 
-Lists packages required by this package. The package will not be installed
-unless those requirements can be met.
+列出此软件包所需的软件包。除非满足这些要求，否则不会安装该软件包。
 
-#### require-dev <span>([root-only](04-schema.md#root-package))</span>
+#### require-dev <span>([仅限根](04-schema.md#root-package))</span>
 
-Lists packages required for developing this package, or running
-tests, etc. The dev requirements of the root package are installed by default.
-Both `install` or `update` support the `--no-dev` option that prevents dev
-dependencies from being installed.
+列出开发此软件包或运行测试等所需的软件包。默认情况下安装根软件包的开发需求。两者`install`或`update`支持`--no-dev`防止安装依赖关系的选项。
 
-#### conflict
+#### 冲突
 
-Lists packages that conflict with this version of this package. They
-will not be allowed to be installed together with your package.
+列出与此软件包的此版本冲突的软件包。他们将不被允许与您的包一起安装。
 
-Note that when specifying ranges like `<1.0 >=1.1` in a `conflict` link,
-this will state a conflict with all versions that are less than 1.0 *and* equal
-or newer than 1.1 at the same time, which is probably not what you want. You
-probably want to go for `<1.0 || >=1.1` in this case.
+请注意，`<1.0 >=1.1`在`conflict`链接中指定范围时，这将与所有小于1.0 且等于或小于1.1的版本发生冲突，这可能不是您想要的。你可能想`<1.0 || >=1.1`在这种情况下去。
 
-#### replace
+#### 更换
 
-Lists packages that are replaced by this package. This allows you to fork a
-package, publish it under a different name with its own version numbers, while
-packages requiring the original package continue to work with your fork because
-it replaces the original package.
+列出被这个软件包取代的软件包。这允许您分发一个包，使用自己的版本号以不同的名称发布它，而需要原始包的包继续与您的fork一起工作，因为它取代了原始包。
 
-This is also useful for packages that contain sub-packages, for example the main
-symfony/symfony package contains all the Symfony Components which are also
-available as individual packages. If you require the main package it will
-automatically fulfill any requirement of one of the individual components,
-since it replaces them.
+这对于包含子包的包也很有用，例如主要的symfony/symfony包包含所有的Symfony组件，这些组件也可作为单独的包使用。如果您需要主包装，它将自动满足单个组件之一的任何要求，因为它取代了它们。
 
-Caution is advised when using replace for the sub-package purpose explained
-above. You should then typically only replace using `self.version` as a version
-constraint, to make sure the main package only replaces the sub-packages of
-that exact version, and not any other version, which would be incorrect.
+当使用替换用于上面解释的子程序包时，建议小心。然后，您通常应该只使用`self.version`版本约束来替换，以确保主包仅替换该确切版本的子包，而不是任何其他版本，这将会不正确。
 
-#### provide
+#### 提供
 
-List of other packages that are provided by this package. This is mostly
-useful for common interfaces. A package could depend on some virtual
-`logger` package, any library that implements this logger interface would
-simply list it in `provide`.
+此软件包提供的其他软件包列表。这对于通用接口是非常有用的。一个包可以依赖于一些虚拟 `logger`包，任何实现这个记录接口的库都会简单地列出它`provide`。
 
-#### suggest
+#### 建议
 
-Suggested packages that can enhance or work well with this package. These are
-informational and are displayed after the package is installed, to give
-your users a hint that they could add more packages, even though they are not
-strictly required.
+建议的软件包可以增强或使用此软件包。这些都是信息性的，并且在安装包后显示，以便为用户提示他们可以添加更多包，尽管这些包并非严格要求。
 
-The format is like package links above, except that the values are free text
-and not version constraints.
+格式与上面的包链接类似，不同之处在于值是自由文本而不是版本约束。
 
-Example:
+例：
 
 ```json
 {
@@ -432,33 +337,25 @@ Example:
 }
 ```
 
-### autoload
+### 自动加载
 
-Autoload mapping for a PHP autoloader.
+自动加载映射为PHP自动加载器。
 
-[`PSR-4`](http://www.php-fig.org/psr/psr-4/) and [`PSR-0`](http://www.php-fig.org/psr/psr-0/)
-autoloading, `classmap` generation and `files` includes are supported.
+[PSR-4](http://www.php-fig.org/psr/psr-4/)和[PSR-0](http://www.php-fig.org/psr/psr-0/) 自动加载，`classmap`代和`files`包括支持。
 
-PSR-4 is the recommended way since it offers greater ease of use (no need
-to regenerate the autoloader when you add classes).
+PSR-4是推荐的方式，因为它提供了更易于使用的特性（无需在添加类时重新生成自动装载器）。
 
 #### PSR-4
 
-Under the `psr-4` key you define a mapping from namespaces to paths, relative to the
-package root. When autoloading a class like `Foo\\Bar\\Baz` a namespace prefix
-`Foo\\` pointing to a directory `src/` means that the autoloader will look for a
-file named `src/Bar/Baz.php` and include it if present. Note that as opposed to
-the older PSR-0 style, the prefix (`Foo\\`) is **not** present in the file path.
+在这个`psr-4`关键字下，你定义了一个从命名空间到路径的映射，相对于软件包根。当自动载入一个像指向目录`Foo\\Bar\\Baz`的名称空间前缀`Foo\\`这样的类时，意味着自动加载器将查找名为`src/src/Bar/Baz.php`的文件并将其包含在内（如果存在）。请注意，与旧的PSR-0样式相反，prefix（`Foo\\`）`不`存在于文件路径中。
 
-Namespace prefixes must end in `\\` to avoid conflicts between similar prefixes.
-For example `Foo` would match classes in the `FooBar` namespace so the trailing
-backslashes solve the problem: `Foo\\` and `FooBar\\` are distinct.
+命名空间前缀必须以`\\`结尾，以避免类似前缀之间的冲突。
+例如`Foo`会匹配`FooBar`命名空间中的类，因此尾随
+反斜杠解决了这个问题：`Foo \\`和`FooBar \\'是不同的。
 
-The PSR-4 references are all combined, during install/update, into a single
-key => value array which may be found in the generated file
-`vendor/composer/autoload_psr4.php`.
+在安装/更新过程中，PSR-4引用全部组合到一个可以在生成的文件中找到的 key=>value 数组中 `vendor/composer/autoload_psr4.php`。
 
-Example:
+例：
 
 ```json
 {
@@ -471,8 +368,7 @@ Example:
 }
 ```
 
-If you need to search for a same prefix in multiple directories,
-you can specify them as an array as such:
+如果您需要在多个目录中搜索相同的前缀，则可以将它们指定为一个数组，如下所示：
 
 ```json
 {
@@ -482,8 +378,7 @@ you can specify them as an array as such:
 }
 ```
 
-If you want to have a fallback directory where any namespace will be looked for,
-you can use an empty prefix like:
+如果您希望有一个后备目录，其中将查找任何命名空间，则可以使用如下的空前缀：
 
 ```json
 {
@@ -495,17 +390,13 @@ you can use an empty prefix like:
 
 #### PSR-0
 
-Under the `psr-0` key you define a mapping from namespaces to paths, relative to the
-package root. Note that this also supports the PEAR-style non-namespaced convention.
+在这个`psr-0`关键字下，你定义了一个从命名空间到路径的映射，相对于软件包根。请注意，这也支持PEAR风格的非名称空间约定。
 
-Please note namespace declarations should end in `\\` to make sure the autoloader
-responds exactly. For example `Foo` would match in `FooBar` so the trailing
-backslashes solve the problem: `Foo\\` and `FooBar\\` are distinct.
+请注意名称空间声明应该结束`\\`以确保自动加载器完全响应。例如`Foo`匹配，`FooBar`所以后面的反斜杠可以解决问题：`Foo\\`和`FooBar\\`是不同的。
 
-The PSR-0 references are all combined, during install/update, into a single key => value
-array which may be found in the generated file `vendor/composer/autoload_namespaces.php`.
+在安装/更新过程中，PSR-0引用全部组合到一个可以在生成的文件中找到的key =>value 数组中`vendor/composer/autoload_namespaces.php`。
 
-Example:
+例：
 
 ```json
 {
@@ -519,8 +410,7 @@ Example:
 }
 ```
 
-If you need to search for a same prefix in multiple directories,
-you can specify them as an array as such:
+如果您需要在多个目录中搜索相同的前缀，则可以将它们指定为一个数组，如下所示：
 
 ```json
 {
@@ -530,10 +420,7 @@ you can specify them as an array as such:
 }
 ```
 
-The PSR-0 style is not limited to namespace declarations only but may be
-specified right down to the class level. This can be useful for libraries with
-only one class in the global namespace. If the php source file is also located
-in the root of the package, for example, it may be declared like this:
+PSR-0风格不仅限于名称空间声明，而是可以直接指定到类级别。这对全局名称空间中只有一个类的库很有用。例如，如果php源文件也位于包的根目录中，则可以这样声明它：
 
 ```json
 {
@@ -543,8 +430,7 @@ in the root of the package, for example, it may be declared like this:
 }
 ```
 
-If you want to have a fallback directory where any namespace can be, you can
-use an empty prefix like:
+如果你想有一个可以使用任何命名空间的回退目录，你可以使用一个空的前缀，如：
 
 ```json
 {
@@ -554,18 +440,13 @@ use an empty prefix like:
 }
 ```
 
-#### Classmap
+#### 类映射
 
-The `classmap` references are all combined, during install/update, into a single
-key => value array which may be found in the generated file
-`vendor/composer/autoload_classmap.php`. This map is built by scanning for
-classes in all `.php` and `.inc` files in the given directories/files.
+这些`classmap`引用在安装/更新期间全部组合为一个可以在生成的文件中找到的 key=>value 数组 `vendor/composer/autoload_classmap.php`。这张地图是通过扫描所有目录/文件中的文件`.php`以及`.inc`文件中的类来构建的。
 
-You can use the classmap generation support to define autoloading for all libraries
-that do not follow PSR-0/4. To configure this you specify all directories or files
-to search for classes.
+您可以使用类映射生成支持为所有不遵循PSR-0/4的库定义自动加载。要配置它，可以指定所有目录或文件来搜索类。
 
-Example:
+例：
 
 ```json
 {
@@ -575,13 +456,11 @@ Example:
 }
 ```
 
-#### Files
+#### 文件
 
-If you want to require certain files explicitly on every request then you can use
-the `files` autoloading mechanism. This is useful if your package includes PHP functions
-that cannot be autoloaded by PHP.
+如果你想在每个请求上明确地要求某些文件，那么你可以使用`files`自动加载机制。如果您的软件包包含PHP无法自动加载的PHP函数，这非常有用。
 
-Example:
+例：
 
 ```json
 {
@@ -591,17 +470,13 @@ Example:
 }
 ```
 
-#### Exclude files from classmaps
+#### 排除classmaps中的文件
 
-If you want to exclude some files or folders from the classmap you can use the `exclude-from-classmap` property.
-This might be useful to exclude test classes in your live environment, for example, as those will be skipped
-from the classmap even when building an optimized autoloader.
+如果你想从类图中排除一些文件或文件夹，你可以使用该`exclude-from-classmap`属性。这可能会有助于排除实时环境中的测试类，例如，即使在构建优化的自动加载器时，它们也会从类映射中跳过。
 
-The classmap generator will ignore all files in the paths configured here. The paths are absolute from the package
-root directory (i.e. composer.json location), and support `*` to match anything but a slash, and `**` to
-match anything. `**` is implicitly added to the end of the paths.
+类映射生成器将忽略此处配置的路径中的所有文件。路径绝对来自包根目录（即composer.json位置），并支持`*`匹配除斜杠之外的任何内容，并`**`匹配任何内容。`**`被隐式添加到路径的末尾。
 
-Example:
+例：
 
 ```json
 {
@@ -611,25 +486,19 @@ Example:
 }
 ```
 
-#### Optimizing the autoloader
+#### 优化自动装载机
 
-The autoloader can have quite a substantial impact on your request time
-(50-100ms per request in large frameworks using a lot of classes). See the
-[article about optimizing the autoloader](articles/autoloader-optimization.md)
-for more details on how to reduce this impact.
+自动加载器可以对您的请求时间产生相当大的影响（在使用大量类的大型框架中，每个请求需要50-100毫秒）。有关[优化自动装载机的文章](articles/autoloader-optimization.md)，请参阅有关如何减少此影响的更多详细信息。
 
-### autoload-dev <span>([root-only](04-schema.md#root-package))</span>
+### autoload-dev <span>([仅限根](04-schema.md#root-package))</span>
 
-This section allows to define autoload rules for development purposes.
+本部分允许为开发目的定义自动加载规则。
 
-Classes needed to run the test suite should not be included in the main autoload
-rules to avoid polluting the autoloader in production and when other people use
-your package as a dependency.
+运行测试套件所需的类不应包含在主自动加载规则中，以避免污染生产中的自动加载器，以及其他人何时使用您的软件包作为依赖项。
 
-Therefore, it is a good idea to rely on a dedicated path for your unit tests
-and to add it within the autoload-dev section.
+因此，依靠单元测试的专用路径并将其添加到autoload-dev部分中是一个好主意。
 
-Example:
+例：
 
 ```json
 {
@@ -642,15 +511,13 @@ Example:
 }
 ```
 
-### include-path
+### 包括路径
 
-> **DEPRECATED**: This is only present to support legacy projects, and all new code
-> should preferably use autoloading. As such it is a deprecated practice, but the
-> feature itself will not likely disappear from Composer.
+> **弃用**: 这只是为了支持传统项目而存在，所有新代码应该最好使用自动加载。因此，这是一个不推荐的做法，但该功能本身不可能从Composer中消失。
 
-A list of paths which should get appended to PHP's `include_path`.
+应该附加到PHP的路径列表include_path。
 
-Example:
+例：
 
 ```json
 {
@@ -658,27 +525,19 @@ Example:
 }
 ```
 
-Optional.
+可选的。
 
-### target-dir
+### 目标目录
 
-> **DEPRECATED**: This is only present to support legacy PSR-0 style autoloading,
-> and all new code should preferably use PSR-4 without target-dir and projects
-> using PSR-0 with PHP namespaces are encouraged to migrate to PSR-4 instead.
+> **弃用**: 这只是为了支持传统的PSR-0样式自动加载，并且所有新代码应该最好使用没有目标代码的PSR-4，并且使用PSR-0的项目与PHP命名空间相反地被鼓励迁移到PSR-4。
 
-Defines the installation target.
+定义安装目标。
 
-In case the package root is below the namespace declaration you cannot
-autoload properly. `target-dir` solves this problem.
+如果包根位于命名空间声明之下，则无法正确自动加载。`target-dir`解决了这个问题。
 
-An example is Symfony. There are individual packages for the components. The
-Yaml component is under `Symfony\Component\Yaml`. The package root is that
-`Yaml` directory. To make autoloading possible, we need to make sure that it
-is not installed into `vendor/symfony/yaml`, but instead into
-`vendor/symfony/yaml/Symfony/Component/Yaml`, so that the autoloader can load
-it from `vendor/symfony/yaml`.
+Symfony就是一个例子。这些组件有单独的包。Yaml组件在下`Symfony\Component\Yaml`。包根是该`Yaml`目录。为了使自动加载成为可能，我们需要确保它没有安装到`vendor/symfony/yaml`，但是代之以进入 `vendor/symfony/yaml/Symfony/Component/Yaml`，以便自动加载器可以加载它`vendor/symfony/yaml`。
 
-To do that, `autoload` and `target-dir` are defined as follows:
+要做到这一点，`autoload`并`target-dir`定义如下：
 
 ```json
 {
@@ -689,61 +548,44 @@ To do that, `autoload` and `target-dir` are defined as follows:
 }
 ```
 
-Optional.
+可选的。
 
-### minimum-stability <span>([root-only](04-schema.md#root-package))</span>
+### 最小稳定性 <span>([仅限根](04-schema.md#root-package))</span>
 
-This defines the default behavior for filtering packages by stability. This
-defaults to `stable`, so if you rely on a `dev` package, you should specify
-it in your file to avoid surprises.
+这定义了稳定性过滤包的默认行为。这默认为`stable`，所以如果你依赖一个`dev`包，你应该在你的文件中指定它以避免意外。
 
-All versions of each package are checked for stability, and those that are less
-stable than the `minimum-stability` setting will be ignored when resolving
-your project dependencies. (Note that you can also specify stability requirements
-on a per-package basis using stability flags in the version constraints that you
-specify in a `require` block (see [package links](#package-links) for more details).
+检查每个软件包的所有版本的稳定性，而那些不如`minimum-stability`设置稳定的软件包在解决项目依赖性时会被忽略。（请注意，您也可以在每个包中使用在`require`块中指定的版本约束中的稳定性标志来指定稳定性要求（有关更多详细信息，请参阅[包链接](#package-links)）。
 
-Available options (in order of stability) are `dev`, `alpha`, `beta`, `RC`,
-and `stable`.
+可用的选项（在稳定的顺序） `dev`, `alpha`, `beta`, `RC`,
+和 `stable`.
 
-### prefer-stable <span>([root-only](04-schema.md#root-package))</span>
+### 偏好稳定 <span>([仅限根](04-schema.md#root-package))</span>
 
-When this is enabled, Composer will prefer more stable packages over unstable
-ones when finding compatible stable packages is possible. If you require a
-dev version or only alphas are available for a package, those will still be
-selected granted that the minimum-stability allows for it.
+启用此功能后，如果找到兼容的稳定软件包，Composer会选择比稳定软件包更稳定的软件包。如果你需要一个开发版本或者只有一个软件包可以使用alpha，那么这些仍然会被选中，以保证最小稳定性。
 
-Use `"prefer-stable": true` to enable.
+使用`"prefer-stable": true`启用。
 
-### repositories <span>([root-only](04-schema.md#root-package))</span>
+### 存储库 <span>([仅限根](04-schema.md#root-package))</span>
 
-Custom package repositories to use.
+使用自定义软件包存储库。
 
-By default Composer only uses the packagist repository. By specifying
-repositories you can get packages from elsewhere.
+默认情况下，Composer仅使用packagist存储库。通过指定存储库，您可以从别处获取软件包。
 
-Repositories are not resolved recursively. You can only add them to your main
-`composer.json`. Repository declarations of dependencies' `composer.json`s are
-ignored.
+存储库不会递归解析。你只能将它们添加到你的主 `composer.json`。依赖关系的存储库声明`composer.json`被忽略。
 
-The following repository types are supported:
+以下储存库类型受支持：
 
-* **composer:** A Composer repository is simply a `packages.json` file served
-  via the network (HTTP, FTP, SSH), that contains a list of `composer.json`
-  objects with additional `dist` and/or `source` information. The `packages.json`
-  file is loaded using a PHP stream. You can set extra options on that stream
-  using the `options` parameter.
-* **vcs:** The version control system repository can fetch packages from git,
-  svn, fossil and hg repositories.
-* **pear:** With this you can import any pear repository into your Composer
-  project.
-* **package:** If you depend on a project that does not have any support for
-  composer whatsoever you can define the package inline using a `package`
-  repository. You basically inline the `composer.json` object.
+* **composer:** Composer仓库只是`packages.json`通过网络（HTTP，FTP，SSH）提供的文件，其中包含`composer.json` 具有附加信息`dist`和/或`source`信息的对象列表。该`packages.json`文件使用PHP流加载。您可以使用`options`参数在该流上设置额外的选项。
 
-For more information on any of these, see [Repositories](05-repositories.md).
+* **vcs:** 版本控制系统存储库可以从git，svn，fossil和hg存储库中获取软件包。
 
-Example:
+* **pear:** 有了这个，你可以将任何梨库导入到你的Composer项目中。
+
+* **package:** 如果你依赖的是一个没有任何支持composer的项目，你可以使用一个`package` 仓库来内联定义这个包。你基本上内联`composer.json`对象。
+
+有关这些信息的更多信息，请参阅[存储库](05-repositories.md)。
+
+例：
 
 ```json
 {
@@ -789,13 +631,9 @@ Example:
 }
 ```
 
-> **Note:** Order is significant here. When looking for a package, Composer
-will look from the first to the last repository, and pick the first match.
-By default Packagist is added last which means that custom repositories can
-override packages from it.
+> **注意：** 这里的订单很重要。在寻找一个包时，Composer会从第一个库到最后一个库，然后选择第一个匹配。默认情况下Packagist是最后添加的，这意味着自定义存储库可以覆盖它。
 
-Using JSON object notation is also possible. However, JSON key/value pairs
-are to be considered unordered so consistent behaviour cannot be guaranteed.
+使用JSON对象表示法也是可能的。但是，JSON键/值对将被视为无序，因此无法保证一致的行为。
 
  ```json
 {
@@ -808,53 +646,45 @@ are to be considered unordered so consistent behaviour cannot be guaranteed.
 }
  ```
 
-### config <span>([root-only](04-schema.md#root-package))</span>
+### 配置 <span>([仅限根](04-schema.md#root-package))</span>
 
-A set of configuration options. It is only used for projects. See
-[Config](06-config.md) for a description of each individual option.
+一组配置选项。它只用于项目。有关各个选项的说明，请参阅 [配置](06-config.md)。
 
-### scripts <span>([root-only](04-schema.md#root-package))</span>
+### 脚本 <span>([仅限根](04-schema.md#root-package))</span>
 
-Composer allows you to hook into various parts of the installation process
-through the use of scripts.
+Composer允许您通过使用脚本来挂接安装过程的各个部分。
 
-See [Scripts](articles/scripts.md) for events details and examples.
+有关活动详情和示例，请参阅[脚本](articles/scripts.md)。
 
-### extra
+### 额外
 
-Arbitrary extra data for consumption by `scripts`.
+任意额外的数据供消费者使用`scripts`。
 
-This can be virtually anything. To access it from within a script event
-handler, you can do:
+这可以是几乎任何事情。要从脚本事件处理程序中访问它，您可以执行以下操作：
 
 ```php
 $extra = $event->getComposer()->getPackage()->getExtra();
 ```
 
-Optional.
+可选的。
 
 ### bin
 
-A set of files that should be treated as binaries and symlinked into the `bin-dir`
-(from config).
+一组应该被视为二进制文件并被链接到`bin-dir` （从配置文件中）的文件。
 
-See [Vendor Binaries](articles/vendor-binaries.md) for more details.
+请参阅[供应商二进制文件](articles/vendor-binaries.md)了解更多详细信
 
-Optional.
+可选的。
 
-### archive
+### 归档
 
-A set of options for creating package archives.
+一组用于创建程序包归档的选项。
 
-The following options are supported:
+支持以下选项：
 
-* **exclude:** Allows configuring a list of patterns for excluded paths. The
-  pattern syntax matches .gitignore files. A leading exclamation mark (!) will
-  result in any matching files to be included even if a previous pattern
-  excluded them. A leading slash will only match at the beginning of the project
-  relative path. An asterisk will not expand to a directory separator.
+* **排除:** 允许配置排除路径的模式列表。模式语法与.gitignore文件匹配。即使先前的模式排除了它们，主导感叹号（！）也会导致包含任何匹配的文件。前导斜杠只会在项目相对路径的开始处匹配。星号不会展开到目录分隔符。
 
-Example:
+例：
 
 ```json
 {
@@ -864,51 +694,40 @@ Example:
 }
 ```
 
-The example will include `/dir/foo/bar/file`, `/foo/bar/baz`, `/file.php`,
-`/foo/my.test` but it will exclude `/foo/bar/any`, `/foo/baz`, and `/my.test`.
+例子包括 `/dir/foo/bar/file`, `/foo/bar/baz`, `/file.php`,
+`/foo/my.test` 但将排除 `/foo/bar/any`, `/foo/baz`, 和 `/my.test`.
 
-Optional.
+可选的。
 
-### abandoned
+### 弃用
 
-Indicates whether this package has been abandoned.
+指示此包是否已被放弃。
 
-It can be boolean or a package name/URL pointing to a recommended alternative.
+它可以是布尔值，也可以是指向推荐替代品的包名/ URL。
 
-Examples:
+例子：
 
-Use `"abandoned": true` to indicates this package is abandoned.
-Use `"abandoned": "monolog/monolog"` to indicates this package is abandoned and the
-recommended alternative is  `monolog/monolog`.
+使用`"abandoned": true`来表示这个包被放弃。使用`"abandoned": "monolog/monolog"`来表示这个包被放弃，推荐的替代方案是 `monolog/monolog`。
 
-Defaults to false.
+默认为false。
 
-Optional.
+可选的。
 
-### non-feature-branches
+### 非特征分支
 
-A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something),
-that will NOT be handled as feature branches. This is an array of strings.
+非数字（例如“最新”或其他）的分支名称的正则表达式列表，不会作为特征分支处理。这是一串字符串。
 
-If you have non-numeric branch names, for example like "latest", "current", "latest-stable"
-or something, that do not look like a version number, then Composer handles such branches
-as feature branches. This means it searches for parent branches, that look like a version
-or ends at special branches (like master) and the root package version number becomes the
-version of the parent branch or at least master or something.
+如果您有非数字分支名称，例如“最新”，“当前”，“最新稳定”或类似于版本号的东西，则Composer将处理诸如功能分支之类的分支。这意味着它搜索父分支，它看起来像一个版本，或者结束于特殊分支（如主分支），并且根包版本号成为父分支的版本或者至少是主或者其他东西。
 
-To handle non-numeric named branches as versions instead of searching for a parent branch
-with a valid version or special branch name like master, you can set patterns for branch
-names, that should be handled as dev version branches.
+要将非数字命名分支作为版本处理，而不是使用有效版本或特殊分支名称（例如master）搜索父分支，可以为分支名称设置模式，这应该作为开发版本分支来处理。
 
-This is really helpful when you have dependencies using "self.version", so that not dev-master,
-but the same branch is installed (in the example: latest-testing).
+当你使用“self.version”进行依赖时，这非常有用，因此不是dev-master，而是安装了相同的分支（在这个例子中：latest-testing）。
 
-An example:
+一个例子：
 
-If you have a testing branch, that is heavily maintained during a testing phase and is
-deployed to your staging environment, normally `composer show -s` will give you `versions : * dev-master`.
+如果您有一个测试分支，在测试阶段大量维护并且部署到分段环境中，通常`composer show -s`会给您v`ersions : * dev-master`。
 
-If you configure `latest-.*` as a pattern for non-feature-branches like this:
+如果您`latest-.*`将此配置为非功能分支的模式：
 
 ```json
 {
@@ -916,8 +735,8 @@ If you configure `latest-.*` as a pattern for non-feature-branches like this:
 }
 ```
 
-Then `composer show -s` will give you `versions : * dev-latest-testing`.
+然后`composer show -s`会给你`versions : * dev-latest-testing`。
 
-Optional.
+可选的。
 
-&larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
+&larr; [命令行界面](03-cli.md)  |  [存储库](05-repositories.md) &rarr;
