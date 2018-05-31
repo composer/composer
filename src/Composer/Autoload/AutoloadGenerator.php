@@ -902,12 +902,13 @@ INITIALIZER;
 
     /**
      * Filters out dev-dependencies when not in dev-mode
-     * 
+     *
      * @param array $packageMap
      * @param PackageInterface $mainPackage
      * @return array
      */
-    protected function filterPackageMap(array $packageMap, PackageInterface $mainPackage) {
+    protected function filterPackageMap(array $packageMap, PackageInterface $mainPackage)
+    {
         if ($this->devMode === true) {
             return $packageMap;
         }
@@ -924,14 +925,16 @@ INITIALIZER;
         $add = function (PackageInterface $package) use (&$add, $mainPackage, $packages, &$include) {
             foreach ($package->getRequires() as $link) {
                 $target = $link->getTarget();
-                $include[$target] = true;
-                if (isset($packages[$target])) {
-                    $add($packages[$target]);
+                if (!isset($include[$target])) {
+                    $include[$target] = true;
+                    if (isset($packages[$target])) {
+                        $add($packages[$target]);
+                    }
                 }
             }
         };
         $add($mainPackage);
-    
+
         return array_filter(
             $packageMap,
             function ($item) use ($include) {
