@@ -18,7 +18,7 @@
 
 ### 名称
 
-包的名称。它由供应商名称和项目名称分隔`/`。例子：
+包的名称。它由第三方库名称和项目名称分隔`/`。例子：
 
 * monolog/monolog
 * igorw/event-source
@@ -672,7 +672,7 @@ $extra = $event->getComposer()->getPackage()->getExtra();
 
 一组应该被视为二进制文件并被链接到`bin-dir` （从配置文件中）的文件。
 
-请参阅[供应商二进制文件](articles/vendor-binaries.md)了解更多详细信
+请参阅[第三方库二进制文件](articles/vendor-binaries.md)了解更多详细信
 
 可选的。
 

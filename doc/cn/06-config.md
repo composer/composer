@@ -1,24 +1,18 @@
-# Config
+# 配置
 
-This chapter will describe the `config` section of the `composer.json`
-[schema](04-schema.md).
+本章将介绍`config`一节的`composer.json` [模式](04-schema.md)。
 
 ## process-timeout
 
-Defaults to `300`. The duration processes like git clones can run before
-Composer assumes they died out. You may need to make this higher if you have a
-slow connection or huge vendors.
+默认为`300`。像git克隆这样的持续时间过程可以在Composer假定它们消失之前运行。如果连接速度较慢或第三方库数量较多，则可能需要提高此值。
 
 ## use-include-path
 
-Defaults to `false`. If `true`, the Composer autoloader will also look for classes
-in the PHP include path.
+默认为`false`。如果`true`，Composer自动加载器也将在PHP包含路径中查找类。
 
 ## preferred-install
 
-Defaults to `auto` and can be any of `source`, `dist` or `auto`. This option
-allows you to set the install method Composer will prefer to use. Can
-optionally be a hash of patterns for more granular install preferences.
+默认为`auto`可以是任何的`source`，`dist`或`auto`。此选项允许您设置Composer喜欢使用的安装方法。可以选择性地使用模式的哈希以获得更详细的安装偏好。
 
 ```json
 {
@@ -33,233 +27,152 @@ optionally be a hash of patterns for more granular install preferences.
 }
 ```
 
-> **Note:** Order matters. More specific patterns should be earlier than
-> more relaxed patterns. When mixing the string notation with the hash
-> configuration in global and package configurations the string notation
-> is translated to a `*` package pattern.
+> **注意：** 订单很重要。更具体的模式应该早于更宽松的模式。将字符串符号与全局和程序包配置中的哈希配置混合时，字符串符号将转换为`*`程序包模式。
 
 ## store-auths
 
-What to do after prompting for authentication, one of: `true` (always store),
-`false` (do not store) and `"prompt"` (ask every time), defaults to `"prompt"`.
+在提示进行身份验证后要做什么，其中一个:`true`(始终存储）， `false`（不存储）和`"prompt"`（每次询问），默认为`"prompt"`。
 
 ## github-protocols
 
-Defaults to `["https", "ssh", "git"]`. A list of protocols to use when cloning
-from github.com, in priority order. By default `git` is present but only if [secure-http](#secure-http)
-is disabled, as the git protocol is not encrypted. If you want your origin remote
-push URLs to be using https and not ssh (`git@github.com:...`), then set the protocol
-list to be only `["https"]` and Composer will stop overwriting the push URL to an ssh
-URL.
+默认为`["https", "ssh", "git"]`。按照优先顺序从github.com克隆时使用的协议列表。默认情况下`git`是存在的，但仅当[secure-http](#secure-http) 被禁用时，因为git协议未加密。如果您希望您的原始远程推送网址使用https而不是ssh（`git@github.com:...`），那么请将协议列表设置为唯一`["https"]`，Composer将停止将推送网址覆盖为ssh网址。
 
 ## github-oauth
 
-A list of domain names and oauth keys. For example using `{"github.com":
-"oauthtoken"}` as the value of this option will use `oauthtoken` to access
-private repositories on github and to circumvent the low IP-based rate limiting
-of their API. [Read
-more](articles/troubleshooting.md#api-rate-limit-and-oauth-tokens) on how to get
-an OAuth token for GitHub.
+域名和oauth密钥的列表。例如，使用`{"github.com": "oauthtoken"}`此选项的值将用于`oauthtoken`访问github上的私有存储库，并规避基于IP的API速率限制。[详细](articles/troubleshooting.md#api-rate-limit-and-oauth-tokens)了解如何获取GitHub的OAuth令牌。
 
 ## gitlab-oauth
 
-A list of domain names and oauth keys. For example using `{"gitlab.com":
-"oauthtoken"}` as the value of this option will use `oauthtoken` to access
-private repositories on gitlab. Please note: If the package is not hosted at 
-gitlab.com the domain names must be also specified with the 
-[`gitlab-domains`](06-config.md#gitlab-domains) option.
+域名和oauth密钥的列表。例如，使用`{"gitlab.com": "oauthtoken"}`此选项的值将用于`oauthtoken`访问gitlab上的私有存储库。请注意：如果该软件包不在 gitlab.com 上，则必须使用该[`gitlab-domains`](06-config.md#gitlab-domains)选项指定域名 。
 
 ## gitlab-token
 
-A list of domain names and private tokens. For example using `{"gitlab.com":
-"privatetoken"}` as the value of this option will use `privatetoken` to access
-private repositories on gitlab. Please note: If the package is not hosted at 
-gitlab.com the domain names must be also specified with the 
-[`gitlab-domains`](06-config.md#gitlab-domains) option.
+域名和私有令牌的列表。例如，使用`{"gitlab.com": "privatetoken"}`此选项的值将用于`privatetoken`访问gitlab上的私有存储库。请注意：如果该软件包不在 gitlab.com 上，则必须使用该[`gitlab-domains`](06-config.md#gitlab-domains)选项指定域名 。
 
 ## disable-tls
 
-Defaults to `false`. If set to true all HTTPS URLs will be tried with HTTP
-instead and no network level encryption is performed. Enabling this is a
-security risk and is NOT recommended. The better way is to enable the
-php_openssl extension in php.ini.
+默认为`false`。如果设置为true，则将使用HTTP尝试所有HTTPS URL，而不执行网络级加密。启用此功能存在安全风险，不建议使用。更好的方法是在php.ini中启用php_openssl扩展。
 
 ## secure-http
 
-Defaults to `true`. If set to true only HTTPS URLs are allowed to be
-downloaded via Composer. If you really absolutely need HTTP access to something
-then you can disable it, but using [Let's Encrypt](https://letsencrypt.org/) to
-get a free SSL certificate is generally a better alternative.
+默认为`true`。如果设置为true，则只允许通过Composer下载HTTPS URL。如果你确实需要HTTP访问功能，那么你可以禁用它，但使用[Let's Encrypt](https://letsencrypt.org/)来获得免费的SSL证书通常是更好的选择。
 
 ## bitbucket-oauth
 
-A list of domain names and consumers. For example using `{"bitbucket.org":
-{"consumer-key": "myKey", "consumer-secret": "mySecret"}}`. [Read](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html)
-how to set up a consumer on Bitbucket.
+一个域名和消费者名单。例如使用`{"bitbucket.org": {"consumer-key": "myKey", "consumer-secret": "mySecret"}}`。[阅读](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html) 如何在Bitbucket上设置使用者。
 
 ## cafile
 
-Location of Certificate Authority file on local filesystem. In PHP 5.6+ you
-should rather set this via openssl.cafile in php.ini, although PHP 5.6+ should
-be able to detect your system CA file automatically.
+证书颁发机构文件在本地文件系统上的位置。在PHP 5.6或更高版本中，您应该通过php.ini中的openssl.cafile来设置它，尽管PHP 5.6+应该能够自动检测您的系统CA文件。
 
 ## capath
 
-If cafile is not specified or if the certificate is not found there, the
-directory pointed to by capath is searched for a suitable certificate.
-capath must be a correctly hashed certificate directory.
+如果未指定cafile或未在其中找到证书，则会搜索capath指向的目录以查找合适的证书。capath必须是正确散列的证书目录。
 
 ## http-basic
 
-A list of domain names and username/passwords to authenticate against them. For
-example using `{"example.org": {"username": "alice", "password": "foo"}}` as the
-value of this option will let Composer authenticate against example.org.
+域名和用户名/密码列表，以对其进行身份验证。例如，使用`{"example.org": {"username": "alice", "password": "foo"}}`此选项的值将使Composer对example.org进行身份验证。
 
-> **Note:** Authentication-related config options like `http-basic` and
-> `github-oauth` can also be specified inside a `auth.json` file that goes
-> besides your `composer.json`. That way you can gitignore it and every
-> developer can place their own credentials in there.
+> **注意：** 身份验证相关的配置选项类似`http-basic`， `github-oauth`也可以在`auth.json`除了您的文件之外的文件中指定`composer.json`。这样你可以对它进行gitignore，每个开发者都可以在那里放置自己的凭证。
 
 ## platform
 
-Lets you fake platform packages (PHP and extensions) so that you can emulate a
-production env or define your target platform in the config. Example: `{"php":
-"7.0.3", "ext-something": "4.0.3"}`.
+让您伪造平台包（PHP和扩展），以便您可以模拟生产环境或在配置中定义目标平台。例如：`{"php": "7.0.3", "ext-something": "4.0.3"}`。
 
 ## vendor-dir
 
-Defaults to `vendor`. You can install dependencies into a different directory if
-you want to. `$HOME` and `~` will be replaced by your home directory's path in
-vendor-dir and all `*-dir` options below.
+默认为`vendor`。如果需要，可以将依赖关系安装到不同的目录中。`$HOME`并且`~`将被vendor-dir中的主目录路径和`*-dir`下面的所有选项所取代。
 
 ## bin-dir
 
-Defaults to `vendor/bin`. If a project includes binaries, they will be symlinked
-into this directory.
+默认为`vendor/bin`。如果一个项目包含二进制文件，它们将被链接到这个目录中。
 
 ## data-dir
 
-Defaults to `C:\Users\<user>\AppData\Roaming\Composer` on Windows,
-`$XDG_DATA_HOME/composer` on unix systems that follow the XDG Base Directory
-Specifications, and `$home` on other unix systems. Right now it is only
-used for storing past composer.phar files to be able to rollback to older
-versions. See also [COMPOSER_HOME](03-cli.md#composer-home).
+默认为`C:\Users\<user>\AppData\Roaming\Composer`在Windows上， `$XDG_DATA_HOME/composer`遵循XDG基本目录规范的`$home`在unix系统上以及其他unix系统上。现在它只用于存储过去的composer.phar文件，以便能够回滚到旧版本。另请参阅[COMPOSER_HOME](03-cli.md#composer-home)。
 
 ## cache-dir
 
-Defaults to `C:\Users\<user>\AppData\Local\Composer` on Windows,
-`$XDG_CACHE_HOME/composer` on unix systems that follow the XDG Base Directory
-Specifications, and `$home/cache` on other unix systems. Stores all the caches
-used by Composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
+默认为`C:\Users\<user>\AppData\Local\Composer`在Windows上， `$XDG_CACHE_HOME/composer`在遵循XDG基本目录规范的`$home/cache`在unix系统上以及其他unix系统上。存储Composer使用的所有缓存。另请参阅[COMPOSER_HOME](03-cli.md#composer-home)。
+
 
 ## cache-files-dir
 
-Defaults to `$cache-dir/files`. Stores the zip archives of packages.
+默认为`$cache-dir/files`。存储软件包的zip存档。
 
 ## cache-repo-dir
 
-Defaults to `$cache-dir/repo`. Stores repository metadata for the `composer`
-type and the VCS repos of type `svn`, `fossil`, `github` and `bitbucket`.
+默认为`$cache-dir/repo`。存储库的元数据`composer` 类型和类型的VCS回购 `svn`, `fossil`, `github` 和 `bitbucket`.
 
 ## cache-vcs-dir
 
-Defaults to `$cache-dir/vcs`. Stores VCS clones for loading VCS repository
-metadata for the `git`/`hg` types and to speed up installs.
+默认为`$cache-dir/vcs`。存储用于加载`git`/` hg`类型的VCS存储库元数据的VCS克隆，并加快安装速度。
 
 ## cache-files-ttl
 
-Defaults to `15552000` (6 months). Composer caches all dist (zip, tar, ..)
-packages that it downloads. Those are purged after six months of being unused by
-default. This option allows you to tweak this duration (in seconds) or disable
-it completely by setting it to 0.
+默认为`15552000`（6个月）。Composer缓存它下载的所有dist（zip，tar，..）包。这些在默认情况下未使用六个月后清除。该选项允许您调整此持续时间（以秒为单位）或通过将其设置为0将其完全禁用。
 
 ## cache-files-maxsize
 
-Defaults to `300MiB`. Composer caches all dist (zip, tar, ..) packages that it
-downloads. When the garbage collection is periodically ran, this is the maximum
-size the cache will be able to use. Older (less used) files will be removed
-first until the cache fits.
+默认为`300MiB`。Composer缓存它下载的所有dist（zip，tar，..）包。当垃圾收集周期性运行时，这是缓存可以使用的最大大小。较旧的（较少使用的）文件将首先被删除，直到缓存适合。
 
 ## bin-compat
 
-Defaults to `auto`. Determines the compatibility of the binaries to be installed.
-If it is `auto` then Composer only installs .bat proxy files when on Windows. If
-set to `full` then both .bat files for Windows and scripts for Unix-based
-operating systems will be installed for each binary. This is mainly useful if you
-run Composer inside a linux VM but still want the .bat proxies available for use
-in the Windows host OS.
+默认为`auto`。确定要安装的二进制文件的兼容性。如果是这样的`auto`话，Composer只能在Windows上安装.bat代理文件。如果设置为，`full`那么针对Windows的两个.bat文件和针对基于Unix的操作系统的脚本将针对每个二进制文件安装。如果您在Linux虚拟机内运行Composer，但仍希望.bat代理可用于Windows主机操作系统，则此功能非常有用。
 
 ## prepend-autoloader
 
-Defaults to `true`. If `false`, the Composer autoloader will not be prepended to
-existing autoloaders. This is sometimes required to fix interoperability issues
-with other autoloaders.
+默认为`true`。如果`false`，Composer自动加载器不会被预先添加到现有的自动加载器中。有时这需要解决与其他自动加载器的互操作性问题。
 
 ## autoloader-suffix
 
-Defaults to `null`. String to be used as a suffix for the generated Composer
-autoloader. When null a random one will be generated.
+默认为`null`。用作生成的Composer自动加载器后缀的字符串。当为空时，随机生成一个。
 
 ## optimize-autoloader
 
-Defaults to `false`. If `true`, always optimize when dumping the autoloader.
+默认为`false`。如果`true`在转储自动加载器时始终进行优化。
 
 ## sort-packages
 
-Defaults to `false`. If `true`, the `require` command keeps packages sorted
-by name in `composer.json` when adding a new package.
+默认为`false`。如果`true`该`require`命令在`composer.json`添加新包时按名称保存包。
 
 ## classmap-authoritative
 
-Defaults to `false`. If `true`, the Composer autoloader will only load classes
-from the classmap. Implies `optimize-autoloader`.
+默认为`false`。如果`true`，Composer自动加载器将只加载类映射中的类。意味着`optimize-autoloader`。
 
 ## apcu-autoloader
 
-Defaults to `false`. If `true`, the Composer autoloader will check for APCu and
-use it to cache found/not-found classes when the extension is enabled.
+默认为`false`。如果`true`，Composer自动加载器将检查APCu，并在启用扩展时使用它来缓存找到/未找到的类。
 
 ## github-domains
 
-Defaults to `["github.com"]`. A list of domains to use in github mode. This is
-used for GitHub Enterprise setups.
+默认为`["github.com"]`。在github模式下使用的域列表。这用于GitHub Enterprise设置。
 
 ## github-expose-hostname
 
-Defaults to `true`. If `false`, the OAuth tokens created to access the
-github API will have a date instead of the machine hostname.
+默认为`true`。如果`false`创建用于访问github API的OAuth令牌将具有日期而不是机器主机名。
 
 ## gitlab-domains
 
-Defaults to `["gitlab.com"]`. A list of domains of GitLab servers.
-This is used if you use the `gitlab` repository type.
+默认为`["gitlab.com"]`。GitLab服务器的域列表。这在您使用`gitlab`存储库类型时使用。
 
 ## notify-on-install
 
-Defaults to `true`. Composer allows repositories to define a notification URL,
-so that they get notified whenever a package from that repository is installed.
-This option allows you to disable that behaviour.
+默认为`true`。Composer允许存储库定义通知URL，以便在安装该存储库中的软件包时得到通知。该选项允许您禁用该行为。
 
 ## discard-changes
 
-Defaults to `false` and can be any of `true`, `false` or `"stash"`. This option
-allows you to set the default style of handling dirty updates when in
-non-interactive mode. `true` will always discard changes in vendors, while
-`"stash"` will try to stash and reapply. Use this for CI servers or deploy
-scripts if you tend to have modified vendors.
+默认为`false`可以是任何的`true`，`false`或`"stash"`。此选项允许您在非交互模式下设置处理脏更新的默认样式。`true`将永远放弃第三方库的变化，同时 `"stash"`将尝试存储和重新应用。如果您倾向于修改第三方库，请将其用于CI服务器或部署脚本。
 
 ## archive-format
 
-Defaults to `tar`. Composer allows you to add a default archive format when the
-workflow needs to create a dedicated archiving format.
+默认为`tar`。Composer允许您在工作流需要创建专用归档格式时添加默认归档格式。
 
 ## archive-dir
 
-Defaults to `.`. Composer allows you to add a default archive directory when the
-workflow needs to create a dedicated archiving format. Or for easier development
-between modules.
+默认为`.`。Composer允许您在工作流需要创建专用归档格式时添加默认归档目录。或者为了更简单的模块开发。
 
-Example:
+例：
 
 ```json
 {
@@ -271,7 +184,6 @@ Example:
 
 ## htaccess-protect
 
-Defaults to `true`. If set to `false`, Composer will not create `.htaccess` files
-in the composer home, cache, and data directories.
+默认为`true`。如果设置为`false`，Composer将不会`.htaccess`在composer目录，缓存和数据目录中创建文件。
 
-&larr; [Repositories](05-repositories.md)  |  [Community](07-community.md) &rarr;
+&larr; [存储库](05-repositories.md)  |  [社区](07-community.md) &rarr;

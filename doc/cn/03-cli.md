@@ -71,7 +71,7 @@ php composer.phar install
 
 * **--prefer-source:** 有两种下载软件包的方法：`source` 和`dist`。对于稳定版本，Composer将`dist`默认使用该版本。这`source`是一个版本控制库。如果`--prefer-source`启用，Composer将从其安装`source`。如果您想对项目进行错误修正并直接获取依赖项的本地git克隆，这非常有用。
 
-* **--prefer-dist:** 反转`--prefer-source`，`dist`如果可能的话，Composer将会安装。这可以加速大量安装在构建服务器和其他通常不运行供应商更新的用例上。如果你没有正确的设置，这也是一种解决git问题的方法。
+* **--prefer-dist:** 反转`--prefer-source`，`dist`如果可能的话，Composer将会安装。这可以加速大量安装在构建服务器和其他通常不运行第三方库更新的用例上。如果你没有正确的设置，这也是一种解决git问题的方法。
 
 * **--dry-run:** 如果你想在没有真正安装包的情况下运行安装，你可以使用`--dry-run`。这将模拟安装并告诉你会发生什么。
 
@@ -600,7 +600,7 @@ php composer.phar config extra.foo.bar value
 
 ## 创建项目
 
-您可以使用Composer从现有包创建新项目。这相当于在一个`composer install` 供应商之后进行git clone/svn checkout 。
+您可以使用Composer从现有包创建新项目。这相当于在一个`composer install` 第三方库之后进行git clone/svn checkout 。
 
 这有几个应用程序：
 
@@ -644,7 +644,7 @@ php composer.phar create-project doctrine/orm path 2.2.*
 
 * **--remove-vcs:** 强制删除VCS元数据而不提示。
 
-* **--no-install:** 禁用供应商的安装。
+* **--no-install:** 禁用第三方库的安装。
 
 * **--ignore-platform-reqs:** 忽略 `php`, `hhvm`, `lib-*` and `ext-*`要求，并强制安装，即使在本地机器不履行这些。
 
