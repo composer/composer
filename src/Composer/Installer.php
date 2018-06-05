@@ -1741,7 +1741,7 @@ class Installer
     }
 
     /**
-     * Should the operations (packge install, update and removal) be executed on disk?
+     * Should the operations (package install, update and removal) be executed on disk?
      *
      * This is disabled implicitly when enabling dryRun
      *
