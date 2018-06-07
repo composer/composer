@@ -56,6 +56,14 @@ class ZipDownloader extends ArchiveDownloader
             self::$hasZipArchive = class_exists('ZipArchive');
         }
 
+        if (!self::$hasZipArchive && !self::$hasSystemUnzip) {
+            // php.ini path is added to the error message to help users find the correct file
+            $iniMessage = IniHelper::getMessage();
+            $error = "The zip extension and unzip command are both missing, skipping.\n" . $iniMessage;
+
+            throw new \RuntimeException($error);
+        }
+
         if (null === self::$isWindows) {
             self::$isWindows = Platform::isWindows();
 
@@ -63,14 +71,6 @@ class ZipDownloader extends ArchiveDownloader
                 $this->io->writeError("<warn>As there is no 'unzip' command installed zip files are being unpacked using the PHP zip extension.</warn>");
                 $this->io->writeError("<warn>This may cause invalid reports of corrupted archives. Installing 'unzip' may remediate them.</warn>");
             }
-        }
-
-        if (!self::$hasZipArchive && !self::$hasSystemUnzip) {
-            // php.ini path is added to the error message to help users find the correct file
-            $iniMessage = IniHelper::getMessage();
-            $error = "The zip extension and unzip command are both missing, skipping.\n" . $iniMessage;
-
-            throw new \RuntimeException($error);
         }
 
         return parent::download($package, $path, $output);
