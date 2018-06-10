@@ -1,70 +1,44 @@
-# Repositories
+# 库
 
-This chapter will explain the concept of packages and repositories, what kinds
-of repositories are available, and how they work.
+本章将解释软件包和存储库的概念，可用的存储库类型以及它们的工作方式。
 
-## Concepts
+## 概念
 
-Before we look at the different types of repositories that exist, we need to
-understand some of the basic concepts that Composer is built on.
+在我们查看存在的不同类型的存储库之前，我们需要了解Composer构建的一些基本概念。
 
-### Package
+### 包
 
-Composer is a dependency manager. It installs packages locally. A package is
-essentially a directory containing something. In this case it is PHP
-code, but in theory it could be anything. And it contains a package
-description which has a name and a version. The name and the version are used
-to identify the package.
+Composer是一个依赖管理器。它在本地安装软件包。一个包本质上是一个包含内容的目录。在这种情况下，它是PHP代码，但理论上它可以是任何东西。它包含一个包含名称和版本的包描述。名称和版本用于标识包。
 
-In fact, internally Composer sees every version as a separate package. While
-this distinction does not matter when you are using Composer, it's quite
-important when you want to change it.
+实际上，Composer将每个版本视为一个独立的软件包。虽然在使用Composer时这种区别并不重要，但当您想要更改时，这一点非常重要。
 
-In addition to the name and the version, there is useful metadata. The
-information most relevant for installation is the source definition, which
-describes where to get the package contents. The package data points to the
-contents of the package. And there are two options here: dist and source.
+除了名称和版本之外，还有一些有用的元数据。与安装最相关的信息是源定义，它描述了获取软件包内容的位置。包数据指向包的内容。这里有两个选项：dist和source。
 
-**Dist:** The dist is a packaged version of the package data. Usually a
-released version, usually a stable release.
+**Dist:** dist是包数据的打包版本。通常是一个发布版本，通常是一个稳定版本。
 
-**Source:** The source is used for development. This will usually originate
-from a source code repository, such as git. You can fetch this when you want
-to modify the downloaded package.
+**Source:** 该来源用于开发。这通常来自源代码库，如git。当你想修改下载的软件包时，你可以获取它。
 
-Packages can supply either of these, or even both. Depending on certain
-factors, such as user-supplied options and stability of the package, one will
-be preferred.
+该来源用于开发。这通常来自源代码库，如git。当你想修改下载的软件包时，你可以获取它。
 
-### Repository
+### 知识库
 
-A repository is a package source. It's a list of packages/versions. Composer
-will look in all your repositories to find the packages your project requires.
+存储库是一个包源。这是一个软件包/版本的列表。作曲家会查看您的所有存储库以查找您的项目需要的软件包。
 
-By default only the Packagist repository is registered in Composer. You can
-add more repositories to your project by declaring them in `composer.json`.
+默认情况下，只有Packagist存储库在Composer中注册。您可以通过声明将更多存储库添加到您的项目中`composer.json`。
 
-Repositories are only available to the root package and the repositories
-defined in your dependencies will not be loaded. Read the
-[FAQ entry](faqs/why-can't-composer-load-repositories-recursively.md) if you
-want to learn why.
+存储库仅适用于根包，并且您的依赖关系中定义的存储库不会被加载。如果您想了解原因，请阅读 [FAQ条目](faqs/why-can't-composer-load-repositories-recursively.md)。
 
-## Types
+## 类型
 
 ### Composer
 
-The main repository type is the `composer` repository. It uses a single
-`packages.json` file that contains all of the package metadata.
+主存储库类型是`composer`存储库。它使用一个 `packages.json`包含所有包元数据的文件。
 
-This is also the repository type that packagist uses. To reference a
-`composer` repository, supply the path before the `packages.json` file.
-In the case of packagist, that file is located at `/packages.json`, so the URL of
-the repository would be `packagist.org`. For `example.org/packages.json` the
-repository URL would be `example.org`.
+这也是packagist使用的存储库类型。要引用 `composer`存储库，请在`packages.json`文件之前提供路径。在packagist的情况下，该文件位于`/packages.json`，因此该存储库的URL将是`packagist.org`。对于`example.org/packages.json`存储库URL将是`example.org`。
 
-#### packages
+#### 包
 
-The only required field is `packages`. The JSON structure is as follows:
+唯一必需的字段是`packages`。JSON结构如下：
 
 ```json
 {
@@ -79,14 +53,13 @@ The only required field is `packages`. The JSON structure is as follows:
 }
 ```
 
-The `@composer.json` marker would be the contents of the `composer.json` from
-that package version including as a minimum:
+该`@composer.json`标记将是`composer.json`来自该软件包版本的内容，包括最低限度：
 
 * name
 * version
 * dist or source
 
-Here is a minimal package definition:
+这是一个最小的包装定义：
 
 ```json
 {
@@ -99,15 +72,13 @@ Here is a minimal package definition:
 }
 ```
 
-It may include any of the other fields specified in the [schema](04-schema.md).
+它可能包含[架构中](04-schema.md)指定的任何其他字段。
 
 #### notify-batch
 
-The `notify-batch` field allows you to specify a URL that will be called
-every time a user installs a package. The URL can be either an absolute path
-(that will use the same domain as the repository) or a fully qualified URL.
+该`notify-batch`字段允许您指定每次用户安装包时都会调用的URL。该URL可以是绝对路径（将使用与存储库相同的域）或完全限定的URL。
 
-An example value:
+一个示例值：
 
 ```json
 {
@@ -115,9 +86,7 @@ An example value:
 }
 ```
 
-For `example.org/packages.json` containing a `monolog/monolog` package, this
-would send a `POST` request to `example.org/downloads/` with following
-JSON request body:
+为了`example.org/packages.json`包含一个`monolog/monolog`包，这会发送一个`POST`请求到`example.org/downloads/`下面的JSON请求主体：
 
 ```json
 {
@@ -127,22 +96,17 @@ JSON request body:
 }
 ```
 
-The version field will contain the normalized representation of the version
-number.
+版本字段将包含版本号的标准化表示。
 
-This field is optional.
+该字段是可选的。
 
-#### provider-includes and providers-url
+#### provider-includes 和 providers-url
 
-The `provider-includes` field allows you to list a set of files that list
-package names provided by this repository. The hash should be a sha256 of
-the files in this case.
+该`provider-includes`字段允许您列出一组列出此存储库提供的软件包名称的文件。在这种情况下，散列应该是文件的sha256。
 
-The `providers-url` describes how provider files are found on the server. It
-is an absolute path from the repository root. It must contain the placeholders
-`%package%` and `%hash%`.
+该`providers-url`描述提供的文件是如何在服务器上找到。它是存储库根目录的绝对路径。它必须包含占位符 `%package%`和`%hash%`。
 
-An example:
+一个例子：
 
 ```json
 {
@@ -158,8 +122,7 @@ An example:
 }
 ```
 
-Those files contain lists of package names and hashes to verify the file
-integrity, for example:
+这些文件包含软件包名称和哈希列表以验证文件的完整性，例如：
 
 ```json
 {
@@ -174,42 +137,23 @@ integrity, for example:
 }
 ```
 
-The file above declares that acme/foo and acme/bar can be found in this
-repository, by loading the file referenced by `providers-url`, replacing
-`%package%` by the vendor namespaced package name and `%hash%` by the
-sha256 field. Those files themselves contain package definitions as
-described [above](#packages).
+上面的文件声明，通过加载引用的文件`providers-url`，替换 `%package%`为第三方库名称空间包名称和`%hash%`通过sha256字段，可以在此存储库中找到acme/foo和acme/bar 。这些文件本身包含[如上所述](#packages)的包定义。
 
-These fields are optional. You probably don't need them for your own custom
-repository.
+这些字段是可选的。您可能不需要它们用于您自己的自定义存储库。
 
-#### stream options
+#### stream选项
 
-The `packages.json` file is loaded using a PHP stream. You can set extra
-options on that stream using the `options` parameter. You can set any valid
-PHP stream context option. See [Context options and
-parameters](https://php.net/manual/en/context.php) for more information.
+该`packages.json`文件使用PHP流加载。您可以使用`options`参数在该流上设置额外的选项。您可以设置任何有效的PHP流上下文选项。有关更多信息，请参阅[上下文选项和参数](https://php.net/manual/en/context.php)
 
 ### VCS
 
-VCS stands for version control system. This includes versioning systems like
-git, svn, fossil or hg. Composer has a repository type for installing packages
-from these systems.
+VCS代表版本控制系统。这包括git，svn，fossil或hg等版本控制系统。Composer具有用于从这些系统安装软件包的存储库类型。
 
-#### Loading a package from a VCS repository
+#### 从VCS存储库加载软件包
 
-There are a few use cases for this. The most common one is maintaining your
-own fork of a third party library. If you are using a certain library for your
-project and you decide to change something in the library, you will want your
-project to use the patched version. If the library is on GitHub (this is the
-case most of the time), you can simply fork it there and push your changes to
-your fork. After that you update the project's `composer.json`. All you have
-to do is add your fork as a repository and update the version constraint to
-point to your custom branch. In `composer.json`, you should prefix your custom
-branch name with `"dev-"`. For version constraint naming conventions see
-[Libraries](02-libraries.md) for more information.
+这有几个用例。最常见的是维护你自己的第三方库分支。如果您为项目使用某个库并决定更改库中的某些内容，那么您会希望项目使用修补版本。如果库在GitHub上（大多数情况下都是这种情况），您可以简单地将它分叉并将更改推送到您的分支。之后，你更新项目的`composer.json`。所有你需要做的就是添加你的fork作为一个仓库，并更新版本约束来指向你的自定义分支。在`composer.json`，你应该用你的自定义分支名称加前缀`"dev-"`。有关版本约束命名约定，请参阅[库](02-libraries.md)以获取更多信息。
 
-Example assuming you patched monolog to fix a bug in the `bugfix` branch:
+假设您修补了monolog以修复`bugfix`分支中的错误：
 
 ```json
 {
@@ -225,28 +169,17 @@ Example assuming you patched monolog to fix a bug in the `bugfix` branch:
 }
 ```
 
-When you run `php composer.phar update`, you should get your modified version
-of `monolog/monolog` instead of the one from packagist.
+当你运行时`php composer.phar update`，你应该`monolog/monolog`从packagist 得到你的修改版本，而不是。
 
-Note that you should not rename the package unless you really intend to fork
-it in the long term, and completely move away from the original package.
-Composer will correctly pick your package over the original one since the
-custom repository has priority over packagist. If you want to rename the
-package, you should do so in the default (often master) branch and not in a
-feature branch, since the package name is taken from the default branch.
+请注意，除非您真的打算从长远角度出发，否则不应重新命名包装，并且完全从原始包装移开。由于自定义存储库的优先级高于packagist，因此Composer会正确选择原始包。如果要重命名包，则应该在默认分支中（通常是主分支）而不是在功能分支中执行此操作，因为软件包名称取自默认分支。
 
-Also note that the override will not work if you change the `name` property
-in your forked repository's `composer.json` file as this needs to match the
-original for the override to work.
+另外请注意，如果您更改`name`分叉存储库`composer.json`文件中的属性，则覆盖将不起作用，因为这需要使覆盖的原始值匹配才能正常工作。
 
-If other dependencies rely on the package you forked, it is possible to
-inline-alias it so that it matches a constraint that it otherwise would not.
-For more information [see the aliases article](articles/aliases.md).
+如果其他依赖项依赖于您分叉的程序包，则可以将它内联别名，以便它匹配否则不会的约束。欲了解更多信息，[请参阅别名文章](articles/aliases.md)。
 
-#### Using private repositories
+#### 使用私人存储库
 
-Exactly the same solution allows you to work with your private repositories at
-GitHub and BitBucket:
+完全相同的解决方案允许您在GitHub和BitBucket中使用您的私有存储库：
 
 ```json
 {
@@ -262,47 +195,35 @@ GitHub and BitBucket:
 }
 ```
 
-The only requirement is the installation of SSH keys for a git client.
+唯一的要求是为git客户端安装SSH密钥。
 
-#### Git alternatives
+#### Git的替代品
 
-Git is not the only version control system supported by the VCS repository.
-The following are supported:
+Git不是VCS存储库支持的唯一版本控制系统。以下支持：
 
 * **Git:** [git-scm.com](https://git-scm.com)
 * **Subversion:** [subversion.apache.org](https://subversion.apache.org)
 * **Mercurial:** [mercurial-scm.org](https://www.mercurial-scm.org)
 * **Fossil**: [fossil-scm.org](https://www.fossil-scm.org/)
 
-To get packages from these systems you need to have their respective clients
-installed. That can be inconvenient. And for this reason there is special
-support for GitHub and BitBucket that use the APIs provided by these sites, to
-fetch the packages without having to install the version control system. The
-VCS repository provides `dist`s for them that fetch the packages as zips.
+要从这些系统获取软件包，您需要安装各自的客户端。这可能是不方便的。为此，GitHub和BitBucket特别支持使用这些站点提供的API来获取软件包，而无需安装版本控制系统。VCS存储库`dist`为他们提供了将这些软件包作为zip文件获取的软件包。
 
 * **GitHub:** [github.com](https://github.com) (Git)
 * **BitBucket:** [bitbucket.org](https://bitbucket.org) (Git and Mercurial)
 
-The VCS driver to be used is detected automatically based on the URL. However,
-should you need to specify one for whatever reason, you can use `git-bitbucket`,
-`hg-bitbucket`, `github`, `gitlab`, `perforce`, `fossil`, `git`, `svn` or `hg`
-as the repository type instead of `vcs`.
+基于URL自动检测要使用的VCS驱动程序。但是，如果你需要指定一个不管什么原因，你可以使用 `git-bitbucket`,`hg-bitbucket`, `github`, `gitlab`, `perforce`, `fossil`, `git`, `svn` 或 `hg` 作为存储库类型，而不是 `vcs`.
 
-If you set the `no-api` key to `true` on a github repository it will clone the
-repository as it would with any other git repository instead of using the
-GitHub API. But unlike using the `git` driver directly, Composer will still
-attempt to use github's zip files.
+如果您将`no-api`密钥设置`true`在github存储库上，它将像使用任何其他git存储库一样克隆存储库，而不是使用GitHub API。但不同于`git`直接使用驱动程序，Composer仍然会尝试使用github的zip文件。
 
-Please note:
-* **To let Composer choose which driver to use** the repository type needs to be defined as "vcs"
-* **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update composer cache and install the package from dist.
+请注意：
+* **要让Composer选择使用** 存储库类型的驱动程序需要定义为“vcs”
+* **如果您已经使用了私有存储库**, 这意味着Composer应该将其克隆到缓存中。如果您想要使用驱动程序安装相同的软件包，请记住启动该命令，`composer clearcache`然后使用命令`composer update`更新作曲程序缓存并从dist安装软件包。
 
-#### BitBucket Driver Configuration
+#### BitBucket驱动程序配置
 
-The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs and you will need to create an OAuth consumer to use the driver, please refer to [Atlassian's Documentation](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). You will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and is not used by Composer.
+BitBucket驱动程序使用OAuth通过BitBucket REST API访问您的私人存储库，您需要创建一个OAuth使用者才能使用该驱动程序，请参阅[Atlassian的文档](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html)。您需要填写回调网址以满足BitBucket，但地址不需要去任何地方，Composer也不会使用该地址。
 
-After creating an OAuth consumer in the BitBucket control panel, you need to setup your auth.json file with
-the credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
+在BitBucket控制面板中创建OAuth使用者后，您需要使用如下所示的凭据设置auth.json文件（更多信息，请参见[此处](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)）：
 ```json
 {
     "config": {
@@ -315,17 +236,13 @@ the credentials like this (more info [here](https://getcomposer.org/doc/06-confi
     }
 }
 ```
-**Note that the repository endpoint needs to be https rather than git.**
+**请注意，存储库端点需要是https而不是git。**
 
-Alternatively if you prefer not to have your OAuth credentials on your filesystem you may export the ```bitbucket-oauth``` block above to the [COMPOSER_AUTH](https://getcomposer.org/doc/03-cli.md#composer-auth) environment variable instead.
+或者，如果您不希望在文件系统上拥有OAuth凭据，则可以将上述```bitbucket-oauth```块导出到[COMPOSER_AUTH](https://getcomposer.org/doc/03-cli.md#composer-auth)环境变量中。
 
-#### Subversion Options
+#### Subversion选项
 
-Since Subversion has no native concept of branches and tags, Composer assumes
-by default that code is located in `$url/trunk`, `$url/branches` and
-`$url/tags`. If your repository has a different layout you can change those
-values. For example if you used capitalized names you could configure the
-repository like this:
+由于Subversion没有分支和标签的本地概念，因此默认情况下，Composer假定代码位于`$url/trunk`，`$url/branches`并且 `$url/tags`。如果您的存储库具有不同的布局，则可以更改这些值。例如，如果您使用大写的名称，则可以像这样配置存储库：
 
 ```json
 {
@@ -341,16 +258,11 @@ repository like this:
 }
 ```
 
-If you have no branches or tags directory you can disable them entirely by
-setting the `branches-path` or `tags-path` to `false`.
+如果您没有分支或标签目录，则可以通过设置branches-path或tags-path来完全禁用它们false。
 
-If the package is in a sub-directory, e.g. `/trunk/foo/bar/composer.json` and
-`/tags/1.0/foo/bar/composer.json`, then you can make Composer access it by
-setting the `"package-path"` option to the sub-directory, in this example it
-would be `"package-path": "foo/bar/"`.
+如果包是一个子目录，如`/trunk/foo/bar/composer.json`和 `/tags/1.0/foo/bar/composer.json`，那么你可以通过设置使作曲家访问其`"package-path"`选项，子目录，在这个例子中这将是`"package-path"`: `"foo/bar/"`。
 
-If you have a private Subversion repository you can save credentials in the
-http-basic section of your config (See [Schema](04-schema.md)):
+如果你有一个私有的Subversion版本库，你可以在配置文件的http-basic部分保存证书（请参阅[Schema](04-schema.md)）：
 
 ```json
 {
@@ -363,10 +275,7 @@ http-basic section of your config (See [Schema](04-schema.md)):
 }
 ```
 
-If your Subversion client is configured to store credentials by default these
-credentials will be saved for the current user and existing saved credentials
-for this server will be overwritten. To change this behavior by setting the
-`"svn-cache-credentials"` option in your repository configuration:
+如果您的Subversion客户端被配置为默认存储凭证，则将为当前用户保存这些凭证，并且该服务器的现有保存凭证将被覆盖。要通过`"svn-cache-credentials"`在存储库配置中设置选项来更改此行为 ：
 
 ```json
 {
@@ -382,12 +291,9 @@ for this server will be overwritten. To change this behavior by setting the
 
 ### PEAR
 
-It is possible to install packages from any PEAR channel by using the `pear`
-repository. Composer will prefix all package names with `pear-{channelName}/`
-to avoid conflicts. All packages are also aliased with prefix
-`pear-{channelAlias}/`.
+可以使用`pear` 存储库从任何PEAR频道安装软件包。Composer会将所有软件包名称加前缀`pear-{channelName}/` 以避免冲突。所有软件包也都带有前缀别名 `pear-{channelAlias}/`。
 
-Example using `pear2.php.net`:
+使用示例`pear2.php.net`：
 
 ```json
 {
@@ -404,47 +310,34 @@ Example using `pear2.php.net`:
 }
 ```
 
-In this case the short name of the channel is `pear2`, so the
-`PEAR2_HTTP_Request` package name becomes `pear-pear2/PEAR2_HTTP_Request`.
+在这种情况下，频道的短名称是`pear2`，所以 `PEAR2_HTTP_Request`包名称变成`pear-pear2/PEAR2_HTTP_Request`。
 
-> **Note:** The `pear` repository requires doing quite a few requests per
-> package, so this may considerably slow down the installation process.
+> **注：** 该`pear`库需要做的每包相当多的要求，所以这可能大大减缓安装过程。
 
-#### Custom vendor alias
+#### 自定义第三方库别名
 
-It is possible to alias PEAR channel packages with a custom vendor name.
+可以使用自定义第三方库名称将PEAR通道包别名。
 
-Example:
+例：
 
-Suppose you have a private PEAR repository and wish to use Composer to
-incorporate dependencies from a VCS. Your PEAR repository contains the
-following packages:
+假设您有一个私有PEAR存储库，并希望使用Composer来合并来自VCS的依赖关系。您的PEAR存储库包含以下软件包：
 
  * `BasePackage`
- * `IntermediatePackage`, which depends on `BasePackage`
- * `TopLevelPackage1` and `TopLevelPackage2` which both depend
-    on `IntermediatePackage`
+ * `IntermediatePackage`, 这取决于  `BasePackage`
+ * `TopLevelPackage1` 和 `TopLevelPackage2` 这两者都依赖于`IntermediatePackage`
 
-Without a vendor alias, Composer will use the PEAR channel name as the
-vendor portion of the package name:
+如果没有第三方库别名，Composer将使用PEAR通道名称作为软件包名称的第三方库部分：
 
  * `pear-pear.foobar.repo/BasePackage`
  * `pear-pear.foobar.repo/IntermediatePackage`
  * `pear-pear.foobar.repo/TopLevelPackage1`
  * `pear-pear.foobar.repo/TopLevelPackage2`
 
-Suppose at a later time you wish to migrate your PEAR packages to a
-Composer repository and naming scheme, and adopt the vendor name of `foobar`.
-Projects using your PEAR packages would not see the updated packages, since
-they have a different vendor name (`foobar/IntermediatePackage` vs
-`pear-pear.foobar.repo/IntermediatePackage`).
+假设您稍后想要将您的PEAR软件包迁移到Composer存储库和命名方案，并采用第三方库名称`foobar`。使用您的PEAR软件包的项目不会看到更新的软件包，因为它们有不同的第三方库名称（`foobar/IntermediatePackage` vs `pear-pear.foobar.repo/IntermediatePackage`）。
 
-By specifying `vendor-alias` for the PEAR repository from the start, you can
-avoid this scenario and future-proof your package names.
+通过`vendor-alias`从一开始就为PEAR存储库指定，您可以避免出现这种情况，并且可以避免使用您的软件包名称。
 
-To illustrate, the following example would get the `BasePackage`,
-`TopLevelPackage1`, and `TopLevelPackage2` packages from your PEAR repository
-and `IntermediatePackage` from a Github repository:
+为了说明这一点，下面的例子中会得到`BasePackage`， `TopLevelPackage1`以及`TopLevelPackage2`从你的PEAR库和包`IntermediatePackage`从Github上库：
 
 ```json
 {
@@ -466,18 +359,13 @@ and `IntermediatePackage` from a Github repository:
 }
 ```
 
-### Package
+### 包
 
-If you want to use a project that does not support Composer through any of the
-means above, you still can define the package yourself by using a `package`
-repository.
+如果您想通过上述任何方式使用不支持Composer的项目，则仍然可以使用`package` 存储库自行定义该程序包。
 
-Basically, you define the same information that is included in the `composer`
-repository's `packages.json`, but only for a single package. Again, the
-minimum required fields are `name`, `version`, and either of `dist` or
-`source`.
+基本上，您可以定义`composer` 存储库中包含的相同信息`packages.json`，但仅限于单个包。同样，最低要求的字段是`name`，`version`或者是`dist`或者 `source`。
 
-Here is an example for the smarty template engine:
+以下是smarty模板引擎的示例：
 
 ```json
 {
@@ -508,17 +396,13 @@ Here is an example for the smarty template engine:
 }
 ```
 
-Typically you would leave the source part off, as you don't really need it.
+通常情况下，您会将源代码部分关闭，因为您并不需要它。
 
-> **Note**: This repository type has a few limitations and should be avoided
-> whenever possible:
->
-> - Composer will not update the package unless you change the `version` field.
-> - Composer will not update the commit references, so if you use `master` as
->   reference you will have to delete the package to force an update, and will
->   have to deal with an unstable lock file.
+> **注意：**此存储库类型有一些限制，应尽可能避免：
+> - 除非您更改该`version`字段，否则Composer将不会更新软件包。
+> - Composer不会更新提交引用，因此如果您使用`master`作为参考，您将不得不删除软件包以强制更新，并且必须处理不稳定的锁定文件。
 
-The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:
+存储库中的`"package"`密钥`package`可以设置为一个数组来定义一个包的多个版本：
 
 ```json
 {
@@ -542,53 +426,35 @@ The `"package"` key in a `package` repository may be set to an array to define m
 }
 ```
 
-## Hosting your own
+## 你自己托管
 
-While you will probably want to put your packages on packagist most of the
-time, there are some use cases for hosting your own repository.
+尽管您可能希望将软件包大部分时间放在pa​​ckagist上，但有一些用于托管自己的存储库的用例。
 
-* **Private company packages:** If you are part of a company that uses Composer
-  for their packages internally, you might want to keep those packages private.
+* **私人公司套餐:** 如果您是内部使用Composer进行套餐的公司的一部分，则可能需要保留这些套餐的私密性。
 
-* **Separate ecosystem:** If you have a project which has its own ecosystem,
-  and the packages aren't really reusable by the greater PHP community, you
-  might want to keep them separate to packagist. An example of this would be
-  wordpress plugins.
+* **独立的生态系统：** 如果你有一个拥有自己的生态系统的项目，并且这些软件包不能被更大的PHP社区真正重用，你可能想让它们独立于包装商。这个例子就是wordpress插件。
 
-For hosting your own packages, a native `composer` type of repository is
-recommended, which provides the best performance.
+要托管您自己的软件包，`composer`建议使用本机类型的存储库，这可提供最佳性能。
 
-There are a few tools that can help you create a `composer` repository.
+有几个工具可以帮助您创建`composer`存储库。
 
-### Private Packagist
+### 私人托管
 
-[Private Packagist](https://packagist.com/) is a hosted or self-hosted
-application providing private package hosting as well as mirroring of
-GitHub, Packagist.org and other package repositories.
+[Private Packagist](https://packagist.com/)是一个托管或自行托管的应用程序，提供私人包裹托管以及GitHub，Packagist.org和其他包裹储存库的镜像。
 
-Check out [Packagist.com](https://packagist.com/) for more information.
+查看[Private Packagist](https://packagist.com/)了解更多信息。
 
 ### Satis
 
-Satis is a static `composer` repository generator. It is a bit like an ultra-
-lightweight, static file-based version of packagist.
+Satis是一个静态`composer`存储库生成器。它有点像一个基于静态文件的超级轻量级​​版本的packagist。
 
-You give it a `composer.json` containing repositories, typically VCS and
-package repository definitions. It will fetch all the packages that are
-`require`d and dump a `packages.json` that is your `composer` repository.
+您给它一个`composer.json`包含存储库，通常是VCS和包存储库定义。它将获取所有`required` 的软件包 并转储一个`packages.json`您的`composer`存储库。
 
-Check [the satis GitHub repository](https://github.com/composer/satis) and
-the [Satis article](articles/handling-private-packages-with-satis.md) for more
-information.
+检查[satis GitHub存储库](https://github.com/composer/satis)和[Satis文章](articles/handling-private-packages-with-satis.md)以获取更多信息。
 
 ### Artifact
 
-There are some cases, when there is no ability to have one of the previously
-mentioned repository types online, even the VCS one. Typical example could be
-cross-organisation library exchange through built artifacts. Of course, most
-of the times they are private. To simplify maintenance, one can simply use a
-repository of type `artifact` with a folder containing ZIP archives of those
-private packages:
+在某些情况下，如果没有能力使上述存储库类型中的一个在线，即使是VCS也是如此。典型的例子可能是通过构建的工件交叉组织库交换。当然，大多数时候他们都是私人的。为了简化维护，您可以简单地使用`artifact`包含这些私有包的ZIP存档的文件夹的类型存储库：
 
 ```json
 {
@@ -606,7 +472,7 @@ private packages:
 }
 ```
 
-Each zip artifact is a ZIP archive with `composer.json` in root folder:
+每个zip文件都是一个ZIP文件`composer.json`夹，位于根文件夹中：
 
 ```sh
 unzip -l acme-corp-parser-10.3.5.zip
@@ -615,18 +481,13 @@ composer.json
 ...
 ```
 
-If there are two archives with different versions of a package, they are both
-imported. When an archive with a newer version is added in the artifact folder
-and you run `update`, that version will be imported as well and Composer will
-update to the latest version.
+如果有两个包含不同版本包的存档，则它们都将被导入。当更新版本的档案被添加到工件文件夹中并运行时`update`，该版本也将被导入，并且Composer将更新为最新版本。
 
 ### Path
 
-In addition to the artifact repository, you can use the path one, which allows
-you to depend on a local directory, either absolute or relative. This can be
-especially useful when dealing with monolithic repositories.
+除了工件存储库之外，您可以使用路径1，它允许您依赖本地目录，无论是绝对还是相对。这在处理整体存储库时特别有用。
 
-For instance, if you have the following directory structure in your repository:
+例如，如果您在存储库中具有以下目录结构：
 ```
 - apps
 \_ my-app
@@ -636,8 +497,7 @@ For instance, if you have the following directory structure in your repository:
   \_ composer.json
 ```
 
-Then, to add the package `my/package` as a dependency, in your
-`apps/my-app/composer.json` file, you can use the following configuration:
+然后，要将该包`my/package`作为依赖 项添加到`apps/my-app/composer.json`文件中，可以使用以下配置：
 
 ```json
 {
@@ -653,20 +513,11 @@ Then, to add the package `my/package` as a dependency, in your
 }
 ```
 
-If the package is a local VCS repository, the version may be inferred by
-the branch or tag that is currently checked out. Otherwise, the version should
-be explicitly defined in the package's `composer.json` file. If the version
-cannot be resolved by these means, it is assumed to be `dev-master`.
+如果软件包是本地VCS存储库，则版本可以由当前检出的分支或标签推断。否则，版本应该在包的`composer.json`文件中明确定义。如果版本无法通过这些方式解决，则认为是`dev-master`。
 
-The local package will be symlinked if possible, in which case the output in
-the console will read `Symlinked from ../../packages/my-package`. If symlinking
-is _not_ possible the package will be copied. In that case, the console will
-output `Mirrored from ../../packages/my-package`.
+如果可能的话，本地软件包将被链接，在这种情况下，控制台中的输出将被读取`Symlinked from ../../packages/my-package`。如果符号链接是没有可能的包将被复制。在这种情况下，控制台将输出M`irrored from ../../packages/my-package`。
 
-Instead of default fallback strategy you can force to use symlink with
-`"symlink": true` or mirroring with `"symlink": false` option. Forcing
-mirroring can be useful when deploying or generating package from a
-monolithic repository.
+而不是默认的回退策略，您可以强制使用符号链接 `"symlink"`: true或使用`"symlink"`: false选项进行镜像。从单一存储库部署或生成包时，强制镜像可能很有用。
 
 ```json
 {
@@ -682,19 +533,13 @@ monolithic repository.
 }
 ```
 
-Leading tildes are expanded to the current user's home folder, and environment
-variables are parsed in both Windows and Linux/Mac notations. For example
-`~/git/mypackage` will automatically load the mypackage clone from
-`/home/<username>/git/mypackage`, equivalent to `$HOME/git/mypackage` or
-`%USERPROFILE%/git/mypackage`.
+前导符被扩展为当前用户的主文件夹，并且环境变量在Windows和Linux / Mac符号中都被解析。例如 `~/git/mypackage`将自动加载mypackage克隆 `/home/<username>/git/mypackage`，等价于`$HOME/git/mypackage`或 `%USERPROFILE%/git/mypackage`。
 
-> **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
-> For details, see the [PHP glob function](http://php.net/glob).
+> **注意：** 存储库路径也可以包含像`*`和的通配符`?`。有关详细信息，请参阅[PHP glob函数](http://php.net/glob)。
 
-## Disabling Packagist.org
+## 禁用Packagist.org
 
-You can disable the default Packagist.org repository by adding this to your
-`composer.json`:
+您可以通过将以下代码添加到您的`composer.json`以下来禁用默认的Packagist.org存储库 ：
 
 ```json
 {
@@ -706,10 +551,10 @@ You can disable the default Packagist.org repository by adding this to your
 }
 ```
 
-You can disable Packagist.org globally by using the global config flag:
+您可以使用全局配置标志全局禁用Packagist.org：
 
 ```bash
 composer config -g repo.packagist false
 ```
 
-&larr; [Schema](04-schema.md)  |  [Config](06-config.md) &rarr;
+&larr; [架构](04-schema.md)  |  [配置](06-config.md) &rarr;
