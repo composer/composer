@@ -118,6 +118,12 @@ EOT
             return 1;
         }
 
+        if ($input->getOption('tree') && $input->getOption('latest')) {
+            $io->writeError('The --tree (-t) option is not usable in combination with --latest (-l)');
+
+            return 1;
+        }
+
         $format = $input->getOption('format');
         if (!in_array($format, array('text', 'json'))) {
             $io->writeError(sprintf('Unsupported format "%s". See help for supported formats.', $format));
