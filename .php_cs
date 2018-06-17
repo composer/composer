@@ -20,7 +20,6 @@ $finder = PhpCsFixer\Finder::create()
 
 return PhpCsFixer\Config::create()
     ->setUsingCache(true)
-    //->setUsingLinter(false)
     ->setRiskyAllowed(true)
     ->setRules(array(
         '@PSR2' => true,
