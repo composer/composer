@@ -255,7 +255,7 @@ EOF;
                             continue;
                         }
 
-                        $namespaceFilter = $namespace === '' ? null : $namespace;
+                        $namespaceFilter = array('name' => $namespace, 'type' => $group['type']);
                         $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespaceFilter, $classMap);
                     }
                 }
@@ -333,7 +333,13 @@ EOF;
 
     private function generateClassMap($dir, $blacklist = null, $namespaceFilter = null, $showAmbiguousWarning = true)
     {
-        return ClassMapGenerator::createMap($dir, $blacklist, $showAmbiguousWarning ? $this->io : null, $namespaceFilter);
+        if ($namespaceFilter !== null) {
+            $namespace = $namespaceFilter['name'];
+            $autoloadType = $namespaceFilter['type'];
+        } else {
+            $namespace = $autoloadType = null;
+        }
+        return ClassMapGenerator::createMap($dir, $blacklist, $showAmbiguousWarning ? $this->io : null, $namespace, $autoloadType);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)

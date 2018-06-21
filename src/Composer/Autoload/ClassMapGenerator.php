@@ -50,17 +50,19 @@ class ClassMapGenerator
     /**
      * Iterate over all files in the given directory searching for classes
      *
-     * @param \Iterator|string $path      The path to search in or an iterator
-     * @param string           $blacklist Regex that matches against the file path that exclude from the classmap.
-     * @param IOInterface      $io        IO object
-     * @param string           $namespace Optional namespace prefix to filter by
+     * @param \Iterator|string $path         The path to search in or an iterator
+     * @param string           $blacklist    Regex that matches against the file path that exclude from the classmap.
+     * @param IOInterface      $io           IO object
+     * @param string           $namespace    Optional namespace prefix to filter by
+     * @param string           $autoloadType psr-0|psr-4 Optional autoload standard to use mapping rules
      *
      * @throws \RuntimeException When the path is neither an existing file nor directory
      * @return array             A class map array
      */
-    public static function createMap($path, $blacklist = null, IOInterface $io = null, $namespace = null)
+    public static function createMap($path, $blacklist = null, IOInterface $io = null, $namespace = null, $autoloadType = null)
     {
         if (is_string($path)) {
+            $basePath = $path;
             if (is_file($path)) {
                 $path = array(new \SplFileInfo($path));
             } elseif (is_dir($path)) {
@@ -71,6 +73,8 @@ class ClassMapGenerator
                     '" which does not appear to be a file nor a folder'
                 );
             }
+        } elseif (null !== $autoloadType) {
+            throw new \RuntimeException('Path must be a string when specifying an autoload type');
         }
 
         $map = array();
@@ -100,10 +104,13 @@ class ClassMapGenerator
             }
 
             $classes = self::findClasses($filePath);
+            if (null !== $autoloadType) {
+                $classes = self::filterByNamespace($classes, $filePath, $namespace, $autoloadType, $basePath, $io);
+            }
 
             foreach ($classes as $class) {
                 // skip classes not within the given namespace prefix
-                if (null !== $namespace && 0 !== strpos($class, $namespace)) {
+                if (null === $autoloadType && null !== $namespace && 0 !== strpos($class, $namespace)) {
                     continue;
                 }
 
@@ -119,6 +126,68 @@ class ClassMapGenerator
         }
 
         return $map;
+    }
+
+    /**
+     * Remove classes which could not have been loaded by namespace autoloaders
+     *
+     * @param array       $classes       found classes in given file
+     * @param string      $filePath      current file
+     * @param string      $baseNamespace prefix of given autoload mapping
+     * @param string      $namespaceType psr-0|psr-4
+     * @param string      $basePath      root directory of given autoload mapping
+     * @param IOInterface $io            IO object
+
+     * @return array      valid classes
+     */
+    private static function filterByNamespace($classes, $filePath, $baseNamespace, $namespaceType, $basePath, $io)
+    {
+        $validClasses = array();
+        $rejectedClasses = array();
+
+        foreach ($classes as $class) {
+            // silently skip if ns doesn't have common root
+            if ('' !== $baseNamespace && 0 !== strpos($class, $baseNamespace)) {
+                continue;
+            }
+
+            // transform class name to file path and validate
+            if ('psr-0' === $namespaceType) {
+                $namespaceLength = strrpos($class, '\\');
+                if (false !== $namespaceLength) {
+                    $namespace = substr($class, 0, $namespaceLength + 1);
+                    $className = substr($class, $namespaceLength + 1);
+                    $subPath = str_replace('\\', DIRECTORY_SEPARATOR, $namespace)
+                        . str_replace('_', DIRECTORY_SEPARATOR, $className);
+                }
+                else {
+                    $subPath = str_replace('_', DIRECTORY_SEPARATOR, $class);
+                }
+            } elseif ('psr-4' === $namespaceType) {
+                $subNamespace = ('' !== $baseNamespace) ? substr($class, strlen($baseNamespace)) : $class;
+                $subPath = str_replace('\\', DIRECTORY_SEPARATOR, $subNamespace);
+            }
+
+            $realSubPath = substr($filePath, strlen($basePath) + 1);
+            $realSubPath = substr($realSubPath, 0, strrpos($realSubPath, '.'));
+            if ($subPath === $realSubPath) {
+                $validClasses[] = $class;
+            } else {
+                $rejectedClasses[] = $class;
+            }
+        }
+
+        // warn only if no valid classes, else silently skip invalid
+        if (!empty($validClasses)) {
+            return $validClasses;
+        }
+        if ($io) {
+            foreach ($rejectedClasses as $class) {
+                $io->writeError("<warning>Warning: class $class located in $filePath "
+                    . "doesn't comply with $namespaceType autoloading standard. Skipping.</warning>");
+            }
+        }
+        return array();
     }
 
     /**
