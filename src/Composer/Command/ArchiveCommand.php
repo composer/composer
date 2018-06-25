@@ -66,8 +66,9 @@ EOT
         $composer = $this->getComposer(false);
         if ($composer) {
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'archive', $input, $output);
-            $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
-            $composer->getEventDispatcher()->dispatchScript(ScriptEvents::PRE_ARCHIVE_CMD);
+            $eventDispatcher = $composer->getEventDispatcher();
+            $eventDispatcher->dispatch($commandEvent->getName(), $commandEvent);
+            $eventDispatcher->dispatchScript(ScriptEvents::PRE_ARCHIVE_CMD);
         }
 
         if (null === $input->getOption('format')) {

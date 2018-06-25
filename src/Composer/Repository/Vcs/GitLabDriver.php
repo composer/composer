@@ -129,7 +129,7 @@ class GitLabDriver extends VcsDriver
             return $this->gitDriver->getFileContent($file, $identifier);
         }
 
-        // Convert the root identifier to a cachable commit id
+        // Convert the root identifier to a cacheable commit id
         if (!preg_match('{[a-f0-9]{40}}i', $identifier)) {
             $branches = $this->getBranches();
             if (isset($branches[$identifier])) {

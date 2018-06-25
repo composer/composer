@@ -137,16 +137,14 @@ EOT
             $input->getOption('repository') ?: $input->getOption('repository-url'),
             $input->getOption('no-plugins'),
             $input->getOption('no-scripts'),
-            $input->getOption('keep-vcs'),
             $input->getOption('no-progress'),
             $input->getOption('no-install'),
             $input->getOption('ignore-platform-reqs'),
-            !$input->getOption('no-secure-http'),
-            $input->getOption('remove-vcs')
+            !$input->getOption('no-secure-http')
         );
     }
 
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true, $removeVcs = false)
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true)
     {
         $oldCwd = getcwd();
 
@@ -156,7 +154,7 @@ EOT
         $this->suggestedPackagesReporter = new SuggestedPackagesReporter($io);
 
         if ($packageName !== null) {
-            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repository, $disablePlugins, $noScripts, $keepVcs, $noProgress, $ignorePlatformReqs, $secureHttp);
+            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repository, $disablePlugins, $noScripts, $noProgress, $ignorePlatformReqs, $secureHttp);
         } else {
             $installedFromVcs = false;
         }
@@ -198,10 +196,10 @@ EOT
 
         $hasVcs = $installedFromVcs;
         if (
-            !$keepVcs
+            !$input->getOption('keep-vcs')
             && $installedFromVcs
             && (
-                $removeVcs
+                $input->getOption('remove-vcs')
                 || !$io->isInteractive()
                 || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
             )
@@ -258,7 +256,7 @@ EOT
         return 0;
     }
 
-    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $ignorePlatformReqs = false, $secureHttp = true)
+    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $ignorePlatformReqs = false, $secureHttp = true)
     {
         if (!$secureHttp) {
             $config->merge(array('config' => array('secure-http' => false)));

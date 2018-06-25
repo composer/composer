@@ -27,13 +27,13 @@
         "composer/ca-bundle": "^1.0",
         "composer/semver": "^1.0",
         "composer/spdx-licenses": "^1.2",
+        "composer/xdebug-handler": "^1.1",
         "seld/jsonlint": "^1.4",
         "symfony/console": "^2.7 || ^3.0 || ^4.0",
         "symfony/finder": "^2.7 || ^3.0 || ^4.0",
         "symfony/process": "^2.7 || ^3.0 || ^4.0",
         "symfony/filesystem": "^2.7 || ^3.0 || ^4.0",
         "seld/phar-utils": "^1.0",
-        "seld/cli-prompt": "^1.0",
         "psr/log": "^1.0"
     },
     "require-dev": {
@@ -62,7 +62,7 @@
     "bin": ["bin/composer"],
     "extra": {
         "branch-alias": {
-            "dev-master": "1.6-dev"
+            "dev-master": "1.7-dev"
         }
     },
     "scripts": {

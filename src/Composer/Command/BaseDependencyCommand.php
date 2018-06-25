@@ -180,8 +180,9 @@ class BaseDependencyCommand extends BaseCommand
         // Render table
         $renderer = new Table($output);
         $renderer->setStyle('compact');
-        $renderer->getStyle()->setVerticalBorderChar('');
-        $renderer->getStyle()->setCellRowContentFormat('%s  ');
+        $rendererStyle = $renderer->getStyle();
+        $rendererStyle->setVerticalBorderChar('');
+        $rendererStyle->setCellRowContentFormat('%s  ');
         $renderer->setRows($table)->render();
     }
 

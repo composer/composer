@@ -34,7 +34,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DiagnoseCommand extends BaseCommand
 {
-    /** @var RemoteFileSystem */
+    /** @var RemoteFilesystem */
     protected $rfs;
 
     /** @var ProcessExecutor */

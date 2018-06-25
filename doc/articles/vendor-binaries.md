@@ -66,7 +66,7 @@ Say project `my-vendor/project-b` has requirements setup like this:
 ```
 
 Running `composer install` for this `composer.json` will look at
-all of project-b's dependencies and install them to `vendor/bin`.
+all of project-a's binaries and install them to `vendor/bin`.
 
 In this case, Composer will make `vendor/my-vendor/project-a/bin/project-a-bin`
 available as `vendor/bin/project-a-bin`. On a Unix-like platform

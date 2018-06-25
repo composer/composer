@@ -110,6 +110,9 @@ class HgDownloaderTest extends TestCase
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->any())
+            ->method('getVersion')
+            ->will($this->returnValue('1.0.0.0'));
+        $packageMock->expects($this->any())
             ->method('getSourceUrls')
             ->will($this->returnValue(array('https://github.com/l3l0/composer')));
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();

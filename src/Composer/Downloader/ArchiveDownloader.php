@@ -27,6 +27,8 @@ abstract class ArchiveDownloader extends FileDownloader
 {
     /**
      * {@inheritDoc}
+     * @throws \RuntimeException
+     * @throws \UnexpectedValueException
      */
     public function download(PackageInterface $package, $path, $output = true)
     {
@@ -35,7 +37,9 @@ abstract class ArchiveDownloader extends FileDownloader
         while ($retries--) {
             $fileName = parent::download($package, $path, $output);
 
-            $this->io->writeError(' Extracting archive', false, IOInterface::VERBOSE);
+            if ($output) {
+                $this->io->writeError(' Extracting archive', false, IOInterface::VERBOSE);
+            }
 
             try {
                 $this->filesystem->ensureDirectoryExists($temporaryDir);

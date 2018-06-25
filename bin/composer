@@ -8,16 +8,13 @@ if (PHP_SAPI !== 'cli') {
 setlocale(LC_ALL, 'C');
 require __DIR__.'/../src/bootstrap.php';
 
-use Composer\Factory;
-use Composer\XdebugHandler;
 use Composer\Console\Application;
+use Composer\XdebugHandler\XdebugHandler;
 
 error_reporting(-1);
 
-// Create output for XdebugHandler and Application
-$output = Factory::createOutput();
-
-$xdebug = new XdebugHandler($output);
+// Restart without xdebug
+$xdebug = new XdebugHandler('Composer', '--ansi');
 $xdebug->check();
 unset($xdebug);
 
@@ -57,4 +54,4 @@ putenv('COMPOSER_BINARY='.realpath($_SERVER['argv'][0]));
 
 // run the command application
 $application = new Application();
-$application->run(null, $output);
+$application->run();

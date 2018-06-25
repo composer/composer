@@ -20,6 +20,8 @@ use PHPUnit\Framework\TestCase;
 
 class InstallationManagerTest extends TestCase
 {
+    protected $repository;
+
     public function setUp()
     {
         $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();

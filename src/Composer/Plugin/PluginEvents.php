@@ -48,4 +48,14 @@ class PluginEvents
      * @var string
      */
     const PRE_FILE_DOWNLOAD = 'pre-file-download';
+
+    /**
+     * The PRE_COMMAND_RUN event occurs before a command is executed and lets you modify the input arguments/options
+     *
+     * The event listener method receives a
+     * Composer\Plugin\PreCommandRunEvent instance.
+     *
+     * @var string
+     */
+    const PRE_COMMAND_RUN = 'pre-command-run';
 }

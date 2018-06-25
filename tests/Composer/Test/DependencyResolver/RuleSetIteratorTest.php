@@ -22,6 +22,7 @@ use PHPUnit\Framework\TestCase;
 class RuleSetIteratorTest extends TestCase
 {
     protected $rules;
+    protected $pool;
 
     protected function setUp()
     {

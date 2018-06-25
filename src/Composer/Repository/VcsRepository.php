@@ -188,6 +188,13 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                     continue;
                 }
 
+                if ($existingPackage = $this->findPackage($data['name'], $data['version_normalized'])) {
+                    if ($verbose) {
+                        $this->io->writeError('<warning>Skipped tag '.$tag.', it conflicts with an another tag ('.$existingPackage->getPrettyVersion().') as both resolve to '.$data['version_normalized'].' internally</warning>');
+                    }
+                    continue;
+                }
+
                 if ($verbose) {
                     $this->io->writeError('Importing tag '.$tag.' ('.$data['version_normalized'].')');
                 }
@@ -205,12 +212,20 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             $this->io->overwriteError('', false);
         }
 
-        foreach ($driver->getBranches() as $branch => $identifier) {
+        $branches = $driver->getBranches();
+        foreach ($branches as $branch => $identifier) {
             $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $branch . '</comment>)';
             if ($verbose) {
                 $this->io->writeError($msg);
             } else {
                 $this->io->overwriteError($msg, false);
+            }
+
+            if ($branch === 'trunk' && isset($branches['master'])) {
+                if ($verbose) {
+                    $this->io->writeError('<warning>Skipped branch '.$branch.', can not parse both master and trunk branches as they both resolve to 9999999-dev internally</warning>');
+                }
+                continue;
             }
 
             if (!$parsedBranch = $this->validateBranch($branch)) {

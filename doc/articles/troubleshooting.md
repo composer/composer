@@ -140,6 +140,12 @@ Debian-like systems):
 memory_limit = -1
 ```
 
+Composer also respects a memory limit defined by the `COMPOSER_MEMORY_LIMIT` environment variable:
+
+```sh
+COMPOSER_MEMORY_LIMIT=-1 composer.phar <...>
+```
+
 Or, you can increase the limit with a command-line argument:
 
 ```sh
@@ -163,7 +169,7 @@ please report this [issue](https://github.com/composer/composer/issues).
 2. Search for an `AutoRun` key inside `HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor`,
    `HKEY_CURRENT_USER\Software\Microsoft\Command Processor`
    or `HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Command Processor`.
-3. Check if it contains any path to non-existent file, if it's the case, just remove them.
+3. Check if it contains any path to non-existent file, if it's the case, remove them.
 
 ## API rate limit and OAuth tokens
 
@@ -281,7 +287,7 @@ for everyone.
 ## Composer hangs with SSH ControlMaster
 
 When you try to install packages from a Git repository and you use the `ControlMaster`
-setting for your SSH connection, Composer might just hang endlessly and you see a `sh`
+setting for your SSH connection, Composer might hang endlessly and you see a `sh`
 process in the `defunct` state in your process list.
 
 The reason for this is a SSH Bug: https://bugzilla.mindrot.org/show_bug.cgi?id=1988

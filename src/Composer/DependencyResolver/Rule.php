@@ -41,6 +41,7 @@ abstract class Rule
     const BITFIELD_DISABLED = 16;
 
     protected $bitfield;
+    protected $job;
     protected $reasonData;
 
     /**

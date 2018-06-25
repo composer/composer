@@ -105,7 +105,7 @@ class Compiler
         foreach ($finder as $file) {
             $this->addFile($phar, $file, false);
         }
-        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/../../vendor/seld/cli-prompt/res/hiddeninput.exe'), false);
+        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/../../vendor/symfony/console/Resources/bin/hiddeninput.exe'), false);
 
         $finder = new Finder();
         $finder->files()
@@ -117,11 +117,11 @@ class Compiler
             ->exclude('docs')
             ->in(__DIR__.'/../../vendor/symfony/')
             ->in(__DIR__.'/../../vendor/seld/jsonlint/')
-            ->in(__DIR__.'/../../vendor/seld/cli-prompt/')
             ->in(__DIR__.'/../../vendor/justinrainbow/json-schema/')
             ->in(__DIR__.'/../../vendor/composer/spdx-licenses/')
             ->in(__DIR__.'/../../vendor/composer/semver/')
             ->in(__DIR__.'/../../vendor/composer/ca-bundle/')
+            ->in(__DIR__.'/../../vendor/composer/xdebug-handler/')
             ->in(__DIR__.'/../../vendor/psr/')
             ->sort($finderSort)
         ;
