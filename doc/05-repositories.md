@@ -700,7 +700,7 @@ You can disable the default Packagist.org repository by adding this to your
 {
     "repositories": [
         {
-            "packagist.org": false
+            "packagist": false
         }
     ]
 }
