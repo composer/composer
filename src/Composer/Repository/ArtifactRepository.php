@@ -138,6 +138,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         $configurationFileName = $zip->getNameIndex($foundFileIndex);
+        $zip->close();
 
         $composerFile = "zip://{$file->getPathname()}#$configurationFileName";
         $json = file_get_contents($composerFile);
