@@ -305,12 +305,10 @@ After creating an OAuth consumer in the BitBucket control panel, you need to set
 the credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
 ```json
 {
-    "config": {
-        "bitbucket-oauth": {
-            "bitbucket.org": {
-                "consumer-key": "myKey",
-                "consumer-secret": "mySecret"
-            }
+    "bitbucket-oauth": {
+        "bitbucket.org": {
+            "consumer-key": "myKey",
+            "consumer-secret": "mySecret"
         }
     }
 }
