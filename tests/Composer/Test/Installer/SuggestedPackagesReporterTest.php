@@ -145,6 +145,20 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::output
      */
+    public function testOutputWithNoSuggestedPackage()
+    {
+        $this->suggestedPackagesReporter->addPackage('a', 'b', '');
+
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('a suggests installing b');
+
+        $this->suggestedPackagesReporter->output();
+    }
+
+    /**
+     * @covers ::output
+     */
     public function testOutputIgnoresFormatting()
     {
         $this->suggestedPackagesReporter->addPackage('source', 'target1', "\x1b[1;37;42m Like us\r\non Facebook \x1b[0m");
