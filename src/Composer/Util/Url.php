@@ -13,7 +13,6 @@
 namespace Composer\Util;
 
 use Composer\Config;
-use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

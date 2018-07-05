@@ -922,7 +922,7 @@ INITIALIZER;
             $packages[$name] = $package;
         }
 
-        $add = function (PackageInterface $package) use (&$add, $mainPackage, $packages, &$include) {
+        $add = function (PackageInterface $package) use (&$add, $packages, &$include) {
             foreach ($package->getRequires() as $link) {
                 $target = $link->getTarget();
                 if (!isset($include[$target])) {

@@ -93,7 +93,7 @@ class Rule2Literals extends Rule
      */
     public function __toString()
     {
-        $result = ($this->isDisabled()) ? 'disabled(' : '(';
+        $result = $this->isDisabled() ? 'disabled(' : '(';
 
         $result .= $this->literal1 . '|' . $this->literal2 . ')';
 

@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Downloader\DownloaderInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;

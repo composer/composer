@@ -281,7 +281,6 @@ class JsonFile
      * @param  string                    $json
      * @param  string                    $file
      * @throws \UnexpectedValueException
-     * @throws JsonValidationException
      * @throws ParsingException
      * @return bool                      true on success
      */

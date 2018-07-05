@@ -251,7 +251,7 @@ class Installer
                 continue;
             }
 
-            $replacement = (is_string($package->getReplacementPackage()))
+            $replacement = is_string($package->getReplacementPackage())
                 ? 'Use ' . $package->getReplacementPackage() . ' instead'
                 : 'No replacement was suggested';
 
@@ -1033,11 +1033,8 @@ class Installer
                         $package->setReplaces($newPackage->getReplaces());
                     }
 
-                    if ($task === 'force-updates' && $newPackage && (
-                        (($newPackage->getSourceReference() && $newPackage->getSourceReference() !== $package->getSourceReference())
-                            || ($newPackage->getDistReference() && $newPackage->getDistReference() !== $package->getDistReference())
-                        )
-                    )) {
+                    if ($task === 'force-updates' && $newPackage && ($newPackage->getSourceReference() && $newPackage->getSourceReference() !== $package->getSourceReference())
+                        || ($newPackage->getDistReference() && $newPackage->getDistReference() !== $package->getDistReference())) {
                         $operations[] = new UpdateOperation($package, $newPackage);
 
                         continue;

@@ -565,7 +565,7 @@ class Filesystem
 
         chdir($cwd);
 
-        return (bool) $result;
+        return $result;
     }
 
     /**

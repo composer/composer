@@ -230,7 +230,7 @@ class RootPackageLoader extends ArrayLoader
     {
         foreach ($requires as $reqName => $reqVersion) {
             $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
-            if (preg_match('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === ($stabilityName = VersionParser::parseStability($reqVersion))) {
+            if (preg_match('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === VersionParser::parseStability($reqVersion)) {
                 $name = strtolower($reqName);
                 $references[$name] = $match[1];
             }

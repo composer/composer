@@ -383,7 +383,7 @@ EOT
                         }
 
                         if ($latestPackage && $latestPackage->isAbandoned()) {
-                            $replacement = (is_string($latestPackage->getReplacementPackage()))
+                            $replacement = is_string($latestPackage->getReplacementPackage())
                                 ? 'Use ' . $latestPackage->getReplacementPackage() . ' instead'
                                 : 'No replacement was suggested';
                             $packageWarning = sprintf(

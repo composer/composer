@@ -169,7 +169,7 @@ class PluginManager
         $generator = $this->composer->getAutoloadGenerator();
         $autoloads = array();
         foreach ($autoloadPackages as $autoloadPackage) {
-            $downloadPath = $this->getInstallPath($autoloadPackage, ($globalRepo && $globalRepo->hasPackage($autoloadPackage)));
+            $downloadPath = $this->getInstallPath($autoloadPackage, $globalRepo && $globalRepo->hasPackage($autoloadPackage));
             $autoloads[] = array($autoloadPackage, $downloadPath);
         }
 
@@ -307,7 +307,7 @@ class PluginManager
     {
         $packages = $pool->whatProvides($link->getTarget(), $link->getConstraint());
 
-        return (!empty($packages)) ? $packages[0] : null;
+        return !empty($packages) ? $packages[0] : null;
     }
 
     /**

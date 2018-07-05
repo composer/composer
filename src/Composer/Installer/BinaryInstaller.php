@@ -113,7 +113,7 @@ class BinaryInstaller
         }
 
         // attempt removing the bin dir in case it is left empty
-        if ((is_dir($this->binDir)) && ($this->filesystem->isDirEmpty($this->binDir))) {
+        if (is_dir($this->binDir) && $this->filesystem->isDirEmpty($this->binDir)) {
             Silencer::call('rmdir', $this->binDir);
         }
     }

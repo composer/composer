@@ -75,7 +75,7 @@ class GenericRule extends Rule
      */
     public function __toString()
     {
-        $result = ($this->isDisabled()) ? 'disabled(' : '(';
+        $result = $this->isDisabled() ? 'disabled(' : '(';
 
         foreach ($this->literals as $i => $literal) {
             if ($i != 0) {

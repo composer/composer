@@ -215,7 +215,7 @@ class RuleSetGenerator
             }
 
             // check obsoletes and implicit obsoletes of a package
-            $isInstalled = (isset($this->installedMap[$package->id]));
+            $isInstalled = isset($this->installedMap[$package->id]);
 
             foreach ($package->getReplaces() as $link) {
                 $obsoleteProviders = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
@@ -226,7 +226,7 @@ class RuleSetGenerator
                     }
 
                     if (!$this->obsoleteImpossibleForAlias($package, $provider)) {
-                        $reason = ($isInstalled) ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
+                        $reason = $isInstalled ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
                         $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $provider, $reason, $link));
                     }
                 }
