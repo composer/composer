@@ -88,7 +88,7 @@ class JsonFormatter
             if (':' === $char) {
                 // Add a space after the : character
                 $char .= ' ';
-            } elseif (('}' === $char || ']' === $char)) {
+            } elseif ('}' === $char || ']' === $char) {
                 $pos--;
                 $prevChar = substr($json, $i - 1, 1);
 
