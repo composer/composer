@@ -510,9 +510,8 @@ class Solver
      */
     private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule)
     {
-        $why = spl_object_hash($conflictRule);
-
         if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
+            $why = spl_object_hash($conflictRule);
             $learnedWhy = $this->learnedWhy[$why];
             $problemRules = $this->learnedPool[$learnedWhy];
 
