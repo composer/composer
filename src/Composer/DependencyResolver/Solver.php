@@ -100,7 +100,7 @@ class Solver
             $literals = $rule->getLiterals();
             $literal = $literals[0];
 
-            if (!$this->decisions->decided(abs($literal))) {
+            if (!$this->decisions->decided($literal)) {
                 $this->decisions->decide($literal, 1, $rule);
                 continue;
             }
