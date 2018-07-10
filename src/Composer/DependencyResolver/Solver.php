@@ -792,7 +792,7 @@ class Solver
                 //
                 foreach ($literals as $literal) {
                     if ($literal <= 0) {
-                        if (!$this->decisions->decidedInstall(abs($literal))) {
+                        if (!$this->decisions->decidedInstall($literal)) {
                             continue 2; // next rule
                         }
                     } else {
