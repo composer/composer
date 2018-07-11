@@ -65,7 +65,7 @@ php composer.phar init
   to a `composer` repository or a JSON string which similar to what the
   [repositories](04-schema.md#repositories) key accepts.
 
-## install
+## install / i
 
 The `install` command reads the `composer.json` file from the current
 directory, resolves the dependencies, and installs them into `vendor`.
