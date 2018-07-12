@@ -37,8 +37,9 @@ class RuleWatchNode
 
         $literals = $rule->getLiterals();
 
-        $this->watch1 = count($literals) > 0 ? $literals[0] : 0;
-        $this->watch2 = count($literals) > 1 ? $literals[1] : 0;
+        $literalCount = count($literals);
+        $this->watch1 = $literalCount > 0 ? $literals[0] : 0;
+        $this->watch2 = $literalCount > 1 ? $literals[1] : 0;
     }
 
     /**
