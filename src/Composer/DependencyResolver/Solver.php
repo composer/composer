@@ -100,7 +100,7 @@ class Solver
             $literals = $rule->getLiterals();
             $literal = $literals[0];
 
-            if (!$this->decisions->decided(abs($literal))) {
+            if (!$this->decisions->decided($literal)) {
                 $this->decisions->decide($literal, 1, $rule);
                 continue;
             }
@@ -792,14 +792,14 @@ class Solver
                 //
                 foreach ($literals as $literal) {
                     if ($literal <= 0) {
-                        if (!$this->decisions->decidedInstall(abs($literal))) {
+                        if (!$this->decisions->decidedInstall($literal)) {
                             continue 2; // next rule
                         }
                     } else {
-                        if ($this->decisions->decidedInstall(abs($literal))) {
+                        if ($this->decisions->decidedInstall($literal)) {
                             continue 2; // next rule
                         }
-                        if ($this->decisions->undecided(abs($literal))) {
+                        if ($this->decisions->undecided($literal)) {
                             $decisionQueue[] = $literal;
                         }
                     }
