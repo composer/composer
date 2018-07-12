@@ -50,9 +50,7 @@ class Rule2Literals extends Rule
 
     public function getHash()
     {
-        $data = unpack('ihash', md5($this->literal1.','.$this->literal2, true));
-
-        return $data['hash'];
+        return $this->literal1.','.$this->literal2;
     }
 
     /**
