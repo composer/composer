@@ -312,7 +312,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if ($this->lazyProvidersUrl && !isset($this->providerListing[$name])) {
                 $hash = null;
                 $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
-                $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
+                $cacheKey = 'provider-'.strtr($name, '/', '$').'.php';
                 $useLastModifiedCheck = true;
             } elseif ($this->providersUrl) {
                 // package does not exist in this repo
@@ -322,7 +322,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 $hash = $this->providerListing[$name]['sha256'];
                 $url = str_replace(array('%package%', '%hash%'), array($name, $hash), $this->providersUrl);
-                $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
+                $cacheKey = 'provider-'.strtr($name, '/', '$').'.php';
             } else {
                 return array();
             }
@@ -330,10 +330,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $packages = null;
             if ($cacheKey) {
                 if (!$useLastModifiedCheck && $hash && $this->cache->sha256($cacheKey) === $hash) {
-                    $packages = json_decode($this->cache->read($cacheKey), true);
+                    $packages = $this->cache->readArray($cacheKey);
                 } elseif ($useLastModifiedCheck) {
-                    if ($contents = $this->cache->read($cacheKey)) {
-                        $contents = json_decode($contents, true);
+                    if ($contents = $this->cache->readArray($cacheKey)) {
                         if (isset($contents['last-modified'])) {
                             $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
                             if (true === $response) {
@@ -583,7 +582,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $url = $this->baseUrl . '/' . str_replace('%hash%', $metadata['sha256'], $include);
                 $cacheKey = str_replace(array('%hash%','$'), '', $include);
                 if ($this->cache->sha256($cacheKey) === $metadata['sha256']) {
-                    $includedData = json_decode($this->cache->read($cacheKey), true);
+                    $includedData = $this->cache->readArray($cacheKey);
                 } else {
                     $includedData = $this->fetchFile($url, $cacheKey, $metadata['sha256']);
                 }
@@ -619,7 +618,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if (isset($data['includes'])) {
             foreach ($data['includes'] as $include => $metadata) {
                 if ($this->cache->sha1($include) === $metadata['sha1']) {
-                    $includedData = json_decode($this->cache->read($include), true);
+                    $includedData = $this->cache->readArray($include);
                 } else {
                     $includedData = $this->fetchFile($include);
                 }
@@ -705,10 +704,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         $lastModifiedDate = $rfs->findHeaderValue($rfs->getLastHeaders(), 'last-modified');
                         if ($lastModifiedDate) {
                             $data['last-modified'] = $lastModifiedDate;
-                            $json = json_encode($data);
                         }
                     }
-                    $this->cache->write($cacheKey, $json);
+                    $this->cache->writeArray($cacheKey, $data);
                 }
 
                 break;
@@ -726,13 +724,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     throw $e;
                 }
 
-                if ($cacheKey && ($contents = $this->cache->read($cacheKey))) {
+                if ($cacheKey && ($contents = $this->cache->readArray($cacheKey))) {
                     if (!$this->degradedMode) {
                         $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
                         $this->io->writeError('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
                     }
                     $this->degradedMode = true;
-                    $data = JsonFile::parseJson($contents, $this->cache->getRoot().$cacheKey);
+                    $data = $contents;
 
                     break;
                 }
@@ -773,9 +771,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $lastModifiedDate = $rfs->findHeaderValue($rfs->getLastHeaders(), 'last-modified');
                 if ($lastModifiedDate) {
                     $data['last-modified'] = $lastModifiedDate;
-                    $json = json_encode($data);
                 }
-                $this->cache->write($cacheKey, $json);
+                $this->cache->writeArray($cacheKey, $data);
 
                 return $data;
             } catch (\Exception $e) {
