@@ -75,9 +75,9 @@ class ArchiveManager
         $nameParts = array(preg_replace('#[^a-z0-9-_]#i', '-', $package->getName()));
 
         if (preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
-            $nameParts = array_merge($nameParts, array($package->getDistReference(), $package->getDistType()));
+            array_push($nameParts, $package->getDistReference(), $package->getDistType());
         } else {
-            $nameParts = array_merge($nameParts, array($package->getPrettyVersion(), $package->getDistReference()));
+            array_push($nameParts, $package->getPrettyVersion(), $package->getDistReference());
         }
 
         if ($package->getSourceReference()) {
@@ -144,7 +144,7 @@ class ArchiveManager
             $sourcePath = realpath('.');
         } else {
             // Directory used to download the sources
-            $sourcePath = sys_get_temp_dir().'/composer_archive'.uniqid();
+            $sourcePath = sys_get_temp_dir().'/composer_archive'.uniqid('', true);
             $filesystem->ensureDirectoryExists($sourcePath);
 
             // Download sources
@@ -161,7 +161,7 @@ class ArchiveManager
         }
 
         // Create the archive
-        $tempTarget = sys_get_temp_dir().'/composer_archive'.uniqid().'.'.$format;
+        $tempTarget = sys_get_temp_dir().'/composer_archive'.uniqid('', true).'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($tempTarget));
 
         $archivePath = $usableArchiver->archive($sourcePath, $tempTarget, $format, $package->getArchiveExcludes(), $ignoreFilters);

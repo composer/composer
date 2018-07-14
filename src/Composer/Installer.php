@@ -543,16 +543,17 @@ class Installer
 
         foreach ($operations as $operation) {
             // collect suggestions
-            if ('install' === $operation->getJobType()) {
+            $jobType = $operation->getJobType();
+            if ('install' === $jobType) {
                 $this->suggestedPackagesReporter->addSuggestionsFromPackage($operation->getPackage());
             }
 
             // updating, force dev packages' references if they're in root package refs
             if ($this->update) {
                 $package = null;
-                if ('update' === $operation->getJobType()) {
+                if ('update' === $jobType) {
                     $package = $operation->getTargetPackage();
-                } elseif ('install' === $operation->getJobType()) {
+                } elseif ('install' === $jobType) {
                     $package = $operation->getPackage();
                 }
                 if ($package && $package->isDev()) {
@@ -561,20 +562,24 @@ class Installer
                         $this->updateInstallReferences($package, $references[$package->getName()]);
                     }
                 }
-                if ('update' === $operation->getJobType()
-                    && $operation->getTargetPackage()->isDev()
-                    && $operation->getTargetPackage()->getVersion() === $operation->getInitialPackage()->getVersion()
-                    && (!$operation->getTargetPackage()->getSourceReference() || $operation->getTargetPackage()->getSourceReference() === $operation->getInitialPackage()->getSourceReference())
-                    && (!$operation->getTargetPackage()->getDistReference() || $operation->getTargetPackage()->getDistReference() === $operation->getInitialPackage()->getDistReference())
-                ) {
-                    $this->io->writeError('  - Skipping update of '. $operation->getTargetPackage()->getPrettyName().' to the same reference-locked version', true, IOInterface::DEBUG);
-                    $this->io->writeError('', true, IOInterface::DEBUG);
+                if ('update' === $jobType) {
+                    $targetPackage = $operation->getTargetPackage();
+                    if ($targetPackage->isDev()) {
+                        $initialPackage = $operation->getInitialPackage();
+                        if ($targetPackage->getVersion() === $initialPackage->getVersion()
+                            && (!$targetPackage->getSourceReference() || $targetPackage->getSourceReference() === $initialPackage->getSourceReference())
+                            && (!$targetPackage->getDistReference() || $targetPackage->getDistReference() === $initialPackage->getDistReference())
+                        ) {
+                            $this->io->writeError('  - Skipping update of ' . $targetPackage->getPrettyName() . ' to the same reference-locked version', true, IOInterface::DEBUG);
+                            $this->io->writeError('', true, IOInterface::DEBUG);
 
-                    continue;
+                            continue;
+                        }
+                    }
                 }
             }
 
-            $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
+            $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($jobType);
             if (defined($event) && $this->runScripts) {
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
@@ -589,7 +594,7 @@ class Installer
             $this->installationManager->execute($localRepo, $operation);
 
             // output reasons why the operation was ran, only for install/update operations
-            if ($this->verbose && $this->io->isVeryVerbose() && in_array($operation->getJobType(), array('install', 'update'))) {
+            if ($this->verbose && $this->io->isVeryVerbose() && in_array($jobType, array('install', 'update'))) {
                 $reason = $operation->getReason();
                 if ($reason instanceof Rule) {
                     switch ($reason->getReason()) {
@@ -605,7 +610,7 @@ class Installer
                 }
             }
 
-            $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
+            $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($jobType);
             if (defined($event) && $this->runScripts) {
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
