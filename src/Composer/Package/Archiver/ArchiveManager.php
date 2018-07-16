@@ -144,7 +144,7 @@ class ArchiveManager
             $sourcePath = realpath('.');
         } else {
             // Directory used to download the sources
-            $sourcePath = sys_get_temp_dir().'/composer_archive'.uniqid('', true);
+            $sourcePath = sys_get_temp_dir().'/composer_archive'.uniqid();
             $filesystem->ensureDirectoryExists($sourcePath);
 
             // Download sources
@@ -161,7 +161,7 @@ class ArchiveManager
         }
 
         // Create the archive
-        $tempTarget = sys_get_temp_dir().'/composer_archive'.uniqid('', true).'.'.$format;
+        $tempTarget = sys_get_temp_dir().'/composer_archive'.uniqid().'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($tempTarget));
 
         $archivePath = $usableArchiver->archive($sourcePath, $tempTarget, $format, $package->getArchiveExcludes(), $ignoreFilters);
