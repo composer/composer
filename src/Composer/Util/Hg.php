@@ -63,9 +63,15 @@ class Hg
             if (0 === $this->process->execute($command)) {
                 return;
             }
+
+            $error = $this->process->getErrorOutput();
+        } else {
+            $error = 'The given URL (' . $url . ') does not match the required format (http(s)://(username:password@)example.com/path-to-repository)';
         }
 
-        $this->throwException('Failed to clone ' . $url . ', aborting', $url);
+
+
+        $this->throwException('Failed to clone ' . $url . ', ' . "\n\n" . $error, $url);
 
     }
 
