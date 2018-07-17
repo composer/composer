@@ -56,7 +56,7 @@ class Hg
         // Try with the authentication informations available
         if (preg_match('{^(https?)://((.+)(?:\:(.+))?@)?([^/]+)(/.*)?}mi', $url, $match) && $this->io->hasAuthentication($match[5])) {
             $auth = $this->io->getAuthentication($match[5]);
-            $authenticatedUrl = $match[1] . '://' . rawurldecode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[5] . (!empty($match[6])? $match[6]: null);
+            $authenticatedUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[5] . (!empty($match[6])? $match[6]: null);
 
             $command = call_user_func($commandCallable, $authenticatedUrl);
 
