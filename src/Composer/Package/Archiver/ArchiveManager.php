@@ -75,9 +75,9 @@ class ArchiveManager
         $nameParts = array(preg_replace('#[^a-z0-9-_]#i', '-', $package->getName()));
 
         if (preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
-            $nameParts = array_merge($nameParts, array($package->getDistReference(), $package->getDistType()));
+            array_push($nameParts, $package->getDistReference(), $package->getDistType());
         } else {
-            $nameParts = array_merge($nameParts, array($package->getPrettyVersion(), $package->getDistReference()));
+            array_push($nameParts, $package->getPrettyVersion(), $package->getDistReference());
         }
 
         if ($package->getSourceReference()) {

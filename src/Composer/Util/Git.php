@@ -245,7 +245,7 @@ class Git
 
     private function isAuthenticationFailure($url, &$match)
     {
-        if (!preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match)) {
+        if (!preg_match('{^(https?://)([^/]+)(.*)$}i', $url, $match)) {
             return false;
         }
 
@@ -257,8 +257,9 @@ class Git
             'fatal: could not read Username',
         );
 
+        $errorOutput = $this->process->getErrorOutput();
         foreach ($authFailures as $authFailure) {
-            if (strpos($this->process->getErrorOutput(), $authFailure) !== false) {
+            if (strpos($errorOutput, $authFailure) !== false) {
                 return true;
             }
         }
