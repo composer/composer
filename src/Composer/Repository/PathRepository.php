@@ -174,9 +174,15 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      */
     private function getUrlMatches()
     {
+        $flags = GLOB_MARK | GLOB_ONLYDIR;
+        
+        if (defined('GLOB_BRACE')) {
+            $flags |= GLOB_BRACE;
+        }
+        
         // Ensure environment-specific path separators are normalized to URL separators
         return array_map(function ($val) {
             return rtrim(str_replace(DIRECTORY_SEPARATOR, '/', $val), '/');
-        }, glob($this->url, GLOB_MARK | GLOB_ONLYDIR | GLOB_BRACE));
+        }, glob($this->url, $flags));
     }
 }
