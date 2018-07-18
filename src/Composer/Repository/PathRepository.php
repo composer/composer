@@ -178,6 +178,8 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         
         if (defined('GLOB_BRACE')) {
             $flags |= GLOB_BRACE;
+        } elseif (strpos($this->url, '{') !== false || strpos($this->url, '}') !== false) {
+            throw new \RuntimeException('The operating system does not support GLOB_BRACE which is required for the url '. $this->url);
         }
         
         // Ensure environment-specific path separators are normalized to URL separators
