@@ -580,7 +580,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $includes = $data['provider-includes'];
             foreach ($includes as $include => $metadata) {
                 $url = $this->baseUrl . '/' . str_replace('%hash%', $metadata['sha256'], $include);
-                $cacheKey = str_replace(array('%hash%','$'), '', $include);
+                $cacheKey = str_replace(array('%hash%','$'), '', $include) .'.php';
                 if ($this->cache->sha256($cacheKey) === $metadata['sha256']) {
                     $includedData = $this->cache->readArray($cacheKey);
                 } else {
@@ -617,10 +617,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (isset($data['includes'])) {
             foreach ($data['includes'] as $include => $metadata) {
-                if ($this->cache->sha1($include) === $metadata['sha1']) {
-                    $includedData = $this->cache->readArray($include);
+                $cacheKey = $include .'.php';
+                if ($this->cache->sha1($cacheKey) === $metadata['sha1']) {
+                    $includedData = $this->cache->readArray($cacheKey);
                 } else {
-                    $includedData = $this->fetchFile($include);
+                    $includedData = $this->fetchFile($cacheKey);
                 }
                 $packages = array_merge($packages, $this->loadIncludes($includedData));
             }
@@ -652,7 +653,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected function fetchFile($filename, $cacheKey = null, $sha256 = null, $storeLastModifiedTime = false)
     {
         if (null === $cacheKey) {
-            $cacheKey = $filename;
+            $cacheKey = $filename. '.php';
             $filename = $this->baseUrl.'/'.$filename;
         }
 
