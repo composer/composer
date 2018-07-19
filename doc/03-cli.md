@@ -115,7 +115,7 @@ resolution.
   requirements and force the installation even if the local machine does not
   fulfill these. See also the [`platform`](06-config.md#platform) config option.
 
-## update
+## update / u
 
 In order to get the latest versions of the dependencies and to update the
 `composer.lock` file, you should use the `update` command. This command is also

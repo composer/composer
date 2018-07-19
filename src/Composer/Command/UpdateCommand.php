@@ -34,7 +34,7 @@ class UpdateCommand extends BaseCommand
     {
         $this
             ->setName('update')
-            ->setAliases(array('upgrade'))
+            ->setAliases(array('u', 'upgrade'))
             ->setDescription('Upgrades your dependencies to the latest version according to composer.json, and updates the composer.lock file.')
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that should be updated, if not provided all packages are.'),
