@@ -1,0 +1,22 @@
+{
+    "packages": {
+        "qux\/quux": {
+            "dev-default": {
+                "name": "qux\/quux",
+                "version": "dev-default",
+                "version_normalized": "9999999-dev",
+                "source": {
+                    "type": "hg",
+                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "reference": "4a10a567baa5"
+                },
+                "replace": {
+                    "gar\/nix": "1.0.*"
+                },
+                "time": "2014-10-11 15:48:15",
+                "type": "library",
+                "uid": 10
+            }
+        }
+    }
+}
