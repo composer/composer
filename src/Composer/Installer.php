@@ -1038,8 +1038,14 @@ class Installer
                         $package->setReplaces($newPackage->getReplaces());
                     }
 
-                    if ($task === 'force-updates' && $newPackage && ($newPackage->getSourceReference() && $newPackage->getSourceReference() !== $package->getSourceReference())
-                        || ($newPackage->getDistReference() && $newPackage->getDistReference() !== $package->getDistReference())) {
+                    if (
+                        $task === 'force-updates'
+                        && $newPackage
+                        && (
+                            ($newPackage->getSourceReference() && $newPackage->getSourceReference() !== $package->getSourceReference())
+                            || ($newPackage->getDistReference() && $newPackage->getDistReference() !== $package->getDistReference())
+                        )
+                    ) {
                         $operations[] = new UpdateOperation($package, $newPackage);
 
                         continue;
