@@ -68,7 +68,7 @@ abstract class Rule
 
     public function getJob()
     {
-        return isset($this->job) ? $this->job : null;
+        return $this->job;
     }
 
     abstract public function equals(Rule $rule);
