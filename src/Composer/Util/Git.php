@@ -57,7 +57,7 @@ class Git
             // capture username/password from URL if there is one
             $this->process->execute('git remote -v', $output, $cwd);
             if (preg_match('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)}im', $output, $match)) {
-                $this->io->setAuthentication($match[3], urldecode($match[1]), urldecode($match[2]));
+                $this->io->setAuthentication($match[3], rawurldecode($match[1]), rawurldecode($match[2]));
             }
         }
 

@@ -243,7 +243,7 @@ class RemoteFilesystem
 
         // capture username/password from URL if there is one
         if (preg_match('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $fileUrl, $match)) {
-            $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
+            $this->io->setAuthentication($originUrl, rawurldecode($match[1]), rawurldecode($match[2]));
         }
 
         $tempAdditionalOptions = $additionalOptions;
