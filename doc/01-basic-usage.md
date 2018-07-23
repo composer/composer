@@ -190,11 +190,11 @@ installed on the system but are not actually installable by Composer. This
 includes PHP itself, PHP extensions and some system libraries.
 
 * `php` represents the PHP version of the user, allowing you to apply
-  constraints, e.g. `>=5.4.0`. To require a 64bit version of php, you can
+  constraints, e.g. `^7.1`. To require a 64bit version of php, you can
   require the `php-64bit` package.
 
 * `hhvm` represents the version of the HHVM runtime and allows you to apply
-  a constraint, e.g., `>=2.3.3`.
+  a constraint, e.g., `^2.3`.
 
 * `ext-<name>` allows you to require PHP extensions (includes core
   extensions). Versioning can be quite inconsistent here, so it's often
