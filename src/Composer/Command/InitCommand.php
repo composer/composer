@@ -165,7 +165,7 @@ EOT
             }
             $repos[] = RepositoryFactory::createRepo($io, $config, array(
                 'type' => 'composer',
-                'url' => 'https://packagist.org',
+                'url' => 'https://repo.packagist.org',
             ));
 
             $this->repos = new CompositeRepository($repos);

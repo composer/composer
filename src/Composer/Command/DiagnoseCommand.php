@@ -81,7 +81,7 @@ EOT
         }
 
         $config->merge(array('config' => array('secure-http' => false)));
-        $config->prohibitUrlByConfig('http://packagist.org', new NullIO);
+        $config->prohibitUrlByConfig('http://repo.packagist.org', new NullIO);
 
         $this->rfs = Factory::createRemoteFilesystem($io, $config);
         $this->process = new ProcessExecutor($io);
@@ -208,7 +208,7 @@ EOT
         }
 
         try {
-            $this->rfs->getContents('packagist.org', $proto . '://packagist.org/packages.json', false);
+            $this->rfs->getContents('packagist.org', $proto . '://repo.packagist.org/packages.json', false);
         } catch (TransportException $e) {
             if (false !== strpos($e->getMessage(), 'cafile')) {
                 $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
@@ -230,11 +230,11 @@ EOT
     {
         $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $json = json_decode($this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false), true);
+            $json = json_decode($this->rfs->getContents('packagist.org', $protocol . '://repo.packagist.org/packages.json', false), true);
             $hash = reset($json['provider-includes']);
             $hash = $hash['sha256'];
             $path = str_replace('%hash%', $hash, key($json['provider-includes']));
-            $provider = $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/'.$path, false);
+            $provider = $this->rfs->getContents('packagist.org', $protocol . '://repo.packagist.org/'.$path, false);
 
             if (hash('sha256', $provider) !== $hash) {
                 return 'It seems that your proxy is modifying http traffic on the fly';
@@ -255,7 +255,7 @@ EOT
      */
     private function checkHttpProxyFullUriRequestParam()
     {
-        $url = 'http://packagist.org/packages.json';
+        $url = 'http://repo.packagist.org/packages.json';
         try {
             $this->rfs->getContents('packagist.org', $url, false);
         } catch (TransportException $e) {

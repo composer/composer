@@ -72,7 +72,7 @@ class Config
     public static $defaultRepositories = array(
         'packagist.org' => array(
             'type' => 'composer',
-            'url' => 'https?://packagist.org',
+            'url' => 'https?://repo.packagist.org',
             'allow_ssl_downgrade' => true,
         ),
     );

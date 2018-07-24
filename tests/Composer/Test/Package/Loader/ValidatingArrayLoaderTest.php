@@ -119,7 +119,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     'repositories' => array(
                         array(
                             'type' => 'composer',
-                            'url' => 'https://packagist.org/',
+                            'url' => 'https://repo.packagist.org/',
                         ),
                     ),
                     'config' => array(

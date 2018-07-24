@@ -90,6 +90,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->config = $config;
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
+
+        // force url for packagist.org to repo.packagist.org
+        if (preg_match('{^(?P<proto>https?)://packagist.org/?$}i', $this->url, $match)) {
+            $this->url = $match['proto'].'://repo.packagist.org';
+        }
+
         $this->baseUrl = rtrim(preg_replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
@@ -539,10 +545,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         // force values for packagist
-        if (preg_match('{^https?://packagist.org/?$}i', $this->url) && !empty($this->repoConfig['force-lazy-providers'])) {
-            $this->url = 'https://packagist.org';
-            $this->baseUrl = 'https://packagist.org';
-            $this->lazyProvidersUrl = $this->canonicalizeUrl('https://packagist.org/p/%package%.json');
+        if (preg_match('{^https?://repo\.packagist\.org/?$}i', $this->url) && !empty($this->repoConfig['force-lazy-providers'])) {
+            $this->url = 'https://repo.packagist.org';
+            $this->baseUrl = 'https://repo.packagist.org';
+            $this->lazyProvidersUrl = $this->canonicalizeUrl('https://repo.packagist.org/p/%package%.json');
             $this->providersUrl = null;
         } elseif (!empty($this->repoConfig['force-lazy-providers'])) {
             $this->lazyProvidersUrl = $this->canonicalizeUrl('/p/%package%.json');
