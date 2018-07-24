@@ -55,7 +55,7 @@ class UrlTest extends TestCase
             // gitlab enterprise
             array('https://mygitlab.com/api/v4/projects/foo%2Fbar/repository/archive.tar.gz?sha=abcd',  'https://mygitlab.com/api/v4/projects/foo%2Fbar/repository/archive.tar.gz?sha=newref', array('gitlab-domains' => array('mygitlab.com'))),
             array('https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=abcd', 'https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=newref', array('gitlab-domains' => array('mygitlab.com'))),
-	        array('https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=abcd', 'https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=65', array('gitlab-domains' => array('mygitlab.com')), '65'),
+            array('https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=abcd', 'https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=65', array('gitlab-domains' => array('mygitlab.com')), '65'),
         );
     }
 }

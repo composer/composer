@@ -129,8 +129,11 @@ class BaseDependencyCommand extends BaseCommand
         $results = $repository->getDependents($needles, $constraint, $inverted, $recursive);
         if (empty($results)) {
             $extra = (null !== $constraint) ? sprintf(' in versions %smatching %s', $inverted ? 'not ' : '', $textConstraint) : '';
-            $this->getIO()->writeError(sprintf('<info>There is no installed package depending on "%s"%s</info>',
-                $needle, $extra));
+            $this->getIO()->writeError(sprintf(
+                '<info>There is no installed package depending on "%s"%s</info>',
+                $needle,
+                $extra
+            ));
         } elseif ($renderTree) {
             $this->initStyles($output);
             $root = $packages[0];

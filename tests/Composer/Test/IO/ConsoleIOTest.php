@@ -241,7 +241,6 @@ class ConsoleIOTest extends TestCase
                 $this->isInstanceOf('Symfony\Component\Console\Question\Question')
             )
             ->will($this->returnValue(array('item2')));
-        ;
 
         $setMock
             ->expects($this->once())

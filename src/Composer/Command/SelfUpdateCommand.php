@@ -53,7 +53,8 @@ class SelfUpdateCommand extends BaseCommand
                 new InputOption('snapshot', null, InputOption::VALUE_NONE, 'Force an update to the snapshot channel'),
                 new InputOption('set-channel-only', null, InputOption::VALUE_NONE, 'Only store the channel as the default one and then exit'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer
 versions of composer and if found, installs the latest.
 
@@ -176,7 +177,9 @@ EOT
 
             $sigFile = 'file://'.$home.'/' . ($updatingToTag ? 'keys.tags.pub' : 'keys.dev.pub');
             if (!file_exists($sigFile)) {
-                file_put_contents($home.'/keys.dev.pub', <<<DEVPUBKEY
+                file_put_contents(
+                    $home.'/keys.dev.pub',
+                    <<<DEVPUBKEY
 -----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAnBDHjZS6e0ZMoK3xTD7f
 FNCzlXjX/Aie2dit8QXA03pSrOTbaMnxON3hUL47Lz3g1SC6YJEMVHr0zYq4elWi
@@ -192,8 +195,11 @@ r/TU7BQQIzsZgAiqOGXvVklIgAMiV0iucgf3rNBLjjeNEwNSTTG9F0CtQ+7JLwaE
 wSEuAuRm+pRqi8BRnQ/GKUcCAwEAAQ==
 -----END PUBLIC KEY-----
 DEVPUBKEY
-);
-                file_put_contents($home.'/keys.tags.pub', <<<TAGSPUBKEY
+                );
+
+                file_put_contents(
+                    $home.'/keys.tags.pub',
+                    <<<TAGSPUBKEY
 -----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0Vi/2K6apCVj76nCnCl2
 MQUPdK+A9eqkYBacXo2wQBYmyVlXm2/n/ZsX6pCLYPQTHyr5jXbkQzBw8SKqPdlh
@@ -209,7 +215,7 @@ TzCFWGk/HM6a4f0IzBWbJ5ot0PIi4amk07IotBXDWwqDiQTwyuGCym5EqWQ2BD95
 RGv89BPD+2DLnJysngsvVaUCAwEAAQ==
 -----END PUBLIC KEY-----
 TAGSPUBKEY
-);
+                );
             }
 
             $pubkeyid = openssl_pkey_get_public($sigFile);

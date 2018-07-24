@@ -46,7 +46,8 @@ class ValidateCommand extends BaseCommand
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code for warnings as well as errors'),
                 new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The validate command validates a given composer.json and composer.lock
 
 Exit codes in case of errors are:

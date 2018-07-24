@@ -135,7 +135,7 @@ class SvnDriver extends VcsDriver
 
             try {
                 $composer = $this->getBaseComposerInformation($identifier);
-            } catch(TransportException $e) {
+            } catch (TransportException $e) {
                 $message = $e->getMessage();
                 if (stripos($message, 'path not found') === false && stripos($message, 'svn: warning: W160013') === false) {
                     throw $e;

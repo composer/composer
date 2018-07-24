@@ -48,7 +48,8 @@ class DiagnoseCommand extends BaseCommand
         $this
             ->setName('diagnose')
             ->setDescription('Diagnoses the system to identify common errors.')
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The <info>diagnose</info> command checks common errors to help debugging problems.
 
 The process exit code will be 1 in case of warnings and 2 for errors.

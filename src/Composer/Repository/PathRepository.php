@@ -175,13 +175,13 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
     private function getUrlMatches()
     {
         $flags = GLOB_MARK | GLOB_ONLYDIR;
-        
+
         if (defined('GLOB_BRACE')) {
             $flags |= GLOB_BRACE;
         } elseif (strpos($this->url, '{') !== false || strpos($this->url, '}') !== false) {
             throw new \RuntimeException('The operating system does not support GLOB_BRACE which is required for the url '. $this->url);
         }
-        
+
         // Ensure environment-specific path separators are normalized to URL separators
         return array_map(function ($val) {
             return rtrim(str_replace(DIRECTORY_SEPARATOR, '/', $val), '/');

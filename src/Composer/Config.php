@@ -245,9 +245,11 @@ class Config
                         case 'g':
                             $size *= 1024;
                             // intentional fallthrough
+                            // no break
                         case 'm':
                             $size *= 1024;
                             // intentional fallthrough
+                            // no break
                         case 'k':
                             $size *= 1024;
                             break;

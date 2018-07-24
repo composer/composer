@@ -31,7 +31,8 @@ class SuggestsCommand extends BaseCommand
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Exclude suggestions from require-dev packages'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that you want to list suggestions from.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 
 The <info>%command.name%</info> command shows a sorted list of suggested packages.
 

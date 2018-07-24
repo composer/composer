@@ -360,7 +360,8 @@ class Locker
 
             if (!$name || !$version) {
                 throw new \LogicException(sprintf(
-                    'Package "%s" has no version or name and can not be locked', $package
+                    'Package "%s" has no version or name and can not be locked',
+                    $package
                 ));
             }
 

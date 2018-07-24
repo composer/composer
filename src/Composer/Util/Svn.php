@@ -66,7 +66,7 @@ class Svn
     /**
      * @var string|null
      */
-    static private $version;
+    private static $version;
 
     /**
      * @param string                   $url
@@ -223,7 +223,8 @@ class Svn
      */
     protected function getCommand($cmd, $url, $path = null)
     {
-        $cmd = sprintf('%s %s%s %s',
+        $cmd = sprintf(
+            '%s %s%s %s',
             $cmd,
             '--non-interactive ',
             $this->getCredentialString(),

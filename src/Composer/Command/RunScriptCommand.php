@@ -57,7 +57,8 @@ class RunScriptCommand extends BaseCommand
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List scripts.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The <info>run-script</info> command runs scripts defined in composer.json:
 
 <info>php composer.phar run-script post-update-cmd</info>

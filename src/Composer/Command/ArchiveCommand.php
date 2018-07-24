@@ -48,7 +48,8 @@ class ArchiveCommand extends BaseCommand
                     .' Note that the format will be appended.'),
                 new InputOption('ignore-filters', false, InputOption::VALUE_NONE, 'Ignore filters when saving package'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The <info>archive</info> command creates an archive of the specified format
 containing the files and directories of the Composer project or the specified
 package in the specified version and writes it to the specified directory.

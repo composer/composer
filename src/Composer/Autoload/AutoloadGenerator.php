@@ -903,8 +903,8 @@ INITIALIZER;
     /**
      * Filters out dev-dependencies when not in dev-mode
      *
-     * @param array $packageMap
-     * @param PackageInterface $mainPackage
+     * @param  array            $packageMap
+     * @param  PackageInterface $mainPackage
      * @return array
      */
     protected function filterPackageMap(array $packageMap, PackageInterface $mainPackage)
@@ -940,6 +940,7 @@ INITIALIZER;
             function ($item) use ($include) {
                 $package = $item[0];
                 $name = $package->getName();
+
                 return isset($include[$name]);
             }
         );

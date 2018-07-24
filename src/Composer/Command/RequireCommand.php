@@ -57,7 +57,8 @@ class RequireCommand extends InitCommand
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
                 new InputOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The require command adds required packages to your composer.json and installs them.
 
 If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of 

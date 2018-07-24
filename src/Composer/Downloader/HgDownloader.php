@@ -28,7 +28,7 @@ class HgDownloader extends VcsDownloader
     {
         $hgUtils = new HgUtils($this->io, $this->config, $this->process);
 
-        $cloneCommand = function($url) use ($path) {
+        $cloneCommand = function ($url) use ($path) {
             return sprintf('hg clone %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($path));
         };
 
@@ -55,7 +55,7 @@ class HgDownloader extends VcsDownloader
             throw new \RuntimeException('The .hg directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
-        $command = function($url) use ($ref) {
+        $command = function ($url) use ($ref) {
             return sprintf('hg pull %s && hg up %s', ProcessExecutor::escape($url), ProcessExecutor::escape($ref));
         };
 

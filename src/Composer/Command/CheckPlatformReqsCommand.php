@@ -26,7 +26,8 @@ class CheckPlatformReqsCommand extends BaseCommand
     {
         $this->setName('check-platform-reqs')
             ->setDescription('Check that platform requirements are satisfied.')
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 Checks that your PHP and extensions versions match the platform requirements of the installed packages.
 
 <info>php composer.phar check-platform-reqs</info>

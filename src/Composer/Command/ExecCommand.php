@@ -53,7 +53,8 @@ class ExecCommand extends BaseCommand
                 throw new \RuntimeException("No binaries found in composer.json or in bin-dir ($binDir)");
             }
 
-            $this->getIO()->write(<<<EOT
+            $this->getIO()->write(
+                <<<EOT
 <comment>Available binaries:</comment>
 EOT
             );
@@ -66,7 +67,8 @@ EOT
 
                 $previousBin = $bin;
                 $bin = basename($bin);
-                $this->getIO()->write(<<<EOT
+                $this->getIO()->write(
+                    <<<EOT
 <info>- $bin</info>
 EOT
                 );

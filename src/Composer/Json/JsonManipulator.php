@@ -510,8 +510,7 @@ class JsonManipulator
                     if (PHP_VERSION_ID > 70000) {
                         throw new \RuntimeException('Failed to execute regex: PREG_JIT_STACKLIMIT_ERROR', 6);
                     }
-                    // fallthrough
-
+                    // no break
                 default:
                     throw new \RuntimeException('Failed to execute regex: Unknown error');
             }
