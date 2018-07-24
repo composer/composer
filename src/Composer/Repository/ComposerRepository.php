@@ -92,7 +92,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->url = $repoConfig['url'];
 
         // force url for packagist.org to repo.packagist.org
-        if (preg_match('{^(?P<proto>https?)://packagist.org/?$}i', $this->url, $match)) {
+        if (preg_match('{^(?P<proto>https?)://packagist\.org/?$}i', $this->url, $match)) {
             $this->url = $match['proto'].'://repo.packagist.org';
         }
 
