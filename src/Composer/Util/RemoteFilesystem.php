@@ -297,7 +297,7 @@ class RemoteFilesystem
         unset($origFileUrl, $actualContextOptions);
 
         // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
-        if ((!preg_match('{^http://(repo\.)?packagist.org/p/}', $fileUrl) || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && empty($degradedPackagist) && $this->config) {
+        if ((!preg_match('{^http://(repo\.)?packagist\.org/p/}', $fileUrl) || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && empty($degradedPackagist) && $this->config) {
             $this->config->prohibitUrlByConfig($fileUrl, $this->io);
         }
 
