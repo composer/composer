@@ -1,3 +1,19 @@
+### [1.7.0-RC] 2018-07-24
+
+  * Changed default repository URL from packagist.org to repo.packagist.org, this might affect people with strict firewall rules
+  * Changed output from Updating to Downgrading when performing package downgrades, this might affect anything parsing output
+  * Several minor performance improvements
+  * Added basic authentication support for mercurial repos
+  * Added explicit `i` and `u` aliases for the `install` and `update` commands
+  * Added support for `show` command to output json format with --tree
+  * Added support for {glob,braces} support in the path repository's path argument
+  * Added support in `status` command for showing diffs in vendor dir even for packages installed as dist/zip archives
+  * Added `--remove-vcs` flag to `create-project` command to avoid prompting for keeping VCS files
+  * Added `--no-secure-http` flag to `create-project` command to bypass https (use at your own risk)
+  * Added `pre-command-run` event that lets plugins modify arguments
+  * Added RemoteFilesystem::getRemoteContents extension point
+  * Fixed setting scripts via `config` command
+
 ### [1.6.5] 2018-05-04
 
   * Fixed regression in 1.6.4 causing strange update behaviors with dev packages
@@ -651,6 +667,7 @@
 
   * Initial release
 
+[1.7.0-RC]: https://github.com/composer/composer/compare/1.6.5...1.7.0-RC
 [1.6.5]: https://github.com/composer/composer/compare/1.6.4...1.6.5
 [1.6.4]: https://github.com/composer/composer/compare/1.6.3...1.6.4
 [1.6.3]: https://github.com/composer/composer/compare/1.6.2...1.6.3
