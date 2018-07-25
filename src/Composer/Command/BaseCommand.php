@@ -127,7 +127,8 @@ abstract class BaseCommand extends Command
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
         // initialize a plugin-enabled Composer instance, either local or global
-        $composer = $this->getComposer(false, false);
+        $disablePlugins = $input->hasParameterOption('--no-plugins');
+        $composer = $this->getComposer(false, $disablePlugins);
         if (null === $composer) {
             $composer = Factory::createGlobal($this->getIO(), false);
         }
