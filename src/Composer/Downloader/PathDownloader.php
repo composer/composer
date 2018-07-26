@@ -150,7 +150,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 $this->io->writeError("  - Removing junction for <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
             }
             if (!$this->filesystem->removeJunction($path)) {
-                $this->io->writeError("    <warn>Could not remove junction at " . $path . " - is another process locking it?</warn>");
+                $this->io->writeError("    <warning>Could not remove junction at " . $path . " - is another process locking it?</warning>");
                 throw new \RuntimeException('Could not reliably remove junction for package ' . $package->getName());
             }
         } else {
