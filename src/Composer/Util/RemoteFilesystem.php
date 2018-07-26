@@ -315,7 +315,7 @@ class RemoteFilesystem
             $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
         });
         try {
-            list($http_response_header, $result) = $this->getRemoteContents($originUrl, $fileUrl, $ctx);
+            $result = $this->getRemoteContents($originUrl, $fileUrl, $ctx, $http_response_header);
 
             if (!empty($http_response_header[0])) {
                 $statusCode = $this->findStatusCode($http_response_header);
@@ -577,13 +577,24 @@ class RemoteFilesystem
      * @param string   $fileUrl   The file URL
      * @param resource $context   The stream context
      *
-     * @return array The response headers and the contents
+     * @return string|false The response contents or false on failure
      */
-    protected function getRemoteContents($originUrl, $fileUrl, $context)
+    protected function getRemoteContents($originUrl, $fileUrl, $context, array &$responseHeaders = null)
     {
-        $contents = file_get_contents($fileUrl, false, $context);
+        try {
+            $e = null;
+            $result = file_get_contents($fileUrl, false, $context);
+        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
+        }
 
-        return array(isset($http_response_header) ? $http_response_header : null, $contents);
+        $responseHeaders = isset($http_response_header) ? $http_response_header : array();
+
+        if (null !== $e) {
+            throw $e;
+        }
+
+        return $result;
     }
 
     /**
