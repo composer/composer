@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\Config;
 use Composer\Downloader\TransportException;
+use Composer\Repository\PlatformRepository;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\ConfigValidator;
@@ -153,7 +154,15 @@ EOT
 
         $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::VERSION));
 
-        $io->write(sprintf('PHP version: <comment>%s</comment>', PHP_VERSION));
+        $platformOverrides = $config->get('platform') ?: array();
+        $platformRepo = new PlatformRepository(array(), $platformOverrides);
+        $phpPkg = $platformRepo->findPackage('php', '*');
+        $phpVersion = $phpPkg->getPrettyVersion();
+        if (false !== strpos($phpPkg->getDescription(), 'overridden')) {
+            $phpVersion .= ' - ' . $phpPkg->getDescription();
+        }
+
+        $io->write(sprintf('PHP version: <comment>%s</comment>', $phpVersion));
 
         if (defined('PHP_BINARY')) {
             $io->write(sprintf('PHP binary path: <comment>%s</comment>', PHP_BINARY));
