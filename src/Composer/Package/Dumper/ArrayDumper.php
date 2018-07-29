@@ -45,7 +45,7 @@ class ArrayDumper
             $data['target-dir'] = $package->getTargetDir();
         }
 
-        if ($package->getSourceType()) {
+        if ($package->getSourceType() && $package->getType() !== 'metapackage') {
             $data['source']['type'] = $package->getSourceType();
             $data['source']['url'] = $package->getSourceUrl();
             $data['source']['reference'] = $package->getSourceReference();
@@ -54,7 +54,7 @@ class ArrayDumper
             }
         }
 
-        if ($package->getDistType()) {
+        if ($package->getDistType() && $package->getType() !== 'metapackage') {
             $data['dist']['type'] = $package->getDistType();
             $data['dist']['url'] = $package->getDistUrl();
             $data['dist']['reference'] = $package->getDistReference();
