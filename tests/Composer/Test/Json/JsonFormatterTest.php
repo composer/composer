@@ -34,6 +34,20 @@ class JsonFormatterTest extends TestCase
     }
 
     /**
+     * Surrogate pairs are intentionally skipped and not unescaped
+     * https://github.com/composer/composer/issues/7510
+     */
+    public function testUtf16SurrogatePair()
+    {
+        if (!extension_loaded('mbstring')) {
+            $this->markTestSkipped('Test requires the mbstring extension');
+        }
+
+        $escaped = '"\ud83d\ude00"';
+        $this->assertEquals($escaped, JsonFormatter::format($escaped, true, true));
+    }
+
+    /**
      * Convert string to character codes split by a plus sign
      * @param  string $string
      * @return string
