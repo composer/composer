@@ -89,7 +89,7 @@ EOT
         list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
 
         $lockErrors = array();
-        $composer = Factory::create($io, $file);
+        $composer = Factory::create($io, $file, $input->hasParameterOption('--no-plugins'));
         $locker = $composer->getLocker();
         if ($locker->isLocked() && !$locker->isFresh()) {
             $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update`.';

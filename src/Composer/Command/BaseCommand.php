@@ -130,7 +130,7 @@ abstract class BaseCommand extends Command
         $disablePlugins = $input->hasParameterOption('--no-plugins');
         $composer = $this->getComposer(false, $disablePlugins);
         if (null === $composer) {
-            $composer = Factory::createGlobal($this->getIO(), false);
+            $composer = Factory::createGlobal($this->getIO(), $disablePlugins);
         }
         if ($composer) {
             $preCommandRunEvent = new PreCommandRunEvent(PluginEvents::PRE_COMMAND_RUN, $input, $this->getName());

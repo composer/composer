@@ -60,7 +60,7 @@ EOT
         $platformRepo = new PlatformRepository;
         $io = $this->getIO();
         if (!($composer = $this->getComposer(false))) {
-            $composer = Factory::create($this->getIO(), array());
+            $composer = Factory::create($this->getIO(), array(), $input->hasParameterOption('--no-plugins'));
         }
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
