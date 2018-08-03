@@ -674,7 +674,7 @@
 
   * Initial release
 
-[1.7.0]: https://github.com/composer/composer/compare/1.7.0...1.7.0
+[1.7.0]: https://github.com/composer/composer/compare/1.7.0-RC...1.7.0
 [1.7.0-RC]: https://github.com/composer/composer/compare/1.6.5...1.7.0-RC
 [1.6.5]: https://github.com/composer/composer/compare/1.6.4...1.6.5
 [1.6.4]: https://github.com/composer/composer/compare/1.6.3...1.6.4
