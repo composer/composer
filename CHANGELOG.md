@@ -1,3 +1,10 @@
+### [1.7.0] 2018-08-03
+
+  * Added the overridden platform config's PHP version in the `diagnose` command output
+  * Fixed --no-plugins not being respected in a few commands
+  * Fixed 1.7.0-RC regression in output showing <warn> instead of proper colors
+  * Fixed 1.7.0-RC regression in output missing "Loading from cache" output on package install
+
 ### [1.7.0-RC] 2018-07-24
 
   * Changed default repository URL from packagist.org to repo.packagist.org, this might affect people with strict firewall rules
@@ -667,6 +674,7 @@
 
   * Initial release
 
+[1.7.0]: https://github.com/composer/composer/compare/1.7.0...1.7.0
 [1.7.0-RC]: https://github.com/composer/composer/compare/1.6.5...1.7.0-RC
 [1.6.5]: https://github.com/composer/composer/compare/1.6.4...1.6.5
 [1.6.4]: https://github.com/composer/composer/compare/1.6.3...1.6.4
