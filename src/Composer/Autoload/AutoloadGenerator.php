@@ -157,7 +157,7 @@ EOF;
 
         // Collect information from all packages.
         $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getCanonicalPackages());
-        $autoloads = $this->parseAutoloads($packageMap, $mainPackage);
+        $autoloads = $this->parseAutoloads($packageMap, $mainPackage, $this->devMode === false);
 
         // Process the 'psr-0' base directories.
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
@@ -383,12 +383,15 @@ EOF;
      *
      * @param  array            $packageMap  array of array(package, installDir-relative-to-composer.json)
      * @param  PackageInterface $mainPackage root package instance
+     * @param  bool             $filterOutRequireDevPackages whether to filter out require-dev packages
      * @return array            array('psr-0' => array('Ns\\Foo' => array('installDir')))
      */
-    public function parseAutoloads(array $packageMap, PackageInterface $mainPackage)
+    public function parseAutoloads(array $packageMap, PackageInterface $mainPackage, $filterOutRequireDevPackages = false)
     {
         $mainPackageMap = array_shift($packageMap);
-        $packageMap = $this->filterPackageMap($packageMap, $mainPackage);
+        if ($filterOutRequireDevPackages) {
+            $packageMap = $this->filterPackageMap($packageMap, $mainPackage);
+        }
         $sortedPackageMap = $this->sortPackageMap($packageMap);
         $sortedPackageMap[] = $mainPackageMap;
         array_unshift($packageMap, $mainPackageMap);
@@ -901,7 +904,7 @@ INITIALIZER;
     }
 
     /**
-     * Filters out dev-dependencies when not in dev-mode
+     * Filters out dev-dependencies
      *
      * @param  array            $packageMap
      * @param  PackageInterface $mainPackage
@@ -909,10 +912,6 @@ INITIALIZER;
      */
     protected function filterPackageMap(array $packageMap, PackageInterface $mainPackage)
     {
-        if ($this->devMode === true) {
-            return $packageMap;
-        }
-
         $packages = array();
         $include = array();
 
