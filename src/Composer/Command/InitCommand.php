@@ -147,10 +147,8 @@ EOT
             }
         }
 
-
         $question = 'Would you like to install dependencies now? [<comment>yes</comment>]? ';
-
-        if ($input->isInteractive() && $io->askConfirmation($question, true)) {
+        if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question, true)) {
             $this->installDependencies($output);
         }
 
@@ -787,5 +785,12 @@ EOT
             $this->getIO()->writeError("Couldn't install dependencies. You can install them later by running 'composer install'.");
         }
 
+    }
+
+    private function hasDependencies($options)
+    {
+        $requires = (array)$options['require'];
+        $devRequires = isset($options['require-dev']) ? (array)$options['require-dev'] : array();
+        return !empty($requires) || !empty($devRequires);
     }
 }
