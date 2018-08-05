@@ -22,6 +22,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Util\ProcessExecutor;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -145,6 +146,15 @@ EOT
                 }
             }
         }
+
+
+        $question = 'Would you like to install dependencies now? [<comment>yes</comment>]? ';
+
+        if ($input->isInteractive() && $io->askConfirmation($question, true)) {
+            $this->installDependencies($output);
+        }
+
+        $io->write('Done. Compose something awesome.');
     }
 
     /**
@@ -766,5 +776,16 @@ EOT
         asort($similarPackages);
 
         return array_keys(array_slice($similarPackages, 0, 5));
+    }
+
+    private function installDependencies($output)
+    {
+        try {
+            $installCommand = $this->getApplication()->find('install');
+            $installCommand->run(new ArrayInput(array()), $output);
+        } catch (\Exception $e) {
+            $this->getIO()->writeError("Couldn't install dependencies. You can install them later by running 'composer install'.");
+        }
+
     }
 }
