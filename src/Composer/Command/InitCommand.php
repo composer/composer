@@ -147,7 +147,7 @@ EOT
             }
         }
 
-        $question = 'Would you like to install dependencies now? [<comment>yes</comment>]? ';
+        $question = 'Would you like to install dependencies now [<comment>yes</comment>]? ';
         if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question, true)) {
             $this->installDependencies($output);
         }
