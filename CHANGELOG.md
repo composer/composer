@@ -1,3 +1,8 @@
+### [1.7.1] 2018-08-07
+
+  * Fixed issue autoloading plugins in require-dev in some conditions
+  * Fixed handling of SSL to repo.packagist.org on very old PHP versions
+
 ### [1.7.0] 2018-08-03
 
   * Added the overridden platform config's PHP version in the `diagnose` command output
@@ -674,7 +679,8 @@
 
   * Initial release
 
-[1.7.0]: https://github.com/composer/composer/compare/1.7.0...1.7.0
+[1.7.1]: https://github.com/composer/composer/compare/1.7.0...1.7.1
+[1.7.0]: https://github.com/composer/composer/compare/1.7.0-RC...1.7.0
 [1.7.0-RC]: https://github.com/composer/composer/compare/1.6.5...1.7.0-RC
 [1.6.5]: https://github.com/composer/composer/compare/1.6.4...1.6.5
 [1.6.4]: https://github.com/composer/composer/compare/1.6.3...1.6.4
