@@ -761,6 +761,9 @@ class RemoteFilesystem
 
                 $tlsOptions['ssl']['CN_match'] = $certMap['cn'];
                 $tlsOptions['ssl']['peer_fingerprint'] = $certMap['fp'];
+            } elseif (!CaBundle::isOpensslParseSafe() && $host === 'repo.packagist.org') {
+                // handle subjectAltName for packagist.org's repo domain on very old PHPs
+                $tlsOptions['ssl']['CN_match'] = 'packagist.org';
             }
         }
 
