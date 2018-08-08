@@ -60,7 +60,7 @@ class Hg
 
             $command = call_user_func($commandCallable, $authenticatedUrl);
 
-            if (0 === $this->process->execute($command)) {
+            if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                 return;
             }
 
