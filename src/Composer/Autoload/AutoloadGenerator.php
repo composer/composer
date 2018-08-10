@@ -399,7 +399,7 @@ EOF;
         $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $mainPackage);
         $psr4 = $this->parseAutoloadsType($packageMap, 'psr-4', $mainPackage);
         $classmap = $this->parseAutoloadsType(array_reverse($sortedPackageMap), 'classmap', $mainPackage);
-        $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage);
+        $files = $this->parseAutoloadsType(array_reverse($sortedPackageMap), 'files', $mainPackage);
         $exclude = $this->parseAutoloadsType($sortedPackageMap, 'exclude-from-classmap', $mainPackage);
 
         krsort($psr0);
