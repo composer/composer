@@ -327,7 +327,7 @@ class RemoteFilesystem
                             $warning = $data['warning'];
                         }
                     }
-                    $this->promptAuthAndRetry($statusCode, $this->findStatusMessage($http_response_header), $warning);
+                    $this->promptAuthAndRetry($statusCode, $this->findStatusMessage($http_response_header), $warning, $http_response_header);
                 }
             }
 
@@ -639,11 +639,35 @@ class RemoteFilesystem
         }
     }
 
-    protected function promptAuthAndRetry($httpStatus, $reason = null, $warning = null)
+    protected function promptAuthAndRetry($httpStatus, $reason = null, $warning = null, $headers = array())
     {
         if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
-            $message = "\n".'Could not fetch '.$this->fileUrl.', please create a GitHub OAuth token '.($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
             $gitHubUtil = new GitHub($this->io, $this->config, null);
+            $message = "\n";
+
+            $rateLimited = $gitHubUtil->isRateLimited($headers);
+            if ($rateLimited) {
+                $rateLimit = $gitHubUtil->getRateLimit($headers);
+                if ($this->io->hasAuthentication($this->originUrl)) {
+                    $message = 'Review your configured GitHub OAuth token or enter a new one to go over the API rate limit.';
+                } else {
+                    $message = 'Create a GitHub OAuth token to go over the API rate limit.';
+                }
+
+                $message = sprintf(
+                    'GitHub API limit (%d calls/hr) is exhausted, could not fetch '.$this->fileUrl.'. '.$message.' You can also wait until %s for the rate limit to reset.',
+                    $rateLimit['limit'],
+                    $rateLimit['reset']
+                )."\n";
+            } else {
+                $message .= 'Could not fetch '.$this->fileUrl.', please ';
+                if ($this->io->hasAuthentication($this->originUrl)) {
+                    $message .= 'review your configured GitHub OAuth token or enter a new one to access private repos';
+                } else {
+                    $message .= 'create a GitHub OAuth token to access private repos';
+                }
+            }
+
             if (!$gitHubUtil->authorizeOAuth($this->originUrl)
                 && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
             ) {
