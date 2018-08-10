@@ -18,33 +18,31 @@ use PHPUnit\Framework\TestCase;
 class JsonFormatterTest extends TestCase
 {
     /**
-     * Test if \u0119 (196+153) will get correctly formatted
-     * See ticket #2613
+     * Test if \u0119 will get correctly formatted (unescaped)
+     * https://github.com/composer/composer/issues/2613
      */
     public function testUnicodeWithPrependedSlash()
     {
         if (!extension_loaded('mbstring')) {
             $this->markTestSkipped('Test requires the mbstring extension');
         }
-
-        $data = '"' . chr(92) . chr(92) . chr(92) . 'u0119"';
-        $encodedData = JsonFormatter::format($data, true, true);
-        $expected = '34+92+92+196+153+34';
-        $this->assertEquals($expected, $this->getCharacterCodes($encodedData));
+        $backslash = chr(92);
+        $data = '"' . $backslash . $backslash . $backslash . 'u0119"';
+        $expected = '"' . $backslash . $backslash . 'ę"';
+        $this->assertEquals($expected, JsonFormatter::format($data, true, true));
     }
 
     /**
-     * Convert string to character codes split by a plus sign
-     * @param  string $string
-     * @return string
+     * Surrogate pairs are intentionally skipped and not unescaped
+     * https://github.com/composer/composer/issues/7510
      */
-    protected function getCharacterCodes($string)
+    public function testUtf16SurrogatePair()
     {
-        $codes = array();
-        for ($i = 0; $i < strlen($string); $i++) {
-            $codes[] = ord($string[$i]);
+        if (!extension_loaded('mbstring')) {
+            $this->markTestSkipped('Test requires the mbstring extension');
         }
 
-        return implode('+', $codes);
+        $escaped = '"\ud83d\ude00"';
+        $this->assertEquals($escaped, JsonFormatter::format($escaped, true, true));
     }
 }
