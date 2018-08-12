@@ -35,4 +35,26 @@ class VersionParserTest extends TestCase
             array(array('php', 'ext-apcu'), array(array('name' => 'php'), array('name' => 'ext-apcu'))),
         );
     }
+
+    /**
+     * @dataProvider getIsUpgradeTests
+     */
+    public function testIsUpgrade($from, $to, $expected)
+    {
+        $this->assertSame($expected, VersionParser::isUpgrade($from, $to));
+    }
+
+    public function getIsUpgradeTests()
+    {
+        return array(
+            array('0.9.0.0', '1.0.0.0', true),
+            array('1.0.0.0', '0.9.0.0', false),
+            array('1.0.0.0', '9999999-dev', true),
+            array('9999999-dev', '9999999-dev', true),
+            array('9999999-dev', '1.0.0.0', false),
+            array('1.0.0.0', 'dev-foo', true),
+            array('dev-foo', 'dev-foo', true),
+            array('dev-foo', '1.0.0.0', true),
+        );
+    }
 }

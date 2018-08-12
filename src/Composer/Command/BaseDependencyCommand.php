@@ -89,7 +89,7 @@ class BaseDependencyCommand extends BaseCommand
         );
 
         // Find packages that are or provide the requested package first
-        $packages = $pool->whatProvides($needle);
+        $packages = $pool->whatProvides(strtolower($needle));
         if (empty($packages)) {
             throw new \InvalidArgumentException(sprintf('Could not find package "%s" in your project', $needle));
         }
@@ -129,8 +129,11 @@ class BaseDependencyCommand extends BaseCommand
         $results = $repository->getDependents($needles, $constraint, $inverted, $recursive);
         if (empty($results)) {
             $extra = (null !== $constraint) ? sprintf(' in versions %smatching %s', $inverted ? 'not ' : '', $textConstraint) : '';
-            $this->getIO()->writeError(sprintf('<info>There is no installed package depending on "%s"%s</info>',
-                $needle, $extra));
+            $this->getIO()->writeError(sprintf(
+                '<info>There is no installed package depending on "%s"%s</info>',
+                $needle,
+                $extra
+            ));
         } elseif ($renderTree) {
             $this->initStyles($output);
             $root = $packages[0];
@@ -180,8 +183,9 @@ class BaseDependencyCommand extends BaseCommand
         // Render table
         $renderer = new Table($output);
         $renderer->setStyle('compact');
-        $renderer->getStyle()->setVerticalBorderChar('');
-        $renderer->getStyle()->setCellRowContentFormat('%s  ');
+        $rendererStyle = $renderer->getStyle();
+        $rendererStyle->setVerticalBorderChar('');
+        $rendererStyle->setCellRowContentFormat('%s  ');
         $renderer->setRows($table)->render();
     }
 

@@ -185,7 +185,8 @@ class ArchivableFilesFinderTest extends TestCase
 
         $this->finder = new ArchivableFilesFinder($this->sources, array());
 
-        $this->assertArchivableFiles($this->getArchivedFiles('git init && '.
+        $this->assertArchivableFiles($this->getArchivedFiles(
+            'git init && '.
             'git config user.email "you@example.com" && '.
             'git config user.name "Your Name" && '.
             'git add .git* && '.
@@ -222,7 +223,8 @@ class ArchivableFilesFinderTest extends TestCase
 
         $this->finder = new ArchivableFilesFinder($this->sources, array());
 
-        $expectedFiles = $this->getArchivedFiles('hg init && '.
+        $expectedFiles = $this->getArchivedFiles(
+            'hg init && '.
             'hg add && '.
             'hg commit -m "init" && '.
             'hg archive archive.zip'

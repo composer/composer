@@ -36,15 +36,19 @@ class StatusCommand extends BaseCommand
     const EXIT_CODE_UNPUSHED_CHANGES = 2;
     const EXIT_CODE_VERSION_CHANGES = 4;
 
+    /**
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     */
     protected function configure()
     {
         $this
             ->setName('status')
-            ->setDescription('Shows a list of locally modified packages.')
+            ->setDescription('Shows a list of locally modified packages, for packages installed from source.')
             ->setDefinition(array(
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The status command displays a list of dependencies that have
 been modified locally.
 
@@ -53,6 +57,11 @@ EOT
         ;
     }
 
+    /**
+     * @param  InputInterface  $input
+     * @param  OutputInterface $output
+     * @return int|null
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         // init repos

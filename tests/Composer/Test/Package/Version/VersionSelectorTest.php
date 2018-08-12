@@ -198,7 +198,7 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($pool);
         $versionParser = new VersionParser();
 
-        $package = $this->getMock('\Composer\Package\PackageInterface');
+        $package = $this->getMockBuilder('\Composer\Package\PackageInterface')->getMock();
         $package
             ->expects($this->any())
             ->method('getPrettyVersion')
@@ -275,6 +275,6 @@ class VersionSelectorTest extends TestCase
 
     private function createMockPool()
     {
-        return $this->getMock('Composer\DependencyResolver\Pool', array(), array(), '', true);
+        return $this->getMockBuilder('Composer\DependencyResolver\Pool')->getMock();
     }
 }

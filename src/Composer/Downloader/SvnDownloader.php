@@ -15,6 +15,7 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 use Composer\Util\Svn as SvnUtil;
 use Composer\Repository\VcsRepository;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Ben Bieker <mail@ben-bieker.de>
@@ -56,11 +57,10 @@ class SvnDownloader extends VcsDownloader
             throw new \RuntimeException('The .svn directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
+        $util = new SvnUtil($url, $this->io, $this->config);
         $flags = "";
-        if (0 === $this->process->execute('svn --version', $output)) {
-            if (preg_match('{(\d+(?:\.\d+)+)}', $output, $match) && version_compare($match[1], '1.7.0', '>=')) {
-                $flags .= ' --ignore-ancestry';
-            }
+        if (version_compare($util->binaryVersion(), '1.7.0', '>=')) {
+            $flags .= ' --ignore-ancestry';
         }
 
         $this->io->writeError(" Checking out " . $ref);
@@ -171,22 +171,41 @@ class SvnDownloader extends VcsDownloader
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
         if (preg_match('{.*@(\d+)$}', $fromReference) && preg_match('{.*@(\d+)$}', $toReference)) {
-            // strip paths from references and only keep the actual revision
-            $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
-            $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
-
-            $command = sprintf('svn log -r%s:%s --incremental', $fromRevision, $toRevision);
-
+            // retrieve the svn base url from the checkout folder
+            $command = sprintf('svn info --non-interactive --xml %s', ProcessExecutor::escape($path));
             if (0 !== $this->process->execute($command, $output, $path)) {
                 throw new \RuntimeException(
                     'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()
                 );
             }
-        } else {
-            $output = "Could not retrieve changes between $fromReference and $toReference due to missing revision information";
+
+            $urlPattern = '#<url>(.*)</url>#';
+            if (preg_match($urlPattern, $output, $matches)) {
+                $baseUrl = $matches[1];
+            } else {
+                throw new \RuntimeException(
+                    'Unable to determine svn url for path '. $path
+                );
+            }
+
+            // strip paths from references and only keep the actual revision
+            $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
+            $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
+
+            $command = sprintf('svn log -r%s:%s --incremental', ProcessExecutor::escape($fromRevision), ProcessExecutor::escape($toRevision));
+
+            $util = new SvnUtil($baseUrl, $this->io, $this->config);
+            $util->setCacheCredentials($this->cacheCredentials);
+            try {
+                return $util->executeLocal($command, $path, null, $this->io->isVerbose());
+            } catch (\RuntimeException $e) {
+                throw new \RuntimeException(
+                    'Failed to execute ' . $command . "\n\n".$e->getMessage()
+                );
+            }
         }
 
-        return $output;
+        return "Could not retrieve changes between $fromReference and $toReference due to missing revision information";
     }
 
     protected function discardChanges($path)

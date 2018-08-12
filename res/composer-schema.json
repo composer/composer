@@ -33,6 +33,10 @@
             "description": "Homepage URL for the project.",
             "format": "uri"
         },
+        "readme": {
+            "type": "string",
+            "description": "Relative path to the readme document."
+        },
         "version": {
             "type": "string",
             "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
@@ -674,15 +678,14 @@
                         { "$ref": "#/definitions/inline-package" },
                         {
                             "type": "array",
-                            "items": {
-                                "type": { "$ref": "#/definitions/inline-package" }
-                            }
+                            "items": { "$ref": "#/definitions/inline-package" }
                         }
                     ]
                 }
             }
         },
         "inline-package": {
+            "type": "object",
             "required": ["name", "version"],
             "properties": {
                 "name": {

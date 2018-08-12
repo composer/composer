@@ -57,7 +57,7 @@ class Git
             // capture username/password from URL if there is one
             $this->process->execute('git remote -v', $output, $cwd);
             if (preg_match('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)}im', $output, $match)) {
-                $this->io->setAuthentication($match[3], urldecode($match[1]), urldecode($match[2]));
+                $this->io->setAuthentication($match[3], rawurldecode($match[1]), rawurldecode($match[2]));
             }
         }
 
@@ -245,7 +245,7 @@ class Git
 
     private function isAuthenticationFailure($url, &$match)
     {
-        if (!preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match)) {
+        if (!preg_match('{^(https?://)([^/]+)(.*)$}i', $url, $match)) {
             return false;
         }
 
@@ -254,10 +254,12 @@ class Git
             'remote error: Invalid username or password.',
             'error: 401 Unauthorized',
             'fatal: unable to access',
+            'fatal: could not read Username',
         );
 
+        $errorOutput = $this->process->getErrorOutput();
         foreach ($authFailures as $authFailure) {
-            if (strpos($this->process->getErrorOutput(), $authFailure) !== false) {
+            if (strpos($errorOutput, $authFailure) !== false) {
                 return true;
             }
         }

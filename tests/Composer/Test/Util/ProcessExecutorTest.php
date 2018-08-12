@@ -37,7 +37,7 @@ class ProcessExecutorTest extends TestCase
 
     public function testUseIOIsNotNullAndIfNotCaptured()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io->expects($this->once())
             ->method('write')
             ->with($this->equalTo('foo'.PHP_EOL), false);

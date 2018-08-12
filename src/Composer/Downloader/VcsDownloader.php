@@ -130,7 +130,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             $to = $target->getFullPrettyVersion();
         }
 
-        $this->io->writeError("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
+        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Updating' : 'Downgrading';
+        $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
 
         $this->cleanChanges($initial, $path, true);
         $urls = $target->getSourceUrls();

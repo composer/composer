@@ -15,8 +15,11 @@ namespace Composer\Command;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Console\Application;
+use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
+use Composer\Plugin\PreCommandRunEvent;
+use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
@@ -123,6 +126,17 @@ abstract class BaseCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
+        // initialize a plugin-enabled Composer instance, either local or global
+        $disablePlugins = $input->hasParameterOption('--no-plugins');
+        $composer = $this->getComposer(false, $disablePlugins);
+        if (null === $composer) {
+            $composer = Factory::createGlobal($this->getIO(), $disablePlugins);
+        }
+        if ($composer) {
+            $preCommandRunEvent = new PreCommandRunEvent(PluginEvents::PRE_COMMAND_RUN, $input, $this->getName());
+            $composer->getEventDispatcher()->dispatch($preCommandRunEvent->getName(), $preCommandRunEvent);
+        }
+
         if (true === $input->hasParameterOption(array('--no-ansi')) && $input->hasOption('no-progress')) {
             $input->setOption('no-progress', true);
         }

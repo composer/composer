@@ -30,7 +30,7 @@ class Solver
     protected $pool;
     /** @var RepositoryInterface */
     protected $installed;
-    /** @var Ruleset */
+    /** @var RuleSet */
     protected $rules;
     /** @var RuleSetGenerator */
     protected $ruleSetGenerator;
@@ -100,7 +100,7 @@ class Solver
             $literals = $rule->getLiterals();
             $literal = $literals[0];
 
-            if (!$this->decisions->decided(abs($literal))) {
+            if (!$this->decisions->decided($literal)) {
                 $this->decisions->decide($literal, 1, $rule);
                 continue;
             }
@@ -226,6 +226,7 @@ class Solver
         $this->io->writeError('Resolving dependencies through SAT', true, IOInterface::DEBUG);
         $before = microtime(true);
         $this->runSat(true);
+        $this->io->writeError('', true, IOInterface::DEBUG);
         $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
         // decide to remove everything that's installed and undecided
@@ -509,9 +510,8 @@ class Solver
      */
     private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule)
     {
-        $why = spl_object_hash($conflictRule);
-
         if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
+            $why = spl_object_hash($conflictRule);
             $learnedWhy = $this->learnedWhy[$why];
             $problemRules = $this->learnedPool[$learnedWhy];
 
@@ -759,10 +759,19 @@ class Solver
             }
 
             $rulesCount = count($this->rules);
+            $pass = 1;
 
+            $this->io->writeError('Looking at all rules.', true, IOInterface::DEBUG);
             for ($i = 0, $n = 0; $n < $rulesCount; $i++, $n++) {
                 if ($i == $rulesCount) {
+                    if (1 === $pass) {
+                        $this->io->writeError("Something's changed, looking at all rules again (pass #$pass)", false, IOInterface::DEBUG);
+                    } else {
+                        $this->io->overwriteError("Something's changed, looking at all rules again (pass #$pass)", false, null, IOInterface::DEBUG);
+                    }
+
                     $i = 0;
+                    $pass++;
                 }
 
                 $rule = $this->rules->ruleById[$i];
@@ -782,14 +791,14 @@ class Solver
                 //
                 foreach ($literals as $literal) {
                     if ($literal <= 0) {
-                        if (!$this->decisions->decidedInstall(abs($literal))) {
+                        if (!$this->decisions->decidedInstall($literal)) {
                             continue 2; // next rule
                         }
                     } else {
-                        if ($this->decisions->decidedInstall(abs($literal))) {
+                        if ($this->decisions->decidedInstall($literal)) {
                             continue 2; // next rule
                         }
-                        if ($this->decisions->undecided(abs($literal))) {
+                        if ($this->decisions->undecided($literal)) {
                             $decisionQueue[] = $literal;
                         }
                     }

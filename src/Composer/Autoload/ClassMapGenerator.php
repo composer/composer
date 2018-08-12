@@ -94,6 +94,10 @@ class ClassMapGenerator
             if ($blacklist && preg_match($blacklist, strtr(realpath($filePath), '\\', '/'))) {
                 continue;
             }
+            // check non-realpath of file for directories symlink in project dir
+            if ($blacklist && preg_match($blacklist, strtr($filePath, '\\', '/'))) {
+                continue;
+            }
 
             $classes = self::findClasses($filePath);
 
@@ -174,6 +178,10 @@ class ClassMapGenerator
         $pos = strrpos($contents, '?>');
         if (false !== $pos && false === strpos(substr($contents, $pos), '<?')) {
             $contents = substr($contents, 0, $pos);
+        }
+        // strip comments if short open tags are in the file
+        if (preg_match('{(<\?)(?!(php|hh))}i', $contents)) {
+            $contents = preg_replace('{//.* | /\*(?:[^*]++|\*(?!/))*\*/}x', '', $contents);
         }
 
         preg_match_all('{

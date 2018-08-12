@@ -103,6 +103,10 @@ class Filesystem
             return $this->removeJunction($directory);
         }
 
+        if (is_link($directory)) {
+            return unlink($directory);
+        }
+
         if (!file_exists($directory) || !is_dir($directory)) {
             return true;
         }
@@ -561,7 +565,7 @@ class Filesystem
 
         chdir($cwd);
 
-        return (bool) $result;
+        return $result;
     }
 
     /**
@@ -630,9 +634,11 @@ class Filesystem
         if (!is_dir($target)) {
             throw new IOException(sprintf('Cannot junction to "%s" as it is not a directory.', $target), 0, null, $target);
         }
-        $cmd = sprintf('mklink /J %s %s',
-                       ProcessExecutor::escape(str_replace('/', DIRECTORY_SEPARATOR, $junction)),
-                       ProcessExecutor::escape(realpath($target)));
+        $cmd = sprintf(
+            'mklink /J %s %s',
+            ProcessExecutor::escape(str_replace('/', DIRECTORY_SEPARATOR, $junction)),
+            ProcessExecutor::escape(realpath($target))
+        );
         if ($this->getProcess()->execute($cmd, $output) !== 0) {
             throw new IOException(sprintf('Failed to create junction to "%s" at "%s".', $target, $junction), 0, null, $target);
         }
@@ -665,6 +671,7 @@ class Filesystem
          * Stat cache should be cleared before to avoid accidentally reading wrong information from previous installs.
          */
         clearstatcache(true, $junction);
+        clearstatcache(false);
         $stat = lstat($junction);
 
         return !($stat['mode'] & 0xC000);

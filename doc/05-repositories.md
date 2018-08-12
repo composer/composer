@@ -11,7 +11,7 @@ understand some of the basic concepts that Composer is built on.
 ### Package
 
 Composer is a dependency manager. It installs packages locally. A package is
-essentially just a directory containing something. In this case it is PHP
+essentially a directory containing something. In this case it is PHP
 code, but in theory it could be anything. And it contains a package
 description which has a name and a version. The name and the version are used
 to identify the package.
@@ -57,9 +57,9 @@ The main repository type is the `composer` repository. It uses a single
 `packages.json` file that contains all of the package metadata.
 
 This is also the repository type that packagist uses. To reference a
-`composer` repository, just supply the path before the `packages.json` file.
+`composer` repository, supply the path before the `packages.json` file.
 In the case of packagist, that file is located at `/packages.json`, so the URL of
-the repository would be `packagist.org`. For `example.org/packages.json` the
+the repository would be `repo.packagist.org`. For `example.org/packages.json` the
 repository URL would be `example.org`.
 
 #### packages
@@ -177,7 +177,7 @@ integrity, for example:
 The file above declares that acme/foo and acme/bar can be found in this
 repository, by loading the file referenced by `providers-url`, replacing
 `%package%` by the vendor namespaced package name and `%hash%` by the
-sha256 field. Those files themselves just contain package definitions as
+sha256 field. Those files themselves contain package definitions as
 described [above](#packages).
 
 These fields are optional. You probably don't need them for your own custom
@@ -284,8 +284,9 @@ VCS repository provides `dist`s for them that fetch the packages as zips.
 * **BitBucket:** [bitbucket.org](https://bitbucket.org) (Git and Mercurial)
 
 The VCS driver to be used is detected automatically based on the URL. However,
-should you need to specify one for whatever reason, you can use `fossil`, `git`,
-`svn` or `hg` as the repository type instead of `vcs`.
+should you need to specify one for whatever reason, you can use `git-bitbucket`,
+`hg-bitbucket`, `github`, `gitlab`, `perforce`, `fossil`, `git`, `svn` or `hg`
+as the repository type instead of `vcs`.
 
 If you set the `no-api` key to `true` on a github repository it will clone the
 repository as it would with any other git repository instead of using the
@@ -304,12 +305,10 @@ After creating an OAuth consumer in the BitBucket control panel, you need to set
 the credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
 ```json
 {
-    "config": {
-        "bitbucket-oauth": {
-            "bitbucket.org": {
-                "consumer-key": "myKey",
-                "consumer-secret": "mySecret"
-            }
+    "bitbucket-oauth": {
+        "bitbucket.org": {
+            "consumer-key": "myKey",
+            "consumer-secret": "mySecret"
         }
     }
 }
@@ -605,7 +604,7 @@ private packages:
 }
 ```
 
-Each zip artifact is just a ZIP archive with `composer.json` in root folder:
+Each zip artifact is a ZIP archive with `composer.json` in root folder:
 
 ```sh
 unzip -l acme-corp-parser-10.3.5.zip

@@ -75,7 +75,8 @@ class ConfigCommand extends BaseCommand
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 This command allows you to edit composer config settings and repositories
 in either the local composer.json file or the global config.json file.
 
@@ -610,6 +611,15 @@ EOT
             }
 
             return;
+        }
+
+        // handle script
+        if (preg_match('/^scripts\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                return $this->configSource->removeProperty($settingKey);
+            }
+
+            return $this->configSource->addProperty($settingKey, count($values) > 1 ? $values : $values[0]);
         }
 
         throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');

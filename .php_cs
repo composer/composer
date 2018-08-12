@@ -20,17 +20,16 @@ $finder = PhpCsFixer\Finder::create()
 
 return PhpCsFixer\Config::create()
     ->setUsingCache(true)
-    //->setUsingLinter(false)
     ->setRiskyAllowed(true)
     ->setRules(array(
         '@PSR2' => true,
+        'array_syntax' => array('syntax' => 'long'),
         'binary_operator_spaces' => true,
-        'blank_line_before_return' => true,
-        'cast_spaces' => true,
+        'blank_line_before_statement' => array('statements' => array('declare', 'return')),
+        'cast_spaces' => array('space' => 'single'),
         'header_comment' => array('header' => $header),
         'include' => true,
-        'array_syntax' => array('syntax' => 'long'),
-        'method_separation' => true,
+        'class_attributes_separation' => array('elements' => array('method')),
         'no_blank_lines_after_class_opening' => true,
         'no_blank_lines_after_phpdoc' => true,
         'no_empty_statement' => true,
@@ -39,7 +38,6 @@ return PhpCsFixer\Config::create()
         'no_leading_namespace_whitespace' => true,
         'no_trailing_comma_in_singleline_array' => true,
         'no_unused_imports' => true,
-        'no_useless_else' => true,
         'no_whitespace_in_blank_line' => true,
         'object_operator_without_whitespace' => true,
         'phpdoc_align' => true,
@@ -52,7 +50,6 @@ return PhpCsFixer\Config::create()
         'phpdoc_types' => true,
         'psr0' => true,
         'single_blank_line_before_namespace' => true,
-        'short_scalar_cast' => true,
         'standardize_not_equals' => true,
         'ternary_operator_spaces' => true,
         'trailing_comma_in_multiline_array' => true,

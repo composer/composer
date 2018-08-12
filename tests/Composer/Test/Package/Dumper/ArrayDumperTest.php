@@ -31,7 +31,7 @@ class ArrayDumperTest extends TestCase
     public function setUp()
     {
         $this->dumper = new ArrayDumper();
-        $this->package = $this->getMock('Composer\Package\CompletePackageInterface');
+        $this->package = $this->getMockBuilder('Composer\Package\CompletePackageInterface')->getMock();
         $this->packageExpects('getTransportOptions', array());
     }
 
@@ -56,7 +56,7 @@ class ArrayDumperTest extends TestCase
 
     public function testRootPackage()
     {
-        $this->package = $this->getMock('Composer\Package\RootPackageInterface');
+        $this->package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
 
         $this
             ->packageExpects('getMinimumStability', 'dev')
@@ -92,7 +92,7 @@ class ArrayDumperTest extends TestCase
      */
     public function testKeys($key, $value, $method = null, $expectedValue = null)
     {
-        $this->package = $this->getMock('Composer\Package\RootPackageInterface');
+        $this->package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
 
         $this->packageExpects('get'.ucfirst($method ?: $key), $value);
         $this->packageExpects('isAbandoned', $value);
@@ -104,6 +104,57 @@ class ArrayDumperTest extends TestCase
         $config = $this->dumper->dump($this->package);
 
         $this->assertSame($expectedValue ?: $value, $config[$key]);
+    }
+
+    public function testMetapackageShouldNotHaveSourceEntries()
+    {
+        $this
+            ->packageExpects('getPrettyName', 'foo')
+            ->packageExpects('getPrettyVersion', '1.0')
+            ->packageExpects('getVersion', '1.0.0.0')
+            ->packageExpects('getType', 'metapackage')
+            ->packageExpects('getSourceType', 'composer')
+            ->packageExpects('getSourceUrl', 'https://packagist.org')
+            ->packageExpects('getSourceReference', 'packagist')
+        ;
+
+        $config = $this->dumper->dump($this->package);
+
+        $this->assertEquals(
+            array(
+                'name' => 'foo',
+                'version' => '1.0',
+                'version_normalized' => '1.0.0.0',
+                'type' => 'metapackage',
+            ),
+            $config
+        );
+    }
+
+    public function testMetapackageShouldNotHaveDistEntries()
+    {
+        $this
+            ->packageExpects('getPrettyName', 'foo')
+            ->packageExpects('getPrettyVersion', '1.0')
+            ->packageExpects('getVersion', '1.0.0.0')
+            ->packageExpects('getType', 'metapackage')
+            ->packageExpects('getDistType', 'composer')
+            ->packageExpects('getDistUrl', 'https://packagist.org')
+            ->packageExpects('getDistReference', 'packagist')
+            ->packageExpects('getDistSha1Checksum', 'packagist')
+        ;
+
+        $config = $this->dumper->dump($this->package);
+
+        $this->assertEquals(
+            array(
+                'name' => 'foo',
+                'version' => '1.0',
+                'version_normalized' => '1.0.0.0',
+                'type' => 'metapackage',
+            ),
+            $config
+        );
     }
 
     public function getKeys()

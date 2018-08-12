@@ -36,7 +36,7 @@ class ConfigTest extends TestCase
         $data = array();
         $data['local config inherits system defaults'] = array(
             array(
-                'packagist.org' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true),
+                'packagist.org' => array('type' => 'composer', 'url' => 'https?://repo.packagist.org', 'allow_ssl_downgrade' => true),
             ),
             array(),
         );
@@ -59,7 +59,7 @@ class ConfigTest extends TestCase
             array(
                 1 => array('type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'),
                 0 => array('type' => 'pear', 'url' => 'http://pear.composer.org'),
-                'packagist.org' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true),
+                'packagist.org' => array('type' => 'composer', 'url' => 'https?://repo.packagist.org', 'allow_ssl_downgrade' => true),
             ),
             array(
                 array('type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'),
@@ -70,7 +70,7 @@ class ConfigTest extends TestCase
         $data['system config adds above core defaults'] = array(
             array(
                 'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
-                'packagist.org' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true),
+                'packagist.org' => array('type' => 'composer', 'url' => 'https?://repo.packagist.org', 'allow_ssl_downgrade' => true),
             ),
             array(),
             array(
@@ -107,7 +107,7 @@ class ConfigTest extends TestCase
 
         $data['incorrect local config does not cause ErrorException'] = array(
             array(
-                'packagist.org' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true),
+                'packagist.org' => array('type' => 'composer', 'url' => 'https?://repo.packagist.org', 'allow_ssl_downgrade' => true),
                 'type' => 'vcs',
                 'url' => 'http://example.com',
             ),

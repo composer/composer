@@ -72,7 +72,7 @@ class Config
     public static $defaultRepositories = array(
         'packagist.org' => array(
             'type' => 'composer',
-            'url' => 'https?://packagist.org',
+            'url' => 'https?://repo.packagist.org',
             'allow_ssl_downgrade' => true,
         ),
     );
@@ -245,9 +245,11 @@ class Config
                         case 'g':
                             $size *= 1024;
                             // intentional fallthrough
+                            // no break
                         case 'm':
                             $size *= 1024;
                             // intentional fallthrough
+                            // no break
                         case 'k':
                             $size *= 1024;
                             break;

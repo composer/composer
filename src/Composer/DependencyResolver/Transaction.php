@@ -49,7 +49,7 @@ class Transaction
             $package = $this->pool->literalToPackage($literal);
 
             // wanted & installed || !wanted & !installed
-            if (($literal > 0) == (isset($this->installedMap[$package->id]))) {
+            if (($literal > 0) == isset($this->installedMap[$package->id])) {
                 continue;
             }
 

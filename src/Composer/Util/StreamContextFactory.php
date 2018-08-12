@@ -109,9 +109,9 @@ final class StreamContextFactory
 
             // handle proxy auth if present
             if (isset($proxy['user'])) {
-                $auth = urldecode($proxy['user']);
+                $auth = rawurldecode($proxy['user']);
                 if (isset($proxy['pass'])) {
-                    $auth .= ':' . urldecode($proxy['pass']);
+                    $auth .= ':' . rawurldecode($proxy['pass']);
                 }
                 $auth = base64_encode($auth);
 
@@ -169,7 +169,7 @@ final class StreamContextFactory
             $header = explode("\r\n", $header);
         }
         uasort($header, function ($el) {
-            return preg_match('{^content-type}i', $el) ? 1 : -1;
+            return stripos($el, 'content-type') === 0 ? 1 : -1;
         });
 
         return $header;

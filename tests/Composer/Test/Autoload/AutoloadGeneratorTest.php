@@ -23,6 +23,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Util\Platform;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
 
 class AutoloadGeneratorTest extends TestCase
@@ -92,7 +93,7 @@ class AutoloadGeneratorTest extends TestCase
         $this->vendorDir = $this->workingDir.DIRECTORY_SEPARATOR.'composer-test-autoload';
         $this->ensureDirectoryExistsAndClear($this->vendorDir);
 
-        $this->config = $this->getMock('Composer\Config');
+        $this->config = $this->getMockBuilder('Composer\Config')->getMock();
 
         $this->configValueMap = array(
             'vendor-dir' => function () use ($that) {
@@ -127,7 +128,7 @@ class AutoloadGeneratorTest extends TestCase
 
                 return $that->vendorDir.'/'.$package->getName() . ($targetDir ? '/'.$targetDir : '');
             }));
-        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
+        $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
 
         $this->eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->disableOriginalConstructor()
@@ -359,6 +360,10 @@ class AutoloadGeneratorTest extends TestCase
     public function testVendorsAutoloading()
     {
         $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b'),
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -366,6 +371,39 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $c = new AliasPackage($b, '1.2', '1.2');
         $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($packages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/lib');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_5');
+        $this->assertAutoloadFiles('vendors', $this->vendorDir.'/composer');
+        $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated, even if empty.");
+    }
+
+    public function testNonDevAutoloadExclusionWithRecursion()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+        ));
+
+        $packages = array();
+        $packages[] = $a = new Package('a/a', '1.0', '1.0');
+        $packages[] = $b = new Package('b/b', '1.0', '1.0');
+        $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
+        $a->setRequires(array(
+            new Link('a/a', 'b/b'),
+        ));
+        $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
+        $b->setRequires(array(
+            new Link('b/b', 'a/a'),
+        ));
 
         $this->repository->expects($this->once())
             ->method('getCanonicalPackages')
@@ -405,6 +443,10 @@ class AutoloadGeneratorTest extends TestCase
     public function testVendorsClassMapAutoloading()
     {
         $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b'),
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -440,6 +482,10 @@ class AutoloadGeneratorTest extends TestCase
     public function testVendorsClassMapAutoloadingWithTargetDir()
     {
         $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b'),
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -475,6 +521,11 @@ class AutoloadGeneratorTest extends TestCase
     public function testClassMapAutoloadingEmptyDirAndExactFile()
     {
         $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b'),
+            new Link('a', 'c/c'),
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -514,6 +565,11 @@ class AutoloadGeneratorTest extends TestCase
     public function testClassMapAutoloadingAuthoritativeAndApcu()
     {
         $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b'),
+            new Link('a', 'c/c'),
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -558,6 +614,11 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array('files' => array('root.php')));
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b'),
+            new Link('a', 'c/c'),
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -602,6 +663,14 @@ class AutoloadGeneratorTest extends TestCase
         $autoloadPackage->setIncludePaths(array('/lib', '/src'));
 
         $notAutoloadPackage = new Package('a', '1.0', '1.0');
+
+        $requires = array(
+            new Link('a', 'a/a'),
+            new Link('a', 'b/b'),
+            new Link('a', 'c/c'),
+        );
+        $autoloadPackage->setRequires($requires);
+        $notAutoloadPackage->setRequires($requires);
 
         $autoloadPackages = array();
         $autoloadPackages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -666,9 +735,12 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array('files' => array('root2.php')));
-        $package->setRequires(array(new Link('a', 'z/foo')));
-        $package->setRequires(array(new Link('a', 'd/d')));
-        $package->setRequires(array(new Link('a', 'e/e')));
+        $package->setRequires(array(
+            new Link('a', 'z/foo'),
+            new Link('a', 'b/bar'),
+            new Link('a', 'd/d'),
+            new Link('a', 'e/e'),
+        ));
 
         $packages = array();
         $packages[] = $z = new Package('z/foo', '1.0', '1.0');
@@ -735,7 +807,10 @@ class AutoloadGeneratorTest extends TestCase
             'psr-0' => array('A\\B' => $this->workingDir.'/lib'),
             'classmap' => array($this->workingDir.'/src'),
         ));
-        $mainPackage->setRequires(array(new Link('z', 'a/a')));
+        $mainPackage->setRequires(array(
+            new Link('z', 'a/a'),
+            new Link('z', 'b/b'),
+        ));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -991,6 +1066,9 @@ EOF;
             'psr-4' => array('Acme\Foo\\' => 'src-psr4'),
             'classmap' => array('classmap'),
             'files' => array('test.php'),
+        ));
+        $package->setRequires(array(
+            new Link('a', 'b/b'),
         ));
 
         $vendorPackage = new Package('b/b', '1.0', '1.0');
@@ -1292,6 +1370,7 @@ EOF;
             ),
             'classmap' => array('composersrc/'),
             'exclude-from-classmap' => array(
+                '/composersrc/foo/bar/',
                 '/composersrc/excludedTests/',
                 '/composersrc/ClassToExclude.php',
                 '/composersrc/*/excluded/excsubpath',
@@ -1325,6 +1404,18 @@ EOF;
         $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/long/excluded/excsubpath');
         file_put_contents($this->workingDir.'/composersrc/long/excluded/excsubpath/foo.php', '<?php class ClassExcludeMapFoo2 {}');
         file_put_contents($this->workingDir.'/composersrc/long/excluded/excsubpath/bar.php', '<?php class ClassExcludeMapBar {}');
+
+        // symlink directory in project directory in classmap
+        $this->fs->ensureDirectoryExists($this->workingDir.'/forks/bar/src/exclude');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/foo');
+
+        file_put_contents($this->workingDir.'/forks/bar/src/exclude/FooExclClass.php', '<?php class FooExclClass {};');
+        $target = $this->workingDir.'/forks/bar/';
+        $link = $this->workingDir.'/composersrc/foo/bar';
+        $command = Platform::isWindows()
+            ? 'mklink /j "' . str_replace('/', '\\', $link) . '" "' . str_replace('/', '\\', $target) . '"'
+            : 'ln -s "' . $target . '" "' . $link . '"';
+        exec($command);
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
 

@@ -126,7 +126,7 @@ class GitLabTest extends TestCase
 
     private function getConfigMock()
     {
-        return $this->getMock('Composer\Config');
+        return $this->getMockBuilder('Composer\Config')->getMock();
     }
 
     private function getRemoteFilesystemMock()

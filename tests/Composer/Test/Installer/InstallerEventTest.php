@@ -19,13 +19,13 @@ class InstallerEventTest extends TestCase
 {
     public function testGetter()
     {
-        $composer = $this->getMock('Composer\Composer');
-        $io = $this->getMock('Composer\IO\IOInterface');
-        $policy = $this->getMock('Composer\DependencyResolver\PolicyInterface');
+        $composer = $this->getMockBuilder('Composer\Composer')->getMock();
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $policy = $this->getMockBuilder('Composer\DependencyResolver\PolicyInterface')->getMock();
         $pool = $this->getMockBuilder('Composer\DependencyResolver\Pool')->disableOriginalConstructor()->getMock();
         $installedRepo = $this->getMockBuilder('Composer\Repository\CompositeRepository')->disableOriginalConstructor()->getMock();
         $request = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
-        $operations = array($this->getMock('Composer\DependencyResolver\Operation\OperationInterface'));
+        $operations = array($this->getMockBuilder('Composer\DependencyResolver\Operation\OperationInterface')->getMock());
         $event = new InstallerEvent('EVENT_NAME', $composer, $io, true, $policy, $pool, $installedRepo, $request, $operations);
 
         $this->assertSame('EVENT_NAME', $event->getName());

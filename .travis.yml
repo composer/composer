@@ -27,23 +27,26 @@ php:
 
 matrix:
   include:
-    - dist: precise
-      php: 5.3
+    - php: 5.3
+      dist: precise
+    - php: 7.2
+      env: deps=high
   fast_finish: true
   allow_failures:
     - php: nightly
 
 before_install:
-    # determine INI file
-    - if [[ $TRAVIS_PHP_VERSION = hhvm* ]]; then export INI=/etc/hhvm/php.ini; else export INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini; fi
-     # disable xdebug if available
+    # disable xdebug if available
     - phpenv config-rm xdebug.ini || echo "xdebug not available"
     # disable default memory limit
+    - export INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
     - echo memory_limit = -1 >> $INI
 
 install:
     # flags to pass to install
     - flags="--ansi --prefer-dist --no-interaction --optimize-autoloader --no-suggest --no-progress"
+    # update deps to latest in case of high deps build
+    - if [ "$deps" == "high" ]; then composer config platform.php 7.2.4; composer update $flags; fi
     # install dependencies using system provided composer binary
     - composer install $flags
     # install dependencies using composer from source

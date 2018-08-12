@@ -90,6 +90,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->config = $config;
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
+
+        // force url for packagist.org to repo.packagist.org
+        if (preg_match('{^(?P<proto>https?)://packagist\.org/?$}i', $this->url, $match)) {
+            $this->url = $match['proto'].'://repo.packagist.org';
+        }
+
         $this->baseUrl = rtrim(preg_replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
@@ -201,9 +207,21 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $hostname = parse_url($url, PHP_URL_HOST) ?: $url;
             $json = $this->rfs->getContents($hostname, $url, false);
-            $results = JsonFile::parseJson($json, $url);
+            $search = JsonFile::parseJson($json, $url);
 
-            return $results['results'];
+            if (empty($search['results'])) {
+                return array();
+            }
+
+            $results = array();
+            foreach ($search['results'] as $result) {
+                // do not show virtual packages in results as they are not directly useful from a composer perspective
+                if (empty($result['virtual'])) {
+                    $results[] = $result;
+                }
+            }
+
+            return $results;
         }
 
         if ($this->hasProviders()) {
@@ -527,10 +545,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         // force values for packagist
-        if (preg_match('{^https?://packagist.org/?$}i', $this->url) && !empty($this->repoConfig['force-lazy-providers'])) {
-            $this->url = 'https://packagist.org';
-            $this->baseUrl = 'https://packagist.org';
-            $this->lazyProvidersUrl = $this->canonicalizeUrl('https://packagist.org/p/%package%.json');
+        if (preg_match('{^https?://repo\.packagist\.org/?$}i', $this->url) && !empty($this->repoConfig['force-lazy-providers'])) {
+            $this->url = 'https://repo.packagist.org';
+            $this->baseUrl = 'https://repo.packagist.org';
+            $this->lazyProvidersUrl = $this->canonicalizeUrl('https://repo.packagist.org/p/%package%.json');
             $this->providersUrl = null;
         } elseif (!empty($this->repoConfig['force-lazy-providers'])) {
             $this->lazyProvidersUrl = $this->canonicalizeUrl('/p/%package%.json');
@@ -677,7 +695,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     }
 
                     // TODO use scarier wording once we know for sure it doesn't do false positives anymore
-                    throw new RepositorySecurityException('The contents of '.$filename.' do not match its signature. This could indicate a man-in-the-middle attack. Try running composer again and report this if you think it is a mistake.');
+                    throw new RepositorySecurityException('The contents of '.$filename.' do not match its signature. This could indicate a man-in-the-middle attack or e.g. antivirus software corrupting files. Try running composer again and report this if you think it is a mistake.');
                 }
 
                 $data = JsonFile::parseJson($json, $filename);

@@ -1,3 +1,63 @@
+### [1.7.1] 2018-08-07
+
+  * Fixed issue autoloading plugins in require-dev in some conditions
+  * Fixed handling of SSL to repo.packagist.org on very old PHP versions
+
+### [1.7.0] 2018-08-03
+
+  * Added the overridden platform config's PHP version in the `diagnose` command output
+  * Fixed --no-plugins not being respected in a few commands
+  * Fixed 1.7.0-RC regression in output showing <warn> instead of proper colors
+  * Fixed 1.7.0-RC regression in output missing "Loading from cache" output on package install
+
+### [1.7.0-RC] 2018-07-24
+
+  * Changed default repository URL from packagist.org to repo.packagist.org, this might affect people with strict firewall rules
+  * Changed output from Updating to Downgrading when performing package downgrades, this might affect anything parsing output
+  * Several minor performance improvements
+  * Added basic authentication support for mercurial repos
+  * Added explicit `i` and `u` aliases for the `install` and `update` commands
+  * Added support for `show` command to output json format with --tree
+  * Added support for {glob,braces} support in the path repository's path argument
+  * Added support in `status` command for showing diffs in vendor dir even for packages installed as dist/zip archives
+  * Added `--remove-vcs` flag to `create-project` command to avoid prompting for keeping VCS files
+  * Added `--no-secure-http` flag to `create-project` command to bypass https (use at your own risk)
+  * Added `pre-command-run` event that lets plugins modify arguments
+  * Added RemoteFilesystem::getRemoteContents extension point
+  * Fixed setting scripts via `config` command
+
+### [1.6.5] 2018-05-04
+
+  * Fixed regression in 1.6.4 causing strange update behaviors with dev packages
+  * Fixed regression in 1.6.4 color support detection for Windows
+  * Fixed issues dealing with broken symlinks when switching branches and using path repositories
+  * Fixed JSON schema for package repositories
+  * Fixed issues on computers set to Turkish locale
+  * Fixed classmap parsing of files using short-open-tags when they are disabled in php
+
+### [1.6.4] 2018-04-13
+
+  * Security fixes in some edge case scenarios, recommended update for all users
+  * Fixed regression in version guessing of path repositories
+  * Fixed removing aliased packages from the repository, which might resolve some odd update bugs
+  * Fixed updating of package URLs for GitLab
+  * Fixed run-script --list failing when script handlers were defined
+  * Fixed init command not respecting the current php version when selecting package versions
+  * Fixed handling of uppercase package names in why/why-not commands
+  * Fixed exclude-from-classmap symlink handling
+  * Fixed filesystem permissions of PEAR binaries
+  * Improved performance of subversion repos
+  * Other minor fixes
+
+### [1.6.3] 2018-01-31
+
+  * Fixed GitLab downloads failing in some edge cases
+  * Fixed ctrl-C handling during create-project
+  * Fixed GitHub VCS repositories not prompting for a token in some conditions
+  * Fixed SPDX license identifiers being case sensitive
+  * Fixed and clarified a few dependency resolution error reporting strings
+  * Fixed SVN commit log fetching in verbose mode when using private repositories
+
 ### [1.6.2] 2018-01-05
 
   * Fixed more autoloader regressions
@@ -160,7 +220,7 @@
   * Added `COMPOSER_MIRROR_PATH_REPOS` env var to force mirroring of path repositories vs symlinking
   * Added `COMPOSER_DEV_MODE` env var that is set by Composer to forward the dev mode to script handlers
   * Fixed support for git 2.11
-  * Fixed output from zip and rar leaking out when an error occured
+  * Fixed output from zip and rar leaking out when an error occurred
   * Removed `hash` from composer.lock, only `content-hash` is now used which should reduce conflicts
   * Minor fixes and performance improvements
 
@@ -619,6 +679,12 @@
 
   * Initial release
 
+[1.7.1]: https://github.com/composer/composer/compare/1.7.0...1.7.1
+[1.7.0]: https://github.com/composer/composer/compare/1.7.0-RC...1.7.0
+[1.7.0-RC]: https://github.com/composer/composer/compare/1.6.5...1.7.0-RC
+[1.6.5]: https://github.com/composer/composer/compare/1.6.4...1.6.5
+[1.6.4]: https://github.com/composer/composer/compare/1.6.3...1.6.4
+[1.6.3]: https://github.com/composer/composer/compare/1.6.2...1.6.3
 [1.6.2]: https://github.com/composer/composer/compare/1.6.1...1.6.2
 [1.6.1]: https://github.com/composer/composer/compare/1.6.0...1.6.1
 [1.6.0]: https://github.com/composer/composer/compare/1.6.0-RC...1.6.0

@@ -20,6 +20,8 @@ use Composer\Downloader\TransportException;
  */
 class RemoteFilesystemMock extends RemoteFilesystem
 {
+    protected $contentMap;
+
     /**
      * @param array $contentMap associative array of locations and content
      */

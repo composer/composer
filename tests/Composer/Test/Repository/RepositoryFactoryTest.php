@@ -20,8 +20,8 @@ class RepositoryFactoryTest extends TestCase
     public function testManagerWithAllRepositoryTypes()
     {
         $manager = RepositoryFactory::manager(
-            $this->getMock('Composer\IO\IOInterface'),
-            $this->getMock('Composer\Config')
+            $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
+            $this->getMockBuilder('Composer\Config')->getMock()
         );
 
         $ref = new \ReflectionProperty($manager, 'repositoryClasses');
@@ -34,12 +34,14 @@ class RepositoryFactoryTest extends TestCase
             'package',
             'pear',
             'git',
+            'git-bitbucket',
             'github',
             'gitlab',
             'svn',
             'fossil',
             'perforce',
             'hg',
+            'hg-bitbucket',
             'artifact',
             'path',
         ), array_keys($repositoryClasses));

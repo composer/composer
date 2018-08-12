@@ -42,7 +42,8 @@ class GitExcludeFilter extends BaseExcludeFilter
                 $this->parseLines(
                     file($sourcePath.'/.gitattributes'),
                     array($this, 'parseGitAttributesLine')
-            ));
+                )
+            );
         }
     }
 

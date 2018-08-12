@@ -135,10 +135,10 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addProperty($name, $value)
     {
         $this->manipulateJson('addProperty', $name, $value, function (&$config, $key, $val) {
-            if (substr($key, 0, 6) === 'extra.') {
+            if (substr($key, 0, 6) === 'extra.' || substr($key, 0, 8) === 'scripts.') {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
-                $arr = &$config['extra'];
+                $arr = &$config[reset($bits)];
                 foreach ($bits as $bit) {
                     if (!isset($arr[$bit])) {
                         $arr[$bit] = array();
@@ -159,10 +159,10 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('removeProperty', $name, function (&$config, $key) {
-            if (substr($key, 0, 6) === 'extra.') {
+            if (substr($key, 0, 6) === 'extra.' || substr($key, 0, 8) === 'scripts.') {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
-                $arr = &$config['extra'];
+                $arr = &$config[reset($bits)];
                 foreach ($bits as $bit) {
                     if (!isset($arr[$bit])) {
                         return;

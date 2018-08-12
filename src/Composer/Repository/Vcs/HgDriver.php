@@ -13,6 +13,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Config;
+use Composer\Util\Hg as HgUtils;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
@@ -49,6 +50,8 @@ class HgDriver extends VcsDriver
             // Ensure we are allowed to use this URL by config
             $this->config->prohibitUrlByConfig($this->url, $this->io);
 
+            $hgUtils = new HgUtils($this->io, $this->config, $this->process);
+
             // update the repo if it is a valid hg repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {
                 if (0 !== $this->process->execute('hg pull', $output, $this->repoDir)) {
@@ -58,15 +61,11 @@ class HgDriver extends VcsDriver
                 // clean up directory and do a fresh clone into it
                 $fs->removeDirectory($this->repoDir);
 
-                if (0 !== $this->process->execute(sprintf('hg clone --noupdate %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoDir)), $output, $cacheDir)) {
-                    $output = $this->process->getErrorOutput();
+                $command = function ($url) {
+                    return sprintf('hg clone --noupdate %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($this->repoDir));
+                };
 
-                    if (0 !== $this->process->execute('hg --version', $ignoredOutput)) {
-                        throw new \RuntimeException('Failed to clone '.$this->url.', hg was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
-                    }
-
-                    throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it' . "\n\n" .$output);
-                }
+                $hgUtils->runCommand($command, $this->url, $this->repoDir);
             }
         }
 

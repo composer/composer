@@ -20,9 +20,11 @@ use PHPUnit\Framework\TestCase;
 
 class InstallationManagerTest extends TestCase
 {
+    protected $repository;
+
     public function setUp()
     {
-        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
+        $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
     }
 
     public function testAddGetInstaller()
@@ -84,7 +86,8 @@ class InstallationManagerTest extends TestCase
         $installOperation = new InstallOperation($this->createPackageMock());
         $removeOperation = new UninstallOperation($this->createPackageMock());
         $updateOperation = new UpdateOperation(
-            $this->createPackageMock(), $this->createPackageMock()
+            $this->createPackageMock(),
+            $this->createPackageMock()
         );
 
         $manager

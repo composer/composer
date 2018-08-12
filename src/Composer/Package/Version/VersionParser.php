@@ -14,6 +14,7 @@ namespace Composer\Package\Version;
 
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser as SemverVersionParser;
+use Composer\Semver\Semver;
 
 class VersionParser extends SemverVersionParser
 {
@@ -62,5 +63,19 @@ class VersionParser extends SemverVersionParser
         }
 
         return $result;
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isUpgrade($normalizedFrom, $normalizedTo)
+    {
+        if (substr($normalizedFrom, 0, 4) === 'dev-' || substr($normalizedTo, 0, 4) === 'dev-') {
+            return true;
+        }
+
+        $sorted = Semver::sort(array($normalizedTo, $normalizedFrom));
+
+        return $sorted[0] === $normalizedFrom;
     }
 }

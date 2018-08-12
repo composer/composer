@@ -31,18 +31,14 @@ class ComposerRepositoryTest extends TestCase
             'url' => 'http://example.org',
         );
 
-        $repository = $this->getMock(
-            'Composer\Repository\ComposerRepository',
-            array(
-                'loadRootServerFile',
-                'createPackage',
-            ),
-            array(
+        $repository = $this->getMockBuilder('Composer\Repository\ComposerRepository')
+            ->setMethods(array('loadRootServerFile', 'createPackage'))
+            ->setConstructorArgs(array(
                 $repoConfig,
                 new NullIO,
                 FactoryMock::createConfig(),
-            )
-        );
+            ))
+            ->getMock();
 
         $repository
             ->expects($this->exactly(2))
@@ -146,7 +142,7 @@ class ComposerRepositoryTest extends TestCase
                 ),
             )));
 
-        $pool = $this->getMock('Composer\DependencyResolver\Pool');
+        $pool = $this->getMockBuilder('Composer\DependencyResolver\Pool')->getMock();
         $pool->expects($this->any())
             ->method('isPackageAcceptable')
             ->will($this->returnValue(true));

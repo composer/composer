@@ -36,7 +36,7 @@ class FossilDownloader extends VcsDownloader
         if (0 !== $this->process->execute($command, $ignoredOutput)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
-        $command = sprintf('fossil open %s', ProcessExecutor::escape($repoFile));
+        $command = sprintf('fossil open %s --nested', ProcessExecutor::escape($repoFile));
         if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
@@ -87,7 +87,7 @@ class FossilDownloader extends VcsDownloader
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
-        $command = sprintf('fossil timeline -t ci -W 0 -n 0 before %s', $toReference);
+        $command = sprintf('fossil timeline -t ci -W 0 -n 0 before %s', ProcessExecutor::escape($toReference));
 
         if (0 !== $this->process->execute($command, $output, realpath($path))) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());

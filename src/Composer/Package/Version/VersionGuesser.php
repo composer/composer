@@ -88,7 +88,7 @@ class VersionGuesser
 
     private function postprocess(array $versionData)
     {
-        if ('-dev' === substr($versionData['version'], -4)) {
+        if ('-dev' === substr($versionData['version'], -4) && preg_match('{\.9{7}}', $versionData['version'])) {
             $versionData['pretty_version'] = preg_replace('{(\.9{7})+}', '.x', $versionData['version']);
         }
 
@@ -120,9 +120,6 @@ class VersionGuesser
                         $version = $this->versionParser->normalizeBranch($match[1]);
                         $prettyVersion = 'dev-' . $match[1];
                         $isFeatureBranch = 0 === strpos($version, 'dev-');
-                        if ('9999999-dev' === $version) {
-                            $version = $prettyVersion;
-                        }
                     }
 
                     if ($match[2]) {
@@ -187,7 +184,7 @@ class VersionGuesser
             $isFeatureBranch = 0 === strpos($version, 'dev-');
 
             if ('9999999-dev' === $version) {
-                $version = 'dev-' . $branch;
+                return array('version' => $version, 'commit' => null, 'pretty_version' => 'dev-'.$branch);
             }
 
             if (!$isFeatureBranch) {
@@ -243,9 +240,6 @@ class VersionGuesser
                     $length = strlen($output);
                     $version = $this->versionParser->normalizeBranch($candidate);
                     $prettyVersion = 'dev-' . $match[1];
-                    if ('9999999-dev' === $version) {
-                        $version = $prettyVersion;
-                    }
                 }
             }
         }
@@ -263,10 +257,6 @@ class VersionGuesser
             $branch = trim($output);
             $version = $this->versionParser->normalizeBranch($branch);
             $prettyVersion = 'dev-' . $branch;
-
-            if ('9999999-dev' === $version) {
-                $version = $prettyVersion;
-            }
         }
 
         // try to fetch current version from fossil tags
@@ -298,9 +288,6 @@ class VersionGuesser
                     // we are in a branches path
                     $version = $this->versionParser->normalizeBranch($matches[3]);
                     $prettyVersion = 'dev-' . $matches[3];
-                    if ('9999999-dev' === $version) {
-                        $version = $prettyVersion;
-                    }
 
                     return array('version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion);
                 }
