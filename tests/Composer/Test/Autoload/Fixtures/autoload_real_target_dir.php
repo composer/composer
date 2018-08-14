@@ -63,7 +63,7 @@ class ComposerAutoloaderInitTargetDir
 
     public static function autoload($class)
     {
-        $dir = dirname(dirname(__DIR__)) . '/';
+        $dir = dirname(__DIR__, 2) . '/';
         $prefixes = array('Main\\Foo', 'Main\\Bar');
         foreach ($prefixes as $prefix) {
             if (0 !== strpos($class, $prefix)) {
