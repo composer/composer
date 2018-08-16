@@ -345,10 +345,6 @@ EOT
             $package = $package->getAliasOf();
         }
 
-        if (0 === strpos($package->getPrettyVersion(), 'dev-') && in_array($package->getSourceType(), array('git', 'hg'))) {
-            $package->setSourceReference(substr($package->getPrettyVersion(), 4));
-        }
-
         $dm = $this->createDownloadManager($io, $config);
         $dm->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
