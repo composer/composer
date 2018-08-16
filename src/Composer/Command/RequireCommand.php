@@ -32,6 +32,11 @@ use Composer\Repository\PlatformRepository;
  */
 class RequireCommand extends InitCommand
 {
+    private $newlyCreated;
+    private $json;
+    private $file;
+    private $composerBackup;
+
     protected function configure()
     {
         $this
@@ -75,32 +80,39 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $file = Factory::getComposerFile();
+        if (function_exists('pcntl_async_signals')) {
+            pcntl_async_signals(true);
+            pcntl_signal(SIGINT, array($this, 'revertComposerFile'));
+            pcntl_signal(SIGTERM, array($this, 'revertComposerFile'));
+            pcntl_signal(SIGHUP, array($this, 'revertComposerFile'));
+        }
+
+        $this->file = Factory::getComposerFile();
         $io = $this->getIO();
 
-        $newlyCreated = !file_exists($file);
-        if ($newlyCreated && !file_put_contents($file, "{\n}\n")) {
-            $io->writeError('<error>'.$file.' could not be created.</error>');
+        $this->newlyCreated = !file_exists($this->file);
+        if ($this->newlyCreated && !file_put_contents($this->file, "{\n}\n")) {
+            $io->writeError('<error>'.$this->file.' could not be created.</error>');
 
             return 1;
         }
-        if (!is_readable($file)) {
-            $io->writeError('<error>'.$file.' is not readable.</error>');
+        if (!is_readable($this->file)) {
+            $io->writeError('<error>'.$this->file.' is not readable.</error>');
 
             return 1;
         }
-        if (!is_writable($file)) {
-            $io->writeError('<error>'.$file.' is not writable.</error>');
+        if (!is_writable($this->file)) {
+            $io->writeError('<error>'.$this->file.' is not writable.</error>');
 
             return 1;
         }
 
-        if (filesize($file) === 0) {
-            file_put_contents($file, "{\n}\n");
+        if (filesize($this->file) === 0) {
+            file_put_contents($this->file, "{\n}\n");
         }
 
-        $json = new JsonFile($file);
-        $composerBackup = file_get_contents($json->getPath());
+        $this->json = new JsonFile($this->file);
+        $this->composerBackup = file_get_contents($this->json->getPath());
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $repos = $composer->getRepositoryManager()->getRepositories();
@@ -133,16 +145,16 @@ EOT
 
         $sortPackages = $input->getOption('sort-packages') || $composer->getConfig()->get('sort-packages');
 
-        if (!$this->updateFileCleanly($json, $requirements, $requireKey, $removeKey, $sortPackages)) {
-            $composerDefinition = $json->read();
+        if (!$this->updateFileCleanly($this->json, $requirements, $requireKey, $removeKey, $sortPackages)) {
+            $composerDefinition = $this->json->read();
             foreach ($requirements as $package => $version) {
                 $composerDefinition[$requireKey][$package] = $version;
                 unset($composerDefinition[$removeKey][$package]);
             }
-            $json->write($composerDefinition);
+            $this->json->write($composerDefinition);
         }
 
-        $io->writeError('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
+        $io->writeError('<info>'.$this->file.' has been '.($this->newlyCreated ? 'created' : 'updated').'</info>');
 
         if ($input->getOption('no-update')) {
             return 0;
@@ -183,13 +195,7 @@ EOT
 
         $status = $install->run();
         if ($status !== 0) {
-            if ($newlyCreated) {
-                $io->writeError("\n".'<error>Installation failed, deleting '.$file.'.</error>');
-                unlink($json->getPath());
-            } else {
-                $io->writeError("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
-                file_put_contents($json->getPath(), $composerBackup);
-            }
+            $this->revertComposerFile();
         }
 
         return $status;
@@ -218,5 +224,20 @@ EOT
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         return;
+    }
+
+    public function revertComposerFile()
+    {
+        $io = $this->getIO();
+
+        if ($this->newlyCreated) {
+            $io->writeError("\n".'<error>Installation failed, deleting '.$this->file.'.</error>');
+            unlink($this->json->getPath());
+        } else {
+            $io->writeError("\n".'<error>Installation failed, reverting '.$this->file.' to its original content.</error>');
+            file_put_contents($this->json->getPath(), $this->composerBackup);
+        }
+
+        exit(1);
     }
 }
