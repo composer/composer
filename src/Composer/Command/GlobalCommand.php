@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Factory;
+use Composer\Util\Filesystem;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\StringInput;
@@ -75,8 +76,22 @@ EOT
 
         // change to global dir
         $config = Factory::createConfig();
-        chdir($config->get('home'));
-        $this->getIO()->writeError('<info>Changed current directory to '.$config->get('home').'</info>');
+        $home = $config->get('home');
+
+        if (!is_dir($home)) {
+            $fs = new Filesystem();
+            $fs->ensureDirectoryExists($home);
+            if (!is_dir($home)) {
+                throw new \RuntimeException('Could not create home directory');
+            }
+        }
+
+        try {
+            chdir($home);
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Could not switch to home directory "'.$home.'"', 0, $e);
+        }
+        $this->getIO()->writeError('<info>Changed current directory to '.$home.'</info>');
 
         // create new input without "global" command prefix
         $input = new StringInput(preg_replace('{\bg(?:l(?:o(?:b(?:a(?:l)?)?)?)?)?\b}', '', $input->__toString(), 1));
