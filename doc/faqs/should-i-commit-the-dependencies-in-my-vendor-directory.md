@@ -16,6 +16,16 @@ problems:
   submodules. This is problematic because they are not real submodules, and you
   will run into issues.
 
+Committing the dependencies might be an option if you:
+
+- have very high demands on reproducibility. Committing vendor makes you
+  independent of upstream changes (e.g. renames, deletes, history overwrites)
+  and makes you´re build process resilient against outages of upstream servers.
+- require a single diff with all changes, including upstream changes.
+  This could make failure analysis and traceability easier.
+- want to reduce your build times
+  (and other options like caching do not work well in your environment)
+
 If you really feel like you must do this, you have a few options:
 
 1. Limit yourself to installing tagged releases (no dev versions), so that you
