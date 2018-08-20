@@ -419,6 +419,39 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated, even if empty.");
     }
 
+    public function testNonDevAutoloadExclusionWithRecursionReplace()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+        ));
+
+        $packages = array();
+        $packages[] = $a = new Package('a/a', '1.0', '1.0');
+        $packages[] = $b = new Package('b/b', '1.0', '1.0');
+        $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
+        $a->setRequires(array(
+            new Link('a/a', 'c/c'),
+        ));
+        $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
+        $b->setReplaces(array(
+            new Link('b/b', 'c/c'),
+        ));
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($packages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/lib');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_5');
+        $this->assertAutoloadFiles('vendors', $this->vendorDir.'/composer');
+        $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated, even if empty.");
+    }
+
     public function testPSRToClassMapIgnoresNonExistingDir()
     {
         $package = new Package('a', '1.0', '1.0');
