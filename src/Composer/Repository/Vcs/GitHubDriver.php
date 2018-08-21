@@ -183,30 +183,13 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getFileContent($file, $identifier);
         }
 
-        $notFoundRetries = 2;
-        while ($notFoundRetries) {
-            try {
-                $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/' . $file . '?ref='.urlencode($identifier);
-                $resource = JsonFile::parseJson($this->getContents($resource));
-                if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($content = base64_decode($resource['content']))) {
-                    throw new \RuntimeException('Could not retrieve ' . $file . ' for '.$identifier);
-                }
-
-                return $content;
-            } catch (TransportException $e) {
-                if (404 !== $e->getCode()) {
-                    throw $e;
-                }
-
-                // TODO should be removed when possible
-                // retry fetching if github returns a 404 since they happen randomly
-                $notFoundRetries--;
-
-                return null;
-            }
+        $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/' . $file . '?ref='.urlencode($identifier);
+        $resource = JsonFile::parseJson($this->getContents($resource));
+        if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($content = base64_decode($resource['content']))) {
+            throw new \RuntimeException('Could not retrieve ' . $file . ' for '.$identifier);
         }
 
-        return null;
+        return $content;
     }
 
     /**
