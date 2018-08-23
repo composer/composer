@@ -299,6 +299,12 @@ class Factory
             $localConfig = $file->read();
         }
 
+        if (isset($localConfig['extra']['symfony']['require'])){
+            $symfonyRequire = $localConfig['extra']['symfony']['require'];
+            $io->writeError(sprintf('<info>Restricting packages listed in "symfony/symfony" to "%s"</info>', $symfonyRequire));
+            Config::$defaultRepositories['packagist.org']['symfony_require'] = $symfonyRequire;
+        }
+
         // Load config and override with local config/auth config
         $config = static::createConfig($io, $cwd);
         $config->merge($localConfig);

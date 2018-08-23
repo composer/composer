@@ -61,6 +61,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $rootData;
     private $hasPartialPackages;
     private $partialPackagesByName;
+    private $versionParser;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
     {
@@ -107,6 +108,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->rfs = $rfs ?: Factory::createRemoteFilesystem($this->io, $this->config, $this->options);
         $this->eventDispatcher = $eventDispatcher;
         $this->repoConfig = $repoConfig;
+        $this->versionParser = new VersionParser();
     }
 
     public function getRepoConfig()
@@ -130,8 +132,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $name = strtolower($name);
         if (!$constraint instanceof ConstraintInterface) {
-            $versionParser = new VersionParser();
-            $constraint = $versionParser->parseConstraints($constraint);
+            $constraint = $this->versionParser->parseConstraints($constraint);
         }
 
         foreach ($this->getProviderNames() as $providerName) {
@@ -162,8 +163,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $name = strtolower($name);
 
         if (null !== $constraint && !$constraint instanceof ConstraintInterface) {
-            $versionParser = new VersionParser();
-            $constraint = $versionParser->parseConstraints($constraint);
+            $constraint = $this->versionParser->parseConstraints($constraint);
         }
 
         $packages = array();
@@ -369,6 +369,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         } else {
             $packages = array('packages' => array('versions' => $this->partialPackagesByName[$name]));
             $loadingPartialPackage = true;
+        }
+
+        if (isset($this->repoConfig['symfony_require'])) {
+            $packages = $this->removeLegacyTags($packages, $this->repoConfig['symfony_require']);
         }
 
         $this->providers[$name] = array();
@@ -834,5 +838,43 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         // wipe rootData as it is fully consumed at this point and this saves some memory
         $this->rootData = true;
+    }
+
+
+    public function removeLegacyTags(array $data, $symfonyRequire)
+    {
+        $symfonyConstraints = $this->versionParser->parseConstraints($symfonyRequire);
+
+        if (!$symfonyConstraints || !isset($data['packages']['symfony/symfony'])) {
+            return $data;
+        }
+        $symfonyVersions = $data['packages']['symfony/symfony'];
+
+        foreach ($data['packages'] as $name => $versions) {
+            foreach ($versions as $version => $package) {
+                $replacedVersion = preg_replace('/^(\d++\.\d++)\..*/', '$1.x-dev', $version);
+                $replaced = isset($symfonyVersions[$replacedVersion]['replace'][$name]) ?
+                         $symfonyVersions[$replacedVersion]['replace'][$name] :
+                         null;
+
+                if ('symfony/symfony' !== $name && 'self.version' !== $replaced) {
+                    continue;
+                }
+
+                $normalizedVersion = isset($package['extra']['branch-alias'][$version]) ? $package['extra']['branch-alias'][$version] : null;
+                $normalizedVersion = $normalizedVersion ? $this->versionParser->normalize($normalizedVersion) : $package['version_normalized'];
+                $provider = new Constraint('==', $normalizedVersion);
+
+                if (!$symfonyConstraints->matches($provider)) {
+                    // if ($this->io) {
+                    //     $this->io->writeError();
+                    //     //$this->io = null;
+                    // }
+                    unset($data['packages'][$name][$version]);
+                }
+            }
+        }
+
+        return $data;
     }
 }
