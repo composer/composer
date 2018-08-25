@@ -307,10 +307,10 @@ class SvnDriver extends VcsDriver
             return false;
         }
 
-        $processExecutor = new ProcessExecutor();
+        $processExecutor = new ProcessExecutor($io);
 
         $exit = $processExecutor->execute(
-            "svn info --non-interactive {$url}",
+            "svn info --non-interactive ".ProcessExecutor::escape('{'.$url.'}'),
             $ignoredOutput
         );
 

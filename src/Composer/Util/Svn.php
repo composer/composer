@@ -79,7 +79,7 @@ class Svn
         $this->url = $url;
         $this->io = $io;
         $this->config = $config;
-        $this->process = $process ?: new ProcessExecutor;
+        $this->process = $process ?: new ProcessExecutor($io);
     }
 
     public static function cleanEnv()

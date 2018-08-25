@@ -58,7 +58,7 @@ class Perforce
     {
         $output = null;
 
-        return  0 === $processExecutor->execute('p4 -p ' . $url . ' info -s', $output);
+        return  0 === $processExecutor->execute('p4 -p ' . ProcessExecutor::escape($url) . ' info -s', $output);
     }
 
     public function initialize($repoConfig)
@@ -105,7 +105,7 @@ class Perforce
     public function cleanupClientSpec()
     {
         $client = $this->getClient();
-        $task = 'client -d ' . $client;
+        $task = 'client -d ' . ProcessExecutor::escape($client);
         $useP4Client = false;
         $command = $this->generateP4Command($task, $useP4Client);
         $this->executeCommand($command);
@@ -383,7 +383,7 @@ class Perforce
             if ($this->windowsFlag) {
                 $this->windowsLogin($password);
             } else {
-                $command = 'echo ' . $password  . ' | ' . $this->generateP4Command(' login -a', false);
+                $command = 'echo ' . ProcessExecutor::escape($password)  . ' | ' . $this->generateP4Command(' login -a', false);
                 $exitCode = $this->executeCommand($command);
                 $result = trim($this->commandResult);
                 if ($exitCode) {
@@ -408,7 +408,7 @@ class Perforce
     {
         $path = $this->getFilePath($file, $identifier);
 
-        $command = $this->generateP4Command(' print ' . $path);
+        $command = $this->generateP4Command(' print ' . ProcessExecutor::escape($path));
         $this->executeCommand($command);
         $result = $this->commandResult;
 
@@ -429,7 +429,7 @@ class Perforce
         }
 
         $path = substr($identifier, 0, $index) . '/' . $file . substr($identifier, $index);
-        $command = $this->generateP4Command(' files ' . $path, false);
+        $command = $this->generateP4Command(' files ' . ProcessExecutor::escape($path), false);
         $this->executeCommand($command);
         $result = $this->commandResult;
         $index2 = strpos($result, 'no such file(s).');
@@ -452,7 +452,7 @@ class Perforce
         if (!$this->isStream()) {
             $possibleBranches[$this->p4Branch] = $this->getStream();
         } else {
-            $command = $this->generateP4Command('streams //' . $this->p4Depot . '/...');
+            $command = $this->generateP4Command('streams '.ProcessExecutor::escape('//' . $this->p4Depot . '/...'));
             $this->executeCommand($command);
             $result = $this->commandResult;
             $resArray = explode(PHP_EOL, $result);
@@ -464,7 +464,7 @@ class Perforce
                 }
             }
         }
-        $command = $this->generateP4Command('changes '. $this->getStream() . '/...', false);
+        $command = $this->generateP4Command('changes '. ProcessExecutor::escape($this->getStream() . '/...'), false);
         $this->executeCommand($command);
         $result = $this->commandResult;
         $resArray = explode(PHP_EOL, $result);
@@ -527,7 +527,7 @@ class Perforce
             return null;
         }
         $label = substr($reference, $index);
-        $command = $this->generateP4Command(' changes -m1 ' . $label);
+        $command = $this->generateP4Command(' changes -m1 ' . ProcessExecutor::escape($label));
         $this->executeCommand($command);
         $changes = $this->commandResult;
         if (strpos($changes, 'Change') !== 0) {
@@ -555,7 +555,7 @@ class Perforce
         }
         $index = strpos($fromReference, '@');
         $main = substr($fromReference, 0, $index) . '/...';
-        $command = $this->generateP4Command('filelog ' . $main . '@' . $fromChangeList. ',' . $toChangeList);
+        $command = $this->generateP4Command('filelog ' . ProcessExecutor::escape($main . '@' . $fromChangeList. ',' . $toChangeList));
         $this->executeCommand($command);
 
         return $this->commandResult;
