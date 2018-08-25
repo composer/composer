@@ -527,7 +527,7 @@ class Filesystem
 
     protected function getProcess()
     {
-        return new ProcessExecutor;
+        return $this->processExecutor;
     }
 
     /**
