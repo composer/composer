@@ -378,7 +378,7 @@ class GitHubDriver extends VcsDriver
                         return $this->attemptCloneFallback();
                     }
 
-                    $rateLimited = $githubUtil->isRateLimited($e->getHeaders());
+                    $rateLimited = $gitHubUtil->isRateLimited($e->getHeaders());
 
                     if (!$this->io->hasAuthentication($this->originUrl)) {
                         if (!$this->io->isInteractive()) {
@@ -392,7 +392,7 @@ class GitHubDriver extends VcsDriver
                     }
 
                     if ($rateLimited) {
-                        $rateLimit = $githubUtil->getRateLimit($e->getHeaders());
+                        $rateLimit = $gitHubUtil->getRateLimit($e->getHeaders());
                         $this->io->writeError(sprintf(
                             '<error>GitHub API limit (%d calls/hr) is exhausted. You are already authorized so you have to wait until %s before doing more requests</error>',
                             $rateLimit['limit'],
