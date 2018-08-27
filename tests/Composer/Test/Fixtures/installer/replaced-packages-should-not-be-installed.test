@@ -1,0 +1,24 @@
+--TEST--
+Requiring a replaced package in a version, that is not provided by the replacing package, should result in a conflict
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "foo/original", "version": "1.0.0", "replace": {"foo/replaced": "1.0.0"} },
+                { "name": "foo/replaced", "version": "1.0.0" },
+                { "name": "foo/replaced", "version": "2.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "foo/original": "1.0.0",
+        "foo/replaced": "2.0.0"
+    }
+}
+--RUN--
+install
+--EXPECT-EXIT-CODE--
+2
+--EXPECT--
