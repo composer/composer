@@ -133,7 +133,14 @@ class ArchiveManager
 
         // Archive filename
         $filesystem->ensureDirectoryExists($targetDir);
-        $target = realpath($targetDir).'/'.$packageName.'.'.$format;
+
+        if(filter_var($targetDir, FILTER_VALIDATE_URL)) {
+            $targetBase = $targetDir;
+        } else {
+            $targetBase = realpath($targetDir);
+        }
+
+        $target = $targetBase.'/'.$packageName.'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($target));
 
         if (!$this->overwriteFiles && file_exists($target)) {
