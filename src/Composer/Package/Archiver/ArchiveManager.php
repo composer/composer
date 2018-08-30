@@ -133,13 +133,7 @@ class ArchiveManager
 
         // Archive filename
         $filesystem->ensureDirectoryExists($targetDir);
-
-        if(filter_var($targetDir, FILTER_VALIDATE_URL)) {
-            $targetBase = $targetDir;
-        } else {
-            $targetBase = realpath($targetDir);
-        }
-
+        $targetBase = filter_var($targetDir, FILTER_VALIDATE_URL) ? $targetDir : realpath($targetDir);
         $target = $targetBase.'/'.$packageName.'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($target));
 
