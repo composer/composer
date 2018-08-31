@@ -2,23 +2,27 @@ build: false
 clone_depth: 5
 
 environment:
-  PHP_CHOCO_VERSION: 7.2.0
-  PHP_CACHE_DIR: C:\tools\php
+  # This sets the PHP version (from Chocolatey)
+  PHPCI_CHOCO_VERSION: 7.2.9
+  PHPCI_CACHE: C:\tools\phpci
+  PHPCI_PHP: C:\tools\phpci\php
+  PHPCI_COMPOSER: C:\tools\phpci\composer
 
 cache:
-  - '%PHP_CACHE_DIR% -> appveyor.yml'
+  - '%PHPCI_CACHE% -> appveyor.yml'
 
 init:
-  - SET PATH=%PHP_CACHE_DIR%;%PATH%
-  - SET COMPOSER_CACHE_DIR=%PHP_CACHE_DIR%
+  - SET PATH=%PHPCI_PHP%;%PHPCI_COMPOSER%;%PATH%
+  - SET COMPOSER_HOME=%PHPCI_COMPOSER%\home
+  - SET COMPOSER_CACHE_DIR=%PHPCI_COMPOSER%\cache
   - SET COMPOSER_NO_INTERACTION=1
   - SET PHP=0
   - SET ANSICON=121x90 (121x90)
 
 install:
-  - IF EXIST %PHP_CACHE_DIR% (SET PHP=1)
-  - IF %PHP%==0 cinst php -y --version %PHP_CHOCO_VERSION%  --params "/InstallDir:%PHP_CACHE_DIR%"
-  - IF %PHP%==0 cinst composer -y --ia "/DEV=%PHP_CACHE_DIR%"
+  - IF EXIST %PHPCI_CACHE% (SET PHP=1)
+  - IF %PHP%==0 cinst php -i -y --version %PHPCI_CHOCO_VERSION%  --params "/InstallDir:%PHPCI_PHP%"
+  - IF %PHP%==0 cinst composer -i -y --ia "/DEV=%PHPCI_COMPOSER%"
   - php -v
   - IF %PHP%==0 (composer --version) ELSE (composer self-update)
   - cd %APPVEYOR_BUILD_FOLDER%
