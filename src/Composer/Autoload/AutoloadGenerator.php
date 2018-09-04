@@ -312,6 +312,8 @@ EOF;
                 'optimize' => (bool) $scanPsr0Packages,
             ));
         }
+
+        return count($classMap);
     }
 
     private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, array $classMap = array())
