@@ -231,7 +231,7 @@ class FileDownloaderTest extends TestCase
             ->will($this->returnValue(array($distUrl)));
 
         $ioMock = $this->getMock('Composer\IO\IOInterface');
-        $ioMock->expects(($this->at(0)))
+        $ioMock->expects($this->at(0))
             ->method('writeError')
             ->with($this->stringContains('Downgrading'));
 
