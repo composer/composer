@@ -638,7 +638,7 @@ composer https://github.com/old/url (push)
             ->will($this->returnValue(0));
 
         $ioMock = $this->getMock('Composer\IO\IOInterface');
-        $ioMock->expects(($this->at(0)))
+        $ioMock->expects($this->at(0))
             ->method('writeError')
             ->with($this->stringContains('Downgrading'));
 
@@ -677,7 +677,7 @@ composer https://github.com/old/url (push)
             ->will($this->returnValue(0));
 
         $ioMock = $this->getMock('Composer\IO\IOInterface');
-        $ioMock->expects(($this->at(0)))
+        $ioMock->expects($this->at(0))
             ->method('writeError')
             ->with($this->stringContains('updating'));
 
