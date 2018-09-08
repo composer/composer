@@ -131,7 +131,7 @@ class ArchiveDownloaderTest extends TestCase
         $method = new \ReflectionMethod($downloader, 'processUrl');
         $method->setAccessible(true);
 
-        $url = $url . '.' . $extension;
+        $url .= '.' . $extension;
         $expected = 'https://bitbucket.org/davereid/drush-virtualhost/get/ref.' . $extension;
 
         $package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
