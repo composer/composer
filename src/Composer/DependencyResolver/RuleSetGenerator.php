@@ -281,13 +281,11 @@ class RuleSetGenerator
         $packageIsAlias = $package instanceof AliasPackage;
         $providerIsAlias = $provider instanceof AliasPackage;
 
-        $impossible = (
+        return (
             ($packageIsAlias && $package->getAliasOf() === $provider) ||
             ($providerIsAlias && $provider->getAliasOf() === $package) ||
             ($packageIsAlias && $providerIsAlias && $provider->getAliasOf() === $package->getAliasOf())
         );
-
-        return $impossible;
     }
 
     protected function whitelistFromJobs()
