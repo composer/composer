@@ -20,12 +20,13 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
+use Composer\Repository\RepositorySet;
 use Composer\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
 
 class SolverTest extends TestCase
 {
-    protected $pool;
+    protected $repoSet;
     protected $repo;
     protected $repoInstalled;
     protected $request;
@@ -33,13 +34,13 @@ class SolverTest extends TestCase
 
     public function setUp()
     {
-        $this->pool = new Pool;
+        $this->repoSet = new RepositorySet(new Pool);
         $this->repo = new ArrayRepository;
         $this->repoInstalled = new ArrayRepository;
 
-        $this->request = new Request($this->pool);
+        $this->request = new Request($this->repoSet);
         $this->policy = new DefaultPolicy;
-        $this->solver = new Solver($this->policy, $this->pool, $this->repoInstalled, new NullIO());
+        $this->solver = new Solver($this->policy, $this->repoSet, $this->repoInstalled, new NullIO());
     }
 
     public function testSolverInstallSingle()
@@ -90,9 +91,9 @@ class SolverTest extends TestCase
         $repo1->addPackage($foo1 = $this->getPackage('foo', '1'));
         $repo2->addPackage($foo2 = $this->getPackage('foo', '1'));
 
-        $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($repo1);
-        $this->pool->addRepository($repo2);
+        $this->repoSet->addRepository($this->repoInstalled);
+        $this->repoSet->addRepository($repo1);
+        $this->repoSet->addRepository($repo2);
 
         $this->request->install('foo');
 
@@ -839,8 +840,8 @@ class SolverTest extends TestCase
 
     protected function reposComplete()
     {
-        $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($this->repo);
+        $this->repoSet->addRepository($this->repoInstalled);
+        $this->repoSet->addRepository($this->repo);
     }
 
     protected function checkSolverResult(array $expected)

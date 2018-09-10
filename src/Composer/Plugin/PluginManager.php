@@ -21,6 +21,7 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
+use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\DependencyResolver\Pool;
 use Composer\Plugin\Capability\Capability;
@@ -157,14 +158,14 @@ class PluginManager
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
 
-        $pool = new Pool('dev');
-        $pool->addRepository($localRepo);
+        $repositorySet = new RepositorySet(new Pool('dev'));
+        $repositorySet->addRepository($localRepo);
         if ($globalRepo) {
-            $pool->addRepository($globalRepo);
+            $repositorySet->addRepository($globalRepo);
         }
 
         $autoloadPackages = array($package->getName() => $package);
-        $autoloadPackages = $this->collectDependencies($pool, $autoloadPackages, $package);
+        $autoloadPackages = $this->collectDependencies($repositorySet, $autoloadPackages, $package);
 
         $generator = $this->composer->getAutoloadGenerator();
         $autoloads = array();
@@ -269,13 +270,13 @@ class PluginManager
     /**
      * Recursively generates a map of package names to packages for all deps
      *
-     * @param Pool             $pool      Package pool of installed packages
-     * @param array            $collected Current state of the map for recursion
-     * @param PackageInterface $package   The package to analyze
+     * @param RepositorySet    $repositorySet Repository set of installed packages
+     * @param array            $collected     Current state of the map for recursion
+     * @param PackageInterface $package       The package to analyze
      *
      * @return array Map of package names to packages
      */
-    private function collectDependencies(Pool $pool, array $collected, PackageInterface $package)
+    private function collectDependencies(RepositorySet $repositorySet, array $collected, PackageInterface $package)
     {
         $requires = array_merge(
             $package->getRequires(),
@@ -283,10 +284,10 @@ class PluginManager
         );
 
         foreach ($requires as $requireLink) {
-            $requiredPackage = $this->lookupInstalledPackage($pool, $requireLink);
+            $requiredPackage = $this->lookupInstalledPackage($repositorySet, $requireLink);
             if ($requiredPackage && !isset($collected[$requiredPackage->getName()])) {
                 $collected[$requiredPackage->getName()] = $requiredPackage;
-                $collected = $this->collectDependencies($pool, $collected, $requiredPackage);
+                $collected = $this->collectDependencies($repositorySet, $collected, $requiredPackage);
             }
         }
 
@@ -294,18 +295,18 @@ class PluginManager
     }
 
     /**
-     * Resolves a package link to a package in the installed pool
+     * Resolves a package link to a package in the installed repo set
      *
      * Since dependencies are already installed this should always find one.
      *
-     * @param Pool $pool Pool of installed packages only
+     * @param RepositorySet $repositorySet Repository set of installed packages only
      * @param Link $link Package link to look up
      *
      * @return PackageInterface|null The found package
      */
-    private function lookupInstalledPackage(Pool $pool, Link $link)
+    private function lookupInstalledPackage(RepositorySet $repositorySet, Link $link)
     {
-        $packages = $pool->whatProvides($link->getTarget(), $link->getConstraint());
+        $packages = $repositorySet->findPackages($link->getTarget(), $link->getConstraint()); // TODO this no longer returns providers
 
         return !empty($packages) ? $packages[0] : null;
     }

@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\IO\IOInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -26,8 +27,8 @@ class Solver
 
     /** @var PolicyInterface */
     protected $policy;
-    /** @var Pool */
-    protected $pool;
+    /** @var RepositorySet */
+    protected $repositorySet = null;
     /** @var RepositoryInterface */
     protected $installed;
     /** @var RuleSet */
@@ -36,6 +37,8 @@ class Solver
     protected $ruleSetGenerator;
     /** @var array */
     protected $jobs;
+    /** @var Pool */
+    protected $pool = null;
 
     /** @var int[] */
     protected $updateMap = array();
@@ -62,17 +65,16 @@ class Solver
 
     /**
      * @param PolicyInterface     $policy
-     * @param Pool                $pool
+     * @param RepositorySet       $repositorySet
      * @param RepositoryInterface $installed
      * @param IOInterface         $io
      */
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, IOInterface $io)
+    public function __construct(PolicyInterface $policy, RepositorySet $repositorySet, RepositoryInterface $installed, IOInterface $io)
     {
         $this->io = $io;
         $this->policy = $policy;
-        $this->pool = $pool;
+        $this->repositorySet = $repositorySet;
         $this->installed = $installed;
-        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
     }
 
     /**
@@ -81,6 +83,11 @@ class Solver
     public function getRuleSetSize()
     {
         return count($this->rules);
+    }
+
+    public function getPool()
+    {
+        return $this->pool;
     }
 
     // aka solver_makeruledecisions
@@ -210,7 +217,11 @@ class Solver
     {
         $this->jobs = $request->getJobs();
 
+        $this->pool = $this->repositorySet->createPool();
+
         $this->setupInstalledMap();
+
+        $this->ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
