@@ -111,7 +111,7 @@ abstract class Rule
 
     public function enable()
     {
-        $this->bitfield = $this->bitfield & ~(255 << self::BITFIELD_DISABLED);
+        $this->bitfield &= ~(255 << self::BITFIELD_DISABLED);
     }
 
     public function isDisabled()

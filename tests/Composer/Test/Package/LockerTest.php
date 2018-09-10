@@ -285,11 +285,9 @@ class LockerTest extends TestCase
 
     private function createInstallationManagerMock()
     {
-        $mock = $this->getMockBuilder('Composer\Installer\InstallationManager')
+        return $this->getMockBuilder('Composer\Installer\InstallationManager')
             ->disableOriginalConstructor()
             ->getMock();
-
-        return $mock;
     }
 
     private function createPackageMock()

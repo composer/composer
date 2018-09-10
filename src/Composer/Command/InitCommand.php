@@ -204,7 +204,7 @@ EOT
                 $name = get_current_user() . '/' . $name;
             } else {
                 // package names must be in the format foo/bar
-                $name = $name . '/' . $name;
+                $name .= '/' . $name;
             }
             $name = strtolower($name);
         } else {

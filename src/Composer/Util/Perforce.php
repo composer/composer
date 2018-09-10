@@ -247,9 +247,7 @@ class Perforce
 
         $command = 'echo $' . $name;
         $this->executeCommand($command);
-        $result = trim($this->commandResult);
-
-        return $result;
+        return trim($this->commandResult);
     }
 
     public function queryP4Password()
@@ -269,9 +267,9 @@ class Perforce
     public function generateP4Command($command, $useClient = true)
     {
         $p4Command = 'p4 ';
-        $p4Command = $p4Command . '-u ' . $this->getUser() . ' ';
+        $p4Command .= '-u ' . $this->getUser() . ' ';
         if ($useClient) {
-            $p4Command = $p4Command . '-c ' . $this->getClient() . ' ';
+            $p4Command .= '-c ' . $this->getClient() . ' ';
         }
         $p4Command = $p4Command . '-p ' . $this->getPort() . ' ' . $command;
 
@@ -312,7 +310,7 @@ class Perforce
         chdir($this->path);
         $p4SyncCommand = $this->generateP4Command('sync -f ');
         if (null !== $sourceReference) {
-            $p4SyncCommand = $p4SyncCommand . '@' . $sourceReference;
+            $p4SyncCommand .= '@' . $sourceReference;
         }
         $this->executeCommand($p4SyncCommand);
         chdir($prevDir);
@@ -423,9 +421,7 @@ class Perforce
     {
         $index = strpos($identifier, '@');
         if ($index === false) {
-            $path = $identifier. '/' . $file;
-
-            return $path;
+            return $identifier. '/' . $file;
         }
 
         $path = substr($identifier, 0, $index) . '/' . $file . substr($identifier, $index);
@@ -472,9 +468,7 @@ class Perforce
         $lastCommitArr = explode(' ', $lastCommit);
         $lastCommitNum = $lastCommitArr[1];
 
-        $branches = array('master' => $possibleBranches[$this->p4Branch] . '@'. $lastCommitNum);
-
-        return $branches;
+        return array('master' => $possibleBranches[$this->p4Branch] . '@'. $lastCommitNum);
     }
 
     public function getTags()
