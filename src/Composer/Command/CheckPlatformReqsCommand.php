@@ -45,16 +45,17 @@ EOT
         $composer = $this->getComposer();
 
         $requires = $composer->getPackage()->getRequires();
-        if (!$input->getOption('no-dev')) {
+        if ($input->getOption('no-dev')) {
+            $dependencies = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'))->getPackages();
+        } else {
+            $dependencies = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
             $requires += $composer->getPackage()->getDevRequires();
         }
         foreach ($requires as $require => $link) {
             $requires[$require] = array($link);
         }
 
-        $locker = $composer->getLocker()
-                           ->getLockedRepository(!$input->getOption('no-dev'));
-        foreach ($locker->getPackages() as $package) {
+        foreach ($dependencies as $package) {
             foreach ($package->getRequires() as $require => $link) {
                 $requires[$require][] = $link;
             }
