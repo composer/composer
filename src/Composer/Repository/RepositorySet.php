@@ -18,6 +18,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Test\DependencyResolver\PoolTest;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -28,17 +29,17 @@ class RepositorySet
     private $rootAliases;
 
     /** @var RepositoryInterface[] */
-    private $repositories;
+    private $repositories = array();
 
     /** @var ComposerRepository[] */
-    private $providerRepos;
+    private $providerRepos = array();
 
     private $acceptableStabilities;
     private $stabilityFlags;
     protected $filterRequires;
 
     /** @var Pool */
-    private $pool; // TODO remove this
+    private $pool;
 
     public function __construct(array $rootAliases = array(), $minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
     {
@@ -66,6 +67,10 @@ class RepositorySet
      */
     public function addRepository(RepositoryInterface $repo)
     {
+        if ($this->pool) {
+            throw new \RuntimeException("Pool has already been created from this repository set, it cannot be modified anymore.");
+        }
+
         if ($repo instanceof CompositeRepository) {
             $repos = $repo->getRepositories();
         } else {
@@ -135,10 +140,6 @@ class RepositorySet
      */
     public function createPool()
     {
-        if ($this->pool) {
-            return $this->pool;
-        }
-
         $this->pool = new Pool($this->acceptableStabilities, $this->stabilityFlags, $this->filterRequires);
 
         foreach ($this->repositories as $repository) {
@@ -148,13 +149,12 @@ class RepositorySet
         return $this->pool;
     }
 
-    // TODO get rid of this function
-    public function getPoolTemp()
+    /**
+     * Access the pool object after it has been created, relevant for plugins which need to read info from the pool
+     * @return Pool
+     */
+    public function getPool()
     {
-        if (!$this->pool) {
-            return $this->createPool();
-        } else {
-            return $this->pool;
-        }
+        return $this->pool;
     }
 }

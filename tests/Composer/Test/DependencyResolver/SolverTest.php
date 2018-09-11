@@ -40,7 +40,6 @@ class SolverTest extends TestCase
 
         $this->request = new Request($this->repoSet);
         $this->policy = new DefaultPolicy;
-        $this->solver = new Solver($this->policy, $this->repoSet, $this->repoInstalled, new NullIO());
     }
 
     public function testSolverInstallSingle()
@@ -94,6 +93,8 @@ class SolverTest extends TestCase
         $this->repoSet->addRepository($this->repoInstalled);
         $this->repoSet->addRepository($repo1);
         $this->repoSet->addRepository($repo2);
+
+        $this->solver = new Solver($this->policy, $this->repoSet->createPool(), $this->repoInstalled, new NullIO());
 
         $this->request->install('foo');
 
@@ -842,6 +843,8 @@ class SolverTest extends TestCase
     {
         $this->repoSet->addRepository($this->repoInstalled);
         $this->repoSet->addRepository($this->repo);
+
+        $this->solver = new Solver($this->policy, $this->repoSet->createPool(), $this->repoInstalled, new NullIO());
     }
 
     protected function checkSolverResult(array $expected)

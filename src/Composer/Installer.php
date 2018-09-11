@@ -20,6 +20,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\PolicyInterface;
+use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\Solver;
@@ -464,14 +465,15 @@ class Installer
             }
         }
 
-        $repositorySet->getPoolTemp(); // TODO remove this, but ensures ids are set before dev packages are processed in advance of solver
+        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
+
+        $pool = $repositorySet->createPool();
 
         // force dev packages to have the latest links if we update or install from a (potentially new) lock
-        $this->processDevPackages($localRepo, $repositorySet, $policy, $repositories, $installedRepo, $lockedRepository, 'force-links');
+        $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, 'force-links');
 
         // solve dependencies
-        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
-        $solver = new Solver($policy, $repositorySet, $installedRepo, $this->io);
+        $solver = new Solver($policy, $pool, $installedRepo, $this->io);
         try {
             $operations = $solver->solve($request, $this->ignorePlatformReqs);
         } catch (SolverProblemsException $e) {
@@ -485,7 +487,7 @@ class Installer
         }
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
-        $operations = $this->processDevPackages($localRepo, $repositorySet, $policy, $repositories, $installedRepo, $lockedRepository, 'force-updates', $operations);
+        $operations = $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, 'force-updates', $operations);
 
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request, $operations);
 
@@ -600,11 +602,11 @@ class Installer
                 if ($reason instanceof Rule) {
                     switch ($reason->getReason()) {
                         case Rule::RULE_JOB_INSTALL:
-                            $this->io->writeError('    REASON: Required by the root package: '.$reason->getPrettyString($solver->getPool()));
+                            $this->io->writeError('    REASON: Required by the root package: '.$reason->getPrettyString($pool));
                             $this->io->writeError('');
                             break;
                         case Rule::RULE_PACKAGE_REQUIRES:
-                            $this->io->writeError('    REASON: '.$reason->getPrettyString($solver->getPool()));
+                            $this->io->writeError('    REASON: '.$reason->getPrettyString($pool));
                             $this->io->writeError('');
                             break;
                     }
@@ -623,7 +625,7 @@ class Installer
 
         if ($this->executeOperations) {
             // force source/dist urls to be updated for all packages
-            $this->processPackageUrls($repositorySet, $policy, $localRepo, $repositories);
+            $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
             $localRepo->write();
         }
 
@@ -699,7 +701,7 @@ class Installer
 
         // solve deps to see which get removed
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $repositorySet, $installedRepo, $request);
-        $solver = new Solver($policy, $repositorySet, $installedRepo, $this->io);
+        $solver = new Solver($policy, $repositorySet->createPool(), $installedRepo, $this->io);
         $ops = $solver->solve($request, $this->ignorePlatformReqs);
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $repositorySet, $installedRepo, $request, $ops);
 
@@ -948,7 +950,7 @@ class Installer
 
     /**
      * @param  WritableRepositoryInterface $localRepo
-     * @param  RepositorySet               $repositorySet
+     * @param  Pool                        $pool
      * @param  PolicyInterface             $policy
      * @param  array                       $repositories
      * @param  RepositoryInterface         $installedRepo
@@ -957,7 +959,7 @@ class Installer
      * @param  array|null                  $operations
      * @return array
      */
-    private function processDevPackages($localRepo, $repositorySet, $policy, $repositories, $installedRepo, $lockedRepository, $task, array $operations = null)
+    private function processDevPackages($localRepo, Pool $pool, $policy, $repositories, $installedRepo, $lockedRepository, $task, array $operations = null)
     {
         if ($task === 'force-updates' && null === $operations) {
             throw new \InvalidArgumentException('Missing operations argument');
@@ -1012,7 +1014,7 @@ class Installer
                 }
 
                 // find similar packages (name/version) in all repositories
-                $matches = $repositorySet->findPackages($package->getName(), new Constraint('=', $package->getVersion()));
+                $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()), true);
                 foreach ($matches as $index => $match) {
                     // skip local packages
                     if (!in_array($match->getRepository(), $repositories, true)) {
@@ -1024,8 +1026,8 @@ class Installer
                 }
 
                 // select preferred package according to policy rules
-                if ($matches && $matches = $policy->selectPreferredPackages($repositorySet->getPoolTemp(), array(), $matches)) { // TODO remove temp call
-                    $newPackage = $repositorySet->getPoolTemp()->literalToPackage($matches[0]);
+                if ($matches && $matches = $policy->selectPreferredPackages($pool, array(), $matches)) {
+                    $newPackage = $pool->literalToPackage($matches[0]);
 
                     if ($task === 'force-links' && $newPackage) {
                         $package->setRequires($newPackage->getRequires());
@@ -1126,12 +1128,12 @@ class Installer
     }
 
     /**
-     * @param RepositorySet               $repositorySet
+     * @param Pool               $pool
      * @param PolicyInterface             $policy
      * @param WritableRepositoryInterface $localRepo
      * @param array                       $repositories
      */
-    private function processPackageUrls($repositorySet, $policy, $localRepo, $repositories)
+    private function processPackageUrls(Pool $pool, $policy, $localRepo, $repositories)
     {
         if (!$this->update) {
             return;
@@ -1140,8 +1142,8 @@ class Installer
         $rootRefs = $this->package->getReferences();
 
         foreach ($localRepo->getCanonicalPackages() as $package) {
-            // find similar packages (name/version) in all repositories
-            $matches = $repositorySet->findPackages($package->getName(), new Constraint('=', $package->getVersion()));
+            // find similar packages (name/version) in pool
+            $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()), true);
             foreach ($matches as $index => $match) {
                 // skip local packages
                 if (!in_array($match->getRepository(), $repositories, true)) {
@@ -1153,8 +1155,8 @@ class Installer
             }
 
             // select preferred package according to policy rules
-            if ($matches && $matches = $policy->selectPreferredPackages($repositorySet->getPoolTemp(), array(), $matches)) { // TODO get rid of pool
-                $newPackage = $repositorySet->getPoolTemp()->literalToPackage($matches[0]);
+            if ($matches && $matches = $policy->selectPreferredPackages($pool, array(), $matches)) {
+                $newPackage = $pool->literalToPackage($matches[0]);
 
                 // update the dist and source URLs
                 $sourceUrl = $package->getSourceUrl();

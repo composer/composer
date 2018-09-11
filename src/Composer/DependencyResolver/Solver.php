@@ -27,8 +27,8 @@ class Solver
 
     /** @var PolicyInterface */
     protected $policy;
-    /** @var RepositorySet */
-    protected $repositorySet = null;
+    /** @var Pool */
+    protected $pool = null;
     /** @var RepositoryInterface */
     protected $installed;
     /** @var RuleSet */
@@ -37,8 +37,6 @@ class Solver
     protected $ruleSetGenerator;
     /** @var array */
     protected $jobs;
-    /** @var Pool */
-    protected $pool = null;
 
     /** @var int[] */
     protected $updateMap = array();
@@ -65,15 +63,15 @@ class Solver
 
     /**
      * @param PolicyInterface     $policy
-     * @param RepositorySet       $repositorySet
+     * @param Pool                $pool
      * @param RepositoryInterface $installed
      * @param IOInterface         $io
      */
-    public function __construct(PolicyInterface $policy, RepositorySet $repositorySet, RepositoryInterface $installed, IOInterface $io)
+    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, IOInterface $io)
     {
         $this->io = $io;
         $this->policy = $policy;
-        $this->repositorySet = $repositorySet;
+        $this->pool = $pool;
         $this->installed = $installed;
     }
 
@@ -216,8 +214,6 @@ class Solver
     public function solve(Request $request, $ignorePlatformReqs = false)
     {
         $this->jobs = $request->getJobs();
-
-        $this->pool = $this->repositorySet->createPool();
 
         $this->setupInstalledMap();
 
