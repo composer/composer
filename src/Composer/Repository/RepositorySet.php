@@ -98,13 +98,14 @@ class RepositorySet
     }
 
     /**
-     * Find packages matching name and optionally a constraint in all repositories
+     * Find packages providing or matching a name and optionally meeting a constraint in all repositories
      *
-     * @param $name
+     * @param string $name
      * @param ConstraintInterface|null $constraint
+     * @param bool $exactMatch
      * @return array
      */
-    public function findPackages($name, ConstraintInterface $constraint = null)
+    public function findPackages($name, ConstraintInterface $constraint = null, $exactMatch = true)
     {
         $packages = array();
         foreach ($this->repositories as $repository) {
@@ -115,6 +116,10 @@ class RepositorySet
 
         $result = array();
         foreach ($candidates as $candidate) {
+            if ($exactMatch && $candidate->getName() !== $name) {
+                continue;
+            }
+
             if ($this->isPackageAcceptable($candidate->getNames(), $candidate->getStability())) {
                 $result[] = $candidate;
             }
