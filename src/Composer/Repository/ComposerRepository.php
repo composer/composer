@@ -169,7 +169,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         foreach ($this->getProviderNames() as $providerName) {
             if ($name === $providerName) {
-                $candidates = $this->whatProvides($providerName); // TODO what is the point of this?
+                $candidates = $this->whatProvides($providerName);
                 foreach ($candidates as $package) {
                     if ($name === $package->getName()) {
                         $pkgConstraint = new Constraint('==', $package->getVersion());
@@ -394,7 +394,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
                 } else {
-                    if (!$bypassFilters && (!$isPackageAcceptableCallable || !call_user_func($isPackageAcceptableCallable, strtolower($version['name']), VersionParser::parseStability($version['version'])))) {
+                    if (!$bypassFilters && $isPackageAcceptableCallable && !call_user_func($isPackageAcceptableCallable, strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                         continue;
                     }
 
