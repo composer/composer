@@ -1660,14 +1660,6 @@ class Installer
     }
 
     /**
-     * @deprecated use setWhitelistTransitiveDependencies instead
-     */
-    public function setWhitelistDependencies($updateDependencies = true)
-    {
-        return $this->setWhitelistTransitiveDependencies($updateDependencies);
-    }
-
-    /**
      * Should dependencies of whitelisted packages (but not direct dependencies) be updated?
      *
      * This will NOT whitelist any dependencies that are also directly defined
