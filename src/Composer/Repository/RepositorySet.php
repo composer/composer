@@ -24,36 +24,132 @@ use Composer\Semver\Constraint\ConstraintInterface;
  */
 class RepositorySet
 {
-    private $pool;
+    /** @var array */
+    private $rootAliases;
 
-    public function __construct(Pool $pool)
+    /** @var RepositoryInterface[] */
+    private $repositories;
+
+    /** @var ComposerRepository[] */
+    private $providerRepos;
+
+    private $acceptableStabilities;
+    private $stabilityFlags;
+    protected $filterRequires;
+
+    /** @var Pool */
+    private $pool; // TODO remove this
+
+    public function __construct(array $rootAliases = array(), $minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
     {
-        $this->pool = $pool;
+        $this->rootAliases = $rootAliases;
+
+        $this->acceptableStabilities = array();
+        foreach (BasePackage::$stabilities as $stability => $value) {
+            if ($value <= BasePackage::$stabilities[$minimumStability]) {
+                $this->acceptableStabilities[$stability] = $value;
+            }
+        }
+        $this->stabilityFlags = $stabilityFlags;
+        $this->filterRequires = $filterRequires;
+        foreach ($filterRequires as $name => $constraint) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
+                unset($this->filterRequires[$name]);
+            }
+        }
     }
 
-    public function addRepository(RepositoryInterface $repo, $rootAliases = array())
+    /**
+     * Adds a repository to this repository set
+     *
+     * @param RepositoryInterface $repo        A package repository
+     */
+    public function addRepository(RepositoryInterface $repo)
     {
-        return $this->pool->addRepository($repo, $rootAliases);
+        if ($repo instanceof CompositeRepository) {
+            $repos = $repo->getRepositories();
+        } else {
+            $repos = array($repo);
+        }
+
+        foreach ($repos as $repo) {
+            $this->repositories[] = $repo;
+            if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
+                $this->providerRepos[] = $repo;
+            }
+        }
     }
 
     public function isPackageAcceptable($name, $stability)
     {
-        return $this->pool->isPackageAcceptable($name, $stability);
+        foreach ((array) $name as $n) {
+            // allow if package matches the global stability requirement and has no exception
+            if (!isset($this->stabilityFlags[$n]) && isset($this->acceptableStabilities[$stability])) {
+                return true;
+            }
+
+            // allow if package matches the package-specific stability flag
+            if (isset($this->stabilityFlags[$n]) && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$n]) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
+    /**
+     * Find packages matching name and optionally a constraint in all repositories
+     *
+     * @param $name
+     * @param ConstraintInterface|null $constraint
+     * @return array
+     */
     public function findPackages($name, ConstraintInterface $constraint = null)
     {
-        return $this->pool->whatProvides($name, $constraint, true);
+        $packages = array();
+        foreach ($this->repositories as $repository) {
+            $packages[] = $repository->findPackages($name, $constraint) ?: array();
+        }
+
+        $candidates = $packages ? call_user_func_array('array_merge', $packages) : array();
+
+        $result = array();
+        foreach ($candidates as $candidate) {
+            if ($this->isPackageAcceptable($candidate->getNames(), $candidate->getStability())) {
+                $result[] = $candidate;
+            }
+        }
+
+        return $candidates;
     }
 
+    /**
+     * Create a pool for dependency resolution from the packages in this repository set.
+     *
+     * @return Pool
+     */
     public function createPool()
     {
+        if ($this->pool) {
+            return $this->pool;
+        }
+
+        $this->pool = new Pool($this->acceptableStabilities, $this->stabilityFlags, $this->filterRequires);
+
+        foreach ($this->repositories as $repository) {
+            $this->pool->addRepository($repository, $this->rootAliases);
+        }
+
         return $this->pool;
     }
 
     // TODO get rid of this function
     public function getPoolTemp()
     {
-        return $this->pool;
+        if (!$this->pool) {
+            return $this->createPool();
+        } else {
+            return $this->pool;
+        }
     }
 }

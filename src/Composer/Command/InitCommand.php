@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\DependencyResolver\Pool;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
@@ -643,7 +642,7 @@ EOT
         $key = $minimumStability ?: 'default';
 
         if (!isset($this->repositorySets[$key])) {
-            $this->repositorySets[$key] = $repositorySet = new RepositorySet(new Pool($minimumStability ?: $this->getMinimumStability($input)));
+            $this->repositorySets[$key] = $repositorySet = new RepositorySet(array(), $minimumStability ?: $this->getMinimumStability($input));
             $repositorySet->addRepository($this->getRepos());
         }
 

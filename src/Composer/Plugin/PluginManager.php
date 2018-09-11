@@ -23,7 +23,6 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
-use Composer\DependencyResolver\Pool;
 use Composer\Plugin\Capability\Capability;
 
 /**
@@ -158,7 +157,7 @@ class PluginManager
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
 
-        $repositorySet = new RepositorySet(new Pool('dev'));
+        $repositorySet = new RepositorySet(array(), 'dev');
         $repositorySet->addRepository($localRepo);
         if ($globalRepo) {
             $repositorySet->addRepository($globalRepo);

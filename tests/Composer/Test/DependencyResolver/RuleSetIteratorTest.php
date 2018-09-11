@@ -17,6 +17,7 @@ use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\RuleSetIterator;
 use Composer\DependencyResolver\Pool;
+use Composer\Package\BasePackage;
 use PHPUnit\Framework\TestCase;
 
 class RuleSetIteratorTest extends TestCase
@@ -26,7 +27,7 @@ class RuleSetIteratorTest extends TestCase
 
     protected function setUp()
     {
-        $this->pool = new Pool;
+        $this->pool = new Pool(array('stable' => BasePackage::STABILITY_STABLE));
 
         $this->rules = array(
             RuleSet::TYPE_JOB => array(

@@ -54,22 +54,12 @@ class Pool implements \Countable
     protected $whitelist = null;
     protected $id = 1;
 
-    public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
+    public function __construct(array $acceptableStabilities, array $stabilityFlags = array(), array $filterRequires = array())
     {
-        $this->versionParser = new VersionParser;
-        $this->acceptableStabilities = array();
-        foreach (BasePackage::$stabilities as $stability => $value) {
-            if ($value <= BasePackage::$stabilities[$minimumStability]) {
-                $this->acceptableStabilities[$stability] = $value;
-            }
-        }
+        $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
         $this->filterRequires = $filterRequires;
-        foreach ($filterRequires as $name => $constraint) {
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
-                unset($this->filterRequires[$name]);
-            }
-        }
+        $this->versionParser = new VersionParser;
     }
 
     public function setWhitelist($whitelist)
@@ -202,7 +192,7 @@ class Pool implements \Countable
         $candidates = array();
 
         foreach ($this->providerRepos as $repo) {
-            foreach ($repo->whatProvides($this, $name, $bypassFilters) as $candidate) {
+            foreach ($repo->whatProvides($name, $bypassFilters, array($this, 'isPackageAcceptable')) as $candidate) {
                 $candidates[] = $candidate;
                 if ($candidate->id < 1) {
                     $candidate->setId($this->id++);

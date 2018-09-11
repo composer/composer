@@ -20,7 +20,6 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\PolicyInterface;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\Solver;
@@ -371,19 +370,19 @@ class Installer
 
         // creating repository set
         $policy = $this->createPolicy();
-        $repositorySet = $this->createRepositorySet($this->update ? null : $lockedRepository);
-        $repositorySet->addRepository($installedRepo, $aliases);
+        $repositorySet = $this->createRepositorySet($aliases, $this->update ? null : $lockedRepository);
+        $repositorySet->addRepository($installedRepo);
         if ($this->update) {
             $repositories = $this->repositoryManager->getRepositories();
             foreach ($repositories as $repository) {
-                $repositorySet->addRepository($repository, $aliases);
+                $repositorySet->addRepository($repository);
             }
         }
         // Add the locked repository after the others in case we are doing a
         // partial update so missing packages can be found there still.
         // For installs from lock it's the only one added so it is first
         if ($lockedRepository) {
-            $repositorySet->addRepository($lockedRepository, $aliases);
+            $repositorySet->addRepository($lockedRepository);
         }
 
         // creating requirements request
@@ -464,6 +463,8 @@ class Installer
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         }
+
+        $repositorySet->getPoolTemp(); // TODO remove this, but ensures ids are set before dev packages are processed in advance of solver
 
         // force dev packages to have the latest links if we update or install from a (potentially new) lock
         $this->processDevPackages($localRepo, $repositorySet, $policy, $repositories, $installedRepo, $lockedRepository, 'force-links');
@@ -685,9 +686,9 @@ class Installer
         unset($tempLocalRepo, $loader, $dumper);
 
         $policy = $this->createPolicy();
-        $repositorySet = $this->createRepositorySet();
+        $repositorySet = $this->createRepositorySet($aliases);
         $installedRepo = $this->createInstalledRepo($localRepo, $platformRepo);
-        $repositorySet->addRepository($installedRepo, $aliases);
+        $repositorySet->addRepository($installedRepo);
 
         // creating requirements request without dev requirements
         $request = $this->createRequest($this->package, $platformRepo);
@@ -844,17 +845,12 @@ class Installer
         return $installedRepo;
     }
 
-    private function createRepositorySet($lockedRepository = null)
-    {
-        $pool = $this->createPool($lockedRepository);
-        return new RepositorySet($pool);
-    }
-
     /**
-     * @param  RepositoryInterface|null $lockedRepository
-     * @return Pool
+     * @param array $rootAliases
+     * @param RepositoryInterface|null $lockedRepository
+     * @return RepositorySet
      */
-    private function createPool(RepositoryInterface $lockedRepository = null)
+    private function createRepositorySet(array $rootAliases = array(), $lockedRepository = null)
     {
         if ($this->update) {
             $minimumStability = $this->package->getMinimumStability();
@@ -886,7 +882,7 @@ class Installer
             }
         }
 
-        return new Pool($minimumStability, $stabilityFlags, $rootConstraints);
+        return new RepositorySet($rootAliases, $minimumStability, $stabilityFlags, $rootConstraints);
     }
 
     /**
@@ -1319,7 +1315,7 @@ class Installer
             }
         }
 
-        $repositorySet = new RepositorySet(new Pool('dev'));
+        $repositorySet = new RepositorySet(array(), 'dev');
         $repositorySet->addRepository($localOrLockRepo);
 
         $seen = array();
@@ -1354,11 +1350,11 @@ class Installer
 
             while (!$packageQueue->isEmpty()) {
                 $package = $packageQueue->dequeue();
-                if (isset($seen[$package->getId()])) {
+                if (isset($seen[spl_object_hash($package)])) {
                     continue;
                 }
 
-                $seen[$package->getId()] = true;
+                $seen[spl_object_hash($package)] = true;
                 $this->updateWhitelist[$package->getName()] = true;
 
                 if (!$this->whitelistDependencies && !$this->whitelistAllDependencies) {

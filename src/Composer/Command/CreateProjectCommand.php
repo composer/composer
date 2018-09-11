@@ -20,7 +20,6 @@ use Composer\Installer\InstallationManager;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
@@ -291,7 +290,7 @@ EOT
             throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
-        $repositorySet = new RepositorySet(new Pool($stability));
+        $repositorySet = new RepositorySet(array(), $stability);
         $repositorySet->addRepository($sourceRepo);
 
         $phpVersion = null;

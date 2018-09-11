@@ -34,7 +34,7 @@ class SolverTest extends TestCase
 
     public function setUp()
     {
-        $this->repoSet = new RepositorySet(new Pool);
+        $this->repoSet = new RepositorySet(array());
         $this->repo = new ArrayRepository;
         $this->repoInstalled = new ArrayRepository;
 

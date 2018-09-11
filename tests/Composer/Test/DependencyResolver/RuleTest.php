@@ -16,6 +16,7 @@ use Composer\DependencyResolver\GenericRule;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\Pool;
+use Composer\Package\BasePackage;
 use Composer\Repository\ArrayRepository;
 use Composer\TestCase;
 
@@ -25,7 +26,7 @@ class RuleTest extends TestCase
 
     public function setUp()
     {
-        $this->pool = new Pool;
+        $this->pool = new Pool(array('stable' => BasePackage::STABILITY_STABLE));
     }
 
     public function testGetHash()

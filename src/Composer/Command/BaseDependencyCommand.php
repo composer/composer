@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\DependencyResolver\Pool;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\ArrayRepository;
@@ -79,7 +78,7 @@ class BaseDependencyCommand extends BaseCommand
             $composer->getRepositoryManager()->getLocalRepository(),
             new PlatformRepository(array(), $platformOverrides),
         ));
-        $repositorySet = new RepositorySet(new Pool());
+        $repositorySet = new RepositorySet();
         $repositorySet->addRepository($repository);
 
         // Parse package name and constraint

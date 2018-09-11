@@ -21,7 +21,7 @@ class PoolTest extends TestCase
 {
     public function testPool()
     {
-        $pool = new Pool;
+        $pool = $this->createPool();
         $repo = new ArrayRepository;
         $package = $this->getPackage('foo', '1');
 
@@ -34,7 +34,7 @@ class PoolTest extends TestCase
 
     public function testPoolIgnoresIrrelevantPackages()
     {
-        $pool = new Pool('stable', array('bar' => BasePackage::STABILITY_BETA));
+        $pool = new Pool(array('stable' => BasePackage::STABILITY_STABLE), array('bar' => BasePackage::STABILITY_BETA));
         $repo = new ArrayRepository;
         $repo->addPackage($package = $this->getPackage('bar', '1'));
         $repo->addPackage($betaPackage = $this->getPackage('bar', '1-beta'));
@@ -53,7 +53,7 @@ class PoolTest extends TestCase
      */
     public function testGetPriorityForNotRegisteredRepository()
     {
-        $pool = new Pool;
+        $pool = $this->createPool();
         $repository = new ArrayRepository;
 
         $pool->getPriority($repository);
@@ -61,7 +61,7 @@ class PoolTest extends TestCase
 
     public function testGetPriorityWhenRepositoryIsRegistered()
     {
-        $pool = new Pool;
+        $pool = $this->createPool();
         $firstRepository = new ArrayRepository;
         $pool->addRepository($firstRepository);
         $secondRepository = new ArrayRepository;
@@ -76,7 +76,7 @@ class PoolTest extends TestCase
 
     public function testWhatProvidesSamePackageForDifferentRepositories()
     {
-        $pool = new Pool;
+        $pool = $this->createPool();
         $firstRepository = new ArrayRepository;
         $secondRepository = new ArrayRepository;
 
@@ -96,7 +96,7 @@ class PoolTest extends TestCase
 
     public function testWhatProvidesPackageWithConstraint()
     {
-        $pool = new Pool;
+        $pool = $this->createPool();
         $repository = new ArrayRepository;
 
         $firstPackage = $this->getPackage('foo', '1');
@@ -113,7 +113,7 @@ class PoolTest extends TestCase
 
     public function testPackageById()
     {
-        $pool = new Pool;
+        $pool = $this->createPool();
         $repository = new ArrayRepository;
         $package = $this->getPackage('foo', '1');
 
@@ -125,8 +125,13 @@ class PoolTest extends TestCase
 
     public function testWhatProvidesWhenPackageCannotBeFound()
     {
-        $pool = new Pool;
+        $pool = $this->createPool();
 
         $this->assertEquals(array(), $pool->whatProvides('foo'));
+    }
+
+    protected function createPool()
+    {
+        return new Pool(array('stable' => BasePackage::STABILITY_STABLE));
     }
 }
