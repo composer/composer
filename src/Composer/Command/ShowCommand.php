@@ -539,9 +539,11 @@ EOT
             $matches[$index] = $package->getId();
         }
 
+        $pool = $repositorySet->createPool();
+
         // select preferred package according to policy rules
-        if (!$matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($repositorySet->getPoolTemp(), array(), $matches)) { // TODO get rid of the pool call
-            $matchedPackage = $repositorySet->getPoolTemp()->literalToPackage($preferred[0]);
+        if (!$matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($pool, array(), $matches)) {
+            $matchedPackage = $pool->literalToPackage($preferred[0]);
         }
 
         return array($matchedPackage, $versions);

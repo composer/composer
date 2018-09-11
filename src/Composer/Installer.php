@@ -127,7 +127,7 @@ class Installer
      * @var array|null
      */
     protected $updateWhitelist = null;
-    protected $whitelistDependencies = false; // TODO 2.0 rename to whitelistTransitiveDependencies
+    protected $whitelistTransitiveDependencies = false;
     protected $whitelistAllDependencies = false;
 
     /**
@@ -1327,7 +1327,7 @@ class Installer
         foreach ($this->updateWhitelist as $packageName => $void) {
             $packageQueue = new \SplQueue;
 
-            $depPackages = $repositorySet->findPackages($packageName); // TODO does this need replacers/providers?
+            $depPackages = $repositorySet->findPackages($packageName, null, false);
 
             $nameMatchesRequiredPackage = in_array($packageName, $requiredPackageNames, true);
 
@@ -1359,14 +1359,14 @@ class Installer
                 $seen[spl_object_hash($package)] = true;
                 $this->updateWhitelist[$package->getName()] = true;
 
-                if (!$this->whitelistDependencies && !$this->whitelistAllDependencies) {
+                if (!$this->whitelistTransitiveDependencies && !$this->whitelistAllDependencies) {
                     continue;
                 }
 
                 $requires = $package->getRequires();
 
                 foreach ($requires as $require) {
-                    $requirePackages = $repositorySet->findPackages($require->getTarget()); // TODO does this need replacers/providers?
+                    $requirePackages = $repositorySet->findPackages($require->getTarget(), null, false);
 
                     foreach ($requirePackages as $requirePackage) {
                         if (isset($this->updateWhitelist[$requirePackage->getName()])) {
@@ -1678,7 +1678,7 @@ class Installer
      */
     public function setWhitelistTransitiveDependencies($updateTransitiveDependencies = true)
     {
-        $this->whitelistDependencies = (bool) $updateTransitiveDependencies;
+        $this->whitelistTransitiveDependencies = (bool) $updateTransitiveDependencies;
 
         return $this;
     }
