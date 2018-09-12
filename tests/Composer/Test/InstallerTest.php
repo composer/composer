@@ -14,6 +14,7 @@ namespace Composer\Test;
 
 use Composer\Installer;
 use Composer\Console\Application;
+use Composer\IO\BufferIO;
 use Composer\Json\JsonFile;
 use Composer\Util\Filesystem;
 use Composer\Repository\ArrayRepository;
@@ -56,7 +57,7 @@ class InstallerTest extends TestCase
      */
     public function testInstaller(RootPackageInterface $rootPackage, $repositories, array $options)
     {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io = new BufferIO('', OutputInterface::VERBOSITY_NORMAL, new OutputFormatter(false));
 
         $downloadManager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($io))
@@ -81,7 +82,9 @@ class InstallerTest extends TestCase
 
         $installer = new Installer($io, $config, clone $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
         $result = $installer->run();
-        $this->assertSame(0, $result);
+
+        $output = str_replace("\r", '', $io->getOutput());
+        $this->assertEquals(0, $result, $output);
 
         $expectedInstalled = isset($options['install']) ? $options['install'] : array();
         $expectedUpdated = isset($options['update']) ? $options['update'] : array();
