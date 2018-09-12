@@ -20,6 +20,7 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
@@ -31,12 +32,13 @@ class SolverTest extends TestCase
     protected $repoInstalled;
     protected $request;
     protected $policy;
+    protected $solver;
 
     public function setUp()
     {
         $this->repoSet = new RepositorySet(array());
         $this->repo = new ArrayRepository;
-        $this->repoInstalled = new ArrayRepository;
+        $this->repoInstalled = new InstalledArrayRepository;
 
         $this->request = new Request($this->repoSet);
         $this->policy = new DefaultPolicy;
@@ -71,6 +73,7 @@ class SolverTest extends TestCase
 
         $this->request->install('B', $this->getVersionConstraint('==', '1'));
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -93,8 +96,6 @@ class SolverTest extends TestCase
         $this->repoSet->addRepository($this->repoInstalled);
         $this->repoSet->addRepository($repo1);
         $this->repoSet->addRepository($repo2);
-
-        $this->solver = new Solver($this->policy, $this->repoSet->createPool(), $this->repoInstalled, new NullIO());
 
         $this->request->install('foo');
 
@@ -447,6 +448,7 @@ class SolverTest extends TestCase
 
         // must explicitly pick the provider, so error in this case
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -480,6 +482,7 @@ class SolverTest extends TestCase
         $this->request->install('A');
 
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -652,6 +655,7 @@ class SolverTest extends TestCase
 
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
 
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -668,6 +672,7 @@ class SolverTest extends TestCase
         $this->request->install('A');
         $this->request->install('B');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -697,6 +702,7 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -744,6 +750,7 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -843,12 +850,16 @@ class SolverTest extends TestCase
     {
         $this->repoSet->addRepository($this->repoInstalled);
         $this->repoSet->addRepository($this->repo);
+    }
 
-        $this->solver = new Solver($this->policy, $this->repoSet->createPool(), $this->repoInstalled, new NullIO());
+    protected function createSolver()
+    {
+        $this->solver = new Solver($this->policy, $this->repoSet->createPool($this->request), $this->repoInstalled, new NullIO());
     }
 
     protected function checkSolverResult(array $expected)
     {
+        $this->createSolver();
         $transaction = $this->solver->solve($this->request);
 
         $result = array();

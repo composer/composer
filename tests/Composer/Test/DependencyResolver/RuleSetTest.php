@@ -22,13 +22,6 @@ use Composer\TestCase;
 
 class RuleSetTest extends TestCase
 {
-    protected $pool;
-
-    public function setUp()
-    {
-        $this->pool = new Pool(array('stable' => BasePackage::STABILITY_STABLE));
-    }
-
     public function testAdd()
     {
         $rules = array(
@@ -146,9 +139,11 @@ class RuleSetTest extends TestCase
 
     public function testPrettyString()
     {
-        $repo = new ArrayRepository;
-        $repo->addPackage($p = $this->getPackage('foo', '2.1'));
-        $this->pool->addRepository($repo);
+        $pool = new Pool(array('stable' => BasePackage::STABILITY_STABLE));
+        $pool->setPackages(array(
+            $p = $this->getPackage('foo', '2.1'),
+        ));
+        $p->setId(1);
 
         $ruleSet = new RuleSet;
         $literal = $p->getId();
@@ -156,7 +151,7 @@ class RuleSetTest extends TestCase
 
         $ruleSet->add($rule, RuleSet::TYPE_JOB);
 
-        $this->assertContains('JOB     : Install command rule (install foo 2.1)', $ruleSet->getPrettyString($this->pool));
+        $this->assertContains('JOB     : Install command rule (install foo 2.1)', $ruleSet->getPrettyString($pool));
     }
 
     private function getRuleMock()

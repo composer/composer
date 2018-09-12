@@ -27,7 +27,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Package\PackageInterface;
 
 /**
- * A package pool contains repositories that provide packages.
+ * A package pool contains all packages for dependency resolution
  *
  * @author Nils Adermann <naderman@naderman.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -41,23 +41,18 @@ class Pool implements \Countable
     const MATCH_REPLACE = 3;
     const MATCH_FILTERED = 4;
 
-    protected $repositories = array();
     protected $providerRepos = array();
     protected $packages = array();
     protected $packageByName = array();
     protected $packageByExactName = array();
-    protected $acceptableStabilities;
-    protected $stabilityFlags;
+    protected $priorities = array();
     protected $versionParser;
     protected $providerCache = array();
     protected $filterRequires;
     protected $whitelist = null;
-    protected $id = 1;
 
-    public function __construct(array $acceptableStabilities, array $stabilityFlags = array(), array $filterRequires = array())
+    public function __construct(array $filterRequires = array())
     {
-        $this->acceptableStabilities = $acceptableStabilities;
-        $this->stabilityFlags = $stabilityFlags;
         $this->filterRequires = $filterRequires;
         $this->versionParser = new VersionParser;
     }
@@ -68,76 +63,24 @@ class Pool implements \Countable
         $this->providerCache = array();
     }
 
-    /**
-     * Adds a repository and its packages to this package pool
-     *
-     * @param RepositoryInterface $repo        A package repository
-     * @param array               $rootAliases
-     */
-    public function addRepository(RepositoryInterface $repo, $rootAliases = array())
+    public function setPackages(array $packages, array $priorities = array())
     {
-        if ($repo instanceof CompositeRepository) {
-            $repos = $repo->getRepositories();
-        } else {
-            $repos = array($repo);
-        }
+        $this->priorities = $priorities;
+        $this->packages = $packages;
 
-        foreach ($repos as $repo) {
-            $this->repositories[] = $repo;
+        foreach ($this->packages as $package) {
+            $names = $package->getNames();
+            $this->packageByExactName[$package->getName()][$package->id] = $package;
 
-            $exempt = $repo instanceof PlatformRepository || $repo instanceof InstalledRepositoryInterface;
-
-            if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
-                $this->providerRepos[] = $repo;
-                $repo->setRootAliases($rootAliases);
-                $repo->resetPackageIds();
-            } else {
-                foreach ($repo->getPackages() as $package) {
-                    $names = $package->getNames();
-                    $stability = $package->getStability();
-                    if ($exempt || $this->isPackageAcceptable($names, $stability)) {
-                        $package->setId($this->id++);
-                        $this->packages[] = $package;
-                        $this->packageByExactName[$package->getName()][$package->id] = $package;
-
-                        foreach ($names as $provided) {
-                            $this->packageByName[$provided][] = $package;
-                        }
-
-                        // handle root package aliases
-                        $name = $package->getName();
-                        if (isset($rootAliases[$name][$package->getVersion()])) {
-                            $alias = $rootAliases[$name][$package->getVersion()];
-                            if ($package instanceof AliasPackage) {
-                                $package = $package->getAliasOf();
-                            }
-                            $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
-                            $aliasPackage->setRootPackageAlias(true);
-                            $aliasPackage->setId($this->id++);
-
-                            $package->getRepository()->addPackage($aliasPackage);
-                            $this->packages[] = $aliasPackage;
-                            $this->packageByExactName[$aliasPackage->getName()][$aliasPackage->id] = $aliasPackage;
-
-                            foreach ($aliasPackage->getNames() as $name) {
-                                $this->packageByName[$name][] = $aliasPackage;
-                            }
-                        }
-                    }
-                }
+            foreach ($names as $provided) {
+                $this->packageByName[$provided][] = $package;
             }
         }
     }
 
-    public function getPriority(RepositoryInterface $repo)
+    public function getPriority($id)
     {
-        $priority = array_search($repo, $this->repositories, true);
-
-        if (false === $priority) {
-            throw new \RuntimeException("Could not determine repository priority. The repository was not registered in the pool.");
-        }
-
-        return -$priority;
+        return $this->priorities[$id - 1];
     }
 
     /**
@@ -191,25 +134,12 @@ class Pool implements \Countable
     {
         $candidates = array();
 
-        foreach ($this->providerRepos as $repo) {
-            foreach ($repo->whatProvides($name, $bypassFilters, array($this, 'isPackageAcceptable')) as $candidate) {
-                $candidates[] = $candidate;
-                if ($candidate->id < 1) {
-                    $candidate->setId($this->id++);
-                    $this->packages[$this->id - 2] = $candidate;
-                }
-            }
-        }
-
         if ($mustMatchName) {
-            $candidates = array_filter($candidates, function ($candidate) use ($name) {
-                return $candidate->getName() == $name;
-            });
             if (isset($this->packageByExactName[$name])) {
-                $candidates = array_merge($candidates, $this->packageByExactName[$name]);
+                $candidates = $this->packageByExactName[$name];
             }
         } elseif (isset($this->packageByName[$name])) {
-            $candidates = array_merge($candidates, $this->packageByName[$name]);
+            $candidates = $this->packageByName[$name];
         }
 
         $matches = $provideMatches = array();
@@ -285,23 +215,6 @@ class Pool implements \Countable
         }
 
         return $prefix.' '.$package->getPrettyString();
-    }
-
-    public function isPackageAcceptable($name, $stability)
-    {
-        foreach ((array) $name as $n) {
-            // allow if package matches the global stability requirement and has no exception
-            if (!isset($this->stabilityFlags[$n]) && isset($this->acceptableStabilities[$stability])) {
-                return true;
-            }
-
-            // allow if package matches the package-specific stability flag
-            if (isset($this->stabilityFlags[$n]) && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$n]) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

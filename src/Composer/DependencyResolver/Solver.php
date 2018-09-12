@@ -244,7 +244,7 @@ class Solver
         }
 
         if ($this->problems) {
-            throw new SolverProblemsException($this->problems, $this->installedMap);
+            throw new SolverProblemsException($this->problems, $this->installedMap, $this->learnedPool);
         }
 
         $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisions);

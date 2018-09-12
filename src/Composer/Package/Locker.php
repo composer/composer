@@ -14,9 +14,9 @@ namespace Composer\Package;
 
 use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
+use Composer\Repository\LockArrayRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
-use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Util\Git as GitUtil;
@@ -150,7 +150,7 @@ class Locker
     public function getLockedRepository($withDevReqs = false)
     {
         $lockData = $this->getLockData();
-        $packages = new ArrayRepository();
+        $packages = new LockArrayRepository();
 
         $lockedPackages = $lockData['packages'];
         if ($withDevReqs) {

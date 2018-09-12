@@ -467,7 +467,7 @@ class Installer
 
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
 
-        $pool = $repositorySet->createPool();
+        $pool = $repositorySet->createPool($request);
 
         // force dev packages to have the latest links if we update or install from a (potentially new) lock
         $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, 'force-links');
@@ -701,7 +701,7 @@ class Installer
 
         // solve deps to see which get removed
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $repositorySet, $installedRepo, $request);
-        $solver = new Solver($policy, $repositorySet->createPool(), $installedRepo, $this->io);
+        $solver = new Solver($policy, $repositorySet->createPool($request), $installedRepo, $this->io);
         $ops = $solver->solve($request, $this->ignorePlatformReqs);
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $repositorySet, $installedRepo, $request, $ops);
 

@@ -13,6 +13,8 @@
 namespace Composer\Repository;
 
 use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\PoolBuilder;
+use Composer\DependencyResolver\Request;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\CompositeRepository;
@@ -30,9 +32,6 @@ class RepositorySet
 
     /** @var RepositoryInterface[] */
     private $repositories = array();
-
-    /** @var ComposerRepository[] */
-    private $providerRepos = array();
 
     private $acceptableStabilities;
     private $stabilityFlags;
@@ -79,9 +78,6 @@ class RepositorySet
 
         foreach ($repos as $repo) {
             $this->repositories[] = $repo;
-            if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
-                $this->providerRepos[] = $repo;
-            }
         }
     }
 
@@ -133,20 +129,43 @@ class RepositorySet
         return $candidates;
     }
 
+    public function getPriority(RepositoryInterface $repo)
+    {
+        $priority = array_search($repo, $this->repositories, true);
+
+        if (false === $priority) {
+            throw new \RuntimeException("Could not determine repository priority. The repository was not registered in the pool.");
+        }
+
+        return -$priority;
+    }
+
     /**
      * Create a pool for dependency resolution from the packages in this repository set.
      *
      * @return Pool
      */
-    public function createPool()
+    public function createPool(Request $request)
     {
-        $this->pool = new Pool($this->acceptableStabilities, $this->stabilityFlags, $this->filterRequires);
+        $poolBuilder = new PoolBuilder(array($this, 'isPackageAcceptable'), $this->filterRequires);
 
-        foreach ($this->repositories as $repository) {
-            $this->pool->addRepository($repository, $this->rootAliases);
+        return $this->pool = $poolBuilder->buildPool($this->repositories, $this->rootAliases, $request);
+    }
+
+    // TODO unify this with above in some simpler version without "request"?
+    public function createPoolForPackage($packageName)
+    {
+        return $this->createPoolForPackages(array($packageName));
+    }
+
+    public function createPoolForPackages($packageNames)
+    {
+        $request = new Request();
+        foreach ($packageNames as $packageName) {
+            $request->install($packageName);
         }
 
-        return $this->pool;
+        return $this->createPool($request);
     }
 
     /**

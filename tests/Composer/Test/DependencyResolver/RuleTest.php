@@ -22,13 +22,6 @@ use Composer\TestCase;
 
 class RuleTest extends TestCase
 {
-    protected $pool;
-
-    public function setUp()
-    {
-        $this->pool = new Pool(array('stable' => BasePackage::STABILITY_STABLE));
-    }
-
     public function testGetHash()
     {
         $rule = new GenericRule(array(123), Rule::RULE_JOB_INSTALL, null);
@@ -100,13 +93,16 @@ class RuleTest extends TestCase
 
     public function testPrettyString()
     {
-        $repo = new ArrayRepository;
-        $repo->addPackage($p1 = $this->getPackage('foo', '2.1'));
-        $repo->addPackage($p2 = $this->getPackage('baz', '1.1'));
-        $this->pool->addRepository($repo);
+        $pool = new Pool(array('stable' => BasePackage::STABILITY_STABLE));
+        $pool->setPackages(array(
+            $p1 = $this->getPackage('foo', '2.1'),
+            $p2 = $this->getPackage('baz', '1.1'),
+        ));
+        $p1->setId(1);
+        $p2->setId(2);
 
         $rule = new GenericRule(array($p1->getId(), -$p2->getId()), Rule::RULE_JOB_INSTALL, null);
 
-        $this->assertEquals('Install command rule (don\'t install baz 1.1|install foo 2.1)', $rule->getPrettyString($this->pool));
+        $this->assertEquals('Install command rule (don\'t install baz 1.1|install foo 2.1)', $rule->getPrettyString($pool));
     }
 }

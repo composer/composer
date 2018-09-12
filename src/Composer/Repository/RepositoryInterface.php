@@ -55,12 +55,21 @@ interface RepositoryInterface extends \Countable
      */
     public function findPackages($name, $constraint = null);
 
+    // TODO this should really not be in this generic interface anymore
     /**
      * Returns list of registered packages.
      *
      * @return PackageInterface[]
      */
     public function getPackages();
+
+    /**
+     * Returns list of registered packages with the supplied name
+     *
+     * @param bool[] $packageNameMap
+     * @return PackageInterface[]
+     */
+    public function loadPackages(array $packageNameMap);
 
     /**
      * Searches the repository for packages containing the query
