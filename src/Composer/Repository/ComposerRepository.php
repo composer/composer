@@ -202,11 +202,22 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         $packages = array();
-        foreach ($packageNameMap as $name => $void) {
+        foreach ($packageNameMap as $name => $constraint) {
             $matches = array();
-            foreach ($this->whatProvides($name, false, $isPackageAcceptableCallable) as $match) {
-                if ($match->getName() === $name) {
-                    $matches[] = $match;
+            $candidates = $this->whatProvides($name, false, $isPackageAcceptableCallable);
+            foreach ($candidates as $candidate) {
+                if ($candidate->getName() === $name && (!$constraint || $constraint->matches(new Constraint('==', $candidate->getVersion())))) {
+                    $matches[spl_object_hash($candidate)] = $candidate;
+                    if ($candidate instanceof AliasPackage && !isset($matches[spl_object_hash($candidate->getAliasOf())])) {
+                        $matches[spl_object_hash($candidate->getAliasOf())] = $candidate->getAliasOf();
+                    }
+                }
+            }
+            foreach ($candidates as $candidate) {
+                if ($candidate instanceof AliasPackage) {
+                    if (isset($result[spl_object_hash($candidate->getAliasOf())])) {
+                        $matches[spl_object_hash($candidate)] = $candidate;
+                    }
                 }
             }
             $packages = array_merge($packages, $matches);
