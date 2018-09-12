@@ -51,7 +51,7 @@ class PoolBuilder
         foreach ($request->getJobs() as $job) {
             switch ($job['cmd']) {
                 case 'install':
-                    $loadNames[$job['packageName']] = true;
+                    $loadNames[$job['packageName']] = $job['constraint'];
                     break;
             }
         }
@@ -129,7 +129,7 @@ class PoolBuilder
         foreach ($package->getRequires() as $link) {
             $require = $link->getTarget();
             if (!isset($this->loadedNames[$require])) {
-                $loadNames[$require] = true;
+                $loadNames[$require] = null;
             }
         }
 

@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\Package\AliasPackage;
 use Composer\Package\RootPackageInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
@@ -25,14 +26,27 @@ use Composer\Package\Link;
 abstract class BaseRepository implements RepositoryInterface
 {
     // TODO should this stay here? some repos need a better implementation
-    public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable)
+    public function loadPackages(array $packageMap, $isPackageAcceptableCallable)
     {
         $packages = $this->getPackages();
 
         $result = array();
         foreach ($packages as $package) {
-            if (isset($packageNameMap[$package->getName()]) && call_user_func($isPackageAcceptableCallable, $package->getNames(), $package->getStability())) {
-                $result[] = $package;
+            if (array_key_exists($package->getName(), $packageMap) &&
+                (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion()))) &&
+                call_user_func($isPackageAcceptableCallable, $package->getNames(), $package->getStability())) {
+                $result[spl_object_hash($package)] = $package;
+                if ($package instanceof AliasPackage && !isset($result[spl_object_hash($package->getAliasOf())])) {
+                    $result[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
+                }
+            }
+        }
+
+        foreach ($packages as $package) {
+            if ($package instanceof AliasPackage) {
+                if (isset($result[spl_object_hash($package->getAliasOf())])) {
+                    $result[spl_object_hash($package)] = $package;
+                }
             }
         }
 

@@ -42,14 +42,16 @@ Updating dependencies (including require-dev)
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - The requested package unstable/package 2.* exists as unstable/package[1.0.0] but these are rejected by your constraint.
+    - The requested package unstable/package could not be found in any version, there may be a typo in the package name.
   Problem 2
     - The requested package bogus could not be found in any version, there may be a typo in the package name.
   Problem 3
-    - The requested package stable-requiree-excluded (installed at 1.0.0, required as 1.0.1) is satisfiable by stable-requiree-excluded[1.0.0] but these conflict with your requirements or minimum-stability.
+    - The requested package stable-requiree-excluded 1.0.1 exists as stable-requiree-excluded[1.0.0] but these are rejected by your constraint.
   Problem 4
+    - The requested package stable-requiree-excluded (installed at 1.0.0, required as 1.0.1) is satisfiable by stable-requiree-excluded[1.0.0] but these conflict with your requirements or minimum-stability.
+  Problem 5
     - Installation request for requirer 1.* -> satisfiable by requirer[1.0.0].
-    - requirer 1.0.0 requires dependency 1.0.0 -> satisfiable by dependency[1.0.0] but these conflict with your requirements or minimum-stability.
+    - requirer 1.0.0 requires dependency 1.0.0 -> no matching package found.
 
 Potential causes:
  - A typo in the package name
