@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Request;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\RepositorySet;
 
 /**
  * The Package Event.
