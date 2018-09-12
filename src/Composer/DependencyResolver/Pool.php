@@ -68,7 +68,10 @@ class Pool implements \Countable
         $this->priorities = $priorities;
         $this->packages = $packages;
 
+        $id = 1;
+
         foreach ($this->packages as $package) {
+            $package->id = $id++;
             $names = $package->getNames();
             $this->packageByExactName[$package->getName()][$package->id] = $package;
 

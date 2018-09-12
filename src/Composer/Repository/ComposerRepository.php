@@ -297,16 +297,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return $this->hasProviders;
     }
 
-    public function resetPackageIds()
-    {
-        foreach ($this->providersByUid as $package) {
-            if ($package instanceof AliasPackage) {
-                $package->getAliasOf()->setId(-1);
-            }
-            $package->setId(-1);
-        }
-    }
-
     /**
      * @param string $name package name
      * @param bool $bypassFilters If set to true, this bypasses the stability filtering, and forces a recompute without cache
