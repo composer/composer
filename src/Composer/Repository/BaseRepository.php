@@ -25,13 +25,13 @@ use Composer\Package\Link;
 abstract class BaseRepository implements RepositoryInterface
 {
     // TODO should this stay here? some repos need a better implementation
-    public function loadPackages(array $packageNameMap)
+    public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable)
     {
         $packages = $this->getPackages();
 
         $result = array();
         foreach ($packages as $package) {
-            if (isset($packageNameMap[$package->getName()])) {
+            if (isset($packageNameMap[$package->getName()]) && call_user_func($isPackageAcceptableCallable, $package->getNames(), $package->getStability())) {
                 $result[] = $package;
             }
         }

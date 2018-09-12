@@ -194,6 +194,26 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return parent::getPackages();
     }
 
+    public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable)
+    {
+        if (!$this->hasProviders()) {
+            // TODO build more efficient version of this
+            return parent::loadPackages($packageNameMap, $isPackageAcceptableCallable);
+        }
+
+        $packages = array();
+        foreach ($packageNameMap as $name => $void) {
+            $matches = array();
+            foreach ($this->whatProvides($name, false, $isPackageAcceptableCallable) as $match) {
+                if ($match->getName() === $name) {
+                    $matches[] = $match;
+                }
+            }
+            $packages = array_merge($packages, $matches);
+        }
+        return $packages;
+    }
+
     /**
      * {@inheritDoc}
      */

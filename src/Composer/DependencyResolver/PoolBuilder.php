@@ -16,6 +16,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\AsyncRepositoryInterface;
+use Composer\Repository\ComposerRepository;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\LockArrayRepository;
 use Composer\Repository\PlatformRepository;
@@ -83,9 +84,11 @@ class PoolBuilder
                 }
 
                 if ($repository instanceof AsyncRepositoryInterface) {
+                    // TODO ispackageacceptablecallable in here?
                     $packages = $repository->returnPackages($loadIds[$key]);
                 } else {
-                    $packages = $repository->loadPackages($loadNames);
+                    // TODO should we really pass the callable into here?
+                    $packages = $repository->loadPackages($loadNames, $this->isPackageAcceptableCallable);
                 }
 
                 foreach ($packages as $package) {

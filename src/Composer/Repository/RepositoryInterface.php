@@ -67,9 +67,10 @@ interface RepositoryInterface extends \Countable
      * Returns list of registered packages with the supplied name
      *
      * @param bool[] $packageNameMap
+     * @param $isPackageAcceptableCallable
      * @return PackageInterface[]
      */
-    public function loadPackages(array $packageNameMap);
+    public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable);
 
     /**
      * Searches the repository for packages containing the query
