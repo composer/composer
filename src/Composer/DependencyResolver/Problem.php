@@ -71,7 +71,7 @@ class Problem
      * @param  array  $installedMap A map of all installed packages
      * @return string
      */
-    public function getPrettyString(array $installedMap = array())
+    public function getPrettyString(array $installedMap = array(), array $learnedPool = array())
     {
         $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
 
@@ -168,7 +168,7 @@ class Problem
                 $messages[] = $this->jobToText($job);
             } elseif ($rule) {
                 if ($rule instanceof Rule) {
-                    $messages[] = $rule->getPrettyString($this->pool, $installedMap);
+                    $messages[] = $rule->getPrettyString($this->pool, $installedMap, $learnedPool);
                 }
             }
         }

@@ -21,7 +21,7 @@ use PHPUnit\Framework\TestCase;
 class VersionSelectorTest extends TestCase
 {
     // A) multiple versions, get the latest one
-    // B) targetPackageVersion will pass to pool
+    // B) targetPackageVersion will pass to repo set
     // C) No results, throw exception
 
     public function testLatestVersionIsReturned()
@@ -33,13 +33,13 @@ class VersionSelectorTest extends TestCase
         $package3 = $this->createPackage('1.2.0');
         $packages = array($package1, $package2, $package3);
 
-        $pool = $this->createMockPool();
-        $pool->expects($this->once())
-            ->method('whatProvides')
-            ->with($packageName, null, true)
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with($packageName, null)
             ->will($this->returnValue($packages));
 
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName);
 
         // 1.2.2 should be returned because it's the latest of the returned versions
@@ -57,13 +57,13 @@ class VersionSelectorTest extends TestCase
         $package2->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), 'requires', '>=5.6')));
         $packages = array($package1, $package2);
 
-        $pool = $this->createMockPool();
-        $pool->expects($this->once())
-            ->method('whatProvides')
-            ->with($packageName, null, true)
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with($packageName, null)
             ->will($this->returnValue($packages));
 
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName, null, '5.5.0');
 
         $this->assertSame($package1, $best, 'Latest version supporting php 5.5 should be returned (1.0.0)');
@@ -77,13 +77,13 @@ class VersionSelectorTest extends TestCase
         $package2 = $this->createPackage('1.1.0-beta');
         $packages = array($package1, $package2);
 
-        $pool = $this->createMockPool();
-        $pool->expects($this->once())
-            ->method('whatProvides')
-            ->with($packageName, null, true)
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with($packageName, null)
             ->will($this->returnValue($packages));
 
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName);
 
         $this->assertSame($package1, $best, 'Latest most stable version should be returned (1.0.0)');
@@ -97,18 +97,18 @@ class VersionSelectorTest extends TestCase
         $package2 = $this->createPackage('2.0.0-beta3');
         $packages = array($package1, $package2);
 
-        $pool = $this->createMockPool();
-        $pool->expects($this->at(0))
-            ->method('whatProvides')
-            ->with($packageName, null, true)
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->at(0))
+            ->method('findPackages')
+            ->with($packageName, null)
             ->will($this->returnValue($packages));
 
-        $pool->expects($this->at(1))
-            ->method('whatProvides')
-            ->with($packageName, null, true)
+        $repositorySet->expects($this->at(1))
+            ->method('findPackages')
+            ->with($packageName, null)
             ->will($this->returnValue(array_reverse($packages)));
 
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName, null, null);
         $this->assertSame($package2, $best, 'Expecting 2.0.0-beta3, cause beta is more stable than dev');
 
@@ -124,13 +124,13 @@ class VersionSelectorTest extends TestCase
         $package2 = $this->createPackage('1.1.0-beta');
         $packages = array($package1, $package2);
 
-        $pool = $this->createMockPool();
-        $pool->expects($this->once())
-            ->method('whatProvides')
-            ->with($packageName, null, true)
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with($packageName, null)
             ->will($this->returnValue($packages));
 
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName, null, null, 'dev');
 
         $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
@@ -145,13 +145,13 @@ class VersionSelectorTest extends TestCase
         $package3 = $this->createPackage('1.2.0-alpha');
         $packages = array($package1, $package2, $package3);
 
-        $pool = $this->createMockPool();
-        $pool->expects($this->once())
-            ->method('whatProvides')
-            ->with($packageName, null, true)
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with($packageName, null)
             ->will($this->returnValue($packages));
 
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName, null, null, 'beta');
 
         $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
@@ -165,13 +165,13 @@ class VersionSelectorTest extends TestCase
         $package3 = $this->createPackage('1.2.0-alpha');
         $packages = array($package2, $package3);
 
-        $pool = $this->createMockPool();
-        $pool->expects($this->once())
-            ->method('whatProvides')
-            ->with($packageName, null, true)
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with($packageName, null)
             ->will($this->returnValue($packages));
 
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName, null, null, 'stable');
 
         $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
@@ -179,12 +179,12 @@ class VersionSelectorTest extends TestCase
 
     public function testFalseReturnedOnNoPackages()
     {
-        $pool = $this->createMockPool();
-        $pool->expects($this->once())
-            ->method('whatProvides')
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
             ->will($this->returnValue(array()));
 
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate('foobaz');
         $this->assertFalse($best, 'No versions are available returns false');
     }
@@ -194,8 +194,8 @@ class VersionSelectorTest extends TestCase
      */
     public function testFindRecommendedRequireVersion($prettyVersion, $isDev, $stability, $expectedVersion, $branchAlias = null)
     {
-        $pool = $this->createMockPool();
-        $versionSelector = new VersionSelector($pool);
+        $repositorySet = $this->createMockRepositorySet();
+        $versionSelector = new VersionSelector($repositorySet);
         $versionParser = new VersionParser();
 
         $package = $this->getMockBuilder('\Composer\Package\PackageInterface')->getMock();
@@ -273,8 +273,10 @@ class VersionSelectorTest extends TestCase
         return new Package('foo', $parser->normalize($version), $version);
     }
 
-    private function createMockPool()
+    private function createMockRepositorySet()
     {
-        return $this->getMockBuilder('Composer\DependencyResolver\Pool')->getMock();
+        return $this->getMockBuilder('Composer\Repository\RepositorySet')
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }

@@ -142,11 +142,6 @@ class ComposerRepositoryTest extends TestCase
                 ),
             )));
 
-        $pool = $this->getMockBuilder('Composer\DependencyResolver\Pool')->getMock();
-        $pool->expects($this->any())
-            ->method('isPackageAcceptable')
-            ->will($this->returnValue(true));
-
         $versionParser = new VersionParser();
         $repo->setRootAliases(array(
             'a' => array(
@@ -155,13 +150,18 @@ class ComposerRepositoryTest extends TestCase
             ),
         ));
 
-        $packages = $repo->whatProvides($pool, 'a');
+        $packages = $repo->whatProvides('a', false, array($this, 'isPackageAcceptableReturnTrue'));
 
         $this->assertCount(7, $packages);
         $this->assertEquals(array('1', '1-alias', '2', '2-alias', '2-root', '3', '3-root'), array_keys($packages));
         $this->assertInstanceOf('Composer\Package\AliasPackage', $packages['2-root']);
         $this->assertSame($packages['2'], $packages['2-root']->getAliasOf());
         $this->assertSame($packages['2'], $packages['2-alias']->getAliasOf());
+    }
+
+    public function isPackageAcceptableReturnTrue()
+    {
+        return true;
     }
 
     public function testSearchWithType()

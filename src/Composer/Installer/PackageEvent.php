@@ -16,9 +16,9 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\PolicyInterface;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\RepositorySet;
 
 /**
  * The Package Event.
@@ -40,15 +40,15 @@ class PackageEvent extends InstallerEvent
      * @param IOInterface          $io
      * @param bool                 $devMode
      * @param PolicyInterface      $policy
-     * @param Pool                 $pool
+     * @param RepositorySet        $repositorySet
      * @param CompositeRepository  $installedRepo
      * @param Request              $request
      * @param OperationInterface[] $operations
      * @param OperationInterface   $operation
      */
-    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations, OperationInterface $operation)
+    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, CompositeRepository $installedRepo, Request $request, array $operations, OperationInterface $operation)
     {
-        parent::__construct($eventName, $composer, $io, $devMode, $policy, $pool, $installedRepo, $request, $operations);
+        parent::__construct($eventName, $composer, $io, $devMode, $policy, $repositorySet, $installedRepo, $request, $operations);
 
         $this->operation = $operation;
     }

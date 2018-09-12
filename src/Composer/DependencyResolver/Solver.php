@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\IO\IOInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -27,7 +28,7 @@ class Solver
     /** @var PolicyInterface */
     protected $policy;
     /** @var Pool */
-    protected $pool;
+    protected $pool = null;
     /** @var RepositoryInterface */
     protected $installed;
     /** @var RuleSet */
@@ -72,7 +73,6 @@ class Solver
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
-        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
     }
 
     /**
@@ -81,6 +81,11 @@ class Solver
     public function getRuleSetSize()
     {
         return count($this->rules);
+    }
+
+    public function getPool()
+    {
+        return $this->pool;
     }
 
     // aka solver_makeruledecisions
@@ -211,6 +216,8 @@ class Solver
         $this->jobs = $request->getJobs();
 
         $this->setupInstalledMap();
+
+        $this->ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
@@ -237,7 +244,7 @@ class Solver
         }
 
         if ($this->problems) {
-            throw new SolverProblemsException($this->problems, $this->installedMap);
+            throw new SolverProblemsException($this->problems, $this->installedMap, $this->learnedPool);
         }
 
         $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisions);

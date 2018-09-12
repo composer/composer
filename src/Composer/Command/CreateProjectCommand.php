@@ -20,7 +20,6 @@ use Composer\Installer\InstallationManager;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
@@ -28,6 +27,7 @@ use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\InputArgument;
@@ -290,8 +290,8 @@ EOT
             throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
-        $pool = new Pool($stability);
-        $pool->addRepository($sourceRepo);
+        $repositorySet = new RepositorySet(array(), $stability);
+        $repositorySet->addRepository($sourceRepo);
 
         $phpVersion = null;
         $prettyPhpVersion = null;
@@ -305,7 +305,7 @@ EOT
         }
 
         // find the latest version if there are multiple
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $package = $versionSelector->findBestCandidate($name, $packageVersion, $phpVersion, $stability);
 
         if (!$package) {

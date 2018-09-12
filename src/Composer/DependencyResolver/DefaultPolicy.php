@@ -57,11 +57,6 @@ class DefaultPolicy implements PolicyInterface
         return $packages;
     }
 
-    public function getPriority(Pool $pool, PackageInterface $package)
-    {
-        return $pool->getPriority($package->getRepository());
-    }
-
     public function selectPreferredPackages(Pool $pool, array $installedMap, array $literals, $requiredPackage = null)
     {
         $packages = $this->groupLiteralsByNamePreferInstalled($pool, $installedMap, $literals);
@@ -168,7 +163,7 @@ class DefaultPolicy implements PolicyInterface
             return 1;
         }
 
-        return ($this->getPriority($pool, $a) > $this->getPriority($pool, $b)) ? -1 : 1;
+        return ($pool->getPriority($a->id) > $pool->getPriority($b->id)) ? -1 : 1;
     }
 
     /**
@@ -236,10 +231,10 @@ class DefaultPolicy implements PolicyInterface
             }
 
             if (null === $priority) {
-                $priority = $this->getPriority($pool, $package);
+                $priority = $pool->getPriority($package->id);
             }
 
-            if ($this->getPriority($pool, $package) != $priority) {
+            if ($pool->getPriority($package->id) != $priority) {
                 break;
             }
 

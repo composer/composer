@@ -15,11 +15,11 @@ namespace Composer\Installer;
 use Composer\Composer;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\EventDispatcher\Event;
 use Composer\IO\IOInterface;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\RepositorySet;
 
 /**
  * An event for all installer.
@@ -49,9 +49,9 @@ class InstallerEvent extends Event
     private $policy;
 
     /**
-     * @var Pool
+     * @var RepositorySet
      */
-    private $pool;
+    private $repositorySet;
 
     /**
      * @var CompositeRepository
@@ -76,12 +76,12 @@ class InstallerEvent extends Event
      * @param IOInterface          $io
      * @param bool                 $devMode
      * @param PolicyInterface      $policy
-     * @param Pool                 $pool
+     * @param RepositorySet        $repositorySet
      * @param CompositeRepository  $installedRepo
      * @param Request              $request
      * @param OperationInterface[] $operations
      */
-    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations = array())
+    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, CompositeRepository $installedRepo, Request $request, array $operations = array())
     {
         parent::__construct($eventName);
 
@@ -89,7 +89,7 @@ class InstallerEvent extends Event
         $this->io = $io;
         $this->devMode = $devMode;
         $this->policy = $policy;
-        $this->pool = $pool;
+        $this->repositorySet = $repositorySet;
         $this->installedRepo = $installedRepo;
         $this->request = $request;
         $this->operations = $operations;
@@ -128,11 +128,11 @@ class InstallerEvent extends Event
     }
 
     /**
-     * @return Pool
+     * @return RepositorySet
      */
-    public function getPool()
+    public function getRepositorySet()
     {
-        return $this->pool;
+        return $this->repositorySet;
     }
 
     /**

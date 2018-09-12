@@ -14,7 +14,6 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\DependencyResolver\DefaultPolicy;
-use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
@@ -29,6 +28,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Semver;
 use Composer\Spdx\SpdxLicenses;
@@ -52,8 +52,8 @@ class ShowCommand extends BaseCommand
     protected $versionParser;
     protected $colors;
 
-    /** @var Pool */
-    private $pool;
+    /** @var RepositorySet */
+    private $repositorySet;
 
     protected function configure()
     {
@@ -523,19 +523,13 @@ EOT
         $constraint = is_string($version) ? $this->versionParser->parseConstraints($version) : $version;
 
         $policy = new DefaultPolicy();
-        $pool = new Pool('dev');
-        $pool->addRepository($repos);
+        $repositorySet = new RepositorySet(array(), 'dev');
+        $repositorySet->addRepository($repos);
 
         $matchedPackage = null;
         $versions = array();
-        $matches = $pool->whatProvides($name, $constraint);
+        $matches = $repositorySet->findPackages($name, $constraint);
         foreach ($matches as $index => $package) {
-            // skip providers/replacers
-            if ($package->getName() !== $name) {
-                unset($matches[$index]);
-                continue;
-            }
-
             // select an exact match if it is in the installed repo and no specific version was required
             if (null === $version && $installedRepo->hasPackage($package)) {
                 $matchedPackage = $package;
@@ -544,6 +538,8 @@ EOT
             $versions[$package->getPrettyVersion()] = $package->getVersion();
             $matches[$index] = $package->getId();
         }
+
+        $pool = $repositorySet->createPool();
 
         // select preferred package according to policy rules
         if (!$matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($pool, array(), $matches)) {
@@ -961,9 +957,9 @@ EOT
      */
     private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false)
     {
-        // find the latest version allowed in this pool
+        // find the latest version allowed in this repo set
         $name = $package->getName();
-        $versionSelector = new VersionSelector($this->getPool($composer));
+        $versionSelector = new VersionSelector($this->getRepositorySet($composer));
         $stability = $composer->getPackage()->getMinimumStability();
         $flags = $composer->getPackage()->getStabilityFlags();
         if (isset($flags[$name])) {
@@ -987,13 +983,13 @@ EOT
         return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability);
     }
 
-    private function getPool(Composer $composer)
+    private function getRepositorySet(Composer $composer)
     {
-        if (!$this->pool) {
-            $this->pool = new Pool($composer->getPackage()->getMinimumStability(), $composer->getPackage()->getStabilityFlags());
-            $this->pool->addRepository(new CompositeRepository($composer->getRepositoryManager()->getRepositories()));
+        if (!$this->repositorySet) {
+            $this->repositorySet = new RepositorySet(array(), $composer->getPackage()->getMinimumStability(), $composer->getPackage()->getStabilityFlags());
+            $this->repositorySet->addRepository(new CompositeRepository($composer->getRepositoryManager()->getRepositories()));
         }
 
-        return $this->pool;
+        return $this->repositorySet;
     }
 }

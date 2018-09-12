@@ -16,7 +16,6 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
-use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
@@ -136,7 +135,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         foreach ($this->getProviderNames() as $providerName) {
             if ($name === $providerName) {
-                $packages = $this->whatProvides(new Pool('dev'), $providerName);
+                $packages = $this->whatProvides($providerName);
                 foreach ($packages as $package) {
                     if ($name === $package->getName()) {
                         $pkgConstraint = new Constraint('==', $package->getVersion());
@@ -170,7 +169,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         foreach ($this->getProviderNames() as $providerName) {
             if ($name === $providerName) {
-                $candidates = $this->whatProvides(new Pool('dev'), $providerName);
+                $candidates = $this->whatProvides($providerName);
                 foreach ($candidates as $package) {
                     if ($name === $package->getName()) {
                         $pkgConstraint = new Constraint('==', $package->getVersion());
@@ -193,6 +192,26 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         return parent::getPackages();
+    }
+
+    public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable)
+    {
+        if (!$this->hasProviders()) {
+            // TODO build more efficient version of this
+            return parent::loadPackages($packageNameMap, $isPackageAcceptableCallable);
+        }
+
+        $packages = array();
+        foreach ($packageNameMap as $name => $void) {
+            $matches = array();
+            foreach ($this->whatProvides($name, false, $isPackageAcceptableCallable) as $match) {
+                if ($match->getName() === $name) {
+                    $matches[] = $match;
+                }
+            }
+            $packages = array_merge($packages, $matches);
+        }
+        return $packages;
     }
 
     /**
@@ -289,12 +308,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @param  Pool        $pool
-     * @param  string      $name          package name
-     * @param  bool        $bypassFilters If set to true, this bypasses the stability filtering, and forces a recompute without cache
+     * @param string $name package name
+     * @param bool $bypassFilters If set to true, this bypasses the stability filtering, and forces a recompute without cache
+     * @param callable $isPackageAcceptableCallable
      * @return array|mixed
      */
-    public function whatProvides(Pool $pool, $name, $bypassFilters = false)
+    public function whatProvides($name, $bypassFilters = false, $isPackageAcceptableCallable = null)
     {
         if (isset($this->providers[$name]) && !$bypassFilters) {
             return $this->providers[$name];
@@ -395,7 +414,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
                 } else {
-                    if (!$bypassFilters && !$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
+                    if (!$bypassFilters && $isPackageAcceptableCallable && !call_user_func($isPackageAcceptableCallable, strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                         continue;
                     }
 

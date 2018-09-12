@@ -130,7 +130,7 @@ class PluginInstallerTest extends TestCase
     public function testInstallNewPlugin()
     {
         $this->repository
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
         $installer = new PluginInstaller($this->io, $this->composer);
@@ -145,7 +145,7 @@ class PluginInstallerTest extends TestCase
     public function testInstallMultiplePlugins()
     {
         $this->repository
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[3])));
         $installer = new PluginInstaller($this->io, $this->composer);
@@ -163,7 +163,7 @@ class PluginInstallerTest extends TestCase
     public function testUpgradeWithNewClassName()
     {
         $this->repository
-            ->expects($this->exactly(3))
+            ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[0])));
         $this->repository
@@ -182,7 +182,7 @@ class PluginInstallerTest extends TestCase
     public function testUpgradeWithSameClassName()
     {
         $this->repository
-            ->expects($this->exactly(3))
+            ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[1])));
         $this->repository
@@ -201,7 +201,7 @@ class PluginInstallerTest extends TestCase
     public function testRegisterPluginOnlyOneTime()
     {
         $this->repository
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
         $installer = new PluginInstaller($this->io, $this->composer);
@@ -240,11 +240,11 @@ class PluginInstallerTest extends TestCase
 
         // Add the plugins to the repo along with the internal Plugin package on which they all rely.
         $this->repository
-             ->expects($this->any())
-             ->method('getPackages')
-             ->will($this->returnCallback(function () use ($plugApiInternalPackage, $plugins) {
-                 return array_merge(array($plugApiInternalPackage), $plugins);
-             }));
+            ->expects($this->any())
+            ->method('getPackages')
+            ->will($this->returnCallback(function () use ($plugApiInternalPackage, $plugins) {
+                return array_merge(array($plugApiInternalPackage), $plugins);
+            }));
 
         $this->pm->loadInstalledPlugins();
     }
@@ -300,7 +300,7 @@ class PluginInstallerTest extends TestCase
     public function testCommandProviderCapability()
     {
         $this->repository
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[7])));
         $installer = new PluginInstaller($this->io, $this->composer);

@@ -20,26 +20,28 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
+use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\RepositorySet;
 use Composer\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
 
 class SolverTest extends TestCase
 {
-    protected $pool;
+    protected $repoSet;
     protected $repo;
     protected $repoInstalled;
     protected $request;
     protected $policy;
+    protected $solver;
 
     public function setUp()
     {
-        $this->pool = new Pool;
+        $this->repoSet = new RepositorySet(array());
         $this->repo = new ArrayRepository;
-        $this->repoInstalled = new ArrayRepository;
+        $this->repoInstalled = new InstalledArrayRepository;
 
-        $this->request = new Request($this->pool);
+        $this->request = new Request($this->repoSet);
         $this->policy = new DefaultPolicy;
-        $this->solver = new Solver($this->policy, $this->pool, $this->repoInstalled, new NullIO());
     }
 
     public function testSolverInstallSingle()
@@ -71,6 +73,7 @@ class SolverTest extends TestCase
 
         $this->request->install('B', $this->getVersionConstraint('==', '1'));
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -90,9 +93,9 @@ class SolverTest extends TestCase
         $repo1->addPackage($foo1 = $this->getPackage('foo', '1'));
         $repo2->addPackage($foo2 = $this->getPackage('foo', '1'));
 
-        $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($repo1);
-        $this->pool->addRepository($repo2);
+        $this->repoSet->addRepository($this->repoInstalled);
+        $this->repoSet->addRepository($repo1);
+        $this->repoSet->addRepository($repo2);
 
         $this->request->install('foo');
 
@@ -445,6 +448,7 @@ class SolverTest extends TestCase
 
         // must explicitly pick the provider, so error in this case
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -478,6 +482,7 @@ class SolverTest extends TestCase
         $this->request->install('A');
 
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -650,6 +655,7 @@ class SolverTest extends TestCase
 
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
 
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -666,6 +672,7 @@ class SolverTest extends TestCase
         $this->request->install('A');
         $this->request->install('B');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -695,6 +702,7 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -742,6 +750,7 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -839,12 +848,18 @@ class SolverTest extends TestCase
 
     protected function reposComplete()
     {
-        $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($this->repo);
+        $this->repoSet->addRepository($this->repoInstalled);
+        $this->repoSet->addRepository($this->repo);
+    }
+
+    protected function createSolver()
+    {
+        $this->solver = new Solver($this->policy, $this->repoSet->createPool($this->request), $this->repoInstalled, new NullIO());
     }
 
     protected function checkSolverResult(array $expected)
     {
+        $this->createSolver();
         $transaction = $this->solver->solve($this->request);
 
         $result = array();

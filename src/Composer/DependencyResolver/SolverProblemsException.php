@@ -21,11 +21,13 @@ class SolverProblemsException extends \RuntimeException
 {
     protected $problems;
     protected $installedMap;
+    protected $learnedPool;
 
-    public function __construct(array $problems, array $installedMap)
+    public function __construct(array $problems, array $installedMap, array $learnedPool)
     {
         $this->problems = $problems;
         $this->installedMap = $installedMap;
+        $this->learnedPool = $learnedPool;
 
         parent::__construct($this->createMessage(), 2);
     }
@@ -35,7 +37,7 @@ class SolverProblemsException extends \RuntimeException
         $text = "\n";
         $hasExtensionProblems = false;
         foreach ($this->problems as $i => $problem) {
-            $text .= "  Problem ".($i + 1).$problem->getPrettyString($this->installedMap)."\n";
+            $text .= "  Problem ".($i + 1).$problem->getPrettyString($this->installedMap, $this->learnedPool)."\n";
 
             if (!$hasExtensionProblems && $this->hasExtensionProblems($problem->getReasons())) {
                 $hasExtensionProblems = true;

@@ -18,13 +18,15 @@ use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\Package\Link;
 use Composer\Package\AliasPackage;
+use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\TestCase;
+use http\Env\Request;
 
 class DefaultPolicyTest extends TestCase
 {
-    /** @var Pool */
-    protected $pool;
+    /** @var RepositorySet */
+    protected $repositorySet;
     /** @var ArrayRepository */
     protected $repo;
     /** @var ArrayRepository */
@@ -34,7 +36,7 @@ class DefaultPolicyTest extends TestCase
 
     public function setUp()
     {
-        $this->pool = new Pool('dev');
+        $this->repositorySet = new RepositorySet(array(), 'dev');
         $this->repo = new ArrayRepository;
         $this->repoInstalled = new ArrayRepository;
 
@@ -44,12 +46,14 @@ class DefaultPolicyTest extends TestCase
     public function testSelectSingle()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A');
 
         $literals = array($packageA->getId());
         $expected = array($packageA->getId());
 
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
     }
@@ -58,12 +62,14 @@ class DefaultPolicyTest extends TestCase
     {
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A');
 
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA2->getId());
 
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
     }
@@ -72,12 +78,14 @@ class DefaultPolicyTest extends TestCase
     {
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.1-alpha'));
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A');
 
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA2->getId());
 
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
     }
@@ -86,13 +94,15 @@ class DefaultPolicyTest extends TestCase
     {
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.1-alpha'));
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A');
 
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA1->getId());
 
         $policy = new DefaultPolicy(true);
-        $selected = $policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
     }
@@ -101,12 +111,14 @@ class DefaultPolicyTest extends TestCase
     {
         $this->repo->addPackage($packageA1 = $this->getPackage('A', 'dev-foo'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.0'));
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A');
 
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA2->getId());
 
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
     }
@@ -115,13 +127,15 @@ class DefaultPolicyTest extends TestCase
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '2.0'));
         $this->repoInstalled->addPackage($packageAInstalled = $this->getPackage('A', '1.0'));
-        $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repoInstalled);
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A');
 
         $literals = array($packageA->getId(), $packageAInstalled->getId());
         $expected = array($packageA->getId());
 
-        $selected = $this->policy->selectPreferredPackages($this->pool, $this->mapFromRepo($this->repoInstalled), $literals);
+        $selected = $this->policy->selectPreferredPackages($pool, $this->mapFromRepo($this->repoInstalled), $literals);
 
         $this->assertSame($expected, $selected);
     }
@@ -133,14 +147,16 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $otherRepository->addPackage($packageAImportant = $this->getPackage('A', '1.0'));
 
-        $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($otherRepository);
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repoInstalled);
+        $this->repositorySet->addRepository($otherRepository);
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A');
 
         $literals = array($packageA->getId(), $packageAImportant->getId());
         $expected = array($packageAImportant->getId());
 
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
     }
@@ -155,21 +171,25 @@ class DefaultPolicyTest extends TestCase
         $repo2->addPackage($package3 = $this->getPackage('A', '1.1'));
         $repo2->addPackage($package4 = $this->getPackage('A', '1.2'));
 
-        $this->pool->addRepository($repo1);
-        $this->pool->addRepository($repo2);
+        $this->repositorySet->addRepository($repo1);
+        $this->repositorySet->addRepository($repo2);
+
+        $pool = $this->repositorySet->createPoolForPackage('A');
 
         $literals = array($package1->getId(), $package2->getId(), $package3->getId(), $package4->getId());
         $expected = array($package2->getId());
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
 
-        $this->pool = new Pool('dev');
-        $this->pool->addRepository($repo2);
-        $this->pool->addRepository($repo1);
+        $this->repositorySet = new RepositorySet(array(), 'dev');
+        $this->repositorySet->addRepository($repo2);
+        $this->repositorySet->addRepository($repo1);
+
+        $pool = $this->repositorySet->createPoolForPackage('A');
 
         $expected = array($package4->getId());
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
     }
@@ -186,11 +206,13 @@ class DefaultPolicyTest extends TestCase
         $repoImportant->addPackage($packageA2AliasImportant = new AliasPackage($packageA2Important, '2.1.9999999.9999999-dev', '2.1.x-dev'));
         $packageAAliasImportant->setRootPackageAlias(true);
 
-        $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($repoImportant);
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repoInstalled);
+        $this->repositorySet->addRepository($repoImportant);
+        $this->repositorySet->addRepository($this->repo);
 
-        $packages = $this->pool->whatProvides('a', new Constraint('=', '2.1.9999999.9999999-dev'));
+        $pool = $this->repositorySet->createPoolForPackage('A');
+
+        $packages = $pool->whatProvides('a', new Constraint('=', '2.1.9999999.9999999-dev'));
         $literals = array();
         foreach ($packages as $package) {
             $literals[] = $package->getId();
@@ -198,7 +220,7 @@ class DefaultPolicyTest extends TestCase
 
         $expected = array($packageAAliasImportant->getId());
 
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
     }
@@ -211,12 +233,14 @@ class DefaultPolicyTest extends TestCase
         $packageA->setProvides(array(new Link('A', 'X', new Constraint('==', '1.0'), 'provides')));
         $packageB->setProvides(array(new Link('B', 'X', new Constraint('==', '1.0'), 'provides')));
 
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackages(array('A', 'B'));
 
         $literals = array($packageA->getId(), $packageB->getId());
         $expected = $literals;
 
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
     }
@@ -228,12 +252,14 @@ class DefaultPolicyTest extends TestCase
 
         $packageB->setReplaces(array(new Link('B', 'A', new Constraint('==', '1.0'), 'replaces')));
 
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackages(array('A', 'B'));
 
         $literals = array($packageA->getId(), $packageB->getId());
         $expected = $literals;
 
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
     }
@@ -247,12 +273,14 @@ class DefaultPolicyTest extends TestCase
         $packageA->setReplaces(array(new Link('vendor-a/replacer', 'vendor-a/package', new Constraint('==', '1.0'), 'replaces')));
         $packageB->setReplaces(array(new Link('vendor-b/replacer', 'vendor-a/package', new Constraint('==', '1.0'), 'replaces')));
 
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackages(array('vendor-a/replacer', 'vendor-b/replacer'));
 
         $literals = array($packageA->getId(), $packageB->getId());
         $expected = $literals;
 
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals, 'vendor-a/package');
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals, 'vendor-a/package');
         $this->assertEquals($expected, $selected);
 
         // test with reversed order in repo
@@ -260,13 +288,15 @@ class DefaultPolicyTest extends TestCase
         $repo->addPackage($packageA = clone $packageA);
         $repo->addPackage($packageB = clone $packageB);
 
-        $pool = new Pool('dev');
-        $pool->addRepository($this->repo);
+        $repositorySet = new RepositorySet(array(), 'dev');
+        $repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackages(array('vendor-a/replacer', 'vendor-b/replacer'));
 
         $literals = array($packageA->getId(), $packageB->getId());
         $expected = $literals;
 
-        $selected = $this->policy->selectPreferredPackages($this->pool, array(), $literals, 'vendor-a/package');
+        $selected = $this->policy->selectPreferredPackages($pool, array(), $literals, 'vendor-a/package');
         $this->assertSame($expected, $selected);
     }
 
@@ -286,12 +316,14 @@ class DefaultPolicyTest extends TestCase
 
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
-        $this->pool->addRepository($this->repo);
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A');
 
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA1->getId());
 
-        $selected = $policy->selectPreferredPackages($this->pool, array(), $literals);
+        $selected = $policy->selectPreferredPackages($pool, array(), $literals);
 
         $this->assertSame($expected, $selected);
     }

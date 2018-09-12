@@ -24,6 +24,21 @@ use Composer\Package\Link;
  */
 abstract class BaseRepository implements RepositoryInterface
 {
+    // TODO should this stay here? some repos need a better implementation
+    public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable)
+    {
+        $packages = $this->getPackages();
+
+        $result = array();
+        foreach ($packages as $package) {
+            if (isset($packageNameMap[$package->getName()]) && call_user_func($isPackageAcceptableCallable, $package->getNames(), $package->getStability())) {
+                $result[] = $package;
+            }
+        }
+
+        return $result;
+    }
+
     /**
      * Returns a list of links causing the requested needle packages to be installed, as an associative array with the
      * dependent's name as key, and an array containing in order the PackageInterface and Link describing the relationship

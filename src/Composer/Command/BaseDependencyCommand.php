@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\DependencyResolver\Pool;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\ArrayRepository;
@@ -21,6 +20,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Repository\RepositorySet;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Package\Version\VersionParser;
 use Symfony\Component\Console\Helper\Table;
@@ -71,15 +71,15 @@ class BaseDependencyCommand extends BaseCommand
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, $this->getName(), $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
-        // Prepare repositories and set up a pool
+        // Prepare repositories and set up a repo set
         $platformOverrides = $composer->getConfig()->get('platform') ?: array();
         $repository = new CompositeRepository(array(
             new ArrayRepository(array($composer->getPackage())),
             $composer->getRepositoryManager()->getLocalRepository(),
             new PlatformRepository(array(), $platformOverrides),
         ));
-        $pool = new Pool();
-        $pool->addRepository($repository);
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository($repository);
 
         // Parse package name and constraint
         list($needle, $textConstraint) = array_pad(
@@ -89,7 +89,7 @@ class BaseDependencyCommand extends BaseCommand
         );
 
         // Find packages that are or provide the requested package first
-        $packages = $pool->whatProvides(strtolower($needle));
+        $packages = $repositorySet->findPackages(strtolower($needle), null, false);
         if (empty($packages)) {
             throw new \InvalidArgumentException(sprintf('Could not find package "%s" in your project', $needle));
         }
