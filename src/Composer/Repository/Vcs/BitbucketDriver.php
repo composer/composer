@@ -189,6 +189,13 @@ abstract class BitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getFileContent($file, $identifier);
         }
 
+        if (strpos($identifier, '/') !== false) {
+            $branches = $this->getBranches();
+            if (isset($branches[$identifier])) {
+                $identifier = $branches[$identifier];
+            }
+        }
+
         $resource = sprintf(
             'https://api.bitbucket.org/1.0/repositories/%s/%s/raw/%s/%s',
             $this->owner,
