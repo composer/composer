@@ -16,7 +16,7 @@ use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 
 /**
  * Repositories manager.
@@ -35,7 +35,7 @@ class RepositoryManager
     private $eventDispatcher;
     private $rfs;
 
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, HttpDownloader $rfs = null)
     {
         $this->io = $io;
         $this->config = $config;
@@ -127,7 +127,7 @@ class RepositoryManager
 
         $reflMethod = new \ReflectionMethod($class, '__construct');
         $params = $reflMethod->getParameters();
-        if (isset($params[4]) && $params[4]->getClass() && $params[4]->getClass()->getName() === 'Composer\Util\RemoteFilesystem') {
+        if (isset($params[4]) && $params[4]->getClass() && $params[4]->getClass()->getName() === 'Composer\Util\HttpDownloader') {
             return new $class($config, $this->io, $this->config, $this->eventDispatcher, $this->rfs);
         }
 

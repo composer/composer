@@ -19,7 +19,7 @@ use Composer\Package\PackageInterface;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\IO\IOInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use ZipArchive;
@@ -36,10 +36,10 @@ class ZipDownloader extends ArchiveDownloader
     protected $process;
     private $zipArchiveObject;
 
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null, RemoteFilesystem $rfs = null)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null, HttpDownloader $downloader = null)
     {
         $this->process = $process ?: new ProcessExecutor($io);
-        parent::__construct($io, $config, $eventDispatcher, $cache, $rfs);
+        parent::__construct($io, $config, $eventDispatcher, $cache, $downloader);
     }
 
     /**

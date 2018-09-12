@@ -21,7 +21,7 @@ use Composer\Cache;
 use Composer\Config;
 use Composer\Factory;
 use Composer\IO\IOInterface;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
@@ -40,7 +40,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $url;
     protected $baseUrl;
     protected $io;
-    protected $rfs;
+    protected $httpDownloader;
     protected $cache;
     protected $notifyUrl;
     protected $searchUrl;
@@ -60,8 +60,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $rootData;
     private $hasPartialPackages;
     private $partialPackagesByName;
+    private $versionParser;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher, HttpDownloader $httpDownloader)
     {
         parent::__construct();
         if (!preg_match('{^[\w.]+\??://}', $repoConfig['url'])) {
@@ -98,12 +99,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->baseUrl = rtrim(preg_replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
-        $this->loader = new ArrayLoader();
-        if ($rfs && $this->options) {
-            $rfs = clone $rfs;
-            $rfs->setOptions($this->options);
+        $this->versionParser = new VersionParser();
+        $this->loader = new ArrayLoader($this->versionParser);
+        if ($httpDownloader && $this->options) {
+            // TODO solve this somehow - should be sent a request time not on the instance
+            $httpDownloader = clone $httpDownloader;
+            $httpDownloader->setOptions($this->options);
         }
-        $this->rfs = $rfs ?: Factory::createRemoteFilesystem($this->io, $this->config, $this->options);
+        $this->httpDownloader = $httpDownloader;
         $this->eventDispatcher = $eventDispatcher;
         $this->repoConfig = $repoConfig;
     }
@@ -129,8 +132,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $name = strtolower($name);
         if (!$constraint instanceof ConstraintInterface) {
-            $versionParser = new VersionParser();
-            $constraint = $versionParser->parseConstraints($constraint);
+            $constraint = $this->versionParser->parseConstraints($constraint);
         }
 
         foreach ($this->getProviderNames() as $providerName) {
@@ -161,8 +163,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $name = strtolower($name);
 
         if (null !== $constraint && !$constraint instanceof ConstraintInterface) {
-            $versionParser = new VersionParser();
-            $constraint = $versionParser->parseConstraints($constraint);
+            $constraint = $this->versionParser->parseConstraints($constraint);
         }
 
         $packages = array();
@@ -196,8 +197,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable)
     {
+        if ($this->lazyProvidersUrl) {
+            return $this->loadAsyncPackages($packageNameMap, $isPackageAcceptableCallable);
+        }
         if (!$this->hasProviders()) {
-            // TODO build more efficient version of this
             return parent::loadPackages($packageNameMap, $isPackageAcceptableCallable);
         }
 
@@ -235,9 +238,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
             $url = str_replace(array('%query%', '%type%'), array($query, $type), $this->searchUrl);
 
-            $hostname = parse_url($url, PHP_URL_HOST) ?: $url;
-            $json = $this->rfs->getContents($hostname, $url, false);
-            $search = JsonFile::parseJson($json, $url);
+            $search = $this->httpDownloader->get($url)->decodeJson();
 
             if (empty($search['results'])) {
                 return array();
@@ -496,6 +497,85 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->configurePackageTransportOptions($package);
     }
 
+    private function loadAsyncPackages(array $packageNames, $isPackageAcceptableCallable)
+    {
+        $this->loadRootServerFile();
+
+        $packages = array();
+        $repo = $this;
+
+        $createPackageIfAcceptable = function ($version, $constraint) use (&$packages, $isPackageAcceptableCallable, $repo) {
+            if (!call_user_func($isPackageAcceptableCallable, strtolower($version['name']), VersionParser::parseStability($version['version']))) {
+                return;
+            }
+
+            if (isset($version['version_normalized']) && $constraint && !$constraint->matches(new Constraint('==', $version['version_normalized']))) {
+                return;
+            }
+
+            // load acceptable packages in the providers
+            $package = $this->createPackage($version, 'Composer\Package\CompletePackage');
+            $package->setRepository($repo);
+
+            // if there was no version_normalized, then we need to check now for the constraint
+            if (!$constraint || isset($version['version_normalized']) || $constraint->matches(new Constraint('==', $package->getVersion()))) {
+                $packages[spl_object_hash($package)] = $package;
+                if ($package instanceof AliasPackage && !isset($packages[spl_object_hash($package->getAliasOf())])) {
+                    $packages[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
+                }
+            }
+        };
+
+        if ($this->lazyProvidersUrl) {
+            foreach ($packageNames as $name => $constraint) {
+                $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
+                $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
+
+                $lastModified = null;
+                if ($contents = $this->cache->read($cacheKey)) {
+                    $contents = json_decode($contents, true);
+                    $lastModified = isset($contents['last-modified']) ? $contents['last-modified'] : null;
+                }
+
+                $this->asyncFetchFile($url, $cacheKey, $lastModified)
+                    ->then(function ($response) use (&$packages, $contents, $name, $constraint, $createPackageIfAcceptable) {
+                        if (true === $response) {
+                            $response = $contents;
+                        }
+
+                        $uniqKeys = array('version', 'version_normalized', 'source', 'dist', 'time');
+                        foreach ($response['packages'][$name] as $version) {
+                            if (isset($version['versions'])) {
+                                $baseVersion = $version;
+                                foreach ($uniqKeys as $key) {
+                                    unset($baseVersion[$key.'s']);
+                                }
+
+                                foreach ($version['versions'] as $index => $dummy) {
+                                    $unpackedVersion = $baseVersion;
+                                    foreach ($uniqKeys as $key) {
+                                        $unpackedVersion[$key] = $version[$key.'s'][$index];
+                                    }
+
+                                    $createPackageIfAcceptable($unpackedVersion, $constraint);
+                                }
+                            } else {
+                                $createPackageIfAcceptable($version, $constraint);
+                            }
+                        }
+                    }, function ($e) {
+                        // TODO use ->done() above instead with react/promise 2.0
+                        var_dump('Uncaught Ex', $e->getMessage());
+                    });
+            }
+        }
+
+        $this->httpDownloader->wait();
+
+        return $packages;
+        // RepositorySet should call loadMetadata, getMetadata when all promises resolved, then metadataComplete when done so we can GC the loaded json and whatnot then as needed
+    }
+
     protected function loadRootServerFile()
     {
         if (null !== $this->rootData) {
@@ -691,15 +771,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $retries = 3;
         while ($retries--) {
             try {
-                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $filename);
-                if ($this->eventDispatcher) {
-                    $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
-                }
+                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
+                $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
 
-                $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
-                $rfs = $preFileDownloadEvent->getRemoteFilesystem();
+                $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
 
-                $json = $rfs->getContents($hostname, $filename, false);
+                $response = $httpDownloader->get($filename);
+                $json = $response->getBody();
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     // undo downgrade before trying again if http seems to be hijacked or modifying content somehow
                     if ($this->allowSslDowngrade) {
@@ -718,7 +796,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     throw new RepositorySecurityException('The contents of '.$filename.' do not match its signature. This could indicate a man-in-the-middle attack or e.g. antivirus software corrupting files. Try running composer again and report this if you think it is a mistake.');
                 }
 
-                $data = JsonFile::parseJson($json, $filename);
+                $data = $response->decodeJson();
                 if (!empty($data['warning'])) {
                     $this->io->writeError('<warning>Warning from '.$this->url.': '.$data['warning'].'</warning>');
                 }
@@ -728,7 +806,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 if ($cacheKey) {
                     if ($storeLastModifiedTime) {
-                        $lastModifiedDate = $rfs->findHeaderValue($rfs->getLastHeaders(), 'last-modified');
+                        $lastModifiedDate = $response->getHeader('last-modified');
                         if ($lastModifiedDate) {
                             $data['last-modified'] = $lastModifiedDate;
                             $json = json_encode($data);
@@ -737,8 +815,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $this->cache->write($cacheKey, $json);
                 }
 
+                $response->collect();
+
                 break;
             } catch (\Exception $e) {
+                if ($e instanceof \LogicException) {
+                    throw $e;
+                }
+
                 if ($e instanceof TransportException && $e->getStatusCode() === 404) {
                     throw $e;
                 }
@@ -775,20 +859,18 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $retries = 3;
         while ($retries--) {
             try {
-                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $filename);
-                if ($this->eventDispatcher) {
-                    $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
-                }
+                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
+                $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
 
-                $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
-                $rfs = $preFileDownloadEvent->getRemoteFilesystem();
+                $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
                 $options = array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime)));
-                $json = $rfs->getContents($hostname, $filename, false, $options);
-                if ($json === '' && $rfs->findStatusCode($rfs->getLastHeaders()) === 304) {
+                $response = $httpDownloader->get($filename, $options);
+                $json = $response->getBody();
+                if ($json === '' && $response->getStatusCode() === 304) {
                     return true;
                 }
 
-                $data = JsonFile::parseJson($json, $filename);
+                $data = $response->decodeJson();
                 if (!empty($data['warning'])) {
                     $this->io->writeError('<warning>Warning from '.$this->url.': '.$data['warning'].'</warning>');
                 }
@@ -796,7 +878,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $this->io->writeError('<info>Info from '.$this->url.': '.$data['info'].'</info>');
                 }
 
-                $lastModifiedDate = $rfs->findHeaderValue($rfs->getLastHeaders(), 'last-modified');
+                $lastModifiedDate = $response->getHeader('last-modified');
+                $response->collect();
                 if ($lastModifiedDate) {
                     $data['last-modified'] = $lastModifiedDate;
                     $json = json_encode($data);
@@ -805,6 +888,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 return $data;
             } catch (\Exception $e) {
+                if ($e instanceof \LogicException) {
+                    throw $e;
+                }
+
                 if ($e instanceof TransportException && $e->getStatusCode() === 404) {
                     throw $e;
                 }
@@ -823,6 +910,69 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return true;
             }
         }
+    }
+
+    protected function asyncFetchFile($filename, $cacheKey, $lastModifiedTime = null)
+    {
+        $retries = 3;
+        $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
+        $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+
+        $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
+        $options = $lastModifiedTime ? array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime))) : array();
+
+        $io = $this->io;
+        $url = $this->url;
+        $cache = $this->cache;
+        $degradedMode =& $this->degradedMode;
+
+        $accept = function ($response) use ($io, $url, $cache, $cacheKey) {
+            $json = $response->getBody();
+            if ($json === '' && $response->getStatusCode() === 304) {
+                return true;
+            }
+
+            $data = $response->decodeJson();
+            if (!empty($data['warning'])) {
+                $io->writeError('<warning>Warning from '.$url.': '.$data['warning'].'</warning>');
+            }
+            if (!empty($data['info'])) {
+                $io->writeError('<info>Info from '.$url.': '.$data['info'].'</info>');
+            }
+
+            $lastModifiedDate = $response->getHeader('last-modified');
+            $response->collect();
+            if ($lastModifiedDate) {
+                $data['last-modified'] = $lastModifiedDate;
+                $json = JsonFile::encode($data, JsonFile::JSON_UNESCAPED_SLASHES | JsonFile::JSON_UNESCAPED_UNICODE);
+            }
+            $cache->write($cacheKey, $json);
+
+            return $data;
+        };
+
+        $reject = function ($e) use (&$retries, $httpDownloader, $filename, $options, &$reject, $accept, $io, $url, $cache, &$degradedMode) {
+            var_dump('Caught8', $e->getMessage());
+            if ($e instanceof TransportException && $e->getStatusCode() === 404) {
+                return false;
+            }
+
+            if (--$retries) {
+                usleep(100000);
+
+                return $httpDownloader->add($filename, $options)->then($accept, $reject);
+            }
+
+            if (!$degradedMode) {
+                $io->writeError('<warning>'.$e->getMessage().'</warning>');
+                $io->writeError('<warning>'.$url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
+            }
+            $degradedMode = true;
+
+            return true;
+        };
+
+        return $httpDownloader->add($filename, $options)->then($accept, $reject);
     }
 
     /**

@@ -16,7 +16,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\Json\JsonFile;
 
 /**
@@ -108,10 +108,10 @@ class RepositoryFactory
      * @param  IOInterface       $io
      * @param  Config            $config
      * @param  EventDispatcher   $eventDispatcher
-     * @param  RemoteFilesystem  $rfs
+     * @param  HttpDownloader  $rfs
      * @return RepositoryManager
      */
-    public static function manager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
+    public static function manager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, HttpDownloader $rfs = null)
     {
         $rm = new RepositoryManager($io, $config, $eventDispatcher, $rfs);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');

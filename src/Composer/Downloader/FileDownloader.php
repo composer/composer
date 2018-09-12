@@ -24,7 +24,7 @@ use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\Util\Url as UrlUtil;
 
 /**
@@ -39,7 +39,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 {
     protected $io;
     protected $config;
-    protected $rfs;
+    protected $httpDownloader;
     protected $filesystem;
     protected $cache;
     protected $outputProgress = true;
@@ -52,16 +52,16 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @param IOInterface      $io              The IO instance
      * @param Config           $config          The config
      * @param EventDispatcher  $eventDispatcher The event dispatcher
-     * @param Cache            $cache           Optional cache instance
-     * @param RemoteFilesystem $rfs             The remote filesystem
+     * @param Cache            $cache           Cache instance
+     * @param HttpDownloader   $httpDownloader  The remote filesystem
      * @param Filesystem       $filesystem      The filesystem
      */
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher, Cache $cache, HttpDownloader $httpDownloader, Filesystem $filesystem = null)
     {
         $this->io = $io;
         $this->config = $config;
         $this->eventDispatcher = $eventDispatcher;
-        $this->rfs = $rfs ?: Factory::createRemoteFilesystem($this->io, $config);
+        $this->httpDownloader = $httpDownloader;
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->cache = $cache;
 
@@ -125,13 +125,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $fileName = $this->getFileName($package, $path);
 
         $processedUrl = $this->processUrl($package, $url);
-        $hostname = parse_url($processedUrl, PHP_URL_HOST);
 
-        $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $processedUrl);
+        $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $processedUrl);
         if ($this->eventDispatcher) {
             $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
         }
-        $rfs = $preFileDownloadEvent->getRemoteFilesystem();
+        $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
 
         try {
             $checksum = $package->getDistSha1Checksum();
@@ -150,7 +149,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 $retries = 3;
                 while ($retries--) {
                     try {
-                        $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress, $package->getTransportOptions());
+                        // TODO handle this->outputProgress
+                        $httpDownloader->copy($processedUrl, $fileName, $package->getTransportOptions());
                         break;
                     } catch (TransportException $e) {
                         // if we got an http response with a proper code, then requesting again will probably not help, abort

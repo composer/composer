@@ -60,7 +60,8 @@ class RemoteFilesystem
         // Setup TLS options
         // The cafile option can be set via config.json
         if ($disableTls === false) {
-            $this->options = $this->getTlsDefaults($options);
+            $logger = $io instanceof LoggerInterface ? $io : null;
+            $this->options = StreamContextFactory::getTlsDefaults($options, $logger);
         } else {
             $this->disableTls = true;
         }
@@ -889,111 +890,6 @@ class RemoteFilesystem
         }
 
         return false;
-    }
-
-    /**
-     * @param array $options
-     *
-     * @return array
-     */
-    private function getTlsDefaults(array $options)
-    {
-        $ciphers = implode(':', array(
-            'ECDHE-RSA-AES128-GCM-SHA256',
-            'ECDHE-ECDSA-AES128-GCM-SHA256',
-            'ECDHE-RSA-AES256-GCM-SHA384',
-            'ECDHE-ECDSA-AES256-GCM-SHA384',
-            'DHE-RSA-AES128-GCM-SHA256',
-            'DHE-DSS-AES128-GCM-SHA256',
-            'kEDH+AESGCM',
-            'ECDHE-RSA-AES128-SHA256',
-            'ECDHE-ECDSA-AES128-SHA256',
-            'ECDHE-RSA-AES128-SHA',
-            'ECDHE-ECDSA-AES128-SHA',
-            'ECDHE-RSA-AES256-SHA384',
-            'ECDHE-ECDSA-AES256-SHA384',
-            'ECDHE-RSA-AES256-SHA',
-            'ECDHE-ECDSA-AES256-SHA',
-            'DHE-RSA-AES128-SHA256',
-            'DHE-RSA-AES128-SHA',
-            'DHE-DSS-AES128-SHA256',
-            'DHE-RSA-AES256-SHA256',
-            'DHE-DSS-AES256-SHA',
-            'DHE-RSA-AES256-SHA',
-            'AES128-GCM-SHA256',
-            'AES256-GCM-SHA384',
-            'AES128-SHA256',
-            'AES256-SHA256',
-            'AES128-SHA',
-            'AES256-SHA',
-            'AES',
-            'CAMELLIA',
-            'DES-CBC3-SHA',
-            '!aNULL',
-            '!eNULL',
-            '!EXPORT',
-            '!DES',
-            '!RC4',
-            '!MD5',
-            '!PSK',
-            '!aECDH',
-            '!EDH-DSS-DES-CBC3-SHA',
-            '!EDH-RSA-DES-CBC3-SHA',
-            '!KRB5-DES-CBC3-SHA',
-        ));
-
-        /**
-         * CN_match and SNI_server_name are only known once a URL is passed.
-         * They will be set in the getOptionsForUrl() method which receives a URL.
-         *
-         * cafile or capath can be overridden by passing in those options to constructor.
-         */
-        $defaults = array(
-            'ssl' => array(
-                'ciphers' => $ciphers,
-                'verify_peer' => true,
-                'verify_depth' => 7,
-                'SNI_enabled' => true,
-                'capture_peer_cert' => true,
-            ),
-        );
-
-        if (isset($options['ssl'])) {
-            $defaults['ssl'] = array_replace_recursive($defaults['ssl'], $options['ssl']);
-        }
-
-        $caBundleLogger = $this->io instanceof LoggerInterface ? $this->io : null;
-
-        /**
-         * Attempt to find a local cafile or throw an exception if none pre-set
-         * The user may go download one if this occurs.
-         */
-        if (!isset($defaults['ssl']['cafile']) && !isset($defaults['ssl']['capath'])) {
-            $result = CaBundle::getSystemCaRootBundlePath($caBundleLogger);
-
-            if (is_dir($result)) {
-                $defaults['ssl']['capath'] = $result;
-            } else {
-                $defaults['ssl']['cafile'] = $result;
-            }
-        }
-
-        if (isset($defaults['ssl']['cafile']) && (!is_readable($defaults['ssl']['cafile']) || !CaBundle::validateCaFile($defaults['ssl']['cafile'], $caBundleLogger))) {
-            throw new TransportException('The configured cafile was not valid or could not be read.');
-        }
-
-        if (isset($defaults['ssl']['capath']) && (!is_dir($defaults['ssl']['capath']) || !is_readable($defaults['ssl']['capath']))) {
-            throw new TransportException('The configured capath was not valid or could not be read.');
-        }
-
-        /**
-         * Disable TLS compression to prevent CRIME attacks where supported.
-         */
-        if (PHP_VERSION_ID >= 50413) {
-            $defaults['ssl']['disable_compression'] = true;
-        }
-
-        return $defaults;
     }
 
     /**

@@ -13,7 +13,7 @@
 namespace Composer\Plugin;
 
 use Composer\EventDispatcher\Event;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 
 /**
  * The pre file download event.
@@ -23,7 +23,7 @@ use Composer\Util\RemoteFilesystem;
 class PreFileDownloadEvent extends Event
 {
     /**
-     * @var RemoteFilesystem
+     * @var HttpDownloader
      */
     private $rfs;
 
@@ -36,10 +36,10 @@ class PreFileDownloadEvent extends Event
      * Constructor.
      *
      * @param string           $name         The event name
-     * @param RemoteFilesystem $rfs
+     * @param HttpDownloader $rfs
      * @param string           $processedUrl
      */
-    public function __construct($name, RemoteFilesystem $rfs, $processedUrl)
+    public function __construct($name, HttpDownloader $rfs, $processedUrl)
     {
         parent::__construct($name);
         $this->rfs = $rfs;
@@ -47,21 +47,17 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Returns the remote filesystem
-     *
-     * @return RemoteFilesystem
+     * @return HttpDownloader
      */
-    public function getRemoteFilesystem()
+    public function getHttpDownloader()
     {
         return $this->rfs;
     }
 
     /**
-     * Sets the remote filesystem
-     *
-     * @param RemoteFilesystem $rfs
+     * @param HttpDownloader $rfs
      */
-    public function setRemoteFilesystem(RemoteFilesystem $rfs)
+    public function setHttpDownloader(HttpDownloader $rfs)
     {
         $this->rfs = $rfs;
     }

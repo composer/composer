@@ -23,7 +23,7 @@ use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\Util\Silencer;
 use Composer\Plugin\PluginEvents;
 use Composer\EventDispatcher\Event;
@@ -325,7 +325,7 @@ class Factory
             $io->loadConfiguration($config);
         }
 
-        $rfs = self::createRemoteFilesystem($io, $config);
+        $rfs = self::createHttpDownloader($io, $config);
 
         // initialize event dispatcher
         $dispatcher = new EventDispatcher($composer, $io);
@@ -451,7 +451,7 @@ class Factory
      * @param  EventDispatcher            $eventDispatcher
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
+    public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, HttpDownloader $rfs = null)
     {
         $cache = null;
         if ($config->get('cache-files-ttl') > 0) {
@@ -579,10 +579,10 @@ class Factory
     /**
      * @param  IOInterface      $io      IO instance
      * @param  Config           $config  Config instance
-     * @param  array            $options Array of options passed directly to RemoteFilesystem constructor
-     * @return RemoteFilesystem
+     * @param  array            $options Array of options passed directly to HttpDownloader constructor
+     * @return HttpDownloader
      */
-    public static function createRemoteFilesystem(IOInterface $io, Config $config = null, $options = array())
+    public static function createHttpDownloader(IOInterface $io, Config $config = null, $options = array())
     {
         static $warned = false;
         $disableTls = false;
@@ -607,7 +607,7 @@ class Factory
             $remoteFilesystemOptions = array_replace_recursive($remoteFilesystemOptions, $options);
         }
         try {
-            $remoteFilesystem = new RemoteFilesystem($io, $config, $remoteFilesystemOptions, $disableTls);
+            $remoteFilesystem = new HttpDownloader($io, $config, $remoteFilesystemOptions, $disableTls);
         } catch (TransportException $e) {
             if (false !== strpos($e->getMessage(), 'cafile')) {
                 $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
