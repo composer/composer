@@ -32,7 +32,6 @@ class PoolBuilder
 
     private $loadedNames = array();
 
-    private $id = 1;
     private $packages = array();
     private $priorities = array();
 
@@ -54,14 +53,6 @@ class PoolBuilder
                 case 'install':
                     $loadNames[$job['packageName']] = true;
                     break;
-            }
-        }
-
-        foreach ($repositories as $repository) {
-            if ($repository instanceof ComposerRepository && $repository->hasProviders()) {
-                $this->providerRepos[] = $repository;
-                $repository->setRootAliases($this->rootAliases);
-                $repository->resetPackageIds();
             }
         }
 
@@ -117,9 +108,8 @@ class PoolBuilder
 
     private function loadPackage(PackageInterface $package, $repoIndex)
     {
-        $package->setId($this->id++);
         $this->packages[] = $package;
-        $this->priorities[$this->id - 2] = -$repoIndex;
+        $this->priorities[] = -$repoIndex;
 
         // handle root package aliases
         $name = $package->getName();
@@ -130,7 +120,6 @@ class PoolBuilder
             }
             $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
             $aliasPackage->setRootPackageAlias(true);
-            $aliasPackage->setId($this->id++);
 
             $package->getRepository()->addPackage($aliasPackage); // TODO do we need this?
             $this->packages[] = $aliasPackage;

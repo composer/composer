@@ -143,7 +143,6 @@ class RuleSetTest extends TestCase
         $pool->setPackages(array(
             $p = $this->getPackage('foo', '2.1'),
         ));
-        $p->setId(1);
 
         $ruleSet = new RuleSet;
         $literal = $p->getId();

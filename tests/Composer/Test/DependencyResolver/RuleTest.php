@@ -98,8 +98,6 @@ class RuleTest extends TestCase
             $p1 = $this->getPackage('foo', '2.1'),
             $p2 = $this->getPackage('baz', '1.1'),
         ));
-        $p1->setId(1);
-        $p2->setId(2);
 
         $rule = new GenericRule(array($p1->getId(), -$p2->getId()), Rule::RULE_JOB_INSTALL, null);
 
