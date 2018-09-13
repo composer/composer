@@ -30,6 +30,7 @@ class SolverTest extends TestCase
     protected $repoSet;
     protected $repo;
     protected $repoInstalled;
+    protected $repoLocked;
     protected $request;
     protected $policy;
     protected $solver;
@@ -39,6 +40,7 @@ class SolverTest extends TestCase
         $this->repoSet = new RepositorySet(array());
         $this->repo = new ArrayRepository;
         $this->repoInstalled = new InstalledArrayRepository;
+        $this->repoLocked = new ArrayRepository;
 
         $this->request = new Request($this->repoSet);
         $this->policy = new DefaultPolicy;
@@ -59,6 +61,7 @@ class SolverTest extends TestCase
     public function testSolverRemoveIfNotInstalled()
     {
         $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage(clone $packageA);
         $this->reposComplete();
 
         $this->checkSolverResult(array(
@@ -919,8 +922,8 @@ class SolverTest extends TestCase
 
     protected function reposComplete()
     {
-        $this->repoSet->addRepository($this->repoInstalled);
         $this->repoSet->addRepository($this->repo);
+        $this->repoSet->addRepository($this->repoLocked);
     }
 
     protected function createSolver()

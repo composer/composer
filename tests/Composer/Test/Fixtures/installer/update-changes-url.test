@@ -95,6 +95,55 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
         "dist": { "reference": "0000000000000000000000000000000000000000", "url": "https://api.github.com/repos/g/g/zipball/0000000000000000000000000000000000000000", "type": "zip" }
     }
 ]
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/a/a", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/a/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "2.0.3",
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/b/b", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/b/b/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "type": "library"
+        },
+        {
+            "name": "c/c", "version": "1.0.0",
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/c/c", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/c/c/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "type": "library"
+        },
+        {
+            "name": "d/d", "version": "dev-master",
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/d/d", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/d/d/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "type": "library"
+        },
+        {
+            "name": "f/f", "version": "dev-master",
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/f/f", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/f/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "type": "library"
+        },
+        {
+            "name": "g/g", "version": "dev-master",
+            "source": { "reference": "0000000000000000000000000000000000000000", "url": "https://github.com/g/g", "type": "git" },
+            "dist": { "reference": "0000000000000000000000000000000000000000", "url": "https://api.github.com/repos/g/g/zipball/0000000000000000000000000000000000000000", "type": "zip" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --EXPECT-LOCK--
 {
     "packages": [

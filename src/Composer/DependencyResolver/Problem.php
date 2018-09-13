@@ -220,7 +220,7 @@ class Problem
         if (isset($job['constraint'])) {
             $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
         } else {
-            $packages = array();
+            $packages = $this->pool->whatProvides($job['packageName'], null);
         }
 
         return 'Job(cmd='.$job['cmd'].', target='.$job['packageName'].', packages=['.$this->getPackageList($packages).'])';

@@ -53,6 +53,10 @@ class PoolBuilder
 
         // TODO do we really want the request here? kind of want a root requirements thingy instead
         $loadNames = array();
+        foreach ($request->getFixedPackages() as $package) {
+            // TODO can actually use very specific constraint
+            $loadNames[$package->getname()] = null;
+        }
         foreach ($request->getJobs() as $job) {
             switch ($job['cmd']) {
                 case 'install':
@@ -99,7 +103,7 @@ class PoolBuilder
         }
 
         foreach ($this->packages as $i => $package) {
-            // we check all alias related packages at once, so no need ot check individual aliases
+            // we check all alias related packages at once, so no need to check individual aliases
             // isset also checks non-null value
             if (!$package instanceof AliasPackage && isset($this->nameConstraints[$package->getName()])) {
                 $constraint = $this->nameConstraints[$package->getName()];

@@ -29,23 +29,18 @@ class Solver
     protected $policy;
     /** @var Pool */
     protected $pool = null;
-    /** @var RepositoryInterface */
-    protected $installed;
+
     /** @var RuleSet */
     protected $rules;
     /** @var RuleSetGenerator */
     protected $ruleSetGenerator;
-    /** @var array */
-    protected $jobs;
 
-    /** @var int[] */
-    protected $updateMap = array();
     /** @var RuleWatchGraph */
     protected $watchGraph;
     /** @var Decisions */
     protected $decisions;
-    /** @var int[] */
-    protected $installedMap;
+    /** @var Package[] */
+    protected $fixedMap;
 
     /** @var int */
     protected $propagateIndex;
@@ -67,15 +62,13 @@ class Solver
     /**
      * @param PolicyInterface     $policy
      * @param Pool                $pool
-     * @param RepositoryInterface $installed
      * @param IOInterface         $io
      */
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, IOInterface $io)
+    public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io)
     {
         $this->io = $io;
         $this->policy = $policy;
         $this->pool = $pool;
-        $this->installed = $installed;
     }
 
     /**
@@ -164,36 +157,22 @@ class Solver
         }
     }
 
-    protected function setupInstalledMap()
+    protected function setupFixedMap(Request $request)
     {
-        $this->installedMap = array();
-        foreach ($this->installed->getPackages() as $package) {
-            $this->installedMap[$package->id] = $package;
+        $this->fixedMap = array();
+        foreach ($request->getFixedPackages() as $package) {
+            $this->fixedMap[$package->id] = $package;
         }
     }
 
     /**
+     * @param  Request $request
      * @param bool $ignorePlatformReqs
      */
-    protected function checkForRootRequireProblems($ignorePlatformReqs)
+    protected function checkForRootRequireProblems($request, $ignorePlatformReqs)
     {
-        foreach ($this->jobs as $job) {
+        foreach ($request->getJobs() as $job) {
             switch ($job['cmd']) {
-                case 'update':
-                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
-                    foreach ($packages as $package) {
-                        if (isset($this->installedMap[$package->id])) {
-                            $this->updateMap[$package->id] = true;
-                        }
-                    }
-                    break;
-
-                case 'update-all':
-                    foreach ($this->installedMap as $package) {
-                        $this->updateMap[$package->id] = true;
-                    }
-                    break;
-
                 case 'install':
                     if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
                         break;
@@ -212,18 +191,16 @@ class Solver
     /**
      * @param  Request $request
      * @param  bool    $ignorePlatformReqs
-     * @return array
+     * @return LockTransaction
      */
     public function solve(Request $request, $ignorePlatformReqs = false)
     {
-        $this->jobs = $request->getJobs();
-
-        $this->setupInstalledMap();
+        $this->setupFixedMap($request);
 
         $this->io->writeError('Generating rules', true, IOInterface::DEBUG);
         $this->ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
-        $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
-        $this->checkForRootRequireProblems($ignorePlatformReqs);
+        $this->rules = $this->ruleSetGenerator->getRulesFor($request, $ignorePlatformReqs);
+        $this->checkForRootRequireProblems($request, $ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
 
@@ -240,20 +217,11 @@ class Solver
         $this->io->writeError('', true, IOInterface::DEBUG);
         $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
-        // decide to remove everything that's installed and undecided
-        foreach ($this->installedMap as $packageId => $void) {
-            if ($this->decisions->undecided($packageId)) {
-                $this->decisions->decide(-$packageId, 1, null);
-            }
-        }
-
         if ($this->problems) {
-            throw new SolverProblemsException($this->problems, $this->installedMap, $this->learnedPool);
+            throw new SolverProblemsException($this->problems, $request->getPresentMap(), $this->learnedPool);
         }
 
-        $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisions);
-
-        return $transaction->getOperations();
+        return new LockTransaction($this->policy, $this->pool, $request->getPresentMap(), $request->getUnlockableMap(), $this->decisions);
     }
 
     /**
@@ -392,7 +360,7 @@ class Solver
     private function selectAndInstall($level, array $decisionQueue, $disableRules, Rule $rule)
     {
         // choose best package to install from decisionQueue
-        $literals = $this->policy->selectPreferredPackages($this->pool, $this->installedMap, $decisionQueue, $rule->getRequiredPackage());
+        $literals = $this->policy->selectPreferredPackages($this->pool, $decisionQueue, $rule->getRequiredPackage());
 
         $selectedLiteral = array_shift($literals);
 
@@ -728,19 +696,14 @@ class Solver
                         }
 
                         if ($noneSatisfied && count($decisionQueue)) {
-                            // prune all update packages until installed version
-                            // except for requested updates
-                            if (count($this->installed) != count($this->updateMap)) {
-                                $prunedQueue = array();
-                                foreach ($decisionQueue as $literal) {
-                                    if (isset($this->installedMap[abs($literal)])) {
-                                        $prunedQueue[] = $literal;
-                                        if (isset($this->updateMap[abs($literal)])) {
-                                            $prunedQueue = $decisionQueue;
-                                            break;
-                                        }
-                                    }
+                            // if any of the options in the decision queue are fixed, only use those
+                            $prunedQueue = array();
+                            foreach ($decisionQueue as $literal) {
+                                if (isset($this->fixedMap[abs($literal)])) {
+                                    $prunedQueue[] = $literal;
                                 }
+                            }
+                            if (!empty($prunedQueue)) {
                                 $decisionQueue = $prunedQueue;
                             }
                         }

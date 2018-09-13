@@ -12,18 +12,11 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
-use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\EmptyConstraint;
-use Composer\Repository\RepositoryInterface;
-use Composer\Repository\CompositeRepository;
-use Composer\Repository\ComposerRepository;
-use Composer\Repository\InstalledRepositoryInterface;
-use Composer\Repository\PlatformRepository;
 use Composer\Package\PackageInterface;
 
 /**

@@ -40,6 +40,7 @@ class Locker
     private $dumper;
     private $process;
     private $lockDataCache;
+    private $virtualFileWritten;
 
     /**
      * Initializes packages locker.
@@ -108,7 +109,7 @@ class Locker
      */
     public function isLocked()
     {
-        if (!$this->lockFile->exists()) {
+        if (!$this->virtualFileWritten && !$this->lockFile->exists()) {
             return false;
         }
 
@@ -282,10 +283,11 @@ class Locker
      * @param bool   $preferStable
      * @param bool   $preferLowest
      * @param array  $platformOverrides
+     * @param bool   $write             Whether to actually write data to disk, useful in tests and for --dry-run
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides, $write = true)
     {
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
@@ -325,7 +327,11 @@ class Locker
 
         if (empty($lock['packages']) && empty($lock['packages-dev']) && empty($lock['platform']) && empty($lock['platform-dev'])) {
             if ($this->lockFile->exists()) {
-                unlink($this->lockFile->getPath());
+                if ($write) {
+                    unlink($this->lockFile->getPath());
+                } else {
+                    $this->virtualFileWritten = false;
+                }
             }
 
             return false;
@@ -337,8 +343,15 @@ class Locker
             $isLocked = false;
         }
         if (!$isLocked || $lock !== $this->getLockData()) {
-            $this->lockFile->write($lock);
-            $this->lockDataCache = null;
+            if ($write) {
+                $this->lockFile->write($lock);
+//                $this->lockDataCache = JsonFile::parseJson(JsonFile::encode($lock, 448 & JsonFile::JSON_PRETTY_PRINT));
+                $this->lockDataCache = null;
+                $this->virtualFileWritten = false;
+            } else {
+                $this->virtualFileWritten = true;
+                $this->lockDataCache = JsonFile::parseJson(JsonFile::encode($lock, 448 & JsonFile::JSON_PRETTY_PRINT));
+            }
 
             return true;
         }

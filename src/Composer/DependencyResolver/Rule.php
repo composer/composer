@@ -231,7 +231,7 @@ abstract class Rule
             case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
                 return $ruleText;
             case self::RULE_PACKAGE_SAME_NAME:
-                return 'Can only install one of: ' . $this->formatPackagesUnique($pool, $literals) . '.';
+                return 'Same name, can only install one of: ' . $this->formatPackagesUnique($pool, $literals) . '.';
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
                 return $ruleText;
             case self::RULE_LEARNED:

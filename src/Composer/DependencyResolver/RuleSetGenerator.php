@@ -24,8 +24,6 @@ class RuleSetGenerator
     protected $policy;
     protected $pool;
     protected $rules;
-    protected $jobs;
-    protected $installedMap;
     protected $addedMap;
     protected $conflictAddedMap;
     protected $addedPackages;
@@ -218,8 +216,6 @@ class RuleSetGenerator
             }
 
             // check obsoletes and implicit obsoletes of a package
-            $isInstalled = isset($this->installedMap[$package->id]);
-
             foreach ($package->getReplaces() as $link) {
                 if (!isset($this->addedPackagesByNames[$link->getTarget()])) {
                     continue;
@@ -232,7 +228,7 @@ class RuleSetGenerator
                     }
 
                     if (!$this->obsoleteImpossibleForAlias($package, $provider)) {
-                        $reason = $isInstalled ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
+                        $reason = Rule::RULE_PACKAGE_OBSOLETES;
                         $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $provider, $reason, $link));
                     }
                 }
@@ -254,21 +250,31 @@ class RuleSetGenerator
         return $impossible;
     }
 
-    protected function addRulesForJobs($ignorePlatformReqs)
+    protected function addRulesForRequest($request, $ignorePlatformReqs)
     {
-        foreach ($this->jobs as $job) {
+        foreach ($request->getFixedPackages() as $package) {
+            $this->addRulesForPackage($package, $ignorePlatformReqs);
+
+            $rule = $this->createInstallOneOfRule(array($package), Rule::RULE_JOB_INSTALL, array(
+                'cmd' => 'fix',
+                'packageName' => $package->getName(),
+                'constraint' => null,
+                'fixed' => true
+            ));
+            $this->addRule(RuleSet::TYPE_JOB, $rule);
+        }
+
+        foreach ($request->getJobs() as $job) {
             switch ($job['cmd']) {
                 case 'install':
-                    if (!$job['fixed'] && $ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
+                    if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
                         break;
                     }
 
                     $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
                     if ($packages) {
                         foreach ($packages as $package) {
-                            if (!isset($this->installedMap[$package->id])) {
-                                $this->addRulesForPackage($package, $ignorePlatformReqs);
-                            }
+                            $this->addRulesForPackage($package, $ignorePlatformReqs);
                         }
 
                         $rule = $this->createInstallOneOfRule($packages, Rule::RULE_JOB_INSTALL, $job);
@@ -288,21 +294,16 @@ class RuleSetGenerator
         }
     }
 
-    public function getRulesFor($jobs, $installedMap, $ignorePlatformReqs = false)
+    public function getRulesFor(Request $request, $ignorePlatformReqs = false)
     {
-        $this->jobs = $jobs;
         $this->rules = new RuleSet;
-        $this->installedMap = $installedMap;
 
         $this->addedMap = array();
         $this->conflictAddedMap = array();
         $this->addedPackages = array();
         $this->addedPackagesByNames = array();
-        foreach ($this->installedMap as $package) {
-            $this->addRulesForPackage($package, $ignorePlatformReqs);
-        }
 
-        $this->addRulesForJobs($ignorePlatformReqs);
+        $this->addRulesForRequest($request, $ignorePlatformReqs);
 
         $this->addConflictRules();
 
