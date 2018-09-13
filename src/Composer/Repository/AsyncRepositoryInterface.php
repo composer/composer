@@ -25,13 +25,13 @@ interface AsyncRepositoryInterface
 {
     /**
      * @param array $names Names of packages to retrieve data for
-     * @return scalar Id to be passed to later loadPackages call
+     * @return mixed Id to be passed to later loadPackages call
      */
     public function requestPackages(array $names);
 
     /**
      * @param array $names
-     * @return scalar id for load call
+     * @return mixed id for load call
      */
     public function returnPackages($loadId);
 }
