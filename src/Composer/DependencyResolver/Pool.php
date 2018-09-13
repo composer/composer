@@ -49,18 +49,11 @@ class Pool implements \Countable
     protected $versionParser;
     protected $providerCache = array();
     protected $filterRequires;
-    protected $whitelist = null;
 
     public function __construct(array $filterRequires = array())
     {
         $this->filterRequires = $filterRequires;
         $this->versionParser = new VersionParser;
-    }
-
-    public function setWhitelist($whitelist)
-    {
-        $this->whitelist = $whitelist;
-        $this->providerCache = array();
     }
 
     public function setPackages(array $packages, array $priorities = array())
@@ -149,20 +142,6 @@ class Pool implements \Countable
         $nameMatch = false;
 
         foreach ($candidates as $candidate) {
-            $aliasOfCandidate = null;
-
-            // alias packages are not white listed, make sure that the package
-            // being aliased is white listed
-            if ($candidate instanceof AliasPackage) {
-                $aliasOfCandidate = $candidate->getAliasOf();
-            }
-
-            if ($this->whitelist !== null && !$bypassFilters && (
-                (!($candidate instanceof AliasPackage) && !isset($this->whitelist[$candidate->id])) ||
-                ($candidate instanceof AliasPackage && !isset($this->whitelist[$aliasOfCandidate->id]))
-            )) {
-                continue;
-            }
             switch ($this->match($candidate, $name, $constraint, $bypassFilters)) {
                 case self::MATCH_NONE:
                     break;
