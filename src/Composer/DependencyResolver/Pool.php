@@ -245,6 +245,7 @@ class Pool implements \Countable
 
                 case self::MATCH_NAME:
                     $nameMatch = true;
+                    $matches[] = $candidate;
                     break;
 
                 case self::MATCH:
