@@ -95,9 +95,10 @@ EOT
             $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update`.';
         }
 
-        $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true);
+        $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true, $isStrict);
 
-        $exitCode = $errors || ($publishErrors && $checkPublish) || ($lockErrors && $checkLock) ? 2 : ($isStrict && $warnings ? 1 : 0);
+        // $errors include publish and lock errors when exists
+        $exitCode = $errors ? 2 : ($isStrict && $warnings ? 1 : 0);
 
         if ($input->getOption('with-dependencies')) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
@@ -108,7 +109,7 @@ EOT
                     list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
                     $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors);
 
-                    $depCode = $errors || ($publishErrors && $checkPublish) ? 2 : ($isStrict && $warnings ? 1 : 0);
+                    $depCode = $errors ? 2 : ($isStrict && $warnings ? 1 : 0);
                     $exitCode = max($depCode, $exitCode);
                 }
             }
@@ -121,7 +122,7 @@ EOT
         return $exitCode;
     }
 
-    private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false)
+    private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false, $isStrict = false)
     {
         if (!$errors && !$publishErrors && !$warnings) {
             $io->write('<info>' . $name . ' is valid</info>');
@@ -141,16 +142,18 @@ EOT
         }
 
         // If checking publish errors, display them as errors, otherwise just show them as warnings
+        // Skip when it is a strict check and we don't want to check publish errors
         if ($checkPublish) {
             $errors = array_merge($errors, $publishErrors);
-        } else {
+        } elseif (!$isStrict) {
             $warnings = array_merge($warnings, $publishErrors);
         }
 
         // If checking lock errors, display them as errors, otherwise just show them as warnings
+        // Skip when it is a strict check and we don't want to check lock errors
         if ($checkLock) {
             $errors = array_merge($errors, $lockErrors);
-        } else {
+        } elseif (!$isStrict) {
             $warnings = array_merge($warnings, $lockErrors);
         }
 
