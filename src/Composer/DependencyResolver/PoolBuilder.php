@@ -20,6 +20,8 @@ use Composer\Repository\ComposerRepository;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\LockArrayRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\MultiConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -29,6 +31,9 @@ class PoolBuilder
     private $isPackageAcceptableCallable;
     private $filterRequires;
     private $rootAliases;
+
+    private $aliasMap = array();
+    private $nameConstraints = array();
 
     private $loadedNames = array();
 
@@ -52,6 +57,7 @@ class PoolBuilder
             switch ($job['cmd']) {
                 case 'install':
                     $loadNames[$job['packageName']] = $job['constraint'];
+                    $this->nameConstraints[$job['packageName']] = $job['constraint'] ? new MultiConstraint(array($job['constraint']), false) : null;
                     break;
             }
         }
@@ -92,6 +98,17 @@ class PoolBuilder
             $loadNames = $newLoadNames;
         }
 
+        foreach ($this->packages as $i => $package) {
+            if (!$package instanceof AliasPackage && !isset($this->aliasMap[spl_object_hash($package)]) && isset($this->nameConstraints[$package->getName()])) {
+                $constraint = $this->nameConstraints[$package->getName()];
+
+                if ($constraint && !$constraint->matches(new Constraint('==', $package->getVersion()))) {
+                    unset($this->packages[$i]);
+                    unset($this->priorities[$i]);
+                }
+            }
+        }
+
         foreach ($repositories as $key => $repository) {
             if ($repository instanceof PlatformRepository ||
                 $repository instanceof InstalledRepositoryInterface) {
@@ -111,18 +128,26 @@ class PoolBuilder
         $this->packages[] = $package;
         $this->priorities[] = -$repoIndex;
 
+        if ($package instanceof AliasPackage) {
+            $this->aliasMap[spl_object_hash($package->getAliasOf())][] = $package;
+        }
+
         // handle root package aliases
         $name = $package->getName();
         if (isset($this->rootAliases[$name][$package->getVersion()])) {
             $alias = $this->rootAliases[$name][$package->getVersion()];
             if ($package instanceof AliasPackage) {
-                $package = $package->getAliasOf();
+                $basePackage = $package->getAliasOf();
+            } else {
+                $basePackage = $package;
             }
-            $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
+            $aliasPackage = new AliasPackage($basePackage, $alias['alias_normalized'], $alias['alias']);
             $aliasPackage->setRootPackageAlias(true);
 
             $package->getRepository()->addPackage($aliasPackage); // TODO do we need this?
             $this->packages[] = $aliasPackage;
+            $this->priorities[] = -$repoIndex;
+            $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][] = $aliasPackage;
         }
 
         $loadNames = array();
@@ -130,6 +155,16 @@ class PoolBuilder
             $require = $link->getTarget();
             if (!isset($this->loadedNames[$require])) {
                 $loadNames[$require] = null;
+            }
+            if ($link->getConstraint()) {
+                if (!array_key_exists($require, $this->nameConstraints)) {
+                    $this->nameConstraints[$require] = new MultiConstraint(array($link->getConstraint()), false);
+                } elseif ($this->nameConstraints[$require]) {
+                    // TODO addConstraint function?
+                    $this->nameConstraints[$require] = new MultiConstraint(array_merge(array($link->getConstraint()), $this->nameConstraints[$require]->getConstraints()), false);
+                }
+            } else {
+                $this->nameConstraints[$require] = null;
             }
         }
 
