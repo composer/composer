@@ -99,12 +99,27 @@ class PoolBuilder
         }
 
         foreach ($this->packages as $i => $package) {
-            if (!$package instanceof AliasPackage && !isset($this->aliasMap[spl_object_hash($package)]) && isset($this->nameConstraints[$package->getName()])) {
+            // we check all alias related packages at once, so no need ot check individual aliases
+            // isset also checks non-null value
+            if (!$package instanceof AliasPackage && isset($this->nameConstraints[$package->getName()])) {
                 $constraint = $this->nameConstraints[$package->getName()];
 
-                if ($constraint && !$constraint->matches(new Constraint('==', $package->getVersion()))) {
-                    unset($this->packages[$i]);
-                    unset($this->priorities[$i]);
+                $aliasedPackages = array($i => $package);
+                if (isset($this->aliasMap[spl_object_hash($package)])) {
+                    $aliasedPackages += $this->aliasMap[spl_object_hash($package)];
+                }
+
+                $found = false;
+                foreach ($aliasedPackages as $packageOrAlias) {
+                    if ($constraint->matches(new Constraint('==', $packageOrAlias->getVersion()))) {
+                        $found = true;
+                    }
+                }
+                if (!$found) {
+                    foreach ($aliasedPackages as $index => $packageOrAlias) {
+                        unset($this->packages[$index]);
+                        unset($this->priorities[$index]);
+                    }
                 }
             }
         }
@@ -120,16 +135,21 @@ class PoolBuilder
 
         $this->pool->setPackages($this->packages, $this->priorities);
 
+        unset($this->aliasMap);
+        unset($this->loadedNames);
+        unset($this->nameConstraints);
+
         return $this->pool;
     }
 
     private function loadPackage(PackageInterface $package, $repoIndex)
     {
+        $index = count($this->packages);
         $this->packages[] = $package;
         $this->priorities[] = -$repoIndex;
 
         if ($package instanceof AliasPackage) {
-            $this->aliasMap[spl_object_hash($package->getAliasOf())][] = $package;
+            $this->aliasMap[spl_object_hash($package->getAliasOf())][$index] = $package;
         }
 
         // handle root package aliases
@@ -147,7 +167,7 @@ class PoolBuilder
             $package->getRepository()->addPackage($aliasPackage); // TODO do we need this?
             $this->packages[] = $aliasPackage;
             $this->priorities[] = -$repoIndex;
-            $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][] = $aliasPackage;
+            $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$index+1] = $aliasPackage;
         }
 
         $loadNames = array();
