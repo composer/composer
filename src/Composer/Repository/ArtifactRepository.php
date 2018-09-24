@@ -126,9 +126,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     private function getComposerInformation(\SplFileInfo $file)
     {
         $zip = new \ZipArchive();
-        $res = $zip->open($file->getPathname());
-
-        if ($res !== true) {
+        if ($zip->open($file->getPathname()) !== true) {
             return false;
         }
 
