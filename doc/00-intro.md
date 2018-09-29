@@ -97,6 +97,15 @@ If you like to install it only for your user and avoid requiring root permission
 you can use `~/.local/bin` instead which is available by default on some
 Linux distributions.
 
+#### Fedora Linux (Or RHEL 7+ Repo)
+
+Composer is included in official repository, do 
+```sh
+sudo dnf install composer
+```
+
+It will install all required dependencies (include php, sympony, zend etc.), and it is available immediately
+
 > **Note:** If the above fails due to permissions, you may need to run it again
 > with sudo.
 
