@@ -336,6 +336,7 @@ EOT
         $showAllTypes = $input->getOption('all');
         $showLatest = $input->getOption('latest');
         $showMinorOnly = $input->getOption('minor-only');
+        $ignoredPackages = array_map('strtolower', $input->getOption('ignore'));
         $indent = $showAllTypes ? '  ' : '';
         $latestPackages = array();
         $exitCode = 0;
@@ -379,7 +380,7 @@ EOT
                         if ($input->getOption('outdated') && $latestPackage && $latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && !$latestPackage->isAbandoned()) {
                             continue;
                         } elseif ($input->getOption('outdated') || $input->getOption('strict')) {
-                            if (\in_array($package->getPrettyName(), $input->getOption('ignore'), true)) {
+                            if (\in_array($package->getPrettyName(), $ignoredPackages, true)) {
                                 continue;
                             }
 

@@ -78,7 +78,7 @@ EOT
             $args['--minor-only'] = true;
         }
         $args['--format'] = $input->getOption('format');
-        $args['--ignore'] = array_map('strtolower', $input->getOption('ignore'));
+        $args['--ignore'] = $input->getOption('ignore');
 
         $input = new ArrayInput($args);
 
