@@ -36,14 +36,14 @@ class JsonManipulator
     public function __construct($contents)
     {
         $contents = trim($contents);
-        if ($contents === '') {
+        if ('' === $contents) {
             $contents = '{}';
         }
         if (!$this->pregMatch('#^\{(.*)\}$#s', $contents)) {
             throw new \InvalidArgumentException('The json file must be an object ({})');
         }
         $this->newline = false !== strpos($contents, "\r\n") ? "\r\n" : "\n";
-        $this->contents = $contents === '{}' ? '{' . $this->newline . '}' : $contents;
+        $this->contents = '{}' === $contents ? '{' . $this->newline . '}' : $contents;
         $this->detectIndenting();
     }
 
@@ -202,7 +202,7 @@ class JsonManipulator
 
         // no main node yet
         if (!isset($decoded[$mainNode])) {
-            if ($subName !== null) {
+            if (null !== $subName) {
                 $this->addMainKey($mainNode, array($name => array($subName => $value)));
             } else {
                 $this->addMainKey($mainNode, array($name => $value));
@@ -238,7 +238,7 @@ class JsonManipulator
         $childRegex = '{'.self::$DEFINES.'(?P<start>"'.preg_quote($name).'"\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
         if ($this->pregMatch($childRegex, $children, $matches)) {
             $children = preg_replace_callback($childRegex, function ($matches) use ($subName, $value, $that) {
-                if ($subName !== null) {
+                if (null !== $subName) {
                     $curVal = json_decode($matches['content'], true);
                     if (!is_array($curVal)) {
                         $curVal = array();
@@ -258,7 +258,7 @@ class JsonManipulator
             }
 
             if (!empty($match['content'])) {
-                if ($subName !== null) {
+                if (null !== $subName) {
                     $value = array($subName => $value);
                 }
 
@@ -269,7 +269,7 @@ class JsonManipulator
                     $children
                 );
             } else {
-                if ($subName !== null) {
+                if (null !== $subName) {
                     $value = array($subName => $value);
                 }
 
@@ -358,7 +358,7 @@ class JsonManipulator
             }, $this->contents);
 
             // we have a subname, so we restore the rest of $name
-            if ($subName !== null) {
+            if (null !== $subName) {
                 $curVal = json_decode($children, true);
                 unset($curVal[$name][$subName]);
                 $this->addSubNode($mainNode, $name, $curVal[$name]);
@@ -369,7 +369,7 @@ class JsonManipulator
 
         $that = $this;
         $this->contents = preg_replace_callback($nodeRegex, function ($matches) use ($that, $name, $subName, $childrenClean) {
-            if ($subName !== null) {
+            if (null !== $subName) {
                 $curVal = json_decode($matches['content'], true);
                 unset($curVal[$name][$subName]);
                 $childrenClean = $that->format($curVal, 0);
@@ -492,7 +492,7 @@ class JsonManipulator
     {
         $count = preg_match($re, $str, $matches);
 
-        if ($count === false) {
+        if (false === $count) {
             switch (preg_last_error()) {
                 case PREG_NO_ERROR:
                     throw new \RuntimeException('Failed to execute regex: PREG_NO_ERROR', PREG_NO_ERROR);

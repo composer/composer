@@ -34,7 +34,7 @@ class ZipArchiver implements ArchiverInterface
 
         $zip = new ZipArchive();
         $res = $zip->open($target, ZipArchive::CREATE);
-        if ($res === true) {
+        if (true === $res) {
             $files = new ArchivableFilesFinder($sources, $excludes, $ignoreFilters);
             foreach ($files as $file) {
                 /** @var $file \SplFileInfo */

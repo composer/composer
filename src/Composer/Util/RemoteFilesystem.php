@@ -59,7 +59,7 @@ class RemoteFilesystem
 
         // Setup TLS options
         // The cafile option can be set via config.json
-        if ($disableTls === false) {
+        if (false === $disableTls) {
             $this->options = $this->getTlsDefaults($options);
         } else {
             $this->disableTls = true;
@@ -391,7 +391,7 @@ class RemoteFilesystem
         }
 
         // check for bitbucket login page asking to authenticate
-        if ($originUrl === 'bitbucket.org'
+        if ('bitbucket.org' === $originUrl
             && !$this->isPublicBitBucketDownload($fileUrl)
             && substr($fileUrl, -4) === '.zip'
             && $contentType && preg_match('{^text/html\b}i', $contentType)

@@ -33,9 +33,9 @@ class AuthHelper
     {
         $store = false;
         $configSource = $this->config->getAuthConfigSource();
-        if ($storeAuth === true) {
+        if (true === $storeAuth) {
             $store = $configSource;
-        } elseif ($storeAuth === 'prompt') {
+        } elseif ('prompt' === $storeAuth) {
             $answer = $this->io->askAndValidate(
                 'Do you want to store credentials for '.$originUrl.' in '.$configSource->getName().' ? [Yn] ',
                 function ($value) {
@@ -49,7 +49,7 @@ class AuthHelper
                 'y'
             );
 
-            if ($answer === 'y') {
+            if ('y' === $answer) {
                 $store = $configSource;
             }
         }

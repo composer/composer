@@ -251,7 +251,7 @@ EOT
                 }
             } elseif (strpos($settingKey, '.')) {
                 $bits = explode('.', $settingKey);
-                if ($bits[0] === 'extra') {
+                if ('extra' === $bits[0]) {
                     $data = $rawData;
                 } else {
                     $data = $data['config'];
@@ -577,7 +577,7 @@ EOT
 
             return $this->configSource->addConfigSetting($settingKey, $values[0]);
         }
-        if ($settingKey === 'platform' && $input->getOption('unset')) {
+        if ('platform' === $settingKey && $input->getOption('unset')) {
             return $this->configSource->removeConfigSetting($settingKey);
         }
 
@@ -590,7 +590,7 @@ EOT
                 return;
             }
 
-            if ($matches[1] === 'bitbucket-oauth') {
+            if ('bitbucket-oauth' === $matches[1]) {
                 if (2 !== count($values)) {
                     throw new \RuntimeException('Expected two arguments (consumer-key, consumer-secret), got '.count($values));
                 }
@@ -602,7 +602,7 @@ EOT
                 }
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], $values[0]);
-            } elseif ($matches[1] === 'http-basic') {
+            } elseif ('http-basic' === $matches[1]) {
                 if (2 !== count($values)) {
                     throw new \RuntimeException('Expected two arguments (username, password), got '.count($values));
                 }
@@ -668,7 +668,7 @@ EOT
         $origK = $k;
         $io = $this->getIO();
         foreach ($contents as $key => $value) {
-            if ($k === null && !in_array($key, array('config', 'repositories'))) {
+            if (null === $k && !in_array($key, array('config', 'repositories'))) {
                 continue;
             }
 

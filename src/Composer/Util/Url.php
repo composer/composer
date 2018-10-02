@@ -23,7 +23,7 @@ class Url
     {
         $host = parse_url($url, PHP_URL_HOST);
 
-        if ($host === 'api.github.com' || $host === 'github.com' || $host === 'www.github.com') {
+        if ('api.github.com' === $host || 'github.com' === $host || 'www.github.com' === $host) {
             if (preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/(zip|tar)ball/(.+)$}i', $url, $match)) {
                 // update legacy github archives to API calls with the proper reference
                 $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $ref;
@@ -34,12 +34,12 @@ class Url
                 // update api archives to the proper reference
                 $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $ref;
             }
-        } elseif ($host === 'bitbucket.org' || $host === 'www.bitbucket.org') {
+        } elseif ('bitbucket.org' === $host || 'www.bitbucket.org' === $host) {
             if (preg_match('{^https?://(?:www\.)?bitbucket\.org/([^/]+)/([^/]+)/get/(.+)\.(zip|tar\.gz|tar\.bz2)$}i', $url, $match)) {
                 // update Bitbucket archives to the proper reference
                 $url = 'https://bitbucket.org/' . $match[1] . '/'. $match[2] . '/get/' . $ref . '.' . $match[4];
             }
-        } elseif ($host === 'gitlab.com' || $host === 'www.gitlab.com') {
+        } elseif ('gitlab.com' === $host || 'www.gitlab.com' === $host) {
             if (preg_match('{^https?://(?:www\.)?gitlab\.com/api/v[34]/projects/([^/]+)/repository/archive\.(zip|tar\.gz|tar\.bz2|tar)\?sha=.+$}i', $url, $match)) {
                 // update Gitlab archives to the proper reference
                 $url = 'https://gitlab.com/api/v4/projects/' . $match[1] . '/repository/archive.' . $match[2] . '?sha=' . $ref;
