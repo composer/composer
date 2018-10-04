@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\Installer;
+namespace Composer\Test\Plugin;
 
 use Composer\Composer;
 use Composer\Config;

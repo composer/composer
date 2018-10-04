@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\Json;
+namespace Composer\Test\Config;
 
 use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
