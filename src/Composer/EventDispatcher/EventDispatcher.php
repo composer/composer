@@ -264,7 +264,7 @@ class EventDispatcher
         $finder = new PhpExecutableFinder();
         $phpPath = $finder->find();
         if (!$phpPath) {
-            throw new \RuntimeException('Failed to locate PHP binary to execute '.$scriptName);
+            throw new \RuntimeException('Failed to locate PHP binary to execute '.$phpPath);
         }
 
         $allowUrlFOpenFlag = ' -d allow_url_fopen=' . ProcessExecutor::escape(ini_get('allow_url_fopen'));
