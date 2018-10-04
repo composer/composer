@@ -251,7 +251,7 @@ JSON;
 
     public function testGetSource_GivenPublicProject()
     {
-        $driver = $this->testInitializePublicProject('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject', true);
+        $driver = $this->testInitializePublicProject('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
         $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
         $expected = array(
