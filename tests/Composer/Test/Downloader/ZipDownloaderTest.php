@@ -24,6 +24,8 @@ class ZipDownloaderTest extends TestCase
      */
     private $testDir;
     private $prophet;
+    private $io;
+    private $config;
 
     public function setUp()
     {

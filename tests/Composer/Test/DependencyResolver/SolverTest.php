@@ -30,6 +30,7 @@ class SolverTest extends TestCase
     protected $repoInstalled;
     protected $request;
     protected $policy;
+    protected $solver;
 
     public function setUp()
     {
