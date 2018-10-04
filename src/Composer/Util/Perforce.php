@@ -517,7 +517,7 @@ class Perforce
     }
 
     /**
-     * @param $reference
+     * @param string $reference
      * @return mixed|null
      */
     protected function getChangeList($reference)
@@ -539,8 +539,8 @@ class Perforce
     }
 
     /**
-     * @param $fromReference
-     * @param $toReference
+     * @param string $fromReference
+     * @param string $toReference
      * @return mixed|null
      */
     public function getCommitLogs($fromReference, $toReference)

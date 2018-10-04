@@ -720,7 +720,7 @@ EOT
     /**
      * Display the tree
      *
-     * @param $arrayTree
+     * @param array $arrayTree
      */
     protected function displayPackageTree(array $arrayTree)
     {
@@ -765,7 +765,7 @@ EOT
     /**
      * Generate the package tree
      *
-     * @param  PackageInterface|string $package
+     * @param  PackageInterface $package
      * @param  RepositoryInterface     $installedRepo
      * @param  RepositoryInterface     $distantRepos
      * @return array

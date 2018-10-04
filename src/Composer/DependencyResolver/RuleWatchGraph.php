@@ -127,9 +127,9 @@ class RuleWatchGraph
      *
      * The rule node's watched literals are updated accordingly.
      *
-     * @param $fromLiteral mixed A literal the node used to watch
-     * @param $toLiteral mixed A literal the node should watch now
-     * @param $node mixed The rule node to be moved
+     * @param mixed $fromLiteral A literal the node used to watch
+     * @param mixed $toLiteral A literal the node should watch now
+     * @param mixed $node The rule node to be moved
      */
     protected function moveWatch($fromLiteral, $toLiteral, $node)
     {

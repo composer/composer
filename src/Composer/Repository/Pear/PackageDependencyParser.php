@@ -22,7 +22,7 @@ class PackageDependencyParser
     /**
      * Builds dependency information. It detects used package.xml format.
      *
-     * @param $depArray array
+     * @param array $depArray
      * @return DependencyInfo
      */
     public function buildDependencyInfo($depArray)
@@ -46,7 +46,7 @@ class PackageDependencyParser
      * { type="php|os|sapi|ext|pkg" rel="has|not|eq|ge|gt|le|lt" optional="yes"
      *   channel="channelName" name="extName|packageName" }
      *
-     * @param $depArray array Dependency data in package.xml 1.0 format
+     * @param array $depArray Dependency data in package.xml 1.0 format
      * @return DependencyConstraint[]
      */
     private function buildDependency10Info($depArray)
@@ -115,7 +115,7 @@ class PackageDependencyParser
     /**
      * Builds dependency information from package.xml 2.0 format
      *
-     * @param $depArray array Dependency data in package.xml 1.0 format
+     * @param array $depArray Dependency data in package.xml 1.0 format
      * @return DependencyInfo
      */
     private function buildDependency20Info($depArray)
@@ -187,8 +187,8 @@ class PackageDependencyParser
     /**
      * Builds dependency constraint of 'extension' type
      *
-     * @param $depItem array dependency constraint or array of dependency constraints
-     * @param $depType string target type of building constraint.
+     * @param array $depItem dependency constraint or array of dependency constraints
+     * @param string $depType target type of building constraint.
      * @return DependencyConstraint[]
      */
     private function buildDepExtensionConstraints($depItem, $depType)
@@ -217,8 +217,8 @@ class PackageDependencyParser
     /**
      * Builds dependency constraint of 'package' type
      *
-     * @param $depItem array dependency constraint or array of dependency constraints
-     * @param $depType string target type of building constraint.
+     * @param array $depItem dependency constraint or array of dependency constraints
+     * @param string $depType target type of building constraint.
      * @return DependencyConstraint[]
      */
     private function buildDepPackageConstraints($depItem, $depType)
@@ -287,7 +287,7 @@ class PackageDependencyParser
     /**
      * Softened version parser
      *
-     * @param $version
+     * @param string $version
      * @return null|string
      */
     private function parseVersion($version)

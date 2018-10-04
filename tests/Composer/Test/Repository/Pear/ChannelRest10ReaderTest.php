@@ -31,7 +31,7 @@ class ChannelRest10ReaderTest extends TestCase
 
         $reader = new \Composer\Repository\Pear\ChannelRest10Reader($rfs);
 
-        /** @var $packages \Composer\Package\PackageInterface[] */
+        /** @var \Composer\Package\PackageInterface[] $packages */
         $packages = $reader->read('http://test.loc/rest10');
 
         $this->assertCount(2, $packages);

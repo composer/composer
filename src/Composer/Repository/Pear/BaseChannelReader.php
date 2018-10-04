@@ -44,8 +44,8 @@ abstract class BaseChannelReader
     /**
      * Read content from remote filesystem.
      *
-     * @param $origin string server
-     * @param $path   string relative path to content
+     * @param string $origin server
+     * @param string $path   relative path to content
      * @throws \UnexpectedValueException
      * @return \SimpleXMLElement
      */
@@ -63,8 +63,8 @@ abstract class BaseChannelReader
     /**
      * Read xml content from remote filesystem
      *
-     * @param $origin string server
-     * @param $path   string relative path to content
+     * @param string $origin server
+     * @param string $path   relative path to content
      * @throws \UnexpectedValueException
      * @return \SimpleXMLElement
      */
