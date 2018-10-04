@@ -19,7 +19,7 @@
 namespace Composer\Test\Autoload;
 
 use Composer\Autoload\ClassMapGenerator;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Symfony\Component\Finder\Finder;
 use Composer\Util\Filesystem;
 

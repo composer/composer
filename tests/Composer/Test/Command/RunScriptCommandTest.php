@@ -15,7 +15,7 @@ namespace Composer\Test\Command;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Script\Event as ScriptEvent;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class RunScriptCommandTest extends TestCase
 {

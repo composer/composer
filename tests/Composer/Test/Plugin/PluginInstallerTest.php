@@ -20,7 +20,7 @@ use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Plugin\PluginManager;
 use Composer\Autoload\AutoloadGenerator;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 
 class PluginInstallerTest extends TestCase

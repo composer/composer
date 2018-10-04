@@ -15,7 +15,7 @@ namespace Composer\Test\DependencyResolver;
 use Composer\DependencyResolver\Pool;
 use Composer\Repository\ArrayRepository;
 use Composer\Package\BasePackage;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class PoolTest extends TestCase
 {

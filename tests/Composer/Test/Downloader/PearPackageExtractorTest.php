@@ -13,7 +13,7 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\PearPackageExtractor;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class PearPackageExtractorTest extends TestCase
 {

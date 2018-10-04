@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Repository\Pear;
 
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Test\Mock\RemoteFilesystemMock;
 
 class ChannelRest10ReaderTest extends TestCase

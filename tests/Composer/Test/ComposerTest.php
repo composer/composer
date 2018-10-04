@@ -13,7 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Composer;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class ComposerTest extends TestCase
 {

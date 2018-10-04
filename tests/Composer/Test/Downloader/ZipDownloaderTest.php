@@ -14,7 +14,7 @@ namespace Composer\Test\Downloader;
 
 use Composer\Downloader\ZipDownloader;
 use Composer\Package\PackageInterface;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 
 class ZipDownloaderTest extends TestCase

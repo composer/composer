@@ -13,7 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Repository\RepositoryFactory;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class RepositoryFactoryTest extends TestCase
 {

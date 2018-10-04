@@ -14,7 +14,7 @@ namespace Composer\Test\Installer;
 
 use Composer\Installer\LibraryInstaller;
 use Composer\Util\Filesystem;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Composer;
 use Composer\Config;
 

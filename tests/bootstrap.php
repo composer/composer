@@ -17,4 +17,4 @@ if (function_exists('date_default_timezone_set') && function_exists('date_defaul
 }
 
 require __DIR__.'/../src/bootstrap.php';
-require __DIR__.'/Composer/TestCase.php';
+require __DIR__.'/Composer/Test/TestCase.php';

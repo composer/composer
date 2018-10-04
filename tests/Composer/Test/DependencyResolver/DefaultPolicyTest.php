@@ -19,7 +19,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\Package\Link;
 use Composer\Package\AliasPackage;
 use Composer\Semver\Constraint\Constraint;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class DefaultPolicyTest extends TestCase
 {

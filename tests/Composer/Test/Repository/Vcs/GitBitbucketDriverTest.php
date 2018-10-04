@@ -14,7 +14,7 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Config;
 use Composer\Repository\Vcs\GitBitbucketDriver;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 
 /**

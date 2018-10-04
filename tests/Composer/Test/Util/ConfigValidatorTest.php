@@ -14,7 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\IO\NullIO;
 use Composer\Util\ConfigValidator;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * ConfigValidator test case

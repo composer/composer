@@ -19,7 +19,7 @@ use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Installer;
 use Composer\IO\IOInterface;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class FactoryMock extends Factory
 {

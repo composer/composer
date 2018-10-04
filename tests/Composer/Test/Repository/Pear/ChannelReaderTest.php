@@ -17,7 +17,7 @@ use Composer\Repository\Pear\DependencyConstraint;
 use Composer\Repository\Pear\DependencyInfo;
 use Composer\Repository\Pear\PackageInfo;
 use Composer\Repository\Pear\ReleaseInfo;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Semver\VersionParser;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Link;

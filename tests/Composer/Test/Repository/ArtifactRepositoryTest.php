@@ -13,7 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Repository\ArtifactRepository;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\IO\NullIO;
 use Composer\Config;
 use Composer\Package\BasePackage;
