@@ -52,7 +52,7 @@ class VcsRepositoryTest extends TestCase
         $process = new ProcessExecutor;
         $exec = function ($command) use ($process) {
             $cwd = getcwd();
-            if ($process->execute($command, $output, $cwd) !== 0) {
+            if (0 !== $process->execute($command, $output, $cwd)) {
                 throw new \RuntimeException('Failed to execute '.$command.': '.$process->getErrorOutput());
             }
         };

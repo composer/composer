@@ -62,7 +62,7 @@ class SolverProblemsException extends \RuntimeException
     {
         $paths = IniHelper::getAll();
 
-        if (count($paths) === 1 && empty($paths[0])) {
+        if (1 === count($paths) && empty($paths[0])) {
             return '';
         }
 

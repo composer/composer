@@ -78,7 +78,7 @@ class GenericRule extends Rule
         $result = $this->isDisabled() ? 'disabled(' : '(';
 
         foreach ($this->literals as $i => $literal) {
-            if ($i != 0) {
+            if (0 != $i) {
                 $result .= '|';
             }
             $result .= $literal;

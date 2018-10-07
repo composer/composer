@@ -151,7 +151,7 @@ EOT
 
         // Create global composer.json if this was invoked using `composer global config`
         if (
-            ($configFile === 'composer.json' || $configFile === './composer.json')
+            ('composer.json' === $configFile || './composer.json' === $configFile)
             && !file_exists($configFile)
             && realpath(getcwd()) === realpath($this->config->get('home'))
         ) {
@@ -240,7 +240,7 @@ EOT
             $rawData = $this->configFile->read();
             $data = $this->config->all();
             if (preg_match('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
-                if (!isset($matches[1]) || $matches[1] === '') {
+                if (!isset($matches[1]) || '' === $matches[1]) {
                     $value = isset($data['repositories']) ? $data['repositories'] : array();
                 } else {
                     if (!isset($data['repositories'][$matches[1]])) {
@@ -295,7 +295,7 @@ EOT
             return in_array($val, array('true', 'false', '1', '0'), true);
         };
         $booleanNormalizer = function ($val) {
-            return $val !== 'false' && (bool) $val;
+            return 'false' !== $val && (bool) $val;
         };
 
         // handle config values
@@ -319,7 +319,7 @@ EOT
                         return 'prompt';
                     }
 
-                    return $val !== 'false' && (bool) $val;
+                    return 'false' !== $val && (bool) $val;
                 },
             ),
             'notify-on-install' => array($booleanValidator, $booleanNormalizer),
@@ -377,11 +377,11 @@ EOT
                         return 'stash';
                     }
 
-                    return $val !== 'false' && (bool) $val;
+                    return 'false' !== $val && (bool) $val;
                 },
             ),
             'autoloader-suffix' => array('is_string', function ($val) {
-                return $val === 'null' ? null : $val;
+                return 'null' === $val ? null : $val;
             }),
             'sort-packages' => array($booleanValidator, $booleanNormalizer),
             'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
@@ -395,7 +395,7 @@ EOT
                     return file_exists($val) && is_readable($val);
                 },
                 function ($val) {
-                    return $val === 'null' ? null : $val;
+                    return 'null' === $val ? null : $val;
                 },
             ),
             'capath' => array(
@@ -403,7 +403,7 @@ EOT
                     return is_dir($val) && is_readable($val);
                 },
                 function ($val) {
-                    return $val === 'null' ? null : $val;
+                    return 'null' === $val ? null : $val;
                 },
             ),
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
@@ -518,7 +518,7 @@ EOT
             ),
         );
 
-        if ($input->getOption('global') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]) || substr($settingKey, 0, 6) === 'extra.')) {
+        if ($input->getOption('global') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]) || 'extra.' === substr($settingKey, 0, 6))) {
             throw new \InvalidArgumentException('The '.$settingKey.' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global composer.json');
         }
         if ($input->getOption('unset') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]))) {
@@ -674,7 +674,7 @@ EOT
 
             $rawVal = isset($rawContents[$key]) ? $rawContents[$key] : null;
 
-            if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
+            if (is_array($value) && (!is_numeric(key($value)) || ('repositories' === $key && null === $k))) {
                 $k .= preg_replace('{^config\.}', '', $key . '.');
                 $this->listConfiguration($value, $rawVal, $output, $k);
                 $k = $origK;

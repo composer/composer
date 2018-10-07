@@ -69,7 +69,7 @@ EOT
     {
         $config = Factory::createConfig();
 
-        if ($config->get('disable-tls') === true) {
+        if (true === $config->get('disable-tls')) {
             $baseUrl = 'http://' . self::HOMEPAGE;
         } else {
             $baseUrl = 'https://' . self::HOMEPAGE;
@@ -276,7 +276,7 @@ TAGSPUBKEY
             $devKey = $io->askAndValidate('Enter Dev / Snapshot Public Key (including lines with -----): ', $validator);
             while ($line = $io->ask('')) {
                 $devKey .= trim($line)."\n";
-                if (trim($line) === '-----END PUBLIC KEY-----') {
+                if ('-----END PUBLIC KEY-----' === trim($line)) {
                     break;
                 }
             }
@@ -289,7 +289,7 @@ TAGSPUBKEY
             $tagsKey = $io->askAndValidate('Enter Tags Public Key (including lines with -----): ', $validator);
             while ($line = $io->ask('')) {
                 $tagsKey .= trim($line)."\n";
-                if (trim($line) === '-----END PUBLIC KEY-----') {
+                if ('-----END PUBLIC KEY-----' === trim($line)) {
                     break;
                 }
             }

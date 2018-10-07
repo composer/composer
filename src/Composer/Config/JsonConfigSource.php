@@ -135,7 +135,7 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addProperty($name, $value)
     {
         $this->manipulateJson('addProperty', $name, $value, function (&$config, $key, $val) {
-            if (substr($key, 0, 6) === 'extra.' || substr($key, 0, 8) === 'scripts.') {
+            if ('extra.' === substr($key, 0, 6) || 'scripts.' === substr($key, 0, 8)) {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
                 $arr = &$config[reset($bits)];
@@ -159,7 +159,7 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('removeProperty', $name, function (&$config, $key) {
-            if (substr($key, 0, 6) === 'extra.' || substr($key, 0, 8) === 'scripts.') {
+            if ('extra.' === substr($key, 0, 6) || 'scripts.' === substr($key, 0, 8)) {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
                 $arr = &$config[reset($bits)];
@@ -224,11 +224,11 @@ class JsonConfigSource implements ConfigSourceInterface
         $newFile = !$this->file->exists();
 
         // override manipulator method for auth config files
-        if ($this->authConfig && $method === 'addConfigSetting') {
+        if ($this->authConfig && 'addConfigSetting' === $method) {
             $method = 'addSubNode';
             list($mainNode, $name) = explode('.', $args[0], 2);
             $args = array($mainNode, $name, $args[1]);
-        } elseif ($this->authConfig && $method === 'removeConfigSetting') {
+        } elseif ($this->authConfig && 'removeConfigSetting' === $method) {
             $method = 'removeSubNode';
             list($mainNode, $name) = explode('.', $args[0], 2);
             $args = array($mainNode, $name);

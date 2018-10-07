@@ -179,7 +179,7 @@ class EventDispatcher
                 $scriptName = substr($callable, 1);
                 $args = $event->getArguments();
                 $flags = $event->getFlags();
-                if (substr($callable, 0, 10) === '@composer ') {
+                if ('@composer ' === substr($callable, 0, 10)) {
                     $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . substr($callable, 9);
                     if (0 !== ($exitCode = $this->process->execute($exec))) {
                         $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
@@ -220,7 +220,7 @@ class EventDispatcher
                 }
             } else {
                 $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
-                $exec = $callable . ($args === '' ? '' : ' '.$args);
+                $exec = $callable . ('' === $args ? '' : ' '.$args);
                 if ($this->io->isVerbose()) {
                     $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
                 } else {
@@ -238,7 +238,7 @@ class EventDispatcher
                     }
                 }
 
-                if (substr($exec, 0, 5) === '@php ') {
+                if ('@php ' === substr($exec, 0, 5)) {
                     $exec = $this->getPhpExecCommand() . ' ' . substr($exec, 5);
                 }
 
@@ -322,7 +322,7 @@ class EventDispatcher
         $expected = $typehint->getName();
 
         // BC support
-        if (!$event instanceof $expected && $expected === 'Composer\Script\CommandEvent') {
+        if (!$event instanceof $expected && 'Composer\Script\CommandEvent' === $expected) {
             trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
             $event = new \Composer\Script\CommandEvent(
                 $event->getName(),
@@ -332,7 +332,7 @@ class EventDispatcher
                 $event->getArguments()
             );
         }
-        if (!$event instanceof $expected && $expected === 'Composer\Script\PackageEvent') {
+        if (!$event instanceof $expected && 'Composer\Script\PackageEvent' === $expected) {
             trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
             $event = new \Composer\Script\PackageEvent(
                 $event->getName(),
@@ -347,7 +347,7 @@ class EventDispatcher
                 $event->getOperation()
             );
         }
-        if (!$event instanceof $expected && $expected === 'Composer\Script\Event') {
+        if (!$event instanceof $expected && 'Composer\Script\Event' === $expected) {
             trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
             $event = new \Composer\Script\Event(
                 $event->getName(),
@@ -364,7 +364,7 @@ class EventDispatcher
 
     private function serializeCallback($cb)
     {
-        if (is_array($cb) && count($cb) === 2) {
+        if (is_array($cb) && 2 === count($cb)) {
             if (is_object($cb[0])) {
                 $cb[0] = get_class($cb[0]);
             }

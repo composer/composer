@@ -136,7 +136,7 @@ class Svn
         $output = null;
         $io = $this->io;
         $handler = function ($type, $buffer) use (&$output, $io, $verbose) {
-            if ($type !== 'out') {
+            if ('out' !== $type) {
                 return;
             }
             if ('Redirecting to URL ' === substr($buffer, 0, 19)) {
@@ -267,7 +267,7 @@ class Svn
      */
     protected function getPassword()
     {
-        if ($this->credentials === null) {
+        if (null === $this->credentials) {
             throw new \LogicException("No svn auth detected.");
         }
 
@@ -282,7 +282,7 @@ class Svn
      */
     protected function getUsername()
     {
-        if ($this->credentials === null) {
+        if (null === $this->credentials) {
             throw new \LogicException("No svn auth detected.");
         }
 

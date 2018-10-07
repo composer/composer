@@ -154,7 +154,7 @@ EOT
 
         $this->suggestedPackagesReporter = new SuggestedPackagesReporter($io);
 
-        if ($packageName !== null) {
+        if (null !== $packageName) {
             $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repository, $disablePlugins, $noScripts, $noProgress, $ignorePlatformReqs, $secureHttp);
         } else {
             $installedFromVcs = false;
@@ -165,7 +165,7 @@ EOT
 
         $fs = new Filesystem();
 
-        if ($noScripts === false) {
+        if (false === $noScripts) {
             // dispatch event
             $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
         }
@@ -175,7 +175,7 @@ EOT
         list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
 
         // install dependencies of the created project
-        if ($noInstall === false) {
+        if (false === $noInstall) {
             $installer = Installer::create($io, $composer);
             $installer->setPreferSource($preferSource)
                 ->setPreferDist($preferDist)
@@ -232,14 +232,14 @@ EOT
             $configSource = new JsonConfigSource(new JsonFile('composer.json'));
             foreach (BasePackage::$supportedLinkTypes as $type => $meta) {
                 foreach ($package->{'get'.$meta['method']}() as $link) {
-                    if ($link->getPrettyConstraint() === 'self.version') {
+                    if ('self.version' === $link->getPrettyConstraint()) {
                         $configSource->addLink($type, $link->getTarget(), $package->getPrettyVersion());
                     }
                 }
             }
         }
 
-        if ($noScripts === false) {
+        if (false === $noScripts) {
             // dispatch event
             $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
         }

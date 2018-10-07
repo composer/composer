@@ -69,7 +69,7 @@ class Bitbucket
      */
     public function authorizeOAuth($originUrl)
     {
-        if ($originUrl !== 'bitbucket.org') {
+        if ('bitbucket.org' !== $originUrl) {
             return false;
         }
 
@@ -100,7 +100,7 @@ class Bitbucket
 
             $this->token = json_decode($json, true);
         } catch (TransportException $e) {
-            if ($e->getCode() === 400) {
+            if (400 === $e->getCode()) {
                 $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
                 $this->io->writeError('This can have two reasons:');
                 $this->io->writeError('1. You are authenticating with a bitbucket username/password combination');

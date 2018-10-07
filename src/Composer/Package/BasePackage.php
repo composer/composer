@@ -217,7 +217,7 @@ abstract class BasePackage implements PackageInterface
         }
 
         // if source reference is a sha1 hash -- truncate
-        if ($truncate && strlen($this->getSourceReference()) === 40) {
+        if ($truncate && 40 === strlen($this->getSourceReference())) {
             return $this->getPrettyVersion() . ' ' . substr($this->getSourceReference(), 0, 7);
         }
 

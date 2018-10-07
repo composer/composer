@@ -211,7 +211,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
             // first pass and we found unpushed changes, fetch from both remotes to make sure we have up to date
             // remotes and then try again as outdated remotes can sometimes cause false-positives
-            if ($unpushedChanges && $i === 0) {
+            if ($unpushedChanges && 0 === $i) {
                 $this->process->execute('git fetch composer && git fetch origin', $output, $path);
             }
 
@@ -233,7 +233,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $path = $this->normalizePath($path);
 
         $unpushed = $this->getUnpushedChanges($package, $path);
-        if ($unpushed && ($this->io->isInteractive() || $this->config->get('discard-changes') !== true)) {
+        if ($unpushed && ($this->io->isInteractive() || true !== $this->config->get('discard-changes'))) {
             throw new \RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch: '."\n".$unpushed);
         }
 
@@ -480,12 +480,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $basePath = $path;
             $removed = array();
 
-            while (!is_dir($basePath) && $basePath !== '\\') {
+            while (!is_dir($basePath) && '\\' !== $basePath) {
                 array_unshift($removed, basename($basePath));
                 $basePath = dirname($basePath);
             }
 
-            if ($basePath === '\\') {
+            if ('\\' === $basePath) {
                 return $path;
             }
 

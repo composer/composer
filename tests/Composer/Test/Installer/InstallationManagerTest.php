@@ -35,7 +35,7 @@ class InstallationManagerTest extends TestCase
             ->expects($this->exactly(2))
             ->method('supports')
             ->will($this->returnCallback(function ($arg) {
-                return $arg === 'vendor';
+                return 'vendor' === $arg;
             }));
 
         $manager = new InstallationManager();
@@ -55,7 +55,7 @@ class InstallationManagerTest extends TestCase
             ->expects($this->exactly(2))
             ->method('supports')
             ->will($this->returnCallback(function ($arg) {
-                return $arg === 'vendor';
+                return 'vendor' === $arg;
             }));
 
         $installer2 = $this->createInstallerMock();
@@ -64,7 +64,7 @@ class InstallationManagerTest extends TestCase
             ->expects($this->exactly(1))
             ->method('supports')
             ->will($this->returnCallback(function ($arg) {
-                return $arg === 'vendor';
+                return 'vendor' === $arg;
             }));
 
         $manager = new InstallationManager();
@@ -194,7 +194,7 @@ class InstallationManagerTest extends TestCase
             ->expects($this->exactly(2))
             ->method('supports')
             ->will($this->returnCallback(function ($arg) {
-                return $arg === 'bundles';
+                return 'bundles' === $arg;
             }));
 
         $libInstaller

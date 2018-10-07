@@ -100,7 +100,7 @@ class PlatformRepository extends ArrayRepository
 
         // The AF_INET6 constant is only defined if ext-sockets is available but
         // IPv6 support might still be available.
-        if (defined('AF_INET6') || Silencer::call('inet_pton', '::') !== false) {
+        if (defined('AF_INET6') || false !== Silencer::call('inet_pton', '::')) {
             $phpIpv6 = new CompletePackage('php-ipv6', $version, $prettyVersion);
             $phpIpv6->setDescription('The PHP interpreter, with IPv6 support');
             $this->addPackage($phpIpv6);

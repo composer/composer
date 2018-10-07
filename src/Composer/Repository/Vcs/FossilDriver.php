@@ -228,7 +228,7 @@ class FossilDriver extends VcsDriver
 
             $process = new ProcessExecutor($io);
             // check whether there is a fossil repo in that path
-            if ($process->execute('fossil info', $output, $url) === 0) {
+            if (0 === $process->execute('fossil info', $output, $url)) {
                 return true;
             }
         }

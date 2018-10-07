@@ -89,7 +89,7 @@ class AllFunctionalTest extends TestCase
         $proc = new Process('php '.escapeshellarg('./bin/compile'), $target);
         $exitcode = $proc->run();
 
-        if ($exitcode !== 0 || trim($proc->getOutput())) {
+        if (0 !== $exitcode || trim($proc->getOutput())) {
             $this->fail($proc->getOutput());
         }
 
@@ -220,9 +220,9 @@ class AllFunctionalTest extends TestCase
         $processed = '';
 
         for ($i = 0; $i < strlen($output); $i++) {
-            if ($output[$i] === "\x08") {
+            if ("\x08" === $output[$i]) {
                 $processed = substr($processed, 0, -1);
-            } elseif ($output[$i] !== "\r") {
+            } elseif ("\r" !== $output[$i]) {
                 $processed .= $output[$i];
             }
         }

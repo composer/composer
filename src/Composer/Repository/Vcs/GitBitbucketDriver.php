@@ -34,7 +34,7 @@ class GitBitbucketDriver extends BitbucketDriver
                 return $this->fallbackDriver->getRootIdentifier();
             }
 
-            if ($this->vcsType !== 'git') {
+            if ('git' !== $this->vcsType) {
                 throw new \RuntimeException(
                     $this->url.' does not appear to be a git repository, use '.
                     $this->cloneHttpsUrl.' if this is a mercurial bitbucket repository'

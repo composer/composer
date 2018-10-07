@@ -115,7 +115,7 @@ class ValidatingArrayLoader implements LoaderInterface
                 }
 
                 $licenseValidator = new SpdxLicenses();
-                if (count($licenses) === 1 && !$licenseValidator->validate($licenses) && $licenseValidator->validate(trim($licenses[0]))) {
+                if (1 === count($licenses) && !$licenseValidator->validate($licenses) && $licenseValidator->validate(trim($licenses[0]))) {
                     $this->warnings[] = sprintf(
                         'License %s must not contain extra spaces, make sure to trim it.',
                         json_encode($this->config['license'])
@@ -222,7 +222,7 @@ class ValidatingArrayLoader implements LoaderInterface
                             // check requires for exact constraints
                             ($this->flags & self::CHECK_STRICT_CONSTRAINTS)
                             && 'require' === $linkType
-                            && substr($linkConstraint, 0, 1) === '='
+                            && '=' === substr($linkConstraint, 0, 1)
                             && $stableConstraint->versionCompare($stableConstraint, $linkConstraint, '<=')
                         ) {
                             $this->warnings[] = $linkType.'.'.$package.' : exact version constraints ('.$constraint.') should be avoided if the package follows semantic versioning';
@@ -255,9 +255,9 @@ class ValidatingArrayLoader implements LoaderInterface
                     $this->errors[] = 'autoload : invalid value ('.$type.'), must be one of '.implode(', ', $types);
                     unset($this->config['autoload'][$type]);
                 }
-                if ($type === 'psr-4') {
+                if ('psr-4' === $type) {
                     foreach ($typeConfig as $namespace => $dirs) {
-                        if ($namespace !== '' && '\\' !== substr($namespace, -1)) {
+                        if ('' !== $namespace && '\\' !== substr($namespace, -1)) {
                             $this->errors[] = 'autoload.psr-4 : invalid value ('.$namespace.'), namespaces must end with a namespace separator, should be '.$namespace.'\\\\';
                         }
                     }
@@ -307,7 +307,7 @@ class ValidatingArrayLoader implements LoaderInterface
                     // If using numeric aliases ensure the alias is a valid subversion
                     if (($sourcePrefix = $this->versionParser->parseNumericAliasPrefix($sourceBranch))
                         && ($targetPrefix = $this->versionParser->parseNumericAliasPrefix($targetBranch))
-                        && (stripos($targetPrefix, $sourcePrefix) !== 0)
+                        && (0 !== stripos($targetPrefix, $sourcePrefix))
                     ) {
                         $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') is not a valid numeric alias for this version';
                         unset($this->config['extra']['branch-alias'][$sourceBranch]);
@@ -366,7 +366,7 @@ class ValidatingArrayLoader implements LoaderInterface
             return false;
         }
 
-        if (!isset($this->config[$property]) || trim($this->config[$property]) === '') {
+        if (!isset($this->config[$property]) || '' === trim($this->config[$property])) {
             if ($mandatory) {
                 $this->errors[] = $property.' : must be present';
             }
@@ -443,7 +443,7 @@ class ValidatingArrayLoader implements LoaderInterface
 
     private function filterUrl($value, array $schemes = array('http', 'https'))
     {
-        if ($value === '') {
+        if ('' === $value) {
             return true;
         }
 

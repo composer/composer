@@ -133,7 +133,7 @@ EOT
                     ));
                 }
             } catch (\Exception $e) {
-                if ($e instanceof TransportException && $e->getCode() === 401) {
+                if ($e instanceof TransportException && 401 === $e->getCode()) {
                     $this->outputResult('<comment>The oauth token for github.com seems invalid, run "composer config --global --unset github-oauth.github.com" to remove it</comment>');
                 } else {
                     $this->outputResult($e);
@@ -198,7 +198,7 @@ EOT
     private function checkGit()
     {
         $this->process->execute('git config color.ui', $output);
-        if (strtolower(trim($output)) === 'always') {
+        if ('always' === strtolower(trim($output))) {
             return '<comment>Your git color.ui setting is set to always, this is known to create issues. Use "git config --global color.ui true" to set it correctly.</comment>';
         }
 
@@ -209,11 +209,11 @@ EOT
     {
         $disableTls = false;
         $result = array();
-        if ($proto === 'https' && $config->get('disable-tls') === true) {
+        if ('https' === $proto && true === $config->get('disable-tls')) {
             $disableTls = true;
             $result[] = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
         }
-        if ($proto === 'https' && !extension_loaded('openssl') && !$disableTls) {
+        if ('https' === $proto && !extension_loaded('openssl') && !$disableTls) {
             $result[] = '<error>Composer is configured to use SSL/TLS protection but the openssl extension is not available.</error>';
         }
 
@@ -314,13 +314,13 @@ EOT
     {
         $this->getIO()->setAuthentication($domain, $token, 'x-oauth-basic');
         try {
-            $url = $domain === 'github.com' ? 'https://api.'.$domain.'/' : 'https://'.$domain.'/api/v3/';
+            $url = 'github.com' === $domain ? 'https://api.'.$domain.'/' : 'https://'.$domain.'/api/v3/';
 
             return $this->rfs->getContents($domain, $url, false, array(
                 'retry-auth-failure' => false,
             )) ? true : 'Unexpected error';
         } catch (\Exception $e) {
-            if ($e instanceof TransportException && $e->getCode() === 401) {
+            if ($e instanceof TransportException && 401 === $e->getCode()) {
                 return '<comment>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</comment>';
             }
 
@@ -340,7 +340,7 @@ EOT
             $this->getIO()->setAuthentication($domain, $token, 'x-oauth-basic');
         }
 
-        $url = $domain === 'github.com' ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
+        $url = 'github.com' === $domain ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
         $json = $this->rfs->getContents($domain, $url, false, array('retry-auth-failure' => false));
         $data = json_decode($json, true);
 
@@ -350,8 +350,8 @@ EOT
     private function checkDiskSpace($config)
     {
         $minSpaceFree = 1024 * 1024;
-        if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
-            || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+        if ((false !== ($df = @disk_free_space($dir = $config->get('home'))) && $df < $minSpaceFree)
+            || (false !== ($df = @disk_free_space($dir = $config->get('vendor-dir'))) && $df < $minSpaceFree)
         ) {
             return '<error>The disk hosting '.$dir.' is full</error>';
         }

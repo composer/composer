@@ -144,9 +144,9 @@ class VersionSelector
         $semanticVersionParts = explode('.', $version);
 
         // check to see if we have a semver-looking version
-        if (count($semanticVersionParts) == 4 && preg_match('{^0\D?}', $semanticVersionParts[3])) {
+        if (4 == count($semanticVersionParts) && preg_match('{^0\D?}', $semanticVersionParts[3])) {
             // remove the last parts (i.e. the patch version number and any extra)
-            if ($semanticVersionParts[0] === '0') {
+            if ('0' === $semanticVersionParts[0]) {
                 unset($semanticVersionParts[3]);
             } else {
                 unset($semanticVersionParts[2], $semanticVersionParts[3]);
@@ -157,7 +157,7 @@ class VersionSelector
         }
 
         // append stability flag if not default
-        if ($stability != 'stable') {
+        if ('stable' != $stability) {
             $version .= '@'.$stability;
         }
 
@@ -167,7 +167,7 @@ class VersionSelector
 
     private function getParser()
     {
-        if ($this->parser === null) {
+        if (null === $this->parser) {
             $this->parser = new VersionParser();
         }
 

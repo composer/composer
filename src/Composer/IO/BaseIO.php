@@ -242,11 +242,11 @@ abstract class BaseIO implements IOInterface, LoggerInterface
     {
         if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
             $this->writeError('<error>'.$message.'</error>', true, self::NORMAL);
-        } elseif ($level === LogLevel::WARNING) {
+        } elseif (LogLevel::WARNING === $level) {
             $this->writeError('<warning>'.$message.'</warning>', true, self::NORMAL);
-        } elseif ($level === LogLevel::NOTICE) {
+        } elseif (LogLevel::NOTICE === $level) {
             $this->writeError('<info>'.$message.'</info>', true, self::VERBOSE);
-        } elseif ($level === LogLevel::INFO) {
+        } elseif (LogLevel::INFO === $level) {
             $this->writeError('<info>'.$message.'</info>', true, self::VERY_VERBOSE);
         } else {
             $this->writeError($message, true, self::DEBUG);

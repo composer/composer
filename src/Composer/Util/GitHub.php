@@ -81,7 +81,7 @@ class GitHub
         }
 
         $note = 'Composer';
-        if ($this->config->get('github-expose-hostname') === true && 0 === $this->process->execute('hostname', $output)) {
+        if (true === $this->config->get('github-expose-hostname') && 0 === $this->process->execute('hostname', $output)) {
             $note .= ' on ' . trim($output);
         }
         $note .= ' ' . date('Y-m-d Hi');

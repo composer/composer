@@ -189,7 +189,7 @@ abstract class BitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getFileContent($file, $identifier);
         }
 
-        if (strpos($identifier, '/') !== false) {
+        if (false !== strpos($identifier, '/')) {
             $branches = $this->getBranches();
             if (isset($branches[$identifier])) {
                 $identifier = $branches[$identifier];
@@ -294,7 +294,7 @@ abstract class BitbucketDriver extends VcsDriver
                     $resource = $tagsData['next'];
                 }
             }
-            if ($this->vcsType === 'hg') {
+            if ('hg' === $this->vcsType) {
                 unset($this->tags['tip']);
             }
         }
@@ -331,7 +331,7 @@ abstract class BitbucketDriver extends VcsDriver
                 $branchData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
                 foreach ($branchData['values'] as $data) {
                     // skip headless branches which seem to be deleted branches that bitbucket nevertheless returns in the API
-                    if ($this->vcsType === 'hg' && empty($data['heads'])) {
+                    if ('hg' === $this->vcsType && empty($data['heads'])) {
                         continue;
                     }
 
@@ -363,7 +363,7 @@ abstract class BitbucketDriver extends VcsDriver
         } catch (TransportException $e) {
             $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process, $this->remoteFilesystem);
 
-            if (403 === $e->getCode() || (401 === $e->getCode() && strpos($e->getMessage(), 'Could not authenticate against') === 0)) {
+            if (403 === $e->getCode() || (401 === $e->getCode() && 0 === strpos($e->getMessage(), 'Could not authenticate against'))) {
                 if (!$this->io->hasAuthentication($this->originUrl)
                     && $bitbucketUtil->authorizeOAuth($this->originUrl)
                 ) {
@@ -414,7 +414,7 @@ abstract class BitbucketDriver extends VcsDriver
     protected function parseCloneUrls(array $cloneLinks)
     {
         foreach ($cloneLinks as $cloneLink) {
-            if ($cloneLink['name'] === 'https') {
+            if ('https' === $cloneLink['name']) {
                 // Format: https://(user@)bitbucket.org/{user}/{repo}
                 // Strip username from URL (only present in clone URL's for private repositories)
                 $this->cloneHttpsUrl = preg_replace('/https:\/\/([^@]+@)?/', 'https://', $cloneLink['href']);

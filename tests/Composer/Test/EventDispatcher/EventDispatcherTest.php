@@ -250,15 +250,15 @@ class EventDispatcherTest extends TestCase
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
             ->will($this->returnCallback(function (Event $event) {
-                if ($event->getName() === 'root') {
+                if ('root' === $event->getName()) {
                     return array('@group');
                 }
 
-                if ($event->getName() === 'group') {
+                if ('group' === $event->getName()) {
                     return array('echo -n foo', '@subgroup', 'echo -n bar');
                 }
 
-                if ($event->getName() === 'subgroup') {
+                if ('subgroup' === $event->getName()) {
                     return array('echo -n baz');
                 }
 
@@ -294,11 +294,11 @@ class EventDispatcherTest extends TestCase
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
             ->will($this->returnCallback(function (Event $event) {
-                if ($event->getName() === 'root') {
+                if ('root' === $event->getName()) {
                     return array('@recurse');
                 }
 
-                if ($event->getName() === 'recurse') {
+                if ('recurse' === $event->getName()) {
                     return array('@root');
                 }
 

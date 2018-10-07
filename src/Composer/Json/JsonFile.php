@@ -165,7 +165,7 @@ class JsonFile
 
         $schemaData = (object) array('$ref' => $schemaFile);
 
-        if ($schema === self::LAX_SCHEMA) {
+        if (self::LAX_SCHEMA === $schema) {
             $schemaData->additionalProperties = true;
             $schemaData->required = array();
         }

@@ -213,7 +213,7 @@ class HgDriver extends VcsDriver
 
             $process = new ProcessExecutor($io);
             // check whether there is a hg repo in that path
-            if ($process->execute('hg summary', $output, $url) === 0) {
+            if (0 === $process->execute('hg summary', $output, $url)) {
                 return true;
             }
         }
@@ -225,6 +225,6 @@ class HgDriver extends VcsDriver
         $processExecutor = new ProcessExecutor($io);
         $exit = $processExecutor->execute(sprintf('hg identify %s', ProcessExecutor::escape($url)), $ignored);
 
-        return $exit === 0;
+        return 0 === $exit;
     }
 }

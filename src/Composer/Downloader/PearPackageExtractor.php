@@ -106,7 +106,7 @@ class PearPackageExtractor
                 $pattern = $task['from'];
                 $varName = $task['to'];
                 if (isset($vars[$varName])) {
-                    if ($varName === 'php_bin' && false === strpos($to, '.bat')) {
+                    if ('php_bin' === $varName && false === strpos($to, '.bat')) {
                         $replacements[$pattern] = preg_replace('{\.bat$}', '', $vars[$varName]);
                     } else {
                         $replacements[$pattern] = $vars[$varName];
@@ -201,13 +201,13 @@ class PearPackageExtractor
         // enumerating files
         foreach ($children as $child) {
             /** @var $child \SimpleXMLElement */
-            if ($child->getName() == 'dir') {
+            if ('dir' == $child->getName()) {
                 $dirSource = $this->combine($source, (string) $child['name']);
                 $dirTarget = $child['baseinstalldir'] ?: $target;
                 $dirRole = $child['role'] ?: $role;
                 $dirFiles = $this->buildSourceList10($child->children(), $targetRoles, $dirSource, $dirTarget, $dirRole, $packageName);
                 $result = array_merge($result, $dirFiles);
-            } elseif ($child->getName() == 'file') {
+            } elseif ('file' == $child->getName()) {
                 $fileRole = (string) $child['role'] ?: $role;
                 if (isset($targetRoles[$fileRole])) {
                     $fileName = (string) ($child['name'] ?: $child[0]); // $child[0] means text content

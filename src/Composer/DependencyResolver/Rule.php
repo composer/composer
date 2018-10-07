@@ -85,11 +85,11 @@ abstract class Rule
 
     public function getRequiredPackage()
     {
-        if ($this->getReason() === self::RULE_JOB_INSTALL) {
+        if (self::RULE_JOB_INSTALL === $this->getReason()) {
             return $this->reasonData;
         }
 
-        if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
+        if (self::RULE_PACKAGE_REQUIRES === $this->getReason()) {
             return $this->reasonData->getTarget();
         }
     }
@@ -132,7 +132,7 @@ abstract class Rule
 
         $ruleText = '';
         foreach ($literals as $i => $literal) {
-            if ($i != 0) {
+            if (0 != $i) {
                 $ruleText .= '|';
             }
             $ruleText .= $pool->literalToPrettyString($literal, $installedMap);
@@ -169,13 +169,13 @@ abstract class Rule
                 } else {
                     $targetName = $this->reasonData->getTarget();
 
-                    if ($targetName === 'php' || $targetName === 'php-64bit' || $targetName === 'hhvm') {
+                    if ('php' === $targetName || 'php-64bit' === $targetName || 'hhvm' === $targetName) {
                         // handle php/hhvm
                         if (defined('HHVM_VERSION')) {
                             return $text . ' -> your HHVM version does not satisfy that requirement.';
                         }
 
-                        if ($targetName === 'hhvm') {
+                        if ('hhvm' === $targetName) {
                             return $text . ' -> you are running this with PHP and not HHVM.';
                         }
 

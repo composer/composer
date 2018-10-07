@@ -128,13 +128,13 @@ class ChannelRest10Reader extends BaseChannelReader
                         $this->readPackageReleaseDependencies($baseUrl, $packageName, $releaseVersion)
                     );
                 } catch (TransportException $exception) {
-                    if ($exception->getCode() != 404) {
+                    if (404 != $exception->getCode()) {
                         throw $exception;
                     }
                 }
             }
         } catch (TransportException $exception) {
-            if ($exception->getCode() != 404) {
+            if (404 != $exception->getCode()) {
                 throw $exception;
             }
         }

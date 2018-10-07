@@ -174,7 +174,7 @@ class Decisions implements \Iterator, \Countable
 
     public function isEmpty()
     {
-        return count($this->decisionQueue) === 0;
+        return 0 === count($this->decisionQueue);
     }
 
     protected function addDecision($literal, $level)
@@ -182,7 +182,7 @@ class Decisions implements \Iterator, \Countable
         $packageId = abs($literal);
 
         $previousDecision = isset($this->decisionMap[$packageId]) ? $this->decisionMap[$packageId] : null;
-        if ($previousDecision != 0) {
+        if (0 != $previousDecision) {
             $literalString = $this->pool->literalToString($literal);
             $package = $this->pool->literalToPackage($literal);
             throw new SolverBugException(

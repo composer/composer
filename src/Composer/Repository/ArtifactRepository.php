@@ -94,25 +94,25 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $stat = $zip->statIndex($i);
-            if (strcmp(basename($stat['name']), $filename) === 0) {
+            if (0 === strcmp(basename($stat['name']), $filename)) {
                 $directoryName = dirname($stat['name']);
-                if ($directoryName == '.') {
+                if ('.' == $directoryName) {
                     //if composer.json is in root directory
                     //it has to be the one to use.
                     return $i;
                 }
 
-                if (strpos($directoryName, '\\') !== false ||
-                   strpos($directoryName, '/') !== false) {
+                if (false !== strpos($directoryName, '\\') ||
+                   false !== strpos($directoryName, '/')) {
                     //composer.json files below first directory are rejected
                     continue;
                 }
 
                 $length = strlen($stat['name']);
-                if ($indexOfShortestMatch === false || $length < $lengthOfShortestMatch) {
+                if (false === $indexOfShortestMatch || $length < $lengthOfShortestMatch) {
                     //Check it's not a directory.
                     $contents = $zip->getFromIndex($i);
-                    if ($contents !== false) {
+                    if (false !== $contents) {
                         $indexOfShortestMatch = $i;
                         $lengthOfShortestMatch = $length;
                     }

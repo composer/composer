@@ -57,7 +57,7 @@ class Filesystem
             ->depth(0)
             ->in($dir);
 
-        return count($finder) === 0;
+        return 0 === count($finder);
     }
 
     public function emptyDirectory($dir, $ensureDirectoryExists = true)
@@ -125,7 +125,7 @@ class Filesystem
             $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
         }
 
-        $result = $this->getProcess()->execute($cmd, $output) === 0;
+        $result = 0 === $this->getProcess()->execute($cmd, $output);
 
         // clear stat cache because external processes aren't tracked by the php stat cache
         clearstatcache();
@@ -358,7 +358,7 @@ class Filesystem
         }
 
         $commonPath = $to;
-        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath)) {
+        while (0 !== strpos($from.'/', $commonPath.'/') && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath)) {
             $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
 
@@ -397,7 +397,7 @@ class Filesystem
         }
 
         $commonPath = $to;
-        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
+        while (0 !== strpos($from.'/', $commonPath.'/') && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
             $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
 
@@ -406,7 +406,7 @@ class Filesystem
         }
 
         $commonPath = rtrim($commonPath, '/') . '/';
-        if (strpos($to, $from.'/') === 0) {
+        if (0 === strpos($to, $from.'/')) {
             return '__DIR__ . '.var_export(substr($to, strlen($from)), true);
         }
         $sourcePathDepth = substr_count(substr($from, strlen($commonPath)), '/') + $directories;
@@ -428,7 +428,7 @@ class Filesystem
      */
     public function isAbsolutePath($path)
     {
-        return substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':';
+        return '/' === substr($path, 0, 1) || ':' === substr($path, 1, 1);
     }
 
     /**
@@ -471,7 +471,7 @@ class Filesystem
             $path = substr($path, strlen($prefix));
         }
 
-        if (substr($path, 0, 1) === '/') {
+        if ('/' === substr($path, 0, 1)) {
             $absolute = true;
             $path = substr($path, 1);
         }
@@ -639,7 +639,7 @@ class Filesystem
             ProcessExecutor::escape(str_replace('/', DIRECTORY_SEPARATOR, $junction)),
             ProcessExecutor::escape(realpath($target))
         );
-        if ($this->getProcess()->execute($cmd, $output) !== 0) {
+        if (0 !== $this->getProcess()->execute($cmd, $output)) {
             throw new IOException(sprintf('Failed to create junction to "%s" at "%s".', $target, $junction), 0, null, $target);
         }
         clearstatcache(true, $junction);
@@ -695,6 +695,6 @@ class Filesystem
         $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape($junction));
         clearstatcache(true, $junction);
 
-        return ($this->getProcess()->execute($cmd, $output) === 0);
+        return (0 === $this->getProcess()->execute($cmd, $output));
     }
 }

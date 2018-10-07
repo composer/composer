@@ -75,7 +75,7 @@ class Problem
     {
         $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
 
-        if (count($reasons) === 1) {
+        if (1 === count($reasons)) {
             reset($reasons);
             $reason = current($reasons);
 
@@ -88,10 +88,10 @@ class Problem
                 $packages = array();
             }
 
-            if ($job && $job['cmd'] === 'install' && empty($packages)) {
+            if ($job && 'install' === $job['cmd'] && empty($packages)) {
 
                 // handle php/hhvm
-                if ($job['packageName'] === 'php' || $job['packageName'] === 'php-64bit' || $job['packageName'] === 'hhvm') {
+                if ('php' === $job['packageName'] || 'php-64bit' === $job['packageName'] || 'hhvm' === $job['packageName']) {
                     $version = phpversion();
                     $available = $this->pool->whatProvides($job['packageName']);
 
@@ -99,7 +99,7 @@ class Problem
                         $firstAvailable = reset($available);
                         $version = $firstAvailable->getPrettyVersion();
                         $extra = $firstAvailable->getExtra();
-                        if ($firstAvailable instanceof CompletePackageInterface && isset($extra['config.platform']) && $extra['config.platform'] === true) {
+                        if ($firstAvailable instanceof CompletePackageInterface && isset($extra['config.platform']) && true === $extra['config.platform']) {
                             $version .= '; ' . $firstAvailable->getDescription();
                         }
                     }
@@ -110,7 +110,7 @@ class Problem
                         return $msg . 'your HHVM version does not satisfy that requirement.';
                     }
 
-                    if ($job['packageName'] === 'hhvm') {
+                    if ('hhvm' === $job['packageName']) {
                         return $msg . 'you are running this with PHP and not HHVM.';
                     }
 
@@ -131,7 +131,7 @@ class Problem
 
                 // handle linked libs
                 if (0 === stripos($job['packageName'], 'lib-')) {
-                    if (strtolower($job['packageName']) === 'lib-icu') {
+                    if ('lib-icu' === strtolower($job['packageName'])) {
                         $error = extension_loaded('intl') ? 'has the wrong version installed, try upgrading the intl extension.' : 'is missing from your system, make sure the intl extension is loaded.';
 
                         return "\n    - The requested linked library ".$job['packageName'].$this->constraintToText($job['constraint']).' '.$error;

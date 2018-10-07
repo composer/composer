@@ -124,7 +124,7 @@ class ConfigValidator
             );
         }
 
-        if (!empty($manifest['type']) && $manifest['type'] == 'composer-installer') {
+        if (!empty($manifest['type']) && 'composer-installer' == $manifest['type']) {
             $warnings[] = "The package type 'composer-installer' is deprecated. Please distribute your custom installers as plugins from now on. See https://getcomposer.org/doc/articles/plugins.md for plugin documentation.";
         }
 
@@ -143,7 +143,7 @@ class ConfigValidator
         $requireDev = isset($manifest['require-dev']) ? $manifest['require-dev'] : array();
         $packages = array_merge($require, $requireDev);
         foreach ($packages as $package => $version) {
-            if (preg_match('/#/', $version) === 1) {
+            if (1 === preg_match('/#/', $version)) {
                 $warnings[] = sprintf(
                     'The package "%s" is pointing to a commit-ref, this is bad practice and can cause unforeseen issues.',
                     $package

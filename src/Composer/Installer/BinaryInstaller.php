@@ -81,13 +81,13 @@ class BinaryInstaller
                 continue;
             }
 
-            if ($this->binCompat === "auto") {
+            if ("auto" === $this->binCompat) {
                 if (Platform::isWindows()) {
                     $this->installFullBinaries($binPath, $link, $bin, $package);
                 } else {
                     $this->installSymlinkBinaries($binPath, $link);
                 }
-            } elseif ($this->binCompat === "full") {
+            } elseif ("full" === $this->binCompat) {
                 $this->installFullBinaries($binPath, $link, $bin, $package);
             }
             Silencer::call('chmod', $link, 0777 & ~umask());

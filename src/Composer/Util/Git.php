@@ -129,7 +129,7 @@ class Git
                     $auth = $this->io->getAuthentication($match[1]);
 
                     //We already have an access_token from a previous request.
-                    if ($auth['username'] !== 'x-token-auth') {
+                    if ('x-token-auth' !== $auth['username']) {
                         $accessToken = $bitbucketUtil->requestToken($match[1], $auth['username'], $auth['password']);
                         if (! empty($accessToken)) {
                             $this->io->setAuthentication($match[1], 'x-token-auth', $accessToken);
@@ -203,7 +203,7 @@ class Git
     public function syncMirror($url, $dir)
     {
         // update the repo if it is a valid git repository
-        if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
+        if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && '.' === trim($output)) {
             try {
                 $commandCallable = function ($url) {
                     return sprintf('git remote set-url origin %s && git remote update --prune origin', ProcessExecutor::escape($url));
@@ -230,10 +230,10 @@ class Git
 
     public function fetchRefOrSyncMirror($url, $dir, $ref)
     {
-        if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
+        if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && '.' === trim($output)) {
             $escapedRef = ProcessExecutor::escape($ref.'^{commit}');
             $exitCode = $this->process->execute(sprintf('git rev-parse --quiet --verify %s', $escapedRef), $output, $dir);
-            if ($exitCode === 0) {
+            if (0 === $exitCode) {
                 return true;
             }
         }
@@ -259,7 +259,7 @@ class Git
 
         $errorOutput = $this->process->getErrorOutput();
         foreach ($authFailures as $authFailure) {
-            if (strpos($errorOutput, $authFailure) !== false) {
+            if (false !== strpos($errorOutput, $authFailure)) {
                 return true;
             }
         }
@@ -274,7 +274,7 @@ class Git
         }
 
         // added in git 1.7.1, prevents prompting the user for username/password
-        if (getenv('GIT_ASKPASS') !== 'echo') {
+        if ('echo' !== getenv('GIT_ASKPASS')) {
             putenv('GIT_ASKPASS=echo');
             unset($_SERVER['GIT_ASKPASS']);
         }
@@ -290,7 +290,7 @@ class Git
         }
 
         // Run processes with predictable LANGUAGE
-        if (getenv('LANGUAGE') !== 'C') {
+        if ('C' !== getenv('LANGUAGE')) {
             putenv('LANGUAGE=C');
         }
 

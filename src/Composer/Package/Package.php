@@ -74,7 +74,7 @@ class Package extends BasePackage
         $this->prettyVersion = $prettyVersion;
 
         $this->stability = VersionParser::parseStability($version);
-        $this->dev = $this->stability === 'dev';
+        $this->dev = 'dev' === $this->stability;
     }
 
     /**
@@ -582,7 +582,7 @@ class Package extends BasePackage
         $this->prettyVersion = $prettyVersion;
 
         $this->stability = VersionParser::parseStability($version);
-        $this->dev = $this->stability === 'dev';
+        $this->dev = 'dev' === $this->stability;
     }
 
     protected function getUrls($url, $mirrors, $ref, $type, $urlType)
@@ -593,11 +593,11 @@ class Package extends BasePackage
         $urls = array($url);
         if ($mirrors) {
             foreach ($mirrors as $mirror) {
-                if ($urlType === 'dist') {
+                if ('dist' === $urlType) {
                     $mirrorUrl = ComposerMirror::processUrl($mirror['url'], $this->name, $this->version, $ref, $type);
-                } elseif ($urlType === 'source' && $type === 'git') {
+                } elseif ('source' === $urlType && 'git' === $type) {
                     $mirrorUrl = ComposerMirror::processGitUrl($mirror['url'], $this->name, $url, $type);
-                } elseif ($urlType === 'source' && $type === 'hg') {
+                } elseif ('source' === $urlType && 'hg' === $type) {
                     $mirrorUrl = ComposerMirror::processHgUrl($mirror['url'], $this->name, $url, $type);
                 }
                 if (!in_array($mirrorUrl, $urls)) {

@@ -79,8 +79,8 @@ class Application extends BaseApplication
                 $lastError = error_get_last();
 
                 if ($lastError && $lastError['message'] &&
-                   (strpos($lastError['message'], 'Allowed memory') !== false /*Zend PHP out of memory error*/ ||
-                    strpos($lastError['message'], 'exceeded memory') !== false /*HHVM out of memory errors*/)) {
+                   (false !== strpos($lastError['message'], 'Allowed memory') /*Zend PHP out of memory error*/ ||
+                    false !== strpos($lastError['message'], 'exceeded memory') /*HHVM out of memory errors*/)) {
                     echo "\n". 'Check https://getcomposer.org/doc/articles/troubleshooting.md#memory-limit-errors for more info on how to handle out of memory errors.';
                 }
             });
@@ -191,7 +191,7 @@ class Application extends BaseApplication
                 $io->writeError('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>');
             }
 
-            if (defined('COMPOSER_DEV_WARNING_TIME') && $commandName !== 'self-update' && $commandName !== 'selfupdate' && time() > COMPOSER_DEV_WARNING_TIME) {
+            if (defined('COMPOSER_DEV_WARNING_TIME') && 'self-update' !== $commandName && 'selfupdate' !== $commandName && time() > COMPOSER_DEV_WARNING_TIME) {
                 $io->writeError(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
             }
 
@@ -200,8 +200,8 @@ class Application extends BaseApplication
             }
 
             if (!Platform::isWindows() && function_exists('exec') && !getenv('COMPOSER_ALLOW_SUPERUSER')) {
-                if (function_exists('posix_getuid') && posix_getuid() === 0) {
-                    if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
+                if (function_exists('posix_getuid') && 0 === posix_getuid()) {
+                    if ('self-update' !== $commandName && 'selfupdate' !== $commandName) {
                         $io->writeError('<warning>Do not run Composer as root/super user! See https://getcomposer.org/root for details</warning>');
                     }
                     if ($uid = (int) getenv('SUDO_UID')) {
@@ -217,7 +217,7 @@ class Application extends BaseApplication
             // Check system temp folder for usability as it can cause weird runtime issues otherwise
             Silencer::call(function () use ($io) {
                 $tempfile = sys_get_temp_dir() . '/temp-' . md5(microtime());
-                if (!(file_put_contents($tempfile, __FILE__) && (file_get_contents($tempfile) == __FILE__) && unlink($tempfile) && !file_exists($tempfile))) {
+                if (!(file_put_contents($tempfile, __FILE__) && (__FILE__ == file_get_contents($tempfile)) && unlink($tempfile) && !file_exists($tempfile))) {
                     $io->writeError(sprintf('<error>PHP temp directory (%s) does not exist or is not writable to Composer. Set sys_temp_dir in your php.ini</error>', sys_get_temp_dir()));
                 }
             });
@@ -302,9 +302,9 @@ class Application extends BaseApplication
                 $config = $composer->getConfig();
 
                 $minSpaceFree = 1024 * 1024;
-                if ((($df = disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
-                    || (($df = disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
-                    || (($df = disk_free_space($dir = sys_get_temp_dir())) !== false && $df < $minSpaceFree)
+                if ((false !== ($df = disk_free_space($dir = $config->get('home'))) && $df < $minSpaceFree)
+                    || (false !== ($df = disk_free_space($dir = $config->get('vendor-dir'))) && $df < $minSpaceFree)
+                    || (false !== ($df = disk_free_space($dir = sys_get_temp_dir())) && $df < $minSpaceFree)
                 ) {
                     $io->writeError('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>', true, IOInterface::QUIET);
                 }

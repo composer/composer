@@ -100,7 +100,7 @@ class Comparer
     {
         if ($dh = opendir($dir)) {
             while ($file = readdir($dh)) {
-                if ($file !== '.' && $file !== '..') {
+                if ('.' !== $file && '..' !== $file) {
                     if (is_dir($dir.'/'.$file)) {
                         if (!count($array)) {
                             $array[0] = 'Temp';

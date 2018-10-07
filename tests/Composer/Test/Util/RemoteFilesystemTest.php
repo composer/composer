@@ -90,7 +90,7 @@ class RemoteFilesystemTest extends TestCase
 
         $found = false;
         foreach ($res['http']['header'] as $header) {
-            if ($header === 'Foo: bar') {
+            if ('Foo: bar' === $header) {
                 $found = true;
             }
         }
@@ -255,7 +255,7 @@ class RemoteFilesystemTest extends TestCase
             ->will($this->returnCallback(function ($arg) use (&$domains) {
                 $domains[] = $arg;
                 // first time is called with bitbucket.org, then it redirects to bbuseruploads.s3.amazonaws.com so next time we have no auth configured
-                return $arg === 'bitbucket.org';
+                return 'bitbucket.org' === $arg;
             }));
         $io
             ->expects($this->at(1))

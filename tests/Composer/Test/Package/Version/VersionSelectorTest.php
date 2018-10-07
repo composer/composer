@@ -220,7 +220,7 @@ class VersionSelectorTest extends TestCase
             ->method('getTransportOptions')
             ->will($this->returnValue(array()));
 
-        $branchAlias = $branchAlias === null ? array() : array('branch-alias' => array($prettyVersion => $branchAlias));
+        $branchAlias = null === $branchAlias ? array() : array('branch-alias' => array($prettyVersion => $branchAlias));
         $package->expects($this->any())
             ->method('getExtra')
             ->will($this->returnValue($branchAlias));

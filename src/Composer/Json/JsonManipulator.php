@@ -167,11 +167,11 @@ class JsonManipulator
 
     public function addProperty($name, $value)
     {
-        if (substr($name, 0, 6) === 'extra.') {
+        if ('extra.' === substr($name, 0, 6)) {
             return $this->addSubNode('extra', substr($name, 6), $value);
         }
 
-        if (substr($name, 0, 8) === 'scripts.') {
+        if ('scripts.' === substr($name, 0, 8)) {
             return $this->addSubNode('scripts', substr($name, 8), $value);
         }
 
@@ -180,11 +180,11 @@ class JsonManipulator
 
     public function removeProperty($name)
     {
-        if (substr($name, 0, 6) === 'extra.') {
+        if ('extra.' === substr($name, 0, 6)) {
             return $this->removeSubNode('extra', substr($name, 6));
         }
 
-        if (substr($name, 0, 8) === 'scripts.') {
+        if ('scripts.' === substr($name, 0, 8)) {
             return $this->removeSubNode('scripts', substr($name, 8));
         }
 
@@ -220,7 +220,7 @@ class JsonManipulator
                 return false;
             }
         } catch (\RuntimeException $e) {
-            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+            if (PREG_BACKTRACK_LIMIT_ERROR === $e->getCode()) {
                 return false;
             }
             throw $e;
@@ -302,7 +302,7 @@ class JsonManipulator
                 return false;
             }
         } catch (\RuntimeException $e) {
-            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+            if (PREG_BACKTRACK_LIMIT_ERROR === $e->getCode()) {
                 return false;
             }
             throw $e;

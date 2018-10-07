@@ -160,7 +160,7 @@ class Perforce
 
     public function isStream()
     {
-        return (strcmp($this->p4DepotType, 'stream') === 0);
+        return (0 === strcmp($this->p4DepotType, 'stream'));
     }
 
     public function getStream()
@@ -179,7 +179,7 @@ class Perforce
     public function getStreamWithoutLabel($stream)
     {
         $index = strpos($stream, '@');
-        if ($index === false) {
+        if (false === $index) {
             return $stream;
         }
 
@@ -229,9 +229,9 @@ class Perforce
             $resArray = explode(PHP_EOL, $result);
             foreach ($resArray as $line) {
                 $fields = explode('=', $line);
-                if (strcmp($name, $fields[0]) == 0) {
+                if (0 == strcmp($name, $fields[0])) {
                     $index = strpos($fields[1], ' ');
-                    if ($index === false) {
+                    if (false === $index) {
                         $value = $fields[1];
                     } else {
                         $value = substr($fields[1], 0, $index);
@@ -285,9 +285,9 @@ class Perforce
         if ($exitCode) {
             $errorOutput = $this->process->getErrorOutput();
             $index = strpos($errorOutput, $this->getUser());
-            if ($index === false) {
+            if (false === $index) {
                 $index = strpos($errorOutput, 'p4');
-                if ($index === false) {
+                if (false === $index) {
                     return false;
                 }
                 throw new \Exception('p4 command not found in path: ' . $errorOutput);
@@ -360,7 +360,7 @@ class Perforce
             return;
         }
         $line = fgets($pipe);
-        while ($line !== false) {
+        while (false !== $line) {
             $line = fgets($pipe);
         }
 
@@ -422,7 +422,7 @@ class Perforce
     public function getFilePath($file, $identifier)
     {
         $index = strpos($identifier, '@');
-        if ($index === false) {
+        if (false === $index) {
             $path = $identifier. '/' . $file;
 
             return $path;
@@ -433,9 +433,9 @@ class Perforce
         $this->executeCommand($command);
         $result = $this->commandResult;
         $index2 = strpos($result, 'no such file(s).');
-        if ($index2 === false) {
+        if (false === $index2) {
             $index3 = strpos($result, 'change');
-            if ($index3 !== false) {
+            if (false !== $index3) {
                 $phrase = trim(substr($result, $index3));
                 $fields = explode(' ', $phrase);
 
@@ -486,7 +486,7 @@ class Perforce
         $tags = array();
         foreach ($resArray as $line) {
             $index = strpos($line, 'Label');
-            if (!($index === false)) {
+            if (!(false === $index)) {
                 $fields = explode(' ', $line);
                 $tags[$fields[1]] = $this->getStream() . '@' . $fields[1];
             }
@@ -503,9 +503,9 @@ class Perforce
         $resArray = explode(PHP_EOL, $result);
         foreach ($resArray as $line) {
             $index = strpos($line, 'Depot');
-            if (!($index === false)) {
+            if (!(false === $index)) {
                 $fields = explode(' ', $line);
-                if (strcmp($this->p4Depot, $fields[1]) === 0) {
+                if (0 === strcmp($this->p4Depot, $fields[1])) {
                     $this->p4DepotType = $fields[3];
 
                     return $this->isStream();
@@ -523,14 +523,14 @@ class Perforce
     protected function getChangeList($reference)
     {
         $index = strpos($reference, '@');
-        if ($index === false) {
+        if (false === $index) {
             return null;
         }
         $label = substr($reference, $index);
         $command = $this->generateP4Command(' changes -m1 ' . ProcessExecutor::escape($label));
         $this->executeCommand($command);
         $changes = $this->commandResult;
-        if (strpos($changes, 'Change') !== 0) {
+        if (0 !== strpos($changes, 'Change')) {
             return null;
         }
         $fields = explode(' ', $changes);
@@ -546,11 +546,11 @@ class Perforce
     public function getCommitLogs($fromReference, $toReference)
     {
         $fromChangeList = $this->getChangeList($fromReference);
-        if ($fromChangeList === null) {
+        if (null === $fromChangeList) {
             return null;
         }
         $toChangeList = $this->getChangeList($toReference);
-        if ($toChangeList === null) {
+        if (null === $toChangeList) {
             return null;
         }
         $index = strpos($fromReference, '@');

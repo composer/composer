@@ -107,7 +107,7 @@ EOT
             return 1;
         }
 
-        if (filesize($this->file) === 0) {
+        if (0 === filesize($this->file)) {
             file_put_contents($this->file, "{\n}\n");
         }
 
@@ -194,7 +194,7 @@ EOT
         ;
 
         $status = $install->run();
-        if ($status !== 0) {
+        if (0 !== $status) {
             $this->revertComposerFile();
         }
 

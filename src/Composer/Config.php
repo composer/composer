@@ -176,7 +176,7 @@ class Config
                 if (is_int($name)) {
                     $this->repositories[] = $repository;
                 } else {
-                    if ($name === 'packagist') { // BC support for default "packagist" named repo
+                    if ('packagist' === $name) { // BC support for default "packagist" named repo
                         $this->repositories[$name . '.org'] = $repository;
                     } else {
                         $this->repositories[$name] = $repository;
@@ -224,11 +224,11 @@ class Config
                 $val = rtrim((string) $this->process(false !== $val ? $val : $this->config[$key], $flags), '/\\');
                 $val = Platform::expandPath($val);
 
-                if (substr($key, -4) !== '-dir') {
+                if ('-dir' !== substr($key, -4)) {
                     return $val;
                 }
 
-                return (($flags & self::RELATIVE_PATHS) == self::RELATIVE_PATHS) ? $val : $this->realpath($val);
+                return (self::RELATIVE_PATHS == ($flags & self::RELATIVE_PATHS)) ? $val : $this->realpath($val);
 
             case 'cache-ttl':
                 return (int) $this->config[$key];
@@ -293,7 +293,7 @@ class Config
                     }
 
                     // convert string value to bool
-                    return $env !== 'false' && (bool) $env;
+                    return 'false' !== $env && (bool) $env;
                 }
 
                 if (!in_array($this->config[$key], array(true, false, 'stash'), true)) {
@@ -309,17 +309,17 @@ class Config
                 if ($this->config['secure-http'] && false !== ($index = array_search('git', $protos))) {
                     unset($protos[$index]);
                 }
-                if (reset($protos) === 'http') {
+                if ('http' === reset($protos)) {
                     throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https", "git" or "ssh"');
                 }
 
                 return $protos;
 
             case 'disable-tls':
-                return $this->config[$key] !== 'false' && (bool) $this->config[$key];
+                return 'false' !== $this->config[$key] && (bool) $this->config[$key];
 
             case 'secure-http':
-                return $this->config[$key] !== 'false' && (bool) $this->config[$key];
+                return 'false' !== $this->config[$key] && (bool) $this->config[$key];
 
             default:
                 if (!isset($this->config[$key])) {
@@ -420,7 +420,7 @@ class Config
     {
         if (isset($this->repositories[$name])) {
             unset($this->repositories[$name]);
-        } elseif ($name === 'packagist') { // BC support for default "packagist" named repo
+        } elseif ('packagist' === $name) { // BC support for default "packagist" named repo
             unset($this->repositories['packagist.org']);
         }
     }

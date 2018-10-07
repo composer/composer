@@ -278,7 +278,7 @@ class Factory
             $file = new JsonFile($localConfig, null, $io);
 
             if (!$file->exists()) {
-                if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
+                if ('./composer.json' === $localConfig || 'composer.json' === $localConfig) {
                     $message = 'Composer could not find a composer.json file in '.$cwd;
                 } else {
                     $message = 'Composer could not find the config file: '.$localConfig;
@@ -586,7 +586,7 @@ class Factory
     {
         static $warned = false;
         $disableTls = false;
-        if ($config && $config->get('disable-tls') === true) {
+        if ($config && true === $config->get('disable-tls')) {
             if (!$warned) {
                 $io->write('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
             }
@@ -597,7 +597,7 @@ class Factory
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
         }
         $remoteFilesystemOptions = array();
-        if ($disableTls === false) {
+        if (false === $disableTls) {
             if ($config && $config->get('cafile')) {
                 $remoteFilesystemOptions['ssl']['cafile'] = $config->get('cafile');
             }
@@ -629,7 +629,7 @@ class Factory
     private static function useXdg()
     {
         foreach (array_keys($_SERVER) as $key) {
-            if (substr($key, 0, 4) === 'XDG_') {
+            if ('XDG_' === substr($key, 0, 4)) {
                 return true;
             }
         }

@@ -295,7 +295,7 @@ class InstallerTest extends TestCase
 
                 if (isset($composer['repositories'])) {
                     foreach ($composer['repositories'] as &$repo) {
-                        if ($repo['type'] !== 'composer') {
+                        if ('composer' !== $repo['type']) {
                             continue;
                         }
 

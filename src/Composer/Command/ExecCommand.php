@@ -81,7 +81,7 @@ EOT
 
         $dispatcher = $composer->getEventDispatcher();
         $dispatcher->addListener('__exec_command', $binary);
-        if ($output->getVerbosity() === OutputInterface::VERBOSITY_NORMAL) {
+        if (OutputInterface::VERBOSITY_NORMAL === $output->getVerbosity()) {
             $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
         }
 

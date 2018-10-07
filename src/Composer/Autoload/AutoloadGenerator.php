@@ -120,7 +120,7 @@ class AutoloadGenerator
         $basePath = $filesystem->normalizePath(realpath(realpath(getcwd())));
         $vendorPath = $filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
-        $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
+        $prependAutoloader = false === $config->get('prepend-autoloader') ? 'false' : 'true';
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
@@ -157,7 +157,7 @@ EOF;
 
         // Collect information from all packages.
         $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getCanonicalPackages());
-        $autoloads = $this->parseAutoloads($packageMap, $mainPackage, $this->devMode === false);
+        $autoloads = $this->parseAutoloads($packageMap, $mainPackage, false === $this->devMode);
 
         // Process the 'psr-0' base directories.
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
@@ -255,7 +255,7 @@ EOF;
                             continue;
                         }
 
-                        $namespaceFilter = $namespace === '' ? null : $namespace;
+                        $namespaceFilter = '' === $namespace ? null : $namespace;
                         $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespaceFilter, $classMap);
                     }
                 }
@@ -373,7 +373,7 @@ EOF;
         }
         if (!empty($autoload['psr-4'])) {
             foreach ($autoload['psr-4'] as $namespace => $dirs) {
-                if ($namespace !== '' && '\\' !== substr($namespace, -1)) {
+                if ('' !== $namespace && '\\' !== substr($namespace, -1)) {
                     throw new \InvalidArgumentException("psr-4 namespaces must end with a namespace separator, '$namespace' does not, use '$namespace\\'.");
                 }
             }
@@ -530,11 +530,11 @@ EOF;
         $path = $filesystem->normalizePath($path);
 
         $baseDir = '';
-        if (strpos($path.'/', $vendorPath.'/') === 0) {
+        if (0 === strpos($path.'/', $vendorPath.'/')) {
             $path = substr($path, strlen($vendorPath));
             $baseDir = '$vendorDir';
 
-            if ($path !== false) {
+            if (false !== $path) {
                 $baseDir .= " . ";
             }
         } else {
@@ -549,7 +549,7 @@ EOF;
             $baseDir = "'phar://' . " . $baseDir;
         }
 
-        return $baseDir . (($path !== false) ? var_export($path, true) : "");
+        return $baseDir . ((false !== $path) ? var_export($path, true) : "");
     }
 
     protected function getAutoloadFile($vendorPathToTargetDirCode, $suffix)
@@ -840,7 +840,7 @@ INITIALIZER;
 
             foreach ($autoload[$type] as $namespace => $paths) {
                 foreach ((array) $paths as $path) {
-                    if (($type === 'files' || $type === 'classmap' || $type === 'exclude-from-classmap') && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                    if (('files' === $type || 'classmap' === $type || 'exclude-from-classmap' === $type) && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
                         // remove target-dir from file paths of the root package
                         if ($package === $mainPackage) {
                             $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
@@ -851,7 +851,7 @@ INITIALIZER;
                         }
                     }
 
-                    if ($type === 'exclude-from-classmap') {
+                    if ('exclude-from-classmap' === $type) {
                         // first escape user input
                         $path = preg_replace('{/+}', '/', preg_quote(trim(strtr($path, '\\', '/'), '/')));
 
@@ -884,10 +884,10 @@ INITIALIZER;
 
                     $relativePath = empty($installPath) ? (empty($path) ? '.' : $path) : $installPath.'/'.$path;
 
-                    if ($type === 'files') {
+                    if ('files' === $type) {
                         $autoloads[$this->getFileIdentifier($package, $path)] = $relativePath;
                         continue;
-                    } elseif ($type === 'classmap') {
+                    } elseif ('classmap' === $type) {
                         $autoloads[] = $relativePath;
                         continue;
                     }

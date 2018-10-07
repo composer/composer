@@ -58,7 +58,7 @@ class ArchivableFilesFinder extends \FilterIterator
         $this->finder = new Finder();
 
         $filter = function (\SplFileInfo $file) use ($sources, $filters, $fs) {
-            if ($file->isLink() && strpos($file->getLinkTarget(), $sources) !== 0) {
+            if ($file->isLink() && 0 !== strpos($file->getLinkTarget(), $sources)) {
                 return false;
             }
 

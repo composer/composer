@@ -226,7 +226,7 @@ class Installer
 
         try {
             list($res, $devPackages) = $this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases);
-            if ($res !== 0) {
+            if (0 !== $res) {
                 return $res;
             }
         } catch (\Exception $e) {
@@ -704,7 +704,7 @@ class Installer
 
         $devPackages = array();
         foreach ($ops as $op) {
-            if ($op->getJobType() === 'uninstall') {
+            if ('uninstall' === $op->getJobType()) {
                 $devPackages[] = $op->getPackage();
             }
         }
@@ -732,7 +732,7 @@ class Installer
 
         // skip operations applied on dev packages
         foreach ($operations as $op) {
-            $package = $op->getJobType() === 'update' ? $op->getTargetPackage() : $op->getPackage();
+            $package = 'update' === $op->getJobType() ? $op->getTargetPackage() : $op->getPackage();
             if (isset($packagesToSkip[$package->getName()])) {
                 continue;
             }
@@ -772,13 +772,13 @@ class Installer
             }
 
             // is this package a plugin?
-            $isPlugin = $package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer';
+            $isPlugin = 'composer-plugin' === $package->getType() || 'composer-installer' === $package->getType();
 
             // is this a plugin or a dependency of a plugin?
             if ($isPlugin || count(array_intersect($package->getNames(), $pluginRequires))) {
                 // get the package's requires, but filter out any platform requirements or 'composer-plugin-api'
                 $requires = array_filter(array_keys($package->getRequires()), function ($req) {
-                    return $req !== 'composer-plugin-api' && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+                    return 'composer-plugin-api' !== $req && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
                 });
 
                 // is this a plugin with no meaningful dependencies?
@@ -957,10 +957,10 @@ class Installer
      */
     private function processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $task, array $operations = null)
     {
-        if ($task === 'force-updates' && null === $operations) {
+        if ('force-updates' === $task && null === $operations) {
             throw new \InvalidArgumentException('Missing operations argument');
         }
-        if ($task === 'force-links') {
+        if ('force-links' === $task) {
             $operations = array();
         }
 
@@ -989,12 +989,12 @@ class Installer
                     // check if non-updateable packages are out of date compared to the lock file to ensure we don't corrupt it
                     foreach ($currentPackages as $curPackage) {
                         if ($curPackage->isDev() && $curPackage->getName() === $package->getName() && $curPackage->getVersion() === $package->getVersion()) {
-                            if ($task === 'force-links') {
+                            if ('force-links' === $task) {
                                 $package->setRequires($curPackage->getRequires());
                                 $package->setConflicts($curPackage->getConflicts());
                                 $package->setProvides($curPackage->getProvides());
                                 $package->setReplaces($curPackage->getReplaces());
-                            } elseif ($task === 'force-updates') {
+                            } elseif ('force-updates' === $task) {
                                 if (($curPackage->getSourceReference() && $curPackage->getSourceReference() !== $package->getSourceReference())
                                     || ($curPackage->getDistReference() && $curPackage->getDistReference() !== $package->getDistReference())
                                 ) {
@@ -1031,7 +1031,7 @@ class Installer
                 if ($matches && $matches = $policy->selectPreferredPackages($pool, array(), $matches)) {
                     $newPackage = $pool->literalToPackage($matches[0]);
 
-                    if ($task === 'force-links' && $newPackage) {
+                    if ('force-links' === $task && $newPackage) {
                         $package->setRequires($newPackage->getRequires());
                         $package->setConflicts($newPackage->getConflicts());
                         $package->setProvides($newPackage->getProvides());
@@ -1039,7 +1039,7 @@ class Installer
                     }
 
                     if (
-                        $task === 'force-updates'
+                        'force-updates' === $task
                         && $newPackage
                         && (
                             ($newPackage->getSourceReference() && $newPackage->getSourceReference() !== $package->getSourceReference())
@@ -1052,7 +1052,7 @@ class Installer
                     }
                 }
 
-                if ($task === 'force-updates') {
+                if ('force-updates' === $task) {
                     // force installed package to update to referenced version in root package if it does not match the installed version
                     $references = $this->package->getReferences();
 
@@ -1065,12 +1065,12 @@ class Installer
                 // force update to locked version if it does not match the installed version
                 foreach ($lockedRepository->findPackages($package->getName()) as $lockedPackage) {
                     if ($lockedPackage->isDev() && $lockedPackage->getVersion() === $package->getVersion()) {
-                        if ($task === 'force-links') {
+                        if ('force-links' === $task) {
                             $package->setRequires($lockedPackage->getRequires());
                             $package->setConflicts($lockedPackage->getConflicts());
                             $package->setProvides($lockedPackage->getProvides());
                             $package->setReplaces($lockedPackage->getReplaces());
-                        } elseif ($task === 'force-updates') {
+                        } elseif ('force-updates' === $task) {
                             if (($lockedPackage->getSourceReference() && $lockedPackage->getSourceReference() !== $package->getSourceReference())
                                 || ($lockedPackage->getDistReference() && $lockedPackage->getDistReference() !== $package->getDistReference())
                             ) {
@@ -1350,7 +1350,7 @@ class Installer
                 }
             }
 
-            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
+            if (0 == count($depPackages) && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
                 $this->io->writeError('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 

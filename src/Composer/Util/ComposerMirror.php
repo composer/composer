@@ -24,7 +24,7 @@ class ComposerMirror
         if ($reference) {
             $reference = preg_match('{^([a-f0-9]*|%reference%)$}', $reference) ? $reference : md5($reference);
         }
-        $version = strpos($version, '/') === false ? $version : md5($version);
+        $version = false === strpos($version, '/') ? $version : md5($version);
 
         return str_replace(
             array('%package%', '%version%', '%reference%', '%type%'),

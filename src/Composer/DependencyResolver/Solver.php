@@ -336,7 +336,7 @@ class Solver
                 break;
             }
 
-            if ($level == 1) {
+            if (1 == $level) {
                 return $this->analyzeUnsolvable($rule, $disableRules);
             }
 
@@ -477,7 +477,7 @@ class Solver
                     }
 
                     foreach ($learnedLiterals as $i => $learnedLiteral) {
-                        if ($i !== 0) {
+                        if (0 !== $i) {
                             unset($seen[abs($learnedLiteral)]);
                         }
                     }
@@ -510,7 +510,7 @@ class Solver
      */
     private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule)
     {
-        if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
+        if (RuleSet::TYPE_LEARNED == $conflictRule->getType()) {
             $why = spl_object_hash($conflictRule);
             $learnedWhy = $this->learnedWhy[$why];
             $problemRules = $this->learnedPool[$learnedWhy];
@@ -522,7 +522,7 @@ class Solver
             return;
         }
 
-        if ($conflictRule->getType() == RuleSet::TYPE_PACKAGE) {
+        if (RuleSet::TYPE_PACKAGE == $conflictRule->getType()) {
             // package rules cannot be part of a problem
             return;
         }
@@ -854,7 +854,7 @@ class Solver
 
                     $level = $this->setPropagateLearn($level, $lastLiteral, $disableRules, $why);
 
-                    if ($level == 0) {
+                    if (0 == $level) {
                         return;
                     }
 

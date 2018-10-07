@@ -61,7 +61,7 @@ EOT
         $tokens = preg_split('{\s+}', $input->__toString());
         $args = array();
         foreach ($tokens as $token) {
-            if ($token && $token[0] !== '-') {
+            if ($token && '-' !== $token[0]) {
                 $args[] = $token;
                 if (count($args) >= 2) {
                     break;

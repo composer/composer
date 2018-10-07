@@ -46,7 +46,7 @@ class ErrorHandler
             "\na legitimately suppressed error that you were not supposed to see.";
         }
 
-        if ($level !== E_DEPRECATED && $level !== E_USER_DEPRECATED) {
+        if (E_DEPRECATED !== $level && E_USER_DEPRECATED !== $level) {
             throw new \ErrorException($message, 0, $level, $file, $line);
         }
 

@@ -59,7 +59,7 @@ class HgExcludeFilter extends BaseExcludeFilter
     public function parseHgIgnoreLine($line)
     {
         if (preg_match('#^syntax\s*:\s*(glob|regexp)$#', $line, $matches)) {
-            if ($matches[1] === 'glob') {
+            if ('glob' === $matches[1]) {
                 $this->patternMode = self::HG_IGNORE_GLOB;
             } else {
                 $this->patternMode = self::HG_IGNORE_REGEX;
@@ -68,7 +68,7 @@ class HgExcludeFilter extends BaseExcludeFilter
             return null;
         }
 
-        if ($this->patternMode == self::HG_IGNORE_GLOB) {
+        if (self::HG_IGNORE_GLOB == $this->patternMode) {
             return $this->patternFromGlob($line);
         }
 

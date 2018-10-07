@@ -54,7 +54,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         $this->prettyVersion = $prettyVersion;
         $this->aliasOf = $aliasOf;
         $this->stability = VersionParser::parseStability($version);
-        $this->dev = $this->stability === 'dev';
+        $this->dev = 'dev' === $this->stability;
 
         foreach (array('requires', 'devRequires', 'conflicts', 'provides', 'replaces') as $type) {
             $links = $aliasOf->{'get' . ucfirst($type)}();

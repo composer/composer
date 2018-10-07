@@ -34,7 +34,7 @@ class HgBitbucketDriver extends BitbucketDriver
                 return $this->fallbackDriver->getRootIdentifier();
             }
 
-            if ($this->vcsType !== 'hg') {
+            if ('hg' !== $this->vcsType) {
                 throw new \RuntimeException(
                     $this->url.' does not appear to be a mercurial repository, use '.
                     $this->cloneHttpsUrl.' if this is a git bitbucket repository'

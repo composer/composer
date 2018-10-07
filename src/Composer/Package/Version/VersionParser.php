@@ -70,7 +70,7 @@ class VersionParser extends SemverVersionParser
      */
     public static function isUpgrade($normalizedFrom, $normalizedTo)
     {
-        if (substr($normalizedFrom, 0, 4) === 'dev-' || substr($normalizedTo, 0, 4) === 'dev-') {
+        if ('dev-' === substr($normalizedFrom, 0, 4) || 'dev-' === substr($normalizedTo, 0, 4)) {
             return true;
         }
 

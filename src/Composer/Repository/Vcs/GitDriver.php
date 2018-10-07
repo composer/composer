@@ -206,7 +206,7 @@ class GitDriver extends VcsDriver
 
             $process = new ProcessExecutor($io);
             // check whether there is a git repo in that path
-            if ($process->execute('git tag', $output, $url) === 0) {
+            if (0 === $process->execute('git tag', $output, $url)) {
                 return true;
             }
         }
@@ -217,6 +217,6 @@ class GitDriver extends VcsDriver
 
         $process = new ProcessExecutor($io);
 
-        return $process->execute('git ls-remote --heads ' . ProcessExecutor::escape($url), $output) === 0;
+        return 0 === $process->execute('git ls-remote --heads ' . ProcessExecutor::escape($url), $output);
     }
 }

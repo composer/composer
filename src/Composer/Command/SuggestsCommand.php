@@ -112,7 +112,7 @@ EOT
         }
 
         // Simple mode
-        if ($mode === 0) {
+        if (0 === $mode) {
             foreach (array_keys($suggested) as $suggestion) {
                 $io->write(sprintf('<info>%s</info>', $suggestion));
             }

@@ -76,7 +76,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         $urlBits = parse_url($repoConfig['url']);
-        if ($urlBits === false || empty($urlBits['scheme'])) {
+        if (false === $urlBits || empty($urlBits['scheme'])) {
             throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
 
@@ -202,7 +202,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         $this->loadRootServerFile();
 
-        if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
+        if ($this->searchUrl && self::SEARCH_FULLTEXT === $mode) {
             $url = str_replace(array('%query%', '%type%'), array($query, $type), $this->searchUrl);
 
             $hostname = parse_url($url, PHP_URL_HOST) ?: $url;
@@ -263,7 +263,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected function configurePackageTransportOptions(PackageInterface $package)
     {
         foreach ($package->getDistUrls() as $url) {
-            if (strpos($url, $this->baseUrl) === 0) {
+            if (0 === strpos($url, $this->baseUrl)) {
                 $package->setTransportOptions($this->options);
 
                 return;
@@ -357,7 +357,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $packages = $this->fetchFile($url, $cacheKey, $hash, $useLastModifiedCheck);
                 } catch (TransportException $e) {
                     // 404s are acceptable for lazy provider repos
-                    if ($e->getStatusCode() === 404 && $this->lazyProvidersUrl) {
+                    if (404 === $e->getStatusCode() && $this->lazyProvidersUrl) {
                         $packages = array('packages' => array());
                     } else {
                         throw $e;
@@ -719,7 +719,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 break;
             } catch (\Exception $e) {
-                if ($e instanceof TransportException && $e->getStatusCode() === 404) {
+                if ($e instanceof TransportException && 404 === $e->getStatusCode()) {
                     throw $e;
                 }
 
@@ -764,7 +764,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $rfs = $preFileDownloadEvent->getRemoteFilesystem();
                 $options = array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime)));
                 $json = $rfs->getContents($hostname, $filename, false, $options);
-                if ($json === '' && $rfs->findStatusCode($rfs->getLastHeaders()) === 304) {
+                if ('' === $json && 304 === $rfs->findStatusCode($rfs->getLastHeaders())) {
                     return true;
                 }
 
@@ -785,7 +785,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 return $data;
             } catch (\Exception $e) {
-                if ($e instanceof TransportException && $e->getStatusCode() === 404) {
+                if ($e instanceof TransportException && 404 === $e->getStatusCode()) {
                     throw $e;
                 }
 

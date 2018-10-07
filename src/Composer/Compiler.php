@@ -44,13 +44,13 @@ class Compiler
         }
 
         $process = new Process('git log --pretty="%H" -n1 HEAD', __DIR__);
-        if ($process->run() != 0) {
+        if (0 != $process->run()) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($process->getOutput());
 
         $process = new Process('git log -n1 --pretty=%ci HEAD', __DIR__);
-        if ($process->run() != 0) {
+        if (0 != $process->run()) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
 
@@ -58,7 +58,7 @@ class Compiler
         $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
         $process = new Process('git describe --tags --exact-match HEAD');
-        if ($process->run() == 0) {
+        if (0 == $process->run()) {
             $this->version = trim($process->getOutput());
         } else {
             // get branch-alias defined in composer.json for dev-master (if any)
@@ -174,7 +174,7 @@ class Compiler
         $pathPrefix = dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR;
 
         $pos = strpos($realPath, $pathPrefix);
-        $relativePath = ($pos !== false) ? substr_replace($realPath, '', $pos, strlen($pathPrefix)) : $realPath;
+        $relativePath = (false !== $pos) ? substr_replace($realPath, '', $pos, strlen($pathPrefix)) : $realPath;
 
         return strtr($relativePath, '\\', '/');
     }
@@ -189,7 +189,7 @@ class Compiler
             $content = "\n".$content."\n";
         }
 
-        if ($path === 'src/Composer/Composer.php') {
+        if ('src/Composer/Composer.php' === $path) {
             $content = str_replace('@package_version@', $this->version, $content);
             $content = str_replace('@package_branch_alias_version@', $this->branchAliasVersion, $content);
             $content = str_replace('@release_date@', $this->versionDate->format('Y-m-d H:i:s'), $content);

@@ -154,7 +154,7 @@ class RepositoryFactory
             while (isset($repos[$name])) {
                 $name .= '2';
             }
-            if ($repo['type'] === 'filesystem') {
+            if ('filesystem' === $repo['type']) {
                 $repos[$name] = new FilesystemRepository($repo['json']);
             } else {
                 $repos[$name] = $rm->createRepository($repo['type'], $repo, $index);

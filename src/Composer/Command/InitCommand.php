@@ -264,7 +264,7 @@ EOT
         $author = $io->askAndValidate(
             'Author [<comment>'.$author.'</comment>, n to skip]: ',
             function ($value) use ($self, $author) {
-                if ($value === 'n' || $value === 'no') {
+                if ('n' === $value || 'no' === $value) {
                     return;
                 }
                 $value = $value ?: $author;
@@ -722,7 +722,7 @@ EOT
             $similar = $this->findSimilar($name);
             if ($similar) {
                 // Check whether the minimum stability was the problem but the package exists
-                if ($requiredVersion === null && in_array($name, $similar, true)) {
+                if (null === $requiredVersion && in_array($name, $similar, true)) {
                     throw new \InvalidArgumentException(sprintf(
                         'Could not find a version of package %s matching your minimum-stability (%s). Require it with an explicit version constraint allowing its desired stability.',
                         $name,

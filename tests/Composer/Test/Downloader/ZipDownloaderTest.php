@@ -45,7 +45,7 @@ class ZipDownloaderTest extends TestCase
         $reflectionClass = new \ReflectionClass('Composer\Downloader\ZipDownloader');
         $reflectedProperty = $reflectionClass->getProperty($name);
         $reflectedProperty->setAccessible(true);
-        if ($obj === null) {
+        if (null === $obj) {
             $reflectedProperty = $reflectedProperty->setValue($value);
         } else {
             $reflectedProperty = $reflectedProperty->setValue($obj, $value);

@@ -54,7 +54,7 @@ class NoProxyPattern
         }
 
         foreach ($this->rules as $rule) {
-            if ($rule == '*') {
+            if ('*' == $rule) {
                 return true;
             }
 
@@ -70,7 +70,7 @@ class NoProxyPattern
                     $ip = gethostbyname($host);
                 }
 
-                if (strpos($ruleHost, '/') === false) {
+                if (false === strpos($ruleHost, '/')) {
                     $match = $ip === $ruleHost;
                 } else {
                     // gethostbyname() failed to resolve $host to an ip, so we assume
@@ -87,11 +87,11 @@ class NoProxyPattern
 
                 $haystack = '.' . trim($host, '.') . '.';
                 $needle = '.'. trim($ruleHost, '.') .'.';
-                $match = stripos(strrev($haystack), strrev($needle)) === 0;
+                $match = 0 === stripos(strrev($haystack), strrev($needle));
             }
 
             // final port check
-            if ($match && strpos($rule, ':') !== false) {
+            if ($match && false !== strpos($rule, ':')) {
                 list(, $rulePort) = explode(':', $rule);
                 if (!empty($rulePort) && $port != $rulePort) {
                     $match = false;
@@ -126,7 +126,7 @@ class NoProxyPattern
 
         // Now do some bit shifting/switching to convert to ints
         $i = ($a << 24) + ($b << 16) + ($c << 8) + $d;
-        $mask = $bits == 0 ? 0 : (~0 << (32 - $bits));
+        $mask = 0 == $bits ? 0 : (~0 << (32 - $bits));
 
         // Here's our lowest int
         $low = $i & $mask;

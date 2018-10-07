@@ -233,7 +233,7 @@ class Pool implements \Countable
                 $aliasOfCandidate = $candidate->getAliasOf();
             }
 
-            if ($this->whitelist !== null && !$bypassFilters && (
+            if (null !== $this->whitelist && !$bypassFilters && (
                 (!($candidate instanceof AliasPackage) && !isset($this->whitelist[$candidate->id])) ||
                 ($candidate instanceof AliasPackage && !isset($this->whitelist[$aliasOfCandidate->id]))
             )) {
@@ -326,7 +326,7 @@ class Pool implements \Countable
     {
         $candidateName = $candidate->getName();
         $candidateVersion = $candidate->getVersion();
-        $isDev = $candidate->getStability() === 'dev';
+        $isDev = 'dev' === $candidate->getStability();
         $isAlias = $candidate instanceof AliasPackage;
 
         if (!$bypassFilters && !$isDev && !$isAlias && isset($this->filterRequires[$name])) {
@@ -338,7 +338,7 @@ class Pool implements \Countable
         if ($candidateName === $name) {
             $pkgConstraint = new Constraint('==', $candidateVersion);
 
-            if ($constraint === null || $constraint->matches($pkgConstraint)) {
+            if (null === $constraint || $constraint->matches($pkgConstraint)) {
                 return $requireFilter->matches($pkgConstraint) ? self::MATCH : self::MATCH_FILTERED;
             }
 
@@ -351,13 +351,13 @@ class Pool implements \Countable
         // aliases create multiple replaces/provides for one target so they can not use the shortcut below
         if (isset($replaces[0]) || isset($provides[0])) {
             foreach ($provides as $link) {
-                if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
+                if ($link->getTarget() === $name && (null === $constraint || $constraint->matches($link->getConstraint()))) {
                     return $requireFilter->matches($link->getConstraint()) ? self::MATCH_PROVIDE : self::MATCH_FILTERED;
                 }
             }
 
             foreach ($replaces as $link) {
-                if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
+                if ($link->getTarget() === $name && (null === $constraint || $constraint->matches($link->getConstraint()))) {
                     return $requireFilter->matches($link->getConstraint()) ? self::MATCH_REPLACE : self::MATCH_FILTERED;
                 }
             }
@@ -365,11 +365,11 @@ class Pool implements \Countable
             return self::MATCH_NONE;
         }
 
-        if (isset($provides[$name]) && ($constraint === null || $constraint->matches($provides[$name]->getConstraint()))) {
+        if (isset($provides[$name]) && (null === $constraint || $constraint->matches($provides[$name]->getConstraint()))) {
             return $requireFilter->matches($provides[$name]->getConstraint()) ? self::MATCH_PROVIDE : self::MATCH_FILTERED;
         }
 
-        if (isset($replaces[$name]) && ($constraint === null || $constraint->matches($replaces[$name]->getConstraint()))) {
+        if (isset($replaces[$name]) && (null === $constraint || $constraint->matches($replaces[$name]->getConstraint()))) {
             return $requireFilter->matches($replaces[$name]->getConstraint()) ? self::MATCH_REPLACE : self::MATCH_FILTERED;
         }
 

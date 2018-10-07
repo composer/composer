@@ -138,7 +138,7 @@ EOT
         ;
 
         $status = $install->run();
-        if ($status !== 0) {
+        if (0 !== $status) {
             $io->writeError("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
             file_put_contents($jsonFile->getPath(), $composerBackup);
         }

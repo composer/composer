@@ -246,7 +246,7 @@ class RuleSetGenerator
                 foreach ($this->addedPackagesByNames[$link->getTarget()] as $possibleConflict) {
                     $conflictMatch = $this->pool->match($possibleConflict, $link->getTarget(), $link->getConstraint(), true);
 
-                    if ($conflictMatch === Pool::MATCH || $conflictMatch === Pool::MATCH_REPLACE) {
+                    if (Pool::MATCH === $conflictMatch || Pool::MATCH_REPLACE === $conflictMatch) {
                         $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $possibleConflict, Rule::RULE_PACKAGE_CONFLICT, $link));
                     }
 

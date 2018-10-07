@@ -81,7 +81,7 @@ class PearBinaryInstaller extends BinaryInstaller
                 $caller = 'php';
             }
 
-            if ($caller === 'php') {
+            if ('php' === $caller) {
                 return "@echo off\r\n".
                     "pushd .\r\n".
                     "cd %~dp0\r\n".

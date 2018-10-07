@@ -97,7 +97,7 @@ class ArrayDumperTest extends TestCase
         $this->packageExpects('get'.ucfirst($method ?: $key), $value);
         $this->packageExpects('isAbandoned', $value);
 
-        if ($method !== 'transportOptions') {
+        if ('transportOptions' !== $method) {
             $this->packageExpects('getTransportOptions', array());
         }
 

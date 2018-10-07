@@ -92,7 +92,7 @@ class GitLabDriver extends VcsDriver
 
         $this->scheme = !empty($match['scheme'])
             ? $match['scheme']
-            : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https')
+            : (isset($this->repoConfig['secure-http']) && false === $this->repoConfig['secure-http'] ? 'http' : 'https')
         ;
         $this->originUrl = $this->determineOrigin($configuredDomains, $guessedDomain, $urlParts);
 
@@ -142,7 +142,7 @@ class GitLabDriver extends VcsDriver
         try {
             $content = $this->getContents($resource);
         } catch (TransportException $e) {
-            if ($e->getCode() !== 404) {
+            if (404 !== $e->getCode()) {
                 throw $e;
             }
 
@@ -323,7 +323,7 @@ class GitLabDriver extends VcsDriver
         $resource = $this->getApiUrl();
         $this->project = JsonFile::parseJson($this->getContents($resource, true), $resource);
         if (isset($this->project['visibility'])) {
-            $this->isPrivate = $this->project['visibility'] !== 'public';
+            $this->isPrivate = 'public' !== $this->project['visibility'];
         } else {
             // client is not authendicated, therefore repository has to be public
             $this->isPrivate = false;
@@ -333,7 +333,7 @@ class GitLabDriver extends VcsDriver
     protected function attemptCloneFallback()
     {
         try {
-            if ($this->isPrivate === false) {
+            if (false === $this->isPrivate) {
                 $url = $this->generatePublicUrl();
             } else {
                 $url = $this->generateSshUrl();

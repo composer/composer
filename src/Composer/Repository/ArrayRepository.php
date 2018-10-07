@@ -100,7 +100,7 @@ class ArrayRepository extends BaseRepository
                 continue;
             }
             if (preg_match($regex, $name)
-                || ($mode === self::SEARCH_FULLTEXT && $package instanceof CompletePackageInterface && preg_match($regex, implode(' ', (array) $package->getKeywords()) . ' ' . $package->getDescription()))
+                || (self::SEARCH_FULLTEXT === $mode && $package instanceof CompletePackageInterface && preg_match($regex, implode(' ', (array) $package->getKeywords()) . ' ' . $package->getDescription()))
             ) {
                 if (null !== $type && $package->getType() !== $type) {
                     continue;

@@ -348,7 +348,7 @@ EOT
                     foreach ($packages[$type] as $package) {
                         if (is_object($package)) {
                             $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly);
-                            if ($latestPackage === false) {
+                            if (false === $latestPackage) {
                                 continue;
                             }
 
@@ -580,7 +580,7 @@ EOT
         $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
 
         if ($latestPackage->isAbandoned()) {
-            $replacement = ($latestPackage->getReplacementPackage() !== null)
+            $replacement = (null !== $latestPackage->getReplacementPackage())
                 ? ' The author suggests using the ' . $latestPackage->getReplacementPackage(). ' package instead.'
                 : null;
 
@@ -601,15 +601,15 @@ EOT
             foreach ($package->getAutoload() as $type => $autoloads) {
                 $io->write('<comment>' . $type . '</comment>');
 
-                if ($type === 'psr-0') {
+                if ('psr-0' === $type) {
                     foreach ($autoloads as $name => $path) {
                         $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
                     }
-                } elseif ($type === 'psr-4') {
+                } elseif ('psr-4' === $type) {
                     foreach ($autoloads as $name => $path) {
                         $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
                     }
-                } elseif ($type === 'classmap') {
+                } elseif ('classmap' === $type) {
                     $io->write(implode(', ', $autoloads));
                 }
             }
@@ -685,7 +685,7 @@ EOT
                 $out = $licenseId;
             } else {
                 // is license OSI approved?
-                if ($license[1] === true) {
+                if (true === $license[1]) {
                     $out = sprintf('%s (%s) (OSI approved) %s', $license[0], $licenseId, $license[2]);
                 } else {
                     $out = sprintf('%s (%s) %s', $license[0], $licenseId, $license[2]);
@@ -884,7 +884,7 @@ EOT
             $installedRepo,
             $distantRepos,
             $name,
-            $package->getPrettyConstraint() === 'self.version' ? $package->getConstraint() : $package->getPrettyConstraint()
+            'self.version' === $package->getPrettyConstraint() ? $package->getConstraint() : $package->getPrettyConstraint()
         );
         if (is_object($package)) {
             $requires = $package->getRequires();
@@ -980,7 +980,7 @@ EOT
             $targetVersion = $package->getVersion();
         }
 
-        if ($targetVersion === null && $minorOnly) {
+        if (null === $targetVersion && $minorOnly) {
             $targetVersion = '^' . $package->getVersion();
         }
 
