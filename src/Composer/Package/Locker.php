@@ -282,8 +282,8 @@ class Locker
      * @param bool   $preferStable
      * @param bool   $preferLowest
      * @param array  $platformOverrides
-     *
      * @return bool
+     * @throws \Exception
      */
     public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides)
     {

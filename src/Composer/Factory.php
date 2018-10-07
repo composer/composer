@@ -149,6 +149,7 @@ class Factory
     /**
      * @param  IOInterface|null $io
      * @return Config
+     * @throws \Exception
      */
     public static function createConfig(IOInterface $io = null, $cwd = null)
     {

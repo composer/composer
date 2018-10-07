@@ -36,6 +36,7 @@ class Cache
      * @param string      $cacheDir   location of the cache
      * @param string      $whitelist  List of characters that are allowed in path names (used in a regex character class)
      * @param Filesystem  $filesystem optional filesystem instance
+     * @throws \Exception
      */
     public function __construct(IOInterface $io, $cacheDir, $whitelist = 'a-z0-9.', Filesystem $filesystem = null)
     {

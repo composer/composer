@@ -78,6 +78,7 @@ class ChannelRest10Reader extends BaseChannelReader
      * @param $baseUrl      string
      * @param $packageName  string
      * @return PackageInfo
+     * @throws \Exception
      */
     private function readPackage($baseUrl, $packageName)
     {
