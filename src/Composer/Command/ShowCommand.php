@@ -219,12 +219,12 @@ EOT
                 if ($input->getOption('outdated') && $input->getOption('strict') && $latestPackage && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion() && !$latestPackage->isAbandoned()) {
                     $exitCode = 1;
                 }
-	            if ($input->getOption('path')) {
-		            $io->write($package->getName(), false);
-		            $io->write(' ' . strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n"));
+                if ($input->getOption('path')) {
+                    $io->write($package->getName(), false);
+                    $io->write(' ' . strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n"));
 
-		            return $exitCode;
-	            }
+                    return $exitCode;
+                }
                 $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null);
                 $this->printLinks($package, 'requires');
                 $this->printLinks($package, 'devRequires', 'requires (dev)');
@@ -583,7 +583,7 @@ EOT
         $this->printLicenses($package);
         $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
         $io->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
-	    $io->write('<info>path</info>     : ' . sprintf('%s', realpath($this->getComposer()->getInstallationManager()->getInstallPath($package))));
+        $io->write('<info>path</info>     : ' . sprintf('%s', realpath($this->getComposer()->getInstallationManager()->getInstallPath($package))));
         $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
 
         if ($latestPackage->isAbandoned()) {
