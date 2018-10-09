@@ -114,13 +114,21 @@ class RemoteFilesystem
     /**
      * Merges new options
      *
-     * @return array $options
+     * @param array $options
+     * @return self
      */
     public function setOptions(array $options)
     {
         $this->options = array_replace_recursive($this->options, $options);
+        
+        return $this;
     }
 
+    /**
+     * Check is disable TLS.
+     *
+     * @return bool
+     */
     public function isTlsDisabled()
     {
         return $this->disableTls === true;
