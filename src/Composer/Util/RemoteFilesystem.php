@@ -115,13 +115,10 @@ class RemoteFilesystem
      * Merges new options
      *
      * @param array $options
-     * @return self
      */
     public function setOptions(array $options)
     {
         $this->options = array_replace_recursive($this->options, $options);
-        
-        return $this;
     }
 
     /**
