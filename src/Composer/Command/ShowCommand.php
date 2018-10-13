@@ -183,6 +183,11 @@ EOT
 
         $packageFilter = $input->getArgument('package');
 
+        if ($input->getOption('path') && null === $composer) {
+            $io->writeError('No composer.json found in the current directory, disabling "path" option');
+            $input->setOption('path', false);
+        }
+
         // show single package or single version
         if (($packageFilter && false === strpos($packageFilter, '*')) || !empty($package)) {
             if (empty($package)) {
@@ -231,6 +236,10 @@ EOT
                 $this->printLinks($package, 'provides');
                 $this->printLinks($package, 'conflicts');
                 $this->printLinks($package, 'replaces');
+                if ($input->getOption('path')) {
+                    $io->write("\n<info>path</info>");
+                    $io->write(strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n"));
+                }
             }
 
             return $exitCode;
@@ -290,11 +299,6 @@ EOT
             $width--;
         } else {
             $width = max(80, $width);
-        }
-
-        if ($input->getOption('path') && null === $composer) {
-            $io->writeError('No composer.json found in the current directory, disabling "path" option');
-            $input->setOption('path', false);
         }
 
         foreach ($repos as $repo) {
