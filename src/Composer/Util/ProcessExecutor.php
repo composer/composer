@@ -60,7 +60,7 @@ class ProcessExecutor
             $cwd = realpath(getcwd());
         }
 
-        $this->captureOutput = count(func_get_args()) > 1;
+        $this->captureOutput = func_num_args() > 1;
         $this->errorOutput = null;
         $process = new Process($command, $cwd, null, null, static::getTimeout());
 
