@@ -236,7 +236,12 @@ class PlatformRepository extends ArrayRepository
         // Skip if overridden
         if (isset($this->overrides[$package->getName()])) {
             $overrider = $this->findPackage($package->getName(), '*');
-            $overrider->setDescription($overrider->getDescription().' (actual: '.$package->getPrettyVersion().')');
+            if ($package->getVersion() === $overrider->getVersion()) {
+                $actualText = 'same as actual';
+            } else {
+                $actualText = 'actual: '.$package->getPrettyVersion();
+            }
+            $overrider->setDescription($overrider->getDescription().' ('.$actualText.')');
 
             return;
         }
@@ -244,7 +249,12 @@ class PlatformRepository extends ArrayRepository
         // Skip if PHP is overridden and we are adding a php-* package
         if (isset($this->overrides['php']) && 0 === strpos($package->getName(), 'php-')) {
             $overrider = $this->addOverriddenPackage($this->overrides['php'], $package->getPrettyName());
-            $overrider->setDescription($overrider->getDescription().' (actual: '.$package->getPrettyVersion().')');
+            if ($package->getVersion() === $overrider->getVersion()) {
+                $actualText = 'same as actual';
+            } else {
+                $actualText = 'actual: '.$package->getPrettyVersion();
+            }
+            $overrider->setDescription($overrider->getDescription().' ('.$actualText.')');
 
             return;
         }
