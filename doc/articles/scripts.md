@@ -244,7 +244,7 @@ You can also refer a script and pass it new arguments:
 {
   "scripts": {
     "tests": "phpunit",
-    "testsVerbose": "@unitTests -vvv"
+    "testsVerbose": "@tests -vvv"
   }
 }
 ```
