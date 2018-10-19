@@ -113,7 +113,7 @@ class GitBitbucketDriverTest extends TestCase
                 ),
                 array(
                     $this->originUrl,
-                    'https://api.bitbucket.org/1.0/repositories/user/repo/main-branch',
+                    'https://api.bitbucket.org/2.0/repositories/user/repo?fields=mainbranch',
                     false,
                 ),
                 array(
@@ -128,7 +128,7 @@ class GitBitbucketDriverTest extends TestCase
                 ),
                 array(
                     $this->originUrl,
-                    'https://api.bitbucket.org/1.0/repositories/user/repo/raw/master/composer.json',
+                    'https://api.bitbucket.org/2.0/repositories/user/repo/src/master/composer.json',
                     false,
                 ),
                 array(
@@ -139,7 +139,7 @@ class GitBitbucketDriverTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls(
                 '{"scm":"git","website":"","has_wiki":false,"name":"repo","links":{"branches":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/branches"},"tags":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/tags"},"clone":[{"href":"https:\/\/user@bitbucket.org\/user\/repo.git","name":"https"},{"href":"ssh:\/\/git@bitbucket.org\/user\/repo.git","name":"ssh"}],"html":{"href":"https:\/\/bitbucket.org\/user\/repo"}},"language":"php","created_on":"2015-02-18T16:22:24.688+00:00","updated_on":"2016-05-17T13:20:21.993+00:00","is_private":true,"has_issues":false}',
-                '{"name": "master"}',
+                '{"mainbranch": {"name": "master"}}',
                 '{"values":[{"name":"1.0.1","target":{"hash":"9b78a3932143497c519e49b8241083838c8ff8a1"}},{"name":"1.0.0","target":{"hash":"d3393d514318a9267d2f8ebbf463a9aaa389f8eb"}}]}',
                 '{"values":[{"name":"master","target":{"hash":"937992d19d72b5116c3e8c4a04f960e5fa270b22"}}]}',
                 '{"name": "user/repo","description": "test repo","license": "GPL","authors": [{"name": "Name","email": "local@domain.tld"}],"require": {"creator/package": "^1.0"},"require-dev": {"phpunit/phpunit": "~4.8"}}',
