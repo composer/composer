@@ -73,4 +73,4 @@ deploy:
   on:
     tags: true
     repo: composer/composer
-    php:  '7.1'
+    php:  '7.2'
