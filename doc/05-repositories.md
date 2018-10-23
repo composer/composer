@@ -657,7 +657,7 @@ be explicitly defined in the package's `composer.json` file. If the version
 cannot be resolved by these means, it is assumed to be `dev-master`.
 
 The local package will be symlinked if possible, in which case the output in
-the console will read `Symlinked from ../../packages/my-package`. If symlinking
+the console will read `Symlinking from ../../packages/my-package`. If symlinking
 is _not_ possible the package will be copied. In that case, the console will
 output `Mirrored from ../../packages/my-package`.
 
