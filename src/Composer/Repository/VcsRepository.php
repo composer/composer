@@ -188,7 +188,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                     continue;
                 }
 
-                if ($existingPackage = $this->findPackage($data['name'], $data['version_normalized'])) {
+                $tagPackageName = isset($data['name']) ? $data['name'] : $this->packageName;
+                if ($existingPackage = $this->findPackage($tagPackageName, $data['version_normalized'])) {
                     if ($verbose) {
                         $this->io->writeError('<warning>Skipped tag '.$tag.', it conflicts with an another tag ('.$existingPackage->getPrettyVersion().') as both resolve to '.$data['version_normalized'].' internally</warning>');
                     }
