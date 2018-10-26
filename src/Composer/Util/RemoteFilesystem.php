@@ -385,15 +385,18 @@ class RemoteFilesystem
 
         $statusCode = null;
         $contentType = null;
+        $locationHeader = null;
         if (!empty($http_response_header[0])) {
             $statusCode = $this->findStatusCode($http_response_header);
             $contentType = $this->findHeaderValue($http_response_header, 'content-type');
+            $locationHeader = $this->findHeaderValue($http_response_header, 'location');
         }
 
         // check for bitbucket login page asking to authenticate
         if ($originUrl === 'bitbucket.org'
             && !$this->isPublicBitBucketDownload($fileUrl)
             && substr($fileUrl, -4) === '.zip'
+            && (!$locationHeader || substr($locationHeader, -4) !== '.zip')
             && $contentType && preg_match('{^text/html\b}i', $contentType)
         ) {
             $result = false;
