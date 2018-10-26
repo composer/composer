@@ -25,7 +25,8 @@ class FactoryTest extends TestCase
         $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
         $ioMock->expects($this->once())
-            ->method("writeError");
+            ->method("writeError")
+            ->with($this->equalTo('<warning>You are running Composer with SSL/TLS protection disabled.</warning>'));
 
         $config = $this
             ->getMockBuilder('Composer\Config')
