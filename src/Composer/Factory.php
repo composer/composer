@@ -588,7 +588,7 @@ class Factory
         $disableTls = false;
         if ($config && $config->get('disable-tls') === true) {
             if (!$warned) {
-                $io->write('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
+                $io->writeError('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
             }
             $warned = true;
             $disableTls = true;
