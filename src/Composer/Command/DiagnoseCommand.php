@@ -121,8 +121,8 @@ EOT
                 $rate = $this->getGithubRateLimit('github.com');
                 $this->outputResult(true);
                 if (10 > $rate['remaining']) {
-                    $io->write('<warning>WARNING</warning>');
-                    $io->write(sprintf(
+                    $io->writeError('<warning>WARNING</warning>');
+                    $io->writeError(sprintf(
                         '<comment>Github has a rate limit on their API. '
                         . 'You currently have <options=bold>%u</options=bold> '
                         . 'out of <options=bold>%u</options=bold> requests left.' . PHP_EOL
