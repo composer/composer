@@ -295,7 +295,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     protected function preProcess(VcsDriverInterface $driver, array $data, $identifier)
     {
         // keep the name of the main identifier for all packages
-        $data['name'] = $this->packageName ?: $data['name'];
+        $dataPackageName = isset($data['name']) ? $data['name'] : null;
+        $data['name'] = $this->packageName ?: $dataPackageName;
 
         if (!isset($data['dist'])) {
             $data['dist'] = $driver->getDist($identifier);
