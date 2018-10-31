@@ -33,14 +33,14 @@ class RepositoryManager
     private $io;
     private $config;
     private $eventDispatcher;
-    private $rfs;
+    private $httpDownloader;
 
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, HttpDownloader $rfs = null)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher, HttpDownloader $httpDownloader)
     {
         $this->io = $io;
         $this->config = $config;
         $this->eventDispatcher = $eventDispatcher;
-        $this->rfs = $rfs;
+        $this->httpDownloader = $httpDownloader;
     }
 
     /**
@@ -128,7 +128,7 @@ class RepositoryManager
         $reflMethod = new \ReflectionMethod($class, '__construct');
         $params = $reflMethod->getParameters();
         if (isset($params[4]) && $params[4]->getClass() && $params[4]->getClass()->getName() === 'Composer\Util\HttpDownloader') {
-            return new $class($config, $this->io, $this->config, $this->eventDispatcher, $this->rfs);
+            return new $class($config, $this->io, $this->config, $this->eventDispatcher, $this->httpDownloader);
         }
 
         return new $class($config, $this->io, $this->config, $this->eventDispatcher);

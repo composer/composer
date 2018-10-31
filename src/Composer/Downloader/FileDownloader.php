@@ -51,12 +51,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @param IOInterface      $io              The IO instance
      * @param Config           $config          The config
+     * @param HttpDownloader   $httpDownloader  The remote filesystem
      * @param EventDispatcher  $eventDispatcher The event dispatcher
      * @param Cache            $cache           Cache instance
-     * @param HttpDownloader   $httpDownloader  The remote filesystem
      * @param Filesystem       $filesystem      The filesystem
      */
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher, Cache $cache, HttpDownloader $httpDownloader, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, Filesystem $filesystem = null)
     {
         $this->io = $io;
         $this->config = $config;

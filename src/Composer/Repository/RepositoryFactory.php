@@ -108,12 +108,12 @@ class RepositoryFactory
      * @param  IOInterface       $io
      * @param  Config            $config
      * @param  EventDispatcher   $eventDispatcher
-     * @param  HttpDownloader  $rfs
+     * @param  HttpDownloader    $httpDownloader
      * @return RepositoryManager
      */
-    public static function manager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, HttpDownloader $rfs = null)
+    public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
     {
-        $rm = new RepositoryManager($io, $config, $eventDispatcher, $rfs);
+        $rm = new RepositoryManager($io, $config, $eventDispatcher, $httpDownloader);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');

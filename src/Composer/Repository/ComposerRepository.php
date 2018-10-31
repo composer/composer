@@ -102,7 +102,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->versionParser = new VersionParser();
         $this->loader = new ArrayLoader($this->versionParser);
         if ($httpDownloader && $this->options) {
-            // TODO solve this somehow - should be sent a request time not on the instance
+            // TODO solve this somehow - should be sent at request time not on the instance
             $httpDownloader = clone $httpDownloader;
             $httpDownloader->setOptions($this->options);
         }
@@ -543,6 +543,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                             $response = $contents;
                         }
 
+                        if (!isset($response['packages'][$name])) {
+                            return;
+                        }
+
                         $uniqKeys = array('version', 'version_normalized', 'source', 'dist', 'time');
                         foreach ($response['packages'][$name] as $version) {
                             if (isset($version['versions'])) {
@@ -566,6 +570,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     }, function ($e) {
                         // TODO use ->done() above instead with react/promise 2.0
                         var_dump('Uncaught Ex', $e->getMessage());
+                        throw $e;
                     });
             }
         }
@@ -642,6 +647,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (!empty($data['providers']) || !empty($data['providers-includes'])) {
             $this->hasProviders = true;
+        }
+
+        // TODO this is for testing only, remove once packagist reports v2 protocol support
+        if (preg_match('{^https?://repo\.packagist\.org/?$}i', $this->url)) {
+            $this->repoConfig['force-lazy-providers'] = true;
         }
 
         // force values for packagist
@@ -927,6 +937,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $degradedMode =& $this->degradedMode;
 
         $accept = function ($response) use ($io, $url, $cache, $cacheKey) {
+            // package not found is acceptable for a v2 protocol repository
+            if ($response->getStatusCode() === 404) {
+                return array('packages' => array());
+            }
+
             $json = $response->getBody();
             if ($json === '' && $response->getStatusCode() === 304) {
                 return true;

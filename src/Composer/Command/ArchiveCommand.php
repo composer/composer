@@ -104,7 +104,7 @@ EOT
             $archiveManager = $composer->getArchiveManager();
         } else {
             $factory = new Factory;
-            $downloadManager = $factory->createDownloadManager($io, $config);
+            $downloadManager = $factory->createDownloadManager($io, $config, $factory->createHttpDownloader($io, $config));
             $archiveManager = $factory->createArchiveManager($config, $downloadManager);
         }
 

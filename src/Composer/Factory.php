@@ -325,14 +325,14 @@ class Factory
             $io->loadConfiguration($config);
         }
 
-        $rfs = self::createHttpDownloader($io, $config);
+        $httpDownloader = self::createHttpDownloader($io, $config);
 
         // initialize event dispatcher
         $dispatcher = new EventDispatcher($composer, $io);
         $composer->setEventDispatcher($dispatcher);
 
         // initialize repository manager
-        $rm = RepositoryFactory::manager($io, $config, $dispatcher, $rfs);
+        $rm = RepositoryFactory::manager($io, $config, $httpDownloader, $dispatcher);
         $composer->setRepositoryManager($rm);
 
         // load local repository
@@ -357,7 +357,7 @@ class Factory
 
         if ($fullLoad) {
             // initialize download manager
-            $dm = $this->createDownloadManager($io, $config, $dispatcher, $rfs);
+            $dm = $this->createDownloadManager($io, $config, $httpDownloader, $dispatcher);
             $composer->setDownloadManager($dm);
 
             // initialize autoload generator
@@ -451,7 +451,7 @@ class Factory
      * @param  EventDispatcher            $eventDispatcher
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, HttpDownloader $rfs = null)
+    public function createDownloadManager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
     {
         $cache = null;
         if ($config->get('cache-files-ttl') > 0) {
@@ -484,14 +484,14 @@ class Factory
         $dm->setDownloader('fossil', new Downloader\FossilDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config));
-        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
-        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
-        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $eventDispatcher, $cache, $rfs));
-        $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
-        $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
-        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache, $rfs));
-        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache, $rfs));
-        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $eventDispatcher, $cache, $rfs));
+        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
+        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
+        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
+        $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
+        $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
+        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
+        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
+        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
 
         return $dm;
     }
@@ -501,14 +501,8 @@ class Factory
      * @param  Downloader\DownloadManager $dm     Manager use to download sources
      * @return Archiver\ArchiveManager
      */
-    public function createArchiveManager(Config $config, Downloader\DownloadManager $dm = null)
+    public function createArchiveManager(Config $config, Downloader\DownloadManager $dm)
     {
-        if (null === $dm) {
-            $io = new IO\NullIO();
-            $io->loadConfiguration($config);
-            $dm = $this->createDownloadManager($io, $config);
-        }
-
         $am = new Archiver\ArchiveManager($dm);
         $am->addArchiver(new Archiver\ZipArchiver);
         $am->addArchiver(new Archiver\PharArchiver);

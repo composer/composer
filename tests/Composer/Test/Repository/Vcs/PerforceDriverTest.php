@@ -26,7 +26,7 @@ class PerforceDriverTest extends TestCase
     protected $config;
     protected $io;
     protected $process;
-    protected $remoteFileSystem;
+    protected $httpDownloader;
     protected $testPath;
     protected $driver;
     protected $repoConfig;
@@ -43,9 +43,9 @@ class PerforceDriverTest extends TestCase
         $this->repoConfig = $this->getTestRepoConfig();
         $this->io = $this->getMockIOInterface();
         $this->process = $this->getMockProcessExecutor();
-        $this->remoteFileSystem = $this->getMockRemoteFilesystem();
+        $this->httpDownloader = $this->getMockHttpDownloader();
         $this->perforce = $this->getMockPerforce();
-        $this->driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->process, $this->remoteFileSystem);
+        $this->driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->process, $this->httpDownloader);
         $this->overrideDriverInternalPerforce($this->perforce);
     }
 
@@ -56,7 +56,7 @@ class PerforceDriverTest extends TestCase
         $fs->removeDirectory($this->testPath);
         $this->driver = null;
         $this->perforce = null;
-        $this->remoteFileSystem = null;
+        $this->httpDownloader = null;
         $this->process = null;
         $this->io = null;
         $this->repoConfig = null;
@@ -99,9 +99,9 @@ class PerforceDriverTest extends TestCase
         return $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
     }
 
-    protected function getMockRemoteFilesystem()
+    protected function getMockHttpDownloader()
     {
-        return $this->getMockBuilder('Composer\Util\RemoteFilesystem')->disableOriginalConstructor()->getMock();
+        return $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
     }
 
     protected function getMockPerforce()
@@ -113,7 +113,7 @@ class PerforceDriverTest extends TestCase
 
     public function testInitializeCapturesVariablesFromRepoConfig()
     {
-        $driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->process, $this->remoteFileSystem);
+        $driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->process, $this->httpDownloader);
         $driver->initialize();
         $this->assertEquals(self::TEST_URL, $driver->getUrl());
         $this->assertEquals(self::TEST_DEPOT, $driver->getDepot());

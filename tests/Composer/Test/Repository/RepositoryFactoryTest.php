@@ -21,7 +21,9 @@ class RepositoryFactoryTest extends TestCase
     {
         $manager = RepositoryFactory::manager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            $this->getMockBuilder('Composer\Config')->getMock()
+            $this->getMockBuilder('Composer\Config')->getMock(),
+            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
+            $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
 
         $ref = new \ReflectionProperty($manager, 'repositoryClasses');

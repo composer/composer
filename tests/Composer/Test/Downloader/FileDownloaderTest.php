@@ -18,13 +18,13 @@ use Composer\Util\Filesystem;
 
 class FileDownloaderTest extends TestCase
 {
-    protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $rfs = null, $filesystem = null)
+    protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $httpDownloader = null, $filesystem = null)
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $config = $config ?: $this->getMockBuilder('Composer\Config')->getMock();
-        $rfs = $rfs ?: $this->getMockBuilder('Composer\Util\RemoteFilesystem')->disableOriginalConstructor()->getMock();
+        $httpDownloader = $httpDownloader ?: $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
 
-        return new FileDownloader($io, $config, $eventDispatcher, $cache, $rfs, $filesystem);
+        return new FileDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $filesystem);
     }
 
     /**

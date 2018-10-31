@@ -22,13 +22,13 @@ use Composer\Semver\VersionParser;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Link;
 use Composer\Package\CompletePackage;
-use Composer\Test\Mock\RemoteFilesystemMock;
+use Composer\Test\Mock\HttpDownloaderMock;
 
 class ChannelReaderTest extends TestCase
 {
     public function testShouldBuildPackagesFromPearSchema()
     {
-        $rfs = new RemoteFilesystemMock(array(
+        $rfs = new HttpDownloaderMock(array(
             'http://pear.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.1.xml'),
             'http://test.loc/rest11/c/categories.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/categories.xml'),
             'http://test.loc/rest11/c/Default/packagesinfo.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/packagesinfo.xml'),
@@ -50,11 +50,15 @@ class ChannelReaderTest extends TestCase
 
     public function testShouldSelectCorrectReader()
     {
-        $rfs = new RemoteFilesystemMock(array(
+        $rfs = new HttpDownloaderMock(array(
             'http://pear.1.0.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.0.xml'),
             'http://test.loc/rest10/p/packages.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/packages.xml'),
             'http://test.loc/rest10/p/http_client/info.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_client_info.xml'),
+            'http://test.loc/rest10/r/http_client/allreleases.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_client_allreleases.xml'),
+            'http://test.loc/rest10/r/http_client/deps.1.2.1.txt' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_client_deps.1.2.1.txt'),
             'http://test.loc/rest10/p/http_request/info.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_request_info.xml'),
+            'http://test.loc/rest10/r/http_request/allreleases.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_request_allreleases.xml'),
+            'http://test.loc/rest10/r/http_request/deps.1.4.0.txt' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_request_deps.1.4.0.txt'),
             'http://pear.1.1.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.1.xml'),
             'http://test.loc/rest11/c/categories.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/categories.xml'),
             'http://test.loc/rest11/c/Default/packagesinfo.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/packagesinfo.xml'),

@@ -13,13 +13,13 @@
 namespace Composer\Test\Repository\Pear;
 
 use Composer\Test\TestCase;
-use Composer\Test\Mock\RemoteFilesystemMock;
+use Composer\Test\Mock\HttpDownloaderMock;
 
 class ChannelRest11ReaderTest extends TestCase
 {
     public function testShouldBuildPackagesFromPearSchema()
     {
-        $rfs = new RemoteFilesystemMock(array(
+        $rfs = new HttpDownloaderMock(array(
             'http://pear.1.1.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.1.xml'),
             'http://test.loc/rest11/c/categories.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/categories.xml'),
             'http://test.loc/rest11/c/Default/packagesinfo.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/packagesinfo.xml'),

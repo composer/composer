@@ -16,7 +16,7 @@ use Composer\Downloader\XzDownloader;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 
 class XzDownloaderTest extends TestCase
 {
@@ -66,7 +66,7 @@ class XzDownloaderTest extends TestCase
             ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));
-        $downloader = new XzDownloader($io, $config, null, null, null, new RemoteFilesystem($io));
+        $downloader = new XzDownloader($io, $config, new HttpDownloader($io, $this->getMockBuilder('Composer\Config')->getMock()), null, null, null);
 
         try {
             $downloader->download($packageMock, $this->getUniqueTmpDirectory());

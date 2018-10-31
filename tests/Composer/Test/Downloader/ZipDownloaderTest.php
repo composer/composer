@@ -16,6 +16,7 @@ use Composer\Downloader\ZipDownloader;
 use Composer\Package\PackageInterface;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\HttpDownloader;
 
 class ZipDownloaderTest extends TestCase
 {
@@ -32,6 +33,8 @@ class ZipDownloaderTest extends TestCase
         $this->testDir = $this->getUniqueTmpDirectory();
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->config = $this->getMockBuilder('Composer\Config')->getMock();
+        $dlConfig = $this->getMockBuilder('Composer\Config')->getMock();
+        $this->httpDownloader = new HttpDownloader($this->io, $dlConfig);
     }
 
     public function tearDown()
@@ -65,18 +68,6 @@ class ZipDownloaderTest extends TestCase
 
         $this->config->expects($this->at(0))
             ->method('get')
-            ->with('disable-tls')
-            ->will($this->returnValue(false));
-        $this->config->expects($this->at(1))
-            ->method('get')
-            ->with('cafile')
-            ->will($this->returnValue(null));
-        $this->config->expects($this->at(2))
-            ->method('get')
-            ->with('capath')
-            ->will($this->returnValue(null));
-        $this->config->expects($this->at(3))
-            ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));
 
@@ -94,7 +85,7 @@ class ZipDownloaderTest extends TestCase
             ->will($this->returnValue(array()))
         ;
 
-        $downloader = new ZipDownloader($this->io, $this->config);
+        $downloader = new ZipDownloader($this->io, $this->config, $this->httpDownloader);
 
         $this->setPrivateProperty('hasSystemUnzip', false);
 
@@ -118,8 +109,7 @@ class ZipDownloaderTest extends TestCase
 
         $this->setPrivateProperty('hasSystemUnzip', false);
         $this->setPrivateProperty('hasZipArchive', true);
-        $downloader = new MockedZipDownloader($this->io, $this->config);
-
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader);
         $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
         $zipArchive->expects($this->at(0))
             ->method('open')
@@ -144,8 +134,7 @@ class ZipDownloaderTest extends TestCase
 
         $this->setPrivateProperty('hasSystemUnzip', false);
         $this->setPrivateProperty('hasZipArchive', true);
-        $downloader = new MockedZipDownloader($this->io, $this->config);
-
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader);
         $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
         $zipArchive->expects($this->at(0))
             ->method('open')
@@ -169,8 +158,7 @@ class ZipDownloaderTest extends TestCase
 
         $this->setPrivateProperty('hasSystemUnzip', false);
         $this->setPrivateProperty('hasZipArchive', true);
-        $downloader = new MockedZipDownloader($this->io, $this->config);
-
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader);
         $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
         $zipArchive->expects($this->at(0))
             ->method('open')
@@ -200,7 +188,7 @@ class ZipDownloaderTest extends TestCase
             ->method('execute')
             ->will($this->returnValue(1));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
         $downloader->extract('testfile.zip', 'vendor/dir');
     }
 
@@ -217,7 +205,7 @@ class ZipDownloaderTest extends TestCase
             ->method('execute')
             ->will($this->returnValue(0));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
         $downloader->extract('testfile.zip', 'vendor/dir');
     }
 
@@ -244,7 +232,7 @@ class ZipDownloaderTest extends TestCase
             ->method('extractTo')
             ->will($this->returnValue(true));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
         $downloader->extract('testfile.zip', 'vendor/dir');
     }
@@ -276,7 +264,7 @@ class ZipDownloaderTest extends TestCase
           ->method('extractTo')
           ->will($this->returnValue(false));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
         $downloader->extract('testfile.zip', 'vendor/dir');
     }
@@ -304,7 +292,7 @@ class ZipDownloaderTest extends TestCase
             ->method('extractTo')
             ->will($this->returnValue(false));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
         $downloader->extract('testfile.zip', 'vendor/dir');
     }
@@ -336,7 +324,7 @@ class ZipDownloaderTest extends TestCase
           ->method('extractTo')
           ->will($this->returnValue(false));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
         $downloader->extract('testfile.zip', 'vendor/dir');
     }

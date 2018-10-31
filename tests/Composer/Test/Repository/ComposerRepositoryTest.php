@@ -18,7 +18,7 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Test\Mock\FactoryMock;
 use Composer\Test\TestCase;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 
 class ComposerRepositoryTest extends TestCase
 {
@@ -37,6 +37,8 @@ class ComposerRepositoryTest extends TestCase
                 $repoConfig,
                 new NullIO,
                 FactoryMock::createConfig(),
+                $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock(),
+                $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock()
             ))
             ->getMock();
 
@@ -179,21 +181,29 @@ class ComposerRepositoryTest extends TestCase
             ),
         );
 
-        $rfs = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $rfs->expects($this->at(0))
-            ->method('getContents')
-            ->with('example.org', 'http://example.org/packages.json', false)
-            ->willReturn(json_encode(array('search' => '/search.json?q=%query%&type=%type%')));
+        $httpDownloader->expects($this->at(0))
+            ->method('get')
+            ->with($url = 'http://example.org/packages.json')
+            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode(array('search' => '/search.json?q=%query%&type=%type%'))));
 
-        $rfs->expects($this->at(1))
-            ->method('getContents')
-            ->with('example.org', 'http://example.org/search.json?q=foo&type=composer-plugin', false)
-            ->willReturn(json_encode($result));
+        $httpDownloader->expects($this->at(1))
+            ->method('get')
+            ->with($url = 'http://example.org/search.json?q=foo&type=composer-plugin')
+            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode($result)));
 
-        $repository = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), null, $rfs);
+        $httpDownloader->expects($this->at(2))
+            ->method('get')
+            ->with($url = 'http://example.org/search.json?q=foo&type=library')
+            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode(array())));
+
+        $repository = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), $eventDispatcher, $httpDownloader);
 
         $this->assertSame(
             array(array('name' => 'foo', 'description' => null)),

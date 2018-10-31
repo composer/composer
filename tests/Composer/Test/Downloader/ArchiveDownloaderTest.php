@@ -156,7 +156,11 @@ class ArchiveDownloaderTest extends TestCase
     {
         return $this->getMockForAbstractClass(
             'Composer\Downloader\ArchiveDownloader',
-            array($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getMockBuilder('Composer\Config')->getMock())
+            array(
+                $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
+                $config = $this->getMockBuilder('Composer\Config')->getMock(),
+                new \Composer\Util\HttpDownloader($io, $config),
+            )
         );
     }
 }

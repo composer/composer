@@ -147,7 +147,7 @@ class RemoteFilesystem
      * @param  string      $name    header name (case insensitive)
      * @return string|null
      */
-    public function findHeaderValue(array $headers, $name)
+    public static function findHeaderValue(array $headers, $name)
     {
         $value = null;
         foreach ($headers as $header) {
@@ -167,7 +167,7 @@ class RemoteFilesystem
      * @param  array    $headers array of returned headers like from getLastHeaders()
      * @return int|null
      */
-    public function findStatusCode(array $headers)
+    public static function findStatusCode(array $headers)
     {
         $value = null;
         foreach ($headers as $header) {

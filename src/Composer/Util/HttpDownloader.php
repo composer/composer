@@ -117,8 +117,8 @@ class HttpDownloader
 
         $origin = $this->getOrigin($job['request']['url']);
 
-        // TODO only send http/https through curl
-        if ($curl) {
+        // TODO experiment with allowing file:// through curl too
+        if ($curl && preg_match('{^https?://}i', $job['request']['url'])) {
             $resolver = function ($resolve, $reject) use (&$job, $curl, $origin) {
                 // start job
                 $url = $job['request']['url'];
@@ -141,11 +141,7 @@ class HttpDownloader
                 $job['status'] = HttpDownloader::STATUS_STARTED;
 
                 if ($job['request']['copyTo']) {
-                    if ($curl) {
-                        $result = $curl->download($origin, $url, $options, $job['request']['copyTo']);
-                    } else {
-                        $result = $rfs->copy($origin, $url, $job['request']['copyTo'], false /* TODO progress */, $options);
-                    }
+                    $result = $rfs->copy($origin, $url, $job['request']['copyTo'], false /* TODO progress */, $options);
 
                     $resolve($result);
                 } else {

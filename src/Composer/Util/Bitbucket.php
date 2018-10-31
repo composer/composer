@@ -25,7 +25,7 @@ class Bitbucket
     private $io;
     private $config;
     private $process;
-    private $remoteFilesystem;
+    private $httpDownloader;
     private $token = array();
     private $time;
 
@@ -37,15 +37,15 @@ class Bitbucket
      * @param IOInterface      $io               The IO instance
      * @param Config           $config           The composer configuration
      * @param ProcessExecutor  $process          Process instance, injectable for mocking
-     * @param RemoteFilesystem $remoteFilesystem Remote Filesystem, injectable for mocking
+     * @param HttpDownloader $httpDownloader Remote Filesystem, injectable for mocking
      * @param int              $time             Timestamp, injectable for mocking
      */
-    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null, $time = null)
+    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null, $time = null)
     {
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor($io);
-        $this->remoteFilesystem = $remoteFilesystem ?: Factory::createRemoteFilesystem($this->io, $config);
+        $this->httpDownloader = $httpDownloader ?: Factory::createHttpDownloader($this->io, $config);
         $this->time = $time;
     }
 
@@ -90,7 +90,7 @@ class Bitbucket
     private function requestAccessToken($originUrl)
     {
         try {
-            $json = $this->remoteFilesystem->getContents($originUrl, self::OAUTH2_ACCESS_TOKEN_URL, false, array(
+            $response = $this->httpDownloader->get(self::OAUTH2_ACCESS_TOKEN_URL, array(
                 'retry-auth-failure' => false,
                 'http' => array(
                     'method' => 'POST',
@@ -98,7 +98,7 @@ class Bitbucket
                 ),
             ));
 
-            $this->token = json_decode($json, true);
+            $this->token = $response->decodeJson();
         } catch (TransportException $e) {
             if ($e->getCode() === 400) {
                 $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');

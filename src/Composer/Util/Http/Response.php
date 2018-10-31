@@ -23,6 +23,9 @@ class Response
 
     public function __construct(array $request, $code, array $headers, $body)
     {
+        if (!isset($request['url'])) {
+            throw new \LogicException('url key missing from request array');
+        }
         $this->request = $request;
         $this->code = $code;
         $this->headers = $headers;

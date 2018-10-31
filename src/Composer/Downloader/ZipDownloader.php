@@ -36,10 +36,10 @@ class ZipDownloader extends ArchiveDownloader
     protected $process;
     private $zipArchiveObject;
 
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null, HttpDownloader $downloader = null)
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $downloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null)
     {
         $this->process = $process ?: new ProcessExecutor($io);
-        parent::__construct($io, $config, $eventDispatcher, $cache, $downloader);
+        parent::__construct($io, $config, $downloader, $eventDispatcher, $cache);
     }
 
     /**

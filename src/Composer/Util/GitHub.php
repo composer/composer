@@ -25,7 +25,7 @@ class GitHub
     protected $io;
     protected $config;
     protected $process;
-    protected $remoteFilesystem;
+    protected $httpDownloader;
 
     /**
      * Constructor.
@@ -33,14 +33,14 @@ class GitHub
      * @param IOInterface      $io               The IO instance
      * @param Config           $config           The composer configuration
      * @param ProcessExecutor  $process          Process instance, injectable for mocking
-     * @param RemoteFilesystem $remoteFilesystem Remote Filesystem, injectable for mocking
+     * @param HttpDownloader $httpDownloader Remote Filesystem, injectable for mocking
      */
-    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
+    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null)
     {
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor($io);
-        $this->remoteFilesystem = $remoteFilesystem ?: Factory::createRemoteFilesystem($this->io, $config);
+        $this->httpDownloader = $httpDownloader ?: Factory::createHttpDownloader($this->io, $config);
     }
 
     /**
@@ -104,7 +104,7 @@ class GitHub
         try {
             $apiUrl = ('github.com' === $originUrl) ? 'api.github.com/' : $originUrl . '/api/v3/';
 
-            $this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl, false, array(
+            $this->httpDownloader->get('https://'. $apiUrl, array(
                 'retry-auth-failure' => false,
             ));
         } catch (TransportException $e) {

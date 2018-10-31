@@ -12,13 +12,11 @@
 
 namespace Composer\Test\Mock;
 
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
+use Composer\Util\Http\Response;
 use Composer\Downloader\TransportException;
 
-/**
- * Remote filesystem mock
- */
-class RemoteFilesystemMock extends RemoteFilesystem
+class HttpDownloaderMock extends HttpDownloader
 {
     protected $contentMap;
 
@@ -30,10 +28,10 @@ class RemoteFilesystemMock extends RemoteFilesystem
         $this->contentMap = $contentMap;
     }
 
-    public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
+    public function get($fileUrl, $options = array())
     {
         if (!empty($this->contentMap[$fileUrl])) {
-            return $this->contentMap[$fileUrl];
+            return new Response(array('url' => $fileUrl), 200, array(), $this->contentMap[$fileUrl]);
         }
 
         throw new TransportException('The "'.$fileUrl.'" file could not be downloaded (NOT FOUND)', 404);
