@@ -364,7 +364,7 @@ class RemoteFilesystem
             }
             $result = false;
         }
-        if ($errorMessage && !ini_get('allow_url_fopen')) {
+        if ($errorMessage && !filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
             $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
         }
         restore_error_handler();
