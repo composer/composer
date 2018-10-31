@@ -23,13 +23,14 @@ php:
   - 7.0
   - 7.1
   - 7.2
+  - 7.3
   - nightly
 
 matrix:
   include:
     - php: 5.3
       dist: precise
-    - php: 7.2
+    - php: 7.3
       env: deps=high
   fast_finish: true
   allow_failures:
@@ -72,4 +73,4 @@ deploy:
   on:
     tags: true
     repo: composer/composer
-    php:  '7.1'
+    php:  '7.2'

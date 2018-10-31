@@ -122,8 +122,8 @@ EOT
                 if (!is_array($rate)) {
                     $this->outputResult($rate);
                 } elseif (10 > $rate['remaining']) {
-                    $io->write('<warning>WARNING</warning>');
-                    $io->write(sprintf(
+                    $io->writeError('<warning>WARNING</warning>');
+                    $io->writeError(sprintf(
                         '<comment>Github has a rate limit on their API. '
                         . 'You currently have <options=bold>%u</options=bold> '
                         . 'out of <options=bold>%u</options=bold> requests left.' . PHP_EOL
@@ -716,8 +716,8 @@ EOT
      *
      * @return bool|string
      */
-    private function checkConnectivity() {
-
+    private function checkConnectivity() 
+    {
         if (!ini_get('allow_url_fopen')) {
             $result = '<info>Skipped because allow_url_fopen is missing.</info>';
             return $result;

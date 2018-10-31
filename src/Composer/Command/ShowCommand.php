@@ -74,6 +74,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
                 new InputOption('latest', 'l', InputOption::VALUE_NONE, 'Show the latest version'),
                 new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show the latest version but only for packages that are outdated'),
+                new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it with the --outdated option if you don\'t want to be informed about new versions of some packages.'),
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
@@ -105,6 +106,8 @@ EOT
 
         if ($input->getOption('outdated')) {
             $input->setOption('latest', true);
+        } elseif ($input->getOption('ignore')) {
+            $io->writeError('<warning>You are using the option "ignore" for action other than "outdated", it will be ignored.</warning>');
         }
 
         if ($input->getOption('direct') && ($input->getOption('all') || $input->getOption('available') || $input->getOption('platform'))) {
@@ -333,6 +336,7 @@ EOT
         $showAllTypes = $input->getOption('all');
         $showLatest = $input->getOption('latest');
         $showMinorOnly = $input->getOption('minor-only');
+        $ignoredPackages = array_map('strtolower', $input->getOption('ignore'));
         $indent = $showAllTypes ? '  ' : '';
         $latestPackages = array();
         $exitCode = 0;
@@ -372,7 +376,11 @@ EOT
                         if ($showLatest && isset($latestPackages[$package->getPrettyName()])) {
                             $latestPackage = $latestPackages[$package->getPrettyName()];
                         }
-                        if ($input->getOption('outdated') && $latestPackage && $latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && !$latestPackage->isAbandoned()) {
+
+                        // Determine if Composer is checking outdated dependencies and if current package should trigger non-default exit code
+                        $packageIsUpToDate = $latestPackage && $latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && !$latestPackage->isAbandoned();
+                        $packageIsIgnored = \in_array($package->getPrettyName(), $ignoredPackages, true);
+                        if ($input->getOption('outdated') && ($packageIsUpToDate || $packageIsIgnored)) {
                             continue;
                         } elseif ($input->getOption('outdated') || $input->getOption('strict')) {
                             $hasOutdatedPackages = true;
