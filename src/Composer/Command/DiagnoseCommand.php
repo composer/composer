@@ -122,8 +122,8 @@ EOT
                 if (!is_array($rate)) {
                     $this->outputResult($rate);
                 } elseif (10 > $rate['remaining']) {
-                    $io->writeError('<warning>WARNING</warning>');
-                    $io->writeError(sprintf(
+                    $io->write('<warning>WARNING</warning>');
+                    $io->write(sprintf(
                         '<comment>Github has a rate limit on their API. '
                         . 'You currently have <options=bold>%u</options=bold> '
                         . 'out of <options=bold>%u</options=bold> requests left.' . PHP_EOL
