@@ -1,3 +1,12 @@
+### [1.7.3] 2018-11-01
+
+  * Fixed handling of replace/conflict rules. This may affect dependency resolution in some edge cases.
+  * Fixed Bitbucket API support and migrated all calls to API v2 as v1 is deprecated
+  * Fixed support for lib-openssl 1.1.1 having only lowercase algorithm names
+  * Fixed escaping of URLs in Perforce and Svn drivers
+  * Fixed `show` command not respecting `--path` when a single package name was given
+  * Fixed regression in 1.7.2's handling of metapackages
+
 ### [1.7.2] 2018-08-16
 
   * Fixed reporting of authentication/rate limiting issues for GitHub API access
@@ -687,6 +696,7 @@
 
   * Initial release
 
+[1.7.3]: https://github.com/composer/composer/compare/1.7.2...1.7.3
 [1.7.2]: https://github.com/composer/composer/compare/1.7.1...1.7.2
 [1.7.1]: https://github.com/composer/composer/compare/1.7.0...1.7.1
 [1.7.0]: https://github.com/composer/composer/compare/1.7.0-RC...1.7.0
