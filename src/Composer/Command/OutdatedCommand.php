@@ -36,6 +36,7 @@ class OutdatedCommand extends ShowCommand
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
+                new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it with the --outdated option if you don\'t want to be informed about new versions of some packages.'),
             ))
             ->setHelp(
                 <<<EOT
@@ -77,6 +78,7 @@ EOT
             $args['--minor-only'] = true;
         }
         $args['--format'] = $input->getOption('format');
+        $args['--ignore'] = $input->getOption('ignore');
 
         $input = new ArrayInput($args);
 
