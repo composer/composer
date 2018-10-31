@@ -474,10 +474,10 @@ EOT
 
         if ($hadError) {
             $io->write('<error>FAIL</error>');
-            $this->exitCode = 2;
+            $this->exitCode = max($this->exitCode, 2);
         } elseif ($hadWarning) {
             $io->write('<warning>WARNING</warning>');
-            $this->exitCode = 1;
+            $this->exitCode = max($this->exitCode, 1);
         }
 
         if ($result) {
@@ -716,7 +716,7 @@ EOT
      *
      * @return bool|string
      */
-    private function checkConnectivity() 
+    private function checkConnectivity()
     {
         if (!ini_get('allow_url_fopen')) {
             $result = '<info>Skipped because allow_url_fopen is missing.</info>';
