@@ -481,7 +481,7 @@ EOT
             $errors['iconv_mbstring'] = true;
         }
 
-        if (!ini_get('allow_url_fopen')) {
+        if (!filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
             $errors['allow_url_fopen'] = true;
         }
 
@@ -505,7 +505,7 @@ EOT
             $warnings['openssl_version'] = true;
         }
 
-        if (!defined('HHVM_VERSION') && !extension_loaded('apcu') && ini_get('apc.enable_cli')) {
+        if (!defined('HHVM_VERSION') && !extension_loaded('apcu') && filter_var(ini_get('apc.enable_cli'), FILTER_VALIDATE_BOOLEAN)) {
             $warnings['apc_cli'] = true;
         }
 
@@ -528,7 +528,7 @@ EOT
             }
         }
 
-        if (ini_get('xdebug.profiler_enabled')) {
+        if (filter_var(ini_get('xdebug.profiler_enabled'), FILTER_VALIDATE_BOOLEAN)) {
             $warnings['xdebug_profile'] = true;
         } elseif (extension_loaded('xdebug')) {
             $warnings['xdebug_loaded'] = true;
