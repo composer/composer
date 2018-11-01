@@ -60,6 +60,9 @@ class Application extends BaseApplication
     private $hasPluginCommands = false;
     private $disablePluginsByDefault = false;
 
+    /**
+     * Create the application instance.
+     */
     public function __construct()
     {
         static $shutdownRegistered = false;
@@ -374,6 +377,11 @@ class Application extends BaseApplication
         return $this->io;
     }
 
+    /**
+     * Get the console app help.
+     * 
+     * @return string
+     */
     public function getHelp()
     {
         return self::$logo . parent::getHelp();
@@ -451,6 +459,11 @@ class Application extends BaseApplication
         return $definition;
     }
 
+    /**
+     * Get plugin commands.
+     * 
+     * @return array
+     */
     private function getPluginCommands()
     {
         $commands = array();

@@ -55,6 +55,12 @@ class HtmlOutputFormatter extends OutputFormatter
         parent::__construct(true, $styles);
     }
 
+    /**
+     * Format message.
+     * 
+     * @param  string $message
+     * @return string
+     */
     public function format($message)
     {
         $formatted = parent::format($message);
@@ -64,6 +70,12 @@ class HtmlOutputFormatter extends OutputFormatter
         return preg_replace_callback("{\033\[([0-9;]+)m(.*?)\033\[(?:".$clearEscapeCodes.";)*?".$clearEscapeCodes."m}s", array($this, 'formatHtml'), $formatted);
     }
 
+    /**
+     * Format html message.
+     * 
+     * @param  array $matches
+     * @return string
+     */
     private function formatHtml($matches)
     {
         $out = '<span style="';
