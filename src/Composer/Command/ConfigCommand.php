@@ -57,7 +57,7 @@ class ConfigCommand extends BaseCommand
     protected $authConfigSource;
 
     /**
-     * {@inheritDoc}
+     * Configures the current command.
      */
     protected function configure()
     {
@@ -186,7 +186,11 @@ EOT
     }
 
     /**
-     * {@inheritDoc}
+     * Executes the current command.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|int null or 0 if everything went fine, or an error code
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -625,6 +629,16 @@ EOT
         throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
     }
 
+    /**
+     * single value handle.
+     * 
+     * @param  string $key
+     * @param  array  $callbacks
+     * @param  array  $values
+     * @param  string $method
+     * @return mixed
+     * @throws \RuntimeException
+     */
     protected function handleSingleValue($key, array $callbacks, array $values, $method)
     {
         list($validator, $normalizer) = $callbacks;
@@ -642,6 +656,16 @@ EOT
         return call_user_func(array($this->configSource, $method), $key, $normalizer($values[0]));
     }
 
+    /**
+     * Multi value handle.
+     * 
+     * @param  string $key
+     * @param  array  $callbacks
+     * @param  array  $values
+     * @param  string $method
+     * @return mixed
+     * @throws \RuntimeException
+     */
     protected function handleMultiValue($key, array $callbacks, array $values, $method)
     {
         list($validator, $normalizer) = $callbacks;

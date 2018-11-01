@@ -55,6 +55,9 @@ class CreateProjectCommand extends BaseCommand
      */
     protected $suggestedPackagesReporter;
 
+    /**
+     * Configures the current command.
+     */
     protected function configure()
     {
         $this
@@ -109,6 +112,13 @@ EOT
         ;
     }
 
+    /**
+     * Executes the current command.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|int null or 0 if everything went fine, or an error code
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $config = Factory::createConfig();
@@ -145,6 +155,28 @@ EOT
         );
     }
 
+    /**
+     * install project.
+     * 
+     * @param  \Composer\IO\IOInterface                        $io
+     * @param  \Composer\Config                                $config
+     * @param  \Symfony\Component\Console\Input\InputInterface $input
+     * @param  string                                          $packageName
+     * @param  null|string                                     $directory
+     * @param  null|string                                     $packageVersion
+     * @param  string                                          $stability
+     * @param  bool                                            $preferSource
+     * @param  bool                                            $preferDist
+     * @param  bool                                            $installDevPackages
+     * @param  null|string                                     $repository
+     * @param  bool                                            $disablePlugins
+     * @param  bool                                            $noScripts
+     * @param  bool                                            $noProgress
+     * @param  bool                                            $noInstall
+     * @param  bool                                            $ignorePlatformReqs
+     * @param  bool                                            $secureHttp
+     * @return int
+     */
     public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true)
     {
         $oldCwd = getcwd();
@@ -257,6 +289,28 @@ EOT
         return 0;
     }
 
+    /**
+     * install root project.
+     * 
+     * @param  \Composer\IO\IOInterface                        $io
+     * @param  \Composer\Config                                $config
+     * @param  \Symfony\Component\Console\Input\InputInterface $input
+     * @param  string                                          $packageName
+     * @param  null|string                                     $directory
+     * @param  null|string                                     $packageVersion
+     * @param  string                                          $stability
+     * @param  bool                                            $preferSource
+     * @param  bool                                            $preferDist
+     * @param  bool                                            $installDevPackages
+     * @param  null|string                                     $repository
+     * @param  bool                                            $disablePlugins
+     * @param  bool                                            $noScripts
+     * @param  bool                                            $noProgress
+     * @param  bool                                            $noInstall
+     * @param  bool                                            $ignorePlatformReqs
+     * @param  bool                                            $secureHttp
+     * @return bool
+     */
     protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $ignorePlatformReqs = false, $secureHttp = true)
     {
         if (!$secureHttp) {
@@ -370,6 +424,13 @@ EOT
         return $installedFromVcs;
     }
 
+    /**
+     * Create download manager
+     * 
+     * @param  \Composer\IO\IOInterface $io
+     * @param  \Composer\Config         $config
+     * @return \Composer\Downloader\DownloadManager
+     */
     protected function createDownloadManager(IOInterface $io, Config $config)
     {
         $factory = new Factory();
@@ -377,6 +438,11 @@ EOT
         return $factory->createDownloadManager($io, $config);
     }
 
+    /**
+     * Create installation manager.
+     *
+     * @return \Composer\Installer\InstallationManager
+     */
     protected function createInstallationManager()
     {
         return new InstallationManager();

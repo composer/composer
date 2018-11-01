@@ -23,6 +23,9 @@ use Composer\Repository\PlatformRepository;
 
 class CheckPlatformReqsCommand extends BaseCommand
 {
+    /**
+     * Configures the current command.
+     */
     protected function configure()
     {
         $this->setName('check-platform-reqs')
@@ -40,6 +43,13 @@ EOT
             );
     }
 
+    /**
+     * Executes the current command.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|int null or 0 if everything went fine, or an error code
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer();
@@ -127,6 +137,12 @@ EOT
         return $exitCode;
     }
 
+    /**
+     * Print table.
+     * 
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param array                                             $results
+     */
     protected function printTable(OutputInterface $output, $results)
     {
         $table = array();

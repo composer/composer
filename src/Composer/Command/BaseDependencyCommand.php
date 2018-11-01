@@ -243,6 +243,11 @@ class BaseDependencyCommand extends BaseCommand
         }
     }
 
+    /**
+     * Write tree line.
+     * 
+     * @param string $line
+     */
     private function writeTreeLine($line)
     {
         $io = $this->getIO();

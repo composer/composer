@@ -29,7 +29,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class HomeCommand extends BaseCommand
 {
     /**
-     * {@inheritDoc}
+     * Configures the current command.
      */
     protected function configure()
     {
@@ -54,7 +54,11 @@ EOT
     }
 
     /**
-     * {@inheritDoc}
+     * Executes the current command.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|int null or 0 if everything went fine, or an error code
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -95,6 +99,14 @@ EOT
         return $return;
     }
 
+    /**
+     * package handle.
+     * 
+     * @param  \Composer\Package\CompletePackageInterface $package
+     * @param  bool                                       $showHomepage
+     * @param  bool                                       $showOnly
+     * @return bool
+     */
     private function handlePackage(CompletePackageInterface $package, $showHomepage, $showOnly)
     {
         $support = $package->getSupport();

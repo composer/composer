@@ -36,6 +36,9 @@ class SelfUpdateCommand extends BaseCommand
     const HOMEPAGE = 'getcomposer.org';
     const OLD_INSTALL_EXT = '-old.phar';
 
+    /**
+     * Configures the current command.
+     */
     protected function configure()
     {
         $this
@@ -65,6 +68,13 @@ EOT
         ;
     }
 
+    /**
+     * Executes the current command.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|int null or 0 if everything went fine, or an error code
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $config = Factory::createConfig();
@@ -255,6 +265,12 @@ TAGSPUBKEY
         }
     }
 
+    /**
+     * Fetch keys.
+     * 
+     * @param \Composer\IO\IOInterface $io
+     * @param \Composer\Config         $config
+     */
     protected function fetchKeys(IOInterface $io, Config $config)
     {
         if (!$io->isInteractive()) {
@@ -300,6 +316,14 @@ TAGSPUBKEY
         $io->write('Public keys stored in '.$config->get('home'));
     }
 
+    /**
+     * Rollback composer.
+     * 
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @param  string                                            $rollbackDir
+     * @param  string                                            $localFilename
+     * @return int
+     */
     protected function rollback(OutputInterface $output, $rollbackDir, $localFilename)
     {
         $rollbackVersion = $this->getLastBackupVersion($rollbackDir);
@@ -362,6 +386,12 @@ TAGSPUBKEY
         }
     }
 
+    /**
+     * Clean backups.
+     * 
+     * @param string      $rollbackDir
+     * @param null|string $except
+     */
     protected function cleanBackups($rollbackDir, $except = null)
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
@@ -378,6 +408,12 @@ TAGSPUBKEY
         }
     }
 
+    /**
+     * Get last backip version.
+     * 
+     * @param  string $roolbackDir
+     * @return bool|string
+     */
     protected function getLastBackupVersion($rollbackDir)
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
@@ -391,6 +427,12 @@ TAGSPUBKEY
         return false;
     }
 
+    /**
+     * Get old installation finder.
+     * 
+     * @param  string $rollbackDir
+     * @return \Symfony\Component\Finder\Finder
+     */
     protected function getOldInstallationFinder($rollbackDir)
     {
         $finder = Finder::create()

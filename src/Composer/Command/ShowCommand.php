@@ -55,6 +55,9 @@ class ShowCommand extends BaseCommand
     /** @var Pool */
     private $pool;
 
+    /**
+     * Configures the current command.
+     */
     protected function configure()
     {
         $this
@@ -90,6 +93,13 @@ EOT
         ;
     }
 
+    /**
+     * Executes the current command.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|int null or 0 if everything went fine, or an error code
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->versionParser = new VersionParser;
@@ -506,6 +516,11 @@ EOT
         return $exitCode;
     }
 
+    /**
+     * Get root requires.
+     * 
+     * @return array
+     */
     protected function getRootRequires()
     {
         $rootPackage = $this->getComposer()->getPackage();
@@ -516,6 +531,14 @@ EOT
         );
     }
 
+    /**
+     * Get version style.
+     * 
+     * @param  \Composer\Package\PackageInterface $latestPackage
+     * @param  \Composer\Package\PackageInterface $package
+     * 
+     * @return string
+     */
     protected function getVersionStyle(PackageInterface $latestPackage, PackageInterface $package)
     {
         return $this->updateStatusToVersionStyle($this->getUpdateStatus($latestPackage, $package));
@@ -929,6 +952,12 @@ EOT
         return $children;
     }
 
+    /**
+     * Update status to version style.
+     * 
+     * @param  string $updateStatus
+     * @return string
+     */
     private function updateStatusToVersionStyle($updateStatus)
     {
         // 'up-to-date' is printed green
@@ -937,6 +966,13 @@ EOT
         return str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('info', 'highlight', 'comment'), $updateStatus);
     }
 
+    /**
+     * Get update status.
+     * 
+     * @param  \Composer\Package\PackageInterface $latestPackage
+     * @param  \Composer\Package\PackageInterface $package
+     * @return string
+     */
     private function getUpdateStatus(PackageInterface $latestPackage, PackageInterface $package)
     {
         if ($latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion()) {
@@ -956,6 +992,11 @@ EOT
         return 'update-possible';
     }
 
+    /**
+     * Trite tree line.
+     * 
+     * @param string $line
+     */
     private function writeTreeLine($line)
     {
         $io = $this->getIO();
@@ -1004,6 +1045,12 @@ EOT
         return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability);
     }
 
+    /**
+     * Get pool.
+     * 
+     * @param  \Composer\Composer $composer
+     * @return \Composer\DependencyResolver\Pool
+     */
     private function getPool(Composer $composer)
     {
         if (!$this->pool) {

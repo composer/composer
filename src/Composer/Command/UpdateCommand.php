@@ -30,6 +30,9 @@ use Symfony\Component\Console\Question\Question;
  */
 class UpdateCommand extends BaseCommand
 {
+    /**
+     * Configures the current command.
+     */
     protected function configure()
     {
         $this
@@ -86,6 +89,13 @@ EOT
         ;
     }
 
+    /**
+     * Executes the current command.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|int null or 0 if everything went fine, or an error code
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = $this->getIO();
@@ -162,6 +172,17 @@ EOT
         return $install->run();
     }
 
+    /**
+     * Get packages interactively.
+     * 
+     * @param  \Composer\IO\IOInterface                          $io
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @param  \Composer\Composer                                $composer
+     * @param  array                                             $packages
+     * @return array
+     * @throws \InvalidArgumentException|\RuntimeException
+     */
     private function getPackagesInteractively(IOInterface $io, InputInterface $input, OutputInterface $output, Composer $composer, array $packages)
     {
         if (!$input->isInteractive()) {

@@ -37,6 +37,9 @@ class RequireCommand extends InitCommand
     private $file;
     private $composerBackup;
 
+    /**
+     * Configures the current command.
+     */
     protected function configure()
     {
         $this
@@ -78,6 +81,13 @@ EOT
         ;
     }
 
+    /**
+     * Executes the current command.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|int null or 0 if everything went fine, or an error code
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if (function_exists('pcntl_async_signals')) {
@@ -201,6 +211,15 @@ EOT
         return $status;
     }
 
+    /**
+     * Update file cleanly.
+     * 
+     * @param  \Composer\Json\JsonFile $json
+     * @param  array                   $new
+     * @param  string                  $requireKey
+     * @param  bool                    $sortPackages
+     * @return bool
+     */
     private function updateFileCleanly($json, array $new, $requireKey, $removeKey, $sortPackages)
     {
         $contents = file_get_contents($json->getPath());
@@ -221,11 +240,21 @@ EOT
         return true;
     }
 
+    /**
+     * interact handle.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return void
+     */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         return;
     }
 
+    /**
+     * Revert composer file.
+     */
     public function revertComposerFile()
     {
         $io = $this->getIO();

@@ -44,6 +44,9 @@ class DiagnoseCommand extends BaseCommand
     /** @var int */
     protected $exitCode = 0;
 
+    /**
+     * Configures the current command.
+     */
     protected function configure()
     {
         $this
@@ -61,7 +64,11 @@ EOT
     }
 
     /**
-     * {@inheritdoc}
+     * Executes the current command.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|int null or 0 if everything went fine, or an error code
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -174,6 +181,11 @@ EOT
         return $this->exitCode;
     }
 
+    /**
+     * Check composer schema.
+     * 
+     * @return bool|string
+     */
     private function checkComposerSchema()
     {
         $validator = new ConfigValidator($this->getIO());
@@ -198,6 +210,11 @@ EOT
         return true;
     }
 
+    /**
+     * Check Git
+     * 
+     * @return bool|string
+     */
     private function checkGit()
     {
         $this->process->execute('git config color.ui', $output);
@@ -208,6 +225,14 @@ EOT
         return true;
     }
 
+    /**
+     * Check http.
+     * 
+     * @param string           $proto
+     * @param \Composer\Config $config
+     * 
+     * @return array|bool
+     */
     private function checkHttp($proto, Config $config)
     {
         $result = $this->checkConnectivity();
@@ -244,6 +269,12 @@ EOT
         return true;
     }
 
+    /**
+     * Check http proxy.
+     * 
+     * @return string|bool
+     * @throws \Exception
+     */
     private function checkHttpProxy()
     {
         $result = $this->checkConnectivity();
@@ -333,6 +364,15 @@ EOT
         return true;
     }
 
+    /**
+     * Check git oauth.
+     * 
+     * @param string $domain
+     * @param string $token
+     * 
+     * @return string|array
+     * @throws \Exception
+     */
     private function checkGithubOauth($domain, $token)
     {
         $result = $this->checkConnectivity();
@@ -380,6 +420,12 @@ EOT
         return $data['resources']['core'];
     }
 
+    /**
+     * Check disk space
+     * 
+     * @param \Composer\Config $config
+     * @return string|bool
+     */
     private function checkDiskSpace($config)
     {
         $minSpaceFree = 1024 * 1024;
@@ -392,6 +438,12 @@ EOT
         return true;
     }
 
+    /**
+     * Check pub keys.
+     * 
+     * @param \Composer\Config $config
+     * @return array|bool
+     */
     private function checkPubKeys($config)
     {
         $home = $config->get('home');
@@ -421,6 +473,12 @@ EOT
         return $errors ?: true;
     }
 
+    /**
+     * Check version.
+     * 
+     * @param \Composer\Config $config
+     * @return array|bool
+     */
     private function checkVersion($config)
     {
         $result = $this->checkConnectivity();
@@ -487,6 +545,11 @@ EOT
         }
     }
 
+    /**
+     * Check platform.
+     * 
+     * @return array|string
+     */
     private function checkPlatform()
     {
         $output = '';

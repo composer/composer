@@ -34,6 +34,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ArchiveCommand extends BaseCommand
 {
+    /**
+     * Configures the current command.
+     */
     protected function configure()
     {
         $this
@@ -61,6 +64,13 @@ EOT
         ;
     }
 
+    /**
+     * Executes the current command.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|int null or 0 if everything went fine, or an error code
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $config = Factory::createConfig();
@@ -98,6 +108,20 @@ EOT
         return $returnCode;
     }
 
+    /**
+     * Archive a package.
+     * 
+     * @param  \Composer\IO\IOInterface $io
+     * @param  \Composer\Config         $config
+     * @param  string                   $packageName
+     * @param  string                   $version
+     * @param  string                   $format
+     * @param  string                   $dest
+     * @param  string                   $fileName
+     * @param  bool                     $ignoreFilters
+     * @param  \Composer\Composer       $composer
+     * @return int
+     */
     protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.', $fileName = null, $ignoreFilters = false, Composer $composer = null)
     {
         if ($composer) {
@@ -129,6 +153,14 @@ EOT
         return 0;
     }
 
+    /**
+     * Select package.
+     * 
+     * @param  \Composer\IO\IOInterface $io
+     * @param  string                   $packageName
+     * @param  string                   $version
+     * @return \Composer\Package\PackageInterface
+     */
     protected function selectPackage(IOInterface $io, $packageName, $version = null)
     {
         $io->writeError('<info>Searching for the specified package.</info>');

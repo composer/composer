@@ -44,7 +44,7 @@ class InitCommand extends BaseCommand
     private $pools;
 
     /**
-     * {@inheritdoc}
+     * Configures the current command.
      */
     protected function configure()
     {
@@ -77,7 +77,11 @@ EOT
     }
 
     /**
-     * {@inheritdoc}
+     * Executes the current command.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|int null or 0 if everything went fine, or an error code
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -148,7 +152,12 @@ EOT
     }
 
     /**
-     * {@inheritdoc}
+     * interact handle.
+     *
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @return null|void|string
+     * @throws \InvalidArgumentException
      */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
@@ -364,11 +373,22 @@ EOT
         );
     }
 
+    /**
+     * Find packages.
+     * 
+     * @param  string $name
+     * @return array
+     */
     protected function findPackages($name)
     {
         return $this->getRepos()->search($name);
     }
 
+    /**
+     * Get repos.
+     * 
+     * @return \Composer\Repository\CompositeRepository
+     */
     protected function getRepos()
     {
         if (!$this->repos) {
@@ -381,6 +401,17 @@ EOT
         return $this->repos;
     }
 
+    /**
+     * Determine requirements.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface   $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface $output
+     * @param  array                                             $requires
+     * @param  null|string                                       $phpVersion
+     * @param  string                                            $preferredStability
+     * @return array
+     * @throws \Exception
+     */
     protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null, $preferredStability = 'stable')
     {
         if ($requires) {
@@ -526,11 +557,23 @@ EOT
         return $requires;
     }
 
+    /**
+     * Format authors.
+     * 
+     * @param  string $author
+     * @return array
+     */
     protected function formatAuthors($author)
     {
         return array($this->parseAuthorString($author));
     }
 
+    /**
+     * Format requirements.
+     * 
+     * @param  array $requirements
+     * @return array
+     */
     protected function formatRequirements(array $requirements)
     {
         $requires = array();
@@ -542,6 +585,11 @@ EOT
         return $requires;
     }
 
+    /**
+     * Get git configure.
+     * 
+     * @return array
+     */
     protected function getGitConfig()
     {
         if (null !== $this->gitConfig) {
@@ -601,6 +649,12 @@ EOT
         return false;
     }
 
+    /**
+     * Normalize requirements
+     * 
+     * @param  array $requirements
+     * @return array
+     */
     protected function normalizeRequirements(array $requirements)
     {
         $parser = new VersionParser();
@@ -608,6 +662,12 @@ EOT
         return $parser->parseNameVersionPairs($requirements);
     }
 
+    /**
+     * Add vendor ignore.
+     * 
+     * @param string $ignoreFile
+     * @param string $vendor
+     */
     protected function addVendorIgnore($ignoreFile, $vendor = '/vendor/')
     {
         $contents = "";
@@ -622,6 +682,12 @@ EOT
         file_put_contents($ignoreFile, $contents . $vendor. "\n");
     }
 
+    /**
+     * Validate email.
+     * 
+     * @param  string $email
+     * @return bool
+     */
     protected function isValidEmail($email)
     {
         // assume it's valid if we can't validate it
@@ -637,6 +703,13 @@ EOT
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 
+    /**
+     * Get pool.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface $input
+     * @param  null|string                                     $minimumStability
+     * @return \Composer\DependencyResolver\Pool
+     */
     private function getPool(InputInterface $input, $minimumStability = null)
     {
         $key = $minimumStability ?: 'default';
@@ -649,6 +722,12 @@ EOT
         return $this->pools[$key];
     }
 
+    /**
+     * Get minimun stability.
+     * 
+     * @param  \Symfony\Component\Console\Input\InputInterface $input
+     * @return string
+     */
     private function getMinimumStability(InputInterface $input)
     {
         if ($input->hasOption('stability')) {
@@ -750,6 +829,12 @@ EOT
         );
     }
 
+    /**
+     * Find similar.
+     * 
+     * @param string $package
+     * @return array
+     */
     private function findSimilar($package)
     {
         try {

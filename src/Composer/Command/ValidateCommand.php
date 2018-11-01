@@ -121,6 +121,19 @@ EOT
         return $exitCode;
     }
 
+    /**
+     * Output ressult.
+     * 
+     * @param \Composer\IO\IOInterface $io
+     * @param string                   $name
+     * @param array                    &$errors
+     * @param array                    &$warnings
+     * @param bool                     $checkPublish
+     * @param array                    $publishErrors
+     * @param bool                     $checkLock
+     * @param array                    $lockErrors
+     * @param bool                     $printSchemaUrl
+     */
     private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false)
     {
         if (!$errors && !$publishErrors && !$warnings) {
