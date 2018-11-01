@@ -57,6 +57,11 @@ class ClassLoader
     private $missingClasses = array();
     private $apcuPrefix;
 
+    /**
+     * Get prefixes.
+     *
+     * @return array
+     */
     public function getPrefixes()
     {
         if (!empty($this->prefixesPsr0)) {
@@ -66,27 +71,49 @@ class ClassLoader
         return array();
     }
 
+    /**
+     * Get dirs prefixes for PSR-4.
+     *
+     * @return array
+     */
     public function getPrefixesPsr4()
     {
         return $this->prefixDirsPsr4;
     }
 
+    /**
+     * Get fallback dirs fpr PSR-0.
+     * 
+     * @return array
+     */
     public function getFallbackDirs()
     {
         return $this->fallbackDirsPsr0;
     }
 
+    /**
+     * Get fallback dirs for PSR-4.
+     *
+     * @return array
+     */
     public function getFallbackDirsPsr4()
     {
         return $this->fallbackDirsPsr4;
     }
 
+    /**
+     * Get class map.
+     *
+     * @return array
+     */
     public function getClassMap()
     {
         return $this->classMap;
     }
 
     /**
+     * Add class map.
+     *
      * @param array $classMap Class to filename map
      */
     public function addClassMap(array $classMap)
@@ -367,6 +394,13 @@ class ClassLoader
         return $file;
     }
 
+    /**
+     * Find file with extension.
+     *
+     * @param  string $class
+     * @param  string $ext
+     * @return string
+     */
     private function findFileWithExtension($class, $ext)
     {
         // PSR-4 lookup

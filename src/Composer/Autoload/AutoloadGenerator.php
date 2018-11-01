@@ -58,12 +58,26 @@ class AutoloadGenerator
      */
     private $runScripts = false;
 
+    /**
+     * Create the "Authload" enerator.
+     *
+     * @param \Composer\EventDispatcher\EventDispatcher $eventDispatcher
+     * @param \Composer\IO\IOInterface                  $io
+     */
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->io = $io;
     }
 
+    /**
+     * Set dev mode.
+     * 
+     * set mode is `true` open dev and debug mode, if `false` close.
+     * 
+     * @param  bool $devMode default value is true
+     * @return void
+     */
     public function setDevMode($devMode = true)
     {
         $this->devMode = (bool) $devMode;
@@ -93,13 +107,26 @@ class AutoloadGenerator
     /**
      * Set whether to run scripts or not
      *
-     * @param bool $runScripts
+     * @param  bool $runScripts
+     * @return void
      */
     public function setRunScripts($runScripts = true)
     {
         $this->runScripts = (bool) $runScripts;
     }
 
+    /**
+     * Dump "Autoload" loader and maps, and write files.
+     * 
+     * @param  \Composer\Config                                  $config
+     * @param  \Composer\Repository\InstalledRepositoryInterface $localRepo
+     * @param  \Composer\Package\PackageInterface                $mainPackage
+     * @param  \Composer\Installer\InstallationManager           $installationManager
+     * @param  string                                            $targetDir
+     * @param  bool                                              $scanPsr0Packages
+     * @param  string                                            $suffix
+     * @return int
+     */
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
         if ($this->classMapAuthoritative) {
@@ -316,6 +343,18 @@ EOF;
         return count($classMap);
     }
 
+    /**
+     * Add class map code.
+     * 
+     * @param  \Composer\Util\Filesystem $filesystem
+     * @param  string                    $basePath
+     * @param  string                    $vendorPath
+     * @param  \Iterator|string          $dir
+     * @param  null|string               $blacklist
+     * @param  null|string               $namespaceFilter
+     * @param  array                     $classMap
+     * @return array
+     */
     private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, array $classMap = array())
     {
         foreach ($this->generateClassMap($dir, $blacklist, $namespaceFilter) as $class => $path) {
@@ -333,11 +372,28 @@ EOF;
         return $classMap;
     }
 
+    /**
+     * Generate class map.
+     * 
+     * @param  \Iterator|string $dir
+     * @param  string           $blacklist
+     * @param  string           $namespaceFilter
+     * @param  bool             $showAmbiguousWarning
+     * @return array A class map array
+     */
     private function generateClassMap($dir, $blacklist = null, $namespaceFilter = null, $showAmbiguousWarning = true)
     {
         return ClassMapGenerator::createMap($dir, $blacklist, $showAmbiguousWarning ? $this->io : null, $namespaceFilter);
     }
 
+    /**
+     * Build package map.
+     *
+     * @param  \Composer\Installer\InstallationManager $installationManager
+     * @param  \Composer\Package\PackageInterface      $mainPackage
+     * @param  array                                   $packages
+     * @return array a packages map array.
+     */
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
     {
         // build package => install path map
@@ -359,7 +415,9 @@ EOF;
     }
 
     /**
-     * @param PackageInterface $package
+     * Validate package.
+     *
+     * @param  \Composer\Package\PackageInterface $package
      *
      * @throws \InvalidArgumentException Throws an exception, if the package has illegal settings.
      */
@@ -456,6 +514,17 @@ EOF;
         return $loader;
     }
 
+    /**
+     * Get include paths file contents.
+     * 
+     * @param  array                     $packageMap
+     * @param  \Composer\Util\Filesystem $filesystem
+     * @param  string                    $basePath
+     * @param  string                    $vendorPath
+     * @param  string                    $vendorPathCode
+     * @param  string                    $appBaseDirCode
+     * @return string
+     */
     protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)
     {
         $includePaths = array();
@@ -496,6 +565,17 @@ $includePathsCode);
 EOF;
     }
 
+    /**
+     * Get include files file contents.
+     * 
+     * @param  array                     $files
+     * @param  \Composer\Util\Filesystem $filesystem
+     * @param  string                    $basePath
+     * @param  string                    $vendorPath
+     * @param  string                    $vendorPathCode
+     * @param  string                    $appBaseDirCode
+     * @return string
+     */
     protected function getIncludeFilesFile(array $files, Filesystem $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)
     {
         $filesCode = '';
@@ -522,6 +602,15 @@ $filesCode);
 EOF;
     }
 
+    /**
+     * Get path code contents.
+     * 
+     * @param  \Composer\Util\Filesystem $filesystem
+     * @param  string                    $basePath
+     * @param  string                    $vendorPath
+     * @param  string                    $path
+     * @return string
+     */
     protected function getPathCode(Filesystem $filesystem, $basePath, $vendorPath, $path)
     {
         if (!$filesystem->isAbsolutePath($path)) {
@@ -552,6 +641,13 @@ EOF;
         return $baseDir . (($path !== false) ? var_export($path, true) : "");
     }
 
+    /**
+     * Get autoload file contents.
+     * 
+     * @param  string $vendorPathToTargetDirCode
+     * @param  string $suffix
+     * @return string
+     */
     protected function getAutoloadFile($vendorPathToTargetDirCode, $suffix)
     {
         $lastChar = $vendorPathToTargetDirCode[strlen($vendorPathToTargetDirCode) - 1];
@@ -573,6 +669,21 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
+    /**
+     * Get autoload real file contents.
+     *
+     * @param  bool   $useClassMap
+     * @param  bool   $useIncludePath
+     * @param  string $targetDirLoader
+     * @param  bool   $useIncludeFiles
+     * @param  string $vendorPathCode
+     * @param  string $appBaseDirCode
+     * @param  string $suffix
+     * @param  bool   $useGlobalIncludePath
+     * @param  bool   $prependAutoloader
+     * @param  int    $staticPhpVersion
+     * @return string
+     */
     protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion = 70000)
     {
         $file = <<<HEADER
@@ -733,6 +844,16 @@ FOOTER;
 FOOTER;
     }
 
+    /**
+     * Get static file contents.
+     *
+     * @param  string $suffix
+     * @param  string $targetDir
+     * @param  string $vendorPath
+     * @param  string $basePath
+     * @param  int    &$staticPhpVersion
+     * @return string
+     */
     protected function getStaticFile($suffix, $targetDir, $vendorPath, $basePath, &$staticPhpVersion)
     {
         $staticPhpVersion = 50600;
@@ -818,6 +939,14 @@ $initializer
 INITIALIZER;
     }
 
+    /**
+     * Parse autoloads type.
+     *
+     * @param  array                              $packageMap
+     * @param  string                             $type
+     * @param  \Composer\Package\PackageInterface $mainPackage
+     * @return array
+     */
     protected function parseAutoloadsType(array $packageMap, $type, PackageInterface $mainPackage)
     {
         $autoloads = array();
@@ -900,6 +1029,13 @@ INITIALIZER;
         return $autoloads;
     }
 
+    /**
+     * Get file Identifier.
+     *
+     * @param  \Composer\Package\PackageInterface $package
+     * @param  string                             $path
+     * @return string
+     */
     protected function getFileIdentifier(PackageInterface $package, $path)
     {
         return md5($package->getName() . ':' . $path);
