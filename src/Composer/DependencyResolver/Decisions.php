@@ -26,12 +26,20 @@ class Decisions implements \Iterator, \Countable
     protected $decisionMap;
     protected $decisionQueue = array();
 
+    /**
+     * Create the decisions instance
+     * 
+     * @param \Composer\DependencyResolver\Pool $pool
+     */
     public function __construct($pool)
     {
         $this->pool = $pool;
         $this->decisionMap = array();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function decide($literal, $level, $why)
     {
         $this->addDecision($literal, $level);
@@ -41,6 +49,9 @@ class Decisions implements \Iterator, \Countable
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function satisfy($literal)
     {
         $packageId = abs($literal);
@@ -51,6 +62,9 @@ class Decisions implements \Iterator, \Countable
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function conflict($literal)
     {
         $packageId = abs($literal);
@@ -61,16 +75,25 @@ class Decisions implements \Iterator, \Countable
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function decided($literalOrPackageId)
     {
         return !empty($this->decisionMap[abs($literalOrPackageId)]);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function undecided($literalOrPackageId)
     {
         return empty($this->decisionMap[abs($literalOrPackageId)]);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function decidedInstall($literalOrPackageId)
     {
         $packageId = abs($literalOrPackageId);
@@ -78,6 +101,9 @@ class Decisions implements \Iterator, \Countable
         return isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] > 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function decisionLevel($literalOrPackageId)
     {
         $packageId = abs($literalOrPackageId);
@@ -88,6 +114,9 @@ class Decisions implements \Iterator, \Countable
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function decisionRule($literalOrPackageId)
     {
         $packageId = abs($literalOrPackageId);
@@ -101,26 +130,41 @@ class Decisions implements \Iterator, \Countable
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function atOffset($queueOffset)
     {
         return $this->decisionQueue[$queueOffset];
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function validOffset($queueOffset)
     {
         return $queueOffset >= 0 && $queueOffset < count($this->decisionQueue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function lastReason()
     {
         return $this->decisionQueue[count($this->decisionQueue) - 1][self::DECISION_REASON];
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function lastLiteral()
     {
         return $this->decisionQueue[count($this->decisionQueue) - 1][self::DECISION_LITERAL];
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function reset()
     {
         while ($decision = array_pop($this->decisionQueue)) {
@@ -128,6 +172,9 @@ class Decisions implements \Iterator, \Countable
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function resetToOffset($offset)
     {
         while (count($this->decisionQueue) > $offset + 1) {
@@ -136,47 +183,78 @@ class Decisions implements \Iterator, \Countable
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function revertLast()
     {
         $this->decisionMap[abs($this->lastLiteral())] = 0;
         array_pop($this->decisionQueue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function count()
     {
         return count($this->decisionQueue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function rewind()
     {
         end($this->decisionQueue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function current()
     {
         return current($this->decisionQueue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function key()
     {
         return key($this->decisionQueue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function next()
     {
         return prev($this->decisionQueue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function valid()
     {
         return false !== current($this->decisionQueue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function isEmpty()
     {
         return count($this->decisionQueue) === 0;
     }
 
+    /**
+     * Add decision.
+     * 
+     * @param  int    $literal
+     * @param  string $level
+     * @throws \Composer\DependencyResolver\SolverBugException
+     */
     protected function addDecision($literal, $level)
     {
         $packageId = abs($literal);

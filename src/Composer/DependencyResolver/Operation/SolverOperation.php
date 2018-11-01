@@ -43,6 +43,12 @@ abstract class SolverOperation implements OperationInterface
         return $this->reason;
     }
 
+    /**
+     * Format version
+     * 
+     * @param  \Composer\Package\PackageInterface $package
+     * @return string
+     */
     protected function formatVersion(PackageInterface $package)
     {
         return $package->getFullPrettyVersion();
