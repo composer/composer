@@ -196,6 +196,14 @@ class JsonConfigSource implements ConfigSourceInterface
         });
     }
 
+    /**
+     * Manipulate json.
+     * 
+     * @param  string   $method
+     * @param  array    $args
+     * @param  callable $fallback
+     * @throws \RuntimeException
+     */
     protected function manipulateJson($method, $args, $fallback)
     {
         $args = func_get_args();

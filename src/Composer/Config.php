@@ -100,21 +100,41 @@ class Config
         $this->baseDir = $baseDir;
     }
 
+    /**
+     * Set config source.
+     * 
+     * @param \Composer\Config\ConfigSourceInterface $source
+     */
     public function setConfigSource(ConfigSourceInterface $source)
     {
         $this->configSource = $source;
     }
 
+    /**
+     * Get config source.
+     * 
+     * @return \Composer\Config\ConfigSourceInterface
+     */
     public function getConfigSource()
     {
         return $this->configSource;
     }
 
+    /**
+     * Set auth config source.
+     * 
+     * @param \Composer\Config\ConfigSourceInterface $source
+     */
     public function setAuthConfigSource(ConfigSourceInterface $source)
     {
         $this->authConfigSource = $source;
     }
 
+    /**
+     * Get auth config source.
+     * 
+     * @return \Composer\Config\ConfigSourceInterface
+     */
     public function getAuthConfigSource()
     {
         return $this->authConfigSource;
@@ -330,6 +350,12 @@ class Config
         }
     }
 
+    /**
+     * Get all config.
+     * 
+     * @param  int $flags
+     * @return array
+     */
     public function all($flags = 0)
     {
         $all = array(
@@ -342,6 +368,11 @@ class Config
         return $all;
     }
 
+    /**
+     * The config raw.
+     * 
+     * @return array
+     */
     public function raw()
     {
         return array(
@@ -416,6 +447,11 @@ class Config
         return false;
     }
 
+    /**
+     * Disable repo by name.
+     * 
+     * @param string $name
+     */
     private function disableRepoByName($name)
     {
         if (isset($this->repositories[$name])) {
