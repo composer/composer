@@ -149,7 +149,7 @@ versions. See also [COMPOSER_HOME](03-cli.md#composer-home).
 
 Defaults to `C:\Users\<user>\AppData\Local\Composer` on Windows,
 `$XDG_CACHE_HOME/composer` on unix systems that follow the XDG Base Directory
-Specifications, and `$home/cache` on other unix systems. Stores all the caches
+Specifications, and `$home/.cache` on other unix systems. Stores all the caches
 used by Composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
 
 ## cache-files-dir
