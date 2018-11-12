@@ -62,7 +62,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $partialPackagesByName;
     private $versionParser;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher, HttpDownloader $httpDownloader)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
     {
         parent::__construct();
         if (!preg_match('{^[\w.]+\??://}', $repoConfig['url'])) {
@@ -101,7 +101,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->versionParser = new VersionParser();
         $this->loader = new ArrayLoader($this->versionParser);
-        if ($httpDownloader && $this->options) {
+        if ($this->options) {
             // TODO solve this somehow - should be sent at request time not on the instance
             $httpDownloader = clone $httpDownloader;
             $httpDownloader->setOptions($this->options);
@@ -781,10 +781,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $retries = 3;
         while ($retries--) {
             try {
-                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
-                $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                $httpDownloader = $this->httpDownloader;
 
-                $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
+                if ($this->eventDispatcher) {
+                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
+                    $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                    $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
+                }
 
                 $response = $httpDownloader->get($filename);
                 $json = $response->getBody();
@@ -869,10 +872,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $retries = 3;
         while ($retries--) {
             try {
-                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
-                $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                $httpDownloader = $this->httpDownloader;
 
-                $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
+                if ($this->eventDispatcher) {
+                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
+                    $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                    $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
+                }
+
                 $options = array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime)));
                 $response = $httpDownloader->get($filename, $options);
                 $json = $response->getBody();
@@ -925,10 +932,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected function asyncFetchFile($filename, $cacheKey, $lastModifiedTime = null)
     {
         $retries = 3;
-        $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
-        $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+        $httpDownloader = $this->httpDownloader;
 
-        $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
+        if ($this->eventDispatcher) {
+            $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
+            $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+            $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
+        }
+
         $options = $lastModifiedTime ? array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime))) : array();
 
         $io = $this->io;

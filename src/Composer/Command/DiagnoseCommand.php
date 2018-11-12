@@ -22,7 +22,7 @@ use Composer\Plugin\PluginEvents;
 use Composer\Util\ConfigValidator;
 use Composer\Util\IniHelper;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\Util\StreamContextFactory;
 use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
@@ -35,8 +35,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DiagnoseCommand extends BaseCommand
 {
-    /** @var RemoteFilesystem */
-    protected $rfs;
+    /** @var HttpDownloader */
+    protected $httpDownloader;
 
     /** @var ProcessExecutor */
     protected $process;
@@ -85,7 +85,7 @@ EOT
         $config->merge(array('config' => array('secure-http' => false)));
         $config->prohibitUrlByConfig('http://repo.packagist.org', new NullIO);
 
-        $this->rfs = Factory::createRemoteFilesystem($io, $config);
+        $this->httpDownloader = Factory::createHttpDownloader($io, $config);
         $this->process = new ProcessExecutor($io);
 
         $io->write('Checking platform settings: ', false);
@@ -226,7 +226,7 @@ EOT
         }
 
         try {
-            $this->rfs->getContents('packagist.org', $proto . '://repo.packagist.org/packages.json', false);
+            $this->httpDownloader->get($proto . '://repo.packagist.org/packages.json');
         } catch (TransportException $e) {
             if (false !== strpos($e->getMessage(), 'cafile')) {
                 $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
@@ -253,11 +253,11 @@ EOT
 
         $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $json = json_decode($this->rfs->getContents('packagist.org', $protocol . '://repo.packagist.org/packages.json', false), true);
+            $json = $this->httpDownloader->get($protocol . '://repo.packagist.org/packages.json')->parseJson();
             $hash = reset($json['provider-includes']);
             $hash = $hash['sha256'];
             $path = str_replace('%hash%', $hash, key($json['provider-includes']));
-            $provider = $this->rfs->getContents('packagist.org', $protocol . '://repo.packagist.org/'.$path, false);
+            $provider = $this->httpDownloader->get($protocol . '://repo.packagist.org/'.$path)->getBody();
 
             if (hash('sha256', $provider) !== $hash) {
                 return 'It seems that your proxy is modifying http traffic on the fly';
@@ -285,10 +285,10 @@ EOT
 
         $url = 'http://repo.packagist.org/packages.json';
         try {
-            $this->rfs->getContents('packagist.org', $url, false);
+            $this->httpDownloader->get($url);
         } catch (TransportException $e) {
             try {
-                $this->rfs->getContents('packagist.org', $url, false, array('http' => array('request_fulluri' => false)));
+                $this->httpDownloader->get($url, array('http' => array('request_fulluri' => false)));
             } catch (TransportException $e) {
                 return 'Unable to assess the situation, maybe packagist.org is down ('.$e->getMessage().')';
             }
@@ -319,10 +319,10 @@ EOT
 
         $url = 'https://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0';
         try {
-            $this->rfs->getContents('github.com', $url, false);
+            $this->httpDownloader->get($url);
         } catch (TransportException $e) {
             try {
-                $this->rfs->getContents('github.com', $url, false, array('http' => array('request_fulluri' => false)));
+                $this->httpDownloader->get($url, array('http' => array('request_fulluri' => false)));
             } catch (TransportException $e) {
                 return 'Unable to assess the situation, maybe github is down ('.$e->getMessage().')';
             }
@@ -344,7 +344,7 @@ EOT
         try {
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/' : 'https://'.$domain.'/api/v3/';
 
-            return $this->rfs->getContents($domain, $url, false, array(
+            return $this->httpDownloader->get($url, array(
                 'retry-auth-failure' => false,
             )) ? true : 'Unexpected error';
         } catch (\Exception $e) {
@@ -374,8 +374,7 @@ EOT
         }
 
         $url = $domain === 'github.com' ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
-        $json = $this->rfs->getContents($domain, $url, false, array('retry-auth-failure' => false));
-        $data = json_decode($json, true);
+        $data = $this->httpDownloader->get($url, array('retry-auth-failure' => false))->parseJson();
 
         return $data['resources']['core'];
     }
@@ -428,7 +427,7 @@ EOT
             return $result;
         }
 
-        $versionsUtil = new Versions($config, $this->rfs);
+        $versionsUtil = new Versions($config, $this->httpDownloader);
         $latest = $versionsUtil->getLatest();
 
         if (Composer::VERSION !== $latest['version'] && Composer::VERSION !== '@package_version@') {

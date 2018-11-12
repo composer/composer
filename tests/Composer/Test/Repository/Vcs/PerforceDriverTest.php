@@ -45,7 +45,7 @@ class PerforceDriverTest extends TestCase
         $this->process = $this->getMockProcessExecutor();
         $this->httpDownloader = $this->getMockHttpDownloader();
         $this->perforce = $this->getMockPerforce();
-        $this->driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->process, $this->httpDownloader);
+        $this->driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->process);
         $this->overrideDriverInternalPerforce($this->perforce);
     }
 
@@ -113,7 +113,7 @@ class PerforceDriverTest extends TestCase
 
     public function testInitializeCapturesVariablesFromRepoConfig()
     {
-        $driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->process, $this->httpDownloader);
+        $driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->process);
         $driver->initialize();
         $this->assertEquals(self::TEST_URL, $driver->getUrl());
         $this->assertEquals(self::TEST_DEPOT, $driver->getDepot());

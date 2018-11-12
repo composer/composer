@@ -92,7 +92,7 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->httpDownloader->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -129,7 +129,7 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->httpDownloader->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -165,7 +165,7 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->httpDownloader->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -204,7 +204,7 @@ JSON;
         $this->mockResponse($apiUrl, array(), sprintf($projectData, $domain, $port, $namespace))
             ->shouldBeCalledTimes(1);
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->httpDownloader->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -457,7 +457,7 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->httpDownloader->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -488,7 +488,7 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->httpDownloader->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -519,7 +519,7 @@ JSON;
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->httpDownloader->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -555,8 +555,8 @@ JSON;
             array('url' => 'https://gitlab.mycompany.local/mygroup/myproject', 'options' => $options),
             $this->io->reveal(),
             $this->config,
-            $this->process->reveal(),
-            $this->httpDownloader->reveal()
+            $this->httpDownloader->reveal(),
+            $this->process->reveal()
         );
         $driver->initialize();
     }

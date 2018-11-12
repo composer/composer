@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\Repository\Vcs\GitBitbucketDriver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 use Composer\Util\Http\Response;
 
 /**
@@ -68,8 +69,8 @@ class GitBitbucketDriverTest extends TestCase
             $repoConfig,
             $this->io,
             $this->config,
-            null,
-            $this->httpDownloader
+            $this->httpDownloader,
+            new ProcessExecutor($this->io)
         );
 
         $driver->initialize();

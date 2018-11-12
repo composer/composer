@@ -457,8 +457,8 @@ class GitHubDriver extends VcsDriver
             array('url' => $url),
             $this->io,
             $this->config,
-            $this->process,
-            $this->httpDownloader
+            $this->httpDownloader,
+            $this->process
         );
         $this->gitDriver->initialize();
     }

@@ -36,7 +36,7 @@ class RepositoryFactory
         if (0 === strpos($repository, 'http')) {
             $repoConfig = array('type' => 'composer', 'url' => $repository);
         } elseif ("json" === pathinfo($repository, PATHINFO_EXTENSION)) {
-            $json = new JsonFile($repository, Factory::createRemoteFilesystem($io, $config));
+            $json = new JsonFile($repository, Factory::createHttpDownloader($io, $config));
             $data = $json->read();
             if (!empty($data['packages']) || !empty($data['includes']) || !empty($data['provider-includes'])) {
                 $repoConfig = array('type' => 'composer', 'url' => 'file://' . strtr(realpath($repository), '\\', '/'));
@@ -77,7 +77,7 @@ class RepositoryFactory
      */
     public static function createRepo(IOInterface $io, Config $config, array $repoConfig)
     {
-        $rm = static::manager($io, $config, null, Factory::createRemoteFilesystem($io, $config));
+        $rm = static::manager($io, $config, Factory::createHttpDownloader($io, $config));
         $repos = static::createRepos($rm, array($repoConfig));
 
         return reset($repos);
@@ -98,7 +98,7 @@ class RepositoryFactory
             if (!$io) {
                 throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
             }
-            $rm = static::manager($io, $config, null, Factory::createRemoteFilesystem($io, $config));
+            $rm = static::manager($io, $config, Factory::createHttpDownloader($io, $config));
         }
 
         return static::createRepos($rm, $config->getRepositories());
@@ -113,7 +113,7 @@ class RepositoryFactory
      */
     public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
     {
-        $rm = new RepositoryManager($io, $config, $eventDispatcher, $httpDownloader);
+        $rm = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');

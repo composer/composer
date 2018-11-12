@@ -47,7 +47,7 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
      */
     private $vendorAlias;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher, HttpDownloader $httpDownloader)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null)
     {
         parent::__construct();
         if (!preg_match('{^https?://}', $repoConfig['url'])) {

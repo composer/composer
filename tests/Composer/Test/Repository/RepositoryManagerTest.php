@@ -38,8 +38,8 @@ class RepositoryManagerTest extends TestCase
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
             $this->getMockBuilder('Composer\Config')->getMock(),
-            $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock(),
-            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock()
+            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
+            $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
 
         $repository1 = $this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock();
@@ -62,8 +62,8 @@ class RepositoryManagerTest extends TestCase
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
             $config = $this->getMockBuilder('Composer\Config')->setMethods(array('get'))->getMock(),
-            $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock(),
-            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock()
+            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
+            $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
 
         $tmpdir = $this->tmpdir;

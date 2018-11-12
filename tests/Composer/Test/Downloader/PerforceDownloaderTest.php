@@ -17,6 +17,7 @@ use Composer\Config;
 use Composer\Repository\VcsRepository;
 use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
+use Composer\Factory;
 use Composer\Util\Filesystem;
 
 /**
@@ -96,7 +97,7 @@ class PerforceDownloaderTest extends TestCase
     {
         $repository = $this->getMockBuilder('Composer\Repository\VcsRepository')
             ->setMethods(array('getRepoConfig'))
-            ->setConstructorArgs(array($repoConfig, $io, $config))
+            ->setConstructorArgs(array($repoConfig, $io, $config, Factory::createHttpDownloader($io, $config)))
             ->getMock();
         $repository->expects($this->any())->method('getRepoConfig')->will($this->returnValue($repoConfig));
 

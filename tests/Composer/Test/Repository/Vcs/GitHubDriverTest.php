@@ -96,7 +96,7 @@ class GitHubDriverTest extends TestCase
             'url' => $repoUrl,
         );
 
-        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $process, $httpDownloader);
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $process);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -139,7 +139,11 @@ class GitHubDriverTest extends TestCase
         );
         $repoUrl = 'https://github.com/composer/packagist.git';
 
-        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, null, $httpDownloader);
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $process);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -192,7 +196,11 @@ class GitHubDriverTest extends TestCase
         );
         $repoUrl = 'https://github.com/composer/packagist.git';
 
-        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, null, $httpDownloader);
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config,$httpDownloader, $process);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -279,7 +287,7 @@ class GitHubDriverTest extends TestCase
             'url' => $repoUrl,
         );
 
-        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $process, $httpDownloader);
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $process);
         $gitHubDriver->initialize();
 
         $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());

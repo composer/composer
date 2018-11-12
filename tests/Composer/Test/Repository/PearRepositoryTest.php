@@ -28,7 +28,7 @@ class PearRepositoryTest extends TestCase
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
      */
-    private $remoteFilesystem;
+    private $httpDownloader;
 
     public function testComposerShouldSetIncludePath()
     {

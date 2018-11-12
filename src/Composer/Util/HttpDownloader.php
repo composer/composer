@@ -102,6 +102,26 @@ class HttpDownloader
         return $promise;
     }
 
+    /**
+     * Retrieve the options set in the constructor
+     *
+     * @return array Options
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * Merges new options
+     *
+     * @return array $options
+     */
+    public function setOptions(array $options)
+    {
+        $this->options = array_replace_recursive($this->options, $options);
+    }
+
     private function addJob($request, $sync = false)
     {
         $job = array(

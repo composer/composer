@@ -61,7 +61,7 @@ Composer fires the following named events during its execution process:
 - **command**: occurs before any Composer Command is executed on the CLI. It
   provides you with access to the input and output objects of the program.
 - **pre-file-download**: occurs before files are downloaded and allows
-  you to manipulate the `RemoteFilesystem` object prior to downloading files
+  you to manipulate the `HttpDownloader` object prior to downloading files
   based on the URL to be downloaded.
 - **pre-command-run**: occurs before a command is executed and allows you to
   manipulate the `InputInterface` object's options and arguments to tweak

@@ -590,18 +590,18 @@ class Factory
             throw new Exception\NoSslException('The openssl extension is required for SSL/TLS protection but is not available. '
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
         }
-        $remoteFilesystemOptions = array();
+        $httpDownloaderOptions = array();
         if ($disableTls === false) {
             if ($config && $config->get('cafile')) {
-                $remoteFilesystemOptions['ssl']['cafile'] = $config->get('cafile');
+                $httpDownloaderOptions['ssl']['cafile'] = $config->get('cafile');
             }
             if ($config && $config->get('capath')) {
-                $remoteFilesystemOptions['ssl']['capath'] = $config->get('capath');
+                $httpDownloaderOptions['ssl']['capath'] = $config->get('capath');
             }
-            $remoteFilesystemOptions = array_replace_recursive($remoteFilesystemOptions, $options);
+            $httpDownloaderOptions = array_replace_recursive($httpDownloaderOptions, $options);
         }
         try {
-            $remoteFilesystem = new HttpDownloader($io, $config, $remoteFilesystemOptions, $disableTls);
+            $httpDownloader = new HttpDownloader($io, $config, $httpDownloaderOptions, $disableTls);
         } catch (TransportException $e) {
             if (false !== strpos($e->getMessage(), 'cafile')) {
                 $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
@@ -614,7 +614,7 @@ class Factory
             throw $e;
         }
 
-        return $remoteFilesystem;
+        return $httpDownloader;
     }
 
     /**

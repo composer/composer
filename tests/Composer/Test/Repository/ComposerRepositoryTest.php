@@ -37,8 +37,8 @@ class ComposerRepositoryTest extends TestCase
                 $repoConfig,
                 new NullIO,
                 FactoryMock::createConfig(),
-                $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock(),
-                $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock()
+                $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
+                $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
             ))
             ->getMock();
 
@@ -203,7 +203,7 @@ class ComposerRepositoryTest extends TestCase
             ->with($url = 'http://example.org/search.json?q=foo&type=library')
             ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode(array())));
 
-        $repository = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), $eventDispatcher, $httpDownloader);
+        $repository = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), $httpDownloader, $eventDispatcher);
 
         $this->assertSame(
             array(array('name' => 'foo', 'description' => null)),

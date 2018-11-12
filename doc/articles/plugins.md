@@ -176,7 +176,7 @@ class AwsPlugin implements PluginInterface, EventSubscriberInterface
 
         if ($protocol === 's3') {
             $awsClient = new AwsClient($this->io, $this->composer->getConfig());
-            $s3Downloader = new S3Downloader($this->io, $event->getRemoteFilesystem()->getOptions(), $awsClient);
+            $s3Downloader = new S3Downloader($this->io, $event->getHttpDownloader()->getOptions(), $awsClient);
             $event->setHttpdownloader($s3Downloader);
         }
     }
