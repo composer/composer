@@ -127,13 +127,22 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     public function findPackage($name, $constraint)
     {
-        if (!$this->hasProviders()) {
-            return parent::findPackage($name, $constraint);
-        }
+        // this call initializes loadRootServerFile which is needed for the rest below to work
+        $hasProviders = $this->hasProviders();
 
         $name = strtolower($name);
         if (!$constraint instanceof ConstraintInterface) {
             $constraint = $this->versionParser->parseConstraints($constraint);
+        }
+
+        // TODO we need a new way for the repo to report this v2 protocol somehow
+        if ($this->lazyProvidersUrl) {
+            return $this->loadAsyncPackages(array($name => $constraint), function ($name, $stability) {
+                return true;
+            });
+        }
+        if (!$hasProviders) {
+            return parent::findPackage($name, $constraint);
         }
 
         foreach ($this->getProviderNames() as $providerName) {
@@ -162,7 +171,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         // TODO we need a new way for the repo to report this v2 protocol somehow
         if ($this->lazyProvidersUrl) {
-            return $this->loadAsyncPackages(array($name => new EmptyConstraint()), function ($name, $stability) {
+            return $this->loadAsyncPackages(array($name => $constraint ?: new EmptyConstraint()), function ($name, $stability) {
                 return true;
             });
         }
