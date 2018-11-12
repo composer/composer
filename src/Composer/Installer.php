@@ -350,16 +350,7 @@ class Installer
         // and a lock file is present as we need to force install non-whitelisted lock file
         // packages in that case
         if (!$this->update || (!empty($this->updateWhitelist) && $this->locker->isLocked())) {
-            try {
-                $lockedRepository = $this->locker->getLockedRepository($this->devMode);
-            } catch (\RuntimeException $e) {
-                // if there are dev requires, then we really can not install
-                if ($this->package->getDevRequires()) {
-                    throw $e;
-                }
-                // no require-dev in composer.json and the lock file was created with no dev info, so skip them
-                $lockedRepository = $this->locker->getLockedRepository();
-            }
+            $lockedRepository = $this->locker->getLockedRepository($this->devMode);
         }
 
         $this->whitelistUpdateDependencies(
