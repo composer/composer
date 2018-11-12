@@ -35,6 +35,6 @@ class FactoryTest extends TestCase
             ->with($this->equalTo('disable-tls'))
             ->will($this->returnValue(true));
 
-        Factory::createRemoteFilesystem($ioMock, $config);
+        Factory::createHttpDownloader($ioMock, $config);
     }
 }

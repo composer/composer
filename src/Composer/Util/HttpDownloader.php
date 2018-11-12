@@ -32,6 +32,7 @@ class HttpDownloader
     private $io;
     private $config;
     private $jobs = array();
+    private $options = array();
     private $index;
     private $progress;
     private $lastProgress;
