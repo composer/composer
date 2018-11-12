@@ -87,15 +87,15 @@ final class StreamContextFactory
 
             // enabled request_fulluri unless it is explicitly disabled
             switch (parse_url($url, PHP_URL_SCHEME)) {
-                case 'http': // default request_fulluri to true
+                case 'http': // default request_fulluri to true for HTTP
                     $reqFullUriEnv = getenv('HTTP_PROXY_REQUEST_FULLURI');
                     if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
                         $options['http']['request_fulluri'] = true;
                     }
                     break;
-                case 'https': // default request_fulluri to true
+                case 'https': // default request_fulluri to false for HTTPS
                     $reqFullUriEnv = getenv('HTTPS_PROXY_REQUEST_FULLURI');
-                    if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
+                    if (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv) {
                         $options['http']['request_fulluri'] = true;
                     }
                     break;
