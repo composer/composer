@@ -20,7 +20,7 @@ use Composer\Composer;
 use Composer\TestCase;
 use Composer\IO\BufferIO;
 use Composer\Script\ScriptEvents;
-use Composer\Script\CommandEvent;
+use Composer\Script\Event as ScriptEvent;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -49,29 +49,6 @@ class EventDispatcherTest extends TestCase
             ->with('<error>Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error_Deprecated
-     */
-    public function testDispatcherCanConvertScriptEventToCommandEventForListener()
-    {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsCommandEvent',
-        ), $io);
-
-        $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
-    }
-
-    public function testDispatcherDoesNotAttemptConversionForListenerWithoutTypehint()
-    {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsVariableEvent',
-        ), $io);
-
-        $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
     }
 
     /**
@@ -265,7 +242,7 @@ class EventDispatcherTest extends TestCase
                 return array();
             }));
 
-        $dispatcher->dispatch('root', new CommandEvent('root', $composer, $io));
+        $dispatcher->dispatch('root', new ScriptEvent('root', $composer, $io));
         $expected = '> root: @group'.PHP_EOL.
             '> group: echo -n foo'.PHP_EOL.
             '> group: @subgroup'.PHP_EOL.
@@ -305,7 +282,7 @@ class EventDispatcherTest extends TestCase
                 return array();
             }));
 
-        $dispatcher->dispatch('root', new CommandEvent('root', $composer, $io));
+        $dispatcher->dispatch('root', new ScriptEvent('root', $composer, $io));
     }
 
     private function getDispatcherStubForListenersTest($listeners, $io)
@@ -422,16 +399,6 @@ class EventDispatcherTest extends TestCase
     public static function call()
     {
         throw new \RuntimeException();
-    }
-
-    public static function expectsCommandEvent(CommandEvent $event)
-    {
-        return false;
-    }
-
-    public static function expectsVariableEvent($event)
-    {
-        return false;
     }
 
     public static function someMethod()

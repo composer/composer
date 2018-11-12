@@ -321,44 +321,6 @@ class EventDispatcher
 
         $expected = $typehint->getName();
 
-        // BC support
-        if (!$event instanceof $expected && $expected === 'Composer\Script\CommandEvent') {
-            trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
-            $event = new \Composer\Script\CommandEvent(
-                $event->getName(),
-                $event->getComposer(),
-                $event->getIO(),
-                $event->isDevMode(),
-                $event->getArguments()
-            );
-        }
-        if (!$event instanceof $expected && $expected === 'Composer\Script\PackageEvent') {
-            trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
-            $event = new \Composer\Script\PackageEvent(
-                $event->getName(),
-                $event->getComposer(),
-                $event->getIO(),
-                $event->isDevMode(),
-                $event->getPolicy(),
-                $event->getRepositorySet(),
-                $event->getInstalledRepo(),
-                $event->getRequest(),
-                $event->getOperations(),
-                $event->getOperation()
-            );
-        }
-        if (!$event instanceof $expected && $expected === 'Composer\Script\Event') {
-            trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
-            $event = new \Composer\Script\Event(
-                $event->getName(),
-                $event->getComposer(),
-                $event->getIO(),
-                $event->isDevMode(),
-                $event->getArguments(),
-                $event->getFlags()
-            );
-        }
-
         return $event;
     }
 
