@@ -28,6 +28,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Downloader\TransportException;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\EmptyConstraint;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -156,9 +157,19 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     public function findPackages($name, $constraint = null)
     {
-        if (!$this->hasProviders()) {
+        // this call initializes loadRootServerFile which is needed for the rest below to work
+        $hasProviders = $this->hasProviders();
+
+        // TODO we need a new way for the repo to report this v2 protocol somehow
+        if ($this->lazyProvidersUrl) {
+            return $this->loadAsyncPackages(array($name => new EmptyConstraint()), function ($name, $stability) {
+                return true;
+            });
+        }
+        if (!$hasProviders) {
             return parent::findPackages($name, $constraint);
         }
+
         // normalize name
         $name = strtolower($name);
 
@@ -197,10 +208,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable)
     {
+        // this call initializes loadRootServerFile which is needed for the rest below to work
+        $hasProviders = $this->hasProviders();
+
+        // TODO we need a new way for the repo to report this v2 protocol somehow
         if ($this->lazyProvidersUrl) {
             return $this->loadAsyncPackages($packageNameMap, $isPackageAcceptableCallable);
         }
-        if (!$this->hasProviders()) {
+        if (!$hasProviders) {
             return parent::loadPackages($packageNameMap, $isPackageAcceptableCallable);
         }
 
@@ -225,6 +240,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
             $packages = array_merge($packages, $matches);
         }
+
         return $packages;
     }
 
@@ -528,6 +544,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if ($this->lazyProvidersUrl) {
             foreach ($packageNames as $name => $constraint) {
+                // skip platform packages, root package and composer-plugin-api
+                if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
+                    continue;
+                }
+
                 $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
                 $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
 

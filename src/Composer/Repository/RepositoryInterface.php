@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\PackageInterface;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * Repository interface.
@@ -38,8 +39,8 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches for the first match of a package by name and version.
      *
-     * @param string                                                 $name       package name
-     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
+     * @param string                     $name       package name
+     * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface|null
      */
@@ -48,8 +49,8 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches for all packages matching a name and optionally a version.
      *
-     * @param string                                                 $name       package name
-     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
+     * @param string                     $name       package name
+     * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface[]
      */
@@ -66,7 +67,7 @@ interface RepositoryInterface extends \Countable
     /**
      * Returns list of registered packages with the supplied name
      *
-     * @param bool[] $packageNameMap
+     * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
      * @param $isPackageAcceptableCallable
      * @return PackageInterface[]
      */

@@ -374,7 +374,7 @@ EOT
     {
         $factory = new Factory();
 
-        return $factory->createDownloadManager($io, $config);
+        return $factory->createDownloadManager($io, $config, $factory->createHttpDownloader($io, $config));
     }
 
     protected function createInstallationManager()
