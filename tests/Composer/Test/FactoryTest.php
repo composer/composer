@@ -12,7 +12,6 @@
 
 namespace Composer\Test;
 
-use PHPUnit\Framework\TestCase;
 use Composer\Factory;
 
 class FactoryTest extends TestCase
