@@ -84,7 +84,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
      * Find a file by name, returning the one that has the shortest path.
      *
      * @param \ZipArchive $zip
-     * @param $filename
+     * @param string $filename
      * @return bool|int
      */
     private function locateFile(\ZipArchive $zip, $filename)
@@ -126,7 +126,9 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     private function getComposerInformation(\SplFileInfo $file)
     {
         $zip = new \ZipArchive();
-        $zip->open($file->getPathname());
+        if ($zip->open($file->getPathname()) !== true) {
+            return false;
+        }
 
         if (0 == $zip->numFiles) {
             $zip->close();

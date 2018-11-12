@@ -13,7 +13,7 @@
 namespace Composer\Test\IO;
 
 use Composer\IO\ConsoleIO;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ConsoleIOTest extends TestCase

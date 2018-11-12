@@ -13,7 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Repository\RepositoryManager;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 
 class RepositoryManagerTest extends TestCase

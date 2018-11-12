@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Question\Test;
+namespace Composer\Test\Question;
 
 use Composer\Question\StrictConfirmationQuestion;
 use PHPUnit\Framework\TestCase;

@@ -14,7 +14,7 @@ namespace Composer\Test\Package;
 
 use Composer\Package\Package;
 use Composer\Semver\VersionParser;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class CompletePackageTest extends TestCase
 {

@@ -14,7 +14,7 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\GitHubDriver;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
 

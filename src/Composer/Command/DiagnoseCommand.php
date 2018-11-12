@@ -119,8 +119,9 @@ EOT
             $io->write('Checking github.com rate limit: ', false);
             try {
                 $rate = $this->getGithubRateLimit('github.com');
-                $this->outputResult(true);
-                if (10 > $rate['remaining']) {
+                if (!is_array($rate)) {
+                    $this->outputResult($rate);
+                } elseif (10 > $rate['remaining']) {
                     $io->write('<warning>WARNING</warning>');
                     $io->write(sprintf(
                         '<comment>Github has a rate limit on their API. '
@@ -131,6 +132,8 @@ EOT
                         $rate['remaining'],
                         $rate['limit']
                     ));
+                } else {
+                    $this->outputResult(true);
                 }
             } catch (\Exception $e) {
                 if ($e instanceof TransportException && $e->getCode() === 401) {
@@ -207,6 +210,11 @@ EOT
 
     private function checkHttp($proto, Config $config)
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         $disableTls = false;
         $result = array();
         if ($proto === 'https' && $config->get('disable-tls') === true) {
@@ -238,6 +246,11 @@ EOT
 
     private function checkHttpProxy()
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
             $json = json_decode($this->rfs->getContents('packagist.org', $protocol . '://repo.packagist.org/packages.json', false), true);
@@ -265,6 +278,11 @@ EOT
      */
     private function checkHttpProxyFullUriRequestParam()
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         $url = 'http://repo.packagist.org/packages.json';
         try {
             $this->rfs->getContents('packagist.org', $url, false);
@@ -290,6 +308,11 @@ EOT
      */
     private function checkHttpsProxyFullUriRequestParam()
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         if (!extension_loaded('openssl')) {
             return 'You need the openssl extension installed for this check';
         }
@@ -312,6 +335,11 @@ EOT
 
     private function checkGithubOauth($domain, $token)
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         $this->getIO()->setAuthentication($domain, $token, 'x-oauth-basic');
         try {
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/' : 'https://'.$domain.'/api/v3/';
@@ -332,10 +360,15 @@ EOT
      * @param  string             $domain
      * @param  string             $token
      * @throws TransportException
-     * @return array
+     * @return array|string
      */
     private function getGithubRateLimit($domain, $token = null)
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         if ($token) {
             $this->getIO()->setAuthentication($domain, $token, 'x-oauth-basic');
         }
@@ -390,6 +423,11 @@ EOT
 
     private function checkVersion($config)
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         $versionsUtil = new Versions($config, $this->rfs);
         $latest = $versionsUtil->getLatest();
 
@@ -413,6 +451,7 @@ EOT
         }
 
         $hadError = false;
+        $hadWarning = false;
         if ($result instanceof \Exception) {
             $result = '<error>['.get_class($result).'] '.$result->getMessage().'</error>';
         }
@@ -427,16 +466,18 @@ EOT
             foreach ($result as $message) {
                 if (false !== strpos($message, '<error>')) {
                     $hadError = true;
+                } elseif (false !== strpos($message, '<warning>')) {
+                    $hadWarning = true;
                 }
             }
         }
 
         if ($hadError) {
             $io->write('<error>FAIL</error>');
-            $this->exitCode = 2;
-        } else {
+            $this->exitCode = max($this->exitCode, 2);
+        } elseif ($hadWarning) {
             $io->write('<warning>WARNING</warning>');
-            $this->exitCode = 1;
+            $this->exitCode = max($this->exitCode, 1);
         }
 
         if ($result) {
@@ -481,7 +522,7 @@ EOT
             $errors['iconv_mbstring'] = true;
         }
 
-        if (!ini_get('allow_url_fopen')) {
+        if (!filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
             $errors['allow_url_fopen'] = true;
         }
 
@@ -505,7 +546,7 @@ EOT
             $warnings['openssl_version'] = true;
         }
 
-        if (!defined('HHVM_VERSION') && !extension_loaded('apcu') && ini_get('apc.enable_cli')) {
+        if (!defined('HHVM_VERSION') && !extension_loaded('apcu') && filter_var(ini_get('apc.enable_cli'), FILTER_VALIDATE_BOOLEAN)) {
             $warnings['apc_cli'] = true;
         }
 
@@ -528,7 +569,7 @@ EOT
             }
         }
 
-        if (ini_get('xdebug.profiler_enabled')) {
+        if (filter_var(ini_get('xdebug.profiler_enabled'), FILTER_VALIDATE_BOOLEAN)) {
             $warnings['xdebug_profile'] = true;
         } elseif (extension_loaded('xdebug')) {
             $warnings['xdebug_loaded'] = true;
@@ -667,5 +708,21 @@ EOT
         }
 
         return !$warnings && !$errors ? true : $output;
+    }
+
+
+    /**
+     * Check if allow_url_fopen is ON
+     *
+     * @return bool|string
+     */
+    private function checkConnectivity()
+    {
+        if (!ini_get('allow_url_fopen')) {
+            $result = '<info>Skipped because allow_url_fopen is missing.</info>';
+            return $result;
+        }
+
+        return true;
     }
 }

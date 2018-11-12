@@ -60,7 +60,7 @@ class ProcessExecutor
             $cwd = realpath(getcwd());
         }
 
-        $this->captureOutput = count(func_get_args()) > 1;
+        $this->captureOutput = func_num_args() > 1;
         $this->errorOutput = null;
         $process = new Process($command, $cwd, null, null, static::getTimeout());
 
@@ -131,15 +131,11 @@ class ProcessExecutor
      */
     public static function escape($argument)
     {
-        if (method_exists('Symfony\Component\Process\ProcessUtils', 'escapeArgument')) {
-            return ProcessUtils::escapeArgument($argument);
-        }
-
         return self::escapeArgument($argument);
     }
 
     /**
-     * Copy of ProcessUtils::escapeArgument() that is removed in Symfony 4.
+     * Copy of ProcessUtils::escapeArgument() that is deprecated in Symfony 3.3 and removed in Symfony 4.
      *
      * @param string $argument
      *

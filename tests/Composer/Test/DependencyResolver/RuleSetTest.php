@@ -18,7 +18,7 @@ use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\Pool;
 use Composer\Package\BasePackage;
 use Composer\Repository\ArrayRepository;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class RuleSetTest extends TestCase
 {

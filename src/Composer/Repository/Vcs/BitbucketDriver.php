@@ -189,8 +189,15 @@ abstract class BitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getFileContent($file, $identifier);
         }
 
+        if (strpos($identifier, '/') !== false) {
+            $branches = $this->getBranches();
+            if (isset($branches[$identifier])) {
+                $identifier = $branches[$identifier];
+            }
+        }
+
         $resource = sprintf(
-            'https://api.bitbucket.org/1.0/repositories/%s/%s/raw/%s/%s',
+            'https://api.bitbucket.org/2.0/repositories/%s/%s/src/%s/%s',
             $this->owner,
             $this->repository,
             $identifier,
@@ -421,11 +428,16 @@ abstract class BitbucketDriver extends VcsDriver
     protected function getMainBranchData()
     {
         $resource = sprintf(
-            'https://api.bitbucket.org/1.0/repositories/%s/%s/main-branch',
+            'https://api.bitbucket.org/2.0/repositories/%s/%s?fields=mainbranch',
             $this->owner,
             $this->repository
         );
 
-        return JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
+        $data = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
+        if (isset($data['mainbranch'])) {
+            return $data['mainbranch'];
+        }
+
+        return null;
     }
 }

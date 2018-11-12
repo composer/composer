@@ -81,11 +81,4 @@ interface RepositoryInterface extends \Countable
      * @return array[] an array of array('name' => '...', 'description' => '...')
      */
     public function search($query, $mode = 0);
-
-    /**
-     * Removes a package from the registered packages list.
-     *
-     * @param PackageInterface $package
-     */
-    public function removePackage(PackageInterface $package);
 }

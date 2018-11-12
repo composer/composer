@@ -10,19 +10,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test;
+namespace Composer\Repository;
 
-use Composer\Config;
-use Composer\Test\TestCase;
-
-class DefaultConfigTest extends TestCase
+interface VersionCacheInterface
 {
     /**
-     * @group TLS
+     * @param string $version
+     * @param string $identifier
+     * @return array Package version data
      */
-    public function testDefaultValuesAreAsExpected()
-    {
-        $config = new Config;
-        $this->assertFalse($config->get('disable-tls'));
-    }
+    public function getVersionPackage($version, $identifier);
 }

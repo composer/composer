@@ -13,7 +13,7 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\HgDownloader;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 

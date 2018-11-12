@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Repository\Pear;
 
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Test\Mock\RemoteFilesystemMock;
 
 class ChannelRest11ReaderTest extends TestCase
@@ -27,7 +27,7 @@ class ChannelRest11ReaderTest extends TestCase
 
         $reader = new \Composer\Repository\Pear\ChannelRest11Reader($rfs);
 
-        /** @var $packages \Composer\Package\PackageInterface[] */
+        /** @var \Composer\Package\PackageInterface[] $packages */
         $packages = $reader->read('http://test.loc/rest11');
 
         $this->assertCount(3, $packages);

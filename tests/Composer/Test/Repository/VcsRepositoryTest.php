@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Repository;
 
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Symfony\Component\Process\ExecutableFinder;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\VcsRepository;

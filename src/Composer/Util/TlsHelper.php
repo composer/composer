@@ -164,7 +164,7 @@ final class TlsHelper
      *
      * @param string $certName CN/SAN
      *
-     * @return callable|null
+     * @return callable|void
      */
     private static function certNameMatcher($certName)
     {

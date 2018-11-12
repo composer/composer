@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\ProcessExecutor;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
 use Symfony\Component\Console\Output\StreamOutput;
 

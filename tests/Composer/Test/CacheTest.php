@@ -12,7 +12,7 @@
 
 namespace Composer\Test;
 
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 
 class CacheTest extends TestCase

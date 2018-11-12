@@ -264,8 +264,8 @@ class Filesystem
     /**
      * Copies a file or directory from $source to $target.
      *
-     * @param $source
-     * @param $target
+     * @param string $source
+     * @param string $target
      * @return bool
      */
     public function copy($source, $target)

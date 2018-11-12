@@ -16,6 +16,7 @@ use Composer\IO\NullIO;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Application as BaseApplication;
+use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -125,6 +126,9 @@ class Application extends BaseApplication
         if ($name = $this->getCommandName($input)) {
             try {
                 $commandName = $this->find($name)->getName();
+            } catch (CommandNotFoundException $e) {
+              // we'll check command validity again later after plugins are loaded
+              $commandName = false;
             } catch (\InvalidArgumentException $e) {
             }
         }

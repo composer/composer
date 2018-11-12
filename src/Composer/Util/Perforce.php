@@ -485,8 +485,7 @@ class Perforce
         $resArray = explode(PHP_EOL, $result);
         $tags = array();
         foreach ($resArray as $line) {
-            $index = strpos($line, 'Label');
-            if (!($index === false)) {
+            if (strpos($line, 'Label') !== false) {
                 $fields = explode(' ', $line);
                 $tags[$fields[1]] = $this->getStream() . '@' . $fields[1];
             }
@@ -502,8 +501,7 @@ class Perforce
         $result = $this->commandResult;
         $resArray = explode(PHP_EOL, $result);
         foreach ($resArray as $line) {
-            $index = strpos($line, 'Depot');
-            if (!($index === false)) {
+            if (strpos($line, 'Depot') !== false) {
                 $fields = explode(' ', $line);
                 if (strcmp($this->p4Depot, $fields[1]) === 0) {
                     $this->p4DepotType = $fields[3];
@@ -517,7 +515,7 @@ class Perforce
     }
 
     /**
-     * @param $reference
+     * @param string $reference
      * @return mixed|null
      */
     protected function getChangeList($reference)
@@ -539,8 +537,8 @@ class Perforce
     }
 
     /**
-     * @param $fromReference
-     * @param $toReference
+     * @param string $fromReference
+     * @param string $toReference
      * @return mixed|null
      */
     public function getCommitLogs($fromReference, $toReference)

@@ -35,7 +35,7 @@ class ChannelRest11Reader extends BaseChannelReader
     /**
      * Reads package descriptions using PEAR Rest 1.1 interface
      *
-     * @param $baseUrl  string base Url interface
+     * @param string $baseUrl base Url interface
      *
      * @return PackageInfo[]
      */
@@ -48,7 +48,7 @@ class ChannelRest11Reader extends BaseChannelReader
      * Read list of channel categories from
      *  {baseUrl}/c/categories.xml
      *
-     * @param $baseUrl string
+     * @param string $baseUrl
      * @return PackageInfo[]
      */
     private function readChannelPackages($baseUrl)
@@ -70,8 +70,8 @@ class ChannelRest11Reader extends BaseChannelReader
      * Read packages from
      *  {baseUrl}/c/{category}/packagesinfo.xml
      *
-     * @param $baseUrl      string
-     * @param $categoryName string
+     * @param string $baseUrl
+     * @param string $categoryName
      * @return PackageInfo[]
      */
     private function readCategoryPackages($baseUrl, $categoryName)
@@ -92,7 +92,7 @@ class ChannelRest11Reader extends BaseChannelReader
     /**
      * Parses package node.
      *
-     * @param $packageInfo  \SimpleXMLElement   xml element describing package
+     * @param \SimpleXMLElement $packageInfo  xml element describing package
      * @return PackageInfo
      */
     private function parsePackage($packageInfo)

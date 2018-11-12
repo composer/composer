@@ -13,7 +13,7 @@
 namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\PerforceDriver;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
 use Composer\Util\Perforce;

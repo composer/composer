@@ -22,7 +22,7 @@ use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositorySet;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
 
 class SolverTest extends TestCase

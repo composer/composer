@@ -69,7 +69,8 @@ class ZipDownloader extends ArchiveDownloader
 
             if (!self::$isWindows && !self::$hasSystemUnzip) {
                 $this->io->writeError("<warning>As there is no 'unzip' command installed zip files are being unpacked using the PHP zip extension.</warning>");
-                $this->io->writeError("<warning>This may cause invalid reports of corrupted archives. Installing 'unzip' may remediate them.</warning>");
+                $this->io->writeError("<warning>This may cause invalid reports of corrupted archives. Besides, any UNIX permissions (e.g. executable) defined in the archives will be lost.</warning>");
+                $this->io->writeError("<warning>Installing 'unzip' may remediate them.</warning>");
             }
         }
 

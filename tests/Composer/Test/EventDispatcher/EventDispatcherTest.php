@@ -17,7 +17,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallerEvents;
 use Composer\Config;
 use Composer\Composer;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
 use Composer\Script\ScriptEvents;
 use Composer\Script\Event as ScriptEvent;

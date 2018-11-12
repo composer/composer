@@ -13,7 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Repository\PearRepository;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * @group legacy

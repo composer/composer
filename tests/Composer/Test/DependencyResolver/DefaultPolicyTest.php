@@ -20,8 +20,7 @@ use Composer\Package\Link;
 use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
-use Composer\TestCase;
-use http\Env\Request;
+use Composer\Test\TestCase;
 
 class DefaultPolicyTest extends TestCase
 {

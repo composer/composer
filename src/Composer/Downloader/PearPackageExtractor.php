@@ -73,8 +73,8 @@ class PearPackageExtractor
      * Perform copy actions on files
      *
      * @param array $files array of copy actions ('from', 'to') with relative paths
-     * @param $source string path to source dir.
-     * @param $target string path to destination dir
+     * @param string $source path to source dir.
+     * @param string $target path to destination dir
      * @param array $roles array [role => roleRoot] relative root for files having that role
      * @param array $vars  list of values can be used for replacement tasks
      */
@@ -135,7 +135,7 @@ class PearPackageExtractor
      */
     private function buildCopyActions($source, array $roles, $vars)
     {
-        /** @var $package \SimpleXmlElement */
+        /** @var \SimpleXmlElement $package */
         $package = simplexml_load_string(file_get_contents($this->combine($source, 'package.xml')));
         if (false === $package) {
             throw new \RuntimeException('Package definition file is not valid.');
