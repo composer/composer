@@ -13,7 +13,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Command\InitCommand;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class InitCommandTest extends TestCase
 {

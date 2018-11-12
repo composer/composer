@@ -14,7 +14,7 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\FossilDriver;
 use Composer\Config;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 

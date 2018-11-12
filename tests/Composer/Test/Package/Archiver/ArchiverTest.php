@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Package\Archiver;
 
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Package;

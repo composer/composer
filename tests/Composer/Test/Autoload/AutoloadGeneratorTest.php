@@ -17,7 +17,7 @@ use Composer\Package\Link;
 use Composer\Util\Filesystem;
 use Composer\Package\AliasPackage;
 use Composer\Package\Package;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Script\ScriptEvents;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Installer\InstallationManager;

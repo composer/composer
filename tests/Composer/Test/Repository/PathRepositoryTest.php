@@ -15,7 +15,7 @@ namespace Composer\Test\Repository;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Repository\PathRepository;
 use Composer\Semver\VersionParser;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class PathRepositoryTest extends TestCase
 {
@@ -25,11 +25,10 @@ class PathRepositoryTest extends TestCase
             ->getMock();
 
         $config = new \Composer\Config();
-        $loader = new ArrayLoader(new VersionParser());
         $versionGuesser = null;
 
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'with-version'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config, $loader);
+        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
         $repository->getPackages();
 
         $this->assertEquals(1, $repository->count());
@@ -42,11 +41,10 @@ class PathRepositoryTest extends TestCase
             ->getMock();
 
         $config = new \Composer\Config();
-        $loader = new ArrayLoader(new VersionParser());
         $versionGuesser = null;
 
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'without-version'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config, $loader);
+        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
         $packages = $repository->getPackages();
 
         $this->assertEquals(1, $repository->count());
@@ -64,11 +62,10 @@ class PathRepositoryTest extends TestCase
             ->getMock();
 
         $config = new \Composer\Config();
-        $loader = new ArrayLoader(new VersionParser());
         $versionGuesser = null;
 
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config, $loader);
+        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
         $packages = $repository->getPackages();
         $names = array();
 
@@ -93,7 +90,6 @@ class PathRepositoryTest extends TestCase
             ->getMock();
 
         $config = new \Composer\Config();
-        $loader = new ArrayLoader(new VersionParser());
         $versionGuesser = null;
 
         // realpath() does not fully expand the paths
@@ -103,7 +99,7 @@ class PathRepositoryTest extends TestCase
         // PHP Bug https://bugs.php.net/bug.php?id=73797
         $relativeUrl = ltrim(substr($repositoryUrl, strlen(realpath(realpath(getcwd())))), DIRECTORY_SEPARATOR);
 
-        $repository = new PathRepository(array('url' => $relativeUrl), $ioInterface, $config, $loader);
+        $repository = new PathRepository(array('url' => $relativeUrl), $ioInterface, $config);
         $packages = $repository->getPackages();
 
         $this->assertEquals(1, $repository->count());

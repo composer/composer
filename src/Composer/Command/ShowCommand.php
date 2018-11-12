@@ -737,7 +737,7 @@ EOT
     /**
      * Display the tree
      *
-     * @param $arrayTree
+     * @param array $arrayTree
      */
     protected function displayPackageTree(array $arrayTree)
     {
@@ -782,7 +782,7 @@ EOT
     /**
      * Generate the package tree
      *
-     * @param  PackageInterface|string $package
+     * @param  PackageInterface $package
      * @param  RepositoryInterface     $installedRepo
      * @param  RepositoryInterface     $distantRepos
      * @return array
@@ -792,38 +792,36 @@ EOT
         RepositoryInterface $installedRepo,
         RepositoryInterface $distantRepos
     ) {
-        if (is_object($package)) {
-            $requires = $package->getRequires();
-            ksort($requires);
-            $children = array();
-            foreach ($requires as $requireName => $require) {
-                $packagesInTree = array($package->getName(), $requireName);
+        $requires = $package->getRequires();
+        ksort($requires);
+        $children = array();
+        foreach ($requires as $requireName => $require) {
+            $packagesInTree = array($package->getName(), $requireName);
 
-                $treeChildDesc = array(
-                    'name' => $requireName,
-                    'version' => $require->getPrettyConstraint(),
-                );
-
-                $deepChildren = $this->addTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree);
-
-                if ($deepChildren) {
-                    $treeChildDesc['requires'] = $deepChildren;
-                }
-
-                $children[] = $treeChildDesc;
-            }
-            $tree = array(
-                'name' => $package->getPrettyName(),
-                'version' => $package->getPrettyVersion(),
-                'description' => $package->getDescription(),
+            $treeChildDesc = array(
+                'name' => $requireName,
+                'version' => $require->getPrettyConstraint(),
             );
 
-            if ($children) {
-                $tree['requires'] = $children;
+            $deepChildren = $this->addTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree);
+
+            if ($deepChildren) {
+                $treeChildDesc['requires'] = $deepChildren;
             }
 
-            return $tree;
+            $children[] = $treeChildDesc;
         }
+        $tree = array(
+            'name' => $package->getPrettyName(),
+            'version' => $package->getPrettyVersion(),
+            'description' => $package->getDescription(),
+        );
+
+        if ($children) {
+            $tree['requires'] = $children;
+        }
+
+        return $tree;
     }
 
     /**

@@ -13,7 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Config;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class ConfigTest extends TestCase
 {

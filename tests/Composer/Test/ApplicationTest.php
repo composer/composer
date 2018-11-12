@@ -13,7 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Console\Application;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ApplicationTest extends TestCase

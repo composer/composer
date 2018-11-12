@@ -13,7 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Repository\ArtifactRepository;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\IO\NullIO;
 use Composer\Config;
 use Composer\Package\BasePackage;
@@ -42,7 +42,7 @@ class ArtifactRepositoryTest extends TestCase
         );
 
         $coordinates = array('type' => 'artifact', 'url' => __DIR__ . '/Fixtures/artifacts');
-        $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
+        $repo = new ArtifactRepository($coordinates, new NullIO());
 
         $foundPackages = array_map(function (BasePackage $package) {
             return "{$package->getPrettyName()}-{$package->getPrettyVersion()}";
@@ -58,7 +58,7 @@ class ArtifactRepositoryTest extends TestCase
     {
         $absolutePath = __DIR__ . '/Fixtures/artifacts';
         $coordinates = array('type' => 'artifact', 'url' => $absolutePath);
-        $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
+        $repo = new ArtifactRepository($coordinates, new NullIO());
 
         foreach ($repo->getPackages() as $package) {
             $this->assertSame(strpos($package->getDistUrl(), strtr($absolutePath, '\\', '/')), 0);
@@ -69,7 +69,7 @@ class ArtifactRepositoryTest extends TestCase
     {
         $relativePath = 'tests/Composer/Test/Repository/Fixtures/artifacts';
         $coordinates = array('type' => 'artifact', 'url' => $relativePath);
-        $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
+        $repo = new ArtifactRepository($coordinates, new NullIO());
 
         foreach ($repo->getPackages() as $package) {
             $this->assertSame(strpos($package->getDistUrl(), $relativePath), 0);

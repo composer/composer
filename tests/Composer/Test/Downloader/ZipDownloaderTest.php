@@ -14,7 +14,7 @@ namespace Composer\Test\Downloader;
 
 use Composer\Downloader\ZipDownloader;
 use Composer\Package\PackageInterface;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 
 class ZipDownloaderTest extends TestCase
@@ -24,6 +24,8 @@ class ZipDownloaderTest extends TestCase
      */
     private $testDir;
     private $prophet;
+    private $io;
+    private $config;
 
     public function setUp()
     {
@@ -46,9 +48,9 @@ class ZipDownloaderTest extends TestCase
         $reflectedProperty = $reflectionClass->getProperty($name);
         $reflectedProperty->setAccessible(true);
         if ($obj === null) {
-            $reflectedProperty = $reflectedProperty->setValue($value);
+            $reflectedProperty->setValue($value);
         } else {
-            $reflectedProperty = $reflectedProperty->setValue($obj, $value);
+            $reflectedProperty->setValue($obj, $value);
         }
     }
 

@@ -33,7 +33,7 @@ use Symfony\Component\Console\Command\Command;
 abstract class BaseCommand extends Command
 {
     /**
-     * @var Composer
+     * @var Composer|null
      */
     private $composer;
 

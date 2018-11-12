@@ -20,7 +20,7 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
 
 class SolverTest extends TestCase
@@ -30,6 +30,7 @@ class SolverTest extends TestCase
     protected $repoInstalled;
     protected $request;
     protected $policy;
+    protected $solver;
 
     public function setUp()
     {
@@ -37,7 +38,7 @@ class SolverTest extends TestCase
         $this->repo = new ArrayRepository;
         $this->repoInstalled = new ArrayRepository;
 
-        $this->request = new Request($this->pool);
+        $this->request = new Request();
         $this->policy = new DefaultPolicy;
         $this->solver = new Solver($this->policy, $this->pool, $this->repoInstalled, new NullIO());
     }

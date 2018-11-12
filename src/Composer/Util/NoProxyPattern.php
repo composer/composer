@@ -35,7 +35,7 @@ class NoProxyPattern
      *
      * @param string $url
      *
-     * @return true if the URL matches one of the rules.
+     * @return bool true if the URL matches one of the rules.
      */
     public function test($url)
     {

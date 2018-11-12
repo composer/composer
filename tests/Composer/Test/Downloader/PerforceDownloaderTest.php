@@ -16,7 +16,7 @@ use Composer\Downloader\PerforceDownloader;
 use Composer\Config;
 use Composer\Repository\VcsRepository;
 use Composer\IO\IOInterface;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 
 /**
