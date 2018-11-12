@@ -529,28 +529,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $packages = array();
         $repo = $this;
 
-        $createPackageIfAcceptable = function ($version, $constraint) use (&$packages, $isPackageAcceptableCallable, $repo) {
-            if (!call_user_func($isPackageAcceptableCallable, strtolower($version['name']), VersionParser::parseStability($version['version']))) {
-                return;
-            }
-
-            if (isset($version['version_normalized']) && $constraint && !$constraint->matches(new Constraint('==', $version['version_normalized']))) {
-                return;
-            }
-
-            // load acceptable packages in the providers
-            $package = $this->createPackage($version, 'Composer\Package\CompletePackage');
-            $package->setRepository($repo);
-
-            // if there was no version_normalized, then we need to check now for the constraint
-            if (!$constraint || isset($version['version_normalized']) || $constraint->matches(new Constraint('==', $package->getVersion()))) {
-                $packages[spl_object_hash($package)] = $package;
-                if ($package instanceof AliasPackage && !isset($packages[spl_object_hash($package->getAliasOf())])) {
-                    $packages[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
-                }
-            }
-        };
-
+        // TODO what if not, then throw?
         if ($this->lazyProvidersUrl) {
             foreach ($packageNames as $name => $constraint) {
                 // skip platform packages, root package and composer-plugin-api
@@ -568,7 +547,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 $this->asyncFetchFile($url, $cacheKey, $lastModified)
-                    ->then(function ($response) use (&$packages, $contents, $name, $constraint, $createPackageIfAcceptable) {
+                    ->then(function ($response) use (&$packages, $contents, $name, $constraint, $repo, $isPackageAcceptableCallable) {
                         if (true === $response) {
                             $response = $contents;
                         }
@@ -591,10 +570,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                                         $unpackedVersion[$key] = $version[$key.'s'][$index];
                                     }
 
-                                    $createPackageIfAcceptable($unpackedVersion, $constraint);
+                                    $repo->createPackageIfAcceptable($packages, $isPackageAcceptableCallable, $unpackedVersion, $constraint);
                                 }
                             } else {
-                                $createPackageIfAcceptable($version, $constraint);
+                                $repo->createPackageIfAcceptable($packages, $isPackageAcceptableCallable, $version, $constraint);
                             }
                         }
                     }, function ($e) {
@@ -609,6 +588,34 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         return $packages;
         // RepositorySet should call loadMetadata, getMetadata when all promises resolved, then metadataComplete when done so we can GC the loaded json and whatnot then as needed
+    }
+
+    /**
+     * TODO v3 should make this private once we can drop PHP 5.3 support
+     *
+     * @private
+     */
+    public function createPackageIfAcceptable(&$packages, $isPackageAcceptableCallable, $version, $constraint)
+    {
+        if (!call_user_func($isPackageAcceptableCallable, strtolower($version['name']), VersionParser::parseStability($version['version']))) {
+            return;
+        }
+
+        if (isset($version['version_normalized']) && $constraint && !$constraint->matches(new Constraint('==', $version['version_normalized']))) {
+            return;
+        }
+
+        // load acceptable packages in the providers
+        $package = $this->createPackage($version, 'Composer\Package\CompletePackage');
+        $package->setRepository($this);
+
+        // if there was no version_normalized, then we need to check now for the constraint
+        if (!$constraint || isset($version['version_normalized']) || $constraint->matches(new Constraint('==', $package->getVersion()))) {
+            $packages[spl_object_hash($package)] = $package;
+            if ($package instanceof AliasPackage && !isset($packages[spl_object_hash($package->getAliasOf())])) {
+                $packages[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
+            }
+        }
     }
 
     protected function loadRootServerFile()
