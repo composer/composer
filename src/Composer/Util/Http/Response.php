@@ -27,7 +27,7 @@ class Response
             throw new \LogicException('url key missing from request array');
         }
         $this->request = $request;
-        $this->code = $code;
+        $this->code = (int) $code;
         $this->headers = $headers;
         $this->body = $body;
     }
@@ -35,6 +35,23 @@ class Response
     public function getStatusCode()
     {
         return $this->code;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getStatusMessage()
+    {
+        $value = null;
+        foreach ($this->headers as $header) {
+            if (preg_match('{^HTTP/\S+ \d+}i', $header)) {
+                // In case of redirects, headers contain the headers of all responses
+                // so we can not return directly and need to keep iterating
+                $value = $header;
+            }
+        }
+
+        return $value;
     }
 
     public function getHeaders()
@@ -51,7 +68,7 @@ class Response
             } elseif (preg_match('{^HTTP/}i', $header)) {
                 // TODO ideally redirects would be handled in CurlDownloader/RemoteFilesystem and this becomes unnecessary
                 //
-                // In case of redirects, http_response_headers contains the headers of all responses
+                // In case of redirects, headers contains the headers of all responses
                 // so we reset the flag when a new response is being parsed as we are only interested in the last response
                 $value = null;
             }
@@ -59,7 +76,6 @@ class Response
 
         return $value;
     }
-
 
     public function getBody()
     {

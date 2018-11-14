@@ -66,6 +66,7 @@ class HttpDownloader
         $this->options = array_replace_recursive($this->options, $options);
         $this->config = $config;
 
+        // TODO enable curl only on 5.6+ if older versions cause any problem
         if (extension_loaded('curl')) {
             $this->curl = new Http\CurlDownloader($io, $config, $options, $disableTls);
         }
@@ -125,6 +126,11 @@ class HttpDownloader
 
     private function addJob($request, $sync = false)
     {
+        // capture username/password from URL if there is one
+        if (preg_match('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $request['url'], $match)) {
+            $this->io->setAuthentication($originUrl, rawurldecode($match[1]), rawurldecode($match[2]));
+        }
+
         $job = array(
             'id' => $this->idGen++,
             'status' => self::STATUS_QUEUED,
@@ -138,7 +144,6 @@ class HttpDownloader
 
         $origin = $this->getOrigin($job['request']['url']);
 
-        // TODO experiment with allowing file:// through curl too
         if ($curl && preg_match('{^https?://}i', $job['request']['url'])) {
             $resolver = function ($resolve, $reject) use (&$job, $curl, $origin) {
                 // start job
@@ -183,10 +188,10 @@ class HttpDownloader
             $job['response'] = $response;
             // TODO look for more jobs to start once we throttle to max X jobs
         }, function ($e) use ($io, &$job) {
-            var_dump(__CLASS__ . __LINE__);
-            var_dump(gettype($e));
-            var_dump($e->getMessage());
-            die;
+            // var_dump(__CLASS__ . __LINE__);
+            // var_dump(get_class($e));
+            // var_dump($e->getMessage());
+            // die;
             $job['status'] = HttpDownloader::STATUS_FAILED;
             $job['exception'] = $e;
         });
@@ -248,14 +253,32 @@ class HttpDownloader
 
     private function getOrigin($url)
     {
+        if (0 === strpos($url, 'file://')) {
+            return $url;
+        }
+
         $origin = parse_url($url, PHP_URL_HOST);
 
-        if ($origin === 'api.github.com') {
+        if (strpos($origin, '.github.com') === (strlen($origin) - 11)) {
             return 'github.com';
         }
 
         if ($origin === 'repo.packagist.org') {
             return 'packagist.org';
+        }
+
+        // Gitlab can be installed in a non-root context (i.e. gitlab.com/foo). When downloading archives the originUrl
+        // is the host without the path, so we look for the registered gitlab-domains matching the host here
+        if (
+            is_array($this->config->get('gitlab-domains'))
+            && false === strpos($origin, '/')
+            && !in_array($origin, $this->config->get('gitlab-domains'))
+        ) {
+            foreach ($this->config->get('gitlab-domains') as $gitlabDomain) {
+                if (0 === strpos($gitlabDomain, $origin)) {
+                    return $gitlabDomain;
+                }
+            }
         }
 
         return $origin ?: $url;

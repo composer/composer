@@ -41,6 +41,7 @@ class RemoteFilesystem
     private $retryAuthFailure;
     private $lastHeaders;
     private $storeAuth;
+    private $authHelper;
     private $degradedMode = false;
     private $redirects;
     private $maxRedirects = 20;
@@ -53,7 +54,7 @@ class RemoteFilesystem
      * @param array       $options    The options
      * @param bool        $disableTls
      */
-    public function __construct(IOInterface $io, Config $config = null, array $options = array(), $disableTls = false)
+    public function __construct(IOInterface $io, Config $config, array $options = array(), $disableTls = false)
     {
         $this->io = $io;
 
@@ -69,6 +70,7 @@ class RemoteFilesystem
         // handle the other externally set options normally.
         $this->options = array_replace_recursive($this->options, $options);
         $this->config = $config;
+        $this->authHelper = new AuthHelper($io, $config);
     }
 
     /**
@@ -215,27 +217,6 @@ class RemoteFilesystem
      */
     protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
     {
-        if (strpos($originUrl, '.github.com') === (strlen($originUrl) - 11)) {
-            $originUrl = 'github.com';
-        }
-
-        // Gitlab can be installed in a non-root context (i.e. gitlab.com/foo). When downloading archives the originUrl
-        // is the host without the path, so we look for the registered gitlab-domains matching the host here
-        if (
-            $this->config
-            && is_array($this->config->get('gitlab-domains'))
-            && false === strpos($originUrl, '/')
-            && !in_array($originUrl, $this->config->get('gitlab-domains'))
-        ) {
-            foreach ($this->config->get('gitlab-domains') as $gitlabDomain) {
-                if (0 === strpos($gitlabDomain, $originUrl)) {
-                    $originUrl = $gitlabDomain;
-                    break;
-                }
-            }
-            unset($gitlabDomain);
-        }
-
         $this->scheme = parse_url($fileUrl, PHP_URL_SCHEME);
         $this->bytesMax = 0;
         $this->originUrl = $originUrl;
@@ -246,11 +227,6 @@ class RemoteFilesystem
         $this->retryAuthFailure = true;
         $this->lastHeaders = array();
         $this->redirects = 1; // The first request counts.
-
-        // capture username/password from URL if there is one
-        if (preg_match('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $fileUrl, $match)) {
-            $this->io->setAuthentication($originUrl, rawurldecode($match[1]), rawurldecode($match[2]));
-        }
 
         $tempAdditionalOptions = $additionalOptions;
         if (isset($tempAdditionalOptions['retry-auth-failure'])) {
@@ -271,14 +247,6 @@ class RemoteFilesystem
         unset($tempAdditionalOptions);
 
         $origFileUrl = $fileUrl;
-
-        if (isset($options['github-token'])) {
-            // only add the access_token if it is actually a github URL (in case we were redirected to S3)
-            if (preg_match('{^https?://([a-z0-9-]+\.)*github\.com/}', $fileUrl)) {
-                $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
-            }
-            unset($options['github-token']);
-        }
 
         if (isset($options['gitlab-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['gitlab-token'];
@@ -400,7 +368,7 @@ class RemoteFilesystem
 
         // check for bitbucket login page asking to authenticate
         if ($originUrl === 'bitbucket.org'
-            && !$this->isPublicBitBucketDownload($fileUrl)
+            && !$this->authHelper->isPublicBitBucketDownload($fileUrl)
             && substr($fileUrl, -4) === '.zip'
             && (!$locationHeader || substr($locationHeader, -4) !== '.zip')
             && $contentType && preg_match('{^text/html\b}i', $contentType)
@@ -544,8 +512,7 @@ class RemoteFilesystem
             $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
 
             if ($this->storeAuth && $this->config) {
-                $authHelper = new AuthHelper($this->io, $this->config);
-                $authHelper->storeAuth($this->originUrl, $this->storeAuth);
+                $this->authHelper->storeAuth($this->originUrl, $this->storeAuth);
                 $this->storeAuth = false;
             }
 
@@ -650,111 +617,14 @@ class RemoteFilesystem
 
     protected function promptAuthAndRetry($httpStatus, $reason = null, $warning = null, $headers = array())
     {
-        if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
-            $gitHubUtil = new GitHub($this->io, $this->config, null);
-            $message = "\n";
+        $result = $this->authHelper->promptAuthIfNeeded($this->fileUrl, $this->originUrl, $httpStatus, $reason, $warning, $headers);
 
-            $rateLimited = $gitHubUtil->isRateLimited($headers);
-            if ($rateLimited) {
-                $rateLimit = $gitHubUtil->getRateLimit($headers);
-                if ($this->io->hasAuthentication($this->originUrl)) {
-                    $message = 'Review your configured GitHub OAuth token or enter a new one to go over the API rate limit.';
-                } else {
-                    $message = 'Create a GitHub OAuth token to go over the API rate limit.';
-                }
+        $this->storeAuth = $result['storeAuth'];
+        $this->retry = $result['retry'];
 
-                $message = sprintf(
-                    'GitHub API limit (%d calls/hr) is exhausted, could not fetch '.$this->fileUrl.'. '.$message.' You can also wait until %s for the rate limit to reset.',
-                    $rateLimit['limit'],
-                    $rateLimit['reset']
-                )."\n";
-            } else {
-                $message .= 'Could not fetch '.$this->fileUrl.', please ';
-                if ($this->io->hasAuthentication($this->originUrl)) {
-                    $message .= 'review your configured GitHub OAuth token or enter a new one to access private repos';
-                } else {
-                    $message .= 'create a GitHub OAuth token to access private repos';
-                }
-            }
-
-            if (!$gitHubUtil->authorizeOAuth($this->originUrl)
-                && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
-            ) {
-                throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
-            }
-        } elseif ($this->config && in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
-            $message = "\n".'Could not fetch '.$this->fileUrl.', enter your ' . $this->originUrl . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
-            $gitLabUtil = new GitLab($this->io, $this->config, null);
-
-            if ($this->io->hasAuthentication($this->originUrl) && ($auth = $this->io->getAuthentication($this->originUrl)) && $auth['password'] === 'private-token') {
-                throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
-            }
-
-            if (!$gitLabUtil->authorizeOAuth($this->originUrl)
-                && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, $message))
-            ) {
-                throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
-            }
-        } elseif ($this->config && $this->originUrl === 'bitbucket.org') {
-            $askForOAuthToken = true;
-            if ($this->io->hasAuthentication($this->originUrl)) {
-                $auth = $this->io->getAuthentication($this->originUrl);
-                if ($auth['username'] !== 'x-token-auth') {
-                    $bitbucketUtil = new Bitbucket($this->io, $this->config);
-                    $accessToken = $bitbucketUtil->requestToken($this->originUrl, $auth['username'], $auth['password']);
-                    if (!empty($accessToken)) {
-                        $this->io->setAuthentication($this->originUrl, 'x-token-auth', $accessToken);
-                        $askForOAuthToken = false;
-                    }
-                } else {
-                    throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
-                }
-            }
-
-            if ($askForOAuthToken) {
-                $message = "\n".'Could not fetch ' . $this->fileUrl . ', please create a bitbucket OAuth token to ' . (($httpStatus === 401 || $httpStatus === 403) ? 'access private repos' : 'go over the API rate limit');
-                $bitBucketUtil = new Bitbucket($this->io, $this->config);
-                if (! $bitBucketUtil->authorizeOAuth($this->originUrl)
-                    && (! $this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($this->originUrl, $message))
-                ) {
-                    throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
-                }
-            }
-        } else {
-            // 404s are only handled for github
-            if ($httpStatus === 404) {
-                return;
-            }
-
-            // fail if the console is not interactive
-            if (!$this->io->isInteractive()) {
-                if ($httpStatus === 401) {
-                    $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console to authenticate";
-                }
-                if ($httpStatus === 403) {
-                    $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $reason;
-                }
-
-                throw new TransportException($message, $httpStatus);
-            }
-            // fail if we already have auth
-            if ($this->io->hasAuthentication($this->originUrl)) {
-                throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
-            }
-
-            $this->io->overwriteError('');
-            if ($warning) {
-                $this->io->writeError('    <warning>'.$warning.'</warning>');
-            }
-            $this->io->writeError('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
-            $username = $this->io->ask('      Username: ');
-            $password = $this->io->askAndHideAnswer('      Password: ');
-            $this->io->setAuthentication($this->originUrl, $username, $password);
-            $this->storeAuth = $this->config->get('store-auths');
+        if ($this->retry) {
+            throw new TransportException('RETRY');
         }
-
-        $this->retry = true;
-        throw new TransportException('RETRY');
     }
 
     protected function getOptionsForUrl($originUrl, $additionalOptions)
@@ -814,27 +684,7 @@ class RemoteFilesystem
             $headers[] = 'Connection: close';
         }
 
-        if ($this->io->hasAuthentication($originUrl)) {
-            $auth = $this->io->getAuthentication($originUrl);
-            if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
-                $options['github-token'] = $auth['username'];
-            } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
-                if ($auth['password'] === 'oauth2') {
-                    $headers[] = 'Authorization: Bearer '.$auth['username'];
-                } elseif ($auth['password'] === 'private-token') {
-                    $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
-                }
-            } elseif ('bitbucket.org' === $originUrl
-                && $this->fileUrl !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL && 'x-token-auth' === $auth['username']
-            ) {
-                if (!$this->isPublicBitBucketDownload($this->fileUrl)) {
-                    $headers[] = 'Authorization: Bearer ' . $auth['password'];
-                }
-            } else {
-                $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-                $headers[] = 'Authorization: Basic '.$authStr;
-            }
-        }
+        $headers = $this->authHelper->addAuthenticationHeader($headers, $originUrl, $this->fileUrl);
 
         $options['http']['follow_location'] = 0;
 
@@ -960,30 +810,5 @@ class RemoteFilesystem
         $port = parse_url($url, PHP_URL_PORT) ?: $defaultPort;
 
         return parse_url($url, PHP_URL_HOST).':'.$port;
-    }
-
-    /**
-     * @link https://github.com/composer/composer/issues/5584
-     *
-     * @param string $urlToBitBucketFile URL to a file at bitbucket.org.
-     *
-     * @return bool Whether the given URL is a public BitBucket download which requires no authentication.
-     */
-    private function isPublicBitBucketDownload($urlToBitBucketFile)
-    {
-        $domain = parse_url($urlToBitBucketFile, PHP_URL_HOST);
-        if (strpos($domain, 'bitbucket.org') === false) {
-            // Bitbucket downloads are hosted on amazonaws.
-            // We do not need to authenticate there at all
-            return true;
-        }
-
-        $path = parse_url($urlToBitBucketFile, PHP_URL_PATH);
-
-        // Path for a public download follows this pattern /{user}/{repo}/downloads/{whatever}
-        // {@link https://blog.bitbucket.org/2009/04/12/new-feature-downloads/}
-        $pathParts = explode('/', $path);
-
-        return count($pathParts) >= 4 && $pathParts[3] == 'downloads';
     }
 }

@@ -16,6 +16,9 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
+use Composer\Util\RemoteFilesystem;
+use Composer\Util\StreamContextFactory;
+use Composer\Util\AuthHelper;
 use Psr\Log\LoggerInterface;
 use React\Promise\Promise;
 
@@ -28,8 +31,14 @@ class CurlDownloader
     private $multiHandle;
     private $shareHandle;
     private $jobs = array();
+    /** @var IOInterface */
     private $io;
+    /** @var Config */
+    private $config;
+    /** @var AuthHelper */
+    private $authHelper;
     private $selectTimeout = 5.0;
+    private $maxRedirects = 20;
     protected $multiErrors = array(
         CURLM_BAD_HANDLE      => array('CURLM_BAD_HANDLE', 'The passed-in handle is not a valid CURLM handle.'),
         CURLM_BAD_EASY_HANDLE => array('CURLM_BAD_EASY_HANDLE', "An easy handle was not good/valid. It could mean that it isn't an easy handle at all, or possibly that the handle already is in used by this or another multi handle."),
@@ -42,6 +51,7 @@ class CurlDownloader
             'method' => CURLOPT_CUSTOMREQUEST,
             'content' => CURLOPT_POSTFIELDS,
             'proxy' => CURLOPT_PROXY,
+            'header' => CURLOPT_HTTPHEADER,
         ),
         'ssl' => array(
             'ciphers' => CURLOPT_SSL_CIPHER_LIST,
@@ -62,6 +72,7 @@ class CurlDownloader
     public function __construct(IOInterface $io, Config $config, array $options = array(), $disableTls = false)
     {
         $this->io = $io;
+        $this->config = $config;
 
         $this->multiHandle = $mh = curl_multi_init();
         if (function_exists('curl_multi_setopt')) {
@@ -77,79 +88,112 @@ class CurlDownloader
             curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);
             curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
         }
+
+        $this->authHelper = new AuthHelper($io, $config);
     }
 
     public function download($resolve, $reject, $origin, $url, $options, $copyTo = null)
     {
-        $ch = curl_init();
-        $hd = fopen('php://temp/maxmemory:32768', 'w+b');
+        return $this->initDownload($resolve, $reject, $origin, $url, $options, $copyTo);
+    }
 
-        // TODO auth & other context
-        // TODO cleanup
+    private function initDownload($resolve, $reject, $origin, $url, $options, $copyTo = null, array $attributes = array())
+    {
+        // TODO allow setting attributes somehow
+        $attributes = array_merge(array(
+            'retryAuthFailure' => true,
+            'redirects' => 1,
+            'storeAuth' => false,
+        ), $attributes);
 
-        if ($copyTo && !$fd = @fopen($copyTo.'~', 'w+b')) {
-            // TODO throw here probably?
-            $copyTo = null;
+        $originalOptions = $options;
+
+        // check URL can be accessed (i.e. is not insecure)
+        $this->config->prohibitUrlByConfig($url, $this->io);
+
+        $curlHandle = curl_init();
+        $headerHandle = fopen('php://temp/maxmemory:32768', 'w+b');
+
+        if ($copyTo) {
+            $errorMessage = '';
+            set_error_handler(function ($code, $msg) use (&$errorMessage) {
+                if ($errorMessage) {
+                    $errorMessage .= "\n";
+                }
+                $errorMessage .= preg_replace('{^fopen\(.*?\): }', '', $msg);
+            });
+            $bodyHandle = fopen($copyTo.'~', 'w+b');
+            restore_error_handler();
+            if (!$bodyHandle) {
+                throw new TransportException('The "'.$url.'" file could not be written to '.$copyTo.': '.$errorMessage);
+            }
+        } else {
+            $bodyHandle = @fopen('php://temp/maxmemory:524288', 'w+b');
         }
-        if (!$copyTo) {
-            $fd = @fopen('php://temp/maxmemory:524288', 'w+b');
+
+        curl_setopt($curlHandle, CURLOPT_URL, $url);
+        curl_setopt($curlHandle, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curlHandle, CURLOPT_MAXREDIRS, 20);
+        //curl_setopt($curlHandle, CURLOPT_DNS_USE_GLOBAL_CACHE, false);
+        curl_setopt($curlHandle, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($curlHandle, CURLOPT_TIMEOUT, 10); // TODO increase
+        curl_setopt($curlHandle, CURLOPT_WRITEHEADER, $headerHandle);
+        curl_setopt($curlHandle, CURLOPT_FILE, $bodyHandle);
+        curl_setopt($curlHandle, CURLOPT_ENCODING, "gzip");
+        curl_setopt($curlHandle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
+        if (defined('CURLOPT_SSL_FALSESTART')) {
+            curl_setopt($curlHandle, CURLOPT_SSL_FALSESTART, true);
+        }
+        if (function_exists('curl_share_init')) {
+            curl_setopt($curlHandle, CURLOPT_SHARE, $this->shareHandle);
         }
 
         if (!isset($options['http']['header'])) {
             $options['http']['header'] = array();
         }
 
-        $headers = array_diff($options['http']['header'], array('Connection: close'));
+        $options['http']['header'] = array_diff($options['http']['header'], array('Connection: close'));
+        $options['http']['header'][] = 'Connection: keep-alive';
 
-        // TODO
-        $degradedMode = false;
-        if ($degradedMode) {
-            curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
-        } else {
-            $headers[] = 'Connection: keep-alive';
-            $version = curl_version();
-            $features = $version['features'];
-            if (0 === strpos($url, 'https://') && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features)) {
-                curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
-            }
+        $version = curl_version();
+        $features = $version['features'];
+        if (0 === strpos($url, 'https://') && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features)) {
+            curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
         }
 
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        //curl_setopt($ch, CURLOPT_DNS_USE_GLOBAL_CACHE, false);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10); // TODO increase
-        curl_setopt($ch, CURLOPT_WRITEHEADER, $hd);
-        curl_setopt($ch, CURLOPT_FILE, $fd);
-        if (function_exists('curl_share_init')) {
-            curl_setopt($ch, CURLOPT_SHARE, $this->shareHandle);
-        }
+        $options['http']['header'] = $this->authHelper->addAuthenticationHeader($options['http']['header'], $origin, $url);
+        $options = StreamContextFactory::initOptions($url, $options);
 
         foreach (self::$options as $type => $curlOptions) {
             foreach ($curlOptions as $name => $curlOption) {
                 if (isset($options[$type][$name])) {
-                    curl_setopt($ch, $curlOption, $options[$type][$name]);
+                    curl_setopt($curlHandle, $curlOption, $options[$type][$name]);
                 }
             }
         }
 
-        $progress = array_diff_key(curl_getinfo($ch), self::$timeInfo);
+        $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
 
-        $this->jobs[(int) $ch] = array(
+        $this->jobs[(int) $curlHandle] = array(
+            'url' => $url,
+            'origin' => $origin,
+            'attributes' => $attributes,
+            'options' => $originalOptions,
             'progress' => $progress,
-            'ch' => $ch,
+            'curlHandle' => $curlHandle,
             //'callback' => $params['notification'],
-            'file' => $copyTo,
-            'hd' => $hd,
-            'fd' => $fd,
+            'filename' => $copyTo,
+            'headerHandle' => $headerHandle,
+            'bodyHandle' => $bodyHandle,
             'resolve' => $resolve,
             'reject' => $reject,
         );
 
-        $this->io->write('Downloading '.$url, true, IOInterface::DEBUG);
+        $usingProxy = !empty($options['http']['proxy']) ? ' using proxy ' . $options['http']['proxy'] : '';
+        $ifModified = false !== strpos(strtolower(implode(',', $options['http']['header'])), 'if-modified-since:') ? ' if modified' : '';
+        $this->io->writeError('Downloading ' . $url . $usingProxy . $ifModified, true, IOInterface::DEBUG);
 
-        $this->checkCurlResult(curl_multi_add_handle($this->multiHandle, $ch));
+        $this->checkCurlResult(curl_multi_add_handle($this->multiHandle, $curlHandle));
         //$params['notification'](STREAM_NOTIFY_RESOLVE, STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, 0, false);
     }
 
@@ -169,74 +213,114 @@ class CurlDownloader
             }
 
             while ($progress = curl_multi_info_read($this->multiHandle)) {
-                $h = $progress['handle'];
-                $i = (int) $h;
+                $curlHandle = $progress['handle'];
+                $i = (int) $curlHandle;
                 if (!isset($this->jobs[$i])) {
                     continue;
                 }
-                $progress = array_diff_key(curl_getinfo($h), self::$timeInfo);
+                $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
                 $job = $this->jobs[$i];
                 unset($this->jobs[$i]);
-                curl_multi_remove_handle($this->multiHandle, $h);
-                $error = curl_error($h);
-                $errno = curl_errno($h);
-                curl_close($h);
+                curl_multi_remove_handle($this->multiHandle, $curlHandle);
+                $error = curl_error($curlHandle);
+                $errno = curl_errno($curlHandle);
+                curl_close($curlHandle);
 
+                $headers = null;
+                $statusCode = null;
+                $response = null;
                 try {
-                    //$this->onProgress($h, $job['callback'], $progress, $job['progress']);
-                    if ('' !== $error) {
-                        throw new TransportException(curl_error($h));
+                    //$this->onProgress($curlHandle, $job['callback'], $progress, $job['progress']);
+                    if (CURLE_OK !== $errno) {
+                        throw new TransportException($error);
                     }
 
-                    if ($job['file']) {
-                        if (CURLE_OK === $errno) {
-                            fclose($job['fd']);
-                            rename($job['file'].'~', $job['file']);
-                            call_user_func($job['resolve'], true);
-                        }
-                        // TODO otherwise show error?
+                    $statusCode = $progress['http_code'];
+                    rewind($job['headerHandle']);
+                    $headers = explode("\r\n", rtrim(stream_get_contents($job['headerHandle'])));
+                    fclose($job['headerHandle']);
+
+                    // prepare response object
+                    if ($job['filename']) {
+                        fclose($job['bodyHandle']);
+                        $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $job['filename'].'~');
                     } else {
-                        rewind($job['hd']);
-                        $headers = explode("\r\n", rtrim(stream_get_contents($job['hd'])));
-                        fclose($job['hd']);
-                        rewind($job['fd']);
-                        $contents = stream_get_contents($job['fd']);
-                        fclose($job['fd']);
-                        $this->io->writeError('['.$progress['http_code'].'] '.$progress['url'], true, IOInterface::DEBUG);
-                        call_user_func($job['resolve'], new Response(array('url' => $progress['url']), $progress['http_code'], $headers, $contents));
+                        rewind($job['bodyHandle']);
+                        $contents = stream_get_contents($job['bodyHandle']);
+                        fclose($job['bodyHandle']);
+                        $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
+                        $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
                     }
-                } catch (TransportException $e) {
-                    fclose($job['hd']);
-                    fclose($job['fd']);
-                    if ($job['file']) {
-                        @unlink($job['file'].'~');
+
+                    $response = $this->retryIfAuthNeeded($job, $response);
+
+                    // handle 3xx redirects, 304 Not Modified is excluded
+                    if ($statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $job['redirects'] < $this->maxRedirects) {
+                        // TODO
+                        $response = $this->handleRedirect($job, $response);
+                    }
+
+                    // fail 4xx and 5xx responses and capture the response
+                    if ($statusCode >= 400 && $statusCode <= 599) {
+                        throw $this->failResponse($job, $response, $response->getStatusMessage());
+//                        $this->io->overwriteError("Downloading (<error>failed</error>)", false);
+                    }
+
+                    if ($job['attributes']['storeAuth']) {
+                        $this->authHelper->storeAuth($job['origin'], $job['attributes']['storeAuth']);
+                    }
+
+                    // resolve promise
+                    if ($job['filename']) {
+                        rename($job['filename'].'~', $job['filename']);
+                        call_user_func($job['resolve'], true);
+                    } else {
+                        call_user_func($job['resolve'], $response);
+                    }
+                } catch (\Exception $e) {
+                    if ($e instanceof TransportException && $headers) {
+                        $e->setHeaders($headers);
+                        $e->setStatusCode($statusCode);
+                    }
+                    if ($e instanceof TransportException && $response) {
+                        $e->setResponse($response->getBody());
+                    }
+
+                    if (is_resource($job['headerHandle'])) {
+                        fclose($job['headerHandle']);
+                    }
+                    if (is_resource($job['bodyHandle'])) {
+                        fclose($job['bodyHandle']);
+                    }
+                    if ($job['filename']) {
+                        @unlink($job['filename'].'~');
                     }
                     call_user_func($job['reject'], $e);
                 }
             }
 
-            foreach ($this->jobs as $i => $h) {
+            foreach ($this->jobs as $i => $curlHandle) {
                 if (!isset($this->jobs[$i])) {
                     continue;
                 }
-                $h = $this->jobs[$i]['ch'];
-                $progress = array_diff_key(curl_getinfo($h), self::$timeInfo);
+                $curlHandle = $this->jobs[$i]['curlHandle'];
+                $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
 
                 if ($this->jobs[$i]['progress'] !== $progress) {
                     $previousProgress = $this->jobs[$i]['progress'];
                     $this->jobs[$i]['progress'] = $progress;
                     try {
-                        //$this->onProgress($h, $this->jobs[$i]['callback'], $progress, $previousProgress);
+                        //$this->onProgress($curlHandle, $this->jobs[$i]['callback'], $progress, $previousProgress);
                     } catch (TransportException $e) {
                         var_dump('Caught '.$e->getMessage());die;
                         unset($this->jobs[$i]);
-                        curl_multi_remove_handle($this->multiHandle, $h);
-                        curl_close($h);
+                        curl_multi_remove_handle($this->multiHandle, $curlHandle);
+                        curl_close($curlHandle);
 
-                        fclose($job['hd']);
-                        fclose($job['fd']);
-                        if ($job['file']) {
-                            @unlink($job['file'].'~');
+                        fclose($job['headerHandle']);
+                        fclose($job['bodyHandle']);
+                        if ($job['filename']) {
+                            @unlink($job['filename'].'~');
                         }
                         call_user_func($job['reject'], $e);
                     }
@@ -245,22 +329,77 @@ class CurlDownloader
         } catch (\Exception $e) {
             var_dump('Caught2', get_class($e), $e->getMessage(), $e);die;
         }
-
-// TODO finalize / resolve
-//            if ($copyTo && !isset($this->exceptions[(int) $ch])) {
-//                $fd = fopen($copyTo, 'rb');
-//            }
-//
     }
 
-    private function onProgress($ch, callable $notify, array $progress, array $previousProgress)
+    private function retryIfAuthNeeded(array $job, Response $response)
+    {
+        if (in_array($response->getStatusCode(), array(401, 403)) && $job['attributes']['retryAuthFailure']) {
+            $warning = null;
+            if ($response->getHeader('content-type') === 'application/json') {
+                $data = json_decode($response->getBody(), true);
+                if (!empty($data['warning'])) {
+                    $warning = $data['warning'];
+                }
+            }
+
+            $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $warning, $response->getHeaders());
+
+            if ($result['retry']) {
+                // TODO retry somehow using $result['storeAuth'] in the attributes
+            }
+        }
+
+        $locationHeader = $response->getHeader('location');
+        $needsAuthRetry = false;
+
+        // check for bitbucket login page asking to authenticate
+        if (
+            $job['origin'] === 'bitbucket.org'
+            && !$this->authHelper->isPublicBitBucketDownload($job['url'])
+            && substr($job['url'], -4) === '.zip'
+            && (!$locationHeader || substr($locationHeader, -4) !== '.zip')
+            && preg_match('{^text/html\b}i', $response->getHeader('content-type'))
+        ) {
+            $needsAuthRetry = 'Bitbucket requires authentication and it was not provided';
+        }
+
+        // check for gitlab 404 when downloading archives
+        if (
+            $response->getStatusCode() === 404
+            && $this->config && in_array($job['origin'], $this->config->get('gitlab-domains'), true)
+            && false !== strpos($job['url'], 'archive.zip')
+        ) {
+            $needsAuthRetry = 'GitLab requires authentication and it was not provided';
+        }
+
+        if ($needsAuthRetry) {
+            if ($job['attributes']['retryAuthFailure']) {
+                $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], 401);
+                if ($result['retry']) {
+                    // TODO ...
+                    // TODO return early here to abort failResponse
+                }
+            }
+
+            throw $this->failResponse($job, $response, $needsAuthRetry);
+        }
+
+        return $response;
+    }
+
+    private function failResponse(array $job, Response $response, $errorMessage)
+    {
+        return new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')', $response->getStatusCode());
+    }
+
+    private function onProgress($curlHandle, callable $notify, array $progress, array $previousProgress)
     {
         if (300 <= $progress['http_code'] && $progress['http_code'] < 400) {
             return;
         }
         if (!$previousProgress['http_code'] && $progress['http_code'] && $progress['http_code'] < 200 || 400 <= $progress['http_code']) {
             $code = 403 === $progress['http_code'] ? STREAM_NOTIFY_AUTH_RESULT : STREAM_NOTIFY_FAILURE;
-            $notify($code, STREAM_NOTIFY_SEVERITY_ERR, curl_error($ch), $progress['http_code'], 0, 0, false);
+            $notify($code, STREAM_NOTIFY_SEVERITY_ERR, curl_error($curlHandle), $progress['http_code'], 0, 0, false);
         }
         if ($previousProgress['download_content_length'] < $progress['download_content_length']) {
             $notify(STREAM_NOTIFY_FILE_SIZE_IS, STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, (int) $progress['download_content_length'], false);

@@ -41,6 +41,32 @@ final class StreamContextFactory
             'max_redirects' => 20,
         ));
 
+        $options = array_replace_recursive($options, self::initOptions($url, $defaultOptions));
+        unset($defaultOptions['http']['header']);
+        $options = array_replace_recursive($options, $defaultOptions);
+
+        if (isset($options['http']['header'])) {
+            $options['http']['header'] = self::fixHttpHeaderField($options['http']['header']);
+        }
+
+        return stream_context_create($options, $defaultParams);
+    }
+
+    /**
+     * @param string $url
+     * @param array $options
+     * @return array ['http' => ['header' => [...], 'proxy' => '..', 'request_fulluri' => bool]] formatted as a stream context array
+     */
+    public static function initOptions($url, array $options)
+    {
+        // Make sure the headers are in an array form
+        if (!isset($options['http']['header'])) {
+            $options['http']['header'] = array();
+        }
+        if (is_string($options['http']['header'])) {
+            $options['http']['header'] = explode("\r\n", $options['http']['header']);
+        }
+
         // Handle HTTP_PROXY/http_proxy on CLI only for security reasons
         if ((PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') && (!empty($_SERVER['HTTP_PROXY']) || !empty($_SERVER['http_proxy']))) {
             $proxy = parse_url(!empty($_SERVER['http_proxy']) ? $_SERVER['http_proxy'] : $_SERVER['HTTP_PROXY']);
@@ -117,22 +143,8 @@ final class StreamContextFactory
                 }
                 $auth = base64_encode($auth);
 
-                // Preserve headers if already set in default options
-                if (isset($defaultOptions['http']['header'])) {
-                    if (is_string($defaultOptions['http']['header'])) {
-                        $defaultOptions['http']['header'] = array($defaultOptions['http']['header']);
-                    }
-                    $defaultOptions['http']['header'][] = "Proxy-Authorization: Basic {$auth}";
-                } else {
-                    $options['http']['header'] = array("Proxy-Authorization: Basic {$auth}");
-                }
+                $options['http']['header'][] = "Proxy-Authorization: Basic {$auth}";
             }
-        }
-
-        $options = array_replace_recursive($options, $defaultOptions);
-
-        if (isset($options['http']['header'])) {
-            $options['http']['header'] = self::fixHttpHeaderField($options['http']['header']);
         }
 
         if (defined('HHVM_VERSION')) {
@@ -141,18 +153,26 @@ final class StreamContextFactory
             $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
         }
 
+        if (extension_loaded('curl')) {
+            $curl = curl_version();
+            $httpVersion = 'curl '.$curl['version'];
+        } else {
+            $httpVersion = 'streams';
+        }
+
         if (!isset($options['http']['header']) || false === stripos(implode('', $options['http']['header']), 'user-agent')) {
             $options['http']['header'][] = sprintf(
-                'User-Agent: Composer/%s (%s; %s; %s%s)',
-                Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
+                'User-Agent: Composer/%s (%s; %s; %s; %s%s)',
+                Composer::VERSION === '@package_version@' ? Composer::SOURCE_VERSION : Composer::VERSION,
                 function_exists('php_uname') ? php_uname('s') : 'Unknown',
                 function_exists('php_uname') ? php_uname('r') : 'Unknown',
                 $phpVersion,
+                $httpVersion,
                 getenv('CI') ? '; CI' : ''
             );
         }
 
-        return stream_context_create($options, $defaultParams);
+        return $options;
     }
 
     /**
