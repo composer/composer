@@ -95,12 +95,17 @@ class CurlDownloader
 
     public function download($resolve, $reject, $origin, $url, $options, $copyTo = null)
     {
-        return $this->initDownload($resolve, $reject, $origin, $url, $options, $copyTo);
+        $attributes = array();
+        if (isset($options['retry-auth-failure'])) {
+            $attributes['retryAuthFailure'] = $options['retry-auth-failure'];
+            unset($options['retry-auth-failure']);
+        }
+
+        return $this->initDownload($resolve, $reject, $origin, $url, $options, $copyTo, $attributes);
     }
 
     private function initDownload($resolve, $reject, $origin, $url, $options, $copyTo = null, array $attributes = array())
     {
-        // TODO allow setting attributes somehow
         $attributes = array_merge(array(
             'retryAuthFailure' => true,
             'redirects' => 1,
@@ -193,12 +198,12 @@ class CurlDownloader
         $this->io->writeError('Downloading ' . $url . $usingProxy . $ifModified, true, IOInterface::DEBUG);
 
         $this->checkCurlResult(curl_multi_add_handle($this->multiHandle, $curlHandle));
+// TODO progress
         //$params['notification'](STREAM_NOTIFY_RESOLVE, STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, 0, false);
     }
 
     public function tick()
     {
-        // TODO check we have active handles before doing this
         if (!$this->jobs) {
             return;
         }
@@ -229,6 +234,7 @@ class CurlDownloader
                 $statusCode = null;
                 $response = null;
                 try {
+// TODO progress
                     //$this->onProgress($curlHandle, $job['callback'], $progress, $job['progress']);
                     if (CURLE_OK !== $errno) {
                         throw new TransportException($error);
@@ -263,7 +269,6 @@ class CurlDownloader
 
                     // handle 3xx redirects, 304 Not Modified is excluded
                     if ($statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $job['redirects'] < $this->maxRedirects) {
-                        // TODO
                         $location = $this->handleRedirect($job, $response);
                         if ($location) {
                             $this->restartJob($job, $location, array('redirects' => $job['attributes']['redirects'] + 1));
@@ -274,6 +279,7 @@ class CurlDownloader
                     // fail 4xx and 5xx responses and capture the response
                     if ($statusCode >= 400 && $statusCode <= 599) {
                         throw $this->failResponse($job, $response, $response->getStatusMessage());
+// TODO progress
 //                        $this->io->overwriteError("Downloading (<error>failed</error>)", false);
                     }
 
@@ -320,24 +326,13 @@ class CurlDownloader
                 if ($this->jobs[$i]['progress'] !== $progress) {
                     $previousProgress = $this->jobs[$i]['progress'];
                     $this->jobs[$i]['progress'] = $progress;
-                    try {
-                        //$this->onProgress($curlHandle, $this->jobs[$i]['callback'], $progress, $previousProgress);
-                    } catch (TransportException $e) {
-                        var_dump('Caught '.$e->getMessage());die;
-                        unset($this->jobs[$i]);
-                        curl_multi_remove_handle($this->multiHandle, $curlHandle);
-                        curl_close($curlHandle);
 
-                        fclose($job['headerHandle']);
-                        fclose($job['bodyHandle']);
-                        if ($job['filename']) {
-                            @unlink($job['filename'].'~');
-                        }
-                        call_user_func($job['reject'], $e);
-                    }
+                    // TODO
+                    //$this->onProgress($curlHandle, $this->jobs[$i]['callback'], $progress, $previousProgress);
                 }
             }
         } catch (\Exception $e) {
+            // TODO
             var_dump('Caught2', get_class($e), $e->getMessage(), $e);die;
         }
     }
@@ -444,12 +439,9 @@ class CurlDownloader
 
     private function onProgress($curlHandle, callable $notify, array $progress, array $previousProgress)
     {
+        // TODO add support for progress
         if (300 <= $progress['http_code'] && $progress['http_code'] < 400) {
             return;
-        }
-        if (!$previousProgress['http_code'] && $progress['http_code'] && $progress['http_code'] < 200 || 400 <= $progress['http_code']) {
-            $code = 403 === $progress['http_code'] ? STREAM_NOTIFY_AUTH_RESULT : STREAM_NOTIFY_FAILURE;
-            $notify($code, STREAM_NOTIFY_SEVERITY_ERR, curl_error($curlHandle), $progress['http_code'], 0, 0, false);
         }
         if ($previousProgress['download_content_length'] < $progress['download_content_length']) {
             $notify(STREAM_NOTIFY_FILE_SIZE_IS, STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, (int) $progress['download_content_length'], false);

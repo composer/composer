@@ -33,8 +33,8 @@ class HttpDownloader
     private $config;
     private $jobs = array();
     private $options = array();
-    private $index;
-    private $progress;
+    private $runningJobs = 0;
+    private $maxJobs = 10;
     private $lastProgress;
     private $disableTls = false;
     private $curl;
@@ -42,8 +42,6 @@ class HttpDownloader
     private $idGen = 0;
 
     /**
-     * Constructor.
-     *
      * @param IOInterface $io         The IO instance
      * @param Config      $config     The config
      * @param array       $options    The options
@@ -131,35 +129,24 @@ class HttpDownloader
             'status' => self::STATUS_QUEUED,
             'request' => $request,
             'sync' => $sync,
+            'origin' => Url::getOrigin($this->config, $request['url']),
         );
-
-        $origin = Url::getOrigin($this->config, $job['request']['url']);
 
         // capture username/password from URL if there is one
         if (preg_match('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $request['url'], $match)) {
-            $this->io->setAuthentication($origin, rawurldecode($match[1]), rawurldecode($match[2]));
+            $this->io->setAuthentication($job['origin'], rawurldecode($match[1]), rawurldecode($match[2]));
         }
 
-        $curl = $this->curl;
         $rfs = $this->rfs;
-        $io = $this->io;
 
-        if ($curl && preg_match('{^https?://}i', $job['request']['url'])) {
-            $resolver = function ($resolve, $reject) use (&$job, $curl, $origin) {
-                // start job
-                $url = $job['request']['url'];
-                $options = $job['request']['options'];
-
-                $job['status'] = HttpDownloader::STATUS_STARTED;
-
-                if ($job['request']['copyTo']) {
-                    $curl->download($resolve, $reject, $origin, $url, $options, $job['request']['copyTo']);
-                } else {
-                    $curl->download($resolve, $reject, $origin, $url, $options);
-                }
+        if ($this->curl && preg_match('{^https?://}i', $job['request']['url'])) {
+            $resolver = function ($resolve, $reject) use (&$job) {
+                $job['status'] = HttpDownloader::STATUS_QUEUED;
+                $job['resolve'] = $resolve;
+                $job['reject'] = $reject;
             };
         } else {
-            $resolver = function ($resolve, $reject) use (&$job, $rfs, $curl, $origin) {
+            $resolver = function ($resolve, $reject) use (&$job, $rfs) {
                 // start job
                 $url = $job['request']['url'];
                 $options = $job['request']['options'];
@@ -167,11 +154,11 @@ class HttpDownloader
                 $job['status'] = HttpDownloader::STATUS_STARTED;
 
                 if ($job['request']['copyTo']) {
-                    $result = $rfs->copy($origin, $url, $job['request']['copyTo'], false /* TODO progress */, $options);
+                    $result = $rfs->copy($job['origin'], $url, $job['request']['copyTo'], false /* TODO progress */, $options);
 
                     $resolve($result);
                 } else {
-                    $body = $rfs->getContents($origin, $url, false /* TODO progress */, $options);
+                    $body = $rfs->getContents($job['origin'], $url, false /* TODO progress */, $options);
                     $headers = $rfs->getLastHeaders();
                     $response = new Http\Response($job['request'], $rfs->findStatusCode($headers), $headers, $body);
 
@@ -180,24 +167,83 @@ class HttpDownloader
             };
         }
 
+        $downloader = $this;
+        $io = $this->io;
+
         $canceler = function () {};
 
         $promise = new Promise($resolver, $canceler);
-        $promise->then(function ($response) use (&$job) {
+        $promise->then(function ($response) use (&$job, $downloader) {
             $job['status'] = HttpDownloader::STATUS_COMPLETED;
             $job['response'] = $response;
-            // TODO look for more jobs to start once we throttle to max X jobs
-        }, function ($e) use ($io, &$job) {
-            // var_dump(__CLASS__ . __LINE__);
-            // var_dump(get_class($e));
-            // var_dump($e->getMessage());
-            // die;
+
+            // TODO 3.0 this should be done directly on $this when PHP 5.3 is dropped
+            $downloader->markJobDone();
+            $downloader->scheduleNextJob();
+
+            return $response;
+        }, function ($e) use ($io, &$job, $downloader) {
             $job['status'] = HttpDownloader::STATUS_FAILED;
             $job['exception'] = $e;
+
+            $downloader->markJobDone();
+
+            throw $e;
         });
         $this->jobs[$job['id']] =& $job;
 
+        if ($this->runningJobs < $this->maxJobs) {
+            $this->startJob($job['id']);
+        }
+
         return array($job, $promise);
+    }
+
+    private function startJob($id)
+    {
+        $job =& $this->jobs[$id];
+        if ($job['status'] !== self::STATUS_QUEUED) {
+            return;
+        }
+
+        // start job
+        $job['status'] = self::STATUS_STARTED;
+        $this->runningJobs++;
+
+        $resolve = $job['resolve'];
+        $reject = $job['reject'];
+        $url = $job['request']['url'];
+        $options = $job['request']['options'];
+        $origin = $job['origin'];
+
+        if ($job['request']['copyTo']) {
+            $this->curl->download($resolve, $reject, $origin, $url, $options, $job['request']['copyTo']);
+        } else {
+            $this->curl->download($resolve, $reject, $origin, $url, $options);
+        }
+    }
+
+    /**
+     * @private
+     */
+    public function markJobDone()
+    {
+        $this->runningJobs--;
+    }
+
+    /**
+     * @private
+     */
+    public function scheduleNextJob()
+    {
+        foreach ($this->jobs as $job) {
+            if ($job['status'] === self::STATUS_QUEUED) {
+                $this->startJob($job['id']);
+                if ($this->runningJobs >= $this->maxJobs) {
+                    return;
+                }
+            }
+        }
     }
 
     public function wait($index = null, $progress = false)
