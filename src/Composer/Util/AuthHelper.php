@@ -30,7 +30,11 @@ class AuthHelper
         $this->config = $config;
     }
 
-    public function storeAuth($originUrl, $storeAuth)
+    /**
+     * @param string $origin
+     * @param string|bool $storeAuth
+     */
+    public function storeAuth($origin, $storeAuth)
     {
         $store = false;
         $configSource = $this->config->getAuthConfigSource();
@@ -38,7 +42,7 @@ class AuthHelper
             $store = $configSource;
         } elseif ($storeAuth === 'prompt') {
             $answer = $this->io->askAndValidate(
-                'Do you want to store credentials for '.$originUrl.' in '.$configSource->getName().' ? [Yn] ',
+                'Do you want to store credentials for '.$origin.' in '.$configSource->getName().' ? [Yn] ',
                 function ($value) {
                     $input = strtolower(substr(trim($value), 0, 1));
                     if (in_array($input, array('y','n'))) {
@@ -56,14 +60,23 @@ class AuthHelper
         }
         if ($store) {
             $store->addConfigSetting(
-                'http-basic.'.$originUrl,
-                $this->io->getAuthentication($originUrl)
+                'http-basic.'.$origin,
+                $this->io->getAuthentication($origin)
             );
         }
     }
 
-
-    public function promptAuthIfNeeded($url, $origin, $httpStatus, $reason = null, $warning = null, $headers = array())
+    /**
+     * @param string $url
+     * @param string $origin
+     * @param int $statusCode HTTP status code that triggered this call
+     * @param string|null $reason a message/description explaining why this was called
+     * @param string $warning an authentication warning returned by the server as {"warning": ".."}, if present
+     * @param string[] $headers
+     * @return array containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
+     *               retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
+     */
+    public function promptAuthIfNeeded($url, $origin, $statusCode, $reason = null, $warning = null, $headers = array())
     {
         $storeAuth = false;
         $retry = false;
@@ -101,11 +114,11 @@ class AuthHelper
                 throw new TransportException('Could not authenticate against '.$origin, 401);
             }
         } elseif (in_array($origin, $this->config->get('gitlab-domains'), true)) {
-            $message = "\n".'Could not fetch '.$url.', enter your ' . $origin . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
+            $message = "\n".'Could not fetch '.$url.', enter your ' . $origin . ' credentials ' .($statusCode === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
 
             if ($this->io->hasAuthentication($origin) && ($auth = $this->io->getAuthentication($origin)) && $auth['password'] === 'private-token') {
-                throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $httpStatus);
+                throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
             }
 
             if (!$gitLabUtil->authorizeOAuth($origin)
@@ -130,7 +143,7 @@ class AuthHelper
             }
 
             if ($askForOAuthToken) {
-                $message = "\n".'Could not fetch ' . $url . ', please create a bitbucket OAuth token to ' . (($httpStatus === 401 || $httpStatus === 403) ? 'access private repos' : 'go over the API rate limit');
+                $message = "\n".'Could not fetch ' . $url . ', please create a bitbucket OAuth token to ' . (($statusCode === 401 || $statusCode === 403) ? 'access private repos' : 'go over the API rate limit');
                 $bitBucketUtil = new Bitbucket($this->io, $this->config);
                 if (! $bitBucketUtil->authorizeOAuth($origin)
                     && (! $this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($origin, $message))
@@ -140,24 +153,24 @@ class AuthHelper
             }
         } else {
             // 404s are only handled for github
-            if ($httpStatus === 404) {
+            if ($statusCode === 404) {
                 return;
             }
 
             // fail if the console is not interactive
             if (!$this->io->isInteractive()) {
-                if ($httpStatus === 401) {
+                if ($statusCode === 401) {
                     $message = "The '" . $url . "' URL required authentication.\nYou must be using the interactive console to authenticate";
                 }
-                if ($httpStatus === 403) {
+                if ($statusCode === 403) {
                     $message = "The '" . $url . "' URL could not be accessed: " . $reason;
                 }
 
-                throw new TransportException($message, $httpStatus);
+                throw new TransportException($message, $statusCode);
             }
             // fail if we already have auth
             if ($this->io->hasAuthentication($origin)) {
-                throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $httpStatus);
+                throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
             }
 
             $this->io->overwriteError('');
@@ -176,6 +189,12 @@ class AuthHelper
         return array('retry' => $retry, 'storeAuth' => $storeAuth);
     }
 
+    /**
+     * @param array $headers
+     * @param string $origin
+     * @param string $url
+     * @return array updated headers array
+     */
     public function addAuthenticationHeader(array $headers, $origin, $url)
     {
         if ($this->io->hasAuthentication($origin)) {

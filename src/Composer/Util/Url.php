@@ -19,6 +19,12 @@ use Composer\Config;
  */
 class Url
 {
+    /**
+     * @param Config $config
+     * @param string $url
+     * @param string $ref
+     * @return string the updated URL
+     */
     public static function updateDistReference(Config $config, $url, $ref)
     {
         $host = parse_url($url, PHP_URL_HOST);
@@ -53,6 +59,10 @@ class Url
         return $url;
     }
 
+    /**
+     * @param string $url
+     * @return string
+     */
     public static function getOrigin(Config $config, $url)
     {
         if (0 === strpos($url, 'file://')) {
@@ -89,5 +99,4 @@ class Url
 
         return $origin;
     }
-
 }
