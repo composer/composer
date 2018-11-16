@@ -142,7 +142,7 @@ class HttpDownloader
         $rfs = $this->rfs;
         $io = $this->io;
 
-        $origin = $this->getOrigin($job['request']['url']);
+        $origin = Url::getOrigin($this->config, $job['request']['url']);
 
         if ($curl && preg_match('{^https?://}i', $job['request']['url'])) {
             $resolver = function ($resolve, $reject) use (&$job, $curl, $origin) {
@@ -249,38 +249,5 @@ class HttpDownloader
         unset($this->jobs[$index]);
 
         return $resp;
-    }
-
-    private function getOrigin($url)
-    {
-        if (0 === strpos($url, 'file://')) {
-            return $url;
-        }
-
-        $origin = parse_url($url, PHP_URL_HOST);
-
-        if (strpos($origin, '.github.com') === (strlen($origin) - 11)) {
-            return 'github.com';
-        }
-
-        if ($origin === 'repo.packagist.org') {
-            return 'packagist.org';
-        }
-
-        // Gitlab can be installed in a non-root context (i.e. gitlab.com/foo). When downloading archives the originUrl
-        // is the host without the path, so we look for the registered gitlab-domains matching the host here
-        if (
-            is_array($this->config->get('gitlab-domains'))
-            && false === strpos($origin, '/')
-            && !in_array($origin, $this->config->get('gitlab-domains'))
-        ) {
-            foreach ($this->config->get('gitlab-domains') as $gitlabDomain) {
-                if (0 === strpos($gitlabDomain, $origin)) {
-                    return $gitlabDomain;
-                }
-            }
-        }
-
-        return $origin ?: $url;
     }
 }

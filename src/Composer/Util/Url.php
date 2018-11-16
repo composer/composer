@@ -52,4 +52,38 @@ class Url
 
         return $url;
     }
+
+    public static function getOrigin(Config $config, $url)
+    {
+        if (0 === strpos($url, 'file://')) {
+            return $url;
+        }
+
+        $origin = parse_url($url, PHP_URL_HOST);
+
+        if (strpos($origin, '.github.com') === (strlen($origin) - 11)) {
+            return 'github.com';
+        }
+
+        if ($origin === 'repo.packagist.org') {
+            return 'packagist.org';
+        }
+
+        // Gitlab can be installed in a non-root context (i.e. gitlab.com/foo). When downloading archives the originUrl
+        // is the host without the path, so we look for the registered gitlab-domains matching the host here
+        if (
+            is_array($config->get('gitlab-domains'))
+            && false === strpos($origin, '/')
+            && !in_array($origin, $config->get('gitlab-domains'))
+        ) {
+            foreach ($config->get('gitlab-domains') as $gitlabDomain) {
+                if (0 === strpos($gitlabDomain, $origin)) {
+                    return $gitlabDomain;
+                }
+            }
+        }
+
+        return $origin ?: $url;
+    }
+
 }

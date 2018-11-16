@@ -19,6 +19,7 @@ use Composer\CaBundle\CaBundle;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
+use Composer\Util\Url;
 use Psr\Log\LoggerInterface;
 use React\Promise\Promise;
 
@@ -132,11 +133,10 @@ class CurlDownloader
         }
 
         curl_setopt($curlHandle, CURLOPT_URL, $url);
-        curl_setopt($curlHandle, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($curlHandle, CURLOPT_MAXREDIRS, 20);
+        curl_setopt($curlHandle, CURLOPT_FOLLOWLOCATION, false);
         //curl_setopt($curlHandle, CURLOPT_DNS_USE_GLOBAL_CACHE, false);
         curl_setopt($curlHandle, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($curlHandle, CURLOPT_TIMEOUT, 10); // TODO increase
+        curl_setopt($curlHandle, CURLOPT_TIMEOUT, 60);
         curl_setopt($curlHandle, CURLOPT_WRITEHEADER, $headerHandle);
         curl_setopt($curlHandle, CURLOPT_FILE, $bodyHandle);
         curl_setopt($curlHandle, CURLOPT_ENCODING, "gzip");
@@ -181,7 +181,6 @@ class CurlDownloader
             'options' => $originalOptions,
             'progress' => $progress,
             'curlHandle' => $curlHandle,
-            //'callback' => $params['notification'],
             'filename' => $copyTo,
             'headerHandle' => $headerHandle,
             'bodyHandle' => $bodyHandle,
@@ -252,12 +251,24 @@ class CurlDownloader
                         $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
                     }
 
-                    $response = $this->retryIfAuthNeeded($job, $response);
+                    $result = $this->isAuthenticatedRetryNeeded($job, $response);
+                    if ($result['retry']) {
+                        if ($job['filename']) {
+                            @unlink($job['filename'].'~');
+                        }
+
+                        $this->restartJob($job, $job['url'], array('storeAuth' => $result['storeAuth']));
+                        continue;
+                    }
 
                     // handle 3xx redirects, 304 Not Modified is excluded
                     if ($statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $job['redirects'] < $this->maxRedirects) {
                         // TODO
-                        $response = $this->handleRedirect($job, $response);
+                        $location = $this->handleRedirect($job, $response);
+                        if ($location) {
+                            $this->restartJob($job, $location, array('redirects' => $job['attributes']['redirects'] + 1));
+                            continue;
+                        }
                     }
 
                     // fail 4xx and 5xx responses and capture the response
@@ -331,7 +342,39 @@ class CurlDownloader
         }
     }
 
-    private function retryIfAuthNeeded(array $job, Response $response)
+    private function handleRedirect(array $job, Response $response)
+    {
+        if ($locationHeader = $response->getHeader('location')) {
+            if (parse_url($locationHeader, PHP_URL_SCHEME)) {
+                // Absolute URL; e.g. https://example.com/composer
+                $targetUrl = $locationHeader;
+            } elseif (parse_url($locationHeader, PHP_URL_HOST)) {
+                // Scheme relative; e.g. //example.com/foo
+                $targetUrl = parse_url($job['url'], PHP_URL_SCHEME).':'.$locationHeader;
+            } elseif ('/' === $locationHeader[0]) {
+                // Absolute path; e.g. /foo
+                $urlHost = parse_url($job['url'], PHP_URL_HOST);
+
+                // Replace path using hostname as an anchor.
+                $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $job['url']);
+            } else {
+                // Relative path; e.g. foo
+                // This actually differs from PHP which seems to add duplicate slashes.
+                $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$locationHeader, $job['url']);
+            }
+        }
+
+        if (!empty($targetUrl)) {
+            $this->io->writeError('', true, IOInterface::DEBUG);
+            $this->io->writeError(sprintf('Following redirect (%u) %s', $job['redirects'] + 1, $targetUrl), true, IOInterface::DEBUG);
+
+            return $targetUrl;
+        }
+
+        throw new TransportException('The "'.$job['url'].'" file could not be downloaded, got redirect without Location ('.$response->getStatusMessage().')');
+    }
+
+    private function isAuthenticatedRetryNeeded(array $job, Response $response)
     {
         if (in_array($response->getStatusCode(), array(401, 403)) && $job['attributes']['retryAuthFailure']) {
             $warning = null;
@@ -345,7 +388,7 @@ class CurlDownloader
             $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $warning, $response->getHeaders());
 
             if ($result['retry']) {
-                // TODO retry somehow using $result['storeAuth'] in the attributes
+                return $result;
             }
         }
 
@@ -376,15 +419,22 @@ class CurlDownloader
             if ($job['attributes']['retryAuthFailure']) {
                 $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], 401);
                 if ($result['retry']) {
-                    // TODO ...
-                    // TODO return early here to abort failResponse
+                    return $result;
                 }
             }
 
             throw $this->failResponse($job, $response, $needsAuthRetry);
         }
 
-        return $response;
+        return array('retry' => false, 'storeAuth' => false);
+    }
+
+    private function restartJob(array $job, $url, array $attributes = array())
+    {
+        $attributes = array_merge($job['attributes'], $attributes);
+        $origin = Url::getOrigin($this->config, $url);
+
+        $this->initDownload($job['resolve'], $job['reject'], $origin, $url, $job['originalOptions'], $job['filename'], $attributes);
     }
 
     private function failResponse(array $job, Response $response, $errorMessage)
