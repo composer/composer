@@ -59,7 +59,7 @@ class Url
             return $url;
         }
 
-        $origin = parse_url($url, PHP_URL_HOST);
+        $origin = (string) parse_url($url, PHP_URL_HOST);
 
         if (strpos($origin, '.github.com') === (strlen($origin) - 11)) {
             return 'github.com';
@@ -67,6 +67,10 @@ class Url
 
         if ($origin === 'repo.packagist.org') {
             return 'packagist.org';
+        }
+
+        if ($origin === '') {
+            $origin = $url;
         }
 
         // Gitlab can be installed in a non-root context (i.e. gitlab.com/foo). When downloading archives the originUrl
@@ -83,7 +87,7 @@ class Url
             }
         }
 
-        return $origin ?: $url;
+        return $origin;
     }
 
 }

@@ -126,11 +126,6 @@ class HttpDownloader
 
     private function addJob($request, $sync = false)
     {
-        // capture username/password from URL if there is one
-        if (preg_match('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $request['url'], $match)) {
-            $this->io->setAuthentication($originUrl, rawurldecode($match[1]), rawurldecode($match[2]));
-        }
-
         $job = array(
             'id' => $this->idGen++,
             'status' => self::STATUS_QUEUED,
@@ -138,11 +133,16 @@ class HttpDownloader
             'sync' => $sync,
         );
 
+        $origin = Url::getOrigin($this->config, $job['request']['url']);
+
+        // capture username/password from URL if there is one
+        if (preg_match('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $request['url'], $match)) {
+            $this->io->setAuthentication($origin, rawurldecode($match[1]), rawurldecode($match[2]));
+        }
+
         $curl = $this->curl;
         $rfs = $this->rfs;
         $io = $this->io;
-
-        $origin = Url::getOrigin($this->config, $job['request']['url']);
 
         if ($curl && preg_match('{^https?://}i', $job['request']['url'])) {
             $resolver = function ($resolve, $reject) use (&$job, $curl, $origin) {

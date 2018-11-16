@@ -143,25 +143,6 @@ class RemoteFilesystemTest extends TestCase
         $this->assertNull($this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0));
     }
 
-    /**
-     * @group slow
-     */
-    public function testCaptureAuthenticationParamsFromUrl()
-    {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $io->expects($this->once())
-            ->method('setAuthentication')
-            ->with($this->equalTo('github.com'), $this->equalTo('user'), $this->equalTo('pass'));
-
-        $fs = new RemoteFilesystem($io, $this->getConfigMock());
-        try {
-            $fs->getContents('github.com', 'https://user:pass@github.com/composer/composer/404');
-        } catch (\Exception $e) {
-            $this->assertInstanceOf('Composer\Downloader\TransportException', $e);
-            $this->assertNotEquals(200, $e->getCode());
-        }
-    }
-
     public function testGetContents()
     {
         $fs = new RemoteFilesystem($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getConfigMock());
