@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-if (PHP_SAPI !== 'cli') {
+if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
     echo 'Warning: Composer should be invoked via the CLI version of PHP, not the '.PHP_SAPI.' SAPI'.PHP_EOL;
 }
 
