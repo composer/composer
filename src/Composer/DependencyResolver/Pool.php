@@ -234,7 +234,7 @@ class Pool implements \Countable
             }
 
             if ($this->whitelist !== null && !$bypassFilters && (
-                (!($candidate instanceof AliasPackage) && !isset($this->whitelist[$candidate->id])) ||
+                !($candidate instanceof AliasPackage) && !isset($this->whitelist[$candidate->id]) ||
                 ($candidate instanceof AliasPackage && !isset($this->whitelist[$aliasOfCandidate->id]))
             )) {
                 continue;

@@ -157,7 +157,7 @@ class DefaultPolicy implements PolicyInterface
                 return 0;
             }
 
-            return ($a->id < $b->id) ? -1 : 1;
+            return $a->id < $b->id ? -1 : 1;
         }
 
         if (isset($installedMap[$a->id])) {
@@ -168,7 +168,7 @@ class DefaultPolicy implements PolicyInterface
             return 1;
         }
 
-        return ($this->getPriority($pool, $a) > $this->getPriority($pool, $b)) ? -1 : 1;
+        return $this->getPriority($pool, $a) > $this->getPriority($pool, $b) ? -1 : 1;
     }
 
     /**

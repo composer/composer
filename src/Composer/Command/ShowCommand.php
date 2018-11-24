@@ -597,7 +597,7 @@ EOT
         $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
 
         if ($latestPackage->isAbandoned()) {
-            $replacement = ($latestPackage->getReplacementPackage() !== null)
+            $replacement = $latestPackage->getReplacementPackage() !== null
                 ? ' The author suggests using the ' . $latestPackage->getReplacementPackage(). ' package instead.'
                 : null;
 

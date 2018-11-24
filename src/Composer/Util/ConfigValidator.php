@@ -133,7 +133,7 @@ class ConfigValidator
             $requireOverrides = array_intersect_key($manifest['require'], $manifest['require-dev']);
 
             if (!empty($requireOverrides)) {
-                $plural = (count($requireOverrides) > 1) ? 'are' : 'is';
+                $plural = count($requireOverrides) > 1 ? 'are' : 'is';
                 $warnings[] = implode(', ', array_keys($requireOverrides)). " {$plural} required both in require and require-dev, this can lead to unexpected behavior";
             }
         }

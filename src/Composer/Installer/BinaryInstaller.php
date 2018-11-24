@@ -191,7 +191,7 @@ class BinaryInstaller
         $binDir = ProcessExecutor::escape(dirname($binPath));
         $binFile = basename($binPath);
 
-        $proxyCode = <<<PROXY
+        return <<<PROXY
 #!/usr/bin/env sh
 
 dir=\$(cd "\${0%[/\\\\]*}" > /dev/null; cd $binDir && pwd)
@@ -204,7 +204,5 @@ fi
 "\${dir}/$binFile" "\$@"
 
 PROXY;
-
-        return $proxyCode;
     }
 }

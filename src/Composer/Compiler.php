@@ -174,7 +174,7 @@ class Compiler
         $pathPrefix = dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR;
 
         $pos = strpos($realPath, $pathPrefix);
-        $relativePath = ($pos !== false) ? substr_replace($realPath, '', $pos, strlen($pathPrefix)) : $realPath;
+        $relativePath = $pos !== false ? substr_replace($realPath, '', $pos, strlen($pathPrefix)) : $realPath;
 
         return strtr($relativePath, '\\', '/');
     }

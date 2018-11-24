@@ -293,12 +293,10 @@ class PackageDependencyParser
     private function parseVersion($version)
     {
         if (preg_match('{^v?(\d{1,3})(\.\d+)?(\.\d+)?(\.\d+)?}i', $version, $matches)) {
-            $version = $matches[1]
+            return $matches[1]
                 .(!empty($matches[2]) ? $matches[2] : '.0')
                 .(!empty($matches[3]) ? $matches[3] : '.0')
                 .(!empty($matches[4]) ? $matches[4] : '.0');
-
-            return $version;
         }
 
         return null;

@@ -8,7 +8,7 @@ class ComposerStaticInitFilesAutoload
 {
     public static function getInitializer(ClassLoader $loader)
     {
-        return \Closure::bind(function () use ($loader) {
+        return \Closure::bind(function ()  {
 
         }, null, ClassLoader::class);
     }

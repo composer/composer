@@ -106,13 +106,11 @@ class GitHubTest extends TestCase
 
     private function getIOMock()
     {
-        $io = $this
+        return $this
             ->getMockBuilder('Composer\IO\ConsoleIO')
             ->disableOriginalConstructor()
             ->getMock()
         ;
-
-        return $io;
     }
 
     private function getConfigMock()
@@ -122,13 +120,11 @@ class GitHubTest extends TestCase
 
     private function getRemoteFilesystemMock()
     {
-        $rfs = $this
+        return $this
             ->getMockBuilder('Composer\Util\RemoteFilesystem')
             ->disableOriginalConstructor()
             ->getMock()
         ;
-
-        return $rfs;
     }
 
     private function getAuthJsonMock()

@@ -370,7 +370,7 @@ class Filesystem
         $sourcePathDepth = substr_count(substr($from, strlen($commonPath)), '/');
         $commonPathCode = str_repeat('../', $sourcePathDepth);
 
-        return ($commonPathCode . substr($to, strlen($commonPath))) ?: './';
+        return $commonPathCode . substr($to, strlen($commonPath)) ?: './';
     }
 
     /**

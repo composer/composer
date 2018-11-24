@@ -128,7 +128,7 @@ class BaseDependencyCommand extends BaseCommand
         // Resolve dependencies
         $results = $repository->getDependents($needles, $constraint, $inverted, $recursive);
         if (empty($results)) {
-            $extra = (null !== $constraint) ? sprintf(' in versions %smatching %s', $inverted ? 'not ' : '', $textConstraint) : '';
+            $extra = null !== $constraint ? sprintf(' in versions %smatching %s', $inverted ? 'not ' : '', $textConstraint) : '';
             $this->getIO()->writeError(sprintf(
                 '<info>There is no installed package depending on "%s"%s</info>',
                 $needle,
@@ -170,7 +170,7 @@ class BaseDependencyCommand extends BaseCommand
                     continue;
                 }
                 $doubles[$unique] = true;
-                $version = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '-' : $package->getPrettyVersion();
+                $version = strpos($package->getPrettyVersion(), 'No version set') === 0 ? '-' : $package->getPrettyVersion();
                 $rows[] = array($package->getPrettyName(), $version, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint()));
                 if ($children) {
                     $queue = array_merge($queue, $children);
@@ -232,7 +232,7 @@ class BaseDependencyCommand extends BaseCommand
             $color = $this->colors[$level % count($this->colors)];
             $prevColor = $this->colors[($level - 1) % count($this->colors)];
             $isLast = (++$idx == $count);
-            $versionText = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '' : $package->getPrettyVersion();
+            $versionText = strpos($package->getPrettyVersion(), 'No version set') === 0 ? '' : $package->getPrettyVersion();
             $packageText = rtrim(sprintf('<%s>%s</%1$s> %s', $color, $package->getPrettyName(), $versionText));
             $linkText = sprintf('%s <%s>%s</%2$s> %s', $link->getDescription(), $prevColor, $link->getTarget(), $link->getPrettyConstraint());
             $circularWarn = $children === false ? '(circular dependency aborted here)' : '';

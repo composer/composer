@@ -260,7 +260,7 @@ class GitLabDriver extends VcsDriver
     public function getApiUrl()
     {
         $domainName = $this->originUrl;
-        $portNumber = (true === is_numeric($this->portNumber)) ? sprintf(':%s', $this->portNumber) : '';
+        $portNumber = true === is_numeric($this->portNumber) ? sprintf(':%s', $this->portNumber) : '';
 
         return $this->scheme.'://'.$domainName.$portNumber.'/api/v4/projects/'.$this->urlEncodeAll($this->namespace).'%2F'.$this->urlEncodeAll($this->repository);
     }

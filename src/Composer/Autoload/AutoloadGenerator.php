@@ -549,7 +549,7 @@ EOF;
             $baseDir = "'phar://' . " . $baseDir;
         }
 
-        return $baseDir . (($path !== false) ? var_export($path, true) : "");
+        return $baseDir . ($path !== false ? var_export($path, true) : "");
     }
 
     protected function getAutoloadFile($vendorPathToTargetDirCode, $suffix)
