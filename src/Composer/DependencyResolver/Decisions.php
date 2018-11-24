@@ -45,20 +45,20 @@ class Decisions implements \Iterator, \Countable
     {
         $packageId = abs($literal);
 
-        return (
+        return 
             $literal > 0 && isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] > 0 ||
             $literal < 0 && isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] < 0
-        );
+        ;
     }
 
     public function conflict($literal)
     {
         $packageId = abs($literal);
 
-        return (
+        return 
             (isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] > 0 && $literal < 0) ||
             (isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] < 0 && $literal > 0)
-        );
+        ;
     }
 
     public function decided($literalOrPackageId)

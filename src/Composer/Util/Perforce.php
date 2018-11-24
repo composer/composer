@@ -160,7 +160,7 @@ class Perforce
 
     public function isStream()
     {
-        return (strcmp($this->p4DepotType, 'stream') === 0);
+        return strcmp($this->p4DepotType, 'stream') === 0;
     }
 
     public function getStream()

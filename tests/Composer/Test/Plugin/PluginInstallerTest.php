@@ -12,14 +12,14 @@
 
 namespace Composer\Test\Plugin;
 
+use Composer\Autoload\AutoloadGenerator;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Installer\PluginInstaller;
 use Composer\Package\CompletePackage;
-use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\JsonLoader;
 use Composer\Plugin\PluginManager;
-use Composer\Autoload\AutoloadGenerator;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 

@@ -12,18 +12,18 @@
 
 namespace Composer\Repository;
 
-use Composer\IO\IOInterface;
-use Composer\Semver\VersionParser as SemverVersionParser;
-use Composer\Package\Version\VersionParser;
-use Composer\Repository\Pear\ChannelReader;
-use Composer\Package\CompletePackage;
-use Composer\Repository\Pear\ChannelInfo;
-use Composer\EventDispatcher\EventDispatcher;
-use Composer\Package\Link;
-use Composer\Semver\Constraint\Constraint;
-use Composer\Util\RemoteFilesystem;
 use Composer\Config;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Factory;
+use Composer\IO\IOInterface;
+use Composer\Package\CompletePackage;
+use Composer\Package\Link;
+use Composer\Package\Version\VersionParser;
+use Composer\Repository\Pear\ChannelInfo;
+use Composer\Repository\Pear\ChannelReader;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\VersionParser as SemverVersionParser;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * Builds list of package from PEAR channel.

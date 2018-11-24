@@ -12,16 +12,16 @@
 
 namespace Composer\Test\DependencyResolver;
 
-use Composer\IO\NullIO;
-use Composer\Repository\ArrayRepository;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
+use Composer\IO\NullIO;
 use Composer\Package\Link;
-use Composer\Test\TestCase;
+use Composer\Repository\ArrayRepository;
 use Composer\Semver\Constraint\MultiConstraint;
+use Composer\Test\TestCase;
 
 class SolverTest extends TestCase
 {

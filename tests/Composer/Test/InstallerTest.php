@@ -12,25 +12,24 @@
 
 namespace Composer\Test;
 
-use Composer\Installer;
 use Composer\Console\Application;
+use Composer\Installer;
+use Composer\IO\BufferIO;
 use Composer\Json\JsonFile;
-use Composer\Util\Filesystem;
-use Composer\Repository\ArrayRepository;
-use Composer\Repository\RepositoryManager;
-use Composer\Repository\InstalledArrayRepository;
-use Composer\Package\RootPackageInterface;
 use Composer\Package\Link;
 use Composer\Package\Locker;
+use Composer\Package\RootPackageInterface;
+use Composer\Repository\ArrayRepository;
+use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\RepositoryManager;
 use Composer\Test\Mock\FactoryMock;
-use Composer\Test\Mock\InstalledFilesystemRepositoryMock;
 use Composer\Test\Mock\InstallationManagerMock;
-use Symfony\Component\Console\Input\StringInput;
-use Symfony\Component\Console\Output\StreamOutput;
-use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Test\Mock\InstalledFilesystemRepositoryMock;
+use Composer\Util\Filesystem;
 use Symfony\Component\Console\Formatter\OutputFormatter;
-use Composer\Test\TestCase;
-use Composer\IO\BufferIO;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\StreamOutput;
 
 class InstallerTest extends TestCase
 {

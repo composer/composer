@@ -14,11 +14,11 @@ namespace Composer;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver\DefaultPolicy;
-use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
@@ -34,10 +34,9 @@ use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackage;
+use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Link;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Dumper\ArrayDumper;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
@@ -48,6 +47,7 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\ScriptEvents;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

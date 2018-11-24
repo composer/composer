@@ -12,8 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
 
 /**
@@ -281,11 +281,11 @@ class RuleSetGenerator
         $packageIsAlias = $package instanceof AliasPackage;
         $providerIsAlias = $provider instanceof AliasPackage;
 
-        return (
+        return 
             ($packageIsAlias && $package->getAliasOf() === $provider) ||
             ($providerIsAlias && $provider->getAliasOf() === $package) ||
             ($packageIsAlias && $providerIsAlias && $provider->getAliasOf() === $package->getAliasOf())
-        );
+        ;
     }
 
     protected function whitelistFromJobs()

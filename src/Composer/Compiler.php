@@ -12,12 +12,12 @@
 
 namespace Composer;
 
+use Composer\CaBundle\CaBundle;
 use Composer\Json\JsonFile;
 use Composer\Spdx\SpdxLicenses;
-use Composer\CaBundle\CaBundle;
+use Seld\PharUtils\Timestamps;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
-use Seld\PharUtils\Timestamps;
 
 /**
  * The Compiler class compiles composer into a phar

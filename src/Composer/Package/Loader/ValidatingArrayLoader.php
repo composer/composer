@@ -13,9 +13,9 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package\BasePackage;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Spdx\SpdxLicenses;
 
 /**

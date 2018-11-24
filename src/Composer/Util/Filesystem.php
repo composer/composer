@@ -695,6 +695,6 @@ class Filesystem
         $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape($junction));
         clearstatcache(true, $junction);
 
-        return ($this->getProcess()->execute($cmd, $output) === 0);
+        return $this->getProcess()->execute($cmd, $output) === 0;
     }
 }

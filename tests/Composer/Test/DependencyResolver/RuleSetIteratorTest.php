@@ -13,10 +13,10 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\GenericRule;
+use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\RuleSetIterator;
-use Composer\DependencyResolver\Pool;
 use PHPUnit\Framework\TestCase;
 
 class RuleSetIteratorTest extends TestCase

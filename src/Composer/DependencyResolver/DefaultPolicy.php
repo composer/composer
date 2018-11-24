@@ -12,9 +12,9 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 
 /**

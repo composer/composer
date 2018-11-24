@@ -13,8 +13,8 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Perforce;
-use PHPUnit\Framework\TestCase;
 use Composer\Util\ProcessExecutor;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>

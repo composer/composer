@@ -12,23 +12,23 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\PackageInterface;
-use Composer\Package\AliasPackage;
-use Composer\Package\Version\VersionParser;
-use Composer\DependencyResolver\Pool;
-use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
+use Composer\DependencyResolver\Pool;
+use Composer\Downloader\TransportException;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Factory;
 use Composer\IO\IOInterface;
-use Composer\Util\RemoteFilesystem;
+use Composer\Json\JsonFile;
+use Composer\Package\AliasPackage;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
-use Composer\EventDispatcher\EventDispatcher;
-use Composer\Downloader\TransportException;
-use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
