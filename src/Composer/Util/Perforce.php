@@ -236,9 +236,7 @@ class Perforce
                     } else {
                         $value = substr($fields[1], 0, $index);
                     }
-                    $value = trim($value);
-
-                    return $value;
+                    return trim($value);
                 }
             }
 
@@ -271,7 +269,7 @@ class Perforce
         if ($useClient) {
             $p4Command .= '-c ' . $this->getClient() . ' ';
         }
-        $p4Command = $p4Command . '-p ' . $this->getPort() . ' ' . $command;
+        $p4Command .= '-p ' . $this->getPort() . ' ' . $command;
 
         return $p4Command;
     }
