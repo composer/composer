@@ -387,7 +387,7 @@ EOT
         return $this->repos;
     }
 
-    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null, $preferredStability = 'stable')
+    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null, $preferredStability = 'stable', $checkProvidedVersions = true)
     {
         if ($requires) {
             $requires = $this->normalizeRequirements($requires);
@@ -410,7 +410,7 @@ EOT
                     ));
                 } else {
                     // check that the specified version/constraint exists before we proceed
-                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $phpVersion, $preferredStability, $requirement['version'], 'dev');
+                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $phpVersion, $preferredStability, $checkProvidedVersions ? $requirement['version'] : null, 'dev');
 
                     // replace package name from packagist.org
                     $requirement['name'] = $name;
