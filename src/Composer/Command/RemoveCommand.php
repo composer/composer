@@ -22,6 +22,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Package\BasePackage;
 
 /**
  * @author Pierre du Plessis <pdples@gmail.com>
@@ -100,11 +101,11 @@ EOT
                         $json->removeLink($altType, $composer[$altType][$package]);
                     }
                 }
-            } elseif (isset($composer[$type]) && $matches = preg_grep('#^'.$package.'#', array_keys($composer[$type]))) {
+            } elseif (isset($composer[$type]) && $matches = preg_grep(BasePackage::packageNameToRegexp($package), array_keys($composer[$type]))) {
                 foreach ($matches as $matchedPackage) {
                     $json->removeLink($type, $matchedPackage);
                 }
-            } elseif (isset($composer[$altType]) && $matches = preg_grep('#^'.$package.'#', array_keys($composer[$altType]))) {
+            } elseif (isset($composer[$altType]) && $matches = preg_grep(BasePackage::packageNameToRegexp($package), array_keys($composer[$altType]))) {
                 foreach ($matches as $matchedPackage) {
                     $io->writeError('<warning>' . $matchedPackage . ' could not be found in ' . $type . ' but it is present in ' . $altType . '</warning>');
                     if ($io->isInteractive()) {

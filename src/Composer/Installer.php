@@ -33,6 +33,7 @@ use Composer\Installer\NoopInstaller;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\Loader\ArrayLoader;
@@ -1254,26 +1255,13 @@ class Installer
         }
 
         foreach ($this->updateWhitelist as $whiteListedPattern => $void) {
-            $patternRegexp = $this->packageNameToRegexp($whiteListedPattern);
+            $patternRegexp = BasePackage::packageNameToRegexp($whiteListedPattern);
             if (preg_match($patternRegexp, $package->getName())) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    /**
-     * Build a regexp from a package name, expanding * globs as required
-     *
-     * @param  string $whiteListedPattern
-     * @return string
-     */
-    private function packageNameToRegexp($whiteListedPattern)
-    {
-        $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern));
-
-        return "{^" . $cleanedWhiteListedPattern . "$}i";
     }
 
     /**
@@ -1341,7 +1329,7 @@ class Installer
 
             // check if the name is a glob pattern that did not match directly
             if (!$nameMatchesRequiredPackage) {
-                $whitelistPatternRegexp = $this->packageNameToRegexp($packageName);
+                $whitelistPatternRegexp = BasePackage::packageNameToRegexp($packageName);
                 foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
                     if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
                         $nameMatchesRequiredPackage = true;
