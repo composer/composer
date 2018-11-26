@@ -151,8 +151,6 @@ EOT
         if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question, true)) {
             $this->installDependencies($output);
         }
-
-        $io->write('Done. Compose something awesome.');
     }
 
     /**
@@ -782,15 +780,16 @@ EOT
             $installCommand = $this->getApplication()->find('install');
             $installCommand->run(new ArrayInput(array()), $output);
         } catch (\Exception $e) {
-            $this->getIO()->writeError("Couldn't install dependencies. You can install them later by running 'composer install'.");
+            $this->getIO()->writeError('Could not install dependencies. Run `composer install` to see more information.');
         }
 
     }
 
     private function hasDependencies($options)
     {
-        $requires = (array)$options['require'];
-        $devRequires = isset($options['require-dev']) ? (array)$options['require-dev'] : array();
+        $requires = (array) $options['require'];
+        $devRequires = isset($options['require-dev']) ? (array) $options['require-dev'] : array();
+
         return !empty($requires) || !empty($devRequires);
     }
 }
