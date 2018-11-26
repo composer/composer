@@ -161,7 +161,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if ($this->validateArray('support') && !empty($this->config['support'])) {
-            foreach (array('issues', 'forum', 'wiki', 'source', 'email', 'irc', 'docs', 'rss') as $key) {
+            foreach (array('issues', 'forum', 'wiki', 'source', 'email', 'irc', 'docs', 'rss', 'chat') as $key) {
                 if (isset($this->config['support'][$key]) && !is_string($this->config['support'][$key])) {
                     $this->errors[] = 'support.'.$key.' : invalid value, must be a string';
                     unset($this->config['support'][$key]);
@@ -178,7 +178,7 @@ class ValidatingArrayLoader implements LoaderInterface
                 unset($this->config['support']['irc']);
             }
 
-            foreach (array('issues', 'forum', 'wiki', 'source', 'docs') as $key) {
+            foreach (array('issues', 'forum', 'wiki', 'source', 'docs', 'chat') as $key) {
                 if (isset($this->config['support'][$key]) && !$this->filterUrl($this->config['support'][$key])) {
                     $this->warnings[] = 'support.'.$key.' : invalid value ('.$this->config['support'][$key].'), must be an http/https URL';
                     unset($this->config['support'][$key]);
