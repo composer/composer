@@ -61,7 +61,7 @@ class RequireCommand extends InitCommand
                 <<<EOT
 The require command adds required packages to your composer.json and installs them.
 
-If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of 
+If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of
 matches to require.
 
 If you do not specify a version constraint, composer will choose a suitable one based on the available package versions.
@@ -119,7 +119,7 @@ EOT
         }
 
         $phpVersion = $this->repos->findPackage('php', '*')->getPrettyVersion();
-        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion, $preferredStability);
+        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion, $preferredStability, !$input->getOption('no-update'));
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
