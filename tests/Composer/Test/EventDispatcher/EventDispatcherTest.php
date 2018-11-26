@@ -14,6 +14,7 @@ namespace Composer\Test\EventDispatcher;
 
 use Composer\EventDispatcher\Event;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Installer\InstallerEvents;
 use Composer\Config;
 use Composer\Composer;
@@ -271,6 +272,45 @@ class EventDispatcherTest extends TestCase
             '> group: @subgroup'.PHP_EOL.
             '> subgroup: echo -n baz'.PHP_EOL.
             '> group: echo -n bar'.PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
+    }
+
+    public function testRecursionInScriptsNames()
+    {
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs(array(
+                $composer = $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process
+            ))
+            ->setMethods(array(
+                'getListeners'
+            ))
+            ->getMock();
+
+        $process->expects($this->exactly(1))
+            ->method('execute')
+            ->will($this->returnValue(0));
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnCallback(function (Event $event) {
+                if($event->getName() === 'hello') {
+                    return array('echo Hello');
+                }
+
+                if($event->getName() === 'helloWorld') {
+                    return array('@hello World');
+                }
+
+                return array();
+            }));
+
+        $dispatcher->dispatch('helloWorld', new CommandEvent('helloWorld', $composer, $io));
+        $expected = "> helloWorld: @hello World".PHP_EOL.
+            "> hello: echo Hello " .escapeshellarg('World').PHP_EOL;
+
         $this->assertEquals($expected, $io->getOutput());
     }
 
