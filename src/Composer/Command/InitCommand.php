@@ -22,6 +22,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Util\ProcessExecutor;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -144,6 +145,11 @@ EOT
                     $this->addVendorIgnore($ignoreFile);
                 }
             }
+        }
+
+        $question = 'Would you like to install dependencies now [<comment>yes</comment>]? ';
+        if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question, true)) {
+            $this->installDependencies($output);
         }
     }
 
@@ -766,5 +772,24 @@ EOT
         asort($similarPackages);
 
         return array_keys(array_slice($similarPackages, 0, 5));
+    }
+
+    private function installDependencies($output)
+    {
+        try {
+            $installCommand = $this->getApplication()->find('install');
+            $installCommand->run(new ArrayInput(array()), $output);
+        } catch (\Exception $e) {
+            $this->getIO()->writeError('Could not install dependencies. Run `composer install` to see more information.');
+        }
+
+    }
+
+    private function hasDependencies($options)
+    {
+        $requires = (array) $options['require'];
+        $devRequires = isset($options['require-dev']) ? (array) $options['require-dev'] : array();
+
+        return !empty($requires) || !empty($devRequires);
     }
 }
