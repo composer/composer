@@ -164,7 +164,7 @@ class PlatformRepository extends ArrayRepository
                     $reflector->info();
                     $output = ob_get_clean();
 
-                    preg_match('/^Imagick using ImageMagick library version => ImageMagick ([\d.]+)-(\d+)/m', $output, $matches);
+                    preg_match('/^(Imagick using ImageMagick library version|ImageMagick version) => ImageMagick ([\d.]+)-(\d+)/m', $output, $matches);
                     $prettyVersion = "{$matches[1]}.{$matches[2]}";
 
                     break;
