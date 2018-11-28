@@ -102,11 +102,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->versionParser = new VersionParser();
         $this->loader = new ArrayLoader($this->versionParser);
-        if ($this->options) {
-            // TODO solve this somehow - should be sent at request time not on the instance
-            $httpDownloader = clone $httpDownloader;
-            $httpDownloader->setOptions($this->options);
-        }
         $this->httpDownloader = $httpDownloader;
         $this->eventDispatcher = $eventDispatcher;
         $this->repoConfig = $repoConfig;
@@ -263,7 +258,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
             $url = str_replace(array('%query%', '%type%'), array($query, $type), $this->searchUrl);
 
-            $search = $this->httpDownloader->get($url)->decodeJson();
+            $search = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
             if (empty($search['results'])) {
                 return array();
@@ -826,7 +821,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
                 }
 
-                $response = $httpDownloader->get($filename);
+                $response = $httpDownloader->get($filename, $this->options);
                 $json = $response->getBody();
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     // undo downgrade before trying again if http seems to be hijacked or modifying content somehow
@@ -917,7 +912,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
                 }
 
-                $options = array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime)));
+                $options = $this->options;
+                if (isset($options['http']['header'])) {
+                    $options['http']['header'] = (array) $options['http']['header'];
+                }
+                $options['http']['header'][] = array('If-Modified-Since: '.$lastModifiedTime);
                 $response = $httpDownloader->get($filename, $options);
                 $json = $response->getBody();
                 if ($json === '' && $response->getStatusCode() === 304) {
