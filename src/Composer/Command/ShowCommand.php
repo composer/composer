@@ -553,7 +553,7 @@ EOT
             $matches[$index] = $package->getId();
         }
 
-        $pool = $repositorySet->createPool();
+        $pool = $repositorySet->createPoolForPackage($package->getName());
 
         // select preferred package according to policy rules
         if (!$matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($pool, array(), $matches)) {
