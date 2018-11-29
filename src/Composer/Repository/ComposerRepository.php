@@ -667,6 +667,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->hasPartialPackages = !empty($data['packages']) && is_array($data['packages']);
         }
 
+        // metadata-url indiates V2 repo protocol so it takes over from all the V1 types
+        // V2 only has lazyProviders and no ability to process anything else, plus support for async loading
+        if (!empty($data['metadata-url'])) {
+            $this->lazyProvidersUrl = $this->canonicalizeUrl($data['metadata-url']);
+            $this->providersUrl = null;
+            $this->hasProviders = false;
+            $this->hasPartialPackages = false;
+            $this->allowSslDowngrade = false;
+            unset($data['providers-url'], $data['providers'], $data['providers-includes']);
+        }
+
         if ($this->allowSslDowngrade) {
             $this->url = str_replace('https://', 'http://', $this->url);
             $this->baseUrl = str_replace('https://', 'http://', $this->baseUrl);
@@ -679,22 +690,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (!empty($data['providers']) || !empty($data['providers-includes'])) {
             $this->hasProviders = true;
-        }
-
-        // TODO this is for testing only, remove once packagist reports v2 protocol support
-        if (preg_match('{^https?://repo\.packagist\.org/?$}i', $this->url)) {
-            $this->repoConfig['force-lazy-providers'] = true;
-        }
-
-        // force values for packagist
-        if (preg_match('{^https?://repo\.packagist\.org/?$}i', $this->url) && !empty($this->repoConfig['force-lazy-providers'])) {
-            $this->url = 'https://repo.packagist.org';
-            $this->baseUrl = 'https://repo.packagist.org';
-            $this->lazyProvidersUrl = $this->canonicalizeUrl('https://repo.packagist.org/p/%package%.json');
-            $this->providersUrl = null;
-        } elseif (!empty($this->repoConfig['force-lazy-providers'])) {
-            $this->lazyProvidersUrl = $this->canonicalizeUrl('/p/%package%.json');
-            $this->providersUrl = null;
         }
 
         return $this->rootData = $data;
