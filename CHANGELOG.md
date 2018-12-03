@@ -1,4 +1,4 @@
-### [1.8.0] 2018-11-XX
+### [1.8.0] 2018-12-03
 
   * Changed `post-package-install` / `post-package-update` event to be fired *after* the lock file has been updated as opposed to before
   * Added support for removing packages using a wildcard with the `remove` command, e.g. `composer remove foo/*`
