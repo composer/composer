@@ -234,4 +234,17 @@ abstract class BasePackage implements PackageInterface
         $this->repository = null;
         $this->id = -1;
     }
+
+    /**
+     * Build a regexp from a package name, expanding * globs as required
+     *
+     * @param  string $whiteListedPattern
+     * @return string
+     */
+    public static function packageNameToRegexp($whiteListedPattern)
+    {
+        $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern));
+
+        return "{^" . $cleanedWhiteListedPattern . "$}i";
+    }
 }

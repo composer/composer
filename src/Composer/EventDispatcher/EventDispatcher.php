@@ -176,8 +176,12 @@ class EventDispatcher
                 $return = false === call_user_func($callable, $event) ? 1 : 0;
             } elseif ($this->isComposerScript($callable)) {
                 $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable), true, IOInterface::VERBOSE);
-                $scriptName = substr($callable, 1);
-                $args = $event->getArguments();
+
+                $script = explode(' ', substr($callable, 1));
+                $scriptName = $script[0];
+                unset($script[0]);
+
+                $args = array_merge($script, $event->getArguments());
                 $flags = $event->getFlags();
                 if (substr($callable, 0, 10) === '@composer ') {
                     $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . substr($callable, 9);
@@ -262,16 +266,17 @@ class EventDispatcher
     protected function getPhpExecCommand()
     {
         $finder = new PhpExecutableFinder();
-        $phpPath = $finder->find();
+        $phpPath = $finder->find(false);
         if (!$phpPath) {
             throw new \RuntimeException('Failed to locate PHP binary to execute '.$phpPath);
         }
-
+        $phpArgs = $finder->findArguments();
+        $phpArgs = $phpArgs ? ' ' . implode(' ', $phpArgs) : '';
         $allowUrlFOpenFlag = ' -d allow_url_fopen=' . ProcessExecutor::escape(ini_get('allow_url_fopen'));
         $disableFunctionsFlag = ' -d disable_functions=' . ProcessExecutor::escape(ini_get('disable_functions'));
         $memoryLimitFlag = ' -d memory_limit=' . ProcessExecutor::escape(ini_get('memory_limit'));
 
-        return ProcessExecutor::escape($phpPath) . $allowUrlFOpenFlag . $disableFunctionsFlag . $memoryLimitFlag;
+        return ProcessExecutor::escape($phpPath) . $phpArgs . $allowUrlFOpenFlag . $disableFunctionsFlag . $memoryLimitFlag;
     }
 
     /**

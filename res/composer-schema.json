@@ -490,6 +490,11 @@
                     "description": "IRC channel for support, as irc://server/channel.",
                     "format": "uri"
                 },
+                "chat": {
+                    "type": "string",
+                    "description": "URL to the support chat.",
+                    "format": "uri"
+                },
                 "source": {
                     "type": "string",
                     "description": "URL to browse or download the sources.",

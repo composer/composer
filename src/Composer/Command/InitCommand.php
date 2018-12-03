@@ -22,6 +22,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositorySet;
 use Composer\Util\ProcessExecutor;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -145,6 +146,11 @@ EOT
                 }
             }
         }
+
+        $question = 'Would you like to install dependencies now [<comment>yes</comment>]? ';
+        if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question, true)) {
+            $this->installDependencies($output);
+        }
     }
 
     /**
@@ -208,7 +214,7 @@ EOT
             }
             $name = strtolower($name);
         } else {
-            if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}', $name)) {
+            if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $name)) {
                 throw new \InvalidArgumentException(
                     'The package name '.$name.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
                 );
@@ -222,7 +228,7 @@ EOT
                     return $name;
                 }
 
-                if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}', $value)) {
+                if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $value)) {
                     throw new \InvalidArgumentException(
                         'The package name '.$value.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
                     );
@@ -381,7 +387,7 @@ EOT
         return $this->repos;
     }
 
-    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null, $preferredStability = 'stable')
+    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null, $preferredStability = 'stable', $checkProvidedVersions = true)
     {
         if ($requires) {
             $requires = $this->normalizeRequirements($requires);
@@ -404,7 +410,7 @@ EOT
                     ));
                 } else {
                     // check that the specified version/constraint exists before we proceed
-                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $phpVersion, $preferredStability, $requirement['version'], 'dev');
+                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $phpVersion, $preferredStability, $checkProvidedVersions ? $requirement['version'] : null, 'dev');
 
                     // replace package name from packagist.org
                     $requirement['name'] = $name;
@@ -766,5 +772,24 @@ EOT
         asort($similarPackages);
 
         return array_keys(array_slice($similarPackages, 0, 5));
+    }
+
+    private function installDependencies($output)
+    {
+        try {
+            $installCommand = $this->getApplication()->find('install');
+            $installCommand->run(new ArrayInput(array()), $output);
+        } catch (\Exception $e) {
+            $this->getIO()->writeError('Could not install dependencies. Run `composer install` to see more information.');
+        }
+
+    }
+
+    private function hasDependencies($options)
+    {
+        $requires = (array) $options['require'];
+        $devRequires = isset($options['require-dev']) ? (array) $options['require-dev'] : array();
+
+        return !empty($requires) || !empty($devRequires);
     }
 }

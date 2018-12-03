@@ -1,3 +1,16 @@
+### [1.8.0] 2018-12-03
+
+  * Changed `post-package-install` / `post-package-update` event to be fired *after* the lock file has been updated as opposed to before
+  * Added support for removing packages using a wildcard with the `remove` command, e.g. `composer remove foo/*`
+  * Added `chat` to the list of `support` channels you can list in composer.json
+  * Added signal handling on require command to restore the composer.json in case of abort
+  * Added `--ignore` to `outdated` command to pass one or more packages that you do not want to be listed
+  * Added `--no-dev` to `check-platform-reqs` command to skip dev requirements even if they are installed
+  * Added support for running plugin commands from sub-directories within a project much like other Composer commands
+  * Added support for running Composer via phpdbg
+  * Added `lib-imagick` platform package
+  * Fixed validate command always checking for disabled checks when used with `--strict`
+
 ### [1.7.3] 2018-11-01
 
   * Fixed handling of replace/conflict rules. This may affect dependency resolution in some edge cases.
@@ -696,6 +709,7 @@
 
   * Initial release
 
+[1.8.0]: https://github.com/composer/composer/compare/1.7.3...1.8.0
 [1.7.3]: https://github.com/composer/composer/compare/1.7.2...1.7.3
 [1.7.2]: https://github.com/composer/composer/compare/1.7.1...1.7.2
 [1.7.1]: https://github.com/composer/composer/compare/1.7.0...1.7.1

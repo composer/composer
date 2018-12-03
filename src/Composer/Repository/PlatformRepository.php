@@ -157,6 +157,13 @@ class PlatformRepository extends ArrayRepository
 
                     break;
 
+                case 'imagick':
+                    $imagick = new \Imagick();
+                    $imageMagickVersion = $imagick->getVersion();
+                    preg_match('/^ImageMagick ([\d.]+)-(\d+)/', $imageMagickVersion['versionString'], $matches);
+                    $prettyVersion = "{$matches[1]}.{$matches[2]}";
+                    break;
+
                 case 'libxml':
                     $prettyVersion = LIBXML_DOTTED_VERSION;
                     break;

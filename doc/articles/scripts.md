@@ -238,6 +238,17 @@ one by prefixing the command name with `@`:
 }
 ```
 
+You can also refer a script and pass it new arguments:
+
+```json
+{
+  "scripts": {
+    "tests": "phpunit",
+    "testsVerbose": "@tests -vvv"
+  }
+}
+```
+
 ## Calling Composer commands
 
 To call Composer commands, you can use `@composer` which will automatically
