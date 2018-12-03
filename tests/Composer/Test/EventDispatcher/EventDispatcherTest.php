@@ -284,7 +284,7 @@ class EventDispatcherTest extends TestCase
                 return array();
             }));
 
-        $dispatcher->dispatch('helloWorld', new CommandEvent('helloWorld', $composer, $io));
+        $dispatcher->dispatch('helloWorld', new ScriptEvent('helloWorld', $composer, $io));
         $expected = "> helloWorld: @hello World".PHP_EOL.
             "> hello: echo Hello " .escapeshellarg('World').PHP_EOL;
 
