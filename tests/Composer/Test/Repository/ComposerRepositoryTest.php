@@ -32,7 +32,7 @@ class ComposerRepositoryTest extends TestCase
         );
 
         $repository = $this->getMockBuilder('Composer\Repository\ComposerRepository')
-            ->setMethods(array('loadRootServerFile', 'createPackage'))
+            ->setMethods(array('loadRootServerFile', 'createPackages'))
             ->setConstructorArgs(array(
                 $repoConfig,
                 new NullIO,
@@ -47,15 +47,16 @@ class ComposerRepositoryTest extends TestCase
             ->method('loadRootServerFile')
             ->will($this->returnValue($repoPackages));
 
+        $stubs = array();
         foreach ($expected as $at => $arg) {
-            $stubPackage = $this->getPackage('stub/stub', '1.0.0');
-
-            $repository
-                ->expects($this->at($at + 2))
-                ->method('createPackage')
-                ->with($this->identicalTo($arg), $this->equalTo('Composer\Package\CompletePackage'))
-                ->will($this->returnValue($stubPackage));
+            $stubs[] = $this->getPackage('stub/stub', '1.0.0');
         }
+
+        $repository
+            ->expects($this->at(2))
+            ->method('createPackages')
+            ->with($this->identicalTo($expected), $this->equalTo('Composer\Package\CompletePackage'))
+            ->will($this->returnValue($stubs));
 
         // Triggers initialization
         $packages = $repository->getPackages();

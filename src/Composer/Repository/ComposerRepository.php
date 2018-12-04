@@ -61,7 +61,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $rootData;
     private $hasPartialPackages;
     private $partialPackagesByName;
-    private $versionParser;
+    /**
+     * TODO v3 should make this private once we can drop PHP 5.3 support
+     * @private
+     */
+    public $versionParser;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
     {
@@ -414,6 +418,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $this->providers[$name] = array();
         foreach ($packages['packages'] as $versions) {
+            $versionsToLoad = array();
             foreach ($versions as $version) {
                 if (!$loadingPartialPackage && $this->hasPartialPackages && isset($this->partialPackagesByName[$version['name']])) {
                     continue;
@@ -440,40 +445,44 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         continue;
                     }
 
-                    // load acceptable packages in the providers
-                    $package = $this->createPackage($version, 'Composer\Package\CompletePackage');
-                    $package->setRepository($this);
+                    $versionsToLoad[] = $version;
+                }
+            }
 
-                    if ($package instanceof AliasPackage) {
-                        $aliased = $package->getAliasOf();
-                        $aliased->setRepository($this);
+            // load acceptable packages in the providers
+            $loadedPackages = $this->createPackages($versionsToLoad, 'Composer\Package\CompletePackage');
+            foreach ($loadedPackages as $package) {
+                $package->setRepository($this);
 
-                        $this->providers[$name][$version['uid']] = $aliased;
-                        $this->providers[$name][$version['uid'].'-alias'] = $package;
+                if ($package instanceof AliasPackage) {
+                    $aliased = $package->getAliasOf();
+                    $aliased->setRepository($this);
 
-                        // override provider with its alias so it can be expanded in the if block above
-                        $this->providersByUid[$version['uid']] = $package;
-                    } else {
-                        $this->providers[$name][$version['uid']] = $package;
-                        $this->providersByUid[$version['uid']] = $package;
-                    }
+                    $this->providers[$name][$version['uid']] = $aliased;
+                    $this->providers[$name][$version['uid'].'-alias'] = $package;
 
-                    // handle root package aliases
-                    unset($rootAliasData);
+                    // override provider with its alias so it can be expanded in the if block above
+                    $this->providersByUid[$version['uid']] = $package;
+                } else {
+                    $this->providers[$name][$version['uid']] = $package;
+                    $this->providersByUid[$version['uid']] = $package;
+                }
 
-                    if (isset($this->rootAliases[$package->getName()][$package->getVersion()])) {
-                        $rootAliasData = $this->rootAliases[$package->getName()][$package->getVersion()];
-                    } elseif ($package instanceof AliasPackage && isset($this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()])) {
-                        $rootAliasData = $this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()];
-                    }
+                // handle root package aliases
+                unset($rootAliasData);
 
-                    if (isset($rootAliasData)) {
-                        $alias = $this->createAliasPackage($package, $rootAliasData['alias_normalized'], $rootAliasData['alias']);
-                        $alias->setRepository($this);
+                if (isset($this->rootAliases[$package->getName()][$package->getVersion()])) {
+                    $rootAliasData = $this->rootAliases[$package->getName()][$package->getVersion()];
+                } elseif ($package instanceof AliasPackage && isset($this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()])) {
+                    $rootAliasData = $this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()];
+                }
 
-                        $this->providers[$name][$version['uid'].'-root'] = $alias;
-                        $this->providersByUid[$version['uid'].'-root'] = $alias;
-                    }
+                if (isset($rootAliasData)) {
+                    $alias = $this->createAliasPackage($package, $rootAliasData['alias_normalized'], $rootAliasData['alias']);
+                    $alias->setRepository($this);
+
+                    $this->providers[$name][$version['uid'].'-root'] = $alias;
+                    $this->providersByUid[$version['uid'].'-root'] = $alias;
                 }
             }
         }
@@ -501,8 +510,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $repoData = $this->loadDataFromServer();
 
-        foreach ($repoData as $package) {
-            $this->addPackage($this->createPackage($package, 'Composer\Package\CompletePackage'));
+        foreach ($this->createPackages($repoData, 'Composer\Package\CompletePackage') as $package) {
+            $this->addPackage($package);
         }
     }
 
@@ -545,6 +554,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 $this->asyncFetchFile($url, $cacheKey, $lastModified)
                     ->then(function ($response) use (&$packages, $contents, $name, $constraint, $repo, $isPackageAcceptableCallable) {
+                        static $uniqKeys = array('version', 'version_normalized', 'source', 'dist', 'time');
+
                         if (true === $response) {
                             $response = $contents;
                         }
@@ -553,24 +564,37 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                             return;
                         }
 
-                        $uniqKeys = array('version', 'version_normalized', 'source', 'dist', 'time');
+                        $versionsToLoad = array();
                         foreach ($response['packages'][$name] as $version) {
-                            if (isset($version['versions'])) {
-                                $baseVersion = $version;
-                                foreach ($uniqKeys as $key) {
-                                    unset($baseVersion[$key.'s']);
-                                }
-
-                                foreach ($version['versions'] as $index => $dummy) {
-                                    $unpackedVersion = $baseVersion;
-                                    foreach ($uniqKeys as $key) {
-                                        $unpackedVersion[$key] = $version[$key.'s'][$index];
+                            if (isset($version['version_normalizeds'])) {
+                                foreach ($version['version_normalizeds'] as $index => $normalizedVersion) {
+                                    if (!$repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $name, $normalizedVersion)) {
+                                        foreach ($uniqKeys as $key) {
+                                            unset($version[$key.'s'][$index]);
+                                        }
                                     }
-
-                                    $repo->createPackageIfAcceptable($packages, $isPackageAcceptableCallable, $unpackedVersion, $constraint);
+                                }
+                                if (count($version['version_normalizeds'])) {
+                                    $versionsToLoad[] = $version;
                                 }
                             } else {
-                                $repo->createPackageIfAcceptable($packages, $isPackageAcceptableCallable, $version, $constraint);
+                                if (!isset($version['version_normalized'])) {
+                                    $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
+                                }
+
+                                if ($repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $name, $version['version_normalized'])) {
+                                    $versionsToLoad[] = $version;
+                                }
+                            }
+                        }
+
+                        $loadedPackages = $this->createPackages($versionsToLoad, 'Composer\Package\CompletePackage');
+                        foreach ($loadedPackages as $package) {
+                            $package->setRepository($this);
+
+                            $packages[spl_object_hash($package)] = $package;
+                            if ($package instanceof AliasPackage && !isset($packages[spl_object_hash($package->getAliasOf())])) {
+                                $packages[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
                             }
                         }
                     }, function ($e) {
@@ -592,27 +616,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      *
      * @private
      */
-    public function createPackageIfAcceptable(&$packages, $isPackageAcceptableCallable, $version, $constraint)
+    public function isVersionAcceptable($isPackageAcceptableCallable, $constraint, $name, $versionNormalized)
     {
-        if (!call_user_func($isPackageAcceptableCallable, strtolower($version['name']), VersionParser::parseStability($version['version']))) {
-            return;
+        if (!call_user_func($isPackageAcceptableCallable, strtolower($name), VersionParser::parseStability($versionNormalized))) {
+            return false;
         }
 
-        if (isset($version['version_normalized']) && $constraint && !$constraint->matches(new Constraint('==', $version['version_normalized']))) {
-            return;
+        if ($constraint && !$constraint->matches(new Constraint('==', $versionNormalized))) {
+            return false;
         }
 
-        // load acceptable packages in the providers
-        $package = $this->createPackage($version, 'Composer\Package\CompletePackage');
-        $package->setRepository($this);
-
-        // if there was no version_normalized, then we need to check now for the constraint
-        if (!$constraint || isset($version['version_normalized']) || $constraint->matches(new Constraint('==', $package->getVersion()))) {
-            $packages[spl_object_hash($package)] = $package;
-            if ($package instanceof AliasPackage && !isset($packages[spl_object_hash($package->getAliasOf())])) {
-                $packages[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
-            }
-        }
+        return true;
     }
 
     protected function loadRootServerFile()
@@ -775,23 +789,37 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return $packages;
     }
 
-    protected function createPackage(array $data, $class = 'Composer\Package\CompletePackage')
+    /**
+     * TODO v3 should make this private once we can drop PHP 5.3 support
+     *
+     * @private
+     */
+    public function createPackages(array $packages, $class = 'Composer\Package\CompletePackage')
     {
+        if (!$packages) {
+            return;
+        }
+
         try {
-            if (!isset($data['notification-url'])) {
-                $data['notification-url'] = $this->notifyUrl;
+            foreach ($packages as &$data) {
+                if (!isset($data['notification-url'])) {
+                    $data['notification-url'] = $this->notifyUrl;
+                }
             }
 
-            $package = $this->loader->load($data, $class);
-            if (isset($this->sourceMirrors[$package->getSourceType()])) {
-                $package->setSourceMirrors($this->sourceMirrors[$package->getSourceType()]);
-            }
-            $package->setDistMirrors($this->distMirrors);
-            $this->configurePackageTransportOptions($package);
+            $packages = $this->loader->loadPackages($packages, $class);
 
-            return $package;
+            foreach ($packages as $package) {
+                if (isset($this->sourceMirrors[$package->getSourceType()])) {
+                    $package->setSourceMirrors($this->sourceMirrors[$package->getSourceType()]);
+                }
+                $package->setDistMirrors($this->distMirrors);
+                $this->configurePackageTransportOptions($package);
+            }
+
+            return $packages;
         } catch (\Exception $e) {
-            throw new \RuntimeException('Could not load package '.(isset($data['name']) ? $data['name'] : json_encode($data)).' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
+            throw new \RuntimeException('Could not load packages '.(isset($packages[0]['name']) ? $packages[0]['name'] : json_encode($packages)).' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
         }
     }
 
