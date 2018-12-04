@@ -588,9 +588,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                             }
                         }
 
-                        $loadedPackages = $this->createPackages($versionsToLoad, 'Composer\Package\CompletePackage');
+                        $loadedPackages = $repo->createPackages($versionsToLoad, 'Composer\Package\CompletePackage');
                         foreach ($loadedPackages as $package) {
-                            $package->setRepository($this);
+                            $package->setRepository($repo);
 
                             $packages[spl_object_hash($package)] = $package;
                             if ($package instanceof AliasPackage && !isset($packages[spl_object_hash($package->getAliasOf())])) {
