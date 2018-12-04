@@ -317,8 +317,8 @@ EOT
             } else {
                 $type = 'available';
             }
-            if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
-                foreach ($repo->getProviderNames() as $name) {
+            if ($repo instanceof ComposerRepository) {
+                foreach ($repo->getPackageNames() as $name) {
                     if (!$packageFilter || preg_match($packageFilter, $name)) {
                         $packages[$type][$name] = $name;
                     }

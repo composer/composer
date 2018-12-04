@@ -153,7 +153,9 @@ class ComposerRepositoryTest extends TestCase
             ),
         ));
 
-        $packages = $repo->whatProvides('a', false, array($this, 'isPackageAcceptableReturnTrue'));
+        $reflMethod = new \ReflectionMethod($repo, 'whatProvides');
+        $reflMethod->setAccessible(true);
+        $packages = $reflMethod->invoke($repo, 'a', array($this, 'isPackageAcceptableReturnTrue'));
 
         $this->assertCount(7, $packages);
         $this->assertEquals(array('1', '1-alias', '2', '2-alias', '2-root', '3', '3-root'), array_keys($packages));

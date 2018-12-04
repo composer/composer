@@ -211,132 +211,127 @@ class CurlDownloader
         }
 
         $active = true;
-        try {
-            $this->checkCurlResult(curl_multi_exec($this->multiHandle, $active));
-            if (-1 === curl_multi_select($this->multiHandle, $this->selectTimeout)) {
-                // sleep in case select returns -1 as it can happen on old php versions or some platforms where curl does not manage to do the select
-                usleep(150);
+        $this->checkCurlResult(curl_multi_exec($this->multiHandle, $active));
+        if (-1 === curl_multi_select($this->multiHandle, $this->selectTimeout)) {
+            // sleep in case select returns -1 as it can happen on old php versions or some platforms where curl does not manage to do the select
+            usleep(150);
+        }
+
+        while ($progress = curl_multi_info_read($this->multiHandle)) {
+            $curlHandle = $progress['handle'];
+            $i = (int) $curlHandle;
+            if (!isset($this->jobs[$i])) {
+                continue;
             }
+            $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
+            $job = $this->jobs[$i];
+            unset($this->jobs[$i]);
+            curl_multi_remove_handle($this->multiHandle, $curlHandle);
+            $error = curl_error($curlHandle);
+            $errno = curl_errno($curlHandle);
+            curl_close($curlHandle);
 
-            while ($progress = curl_multi_info_read($this->multiHandle)) {
-                $curlHandle = $progress['handle'];
-                $i = (int) $curlHandle;
-                if (!isset($this->jobs[$i])) {
-                    continue;
+            $headers = null;
+            $statusCode = null;
+            $response = null;
+            try {
+// TODO progress
+                //$this->onProgress($curlHandle, $job['callback'], $progress, $job['progress']);
+                if (CURLE_OK !== $errno) {
+                    throw new TransportException($error);
                 }
-                $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
-                $job = $this->jobs[$i];
-                unset($this->jobs[$i]);
-                curl_multi_remove_handle($this->multiHandle, $curlHandle);
-                $error = curl_error($curlHandle);
-                $errno = curl_errno($curlHandle);
-                curl_close($curlHandle);
 
-                $headers = null;
-                $statusCode = null;
-                $response = null;
-                try {
-// TODO progress
-                    //$this->onProgress($curlHandle, $job['callback'], $progress, $job['progress']);
-                    if (CURLE_OK !== $errno) {
-                        throw new TransportException($error);
-                    }
+                $statusCode = $progress['http_code'];
+                rewind($job['headerHandle']);
+                $headers = explode("\r\n", rtrim(stream_get_contents($job['headerHandle'])));
+                fclose($job['headerHandle']);
 
-                    $statusCode = $progress['http_code'];
-                    rewind($job['headerHandle']);
-                    $headers = explode("\r\n", rtrim(stream_get_contents($job['headerHandle'])));
-                    fclose($job['headerHandle']);
+                // prepare response object
+                if ($job['filename']) {
+                    fclose($job['bodyHandle']);
+                    $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $job['filename'].'~');
+                    $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
+                } else {
+                    rewind($job['bodyHandle']);
+                    $contents = stream_get_contents($job['bodyHandle']);
+                    fclose($job['bodyHandle']);
+                    $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
+                    $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
+                }
 
-                    // prepare response object
-                    if ($job['filename']) {
-                        fclose($job['bodyHandle']);
-                        $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $job['filename'].'~');
-                        $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
-                    } else {
-                        rewind($job['bodyHandle']);
-                        $contents = stream_get_contents($job['bodyHandle']);
-                        fclose($job['bodyHandle']);
-                        $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
-                        $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
-                    }
-
-                    $result = $this->isAuthenticatedRetryNeeded($job, $response);
-                    if ($result['retry']) {
-                        if ($job['filename']) {
-                            @unlink($job['filename'].'~');
-                        }
-
-                        $this->restartJob($job, $job['url'], array('storeAuth' => $result['storeAuth']));
-                        continue;
-                    }
-
-                    // handle 3xx redirects, 304 Not Modified is excluded
-                    if ($statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $job['attributes']['redirects'] < $this->maxRedirects) {
-                        $location = $this->handleRedirect($job, $response);
-                        if ($location) {
-                            $this->restartJob($job, $location, array('redirects' => $job['attributes']['redirects'] + 1));
-                            continue;
-                        }
-                    }
-
-                    // fail 4xx and 5xx responses and capture the response
-                    if ($statusCode >= 400 && $statusCode <= 599) {
-                        throw $this->failResponse($job, $response, $response->getStatusMessage());
-// TODO progress
-//                        $this->io->overwriteError("Downloading (<error>failed</error>)", false);
-                    }
-
-                    if ($job['attributes']['storeAuth']) {
-                        $this->authHelper->storeAuth($job['origin'], $job['attributes']['storeAuth']);
-                    }
-
-                    // resolve promise
-                    if ($job['filename']) {
-                        rename($job['filename'].'~', $job['filename']);
-                        call_user_func($job['resolve'], true);
-                    } else {
-                        call_user_func($job['resolve'], $response);
-                    }
-                } catch (\Exception $e) {
-                    if ($e instanceof TransportException && $headers) {
-                        $e->setHeaders($headers);
-                        $e->setStatusCode($statusCode);
-                    }
-                    if ($e instanceof TransportException && $response) {
-                        $e->setResponse($response->getBody());
-                    }
-
-                    if (is_resource($job['headerHandle'])) {
-                        fclose($job['headerHandle']);
-                    }
-                    if (is_resource($job['bodyHandle'])) {
-                        fclose($job['bodyHandle']);
-                    }
+                $result = $this->isAuthenticatedRetryNeeded($job, $response);
+                if ($result['retry']) {
                     if ($job['filename']) {
                         @unlink($job['filename'].'~');
                     }
-                    call_user_func($job['reject'], $e);
-                }
-            }
 
-            foreach ($this->jobs as $i => $curlHandle) {
-                if (!isset($this->jobs[$i])) {
+                    $this->restartJob($job, $job['url'], array('storeAuth' => $result['storeAuth']));
                     continue;
                 }
-                $curlHandle = $this->jobs[$i]['curlHandle'];
-                $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
 
-                if ($this->jobs[$i]['progress'] !== $progress) {
-                    $previousProgress = $this->jobs[$i]['progress'];
-                    $this->jobs[$i]['progress'] = $progress;
-
-                    // TODO
-                    //$this->onProgress($curlHandle, $this->jobs[$i]['callback'], $progress, $previousProgress);
+                // handle 3xx redirects, 304 Not Modified is excluded
+                if ($statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $job['attributes']['redirects'] < $this->maxRedirects) {
+                    $location = $this->handleRedirect($job, $response);
+                    if ($location) {
+                        $this->restartJob($job, $location, array('redirects' => $job['attributes']['redirects'] + 1));
+                        continue;
+                    }
                 }
+
+                // fail 4xx and 5xx responses and capture the response
+                if ($statusCode >= 400 && $statusCode <= 599) {
+                    throw $this->failResponse($job, $response, $response->getStatusMessage());
+// TODO progress
+//                        $this->io->overwriteError("Downloading (<error>failed</error>)", false);
+                }
+
+                if ($job['attributes']['storeAuth']) {
+                    $this->authHelper->storeAuth($job['origin'], $job['attributes']['storeAuth']);
+                }
+
+                // resolve promise
+                if ($job['filename']) {
+                    rename($job['filename'].'~', $job['filename']);
+                    call_user_func($job['resolve'], true);
+                } else {
+                    call_user_func($job['resolve'], $response);
+                }
+            } catch (\Exception $e) {
+                if ($e instanceof TransportException && $headers) {
+                    $e->setHeaders($headers);
+                    $e->setStatusCode($statusCode);
+                }
+                if ($e instanceof TransportException && $response) {
+                    $e->setResponse($response->getBody());
+                }
+
+                if (is_resource($job['headerHandle'])) {
+                    fclose($job['headerHandle']);
+                }
+                if (is_resource($job['bodyHandle'])) {
+                    fclose($job['bodyHandle']);
+                }
+                if ($job['filename']) {
+                    @unlink($job['filename'].'~');
+                }
+                call_user_func($job['reject'], $e);
             }
-        } catch (\Exception $e) {
-            // TODO
-            var_dump('Caught2', get_class($e), $e->getMessage(), $e);die;
+        }
+
+        foreach ($this->jobs as $i => $curlHandle) {
+            if (!isset($this->jobs[$i])) {
+                continue;
+            }
+            $curlHandle = $this->jobs[$i]['curlHandle'];
+            $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
+
+            if ($this->jobs[$i]['progress'] !== $progress) {
+                $previousProgress = $this->jobs[$i]['progress'];
+                $this->jobs[$i]['progress'] = $progress;
+
+                // TODO
+                //$this->onProgress($curlHandle, $this->jobs[$i]['callback'], $progress, $previousProgress);
+            }
         }
     }
 
