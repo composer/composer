@@ -108,7 +108,7 @@ class CurlDownloader
     {
         $attributes = array_merge(array(
             'retryAuthFailure' => true,
-            'redirects' => 1,
+            'redirects' => 0,
             'storeAuth' => false,
         ), $attributes);
 
@@ -195,7 +195,9 @@ class CurlDownloader
 
         $usingProxy = !empty($options['http']['proxy']) ? ' using proxy ' . $options['http']['proxy'] : '';
         $ifModified = false !== strpos(strtolower(implode(',', $options['http']['header'])), 'if-modified-since:') ? ' if modified' : '';
-        $this->io->writeError('Downloading ' . $url . $usingProxy . $ifModified, true, IOInterface::DEBUG);
+        if ($attributes['redirects'] === 0) {
+            $this->io->writeError('Downloading ' . $url . $usingProxy . $ifModified, true, IOInterface::DEBUG);
+        }
 
         $this->checkCurlResult(curl_multi_add_handle($this->multiHandle, $curlHandle));
 // TODO progress
@@ -249,6 +251,7 @@ class CurlDownloader
                     if ($job['filename']) {
                         fclose($job['bodyHandle']);
                         $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $job['filename'].'~');
+                        $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
                     } else {
                         rewind($job['bodyHandle']);
                         $contents = stream_get_contents($job['bodyHandle']);
@@ -268,7 +271,7 @@ class CurlDownloader
                     }
 
                     // handle 3xx redirects, 304 Not Modified is excluded
-                    if ($statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $job['redirects'] < $this->maxRedirects) {
+                    if ($statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $job['attributes']['redirects'] < $this->maxRedirects) {
                         $location = $this->handleRedirect($job, $response);
                         if ($location) {
                             $this->restartJob($job, $location, array('redirects' => $job['attributes']['redirects'] + 1));
@@ -360,8 +363,7 @@ class CurlDownloader
         }
 
         if (!empty($targetUrl)) {
-            $this->io->writeError('', true, IOInterface::DEBUG);
-            $this->io->writeError(sprintf('Following redirect (%u) %s', $job['redirects'] + 1, $targetUrl), true, IOInterface::DEBUG);
+            $this->io->writeError(sprintf('Following redirect (%u) %s', $job['attributes']['redirects'] + 1, $targetUrl), true, IOInterface::DEBUG);
 
             return $targetUrl;
         }
@@ -429,7 +431,7 @@ class CurlDownloader
         $attributes = array_merge($job['attributes'], $attributes);
         $origin = Url::getOrigin($this->config, $url);
 
-        $this->initDownload($job['resolve'], $job['reject'], $origin, $url, $job['originalOptions'], $job['filename'], $attributes);
+        $this->initDownload($job['resolve'], $job['reject'], $origin, $url, $job['options'], $job['filename'], $attributes);
     }
 
     private function failResponse(array $job, Response $response, $errorMessage)
