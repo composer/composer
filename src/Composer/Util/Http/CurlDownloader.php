@@ -114,8 +114,10 @@ class CurlDownloader
 
         $originalOptions = $options;
 
-        // check URL can be accessed (i.e. is not insecure)
-        $this->config->prohibitUrlByConfig($url, $this->io);
+        // check URL can be accessed (i.e. is not insecure), but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
+        if (!preg_match('{^http://(repo\.)?packagist\.org/p/}', $url) || (false === strpos($url, '$') && false === strpos($url, '%24'))) {
+            $this->config->prohibitUrlByConfig($url, $this->io);
+        }
 
         $curlHandle = curl_init();
         $headerHandle = fopen('php://temp/maxmemory:32768', 'w+b');
