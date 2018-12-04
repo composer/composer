@@ -136,7 +136,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if ($this->lazyProvidersUrl) {
             if ($this->hasPartialPackages() && isset($this->partialPackagesByName[$name])) {
-                return $this->filterPackages($this->whatProvides($name), $name, $constraint, true);
+                return $this->filterPackages($this->whatProvides($name), $constraint, true);
             }
 
             return $this->loadAsyncPackages(array($name => $constraint), function ($name, $stability) {
@@ -150,7 +150,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         foreach ($this->getProviderNames() as $providerName) {
             if ($name === $providerName) {
-                return $this->filterPackages($this->whatProvides($providerName), $name, $constraint, true);
+                return $this->filterPackages($this->whatProvides($providerName), $constraint, true);
             }
         }
     }
@@ -170,7 +170,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if ($this->lazyProvidersUrl) {
             if ($this->hasPartialPackages() && isset($this->partialPackagesByName[$name])) {
-                return $this->filterPackages($this->whatProvides($name), $name, $constraint);
+                return $this->filterPackages($this->whatProvides($name), $constraint);
             }
 
             return $this->loadAsyncPackages(array($name => $constraint ?: new EmptyConstraint()), function ($name, $stability) {
@@ -184,22 +184,18 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         foreach ($this->getProviderNames() as $providerName) {
             if ($name === $providerName) {
-                return $this->filterPackages($this->whatProvides($providerName), $name, $constraint);
+                return $this->filterPackages($this->whatProvides($providerName), $constraint);
             }
         }
 
         return array();
     }
 
-    private function filterPackages(array $packages, $name, $constraint = null, $returnFirstMatch = false)
+    private function filterPackages(array $packages, $constraint = null, $returnFirstMatch = false)
     {
         $packages = array();
 
         foreach ($packages as $package) {
-            // TODO this check can be removed once providers are only what really has that name anyway
-            if ($name !== $package->getName()) {
-                continue;
-            }
 
             $pkgConstraint = new Constraint('==', $package->getVersion());
             if (null === $constraint || $constraint->matches($pkgConstraint)) {
@@ -452,7 +448,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         foreach ($packages['packages'] as $versions) {
             $versionsToLoad = array();
             foreach ($versions as $version) {
-                if (!$loadingPartialPackage && $this->hasPartialPackages() && isset($this->partialPackagesByName[$version['name']])) {
+                $normalizedName = strtolower($version['name']);
+
+                // only load the actual named package, not other packages that might find themselves in the same file
+                if ($normalizedName !== $name) {
+                    continue;
+                }
+
+                if (!$loadingPartialPackage && $this->hasPartialPackages() && isset($this->partialPackagesByName[$normalizedName])) {
                     continue;
                 }
 
@@ -473,7 +476,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
                 } else {
-                    if ($isPackageAcceptableCallable && !call_user_func($isPackageAcceptableCallable, strtolower($version['name']), VersionParser::parseStability($version['version']))) {
+                    if ($isPackageAcceptableCallable && !call_user_func($isPackageAcceptableCallable, $normalizedName, VersionParser::parseStability($version['version']))) {
                         continue;
                     }
 
@@ -830,7 +833,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     public function createPackages(array $packages, $class = 'Composer\Package\CompletePackage')
     {
         if (!$packages) {
-            return;
+            return array();
         }
 
         try {
@@ -1110,19 +1113,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $this->partialPackagesByName = array();
         foreach ($rootData['packages'] as $package => $versions) {
-            $package = strtolower($package);
             foreach ($versions as $version) {
-                $this->partialPackagesByName[$package][] = $version;
-                if (!empty($version['provide']) && is_array($version['provide'])) {
-                    foreach ($version['provide'] as $provided => $providedVersion) {
-                        $this->partialPackagesByName[strtolower($provided)][] = $version;
-                    }
-                }
-                if (!empty($version['replace']) && is_array($version['replace'])) {
-                    foreach ($version['replace'] as $provided => $providedVersion) {
-                        $this->partialPackagesByName[strtolower($provided)][] = $version;
-                    }
-                }
+                $this->partialPackagesByName[strtolower($version['name'])][] = $version;
             }
         }
 
