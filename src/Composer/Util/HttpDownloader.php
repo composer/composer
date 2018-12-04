@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
+use Composer\Util\Http\Response;
 use Psr\Log\LoggerInterface;
 use React\Promise\Promise;
 
@@ -40,6 +41,7 @@ class HttpDownloader
     private $curl;
     private $rfs;
     private $idGen = 0;
+    private $disabled;
 
     /**
      * @param IOInterface $io         The IO instance
@@ -50,6 +52,8 @@ class HttpDownloader
     public function __construct(IOInterface $io, Config $config, array $options = array(), $disableTls = false)
     {
         $this->io = $io;
+
+        $this->disabled = (bool) getenv('COMPOSER_DISABLE_NETWORK');
 
         // Setup TLS options
         // The cafile option can be set via config.json
@@ -215,6 +219,17 @@ class HttpDownloader
         $url = $job['request']['url'];
         $options = $job['request']['options'];
         $origin = $job['origin'];
+
+        if ($this->disabled) {
+            if (isset($job['request']['options']['http']['header']) && false !== stripos(implode('', $job['request']['options']['http']['header']), 'if-modified-since')) {
+                $resolve(new Response(array('url' => $url), 304, array(), ''));
+            } else {
+                $e = new TransportException('Network disabled', 499);
+                $e->setStatusCode(499);
+                $reject($e);
+            }
+            return;
+        }
 
         if ($job['request']['copyTo']) {
             $this->curl->download($resolve, $reject, $origin, $url, $options, $job['request']['copyTo']);

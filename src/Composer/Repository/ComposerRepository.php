@@ -1044,7 +1044,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return false;
             }
 
-            if (--$retries) {
+            // special error code returned when network is being artificially disabled
+            if ($e instanceof TransportException && $e->getStatusCode() === 499) {
+                $retries = 0;
+            }
+
+            if (--$retries > 0) {
                 usleep(100000);
 
                 return $httpDownloader->add($filename, $options)->then($accept, $reject);
