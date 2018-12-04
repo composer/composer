@@ -210,7 +210,7 @@ class Application extends BaseApplication
                         
                         if ($io->isInteractive()) {
                             if (!$io->askConfirmation('<info>Continue as root/super user</info> [<comment>yes</comment>]? ', true)) {
-                                exit(0);
+                                return 0;
                             }
                         }
                     }
