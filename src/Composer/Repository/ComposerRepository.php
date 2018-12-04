@@ -527,6 +527,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         // TODO what if not, then throw?
         if ($this->lazyProvidersUrl) {
             foreach ($packageNames as $name => $constraint) {
+                $name = strtolower($name);
+
                 // skip platform packages, root package and composer-plugin-api
                 if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
                     continue;

@@ -217,6 +217,7 @@ class Solver
 
         $this->setupInstalledMap();
 
+        $this->io->writeError('Generating rules', true, IOInterface::DEBUG);
         $this->ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);
