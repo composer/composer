@@ -250,13 +250,18 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             foreach ($packageNameMap as $name => $constraint) {
                 $matches = array();
 
+                // if a repo has no providers but only partial packages and the partial packages are missing
+                // then we don't want to call whatProvides as it would try to load from the providers and fail
                 if (!$hasProviders && !isset($this->partialPackagesByName[$name])) {
                     continue;
                 }
 
                 $candidates = $this->whatProvides($name, $isPackageAcceptableCallable);
                 foreach ($candidates as $candidate) {
-                    if ($candidate->getName() === $name && (!$constraint || $constraint->matches(new Constraint('==', $candidate->getVersion())))) {
+                    if ($candidate->getName() !== $name) {
+                        throw new \LogicException('whatProvides should never return a package with a different name than the requested one');
+                    }
+                    if (!$constraint || $constraint->matches(new Constraint('==', $candidate->getVersion()))) {
                         $matches[spl_object_hash($candidate)] = $candidate;
                         if ($candidate instanceof AliasPackage && !isset($matches[spl_object_hash($candidate->getAliasOf())])) {
                             $matches[spl_object_hash($candidate->getAliasOf())] = $candidate->getAliasOf();
@@ -278,7 +283,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $packages;
         }
 
-        if ($this->lazyProvidersUrl) {
+        if ($this->lazyProvidersUrl && count($packageNameMap)) {
             $packages = array_merge($packages, $this->loadAsyncPackages($packageNameMap, $isPackageAcceptableCallable));
         }
 

@@ -225,6 +225,7 @@ class CurlDownloader
             if (!isset($this->jobs[$i])) {
                 continue;
             }
+
             $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
             $job = $this->jobs[$i];
             unset($this->jobs[$i]);
@@ -239,7 +240,7 @@ class CurlDownloader
             try {
 // TODO progress
                 //$this->onProgress($curlHandle, $job['callback'], $progress, $job['progress']);
-                if (CURLE_OK !== $errno) {
+                if (CURLE_OK !== $errno || $error) {
                     throw new TransportException($error);
                 }
 
