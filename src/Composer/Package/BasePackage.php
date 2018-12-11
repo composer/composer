@@ -106,6 +106,44 @@ abstract class BasePackage implements PackageInterface
         return array_keys($names);
     }
 
+    public function getIdentityHash()
+    {
+        return md5($this->getIdentityString());
+    }
+
+    public function isIdentical(BasePackage $package)
+    {
+        return $this->getIdentityString() == $package->getIdentityString();
+    }
+
+    protected function getIdentityString()
+    {
+        $str = $this->getName().';'.$this->getVersion().';'.$this->getStability().'@@@';
+
+        $links = array();
+        foreach ($this->getProvides() as $link) {
+            $links[] = $link->getTarget().';'.(string) $link->getConstraint();
+        }
+        sort($links);
+        $str .= implode('@@', $links).'@@@';
+
+        $links = array();
+        foreach ($this->getReplaces() as $link) {
+            $links[] = $link->getTarget().';'.(string) $link->getConstraint();
+        }
+        sort($links);
+        $str .= implode('@@', $links).'@@@';
+
+        $links = array();
+        foreach ($this->getConflicts() as $link) {
+            $links[] = $link->getTarget().';'.(string) $link->getConstraint();
+        }
+        sort($links);
+        $str .= '@@@';
+
+        return $str;
+    }
+
     /**
      * {@inheritDoc}
      */

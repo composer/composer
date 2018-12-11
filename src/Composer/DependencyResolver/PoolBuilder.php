@@ -32,6 +32,7 @@ class PoolBuilder
     private $filterRequires;
     private $rootAliases;
 
+    private $identityMap = array();
     private $aliasMap = array();
     private $nameConstraints = array();
 
@@ -99,7 +100,7 @@ class PoolBuilder
         }
 
         foreach ($this->packages as $i => $package) {
-            // we check all alias related packages at once, so no need ot check individual aliases
+            // we check all alias related packages at once, so no need to check individual aliases
             // isset also checks non-null value
             if (!$package instanceof AliasPackage && isset($this->nameConstraints[$package->getName()])) {
                 $constraint = $this->nameConstraints[$package->getName()];
@@ -133,11 +134,12 @@ class PoolBuilder
             }
         }
 
-        $this->pool->setPackages($this->packages, $this->priorities);
-
         unset($this->aliasMap);
         unset($this->loadedNames);
         unset($this->nameConstraints);
+        unset($this->identityMap);
+
+        $this->pool->setPackages($this->packages, $this->priorities);
 
         return $this->pool;
     }
@@ -147,6 +149,32 @@ class PoolBuilder
         $index = count($this->packages);
         $this->packages[] = $package;
         $this->priorities[] = -$repoIndex;
+
+        $identityHash = $package->getIdentityHash();
+        if (isset($this->identityMap[$identityHash]) && $this->identityMap[$identityHash][1]->isIdentical($package)) {
+            $identicalPackageData = $this->identityMap[$identityHash];
+            if ($identicalPackageData[0] >= -$repoIndex) {
+                // identical package already exists and it has a higher or same priority
+                return array();
+            } else {
+                // identical package exists but this one is higher priority, so delete the existing one and proceed
+                // TODO is deleting aliases the correct behaviour here? shouldn't we retarget them to the current package?
+                if (isset($this->aliasMap[spl_object_hash($identicalPackageData[1])])) {
+                    foreach ($this->aliasMap[spl_object_hash($identicalPackageData[1])] as $aliasIndex => $aliasPackage) {
+                        unset($this->packages[$aliasIndex]);
+                        unset($this->priorities[$aliasIndex]);
+                    }
+                }
+                unset($this->packages[$identicalPackageData[2]]);
+                unset($this->priorities[$identicalPackageData[2]]);
+
+                // overwrite identity map with current data
+                $this->identityMap[$identityHash] = array(-$repoIndex, $package, $index);
+            }
+        } else {
+            // no identical package yet, mark that this one exists
+            $this->identityMap[$identityHash] = array(-$repoIndex, $package, $index);
+        }
 
         if ($package instanceof AliasPackage) {
             $this->aliasMap[spl_object_hash($package->getAliasOf())][$index] = $package;

@@ -193,7 +193,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
-    public function testSelectLocalReposFirst()
+    public function testSelectFirstPackageInSameRepo()
     {
         $repoImportant = new ArrayRepository;
 
