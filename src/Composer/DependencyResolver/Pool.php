@@ -58,12 +58,12 @@ class Pool implements \Countable
 
     public function setPackages(array $packages, array $priorities = array())
     {
-        $this->priorities = $priorities;
-        $this->packages = $packages;
-
         $id = 1;
 
-        foreach ($this->packages as $package) {
+        foreach ($packages as $i => $package) {
+            $this->packages[] = $package;
+            $this->priorities[] = isset($priorities[$i]) ? $priorities[$i] : 0;
+
             $package->id = $id++;
             $names = $package->getNames();
             $this->packageByExactName[$package->getName()][$package->id] = $package;
