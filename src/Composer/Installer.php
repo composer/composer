@@ -1332,8 +1332,8 @@ class Installer
                 $whitelistPatternRegexp = BasePackage::packageNameToRegexp($packageName);
                 foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
                     if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
+                        $depPackages = array_merge($pool->whatProvides($rootRequiredPackageName));
                         $nameMatchesRequiredPackage = true;
-                        break;
                     }
                 }
             }
