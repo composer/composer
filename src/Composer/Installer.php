@@ -1323,7 +1323,7 @@ class Installer
         foreach ($this->updateWhitelist as $packageName => $void) {
             $packageQueue = new \SplQueue;
 
-            $depPackages = $pool->whatProvides($packageName);
+            $depPackages = [$pool->whatProvides($packageName)];
 
             $nameMatchesRequiredPackage = in_array($packageName, $requiredPackageNames, true);
 
@@ -1332,11 +1332,13 @@ class Installer
                 $whitelistPatternRegexp = BasePackage::packageNameToRegexp($packageName);
                 foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
                     if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
-                        $depPackages = array_merge($pool->whatProvides($rootRequiredPackageName));
+                        $depPackages[] = $pool->whatProvides($rootRequiredPackageName);
                         $nameMatchesRequiredPackage = true;
                     }
                 }
             }
+
+            $depPackages = array_merge(...$depPackages);
 
             if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
                 $this->io->writeError('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
