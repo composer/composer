@@ -1301,11 +1301,6 @@ class Installer
 
         $rootRequires = array_merge($rootRequires, $rootDevRequires);
 
-        $requiredPackageNames = array();
-        foreach ($rootRequires as $require) {
-            $requiredPackageNames[] = $require->getTarget();
-        }
-
         $skipPackages = array();
         if (!$this->whitelistAllDependencies) {
             foreach ($rootRequires as $require) {
@@ -1323,22 +1318,26 @@ class Installer
         foreach ($this->updateWhitelist as $packageName => $void) {
             $packageQueue = new \SplQueue;
 
-            $depPackages = [$pool->whatProvides($packageName)];
-
-            $nameMatchesRequiredPackage = in_array($packageName, $requiredPackageNames, true);
-
+            $depPackages = $pool->whatProvides($packageName);
+            $matchesByPattern = [];
             // check if the name is a glob pattern that did not match directly
-            if (!$nameMatchesRequiredPackage) {
+            if (empty($depPackages)) {
+                $whitelistPatternSearchRegexp = BasePackage::packageNameToRegexp($packageName, '^%s$');
+                foreach ($localOrLockRepo->search($whitelistPatternSearchRegexp) as $installedPackage) {
+                    $matchesByPattern[] = $pool->whatProvides($installedPackage['name']);
+                }
                 $whitelistPatternRegexp = BasePackage::packageNameToRegexp($packageName);
                 foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
                     if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
-                        $depPackages[] = $pool->whatProvides($rootRequiredPackageName);
                         $nameMatchesRequiredPackage = true;
+                        break;
                     }
                 }
             }
 
-            $depPackages = array_merge(...$depPackages);
+            if (!empty($matchesByPattern)) {
+                $depPackages = array_merge($depPackages, array_merge(...$matchesByPattern));
+            }
 
             if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
                 $this->io->writeError('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
@@ -1371,7 +1370,7 @@ class Installer
                             continue;
                         }
 
-                        if (isset($skipPackages[$requirePackage->getName()])) {
+                        if (isset($skipPackages[$requirePackage->getName()]) && !preg_match(BasePackage::packageNameToRegexp($packageName), $requirePackage->getName())) {
                             $this->io->writeError('<warning>Dependency "' . $requirePackage->getName() . '" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>');
                             continue;
                         }

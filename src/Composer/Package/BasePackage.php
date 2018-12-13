@@ -239,12 +239,13 @@ abstract class BasePackage implements PackageInterface
      * Build a regexp from a package name, expanding * globs as required
      *
      * @param  string $whiteListedPattern
+     * @param  bool $wrap Wrap the cleaned string by the given string
      * @return string
      */
-    public static function packageNameToRegexp($whiteListedPattern)
+    public static function packageNameToRegexp($whiteListedPattern, $wrap = '{^%s$}i')
     {
         $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern));
 
-        return "{^" . $cleanedWhiteListedPattern . "$}i";
+        return sprintf($wrap, $cleanedWhiteListedPattern);
     }
 }
