@@ -146,7 +146,7 @@ class JsonFile
      * Validates the schema of the current json file according to composer-schema.json rules
      *
      * @param  int                     $schema a JsonFile::*_SCHEMA constant
-     * @param  string                  $schemaFile a path to the schema file
+     * @param  string|null             $schemaFile a path to the schema file
      * @throws JsonValidationException
      * @return bool                    true on success
      */
