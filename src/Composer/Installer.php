@@ -1319,7 +1319,7 @@ class Installer
             $packageQueue = new \SplQueue;
 
             $depPackages = $pool->whatProvides($packageName);
-            $matchesByPattern = [];
+            $matchesByPattern = array();
             // check if the name is a glob pattern that did not match directly
             if (empty($depPackages)) {
                 $whitelistPatternSearchRegexp = BasePackage::packageNameToRegexp($packageName, '^%s$');
@@ -1336,7 +1336,7 @@ class Installer
             }
 
             if (!empty($matchesByPattern)) {
-                $depPackages = array_merge($depPackages, array_merge(...$matchesByPattern));
+                $depPackages = array_merge($depPackages, call_user_func_array('array_merge', $matchesByPattern));
             }
 
             if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
