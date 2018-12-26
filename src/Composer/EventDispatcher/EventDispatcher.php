@@ -244,6 +244,12 @@ class EventDispatcher
 
                 if (substr($exec, 0, 5) === '@php ') {
                     $exec = $this->getPhpExecCommand() . ' ' . substr($exec, 5);
+                } else {
+                    $finder = new PhpExecutableFinder();
+                    $phpPath = $finder->find(false);
+                    if ($phpPath) {
+                        putenv('PHP_BINARY=' . $phpPath);
+                    }
                 }
 
                 if (0 !== ($exitCode = $this->process->execute($exec))) {
