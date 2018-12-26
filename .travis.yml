@@ -2,7 +2,7 @@ language: php
 
 sudo: false
 
-dist: trusty
+dist: xenial
 
 git:
   depth: 5
