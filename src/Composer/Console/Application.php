@@ -17,6 +17,8 @@ use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
+use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -111,7 +113,9 @@ class Application extends BaseApplication
     {
         $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
 
-        $io = $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
+        $io = $this->io = new ConsoleIO($input, $output, new HelperSet(array(
+            new QuestionHelper(),
+        )));
         ErrorHandler::register($io);
 
         // switch working dir
