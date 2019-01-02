@@ -42,6 +42,7 @@ before_install:
     # disable default memory limit
     - export INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
     - echo memory_limit = -1 >> $INI
+    - composer validate
 
 install:
     # flags to pass to install
