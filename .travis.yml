@@ -1,7 +1,5 @@
 language: php
 
-sudo: false
-
 dist: trusty
 
 git:
