@@ -1,7 +1,5 @@
 language: php
 
-sudo: false
-
 dist: trusty
 
 git:
@@ -16,55 +14,53 @@ addons:
     packages:
       - parallel
 
-php:
-  - 5.4
-  - 5.5
-  - 5.6
-  - 7.0
-  - 7.1
-  - 7.2
-  - 7.3
-  - nightly
-
 matrix:
   include:
     - php: 5.3
       dist: precise
+    - php: 5.4
+    - php: 5.5
+    - php: 5.6
+    - php: 7.0
+    - php: 7.1
+    - php: 7.2
+    - php: 7.3
     - php: 7.3
       env: deps=high
+    - php: nightly
   fast_finish: true
   allow_failures:
     - php: nightly
 
 before_install:
-    # disable xdebug if available
-    - phpenv config-rm xdebug.ini || echo "xdebug not available"
-    # disable default memory limit
-    - export INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
-    - echo memory_limit = -1 >> $INI
-    - composer validate
+  # disable xdebug if available
+  - phpenv config-rm xdebug.ini || echo "xdebug not available"
+  # disable default memory limit
+  - export INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+  - echo memory_limit = -1 >> $INI
+  - composer validate
 
 install:
-    # flags to pass to install
-    - flags="--ansi --prefer-dist --no-interaction --optimize-autoloader --no-suggest --no-progress"
-    # update deps to latest in case of high deps build
-    - if [ "$deps" == "high" ]; then composer config platform.php 7.2.4; composer update $flags; fi
-    # install dependencies using system provided composer binary
-    - composer install $flags
-    # install dependencies using composer from source
-    - bin/composer install $flags
+  # flags to pass to install
+  - flags="--ansi --prefer-dist --no-interaction --optimize-autoloader --no-suggest --no-progress"
+  # update deps to latest in case of high deps build
+  - if [ "$deps" == "high" ]; then composer config platform.php 7.2.4; composer update $flags; fi
+  # install dependencies using system provided composer binary
+  - composer install $flags
+  # install dependencies using composer from source
+  - bin/composer install $flags
 
 before_script:
-    # make sure git tests do not complain about user/email not being set
-    - git config --global user.name travis-ci
-    - git config --global user.email travis@example.com
+  # make sure git tests do not complain about user/email not being set
+  - git config --global user.name travis-ci
+  - git config --global user.email travis@example.com
 
 script:
-    # run test suite directories in parallel using GNU parallel
-    - ls -d tests/Composer/Test/* | grep -v TestCase.php | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && exit 1);'
+  # run test suite directories in parallel using GNU parallel
+  - ls -d tests/Composer/Test/* | grep -v TestCase.php | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && exit 1);'
 
 before_deploy:
-    - php -d phar.readonly=0 bin/compile
+  - php -d phar.readonly=0 bin/compile
 
 deploy:
   provider: releases
