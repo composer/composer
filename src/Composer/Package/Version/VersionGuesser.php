@@ -17,6 +17,7 @@ use Composer\Repository\Vcs\HgDriver;
 use Composer\IO\NullIO;
 use Composer\Semver\VersionParser as SemverVersionParser;
 use Composer\Util\Git as GitUtil;
+use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
 

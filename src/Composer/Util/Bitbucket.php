@@ -22,11 +22,17 @@ use Composer\Downloader\TransportException;
  */
 class Bitbucket
 {
+    /** @var IOInterface */
     private $io;
+    /** @var Config */
     private $config;
+    /** @var ProcessExecutor */
     private $process;
+    /** @var HttpDownloader */
     private $httpDownloader;
+    /** @var array */
     private $token = array();
+    /** @var int|null */
     private $time;
 
     const OAUTH2_ACCESS_TOKEN_URL = 'https://bitbucket.org/site/oauth2/access_token';

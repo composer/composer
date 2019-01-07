@@ -20,6 +20,8 @@ use Composer\Util\Loop;
 
 class FileDownloaderTest extends TestCase
 {
+    private $httpDownloader;
+
     protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $httpDownloader = null, $filesystem = null)
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();

@@ -14,6 +14,7 @@ namespace Composer\Util;
 
 use Composer\Composer;
 use Composer\CaBundle\CaBundle;
+use Composer\Downloader\TransportException;
 use Psr\Log\LoggerInterface;
 
 /**

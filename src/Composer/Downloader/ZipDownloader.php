@@ -33,7 +33,9 @@ class ZipDownloader extends ArchiveDownloader
     private static $hasZipArchive;
     private static $isWindows;
 
+    /** @var ProcessExecutor */
     protected $process;
+    /** @var ZipArchive|null */
     private $zipArchiveObject;
 
     public function __construct(IOInterface $io, Config $config, HttpDownloader $downloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null)

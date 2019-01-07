@@ -48,7 +48,7 @@ class PoolBuilder
 
     public function buildPool(array $repositories, array $rootAliases, Request $request)
     {
-        $this->pool = new Pool($this->filterRequires);
+        $pool = new Pool($this->filterRequires);
         $this->rootAliases = $rootAliases;
 
         // TODO do we really want the request here? kind of want a root requirements thingy instead
@@ -133,13 +133,13 @@ class PoolBuilder
             }
         }
 
-        $this->pool->setPackages($this->packages, $this->priorities);
+        $pool->setPackages($this->packages, $this->priorities);
 
         unset($this->aliasMap);
         unset($this->loadedNames);
         unset($this->nameConstraints);
 
-        return $this->pool;
+        return $pool;
     }
 
     private function loadPackage(PackageInterface $package, $repoIndex)

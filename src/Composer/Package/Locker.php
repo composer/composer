@@ -31,13 +31,21 @@ use Seld\JsonLint\ParsingException;
  */
 class Locker
 {
+    /** @var JsonFile */
     private $lockFile;
+    /** @var RepositoryManager */
     private $repositoryManager;
+    /** @var InstallationManager */
     private $installationManager;
+    /** @var string */
     private $hash;
+    /** @var string */
     private $contentHash;
+    /** @var ArrayLoader */
     private $loader;
+    /** @var ArrayDumper */
     private $dumper;
+    /** @var ProcessExecutor */
     private $process;
     private $lockDataCache;
 
