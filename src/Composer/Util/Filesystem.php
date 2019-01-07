@@ -23,6 +23,7 @@ use Symfony\Component\Finder\Finder;
  */
 class Filesystem
 {
+    /** @var ProcessExecutor */
     private $processExecutor;
 
     public function __construct(ProcessExecutor $executor = null)
@@ -525,6 +526,9 @@ class Filesystem
         return $size;
     }
 
+    /**
+     * @return ProcessExecutor
+     */
     protected function getProcess()
     {
         return $this->processExecutor;

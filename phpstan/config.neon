@@ -1,0 +1,26 @@
+parameters:
+    level: 0
+    ignoreErrors:
+        # unused parameters
+        - '~^Constructor of class Composer\\Repository\\VcsRepository has an unused parameter \$dispatcher\.$~'
+        - '~^Constructor of class Composer\\Repository\\PearRepository has an unused parameter \$dispatcher\.$~'
+        - '~^Constructor of class Composer\\Util\\Http\\CurlDownloader has an unused parameter \$disableTls\.$~'
+        - '~^Constructor of class Composer\\Util\\Http\\CurlDownloader has an unused parameter \$options\.$~'
+        - '~^Constructor of class Composer\\Repository\\PearRepository has an unused parameter \$config\.$~'
+
+        # unused uses
+        - '~^Anonymous function has an unused use \$io\.$~'
+        - '~^Anonymous function has an unused use \$cache\.$~'
+        - '~^Anonymous function has an unused use \$path\.$~'
+        - '~^Anonymous function has an unused use \$fileName\.$~'
+
+        # ion cube cannot be installed on travis and stubs not found
+        - '~^Function ioncube_loader_\w+ not found\.$~'
+
+        # variables from global scope
+        - '~^Undefined variable: \$vendorDir$~'
+        - '~^Undefined variable: \$baseDir$~'
+
+        # always checked whether the class exists
+        - '~^Instantiated class Symfony\\Component\\Console\\Terminal not found\.$~'
+        - '~^Class Symfony\\Component\\Console\\Input\\StreamableInputInterface not found\.$~'

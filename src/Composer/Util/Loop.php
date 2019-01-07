@@ -20,7 +20,7 @@ use React\Promise\Promise;
  */
 class Loop
 {
-    private $io;
+    private $httpDownloader;
 
     public function __construct(HttpDownloader $httpDownloader)
     {
