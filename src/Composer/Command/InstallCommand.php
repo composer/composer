@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -40,12 +41,12 @@ class InstallCommand extends BaseCommand
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
+                new InputOption('no-cache', null, InputOption::VALUE_NONE, 'Do not use the cache directory'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'Do not show package suggestions.'),
-                new InputOption('no-cache', null, InputOption::VALUE_NONE, 'Do not use the cache directory'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
@@ -94,6 +95,18 @@ EOT
         $install = Installer::create($io, $composer);
 
         $config = $composer->getConfig();
+
+        if ($input->getOption('no-cache')) {
+            $io->write('Skipping cache directory');
+            $config->merge(
+                array(
+                    'config' => array(
+                        'cache-dir' => Platform::isWindows() ? 'nul' : '/dev/null',
+                    )
+                )
+            );
+        }
+
         list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
 
         $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
