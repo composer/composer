@@ -385,7 +385,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         $command = sprintf($template, ProcessExecutor::escape($gitRef));
-        if (0 === $this->process->execute($command, $output, $path)) {
+        if ($path) {
+            $cdCmd = Platform::isWindows() ? 'cd /D' : 'cd';
+            $command = sprintf("$cdCmd %s && %s", ProcessExecutor::escape($path), $command);
+        }
+
+        if (0 === $this->process->execute($command, $output)) {
             return;
         }
 

@@ -17,6 +17,7 @@ use Composer\Config;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
+use Composer\Util\ProcessExecutor;
 
 class GitDownloaderTest extends TestCase
 {
@@ -24,6 +25,8 @@ class GitDownloaderTest extends TestCase
     private $fs;
     /** @var string */
     private $workingDir;
+    /** @var string */
+    private $workingDirSafe;
 
     protected function setUp()
     {
@@ -31,6 +34,7 @@ class GitDownloaderTest extends TestCase
 
         $this->fs = new Filesystem;
         $this->workingDir = $this->getUniqueTmpDirectory();
+        $this->workingDirSafe = ProcessExecutor::escape($this->workingDir);
     }
 
     protected function tearDown()
@@ -261,7 +265,7 @@ class GitDownloaderTest extends TestCase
 
         $processExecutor->expects($this->at(7))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
+            ->with($this->equalTo($this->winCompat("cd 'composerPath' && git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo(null))
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, new Config(), $processExecutor);
@@ -419,7 +423,7 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(6))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo($this->winCompat($this->workingDir)))
+            ->with($this->equalTo($this->winCompat("cd {$this->workingDirSafe} && git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo((null)))
             ->will($this->returnValue(0));
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
@@ -479,7 +483,7 @@ composer https://github.com/old/url (push)
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(6))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo($this->winCompat($this->workingDir)))
+            ->with($this->equalTo($this->winCompat("cd {$this->workingDirSafe} && git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo(null))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(7))
             ->method('execute')
@@ -592,9 +596,10 @@ composer https://github.com/old/url (push)
             ->method('execute')
             ->with($this->equalTo($expectedSecondGitUpdateCommand))
             ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(11))
+        $processExecutor
+            ->expects($this->at(11))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo($this->winCompat($this->workingDir)))
+            ->with($this->equalTo($this->winCompat("cd {$this->workingDirSafe} && git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo(null))
             ->will($this->returnValue(0));
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
@@ -716,10 +721,13 @@ composer https://github.com/old/url (push)
     private function winCompat($cmd)
     {
         if (Platform::isWindows()) {
-            $cmd = str_replace('cd ', 'cd /D ', $cmd);
-            $cmd = str_replace('composerPath', getcwd().'/composerPath', $cmd);
+            $replacementPairs = array(
+                'cd ' => 'cd /D ',
+                'composerPath' => getcwd().'/composerPath',
+                "'" => '"',
+            );
 
-            return str_replace('""', '', strtr($cmd, "'", '"'));
+            return str_replace('""', '', strtr($cmd, $replacementPairs));
         }
 
         return $cmd;
