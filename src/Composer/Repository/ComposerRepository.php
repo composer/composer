@@ -185,17 +185,25 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     private function filterPackages(array $packages, $constraint = null, $returnFirstMatch = false)
     {
-        $packages = array();
+        if (null === $constraint) {
+            if ($returnFirstMatch) {
+                return reset($packages);
+            }
+
+            return $packages;
+        }
+
+        $filteredPackages = array();
 
         foreach ($packages as $package) {
-
             $pkgConstraint = new Constraint('==', $package->getVersion());
-            if (null === $constraint || $constraint->matches($pkgConstraint)) {
+
+            if ($constraint->matches($pkgConstraint)) {
                 if ($returnFirstMatch) {
                     return $package;
                 }
 
-                $packages[] = $package;
+                $filteredPackages[] = $package;
             }
         }
 
@@ -203,7 +211,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return null;
         }
 
-        return $packages;
+        return $filteredPackages;
     }
 
     public function getPackages()
