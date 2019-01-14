@@ -49,10 +49,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $providersUrl;
     protected $lazyProvidersUrl;
     protected $providerListing;
-    private $providers = array();
-    private $providersByUid = array();
     protected $loader;
-    private $rootAliases;
     private $allowSslDowngrade = false;
     private $eventDispatcher;
     private $sourceMirrors;
@@ -114,11 +111,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     public function getRepoConfig()
     {
         return $this->repoConfig;
-    }
-
-    public function setRootAliases(array $rootAliases)
-    {
-        $this->rootAliases = $rootAliases;
     }
 
     /**
@@ -378,10 +370,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     private function whatProvides($name, $isPackageAcceptableCallable = null)
     {
-        if (isset($this->providers[$name])) {
-            return $this->providers[$name];
-        }
-
         if (!$this->hasPartialPackages() || !isset($this->partialPackagesByName[$name])) {
             // skip platform packages, root package and composer-plugin-api
             if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
@@ -449,9 +437,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $loadingPartialPackage = true;
         }
 
-        $this->providers[$name] = array();
+        $result = array();
+        $versionsToLoad = array();
         foreach ($packages['packages'] as $versions) {
-            $versionsToLoad = array();
             foreach ($versions as $version) {
                 $normalizedName = strtolower($version['name']);
 
@@ -464,70 +452,34 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     continue;
                 }
 
-                // avoid loading the same objects twice
-                if (isset($this->providersByUid[$version['uid']])) {
-                    // skip if already assigned
-                    if (!isset($this->providers[$name][$version['uid']])) {
-                        // expand alias in two packages
-                        if ($this->providersByUid[$version['uid']] instanceof AliasPackage) {
-                            $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']]->getAliasOf();
-                            $this->providers[$name][$version['uid'].'-alias'] = $this->providersByUid[$version['uid']];
-                        } else {
-                            $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']];
-                        }
-                        // check for root aliases
-                        if (isset($this->providersByUid[$version['uid'].'-root'])) {
-                            $this->providers[$name][$version['uid'].'-root'] = $this->providersByUid[$version['uid'].'-root'];
-                        }
-                    }
-                } else {
+                if (!isset($versionsToLoad[$version['uid']])) {
                     if ($isPackageAcceptableCallable && !call_user_func($isPackageAcceptableCallable, $normalizedName, VersionParser::parseStability($version['version']))) {
                         continue;
                     }
 
-                    $versionsToLoad[] = $version;
-                }
-            }
-
-            // load acceptable packages in the providers
-            $loadedPackages = $this->createPackages($versionsToLoad, 'Composer\Package\CompletePackage');
-            foreach ($loadedPackages as $package) {
-                $package->setRepository($this);
-
-                if ($package instanceof AliasPackage) {
-                    $aliased = $package->getAliasOf();
-                    $aliased->setRepository($this);
-
-                    $this->providers[$name][$version['uid']] = $aliased;
-                    $this->providers[$name][$version['uid'].'-alias'] = $package;
-
-                    // override provider with its alias so it can be expanded in the if block above
-                    $this->providersByUid[$version['uid']] = $package;
-                } else {
-                    $this->providers[$name][$version['uid']] = $package;
-                    $this->providersByUid[$version['uid']] = $package;
-                }
-
-                // handle root package aliases
-                unset($rootAliasData);
-
-                if (isset($this->rootAliases[$package->getName()][$package->getVersion()])) {
-                    $rootAliasData = $this->rootAliases[$package->getName()][$package->getVersion()];
-                } elseif ($package instanceof AliasPackage && isset($this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()])) {
-                    $rootAliasData = $this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()];
-                }
-
-                if (isset($rootAliasData)) {
-                    $alias = $this->createAliasPackage($package, $rootAliasData['alias_normalized'], $rootAliasData['alias']);
-                    $alias->setRepository($this);
-
-                    $this->providers[$name][$version['uid'].'-root'] = $alias;
-                    $this->providersByUid[$version['uid'].'-root'] = $alias;
+                    $versionsToLoad[$version['uid']] = $version;
                 }
             }
         }
 
-        $result = $this->providers[$name];
+        // load acceptable packages in the providers
+        $loadedPackages = $this->createPackages($versionsToLoad, 'Composer\Package\CompletePackage');
+        $uids = array_keys($versionsToLoad);
+
+        foreach ($loadedPackages as $index => $package) {
+            $package->setRepository($this);
+            $uid = $uids[$index];
+
+            if ($package instanceof AliasPackage) {
+                $aliased = $package->getAliasOf();
+                $aliased->setRepository($this);
+
+                $result[$uid] = $aliased;
+                $result[$uid.'-alias'] = $package;
+            } else {
+                $result[$uid] = $package;
+            }
+        }
 
         return $result;
     }

@@ -146,21 +146,12 @@ class ComposerRepositoryTest extends TestCase
             )));
 
         $versionParser = new VersionParser();
-        $repo->setRootAliases(array(
-            'a' => array(
-                $versionParser->normalize('0.6') => array('alias' => 'dev-feature', 'alias_normalized' => $versionParser->normalize('dev-feature')),
-                $versionParser->normalize('1.1.x-dev') => array('alias' => '1.0', 'alias_normalized' => $versionParser->normalize('1.0')),
-            ),
-        ));
-
         $reflMethod = new \ReflectionMethod($repo, 'whatProvides');
         $reflMethod->setAccessible(true);
         $packages = $reflMethod->invoke($repo, 'a', array($this, 'isPackageAcceptableReturnTrue'));
 
-        $this->assertCount(7, $packages);
-        $this->assertEquals(array('1', '1-alias', '2', '2-alias', '2-root', '3', '3-root'), array_keys($packages));
-        $this->assertInstanceOf('Composer\Package\AliasPackage', $packages['2-root']);
-        $this->assertSame($packages['2'], $packages['2-root']->getAliasOf());
+        $this->assertCount(5, $packages);
+        $this->assertEquals(array('1', '1-alias', '2', '2-alias', '3'), array_keys($packages));
         $this->assertSame($packages['2'], $packages['2-alias']->getAliasOf());
     }
 

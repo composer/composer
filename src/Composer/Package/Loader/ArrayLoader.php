@@ -95,7 +95,6 @@ class ArrayLoader implements LoaderInterface
 
                 $packages[] = $package;
             }
-
         }
 
         return $packages;
