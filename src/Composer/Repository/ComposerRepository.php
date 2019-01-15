@@ -47,6 +47,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $searchUrl;
     protected $hasProviders = false;
     protected $providersUrl;
+    protected $availablePackages;
     protected $lazyProvidersUrl;
     protected $providerListing;
     protected $loader;
@@ -131,20 +132,28 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return $this->filterPackages($this->whatProvides($name), $constraint, true);
             }
 
-            return $this->loadAsyncPackages(array($name => $constraint), function ($name, $stability) {
+            if (is_array($this->availablePackages) && !isset($this->availablePackages[$name])) {
+                return;
+            }
+
+            $packages = $this->loadAsyncPackages(array($name => $constraint), function ($name, $stability) {
                 return true;
             });
+
+            return reset($packages);
         }
 
-        if (!$hasProviders) {
-            return parent::findPackage($name, $constraint);
-        }
-
-        foreach ($this->getProviderNames() as $providerName) {
-            if ($name === $providerName) {
-                return $this->filterPackages($this->whatProvides($providerName), $constraint, true);
+        if ($hasProviders) {
+            foreach ($this->getProviderNames() as $providerName) {
+                if ($name === $providerName) {
+                    return $this->filterPackages($this->whatProvides($providerName), $constraint, true);
+                }
             }
+
+            return;
         }
+
+        return parent::findPackage($name, $constraint);
     }
 
     /**
@@ -165,22 +174,26 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return $this->filterPackages($this->whatProvides($name), $constraint);
             }
 
+            if (is_array($this->availablePackages) && !isset($this->availablePackages[$name])) {
+                return array();
+            }
+
             return $this->loadAsyncPackages(array($name => $constraint ?: new EmptyConstraint()), function ($name, $stability) {
                 return true;
             });
         }
 
-        if (!$hasProviders) {
-            return parent::findPackages($name, $constraint);
-        }
-
-        foreach ($this->getProviderNames() as $providerName) {
-            if ($name === $providerName) {
-                return $this->filterPackages($this->whatProvides($providerName), $constraint);
+        if ($hasProviders) {
+            foreach ($this->getProviderNames() as $providerName) {
+                if ($name === $providerName) {
+                    return $this->filterPackages($this->whatProvides($providerName), $constraint);
+                }
             }
+
+            return array();
         }
 
-        return array();
+        return parent::findPackages($name, $constraint);
     }
 
     private function filterPackages(array $packages, $constraint = null, $returnFirstMatch = false)
@@ -216,7 +229,22 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     public function getPackages()
     {
-        if ($this->hasProviders()) {
+        $hasProviders = $this->hasProviders();
+
+        if ($this->lazyProvidersUrl) {
+            if (is_array($this->availablePackages)) {
+                $packageMap = array();
+                foreach ($this->availablePackages as $name) {
+                    $packageMap[$name] = new EmptyConstraint();
+                }
+
+                return array_values($this->loadAsyncPackages($packageMap, function ($name, $stability) { return true; }));
+            }
+
+            throw new \LogicException('Composer repositories that have lazy providers and no available-packages list can not load the complete list of packages, use getProviderNames instead.');
+        }
+
+        if ($hasProviders) {
             throw new \LogicException('Composer repositories that have providers can not load the complete list of packages, use getProviderNames instead.');
         }
 
@@ -225,14 +253,28 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     public function getPackageNames()
     {
-        if ($this->hasProviders()) {
+        // TODO add getPackageNames to the RepositoryInterface perhaps? With filtering capability embedded?
+        $hasProviders = $this->hasProviders();
+
+        if ($this->lazyProvidersUrl) {
+            if (is_array($this->availablePackages)) {
+                return array_keys($this->availablePackages);
+            }
+
+            // TODO implement new list API endpoint for those repos somehow?
+            return array();
+        }
+
+        if ($hasProviders) {
             return $this->getProviderNames();
         }
 
-        // TODO implement new list API endpoint for repos somehow?
-        // TODO add getPackageNames to the RepositoryInterface perhaps? With filtering capability embedded?
+        $names = array();
+        foreach ($this->getPackages() as $package) {
+            $names[] = $package->getPrettyName();
+        }
 
-        return $this->getPackages();
+        return $names;
     }
 
     public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable)
@@ -279,11 +321,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 unset($packageNameMap[$name]);
             }
-
-            return $packages;
         }
 
         if ($this->lazyProvidersUrl && count($packageNameMap)) {
+            if (is_array($this->availablePackages)) {
+                $availPackages = $this->availablePackages;
+                $packageNameMap = array_filter($packageNameMap, function ($name) use ($availPackages) {
+                    return isset($availPackages[strtolower($name)]);
+                }, ARRAY_FILTER_USE_KEY);
+            }
+
             $packages = array_merge($packages, $this->loadAsyncPackages($packageNameMap, $isPackageAcceptableCallable));
         }
 
@@ -317,11 +364,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $results;
         }
 
-        if ($this->hasProviders()) {
+        if ($this->hasProviders() || $this->lazyProvidersUrl) {
             $results = array();
             $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
 
-            foreach ($this->getProviderNames() as $name) {
+            foreach ($this->getPackageNames() as $name) {
                 if (preg_match($regex, $name)) {
                     $results[] = array('name' => $name);
                 }
@@ -683,6 +730,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->hasProviders = false;
             $this->hasPartialPackages = !empty($data['packages']) && is_array($data['packages']);
             $this->allowSslDowngrade = false;
+
+            // provides a list of package names that are available in this repo
+            // this disables lazy-provider behavior in the sense that if a list is available we assume it is finite and won't search for other packages in that repo
+            // while if no list is there lazyProvidersUrl is used when looking for any package name to see if the repo knows it
+            if (!empty($data['available-packages'])) {
+                $availPackages = array_map('strtolower', $data['available-packages']);
+                $this->availablePackages = array_combine($availPackages, $availPackages);
+            }
+
+            // Remove legacy keys as most repos need to be compatible with Composer v1
+            // as well but we are not interested in the old format anymore at this point
             unset($data['providers-url'], $data['providers'], $data['providers-includes']);
         }
 
