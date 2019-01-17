@@ -14,6 +14,7 @@ namespace Composer\Test\Autoload;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Link;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Util\Filesystem;
 use Composer\Package\AliasPackage;
 use Composer\Package\Package;
@@ -417,6 +418,39 @@ class AutoloadGeneratorTest extends TestCase
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_5');
         $this->assertAutoloadFiles('vendors', $this->vendorDir.'/composer');
         $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated, even if empty.");
+    }
+
+    public function testNonDevAutoloadShouldIncludeReplacedPackages()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(new Link('a', 'a/a')));
+
+        $packages = array();
+        $packages[] = $a = new Package('a/a', '1.0', '1.0');
+        $packages[] = $b = new Package('b/b', '1.0', '1.0');
+
+        $a->setRequires(array(new Link('a/a', 'b/c')));
+
+        $b->setAutoload(array('psr-4' => array('B\\' => 'src/')));
+        $b->setReplaces(
+            array(new Link('b/b', 'b/c', new Constraint('==', '1.0'), 'replaces'))
+        );
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($packages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src/C');
+        file_put_contents($this->vendorDir.'/b/b/src/C/C.php', '<?php namespace B\\C; class C {}');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_5');
+
+        $this->assertEquals(
+            array(
+                'B\\C\\C' => $this->vendorDir.'/b/b/src/C/C.php',
+            ),
+            include $this->vendorDir.'/composer/autoload_classmap.php'
+        );
     }
 
     public function testPSRToClassMapIgnoresNonExistingDir()
