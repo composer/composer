@@ -24,6 +24,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\Util\StreamContextFactory;
+use Composer\Util\Loop;
 
 /**
  * Package operation manager.
@@ -37,6 +38,12 @@ class InstallationManager
     private $installers = array();
     private $cache = array();
     private $notifiablePackages = array();
+    private $loop;
+
+    public function __construct(Loop $loop)
+    {
+        $this->loop = $loop;
+    }
 
     public function reset()
     {
@@ -156,7 +163,24 @@ class InstallationManager
      */
     public function execute(RepositoryInterface $repo, OperationInterface $operation)
     {
+        // TODO this should take all operations in one go
         $method = $operation->getJobType();
+
+        if ($method === 'install') {
+            $package = $operation->getPackage();
+            $installer = $this->getInstaller($package->getType());
+            $promise = $installer->download($package);
+        } elseif ($method === 'update') {
+            $target = $operation->getTargetPackage();
+            $targetType = $target->getType();
+            $installer = $this->getInstaller($targetType);
+            $promise = $installer->download($target, $operation->getInitialPackage());
+        }
+
+        if (isset($promise)) {
+            $this->loop->wait(array($promise));
+        }
+
         $this->$method($repo, $operation);
     }
 
@@ -194,7 +218,8 @@ class InstallationManager
             $this->markForNotification($target);
         } else {
             $this->getInstaller($initialType)->uninstall($repo, $initial);
-            $this->getInstaller($targetType)->install($repo, $target);
+            $installer = $this->getInstaller($targetType);
+            $installer->install($repo, $target);
         }
     }
 

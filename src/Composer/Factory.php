@@ -24,6 +24,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\HttpDownloader;
+use Composer\Util\Loop;
 use Composer\Util\Silencer;
 use Composer\Plugin\PluginEvents;
 use Composer\EventDispatcher\Event;
@@ -326,6 +327,7 @@ class Factory
         }
 
         $httpDownloader = self::createHttpDownloader($io, $config);
+        $loop = new Loop($httpDownloader);
 
         // initialize event dispatcher
         $dispatcher = new EventDispatcher($composer, $io);
@@ -352,7 +354,7 @@ class Factory
         $composer->setPackage($package);
 
         // initialize installation manager
-        $im = $this->createInstallationManager();
+        $im = $this->createInstallationManager($loop);
         $composer->setInstallationManager($im);
 
         if ($fullLoad) {
@@ -365,7 +367,7 @@ class Factory
             $composer->setAutoloadGenerator($generator);
 
             // initialize archive manager
-            $am = $this->createArchiveManager($config, $dm);
+            $am = $this->createArchiveManager($config, $dm, $loop);
             $composer->setArchiveManager($am);
         }
 
@@ -501,9 +503,9 @@ class Factory
      * @param  Downloader\DownloadManager $dm     Manager use to download sources
      * @return Archiver\ArchiveManager
      */
-    public function createArchiveManager(Config $config, Downloader\DownloadManager $dm)
+    public function createArchiveManager(Config $config, Downloader\DownloadManager $dm, Loop $loop)
     {
-        $am = new Archiver\ArchiveManager($dm);
+        $am = new Archiver\ArchiveManager($dm, $loop);
         $am->addArchiver(new Archiver\ZipArchiver);
         $am->addArchiver(new Archiver\PharArchiver);
 
@@ -525,9 +527,9 @@ class Factory
     /**
      * @return Installer\InstallationManager
      */
-    protected function createInstallationManager()
+    public function createInstallationManager(Loop $loop)
     {
-        return new Installer\InstallationManager();
+        return new Installer\InstallationManager($loop);
     }
 
     /**

@@ -16,6 +16,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\Loop;
 use Composer\Json\JsonFile;
 
 /**
@@ -25,6 +26,7 @@ use Composer\Json\JsonFile;
 class ArchiveManager
 {
     protected $downloadManager;
+    protected $loop;
 
     protected $archivers = array();
 
@@ -36,9 +38,10 @@ class ArchiveManager
     /**
      * @param DownloadManager $downloadManager A manager used to download package sources
      */
-    public function __construct(DownloadManager $downloadManager)
+    public function __construct(DownloadManager $downloadManager, Loop $loop)
     {
         $this->downloadManager = $downloadManager;
+        $this->loop = $loop;
     }
 
     /**
@@ -148,7 +151,9 @@ class ArchiveManager
             $filesystem->ensureDirectoryExists($sourcePath);
 
             // Download sources
-            $this->downloadManager->download($package, $sourcePath);
+            $promise = $this->downloadManager->download($package, $sourcePath);
+            $this->loop->wait(array($promise));
+            $this->downloadManager->install($package, $sourcePath);
 
             // Check exclude from downloaded composer.json
             if (file_exists($composerJsonPath = $sourcePath.'/composer.json')) {

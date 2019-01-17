@@ -22,6 +22,7 @@ use Composer\Config;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Util\HttpDownloader;
+use Composer\Util\Loop;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
@@ -42,6 +43,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $baseUrl;
     private $io;
     private $httpDownloader;
+    private $loop;
     protected $cache;
     protected $notifyUrl;
     protected $searchUrl;
@@ -107,6 +109,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->httpDownloader = $httpDownloader;
         $this->eventDispatcher = $eventDispatcher;
         $this->repoConfig = $repoConfig;
+        $this->loop = new Loop($this->httpDownloader);
     }
 
     public function getRepoConfig()
@@ -569,6 +572,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->loadRootServerFile();
 
         $packages = array();
+        $promises = array();
         $repo = $this;
 
         if (!$this->lazyProvidersUrl) {
@@ -592,7 +596,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $lastModified = isset($contents['last-modified']) ? $contents['last-modified'] : null;
             }
 
-            $this->asyncFetchFile($url, $cacheKey, $lastModified)
+            $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
                 ->then(function ($response) use (&$packages, $contents, $name, $constraint, $repo, $isPackageAcceptableCallable) {
                     static $uniqKeys = array('version', 'version_normalized', 'source', 'dist', 'time');
 
@@ -637,13 +641,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                             $packages[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
                         }
                     }
-                }, function ($e) {
-                    // TODO use ->done() above instead with react/promise 2.0
-                    throw $e;
                 });
         }
 
-        $this->httpDownloader->wait();
+        $this->loop->wait($promises);
 
         return $packages;
         // RepositorySet should call loadMetadata, getMetadata when all promises resolved, then metadataComplete when done so we can GC the loaded json and whatnot then as needed
@@ -1119,7 +1120,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
             $degradedMode = true;
 
-            return true;
+            throw $e;
         };
 
         return $httpDownloader->add($filename, $options)->then($accept, $reject);

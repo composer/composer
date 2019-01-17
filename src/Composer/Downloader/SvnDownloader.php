@@ -28,7 +28,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doDownload(PackageInterface $package, $path, $url)
+    public function doInstall(PackageInterface $package, $path, $url)
     {
         SvnUtil::cleanEnv();
         $ref = $package->getSourceReference();

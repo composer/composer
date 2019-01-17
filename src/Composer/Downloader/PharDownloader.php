@@ -12,6 +12,8 @@
 
 namespace Composer\Downloader;
 
+use Composer\Package\PackageInterface;
+
 /**
  * Downloader for phar files
  *
@@ -22,7 +24,7 @@ class PharDownloader extends ArchiveDownloader
     /**
      * {@inheritDoc}
      */
-    protected function extract($file, $path)
+    protected function extract(PackageInterface $package, $file, $path)
     {
         // Can throw an UnexpectedValueException
         $archive = new \Phar($file);

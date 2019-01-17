@@ -20,6 +20,7 @@ use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\HttpDownloader;
 use Composer\IO\IOInterface;
+use Composer\Package\PackageInterface;
 use RarArchive;
 
 /**
@@ -39,7 +40,7 @@ class RarDownloader extends ArchiveDownloader
         parent::__construct($io, $config, $downloader, $eventDispatcher, $cache);
     }
 
-    protected function extract($file, $path)
+    protected function extract(PackageInterface $package, $file, $path)
     {
         $processError = null;
 

@@ -160,7 +160,10 @@ class HttpDownloader
                 if ($job['request']['copyTo']) {
                     $result = $rfs->copy($job['origin'], $url, $job['request']['copyTo'], false /* TODO progress */, $options);
 
-                    $resolve($result);
+                    $headers = $rfs->getLastHeaders();
+                    $response = new Http\Response($job['request'], $rfs->findStatusCode($headers), $headers, $job['request']['copyTo'].'~');
+
+                    $resolve($response);
                 } else {
                     $body = $rfs->getContents($job['origin'], $url, false /* TODO progress */, $options);
                     $headers = $rfs->getLastHeaders();
@@ -191,6 +194,7 @@ class HttpDownloader
             $job['exception'] = $e;
 
             $downloader->markJobDone();
+            $downloader->scheduleNextJob();
 
             throw $e;
         });

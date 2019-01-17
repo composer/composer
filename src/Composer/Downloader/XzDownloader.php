@@ -37,7 +37,7 @@ class XzDownloader extends ArchiveDownloader
         parent::__construct($io, $config, $downloader, $eventDispatcher, $cache);
     }
 
-    protected function extract($file, $path)
+    protected function extract(PackageInterface $package, $file, $path)
     {
         $command = 'tar -xJf ' . ProcessExecutor::escape($file) . ' -C ' . ProcessExecutor::escape($path);
 
@@ -48,13 +48,5 @@ class XzDownloader extends ArchiveDownloader
         $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
 
         throw new \RuntimeException($processError);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getFileName(PackageInterface $package, $path)
-    {
-        return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
     }
 }

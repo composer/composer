@@ -61,6 +61,15 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 $realUrl
             ));
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function install(PackageInterface $package, $path, $output = true)
+    {
+        $url = $package->getDistUrl();
+        $realUrl = realpath($url);
 
         // Get the transport options with default values
         $transportOptions = $package->getTransportOptions() + array('symlink' => null);

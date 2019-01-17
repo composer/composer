@@ -15,6 +15,7 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use React\Promise\PromiseInterface;
 
 /**
  * Downloaders manager.
@@ -24,6 +25,7 @@ use Composer\Util\Filesystem;
 class DownloadManager
 {
     private $io;
+    private $httpDownloader;
     private $preferDist = false;
     private $preferSource = false;
     private $packagePreferences = array();
@@ -33,9 +35,9 @@ class DownloadManager
     /**
      * Initializes download manager.
      *
-     * @param IOInterface     $io           The Input Output Interface
-     * @param bool            $preferSource prefer downloading from source
-     * @param Filesystem|null $filesystem   custom Filesystem object
+     * @param IOInterface     $io             The Input Output Interface
+     * @param bool            $preferSource   prefer downloading from source
+     * @param Filesystem|null $filesystem     custom Filesystem object
      */
     public function __construct(IOInterface $io, $preferSource = false, Filesystem $filesystem = null)
     {
@@ -140,7 +142,7 @@ class DownloadManager
      *                                           wrong type
      * @return DownloaderInterface|null
      */
-    public function getDownloaderForInstalledPackage(PackageInterface $package)
+    public function getDownloaderForPackage(PackageInterface $package)
     {
         $installationSource = $package->getInstallationSource();
 
@@ -154,7 +156,7 @@ class DownloadManager
             $downloader = $this->getDownloader($package->getSourceType());
         } else {
             throw new \InvalidArgumentException(
-                'Package '.$package.' seems not been installed properly'
+                'Package '.$package.' does not have an installation source set'
             );
         }
 
@@ -171,63 +173,95 @@ class DownloadManager
         return $downloader;
     }
 
+    public function getDownloaderType(DownloaderInterface $downloader)
+    {
+        return array_search($downloader, $this->downloaders);
+    }
+
     /**
      * Downloads package into target dir.
      *
      * @param PackageInterface $package      package instance
      * @param string           $targetDir    target dir
-     * @param bool             $preferSource prefer installation from source
+     * @param PackageInterface $prevPackage  previous package instance in case of updates
+     *
+     * @return PromiseInterface
+     * @throws \InvalidArgumentException if package have no urls to download from
+     * @throws \RuntimeException
+     */
+    public function download(PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
+    {
+        $this->filesystem->ensureDirectoryExists(dirname($targetDir));
+
+        $sources = $this->getAvailableSources($package, $prevPackage);
+
+        $io = $this->io;
+        $self = $this;
+
+        $download = function ($retry = false) use (&$sources, $io, $package, $self, $targetDir, &$download) {
+            $source = array_shift($sources);
+            if ($retry) {
+                $io->writeError('    <warning>Now trying to download from ' . $source . '</warning>');
+            }
+            $package->setInstallationSource($source);
+
+            $downloader = $self->getDownloaderForPackage($package);
+            if (!$downloader) {
+                return \React\Promise\resolve();
+            }
+
+            $handleError = function ($e) use ($sources, $source, $package, $io, $download) {
+                if ($e instanceof \RuntimeException) {
+                    if (!$sources) {
+                        throw $e;
+                    }
+
+                    $io->writeError(
+                        '    <warning>Failed to download '.
+                        $package->getPrettyName().
+                        ' from ' . $source . ': '.
+                        $e->getMessage().'</warning>'
+                    );
+
+                    return $download(true);
+                }
+
+                throw $e;
+            };
+
+            try {
+                $result = $downloader->download($package, $targetDir);
+            } catch (\Exception $e) {
+                return $handleError($e);
+            }
+            if (!$result instanceof PromiseInterface) {
+                return \React\Promise\resolve($result);
+            }
+
+            $res = $result->then(function ($res) {
+                return $res;
+            }, $handleError);
+
+            return $res;
+        };
+
+        return $download();
+    }
+
+    /**
+     * Installs package into target dir.
+     *
+     * @param PackageInterface $package      package instance
+     * @param string           $targetDir    target dir
      *
      * @throws \InvalidArgumentException if package have no urls to download from
      * @throws \RuntimeException
      */
-    public function download(PackageInterface $package, $targetDir, $preferSource = null)
+    public function install(PackageInterface $package, $targetDir)
     {
-        $preferSource = null !== $preferSource ? $preferSource : $this->preferSource;
-        $sourceType = $package->getSourceType();
-        $distType = $package->getDistType();
-
-        $sources = array();
-        if ($sourceType) {
-            $sources[] = 'source';
-        }
-        if ($distType) {
-            $sources[] = 'dist';
-        }
-
-        if (empty($sources)) {
-            throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
-        }
-
-        if (!$preferSource && ($this->preferDist || 'dist' === $this->resolvePackageInstallPreference($package))) {
-            $sources = array_reverse($sources);
-        }
-
-        $this->filesystem->ensureDirectoryExists($targetDir);
-
-        foreach ($sources as $i => $source) {
-            if (isset($e)) {
-                $this->io->writeError('    <warning>Now trying to download from ' . $source . '</warning>');
-            }
-            $package->setInstallationSource($source);
-            try {
-                $downloader = $this->getDownloaderForInstalledPackage($package);
-                if ($downloader) {
-                    $downloader->download($package, $targetDir);
-                }
-                break;
-            } catch (\RuntimeException $e) {
-                if ($i === count($sources) - 1) {
-                    throw $e;
-                }
-
-                $this->io->writeError(
-                    '    <warning>Failed to download '.
-                    $package->getPrettyName().
-                    ' from ' . $source . ': '.
-                    $e->getMessage().'</warning>'
-                );
-            }
+        $downloader = $this->getDownloaderForPackage($package);
+        if ($downloader) {
+            $downloader->install($package, $targetDir);
         }
     }
 
@@ -242,31 +276,23 @@ class DownloadManager
      */
     public function update(PackageInterface $initial, PackageInterface $target, $targetDir)
     {
-        $downloader = $this->getDownloaderForInstalledPackage($initial);
+        $downloader = $this->getDownloaderForPackage($target);
+        $initialDownloader = $this->getDownloaderForPackage($initial);
+
+        // no downloaders present means update from metapackage to metapackage, nothing to do
+        if (!$initialDownloader && !$downloader) {
+            return;
+        }
+
+        // if we have a downloader present before, but not after, the package became a metapackage and its files should be removed
         if (!$downloader) {
+            $initialDownloader->remove($initial, $targetDir);
             return;
         }
 
-        $installationSource = $initial->getInstallationSource();
-
-        if ('dist' === $installationSource) {
-            $initialType = $initial->getDistType();
-            $targetType = $target->getDistType();
-        } else {
-            $initialType = $initial->getSourceType();
-            $targetType = $target->getSourceType();
-        }
-
-        // upgrading from a dist stable package to a dev package, force source reinstall
-        if ($target->isDev() && 'dist' === $installationSource) {
-            $downloader->remove($initial, $targetDir);
-            $this->download($target, $targetDir);
-
-            return;
-        }
-
+        $initialType = $this->getDownloaderType($initialDownloader);
+        $targetType = $this->getDownloaderType($downloader);
         if ($initialType === $targetType) {
-            $target->setInstallationSource($installationSource);
             try {
                 $downloader->update($initial, $target, $targetDir);
 
@@ -282,8 +308,12 @@ class DownloadManager
             }
         }
 
-        $downloader->remove($initial, $targetDir);
-        $this->download($target, $targetDir, 'source' === $installationSource);
+        // if downloader type changed, or update failed and user asks for reinstall,
+        // we wipe the dir and do a new install instead of updating it
+        if ($initialDownloader) {
+            $initialDownloader->remove($initial, $targetDir);
+        }
+        $this->install($target, $targetDir);
     }
 
     /**
@@ -294,7 +324,7 @@ class DownloadManager
      */
     public function remove(PackageInterface $package, $targetDir)
     {
-        $downloader = $this->getDownloaderForInstalledPackage($package);
+        $downloader = $this->getDownloaderForPackage($package);
         if ($downloader) {
             $downloader->remove($package, $targetDir);
         }
@@ -321,5 +351,49 @@ class DownloadManager
         }
 
         return $package->isDev() ? 'source' : 'dist';
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getAvailableSources(PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+        $sourceType = $package->getSourceType();
+        $distType = $package->getDistType();
+
+        // add source before dist by default
+        $sources = array();
+        if ($sourceType) {
+            $sources[] = 'source';
+        }
+        if ($distType) {
+            $sources[] = 'dist';
+        }
+
+        if (empty($sources)) {
+            throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
+        }
+
+        if (
+            $prevPackage
+            // if we are updating, we want to keep the same source as the previously installed package (if available in the new one)
+            && in_array($prevPackage->getInstallationSource(), $sources, true)
+            // unless the previous package was stable dist (by default) and the new package is dev, then we allow the new default to take over
+            && !(!$prevPackage->isDev() && $prevPackage->getInstallationSource() === 'dist' && $package->isDev())
+        ) {
+            $prevSource = $prevPackage->getInstallationSource();
+            usort($sources, function ($a, $b) use ($prevSource) {
+                return $a === $prevSource ? -1 : 1;
+            });
+
+            return $sources;
+        }
+
+        // reverse sources in case dist is the preferred source for this package
+        if (!$this->preferSource && ($this->preferDist || 'dist' === $this->resolvePackageInstallPreference($package))) {
+            $sources = array_reverse($sources);
+        }
+
+        return $sources;
     }
 }

@@ -101,7 +101,7 @@ class EventDispatcherTest extends TestCase
         $composer->setPackage($package);
 
         $composer->setRepositoryManager($this->getRepositoryManagerMockForDevModePassingTest());
-        $composer->setInstallationManager($this->getMockBuilder('Composer\Installer\InstallationManager')->getMock());
+        $composer->setInstallationManager($this->getMockBuilder('Composer\Installer\InstallationManager')->disableOriginalConstructor()->getMock());
 
         $dispatcher = new EventDispatcher(
             $composer,

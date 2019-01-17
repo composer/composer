@@ -295,7 +295,7 @@ class CurlDownloader
                 // resolve promise
                 if ($job['filename']) {
                     rename($job['filename'].'~', $job['filename']);
-                    call_user_func($job['resolve'], true);
+                    call_user_func($job['resolve'], $response);
                 } else {
                     call_user_func($job['resolve'], $response);
                 }

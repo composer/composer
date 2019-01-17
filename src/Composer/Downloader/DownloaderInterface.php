@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use React\Promise\PromiseInterface;
 
 /**
  * Downloader interface.
@@ -30,12 +31,19 @@ interface DownloaderInterface
     public function getInstallationSource();
 
     /**
+     * This should do any network-related tasks to prepare for install/update
+     *
+     * @return PromiseInterface|null
+     */
+    public function download(PackageInterface $package, $path);
+
+    /**
      * Downloads specific package into specific folder.
      *
      * @param PackageInterface $package package instance
      * @param string           $path    download path
      */
-    public function download(PackageInterface $package, $path);
+    public function install(PackageInterface $package, $path);
 
     /**
      * Updates specific package in specific folder from initial to target version.

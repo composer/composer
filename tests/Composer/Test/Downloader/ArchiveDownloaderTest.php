@@ -29,7 +29,7 @@ class ArchiveDownloaderTest extends TestCase
         $method->setAccessible(true);
 
         $first = $method->invoke($downloader, $packageMock, '/path');
-        $this->assertRegExp('#/path/[a-z0-9]+\.js#', $first);
+        $this->assertRegExp('#/path_[a-z0-9]+\.js#', $first);
         $this->assertSame($first, $method->invoke($downloader, $packageMock, '/path'));
     }
 

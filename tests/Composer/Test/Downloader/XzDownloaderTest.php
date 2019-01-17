@@ -16,6 +16,7 @@ use Composer\Downloader\XzDownloader;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
+use Composer\Util\Loop;
 use Composer\Util\HttpDownloader;
 
 class XzDownloaderTest extends TestCase
@@ -66,10 +67,14 @@ class XzDownloaderTest extends TestCase
             ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));
-        $downloader = new XzDownloader($io, $config, new HttpDownloader($io, $this->getMockBuilder('Composer\Config')->getMock()), null, null, null);
+        $downloader = new XzDownloader($io, $config, $httpDownloader = new HttpDownloader($io, $this->getMockBuilder('Composer\Config')->getMock()), null, null, null);
 
         try {
-            $downloader->download($packageMock, $this->getUniqueTmpDirectory());
+            $promise = $downloader->download($packageMock, $this->testDir);
+            $loop = new Loop($httpDownloader);
+            $loop->wait(array($promise));
+            $downloader->install($packageMock, $this->testDir);
+
             $this->fail('Download of invalid tarball should throw an exception');
         } catch (\RuntimeException $e) {
             $this->assertRegexp('/(File format not recognized|Unrecognized archive format)/i', $e->getMessage());

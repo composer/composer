@@ -50,13 +50,21 @@ class PluginInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function download(PackageInterface $package, PackageInterface $prevPackage = null)
     {
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
             throw new \UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
         }
 
+        return parent::download($package, $prevPackage);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
+    {
         parent::install($repo, $package);
         try {
             $this->composer->getPluginManager()->registerPackage($package, true);

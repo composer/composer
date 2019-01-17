@@ -185,7 +185,7 @@ class ZipDownloader extends ArchiveDownloader
      * @param string $file File to extract
      * @param string $path Path where to extract file
      */
-    public function extract($file, $path)
+    public function extract(PackageInterface $package, $file, $path)
     {
         // Each extract calls its alternative if not available or fails
         if (self::$isWindows) {

@@ -27,7 +27,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doDownload(PackageInterface $package, $path, $url)
+    public function doInstall(PackageInterface $package, $path, $url)
     {
         $ref = $package->getSourceReference();
         $label = $this->getLabelFromSourceReference($ref);

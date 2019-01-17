@@ -16,6 +16,7 @@ use Composer\IO\NullIO;
 use Composer\Factory;
 use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\PackageInterface;
+use Composer\Util\Loop;
 use Composer\Test\Mock\FactoryMock;
 
 class ArchiveManagerTest extends ArchiverTest
@@ -35,9 +36,10 @@ class ArchiveManagerTest extends ArchiverTest
         $dm = $factory->createDownloadManager(
             $io = new NullIO,
             $config = FactoryMock::createConfig(),
-            $factory->createHttpDownloader($io, $config)
+            $httpDownloader = $factory->createHttpDownloader($io, $config)
         );
-        $this->manager = $factory->createArchiveManager($factory->createConfig(), $dm);
+        $loop = new Loop($httpDownloader);
+        $this->manager = $factory->createArchiveManager($factory->createConfig(), $dm, $loop);
         $this->targetDir = $this->testDir.'/composer_archiver_tests';
     }
 

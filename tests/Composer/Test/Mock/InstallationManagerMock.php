@@ -17,6 +17,7 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
@@ -28,6 +29,18 @@ class InstallationManagerMock extends InstallationManager
     private $updated = array();
     private $uninstalled = array();
     private $trace = array();
+
+    public function __construct()
+    {
+
+    }
+
+    public function execute(RepositoryInterface $repo, OperationInterface $operation)
+    {
+        $method = $operation->getJobType();
+        // skipping download() step here for tests
+        $this->$method($repo, $operation);
+    }
 
     public function getInstallPath(PackageInterface $package)
     {

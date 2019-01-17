@@ -138,7 +138,7 @@ class PerforceDownloaderTest extends TestCase
         $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);
         $perforce->expects($this->at(6))->method('cleanupClientSpec');
         $this->downloader->setPerforce($perforce);
-        $this->downloader->doDownload($this->package, $this->testPath, 'url');
+        $this->downloader->doInstall($this->package, $this->testPath, 'url');
     }
 
     /**
@@ -161,6 +161,6 @@ class PerforceDownloaderTest extends TestCase
         $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);
         $perforce->expects($this->at(6))->method('cleanupClientSpec');
         $this->downloader->setPerforce($perforce);
-        $this->downloader->doDownload($this->package, $this->testPath, 'url');
+        $this->downloader->doInstall($this->package, $this->testPath, 'url');
     }
 }
