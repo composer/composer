@@ -38,6 +38,7 @@ class RemoveCommand extends BaseCommand
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Packages that should be removed.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section.'),
+                new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
@@ -78,6 +79,12 @@ EOT
         $altType = !$input->getOption('dev') ? 'require-dev' : 'require';
         $io = $this->getIO();
 
+        $dryRun = $input->getOption('dry-run');
+
+        if ($dryRun) {
+            $io->write('Running the command in "dry run" mode. No modifications to composer.json will happen');
+        }
+
         if ($input->getOption('update-with-dependencies')) {
             $io->writeError('<warning>You are using the deprecated option "update-with-dependencies". This is now default behaviour. The --no-update-with-dependencies option can be used to remove a package without its dependencies.</warning>');
         }
@@ -93,24 +100,32 @@ EOT
 
         foreach ($packages as $package) {
             if (isset($composer[$type][$package])) {
-                $json->removeLink($type, $composer[$type][$package]);
+                if (!$dryRun) {
+                    $json->removeLink($type, $composer[$type][$package]);
+                }
             } elseif (isset($composer[$altType][$package])) {
                 $io->writeError('<warning>' . $composer[$altType][$package] . ' could not be found in ' . $type . ' but it is present in ' . $altType . '</warning>');
                 if ($io->isInteractive()) {
                     if ($io->askConfirmation('Do you want to remove it from ' . $altType . ' [<comment>yes</comment>]? ', true)) {
-                        $json->removeLink($altType, $composer[$altType][$package]);
+                        if (!$dryRun) {
+                            $json->removeLink($altType, $composer[$altType][$package]);
+                        }
                     }
                 }
             } elseif (isset($composer[$type]) && $matches = preg_grep(BasePackage::packageNameToRegexp($package), array_keys($composer[$type]))) {
                 foreach ($matches as $matchedPackage) {
-                    $json->removeLink($type, $matchedPackage);
+                    if (!$dryRun) {
+                        $json->removeLink($type, $matchedPackage);
+                    }
                 }
             } elseif (isset($composer[$altType]) && $matches = preg_grep(BasePackage::packageNameToRegexp($package), array_keys($composer[$altType]))) {
                 foreach ($matches as $matchedPackage) {
                     $io->writeError('<warning>' . $matchedPackage . ' could not be found in ' . $type . ' but it is present in ' . $altType . '</warning>');
                     if ($io->isInteractive()) {
                         if ($io->askConfirmation('Do you want to remove it from ' . $altType . ' [<comment>yes</comment>]? ', true)) {
-                            $json->removeLink($altType, $matchedPackage);
+                            if (!$dryRun) {
+                                $json->removeLink($altType, $matchedPackage);
+                            }
                         }
                     }
                 }
