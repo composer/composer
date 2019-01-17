@@ -940,9 +940,13 @@ INITIALIZER;
             $packageMap,
             function ($item) use ($include) {
                 $package = $item[0];
-                $name = $package->getName();
+                foreach ($package->getNames() as $name) {
+                    if (isset($include[$name])) {
+                        return true;
+                    }
+                }
 
-                return isset($include[$name]);
+                return false;
             }
         );
     }
