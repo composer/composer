@@ -162,7 +162,6 @@ EOT
         }
 
         $composer = Factory::create($io, null, $disablePlugins);
-        $composer->getDownloadManager()->setOutputProgress(!$noProgress);
 
         $fs = new Filesystem();
 
@@ -351,8 +350,7 @@ EOT
         $httpDownloader = $factory->createHttpDownloader($io, $config);
         $dm = $factory->createDownloadManager($io, $config, $httpDownloader);
         $dm->setPreferSource($preferSource)
-            ->setPreferDist($preferDist)
-            ->setOutputProgress(!$noProgress);
+            ->setPreferDist($preferDist);
 
         $projectInstaller = new ProjectInstaller($directory, $dm);
         $im = $factory->createInstallationManager(new Loop($httpDownloader));

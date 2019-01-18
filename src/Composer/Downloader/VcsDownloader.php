@@ -211,15 +211,6 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * Download progress information is not available for all VCS downloaders.
-     * {@inheritDoc}
-     */
-    public function setOutputProgress($outputProgress)
-    {
-        return $this;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function getVcsReference(PackageInterface $package, $path)

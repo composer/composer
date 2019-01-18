@@ -86,22 +86,6 @@ class DownloadManager
     }
 
     /**
-     * Sets whether to output download progress information for all registered
-     * downloaders
-     *
-     * @param  bool            $outputProgress
-     * @return DownloadManager
-     */
-    public function setOutputProgress($outputProgress)
-    {
-        foreach ($this->downloaders as $downloader) {
-            $downloader->setOutputProgress($outputProgress);
-        }
-
-        return $this;
-    }
-
-    /**
      * Sets installer downloader for a specific installation type.
      *
      * @param  string              $type       installation type

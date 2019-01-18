@@ -85,7 +85,6 @@ EOT
         }
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
-        $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'install', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);

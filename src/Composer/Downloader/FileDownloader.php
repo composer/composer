@@ -43,7 +43,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     protected $httpDownloader;
     protected $filesystem;
     protected $cache;
-    protected $outputProgress = true;
     /**
      * @private this is only public for php 5.3 support in closures
      */
@@ -237,16 +236,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function setOutputProgress($outputProgress)
-    {
-        $this->outputProgress = $outputProgress;
-
-        return $this;
-    }
-
-    /**
      * TODO mark private in v3
      * @protected This is public due to PHP 5.3
      */
@@ -340,11 +329,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     public function getLocalChanges(PackageInterface $package, $targetDir)
     {
         $prevIO = $this->io;
-        $prevProgress = $this->outputProgress;
 
         $this->io = new NullIO;
         $this->io->loadConfiguration($this->config);
-        $this->outputProgress = false;
         $e = null;
 
         try {
@@ -362,7 +349,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
 
         $this->io = $prevIO;
-        $this->outputProgress = $prevProgress;
 
         if ($e) {
             throw $e;

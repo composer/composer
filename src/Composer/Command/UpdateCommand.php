@@ -120,8 +120,6 @@ EOT
             }
         }
 
-        $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
-
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
