@@ -898,15 +898,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $retries = 3;
         while ($retries--) {
             try {
-                $httpDownloader = $this->httpDownloader;
-
                 if ($this->eventDispatcher) {
                     $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
-                    $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
                 }
 
-                $response = $httpDownloader->get($filename, $this->options);
+                $response = $this->httpDownloader->get($filename, $this->options);
                 $json = $response->getBody();
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     // undo downgrade before trying again if http seems to be hijacked or modifying content somehow
@@ -989,12 +986,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $retries = 3;
         while ($retries--) {
             try {
-                $httpDownloader = $this->httpDownloader;
-
                 if ($this->eventDispatcher) {
                     $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
-                    $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
                 }
 
                 $options = $this->options;
@@ -1002,7 +996,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $options['http']['header'] = (array) $options['http']['header'];
                 }
                 $options['http']['header'][] = array('If-Modified-Since: '.$lastModifiedTime);
-                $response = $httpDownloader->get($filename, $options);
+                $response = $this->httpDownloader->get($filename, $options);
                 $json = $response->getBody();
                 if ($json === '' && $response->getStatusCode() === 304) {
                     return true;
@@ -1053,12 +1047,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private function asyncFetchFile($filename, $cacheKey, $lastModifiedTime = null)
     {
         $retries = 3;
-        $httpDownloader = $this->httpDownloader;
 
+        $httpDownloader = $this->httpDownloader;
         if ($this->eventDispatcher) {
             $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
             $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
-            $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
         }
 
         $options = $lastModifiedTime ? array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime))) : array();

@@ -25,7 +25,7 @@ class PreFileDownloadEvent extends Event
     /**
      * @var HttpDownloader
      */
-    private $rfs;
+    private $httpDownloader;
 
     /**
      * @var string
@@ -36,13 +36,13 @@ class PreFileDownloadEvent extends Event
      * Constructor.
      *
      * @param string           $name         The event name
-     * @param HttpDownloader $rfs
+     * @param HttpDownloader $httpDownloader
      * @param string           $processedUrl
      */
-    public function __construct($name, HttpDownloader $rfs, $processedUrl)
+    public function __construct($name, HttpDownloader $httpDownloader, $processedUrl)
     {
         parent::__construct($name);
-        $this->rfs = $rfs;
+        $this->httpDownloader = $httpDownloader;
         $this->processedUrl = $processedUrl;
     }
 
@@ -51,15 +51,7 @@ class PreFileDownloadEvent extends Event
      */
     public function getHttpDownloader()
     {
-        return $this->rfs;
-    }
-
-    /**
-     * @param HttpDownloader $rfs
-     */
-    public function setHttpDownloader(HttpDownloader $rfs)
-    {
-        $this->rfs = $rfs;
+        return $this->httpDownloader;
     }
 
     /**

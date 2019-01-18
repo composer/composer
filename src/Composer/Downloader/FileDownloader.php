@@ -106,21 +106,19 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $io = $this->io;
         $cache = $this->cache;
-        $originalHttpDownloader = $this->httpDownloader;
+        $httpDownloader = $this->httpDownloader;
         $eventDispatcher = $this->eventDispatcher;
         $filesystem = $this->filesystem;
         $self = $this;
 
         $accept = null;
         $reject = null;
-        $download = function () use ($io, $output, $originalHttpDownloader, $cache, $eventDispatcher, $package, $fileName, $path, &$urls, &$accept, &$reject) {
+        $download = function () use ($io, $output, $httpDownloader, $cache, $eventDispatcher, $package, $fileName, $path, &$urls, &$accept, &$reject) {
             $url = reset($urls);
 
-            $httpDownloader = $originalHttpDownloader;
             if ($eventDispatcher) {
                 $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $httpDownloader, $url['processed']);
                 $eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
-                $httpDownloader = $preFileDownloadEvent->getHttpDownloader();
             }
 
             $checksum = $package->getDistSha1Checksum();
