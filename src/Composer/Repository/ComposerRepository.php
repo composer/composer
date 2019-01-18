@@ -598,8 +598,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
                 ->then(function ($response) use (&$packages, $contents, $name, $constraint, $repo, $isPackageAcceptableCallable) {
-                    static $uniqKeys = array('version', 'version_normalized', 'source', 'dist', 'time');
-
                     if (true === $response) {
                         $response = $contents;
                     }
@@ -608,8 +606,38 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         return;
                     }
 
+                    $versions = $response['packages'][$name];
+
+                    if (isset($response['minified']) && $response['minified'] === 'composer/2.0') {
+                        // TODO extract in other method
+                        $expanded = array();
+                        $expandedVersion = null;
+                        foreach ($versions as $versionData) {
+                            if (!$expandedVersion) {
+                                $expandedVersion = $versionData;
+                                $expanded[] = $expandedVersion;
+                                continue;
+                            }
+
+                            // add any changes from the previous version to the expanded one
+                            foreach ($versionData as $key => $val) {
+                                if ($val === '__unset') {
+                                    unset($expandedVersion[$key]);
+                                } else {
+                                    $expandedVersion[$key] = $val;
+                                }
+                            }
+
+                            $expanded[] = $expandedVersion;
+                        }
+
+                        $versions = $expanded;
+                        unset($expanded, $expandedVersion, $versionData);
+                    }
+
+                    static $uniqKeys = array('version', 'version_normalized', 'source', 'dist', 'time');
                     $versionsToLoad = array();
-                    foreach ($response['packages'][$name] as $version) {
+                    foreach ($versions as $version) {
                         if (isset($version['version_normalizeds'])) {
                             foreach ($version['version_normalizeds'] as $index => $normalizedVersion) {
                                 if (!$repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $name, $normalizedVersion)) {
