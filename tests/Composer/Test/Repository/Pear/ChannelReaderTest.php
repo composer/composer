@@ -28,13 +28,13 @@ class ChannelReaderTest extends TestCase
 {
     public function testShouldBuildPackagesFromPearSchema()
     {
-        $rfs = new HttpDownloaderMock(array(
+        $httpDownloader = new HttpDownloaderMock(array(
             'http://pear.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.1.xml'),
             'http://test.loc/rest11/c/categories.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/categories.xml'),
             'http://test.loc/rest11/c/Default/packagesinfo.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/packagesinfo.xml'),
         ));
 
-        $reader = new \Composer\Repository\Pear\ChannelReader($rfs);
+        $reader = new \Composer\Repository\Pear\ChannelReader($httpDownloader);
 
         $channelInfo = $reader->read('http://pear.net/');
         $packages = $channelInfo->getPackages();
@@ -50,7 +50,7 @@ class ChannelReaderTest extends TestCase
 
     public function testShouldSelectCorrectReader()
     {
-        $rfs = new HttpDownloaderMock(array(
+        $httpDownloader = new HttpDownloaderMock(array(
             'http://pear.1.0.net/channel.xml' => file_get_contents(__DIR__ . '/Fixtures/channel.1.0.xml'),
             'http://test.loc/rest10/p/packages.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/packages.xml'),
             'http://test.loc/rest10/p/http_client/info.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_client_info.xml'),
@@ -64,7 +64,7 @@ class ChannelReaderTest extends TestCase
             'http://test.loc/rest11/c/Default/packagesinfo.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.1/packagesinfo.xml'),
         ));
 
-        $reader = new \Composer\Repository\Pear\ChannelReader($rfs);
+        $reader = new \Composer\Repository\Pear\ChannelReader($httpDownloader);
 
         $reader->read('http://pear.1.0.net/');
         $reader->read('http://pear.1.1.net/');
