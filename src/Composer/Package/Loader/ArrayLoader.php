@@ -62,39 +62,16 @@ class ArrayLoader implements LoaderInterface
 
     public function loadPackages(array $versions, $class)
     {
-        static $uniqKeys = array('version', 'version_normalized', 'source', 'dist', 'time');
-
         $packages = array();
         $linkCache = array();
 
         foreach ($versions as $version) {
-            if (isset($version['versions'])) {
-                $baseVersion = $version;
-                foreach ($uniqKeys as $key) {
-                    unset($baseVersion[$key.'s']);
-                }
+            $package = $this->createObject($version, $class);
 
-                foreach ($version['versions'] as $index => $dummy) {
-                    $unpackedVersion = $baseVersion;
-                    foreach ($uniqKeys as $key) {
-                        $unpackedVersion[$key] = $version[$key.'s'][$index];
-                    }
+            $this->configureCachedLinks($linkCache, $package, $version);
+            $package = $this->configureObject($package, $version);
 
-                    $package = $this->createObject($unpackedVersion, $class);
-
-                    $this->configureCachedLinks($linkCache, $package, $unpackedVersion);
-                    $package = $this->configureObject($package, $unpackedVersion);
-
-                    $packages[] = $package;
-                }
-            } else {
-                $package = $this->createObject($version, $class);
-
-                $this->configureCachedLinks($linkCache, $package, $version);
-                $package = $this->configureObject($package, $version);
-
-                $packages[] = $package;
-            }
+            $packages[] = $package;
         }
 
         return $packages;
