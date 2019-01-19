@@ -72,7 +72,12 @@
         "bin/composer"
     ],
     "scripts": {
+        "compile": "@php -dphar.readonly=0 bin/compile",
         "test": "phpunit"
+    },
+    "scripts-descriptions": {
+        "compile": "Compile composer.phar",
+        "test": "Run all tests"
     },
     "support": {
         "issues": "https://github.com/composer/composer/issues",
