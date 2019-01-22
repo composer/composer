@@ -61,6 +61,7 @@ class Config
         'archive-format' => 'tar',
         'archive-dir' => '.',
         'htaccess-protect' => true,
+        'no-api' => false,
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth
@@ -317,10 +318,10 @@ class Config
 
             case 'disable-tls':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
-
             case 'secure-http':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
-
+            case 'no-api':
+                return $this->config[$key] !== 'false' && (bool) $this->config[$key];
             default:
                 if (!isset($this->config[$key])) {
                     return null;
