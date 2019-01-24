@@ -15,6 +15,7 @@ namespace Composer\Installer;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use InvalidArgumentException;
+use React\Promise\PromiseInterface;
 
 /**
  * Interface for the package installation manager.
@@ -41,6 +42,15 @@ interface InstallerInterface
      * @return bool
      */
     public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package);
+
+    /**
+     * Downloads the files needed to later install the given package.
+     *
+     * @param  PackageInterface $package     package instance
+     * @param  PackageInterface $prevPackage previous package instance in case of an update
+     * @return PromiseInterface
+     */
+    public function download(PackageInterface $package, PackageInterface $prevPackage = null);
 
     /**
      * Installs specific package.

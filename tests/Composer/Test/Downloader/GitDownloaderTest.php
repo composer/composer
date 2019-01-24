@@ -79,7 +79,7 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(null));
 
         $downloader = $this->getDownloaderMock();
-        $downloader->download($packageMock, '/path');
+        $downloader->install($packageMock, '/path');
     }
 
     public function testDownload()
@@ -130,7 +130,7 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, null, $processExecutor);
-        $downloader->download($packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
     }
 
     public function testDownloadWithCache()
@@ -195,7 +195,7 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, $config, $processExecutor);
-        $downloader->download($packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
         @rmdir($cachePath);
     }
 
@@ -265,7 +265,7 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, new Config(), $processExecutor);
-        $downloader->download($packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
     }
 
     public function pushUrlProvider()
@@ -329,7 +329,7 @@ class GitDownloaderTest extends TestCase
         $config->merge(array('config' => array('github-protocols' => $protocols)));
 
         $downloader = $this->getDownloaderMock(null, $config, $processExecutor);
-        $downloader->download($packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
     }
 
     /**
@@ -360,7 +360,7 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(1));
 
         $downloader = $this->getDownloaderMock(null, null, $processExecutor);
-        $downloader->download($packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
     }
 
     /**

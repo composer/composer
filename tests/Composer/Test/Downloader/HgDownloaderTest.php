@@ -56,7 +56,7 @@ class HgDownloaderTest extends TestCase
             ->will($this->returnValue(null));
 
         $downloader = $this->getDownloaderMock();
-        $downloader->download($packageMock, '/path');
+        $downloader->install($packageMock, '/path');
     }
 
     public function testDownload()
@@ -83,7 +83,7 @@ class HgDownloaderTest extends TestCase
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, null, $processExecutor);
-        $downloader->download($packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
     }
 
     /**

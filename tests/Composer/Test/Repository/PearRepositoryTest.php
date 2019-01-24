@@ -28,7 +28,7 @@ class PearRepositoryTest extends TestCase
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
      */
-    private $remoteFilesystem;
+    private $httpDownloader;
 
     public function testComposerShouldSetIncludePath()
     {
@@ -133,7 +133,7 @@ class PearRepositoryTest extends TestCase
 
         $config = new \Composer\Config();
 
-        $this->remoteFilesystem = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+        $this->httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -143,6 +143,6 @@ class PearRepositoryTest extends TestCase
     protected function tearDown()
     {
         $this->repository = null;
-        $this->remoteFilesystem = null;
+        $this->httpDownloader = null;
     }
 }

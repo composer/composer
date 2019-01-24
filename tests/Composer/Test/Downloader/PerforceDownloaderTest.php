@@ -17,6 +17,7 @@ use Composer\Config;
 use Composer\Repository\VcsRepository;
 use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
+use Composer\Factory;
 use Composer\Util\Filesystem;
 
 /**
@@ -96,7 +97,7 @@ class PerforceDownloaderTest extends TestCase
     {
         $repository = $this->getMockBuilder('Composer\Repository\VcsRepository')
             ->setMethods(array('getRepoConfig'))
-            ->setConstructorArgs(array($repoConfig, $io, $config))
+            ->setConstructorArgs(array($repoConfig, $io, $config, Factory::createHttpDownloader($io, $config)))
             ->getMock();
         $repository->expects($this->any())->method('getRepoConfig')->will($this->returnValue($repoConfig));
 
@@ -137,7 +138,7 @@ class PerforceDownloaderTest extends TestCase
         $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);
         $perforce->expects($this->at(6))->method('cleanupClientSpec');
         $this->downloader->setPerforce($perforce);
-        $this->downloader->doDownload($this->package, $this->testPath, 'url');
+        $this->downloader->doInstall($this->package, $this->testPath, 'url');
     }
 
     /**
@@ -160,6 +161,6 @@ class PerforceDownloaderTest extends TestCase
         $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);
         $perforce->expects($this->at(6))->method('cleanupClientSpec');
         $this->downloader->setPerforce($perforce);
-        $this->downloader->doDownload($this->package, $this->testPath, 'url');
+        $this->downloader->doInstall($this->package, $this->testPath, 'url');
     }
 }

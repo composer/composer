@@ -13,6 +13,7 @@
 namespace Composer\Repository\Pear;
 
 use Composer\Downloader\TransportException;
+use Composer\Util\HttpDownloader;
 
 /**
  * Read PEAR packages using REST 1.0 interface
@@ -29,9 +30,9 @@ class ChannelRest10Reader extends BaseChannelReader
 {
     private $dependencyReader;
 
-    public function __construct($rfs)
+    public function __construct(HttpDownloader $httpDownloader)
     {
-        parent::__construct($rfs);
+        parent::__construct($httpDownloader);
 
         $this->dependencyReader = new PackageDependencyParser();
     }

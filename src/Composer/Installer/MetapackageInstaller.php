@@ -41,6 +41,14 @@ class MetapackageInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
+    public function download(PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+        // noop
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $repo->addPackage(clone $package);

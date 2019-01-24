@@ -928,4 +928,9 @@ repository options.
 Defaults to `1`. If set to `0`, Composer will not create `.htaccess` files in the
 composer home, cache, and data directories.
 
+### COMPOSER_DISABLE_NETWORK
+
+If set to `1`, disables network access (best effort). This can be used for debugging or
+to run Composer on a plane or a starship with poor connectivity.
+
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

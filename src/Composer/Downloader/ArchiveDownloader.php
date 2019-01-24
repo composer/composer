@@ -30,33 +30,50 @@ abstract class ArchiveDownloader extends FileDownloader
      * @throws \RuntimeException
      * @throws \UnexpectedValueException
      */
-    public function download(PackageInterface $package, $path, $output = true)
+    public function install(PackageInterface $package, $path, $output = true)
     {
-        $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
-        $retries = 3;
-        while ($retries--) {
-            $fileName = parent::download($package, $path, $output);
+        if ($output) {
+            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+        }
 
-            if ($output) {
-                $this->io->writeError(' Extracting archive', false, IOInterface::VERBOSE);
+        $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
+        $fileName = $this->getFileName($package, $path);
+
+        if ($output) {
+            $this->io->writeError('    Extracting archive', true, IOInterface::VERBOSE);
+        }
+
+        try {
+            $this->filesystem->ensureDirectoryExists($temporaryDir);
+            try {
+                $this->extract($package, $fileName, $temporaryDir);
+            } catch (\Exception $e) {
+                // remove cache if the file was corrupted
+                parent::clearLastCacheWrite($package);
+                throw $e;
             }
 
-            try {
-                $this->filesystem->ensureDirectoryExists($temporaryDir);
-                try {
-                    $this->extract($fileName, $temporaryDir);
-                } catch (\Exception $e) {
-                    // remove cache if the file was corrupted
-                    parent::clearLastCacheWrite($package);
-                    throw $e;
+            $this->filesystem->unlink($fileName);
+
+            $renameAsOne = false;
+            if (!file_exists($path) || ($this->filesystem->isDirEmpty($path) && $this->filesystem->removeDirectory($path))) {
+                $renameAsOne = true;
+            }
+
+            $contentDir = $this->getFolderContent($temporaryDir);
+            $singleDirAtTopLevel = 1 === count($contentDir) && is_dir(reset($contentDir));
+
+            if ($renameAsOne) {
+                // if the target $path is clear, we can rename the whole package in one go instead of looping over the contents
+                if ($singleDirAtTopLevel) {
+                    $extractedDir = (string) reset($contentDir);
+                } else {
+                    $extractedDir = $temporaryDir;
                 }
-
-                $this->filesystem->unlink($fileName);
-
-                $contentDir = $this->getFolderContent($temporaryDir);
-
+                $this->filesystem->rename($extractedDir, $path);
+            } else {
                 // only one dir in the archive, extract its contents out of it
-                if (1 === count($contentDir) && is_dir(reset($contentDir))) {
+                if ($singleDirAtTopLevel) {
                     $contentDir = $this->getFolderContent((string) reset($contentDir));
                 }
 
@@ -65,35 +82,24 @@ abstract class ArchiveDownloader extends FileDownloader
                     $file = (string) $file;
                     $this->filesystem->rename($file, $path . '/' . basename($file));
                 }
-
-                $this->filesystem->removeDirectory($temporaryDir);
-                if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
-                    $this->filesystem->removeDirectory($this->config->get('vendor-dir').'/composer/');
-                }
-                if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
-                    $this->filesystem->removeDirectory($this->config->get('vendor-dir'));
-                }
-            } catch (\Exception $e) {
-                // clean up
-                $this->filesystem->removeDirectory($path);
-                $this->filesystem->removeDirectory($temporaryDir);
-
-                // retry downloading if we have an invalid zip file
-                if ($retries && $e instanceof \UnexpectedValueException && class_exists('ZipArchive') && $e->getCode() === \ZipArchive::ER_NOZIP) {
-                    $this->io->writeError('');
-                    if ($this->io->isDebug()) {
-                        $this->io->writeError('    Invalid zip file ('.$e->getMessage().'), retrying...');
-                    } else {
-                        $this->io->writeError('    Invalid zip file, retrying...');
-                    }
-                    usleep(500000);
-                    continue;
-                }
-
-                throw $e;
             }
 
-            break;
+            $this->filesystem->removeDirectory($temporaryDir);
+            if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
+                $this->filesystem->removeDirectory($this->config->get('vendor-dir').'/composer/');
+            }
+            if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
+                $this->filesystem->removeDirectory($this->config->get('vendor-dir'));
+            }
+        } catch (\Exception $e) {
+            // clean up
+            $this->filesystem->removeDirectory($path);
+            $this->filesystem->removeDirectory($temporaryDir);
+            if (file_exists($fileName)) {
+                $this->filesystem->unlink($fileName);
+            }
+
+            throw $e;
         }
     }
 
@@ -102,7 +108,7 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return rtrim($path.'/'.md5($path.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
+        return rtrim($path.'_'.md5($path.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
     }
 
     /**
@@ -113,7 +119,7 @@ abstract class ArchiveDownloader extends FileDownloader
      *
      * @throws \UnexpectedValueException If can not extract downloaded file to path
      */
-    abstract protected function extract($file, $path);
+    abstract protected function extract(PackageInterface $package, $file, $path);
 
     /**
      * Returns the folder content, excluding dotfiles

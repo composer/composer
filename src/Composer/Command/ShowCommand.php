@@ -317,8 +317,8 @@ EOT
             } else {
                 $type = 'available';
             }
-            if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
-                foreach ($repo->getProviderNames() as $name) {
+            if ($repo instanceof ComposerRepository) {
+                foreach ($repo->getPackageNames() as $name) {
                     if (!$packageFilter || preg_match($packageFilter, $name)) {
                         $packages[$type][$name] = $name;
                     }
@@ -553,7 +553,7 @@ EOT
             $matches[$index] = $package->getId();
         }
 
-        $pool = $repositorySet->createPool();
+        $pool = $repositorySet->createPoolForPackage($package->getName());
 
         // select preferred package according to policy rules
         if (!$matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($pool, array(), $matches)) {

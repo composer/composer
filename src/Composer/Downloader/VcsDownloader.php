@@ -56,6 +56,14 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      */
     public function download(PackageInterface $package, $path)
     {
+        // noop for now, ideally we would do a git fetch already here, or make sure the cached git repo is synced, etc.
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function install(PackageInterface $package, $path)
+    {
         if (!$package->getSourceReference()) {
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
@@ -87,7 +95,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                         $url = $needle . $url;
                     }
                 }
-                $this->doDownload($package, $path, $url);
+                $this->doInstall($package, $path, $url);
                 break;
             } catch (\Exception $e) {
                 // rethrow phpunit exceptions to avoid hard to debug bug failures
@@ -203,15 +211,6 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * Download progress information is not available for all VCS downloaders.
-     * {@inheritDoc}
-     */
-    public function setOutputProgress($outputProgress)
-    {
-        return $this;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function getVcsReference(PackageInterface $package, $path)
@@ -260,7 +259,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @param string           $path    download path
      * @param string           $url     package url
      */
-    abstract protected function doDownload(PackageInterface $package, $path, $url);
+    abstract protected function doInstall(PackageInterface $package, $path, $url);
 
     /**
      * Updates specific package in specific folder from initial to target version.

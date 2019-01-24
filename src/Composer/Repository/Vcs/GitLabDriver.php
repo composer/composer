@@ -17,8 +17,9 @@ use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Downloader\TransportException;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\Util\GitLab;
+use Composer\Util\Http\Response;
 
 /**
  * Driver for GitLab API, use the Git driver for local checkouts.
@@ -110,14 +111,14 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * Updates the RemoteFilesystem instance.
+     * Updates the HttpDownloader instance.
      * Mainly useful for tests.
      *
      * @internal
      */
-    public function setRemoteFilesystem(RemoteFilesystem $remoteFilesystem)
+    public function setHttpDownloader(HttpDownloader $httpDownloader)
     {
-        $this->remoteFilesystem = $remoteFilesystem;
+        $this->httpDownloader = $httpDownloader;
     }
 
     /**
@@ -140,7 +141,7 @@ class GitLabDriver extends VcsDriver
         $resource = $this->getApiUrl().'/repository/files/'.$this->urlEncodeAll($file).'/raw?ref='.$identifier;
 
         try {
-            $content = $this->getContents($resource);
+            $content = $this->getContents($resource)->getBody();
         } catch (TransportException $e) {
             if ($e->getCode() !== 404) {
                 throw $e;
@@ -297,7 +298,8 @@ class GitLabDriver extends VcsDriver
 
         $references = array();
         do {
-            $data = JsonFile::parseJson($this->getContents($resource), $resource);
+            $response = $this->getContents($resource);
+            $data = $response->decodeJson();
 
             foreach ($data as $datum) {
                 $references[$datum['name']] = $datum['commit']['id'];
@@ -308,7 +310,7 @@ class GitLabDriver extends VcsDriver
             }
 
             if (count($data) >= $perPage) {
-                $resource = $this->getNextPage();
+                $resource = $this->getNextPage($response);
             } else {
                 $resource = false;
             }
@@ -321,7 +323,7 @@ class GitLabDriver extends VcsDriver
     {
         // we need to fetch the default branch from the api
         $resource = $this->getApiUrl();
-        $this->project = JsonFile::parseJson($this->getContents($resource, true), $resource);
+        $this->project = $this->getContents($resource, true)->decodeJson();
         if (isset($this->project['visibility'])) {
             $this->isPrivate = $this->project['visibility'] !== 'public';
         } else {
@@ -344,7 +346,7 @@ class GitLabDriver extends VcsDriver
             // are not interactive) then we fallback to GitDriver.
             $this->setupGitDriver($url);
 
-            return;
+            return true;
         } catch (\RuntimeException $e) {
             $this->gitDriver = null;
 
@@ -374,8 +376,8 @@ class GitLabDriver extends VcsDriver
             array('url' => $url),
             $this->io,
             $this->config,
-            $this->process,
-            $this->remoteFilesystem
+            $this->httpDownloader,
+            $this->process
         );
         $this->gitDriver->initialize();
     }
@@ -386,10 +388,10 @@ class GitLabDriver extends VcsDriver
     protected function getContents($url, $fetchingRepoData = false)
     {
         try {
-            $res = parent::getContents($url);
+            $response = parent::getContents($url);
 
             if ($fetchingRepoData) {
-                $json = JsonFile::parseJson($res, $url);
+                $json = $response->decodeJson();
 
                 // force auth as the unauthenticated version of the API is broken
                 if (!isset($json['default_branch'])) {
@@ -401,9 +403,9 @@ class GitLabDriver extends VcsDriver
                 }
             }
 
-            return $res;
+            return $response;
         } catch (TransportException $e) {
-            $gitLabUtil = new GitLab($this->io, $this->config, $this->process, $this->remoteFilesystem);
+            $gitLabUtil = new GitLab($this->io, $this->config, $this->process, $this->httpDownloader);
 
             switch ($e->getCode()) {
                 case 401:
@@ -418,7 +420,9 @@ class GitLabDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive()) {
-                        return $this->attemptCloneFallback();
+                        if ($this->attemptCloneFallback()) {
+                            return new Response(array('url' => 'dummy'), 200, array(), 'null');
+                        }
                     }
                     $this->io->writeError('<warning>Failed to download ' . $this->namespace . '/' . $this->repository . ':' . $e->getMessage() . '</warning>');
                     $gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, 'Your credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
@@ -431,7 +435,9 @@ class GitLabDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive() && $fetchingRepoData) {
-                        return $this->attemptCloneFallback();
+                        if ($this->attemptCloneFallback()) {
+                            return new Response(array('url' => 'dummy'), 200, array(), 'null');
+                        }
                     }
 
                     throw $e;
@@ -471,17 +477,14 @@ class GitLabDriver extends VcsDriver
         return true;
     }
 
-    private function getNextPage()
+    protected function getNextPage(Response $response)
     {
-        $headers = $this->remoteFilesystem->getLastHeaders();
-        foreach ($headers as $header) {
-            if (preg_match('{^link:\s*(.+?)\s*$}i', $header, $match)) {
-                $links = explode(',', $match[1]);
-                foreach ($links as $link) {
-                    if (preg_match('{<(.+?)>; *rel="next"}', $link, $match)) {
-                        return $match[1];
-                    }
-                }
+        $header = $response->getHeader('link');
+
+        $links = explode(',', $header);
+        foreach ($links as $link) {
+            if (preg_match('{<(.+?)>; *rel="next"}', $link, $match)) {
+                return $match[1];
             }
         }
     }

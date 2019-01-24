@@ -20,6 +20,8 @@ use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
 use Composer\Package\Loader\LoaderInterface;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Util\ProcessExecutor;
+use Composer\Util\HttpDownloader;
 use Composer\IO\IOInterface;
 use Composer\Config;
 
@@ -37,6 +39,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     protected $type;
     protected $loader;
     protected $repoConfig;
+    protected $httpDownloader;
+    protected $processExecutor;
     protected $branchErrorOccurred = false;
     private $drivers;
     /** @var VcsDriverInterface */
@@ -44,7 +48,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     /** @var VersionCacheInterface */
     private $versionCache;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, array $drivers = null, VersionCacheInterface $versionCache = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null, array $drivers = null, VersionCacheInterface $versionCache = null)
     {
         parent::__construct();
         $this->drivers = $drivers ?: array(
@@ -67,6 +71,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $this->config = $config;
         $this->repoConfig = $repoConfig;
         $this->versionCache = $versionCache;
+        $this->httpDownloader = $httpDownloader;
+        $this->processExecutor = new ProcessExecutor($io);
     }
 
     public function getRepoConfig()
@@ -87,7 +93,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         if (isset($this->drivers[$this->type])) {
             $class = $this->drivers[$this->type];
-            $this->driver = new $class($this->repoConfig, $this->io, $this->config);
+            $this->driver = new $class($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->processExecutor);
             $this->driver->initialize();
 
             return $this->driver;
@@ -95,7 +101,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->config, $this->url)) {
-                $this->driver = new $driver($this->repoConfig, $this->io, $this->config);
+                $this->driver = new $driver($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->processExecutor);
                 $this->driver->initialize();
 
                 return $this->driver;
@@ -104,7 +110,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->config, $this->url, true)) {
-                $this->driver = new $driver($this->repoConfig, $this->io, $this->config);
+                $this->driver = new $driver($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->processExecutor);
                 $this->driver->initialize();
 
                 return $this->driver;

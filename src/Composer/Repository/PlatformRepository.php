@@ -308,6 +308,10 @@ class PlatformRepository extends ArrayRepository
         $this->addPackage($ext);
     }
 
+    /**
+     * @param string $name
+     * @return string
+     */
     private function buildPackageName($name)
     {
         return 'ext-' . str_replace(' ', '-', $name);

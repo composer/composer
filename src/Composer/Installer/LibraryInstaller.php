@@ -85,6 +85,14 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         return (Platform::isWindows() && $this->filesystem->isJunction($installPath)) || is_link($installPath);
     }
 
+    public function download(PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+        $this->initializeVendorDir();
+        $downloadPath = $this->getInstallPath($package);
+
+        return $this->downloadManager->download($package, $downloadPath, $prevPackage);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -194,7 +202,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     protected function installCode(PackageInterface $package)
     {
         $downloadPath = $this->getInstallPath($package);
-        $this->downloadManager->download($package, $downloadPath);
+        $this->downloadManager->install($package, $downloadPath);
     }
 
     protected function updateCode(PackageInterface $initial, PackageInterface $target)

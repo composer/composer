@@ -38,6 +38,7 @@ use Symfony\Component\Finder\Finder;
 use Composer\Json\JsonFile;
 use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
+use Composer\Util\Loop;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -161,7 +162,6 @@ EOT
         }
 
         $composer = Factory::create($io, null, $disablePlugins);
-        $composer->getDownloadManager()->setOutputProgress(!$noProgress);
 
         $fs = new Filesystem();
 
@@ -345,15 +345,17 @@ EOT
             $package = $package->getAliasOf();
         }
 
-        $dm = $this->createDownloadManager($io, $config);
+        $factory = new Factory();
+
+        $httpDownloader = $factory->createHttpDownloader($io, $config);
+        $dm = $factory->createDownloadManager($io, $config, $httpDownloader);
         $dm->setPreferSource($preferSource)
-            ->setPreferDist($preferDist)
-            ->setOutputProgress(!$noProgress);
+            ->setPreferDist($preferDist);
 
         $projectInstaller = new ProjectInstaller($directory, $dm);
-        $im = $this->createInstallationManager();
+        $im = $factory->createInstallationManager(new Loop($httpDownloader));
         $im->addInstaller($projectInstaller);
-        $im->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
+        $im->execute(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
         $im->notifyInstalls($io);
 
         // collect suggestions
@@ -368,17 +370,5 @@ EOT
         putenv('COMPOSER_ROOT_VERSION='.$_SERVER['COMPOSER_ROOT_VERSION']);
 
         return $installedFromVcs;
-    }
-
-    protected function createDownloadManager(IOInterface $io, Config $config)
-    {
-        $factory = new Factory();
-
-        return $factory->createDownloadManager($io, $config);
-    }
-
-    protected function createInstallationManager()
-    {
-        return new InstallationManager();
     }
 }

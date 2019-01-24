@@ -57,7 +57,7 @@ class ComposerTest extends TestCase
     public function testSetGetInstallationManager()
     {
         $composer = new Composer();
-        $manager = $this->getMockBuilder('Composer\Installer\InstallationManager')->getMock();
+        $manager = $this->getMockBuilder('Composer\Installer\InstallationManager')->disableOriginalConstructor()->getMock();
         $composer->setInstallationManager($manager);
 
         $this->assertSame($manager, $composer->getInstallationManager());

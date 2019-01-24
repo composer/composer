@@ -26,7 +26,7 @@ class GitLab
     protected $io;
     protected $config;
     protected $process;
-    protected $remoteFilesystem;
+    protected $httpDownloader;
 
     /**
      * Constructor.
@@ -34,14 +34,14 @@ class GitLab
      * @param IOInterface      $io               The IO instance
      * @param Config           $config           The composer configuration
      * @param ProcessExecutor  $process          Process instance, injectable for mocking
-     * @param RemoteFilesystem $remoteFilesystem Remote Filesystem, injectable for mocking
+     * @param HttpDownloader $httpDownloader Remote Filesystem, injectable for mocking
      */
-    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
+    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null)
     {
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor($io);
-        $this->remoteFilesystem = $remoteFilesystem ?: Factory::createRemoteFilesystem($this->io, $config);
+        $this->httpDownloader = $httpDownloader ?: Factory::createHttpDownloader($this->io, $config);
     }
 
     /**
@@ -154,10 +154,10 @@ class GitLab
             ),
         );
 
-        $json = $this->remoteFilesystem->getContents($originUrl, $scheme.'://'.$apiUrl.'/oauth/token', false, $options);
+        $token = $this->httpDownloader->get($scheme.'://'.$apiUrl.'/oauth/token', $options)->decodeJson();
 
         $this->io->writeError('Token successfully created');
 
-        return JsonFile::parseJson($json);
+        return $token;
     }
 }

@@ -89,7 +89,7 @@ EOT
 
         // list packages
         foreach ($installedRepo->getCanonicalPackages() as $package) {
-            $downloader = $dm->getDownloaderForInstalledPackage($package);
+            $downloader = $dm->getDownloaderForPackage($package);
             $targetDir = $im->getInstallPath($package);
 
             if ($downloader instanceof ChangeReportInterface) {

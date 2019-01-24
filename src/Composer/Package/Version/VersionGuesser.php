@@ -192,7 +192,8 @@ class VersionGuesser
             }
 
             // re-use the HgDriver to fetch branches (this properly includes bookmarks)
-            $driver = new HgDriver(array('url' => $path), new NullIO(), $this->config, $this->process);
+            $io = new NullIO();
+            $driver = new HgDriver(array('url' => $path), $io, $this->config, new HttpDownloader($io, $this->config), $this->process);
             $branches = array_keys($driver->getBranches());
 
             // try to find the best (nearest) version branch to assume this feature's version

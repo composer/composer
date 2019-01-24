@@ -19,6 +19,12 @@ use Composer\Config;
  */
 class Url
 {
+    /**
+     * @param Config $config
+     * @param string $url
+     * @param string $ref
+     * @return string the updated URL
+     */
     public static function updateDistReference(Config $config, $url, $ref)
     {
         $host = parse_url($url, PHP_URL_HOST);
@@ -51,5 +57,46 @@ class Url
         }
 
         return $url;
+    }
+
+    /**
+     * @param string $url
+     * @return string
+     */
+    public static function getOrigin(Config $config, $url)
+    {
+        if (0 === strpos($url, 'file://')) {
+            return $url;
+        }
+
+        $origin = (string) parse_url($url, PHP_URL_HOST);
+
+        if (strpos($origin, '.github.com') === (strlen($origin) - 11)) {
+            return 'github.com';
+        }
+
+        if ($origin === 'repo.packagist.org') {
+            return 'packagist.org';
+        }
+
+        if ($origin === '') {
+            $origin = $url;
+        }
+
+        // Gitlab can be installed in a non-root context (i.e. gitlab.com/foo). When downloading archives the originUrl
+        // is the host without the path, so we look for the registered gitlab-domains matching the host here
+        if (
+            is_array($config->get('gitlab-domains'))
+            && false === strpos($origin, '/')
+            && !in_array($origin, $config->get('gitlab-domains'))
+        ) {
+            foreach ($config->get('gitlab-domains') as $gitlabDomain) {
+                if (0 === strpos($gitlabDomain, $origin)) {
+                    return $gitlabDomain;
+                }
+            }
+        }
+
+        return $origin;
     }
 }
