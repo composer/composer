@@ -12,6 +12,7 @@
 
 namespace Composer\IO;
 
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Input\StringInput;
@@ -34,7 +35,9 @@ class BufferIO extends ConsoleIO
 
         $output = new StreamOutput(fopen('php://memory', 'rw'), $verbosity, $formatter ? $formatter->isDecorated() : false, $formatter);
 
-        parent::__construct($input, $output, new HelperSet(array()));
+        parent::__construct($input, $output, new HelperSet(array(
+            new QuestionHelper(),
+        )));
     }
 
     public function getOutput()
