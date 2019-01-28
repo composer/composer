@@ -147,8 +147,13 @@ class ArchiveManager
             $sourcePath = sys_get_temp_dir().'/composer_archive'.uniqid();
             $filesystem->ensureDirectoryExists($sourcePath);
 
-            // Download sources
-            $this->downloadManager->download($package, $sourcePath);
+            try {
+                // Download sources
+                $this->downloadManager->download($package, $sourcePath);
+            } catch (\Exception $e) {
+                $filesystem->removeDirectory($sourcePath);
+                throw  $e;
+            }
 
             // Check exclude from downloaded composer.json
             if (file_exists($composerJsonPath = $sourcePath.'/composer.json')) {

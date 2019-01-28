@@ -216,7 +216,6 @@ class Config
             case 'cache-vcs-dir':
             case 'cafile':
             case 'capath':
-            case 'htaccess-protect':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
@@ -229,6 +228,13 @@ class Config
                 }
 
                 return (($flags & self::RELATIVE_PATHS) == self::RELATIVE_PATHS) ? $val : $this->realpath($val);
+
+            case 'htaccess-protect':
+                $value = $this->getComposerEnv('COMPOSER_HTACCESS_PROTECT');
+                if (false === $value) {
+                    $value = $this->config[$key];
+                }
+                return $value !== 'false' && (bool) $value;
 
             case 'cache-ttl':
                 return (int) $this->config[$key];
