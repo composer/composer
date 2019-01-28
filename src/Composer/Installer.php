@@ -1322,10 +1322,13 @@ class Installer
             $matchesByPattern = array();
             // check if the name is a glob pattern that did not match directly
             if (empty($depPackages)) {
+                // add any installed package matching the whitelisted name/pattern
                 $whitelistPatternSearchRegexp = BasePackage::packageNameToRegexp($packageName, '^%s$');
                 foreach ($localOrLockRepo->search($whitelistPatternSearchRegexp) as $installedPackage) {
                     $matchesByPattern[] = $pool->whatProvides($installedPackage['name']);
                 }
+
+                // add root requirements which match the whitelisted name/pattern
                 $whitelistPatternRegexp = BasePackage::packageNameToRegexp($packageName);
                 foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
                     if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
