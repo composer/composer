@@ -39,7 +39,7 @@ class ValidateCommand extends BaseCommand
             ->setName('validate')
             ->setDescription('Validates a composer.json and composer.lock.')
             ->setDefinition(array(
-                new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not make a complete validation'),
+                new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not validate requires for overly strict/loose constraints'),
                 new InputOption('no-check-lock', null, InputOption::VALUE_NONE, 'Do not check if lock file is up to date'),
                 new InputOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors'),
                 new InputOption('with-dependencies', 'A', InputOption::VALUE_NONE, 'Also validate the composer.json of all installed dependencies'),

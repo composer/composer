@@ -370,7 +370,13 @@ class Perforce
     public function windowsLogin($password)
     {
         $command = $this->generateP4Command(' login -a');
-        $process = new Process($command, null, null, $password);
+
+        // TODO in v3 generate command as an array
+        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+            $process = Process::fromShellCommandline($command, null, null, $password);
+        } else {
+            $process = new Process($command, null, null, $password);
+        }
 
         return $process->run();
     }
