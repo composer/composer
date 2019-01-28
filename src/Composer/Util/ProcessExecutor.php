@@ -62,7 +62,13 @@ class ProcessExecutor
 
         $this->captureOutput = func_num_args() > 1;
         $this->errorOutput = null;
-        $process = new Process($command, $cwd, null, null, static::getTimeout());
+
+        // TODO in v3, commands should be passed in as arrays of cmd + args
+        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+        } else {
+            $process = new Process($command, $cwd, null, null, static::getTimeout());
+        }
 
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
         $process->run($callback);
