@@ -61,7 +61,7 @@ class Config
         'archive-format' => 'tar',
         'archive-dir' => '.',
         'htaccess-protect' => true,
-        'no-api' => false,
+        'use-github-api' => true,
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth
@@ -320,7 +320,7 @@ class Config
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
             case 'secure-http':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
-            case 'no-api':
+            case 'use-github-api':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
             default:
                 if (!isset($this->config[$key])) {
