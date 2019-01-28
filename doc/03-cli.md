@@ -491,7 +491,7 @@ php composer.phar validate
 
 ### Options
 
-* **--no-check-all:** Do not emit a warning if requirements in `composer.json` use unbound version constraints.
+* **--no-check-all:** Do not emit a warning if requirements in `composer.json` use unbound or overly strict version constraints.
 * **--no-check-lock:** Do not emit an error if `composer.lock` exists and is not up to date.
 * **--no-check-publish:** Do not emit an error if `composer.json` is unsuitable for publishing as a package on Packagist but is otherwise valid.
 * **--with-dependencies:** Also validate the composer.json of all installed dependencies.
