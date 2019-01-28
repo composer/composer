@@ -557,7 +557,12 @@ EOT
         $finder = new ExecutableFinder();
         $gitBin = $finder->find('git');
 
-        $cmd = new Process(sprintf('%s config -l', ProcessExecutor::escape($gitBin)));
+        // TODO in v3 always call with an array
+        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+            $cmd = new Process(array($gitBin, 'config', '-l'));
+        } else {
+            $cmd = new Process(sprintf('%s config -l', ProcessExecutor::escape($gitBin)));
+        }
         $cmd->run();
 
         if ($cmd->isSuccessful()) {
