@@ -118,6 +118,11 @@ class Application extends BaseApplication
         )));
         ErrorHandler::register($io);
 
+        if ($input->hasParameterOption('--no-cache')) {
+            $io->writeError('Disabling cache usage', true, IOInterface::DEBUG);
+            putenv('COMPOSER_CACHE_DIR='.(Platform::isWindows() ? 'nul' : '/dev/null'));
+        }
+
         // switch working dir
         if ($newWorkDir = $this->getNewWorkingDir($input)) {
             $oldWorkingDir = getcwd();
@@ -451,6 +456,7 @@ class Application extends BaseApplication
         $definition->addOption(new InputOption('--profile', null, InputOption::VALUE_NONE, 'Display timing and memory usage information'));
         $definition->addOption(new InputOption('--no-plugins', null, InputOption::VALUE_NONE, 'Whether to disable plugins.'));
         $definition->addOption(new InputOption('--working-dir', '-d', InputOption::VALUE_REQUIRED, 'If specified, use the given directory as working directory.'));
+        $definition->addOption(new InputOption('--no-cache', null, InputOption::VALUE_NONE, 'Prevent use of the cache'));
 
         return $definition;
     }

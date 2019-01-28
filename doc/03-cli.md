@@ -22,6 +22,8 @@ The following options are available with every command:
 * **--quiet (-q):** Do not output any message.
 * **--no-interaction (-n):** Do not ask any interactive question.
 * **--no-plugins:** Disables plugins.
+* **--no-cache:** Disables the use of the cache directory. Same as setting the COMPOSER_CACHE_DIR
+  env var to /dev/null (or NUL on Windows).
 * **--working-dir (-d):** If specified, use the given directory as working directory.
 * **--profile:** Display timing and memory usage information
 * **--ansi:** Force ANSI output.

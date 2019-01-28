@@ -17,7 +17,6 @@ use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Util\Platform;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -45,7 +44,6 @@ class UpdateCommand extends BaseCommand
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('lock', null, InputOption::VALUE_NONE, 'Only updates the lock file hash to suppress warning about the lock file being out of date.'),
-                new InputOption('no-cache', null, InputOption::VALUE_NONE, 'Do not use the cache directory'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
@@ -130,18 +128,6 @@ EOT
         $install = Installer::create($io, $composer);
 
         $config = $composer->getConfig();
-
-        if ($input->getOption('no-cache')) {
-            $io->write('Skipping cache directory');
-            $config->merge(
-                array(
-                    'config' => array(
-                        'cache-dir' => Platform::isWindows() ? 'nul' : '/dev/null',
-                    )
-                )
-            );
-        }
-
         list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
 
         $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
