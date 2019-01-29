@@ -236,11 +236,11 @@ This is used if you use the `gitlab` repository type.
 
 ## use-github-api
 
-Defaults to `true`.  Similar to the `no-api` key on a specific repository, setting `use-github-api` to `false` will define the global behavior for all GitHub repositories to clone the
-repository as it would with any other git repository instead of using the
-GitHub API. But unlike using the `git` driver directly, Composer will still
-attempt to use github's zip files.
-
+Defaults to `true`.  Similar to the `no-api` key on a specific repository,
+setting `use-github-api` to `false` will define the global behavior for all
+GitHub repositories to clone the repository as it would with any other git
+repository instead of using the GitHub API. But unlike using the `git`
+driver directly, Composer will still attempt to use GitHub's zip files.
 
 ## notify-on-install
 
