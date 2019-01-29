@@ -27,7 +27,7 @@ class MetapackageInstallerTest extends TestCase
 
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
-        $this->installer = new MetapackageInstaller();
+        $this->installer = new MetapackageInstaller($this->io);
     }
 
     public function testInstall()
@@ -45,7 +45,13 @@ class MetapackageInstallerTest extends TestCase
     public function testUpdate()
     {
         $initial = $this->createPackageMock();
+        $initial->expects($this->once())
+            ->method('getVersion')
+            ->will($this->returnValue('1.0.0'));
         $target = $this->createPackageMock();
+        $target->expects($this->once())
+            ->method('getVersion')
+            ->will($this->returnValue('1.0.1'));
 
         $this->repository
             ->expects($this->exactly(2))

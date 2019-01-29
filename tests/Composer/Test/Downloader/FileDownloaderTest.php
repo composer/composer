@@ -210,7 +210,7 @@ class FileDownloaderTest extends TestCase
     {
         $oldPackage = $this->getMock('Composer\Package\PackageInterface');
         $oldPackage->expects($this->once())
-            ->method('getPrettyVersion')
+            ->method('getFullPrettyVersion')
             ->will($this->returnValue('1.2.0'));
         $oldPackage->expects($this->once())
             ->method('getVersion')
@@ -218,7 +218,7 @@ class FileDownloaderTest extends TestCase
 
         $newPackage = $this->getMock('Composer\Package\PackageInterface');
         $newPackage->expects($this->once())
-            ->method('getPrettyVersion')
+            ->method('getFullPrettyVersion')
             ->will($this->returnValue('1.0.0'));
         $newPackage->expects($this->once())
             ->method('getVersion')
