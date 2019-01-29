@@ -15,6 +15,7 @@ namespace Composer\Package\Loader;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Config;
+use Composer\IO\IOInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryFactory;
 use Composer\Package\Version\VersionGuesser;
@@ -46,13 +47,19 @@ class RootPackageLoader extends ArrayLoader
      */
     private $versionGuesser;
 
-    public function __construct(RepositoryManager $manager, Config $config, VersionParser $parser = null, VersionGuesser $versionGuesser = null)
+    /**
+     * @var IOInterface
+     */
+    private $io;
+
+    public function __construct(RepositoryManager $manager, Config $config, VersionParser $parser = null, VersionGuesser $versionGuesser = null, IOInterface $io = null)
     {
         parent::__construct($parser);
 
         $this->manager = $manager;
         $this->config = $config;
         $this->versionGuesser = $versionGuesser ?: new VersionGuesser($config, new ProcessExecutor(), $this->versionParser);
+        $this->io = $io;
     }
 
     /**
@@ -65,6 +72,10 @@ class RootPackageLoader extends ArrayLoader
     {
         if (!isset($config['name'])) {
             $config['name'] = '__root__';
+        } elseif ($this->io) {
+            if ($err = ValidatingArrayLoader::hasPackageNamingError($config['name'])) {
+                $this->io->writeError('<warning>Deprecation warning: Your package name '.$err.' Make sure you fix this as Composer 2.0 will error.</warning>');
+            }
         }
         $autoVersioned = false;
         if (!isset($config['version'])) {
@@ -128,6 +139,18 @@ class RootPackageLoader extends ArrayLoader
                 $aliases = $this->extractAliases($links, $aliases);
                 $stabilityFlags = $this->extractStabilityFlags($links, $stabilityFlags, $realPackage->getMinimumStability());
                 $references = $this->extractReferences($links, $references);
+            }
+        }
+
+        if ($this->io) {
+            foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
+                if (isset($config[$linkType])) {
+                    foreach ($config[$linkType] as $linkName => $constraint) {
+                        if ($err = ValidatingArrayLoader::hasPackageNamingError($linkName, true)) {
+                            $this->io->writeError('<warning>Deprecation warning: '.$linkType.'.'.$err.' Make sure you fix this as Composer 2.0 will error.</warning>');
+                        }
+                    }
+                }
             }
         }
 
