@@ -10,27 +10,27 @@ When `--with-all-dependencies` is used, Composer\Installer::whitelistUpdateDepen
         {
             "type": "package",
             "package": [
-                { "name": "a", "version": "1.0.0" },
-                { "name": "a", "version": "1.1.0" },
-                { "name": "b", "version": "1.0.0", "require": { "a": "~1.0" } },
-                { "name": "b", "version": "1.1.0", "require": { "a": "~1.1" } }
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "a/a", "version": "1.1.0" },
+                { "name": "b/b", "version": "1.0.0", "require": { "a/a": "~1.0" } },
+                { "name": "b/b", "version": "1.1.0", "require": { "a/a": "~1.1" } }
             ]
         }
     ],
     "require": {
-        "a": "~1.0",
-        "b": "~1.0"
+        "a/a": "~1.0",
+        "b/b": "~1.0"
     }
 }
 
 --INSTALLED--
 [
-    { "name": "a", "version": "1.0.0" },
-    { "name": "b", "version": "1.0.0", "require": { "a": "~1.0" } }
+    { "name": "a/a", "version": "1.0.0" },
+    { "name": "b/b", "version": "1.0.0", "require": { "a/a": "~1.0" } }
 ]
 
 --RUN--
-update b --with-all-dependencies
+update b/b --with-all-dependencies
 
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
@@ -40,5 +40,5 @@ Writing lock file
 Generating autoload files
 
 --EXPECT--
-Updating a (1.0.0) to a (1.1.0)
-Updating b (1.0.0) to b (1.1.0)
+Updating a/a (1.0.0) to a/a (1.1.0)
+Updating b/b (1.0.0) to b/b (1.1.0)

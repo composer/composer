@@ -302,6 +302,7 @@ EOT
         $uniqueConfigValues = array(
             'process-timeout' => array('is_numeric', 'intval'),
             'use-include-path' => array($booleanValidator, $booleanNormalizer),
+            'use-github-api' => array($booleanValidator, $booleanNormalizer),
             'preferred-install' => array(
                 function ($val) {
                     return in_array($val, array('auto', 'source', 'dist'), true);

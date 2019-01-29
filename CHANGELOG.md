@@ -1,3 +1,14 @@
+### [1.8.1] 2019-01-29
+
+  * Deprecated support for non-standard package names (anything with uppercase, or no / in it). Make sure to follow the warnings if you see any to avoid problems in 2.0.
+  * Fixed some packages missing from the autoloader config when installing with --no-dev
+  * Fixed support for cloning GitLab repos using OAuth tokens instead of SSH keys
+  * Fixed metapackage installs/updates missing from output
+  * Fixed --with-dependencies / --with-all-dependencies not updating some packages in some edge cases
+  * Fixed compatibility with Symfony 4.2 deprecations
+  * Fixed temp dir not being cleaned up on download error while archiving packages
+  * Updated to latest ca-bundle
+
 ### [1.8.0] 2018-12-03
 
   * Changed `post-package-install` / `post-package-update` event to be fired *after* the lock file has been updated as opposed to before
