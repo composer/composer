@@ -347,7 +347,7 @@ class Factory
         // load package
         $parser = new VersionParser;
         $guesser = new VersionGuesser($config, new ProcessExecutor($io), $parser);
-        $loader = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser);
+        $loader = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser, $io);
         $package = $loader->load($localConfig, 'Composer\Package\RootPackage', $cwd);
         $composer->setPackage($package);
 
@@ -546,7 +546,7 @@ class Factory
         $im->addInstaller(new Installer\LibraryInstaller($io, $composer, null));
         $im->addInstaller(new Installer\PearInstaller($io, $composer, 'pear-library'));
         $im->addInstaller(new Installer\PluginInstaller($io, $composer));
-        $im->addInstaller(new Installer\MetapackageInstaller());
+        $im->addInstaller(new Installer\MetapackageInstaller($io));
     }
 
     /**

@@ -215,8 +215,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
         $name = $target->getName();
-        $from = $initial->getPrettyVersion();
-        $to = $target->getPrettyVersion();
+        $from = $initial->getFullPrettyVersion();
+        $to = $target->getFullPrettyVersion();
 
         $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Updating' : 'Downgrading';
         $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
