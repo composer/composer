@@ -1317,6 +1317,7 @@ class Installer
 
         foreach ($this->updateWhitelist as $packageName => $void) {
             $packageQueue = new \SplQueue;
+            $nameMatchesRequiredPackage = false;
 
             $depPackages = $pool->whatProvides($packageName);
             $matchesByPattern = array();
