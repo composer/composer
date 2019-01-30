@@ -1,3 +1,12 @@
+### [1.8.3] 2019-01-30
+
+  * Fixed regression when executing partial updates
+
+### [1.8.2] 2019-01-29
+
+  * Fixed invalid deprecation warning for ext-pdo_mysql and similar
+  * Updated to latest xdebug-handler
+
 ### [1.8.1] 2019-01-29
 
   * Deprecated support for non-standard package names (anything with uppercase, or no / in it). Make sure to follow the warnings if you see any to avoid problems in 2.0.
