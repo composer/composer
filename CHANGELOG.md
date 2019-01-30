@@ -1,3 +1,7 @@
+### [1.8.3] 2019-01-30
+
+  * Fixed regression when executing partial updates
+
 ### [1.8.2] 2019-01-29
 
   * Fixed invalid deprecation warning for ext-pdo_mysql and similar
