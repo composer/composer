@@ -93,9 +93,9 @@ class RepositoryFactory
     {
         if (!$config) {
             $config = Factory::createConfig($io);
-            if ($io) {
-                $io->loadConfiguration($config);
-            }
+        }
+        if ($io) {
+            $io->loadConfiguration($config);
         }
         if (!$rm) {
             if (!$io) {
