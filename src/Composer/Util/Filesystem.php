@@ -648,6 +648,10 @@ class Filesystem
     /**
      * Returns whether the target directory is a Windows NTFS Junction.
      *
+     * We test if the path is a directory and not an ordinary link, then check
+     * that the mode value returned from lstat (which gives the status of the
+     * link itself) is not a directory.
+     *
      * @param  string $junction Path to check.
      * @return bool
      */
@@ -659,22 +663,14 @@ class Filesystem
         if (!is_dir($junction) || is_link($junction)) {
             return false;
         }
-        /**
-         * According to MSDN at https://msdn.microsoft.com/en-us/library/14h5k7ff.aspx we can detect a junction now
-         * using the 'mode' value from stat: "The _S_IFDIR bit is set if path specifies a directory; the _S_IFREG bit
-         * is set if path specifies an ordinary file or a device." We have just tested for a directory above, so if
-         * we have a directory that isn't one according to lstat(...) we must have a junction.
-         *
-         * #define	_S_IFDIR	0x4000
-         * #define	_S_IFREG	0x8000
-         *
-         * Stat cache should be cleared before to avoid accidentally reading wrong information from previous installs.
-         */
+
+        // Important to clear cache first
         clearstatcache(true, $junction);
         clearstatcache(false);
         $stat = lstat($junction);
 
-        return !($stat['mode'] & 0xC000);
+        // S_IFDIR is 0x4000, S_IFMT is the 0xF000 bitmask
+        return $stat ? 0x4000 !== ($stat['mode'] & 0xF000) : false;
     }
 
     /**
