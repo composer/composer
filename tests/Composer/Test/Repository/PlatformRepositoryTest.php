@@ -49,7 +49,8 @@ class PlatformRepositoryTest extends TestCase {
             $this->markTestSkipped('Test does not run on Windows');
             return;
         }
-        $hhvm = (new ExecutableFinder())->find('hhvm');
+        $finder = new ExecutableFinder();
+        $hhvm = $finder->find('hhvm');
         if ($hhvm === null) {
             $this->markTestSkipped('HHVM is not installed');
         }
