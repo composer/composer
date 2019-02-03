@@ -838,6 +838,70 @@ class SolverTest extends TestCase
         ));
     }
 
+    /**
+     * Tests for a bug introduced in commit 451bab1c2cd58e05af6e21639b829408ad023463 Solver.php line 554/523
+     *
+     * Every package and link in this test matters, only a combination this complex will run into the situation in which
+     * a negatively decided literal will need to be learned inverted as a positive assertion.
+     *
+     * In particular in this case the goal is to first have the solver decide X 2.0 should not be installed to later
+     * decide to learn that X 2.0 must be installed and revert decisions to retry solving with this new assumption.
+     */
+    public function testLearnPositiveLiteral()
+    {
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repo->addPackage($packageC1 = $this->getPackage('C', '1.0'));
+        $this->repo->addPackage($packageC2 = $this->getPackage('C', '2.0'));
+        $this->repo->addPackage($packageD = $this->getPackage('D', '1.0'));
+        $this->repo->addPackage($packageE = $this->getPackage('E', '1.0'));
+        $this->repo->addPackage($packageF1 = $this->getPackage('F', '1.0'));
+        $this->repo->addPackage($packageF2 = $this->getPackage('F', '2.0'));
+        $this->repo->addPackage($packageG1 = $this->getPackage('G', '1.0'));
+        $this->repo->addPackage($packageG2 = $this->getPackage('G', '2.0'));
+        $this->repo->addPackage($packageG3 = $this->getPackage('G', '3.0'));
+
+        $packageA->setRequires(array(
+            'b' => new Link('A', 'B', $this->getVersionConstraint('==', '1.0'), 'requires'),
+            'c' => new Link('A', 'C', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            'd' => new Link('A', 'D', $this->getVersionConstraint('==', '1.0'), 'requires'),
+        ));
+
+        $packageB->setRequires(array(
+            'e' => new Link('B', 'E', $this->getVersionConstraint('==', '1.0'), 'requires'),
+        ));
+
+        $packageC1->setRequires(array(
+            'f' => new Link('C', 'F', $this->getVersionConstraint('==', '1.0'), 'requires'),
+        ));
+        $packageC2->setRequires(array(
+            'f' => new Link('C', 'F', $this->getVersionConstraint('==', '1.0'), 'requires'),
+            'g' => new Link('C', 'G', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+        ));
+
+        $packageD->setRequires(array(
+            'f' => new Link('D', 'F', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+        ));
+
+        $packageE->setRequires(array(
+            'g' => new Link('E', 'G', $this->getVersionConstraint('<=', '2.0'), 'requires'),
+        ));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageF1),
+            array('job' => 'install', 'package' => $packageD),
+            array('job' => 'install', 'package' => $packageG2),
+            array('job' => 'install', 'package' => $packageC2),
+            array('job' => 'install', 'package' => $packageE),
+            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
     protected function reposComplete()
     {
         $this->pool->addRepository($this->repoInstalled);
