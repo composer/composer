@@ -34,9 +34,10 @@ separated by `/`. Examples:
 * monolog/monolog
 * igorw/event-source
 
-The name can contain any character, including white spaces, and it's case
-insensitive (`foo/bar` and `Foo/Bar` are considered the same package). In order
-to simplify its installation, it's recommended to define a short and lowercase
+The name can contain any character, including white spaces, and should be all
+lowercase (Note, before Composer 2.0 it's case insensitive (`foo/bar` and `Foo/Bar`
+are considered the same package, but this is deprecated in in Composer 2.0 will error). 
+In order to simplify its installation, it's recommended to define a short and lowercase
 name that doesn't include non-alphanumeric characters or white spaces.
 
 Required for published packages (libraries).
