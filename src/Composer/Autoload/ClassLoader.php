@@ -441,5 +441,9 @@ class ClassLoader
  */
 function includeFile($file)
 {
+    if (!is_file($file)) {
+        return;
+    }
+    
     include $file;
 }
