@@ -94,6 +94,9 @@ class RepositoryFactory
         if (!$config) {
             $config = Factory::createConfig($io);
         }
+        if ($io) {
+            $io->loadConfiguration($config);
+        }
         if (!$rm) {
             if (!$io) {
                 throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
