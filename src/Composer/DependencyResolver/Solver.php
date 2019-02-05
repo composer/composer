@@ -470,7 +470,7 @@ class Solver
                 unset($seen[abs($literal)]);
 
                 if ($num && 0 === --$num) {
-                    $learnedLiterals[0] = -abs($literal);
+                    $learnedLiterals[0] = -$literal;
 
                     if (!$l1num) {
                         break 2;
