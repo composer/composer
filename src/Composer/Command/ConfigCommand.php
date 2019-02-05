@@ -456,6 +456,10 @@ EOT
         );
 
         if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {
+            if ($settingKey === 'disable-tls' && $this->config->get('disable-tls')) {
+                $this->getIO()->writeError('<info>You are now running Composer with SSL/TLS protection enabled.</info>');
+            }
+
             return $this->configSource->removeConfigSetting($settingKey);
         }
         if (isset($uniqueConfigValues[$settingKey])) {
@@ -640,7 +644,17 @@ EOT
             ));
         }
 
-        return call_user_func(array($this->configSource, $method), $key, $normalizer($values[0]));
+        $normalizedValue = $normalizer($values[0]);
+
+        if ($key === 'disable-tls') {
+            if (!$normalizedValue && $this->config->get('disable-tls')) {
+                $this->getIO()->writeError('<info>You are now running Composer with SSL/TLS protection enabled.</info>');
+            } elseif ($normalizedValue && !$this->config->get('disable-tls')) {
+                $this->getIO()->writeError('<warning>You are now running Composer with SSL/TLS protection disabled.</warning>');
+            }
+        }
+
+        return call_user_func(array($this->configSource, $method), $key, $normalizedValue);
     }
 
     protected function handleMultiValue($key, array $callbacks, array $values, $method)
