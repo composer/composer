@@ -1320,6 +1320,7 @@ class Installer
 
             $depPackages = $pool->whatProvides($packageName);
             $matchesByPattern = array();
+            $nameMatchesRequiredPackage = false;
             // check if the name is a glob pattern that did not match directly
             if (empty($depPackages)) {
                 // add any installed package matching the whitelisted name/pattern
