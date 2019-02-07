@@ -195,7 +195,7 @@ EOT
 
         $status = $install->run();
         if ($status !== 0) {
-            $this->revertComposerFile();
+            $this->revertComposerFile(false);
         }
 
         return $status;
@@ -226,7 +226,7 @@ EOT
         return;
     }
 
-    public function revertComposerFile()
+    public function revertComposerFile($hardExit = true)
     {
         $io = $this->getIO();
 
@@ -238,6 +238,8 @@ EOT
             file_put_contents($this->json->getPath(), $this->composerBackup);
         }
 
-        exit(1);
+        if ($hardExit) {
+            exit(1);
+        }
     }
 }
