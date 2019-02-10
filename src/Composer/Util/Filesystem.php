@@ -652,6 +652,11 @@ class Filesystem
      * that the mode value returned from lstat (which gives the status of the
      * link itself) is not a directory.
      *
+     * This relies on the fact that PHP does not set this value because there is
+     * no universal file type flag for a junction or a mount point. However a
+     * bug in PHP can cause a random value to be returned and this could result
+     * in a junction not being detected: https://bugs.php.net/bug.php?id=77552
+     *
      * @param  string $junction Path to check.
      * @return bool
      */
@@ -664,9 +669,8 @@ class Filesystem
             return false;
         }
 
-        // Important to clear cache first
+        // Important to clear all caches first
         clearstatcache(true, $junction);
-        clearstatcache(false);
         $stat = lstat($junction);
 
         // S_IFDIR is 0x4000, S_IFMT is the 0xF000 bitmask
