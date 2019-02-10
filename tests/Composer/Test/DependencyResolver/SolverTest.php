@@ -899,6 +899,9 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
+        // check correct setup for assertion later
+        $this->assertFalse($this->solver->testFlagLearnedPositiveLiteral);
+
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageF1),
             array('job' => 'install', 'package' => $packageD),
@@ -908,6 +911,10 @@ class SolverTest extends TestCase
             array('job' => 'install', 'package' => $packageB),
             array('job' => 'install', 'package' => $packageA),
         ));
+
+        // verify that the code path leading to a negative literal resulting in a positive learned literal is actually
+        // executed
+        $this->assertTrue($this->solver->testFlagLearnedPositiveLiteral);
     }
 
     protected function reposComplete()

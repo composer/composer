@@ -58,6 +58,9 @@ class Solver
     /** @var array */
     protected $learnedWhy = array();
 
+    /** @var bool */
+    public $testFlagLearnedPositiveLiteral = false;
+
     /** @var IOInterface */
     protected $io;
 
@@ -478,6 +481,9 @@ class Solver
                 unset($seen[abs($literal)]);
 
                 if ($num && 0 === --$num) {
+                    if ($literal < 0) {
+                        $this->testFlagLearnedPositiveLiteral = true;
+                    }
                     $learnedLiterals[0] = -$literal;
 
                     if (!$l1num) {
