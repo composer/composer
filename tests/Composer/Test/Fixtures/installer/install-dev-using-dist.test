@@ -35,8 +35,7 @@ install --prefer-dist
             "dist": {
                 "type": "zip",
                 "url": "http://www.example.com/dist.zip",
-                "reference": "459720ff3b74ee0c0d159277c6f2f5df89d8a4f6",
-                "shasum": null
+                "reference": "459720ff3b74ee0c0d159277c6f2f5df89d8a4f6"
             },
             "type": "library"
         }
