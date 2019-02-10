@@ -138,7 +138,7 @@ php composer.phar update vendor/package vendor/package2
 You can also use wildcards to update a bunch of packages at once:
 
 ```sh
-php composer.phar update vendor/*
+php composer.phar update "vendor/*"
 ```
 
 ### Options
