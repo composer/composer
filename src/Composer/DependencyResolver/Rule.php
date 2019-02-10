@@ -175,12 +175,17 @@ abstract class Rule
                             return $text . ' -> your HHVM version does not satisfy that requirement.';
                         }
 
-                        if ($targetName === 'hhvm') {
-                            return $text . ' -> you are running this with PHP and not HHVM.';
-                        }
-
                         $packages = $pool->whatProvides($targetName);
                         $package = count($packages) ? current($packages) : phpversion();
+
+                        if ($targetName === 'hhvm') {
+                            if ($package instanceof CompletePackage) {
+                                return $text . ' -> your HHVM version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
+                            } else {
+                                return $text . ' -> you are running this with PHP and not HHVM.';
+                            }
+                        }
+
 
                         if (!($package instanceof CompletePackage)) {
                             return $text . ' -> your PHP version ('.phpversion().') does not satisfy that requirement.';

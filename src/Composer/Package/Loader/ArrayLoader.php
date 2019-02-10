@@ -85,7 +85,7 @@ class ArrayLoader implements LoaderInterface
             }
             $package->setSourceType($config['source']['type']);
             $package->setSourceUrl($config['source']['url']);
-            $package->setSourceReference($config['source']['reference']);
+            $package->setSourceReference(isset($config['source']['reference']) ? $config['source']['reference'] : null);
             if (isset($config['source']['mirrors'])) {
                 $package->setSourceMirrors($config['source']['mirrors']);
             }
