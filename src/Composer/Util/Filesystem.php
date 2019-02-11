@@ -650,12 +650,17 @@ class Filesystem
      *
      * We test if the path is a directory and not an ordinary link, then check
      * that the mode value returned from lstat (which gives the status of the
-     * link itself) is not a directory.
+     * link itself) is not a directory, by replicating the POSIX S_ISDIR test.
      *
-     * This relies on the fact that PHP does not set this value because there is
-     * no universal file type flag for a junction or a mount point. However a
-     * bug in PHP can cause a random value to be returned and this could result
-     * in a junction not being detected: https://bugs.php.net/bug.php?id=77552
+     * This logic works because PHP does not set the mode value for a junction,
+     * since there is no universal file type flag for it. Unfortunately an
+     * uninitialized variable in PHP prior to 7.2.16 and 7.3.3 may cause a
+     * random value to be returned. See https://bugs.php.net/bug.php?id=77552
+     *
+     * If this random value passes the S_ISDIR test, then a junction will not be
+     * detected and a recursive delete operation could lead to loss of data in
+     * the target directory. Note that Windows rmdir can handle this situation
+     * and will only delete the junction (from Windows 7 onwards).
      *
      * @param  string $junction Path to check.
      * @return bool
@@ -673,7 +678,7 @@ class Filesystem
         clearstatcache(true, $junction);
         $stat = lstat($junction);
 
-        // S_IFDIR is 0x4000, S_IFMT is the 0xF000 bitmask
+        // S_ISDIR test (S_IFDIR is 0x4000, S_IFMT is 0xF000 bitmask)
         return $stat ? 0x4000 !== ($stat['mode'] & 0xF000) : false;
     }
 
