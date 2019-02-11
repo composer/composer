@@ -1,3 +1,11 @@
+### [1.8.4] 2019-02-11
+
+  * Fixed long standing solver bug leading to odd solving issues in edge cases, see #7946
+  * Fixed HHVM support for upcoming releases
+  * Fixed unix proxy for binaries to be POSIX compatible instead of breaking some shells
+  * Fixed invalid deprecation warning for composer-plugin-api
+  * Fixed edge case issues with Windows junctions when working with path repositories
+
 ### [1.8.3] 2019-01-30
 
   * Fixed regression when executing partial updates
@@ -729,6 +737,10 @@
 
   * Initial release
 
+[1.8.4]: https://github.com/composer/composer/compare/1.8.3...1.8.4
+[1.8.3]: https://github.com/composer/composer/compare/1.8.2...1.8.3
+[1.8.2]: https://github.com/composer/composer/compare/1.8.1...1.8.2
+[1.8.1]: https://github.com/composer/composer/compare/1.8.0...1.8.1
 [1.8.0]: https://github.com/composer/composer/compare/1.7.3...1.8.0
 [1.7.3]: https://github.com/composer/composer/compare/1.7.2...1.7.3
 [1.7.2]: https://github.com/composer/composer/compare/1.7.1...1.7.2
