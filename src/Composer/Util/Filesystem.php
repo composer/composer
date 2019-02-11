@@ -692,9 +692,7 @@ class Filesystem
         if (!$this->isJunction($junction)) {
             throw new IOException(sprintf('%s is not a junction and thus cannot be removed as one', $junction));
         }
-        $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape($junction));
-        clearstatcache(true, $junction);
 
-        return ($this->getProcess()->execute($cmd, $output) === 0);
+        return $this->rmdir($junction);
     }
 }
