@@ -608,6 +608,7 @@
                 { "$ref": "#/definitions/path-repository" },
                 { "$ref": "#/definitions/artifact-repository" },
                 { "$ref": "#/definitions/pear-repository" },
+                { "$ref": "#/definitions/pecl-repository" },
                 { "$ref": "#/definitions/package-repository" }
             ]
         },
@@ -673,6 +674,15 @@
             "required": ["type", "url"],
             "properties": {
                 "type": { "type": "string", "enum": ["pear"] },
+                "url": { "type": "string" },
+                "vendor-alias": { "type": "string" }
+            }
+        },
+        "pecl-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["pecl"] },
                 "url": { "type": "string" },
                 "vendor-alias": { "type": "string" }
             }
