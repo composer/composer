@@ -68,7 +68,7 @@ script:
       yes | pecl install imagick &&
       (yes | pecl install rar || true) &&
       composer require --dev phpstan/phpstan-shim:^0.11 --ignore-platform-reqs &&
-      vendor/bin/phpstan.phar analyse src --configuration=phpstan/config.neon --autoload-file=phpstan/autoload.php;
+      vendor/bin/phpstan.phar analyse src tests --configuration=phpstan/config.neon --autoload-file=phpstan/autoload.php;
     fi
 
 before_deploy:

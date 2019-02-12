@@ -1,5 +1,9 @@
 parameters:
     level: 0
+    excludes_analyse:
+        - 'tests/Composer/Test/Fixtures'
+        - 'tests/Composer/Test/Autoload/Fixtures'
+        - 'tests/Composer/Test/Plugin/Fixtures'
     ignoreErrors:
         # unused parameters
         - '~^Constructor of class Composer\\Repository\\VcsRepository has an unused parameter \$dispatcher\.$~'
@@ -24,3 +28,7 @@ parameters:
         # always checked whether the class exists
         - '~^Instantiated class Symfony\\Component\\Console\\Terminal not found\.$~'
         - '~^Class Symfony\\Component\\Console\\Input\\StreamableInputInterface not found\.$~'
+
+        # parent call in test mocks
+        - '~^Composer\\Test\\Mock\\HttpDownloaderMock::__construct\(\) does not call parent constructor from Composer\\Util\\HttpDownloader\.$~'
+        - '~^Composer\\Test\\Mock\\InstallationManagerMock::__construct\(\) does not call parent constructor from Composer\\Installer\\InstallationManager\.$~'

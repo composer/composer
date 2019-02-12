@@ -25,7 +25,7 @@ class ZipDownloaderTest extends TestCase
      * @var string
      */
     private $testDir;
-    private $prophet;
+    private $httpDownloader;
     private $io;
     private $config;
     private $package;
