@@ -666,6 +666,10 @@ Instead of default fallback strategy you can force to use symlink with
 mirroring can be useful when deploying or generating package from a
 monolithic repository.
 
+> **Note:** On Windows, directory symlinks are implemented using NTFS junctions
+> because they can be created by non-admin users. Mirroring will always be used
+> on versions below Windows 7 or if `proc_open` has been disabled.
+
 ```json
 {
     "repositories": [
