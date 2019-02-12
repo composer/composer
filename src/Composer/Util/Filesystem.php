@@ -204,7 +204,7 @@ class Filesystem
             // retry after a bit on windows since it tends to be touchy with mass removals
             if (Platform::isWindows()) {
                 usleep(350000);
-                $unlinked = @$this->unlinkImplementation($path)
+                $unlinked = @$this->unlinkImplementation($path);
             }
             
             if (!$unlinked) {
