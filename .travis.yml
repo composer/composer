@@ -65,8 +65,6 @@ script:
   - ls -d tests/Composer/Test/* | grep -v TestCase.php | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && exit 1);'
   # Run PHPStan
   - if [[ $PHPSTAN == "1" ]]; then
-      yes | pecl install imagick &&
-      (yes | pecl install rar || true) &&
       composer require --dev phpstan/phpstan-shim:^0.11 --ignore-platform-reqs &&
       vendor/bin/phpstan.phar analyse src tests --configuration=phpstan/config.neon --autoload-file=phpstan/autoload.php;
     fi
