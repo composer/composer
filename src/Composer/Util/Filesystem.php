@@ -235,7 +235,7 @@ class Filesystem
             // retry after a bit on windows since it tends to be touchy with mass removals
             if (Platform::isWindows()) {
                 usleep(350000);
-                $deleted = !@rmdir($path);
+                $deleted = @rmdir($path);
             }
             
             if (!$deleted) {
