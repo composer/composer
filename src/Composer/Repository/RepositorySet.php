@@ -101,6 +101,8 @@ class RepositorySet
     /**
      * Find packages providing or matching a name and optionally meeting a constraint in all repositories
      *
+     * Returned in the order of repositories, matching priority
+     *
      * @param string $name
      * @param ConstraintInterface|null $constraint
      * @param bool $exactMatch

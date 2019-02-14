@@ -219,21 +219,17 @@ class Installer
         $this->downloadManager->setPreferDist($this->preferDist);
 
         $localRepo = $this->repositoryManager->getLocalRepository();
-        $platformRepo = $this->createPlatformRepo($this->update);
-
-        $aliases = $this->getRootAliases();
-        $this->aliasPlatformPackages($platformRepo, $aliases);
 
         if (!$this->suggestedPackagesReporter) {
             $this->suggestedPackagesReporter = new SuggestedPackagesReporter($this->io);
         }
 
         try {
-            // TODO what are installs? does locking a package without downloading code count?
             if ($this->update) {
-                $res = $this->doUpdate($localRepo, $platformRepo, $aliases, true);
+                // TODO introduce option to set doInstall to false (update lock file without vendor install)
+                $res = $this->doUpdate($localRepo, true);
             } else {
-                $res = $this->doInstall($localRepo, $platformRepo, $aliases, false);
+                $res = $this->doInstall($localRepo);
             }
             if ($res !== 0) {
                 return $res;
@@ -317,8 +313,11 @@ class Installer
         return 0;
     }
 
-    protected function doUpdate(RepositoryInterface $localRepo, PlatformRepository $platformRepo, $aliases, $doInstall)
+    protected function doUpdate(RepositoryInterface $localRepo, $doInstall)
     {
+        $platformRepo = $this->createPlatformRepo(true);
+        $aliases = $this->getRootAliases(true);
+
         $lockedRepository = null;
 
         if ($this->locker->isLocked()) {
@@ -377,6 +376,13 @@ class Installer
         if ($this->updateWhitelist) {
             foreach ($lockedRepository->getPackages() as $lockedPackage) {
                 if (!$this->isUpdateable($lockedPackage) && $repositorySet->isPackageAcceptable($lockedPackage->getNames(), $lockedPackage->getStability())) {
+                    // need to actually allow for metadata updates at all times, so we want to fix the most recent prefered package in the repo set instead
+                    $packages = $repositorySet->findPackages($lockedPackage->getName(), new Constraint('=', $lockedPackage->getVersion()));
+                    $lockedPackage = isset($packages[0]) ? $packages[0] : $lockedPackage;
+
+                    // in how far do we need to reset requirements here, theoretically it's the same version so nothing should have changed, but for a dev version it could have?
+
+
                     // TODO add reason for fix?
                     $request->fixPackage($lockedPackage);
                 }
@@ -418,7 +424,7 @@ class Installer
         $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
 
         $updatedLock = $this->locker->setLockData(
-            $lockTransaction->getNewLockNonDevPackages(),
+            $lockTransaction->getNewLockNonDevPackages($this->package->getReferences()),
             $lockTransaction->getNewLockDevPackages(),
             $platformReqs,
             $platformDevReqs,
@@ -473,22 +479,6 @@ class Installer
                 $this->suggestedPackagesReporter->addSuggestionsFromPackage($operation->getPackage());
             }
 
-            // TODO should this really happen here or should this be written to the lock file?
-            // updating, force dev packages' references if they're in root package refs
-            $package = null;
-            if ('update' === $jobType) {
-                $package = $operation->getTargetPackage();
-            } elseif ('install' === $jobType) {
-                $package = $operation->getPackage();
-            }
-
-            if ($package && $package->isDev()) {
-                $references = $this->package->getReferences();
-                if (isset($references[$package->getName()])) {
-                    $this->updateInstallReferences($package, $references[$package->getName()]);
-                }
-            }
-
             // output op, but alias op only in debug verbosity
             if (false === strpos($operation->getJobType(), 'Alias') || $this->io->isDebug()) {
                 $this->io->writeError('  - ' . $operation);
@@ -514,7 +504,7 @@ class Installer
 
         if ($doInstall) {
             // TODO ensure lock is used from locker as-is, since it may not have been written to disk in case of executeOperations == false
-            return $this->doInstall($localRepo, $platformRepo, $aliases, true);
+            return $this->doInstall($localRepo, true);
         }
 
         return 0;
@@ -527,8 +517,11 @@ class Installer
      * @param  array               $aliases
      * @return int                 exit code
      */
-    protected function doInstall(RepositoryInterface $localRepo, PlatformRepository $platformRepo, $aliases, $alreadySolved = false)
+    protected function doInstall(RepositoryInterface $localRepo, $alreadySolved = false)
     {
+        $platformRepo = $this->createPlatformRepo(false);
+        $aliases = $this->getRootAliases(false);
+
         $lockedRepository = $this->locker->getLockedRepository($this->devMode);
 
         // creating repository set
@@ -669,6 +662,8 @@ class Installer
      */
     private function createRepositorySet(PlatformRepository $platformRepo, array $rootAliases = array(), $lockedRepository = null)
     {
+        $this->aliasPlatformPackages($platformRepo, $rootAliases);
+
         // TODO what's the point of rootConstraints at all, we generate the package pool taking them into account anyway?
         // TODO maybe we can drop the lockedRepository here
         if ($this->update) {
@@ -772,11 +767,12 @@ class Installer
     }
 
     /**
+     * @param bool $forUpdate
      * @return array
      */
-    private function getRootAliases()
+    private function getRootAliases($forUpdate)
     {
-        if ($this->update) {
+        if ($forUpdate) {
             $aliases = $this->package->getAliases();
         } else {
             $aliases = $this->locker->getAliases();
@@ -838,9 +834,10 @@ class Installer
      */
     private function aliasPlatformPackages(PlatformRepository $platformRepo, $aliases)
     {
-        foreach ($aliases as $package => $versions) {
+        // TODO should the repository set do this?
+        foreach ($aliases as $packageName => $versions) {
             foreach ($versions as $version => $alias) {
-                $packages = $platformRepo->findPackages($package, $version);
+                $packages = $platformRepo->findPackages($packageName, $version);
                 foreach ($packages as $package) {
                     $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
                     $aliasPackage->setRootPackageAlias(true);
