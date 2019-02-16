@@ -82,6 +82,12 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             $allowedStrategies = array(self::STRATEGY_MIRROR);
         }
 
+        // Check we can use junctions safely if we are on Windows
+        if (Platform::isWindows() && self::STRATEGY_SYMLINK === $currentStrategy && !$this->safeJunctions()) {
+            $currentStrategy = self::STRATEGY_MIRROR;
+            $allowedStrategies = array(self::STRATEGY_MIRROR);
+        }
+
         $fileSystem = new Filesystem();
         $this->filesystem->removeDirectory($path);
 
@@ -171,5 +177,29 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {
             return $packageVersion['commit'];
         }
+    }
+
+    /**
+     * Returns true if junctions can be safely used on Windows
+     *
+     * A PHP bug makes junction detection fragile, leading to possible data loss
+     * when removing a package. See https://bugs.php.net/bug.php?id=77552
+     *
+     * For safety we require a minimum version of Windows 7, so we can call the
+     * system rmdir which can detect junctions and not delete target content.
+     *
+     * @return bool
+     */
+    private function safeJunctions()
+    {
+        // Bug fixed in 7.3.3 and 7.2.16
+        if (PHP_VERSION_ID >= 70303 || (PHP_VERSION_ID >= 70216 && PHP_VERSION_ID < 70300)) {
+            return true;
+        }
+
+        // Windows 7 is version 6.1
+        return function_exists('proc_open') &&
+            (PHP_WINDOWS_VERSION_MAJOR > 6 ||
+            (PHP_WINDOWS_VERSION_MAJOR === 6 && PHP_WINDOWS_VERSION_MINOR >= 1));
     }
 }
