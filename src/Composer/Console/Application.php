@@ -284,7 +284,7 @@ class Application extends BaseApplication
 
             return $result;
         } catch (ScriptExecutionException $e) {
-            return $e->getCode();
+            return (int) $e->getCode();
         } catch (\Exception $e) {
             $this->hintCommonErrors($e);
             restore_error_handler();

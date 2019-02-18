@@ -88,7 +88,7 @@ class PerforceDownloader extends VcsDownloader
     {
         $this->io->writeError('Perforce driver does not check for local changes before overriding', true);
 
-        return;
+        return null;
     }
 
     /**

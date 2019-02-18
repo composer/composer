@@ -43,6 +43,9 @@ EOT
         ;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $lock = $this->getComposer()->getLocker()->getLockData();
@@ -117,7 +120,7 @@ EOT
                 $io->write(sprintf('<info>%s</info>', $suggestion));
             }
 
-            return;
+            return null;
         }
 
         // Grouped by package

@@ -823,10 +823,10 @@ EOT
     /**
      * Display a package tree
      *
-     * @param PackageInterface|string $package
-     * @param array                   $packagesInTree
-     * @param string                  $previousTreeBar
-     * @param int                     $level
+     * @param array|string $package
+     * @param array        $packagesInTree
+     * @param string       $previousTreeBar
+     * @param int          $level
      */
     protected function displayTree(
         $package,
@@ -835,7 +835,7 @@ EOT
         $level = 1
     ) {
         $previousTreeBar = str_replace('├', '│', $previousTreeBar);
-        if (isset($package['requires'])) {
+        if (is_array($package) && isset($package['requires'])) {
             $requires = $package['requires'];
             $treeBar = $previousTreeBar . '  ├';
             $i = 0;
@@ -968,7 +968,7 @@ EOT
      * @param string           $phpVersion
      * @param bool             $minorOnly
      *
-     * @return PackageInterface|null
+     * @return PackageInterface|false
      */
     private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false)
     {

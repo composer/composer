@@ -196,6 +196,7 @@ class EventDispatcher
                     }
 
                     try {
+                        /** @var InstallerEvent $event */
                         $return = $this->dispatch($scriptName, new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode(), $args, $flags));
                     } catch (ScriptExecutionException $e) {
                         $this->io->writeError(sprintf('<error>Script %s was called via %s</error>', $callable, $event->getName()), true, IOInterface::QUIET);
@@ -480,7 +481,7 @@ class EventDispatcher
      *
      * @param  Event             $event
      * @throws \RuntimeException
-     * @return number
+     * @return int
      */
     protected function pushEvent(Event $event)
     {

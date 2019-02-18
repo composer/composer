@@ -119,7 +119,7 @@ class HttpDownloader
     /**
      * Merges new options
      *
-     * @return array $options
+     * @return void
      */
     public function setOptions(array $options)
     {

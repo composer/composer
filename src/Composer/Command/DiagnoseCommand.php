@@ -602,20 +602,6 @@ EOT
                         $text .= "Install either of them or recompile php without --disable-iconv";
                         break;
 
-                    case 'unicode':
-                        $text = PHP_EOL."The detect_unicode setting must be disabled.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
-                        $text .= "    detect_unicode = Off";
-                        $displayIniMessage = true;
-                        break;
-
-                    case 'suhosin':
-                        $text = PHP_EOL."The suhosin.executor.include.whitelist setting is incorrect.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini` or suhosin.ini (Example path [for Debian]: /etc/php5/cli/conf.d/suhosin.ini):".PHP_EOL;
-                        $text .= "    suhosin.executor.include.whitelist = phar ".$current;
-                        $displayIniMessage = true;
-                        break;
-
                     case 'php':
                         $text = PHP_EOL."Your PHP ({$current}) is too old, you must upgrade to PHP 5.3.2 or higher.";
                         break;
@@ -713,7 +699,7 @@ EOT
     /**
      * Check if allow_url_fopen is ON
      *
-     * @return bool|string
+     * @return true|string
      */
     private function checkConnectivity()
     {

@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\IO\IOInterface;
+use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositorySet;
@@ -44,7 +45,7 @@ class Solver
     protected $watchGraph;
     /** @var Decisions */
     protected $decisions;
-    /** @var int[] */
+    /** @var PackageInterface[] */
     protected $installedMap;
 
     /** @var int */
@@ -513,7 +514,7 @@ class Solver
             );
         }
 
-        $newRule = new GenericRule($learnedLiterals, Rule::RULE_LEARNED, $why);
+        $newRule = new GenericRule($learnedLiterals, Rule::RULE_LEARNED, null);
 
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
@@ -691,7 +692,7 @@ class Solver
         /**
          * @todo this makes $disableRules always false; determine the rationale and possibly remove dead code?
          */
-        $disableRules = array();
+        $disableRules = false;
 
         $level = 1;
         $systemLevel = $level + 1;

@@ -180,7 +180,7 @@ class Problem
      * Store a reason descriptor but ignore duplicates
      *
      * @param string $id     A canonical identifier for the reason
-     * @param string $reason The reason descriptor
+     * @param string|array $reason The reason descriptor
      */
     protected function addReason($id, $reason)
     {

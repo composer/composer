@@ -362,7 +362,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         ) {
             $command = sprintf('git checkout '.$force.'-B %s %s -- && git reset --hard %2$s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
             if (0 === $this->process->execute($command, $output, $path)) {
-                return;
+                return null;
             }
         }
 
@@ -380,14 +380,14 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             ) {
                 $command = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
                 if (0 === $this->process->execute($command, $output, $path)) {
-                    return;
+                    return null;
                 }
             }
         }
 
         $command = sprintf($template, ProcessExecutor::escape($gitRef));
         if (0 === $this->process->execute($command, $output, $path)) {
-            return;
+            return null;
         }
 
         // reference was not found (prints "fatal: reference is not a tree: $ref")

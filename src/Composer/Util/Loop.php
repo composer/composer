@@ -29,6 +29,7 @@ class Loop
 
     public function wait(array $promises)
     {
+        /** @var ?\Exception */
         $uncaught = null;
 
         \React\Promise\all($promises)->then(

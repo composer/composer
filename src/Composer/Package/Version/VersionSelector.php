@@ -45,7 +45,7 @@ class VersionSelector
      * @param  string                $targetPackageVersion
      * @param  string                $targetPhpVersion
      * @param  string                $preferredStability
-     * @return PackageInterface|bool
+     * @return PackageInterface|false
      */
     public function findBestCandidate($packageName, $targetPackageVersion = null, $targetPhpVersion = null, $preferredStability = 'stable')
     {

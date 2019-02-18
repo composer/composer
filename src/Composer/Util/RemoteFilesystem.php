@@ -82,7 +82,7 @@ class RemoteFilesystem
      * @param bool   $progress  Display the progression
      * @param array  $options   Additional context options
      *
-     * @return bool true
+     * @return bool|string true
      */
     public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array())
     {
@@ -400,7 +400,7 @@ class RemoteFilesystem
         // fail 4xx and 5xx responses and capture the response
         if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
             if (!$this->retry) {
-                if ($this->progress && !$this->retry && !$isRedirect) {
+                if ($this->progress && !$isRedirect) {
                     $this->io->overwriteError("Downloading (<error>failed</error>)", false);
                 }
 
