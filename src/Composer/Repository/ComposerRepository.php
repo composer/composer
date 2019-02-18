@@ -313,9 +313,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
                 }
+
+                // add aliases of matched packages even if they did not match the constraint
                 foreach ($candidates as $candidate) {
                     if ($candidate instanceof AliasPackage) {
-                        if (isset($result[spl_object_hash($candidate->getAliasOf())])) {
+                        if (isset($matches[spl_object_hash($candidate->getAliasOf())])) {
                             $matches[spl_object_hash($candidate)] = $candidate;
                         }
                     }
