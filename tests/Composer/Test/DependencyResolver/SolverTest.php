@@ -899,6 +899,8 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
+        $this->createSolver();
+
         // check correct setup for assertion later
         $this->assertFalse($this->solver->testFlagLearnedPositiveLiteral);
 
