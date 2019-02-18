@@ -108,7 +108,7 @@ class PerforceDriverTest extends TestCase
     {
         $methods = array('p4login', 'checkStream', 'writeP4ClientSpec', 'connectClient', 'getComposerInformation', 'cleanupClientSpec');
 
-        return $this->getMockBuilder('Composer\Util\Perforce', $methods)->disableOriginalConstructor()->getMock();
+        return $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
     }
 
     public function testInitializeCapturesVariablesFromRepoConfig()

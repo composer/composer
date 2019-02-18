@@ -40,7 +40,7 @@ class SolverTest extends TestCase
         $this->repo = new ArrayRepository;
         $this->repoInstalled = new InstalledArrayRepository;
 
-        $this->request = new Request($this->repoSet);
+        $this->request = new Request();
         $this->policy = new DefaultPolicy;
     }
 

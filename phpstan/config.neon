@@ -29,9 +29,11 @@ parameters:
         - '~^Undefined variable: \$vendorDir$~'
         - '~^Undefined variable: \$baseDir$~'
 
+        # variable defined in eval
+        - '~^Undefined variable: \$res$~'
+
         # always checked whether the class exists
-        - '~^Instantiated class Symfony\\Component\\Console\\Terminal not found\.$~'
-        - '~^Class Symfony\\Component\\Console\\Input\\StreamableInputInterface not found\.$~'
+        - '~^Call to an undefined static method Symfony\\Component\\Process\\Process::fromShellCommandline\(\).$~'
 
         # parent call in test mocks
         - '~^Composer\\Test\\Mock\\HttpDownloaderMock::__construct\(\) does not call parent constructor from Composer\\Util\\HttpDownloader\.$~'
