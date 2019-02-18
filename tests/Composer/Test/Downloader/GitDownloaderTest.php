@@ -604,7 +604,7 @@ composer https://github.com/old/url (push)
 
     public function testDowngradeShowsAppropriateMessage()
     {
-        $oldPackage = $this->getMock('Composer\Package\PackageInterface');
+        $oldPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $oldPackage->expects($this->any())
             ->method('getVersion')
             ->will($this->returnValue('1.2.0.0'));
@@ -618,7 +618,7 @@ composer https://github.com/old/url (push)
             ->method('getSourceUrls')
             ->will($this->returnValue(array('/foo/bar', 'https://github.com/composer/composer')));
 
-        $newPackage = $this->getMock('Composer\Package\PackageInterface');
+        $newPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $newPackage->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
@@ -632,12 +632,12 @@ composer https://github.com/old/url (push)
             ->method('getFullPrettyVersion')
             ->will($this->returnValue('1.0.0'));
 
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->any())
             ->method('execute')
             ->will($this->returnValue(0));
 
-        $ioMock = $this->getMock('Composer\IO\IOInterface');
+        $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $ioMock->expects($this->at(0))
             ->method('writeError')
             ->with($this->stringContains('Downgrading'));
@@ -649,7 +649,7 @@ composer https://github.com/old/url (push)
 
     public function testNotUsingDowngradingWithReferences()
     {
-        $oldPackage = $this->getMock('Composer\Package\PackageInterface');
+        $oldPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $oldPackage->expects($this->any())
             ->method('getVersion')
             ->will($this->returnValue('dev-ref'));
@@ -660,7 +660,7 @@ composer https://github.com/old/url (push)
             ->method('getSourceUrls')
             ->will($this->returnValue(array('/foo/bar', 'https://github.com/composer/composer')));
 
-        $newPackage = $this->getMock('Composer\Package\PackageInterface');
+        $newPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $newPackage->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
@@ -671,12 +671,12 @@ composer https://github.com/old/url (push)
             ->method('getVersion')
             ->will($this->returnValue('dev-ref2'));
 
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->any())
             ->method('execute')
             ->will($this->returnValue(0));
 
-        $ioMock = $this->getMock('Composer\IO\IOInterface');
+        $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $ioMock->expects($this->at(0))
             ->method('writeError')
             ->with($this->stringContains('updating'));

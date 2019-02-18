@@ -20,6 +20,7 @@ class CacheTest extends TestCase
     private $files;
     private $root;
     private $finder;
+    private $filesystem;
     private $cache;
 
     public function setUp()
@@ -34,11 +35,12 @@ class CacheTest extends TestCase
         }
 
         $this->finder = $this->getMockBuilder('Symfony\Component\Finder\Finder')->disableOriginalConstructor()->getMock();
+        $this->filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
 
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->cache = $this->getMockBuilder('Composer\Cache')
             ->setMethods(array('getFinder'))
-            ->setConstructorArgs(array($io, $this->root))
+            ->setConstructorArgs(array($io, $this->root, 'a-z0-9.', $this->filesystem))
             ->getMock();
         $this->cache
             ->expects($this->any())
@@ -105,7 +107,7 @@ class CacheTest extends TestCase
 
     public function testClearCache()
     {
-        $this->finder
+        $this->filesystem
             ->method('removeDirectory')
             ->with($this->root)
             ->willReturn(true);
