@@ -189,6 +189,7 @@ class ArchivableFilesFinderTest extends TestCase
             'git init && '.
             'git config user.email "you@example.com" && '.
             'git config user.name "Your Name" && '.
+            'git config commit.gpgsign false && '.
             'git add .git* && '.
             'git commit -m "ignore rules" && '.
             'git add . && '.
