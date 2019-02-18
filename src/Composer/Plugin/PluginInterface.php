@@ -36,4 +36,22 @@ interface PluginInterface
      * @param IOInterface $io
      */
     public function activate(Composer $composer, IOInterface $io);
+
+    /**
+     * Remove any hooks from Composer
+     *
+     * @param Composer    $composer
+     * @param IOInterface $io
+     */
+    public function deactivate(Composer $composer, IOInterface $io);
+
+    /**
+     * Prepare the plugin to be uninstalled
+     *
+     * This will be called after deactivate
+     *
+     * @param Composer    $composer
+     * @param IOInterface $io
+     */
+    public function uninstall(Composer $composer, IOInterface $io);
 }

@@ -144,7 +144,7 @@ class PluginManager
 
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
 
-        if (in_array($package->getName(), $this->registeredPlugins)) {
+        if (isset($this->registeredPlugins[$package->getName()])) {
             return;
         }
 
@@ -200,13 +200,79 @@ class PluginManager
             if ($oldInstallerPlugin) {
                 $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
+                $this->registeredPlugins[$package->getName()] = $installer;
             } elseif (class_exists($class)) {
                 $plugin = new $class();
                 $this->addPlugin($plugin);
-                $this->registeredPlugins[] = $package->getName();
+                $this->registeredPlugins[$package->getName()] = $plugin;
             } elseif ($failOnMissingClasses) {
                 throw new \UnexpectedValueException('Plugin '.$package->getName().' could not be initialized, class not found: '.$class);
             }
+        }
+    }
+
+    /**
+     * Deactivates a plugin package
+     *
+     * If it's of type composer-installer it is unregistered from the installers
+     * instead for BC
+     *
+     * @param PackageInterface $package
+     *
+     * @throws \UnexpectedValueException
+     */
+    public function deactivatePackage(PackageInterface $package)
+    {
+        if ($this->disablePlugins) {
+            return;
+        }
+
+        $oldInstallerPlugin = ($package->getType() === 'composer-installer');
+
+        if (!isset($this->registeredPlugins[$package->getName()])) {
+            return;
+        }
+
+        if ($oldInstallerPlugin) {
+            $installer = $this->registeredPlugins[$package->getName()];
+            unset($this->registeredPlugins[$package->getName()]);
+            $this->composer->getInstallationManager()->removeInstaller($installer);
+        } else {
+            $plugin = $this->registeredPlugins[$package->getName()];
+            unset($this->registeredPlugins[$package->getName()]);
+            $this->removePlugin($plugin);
+        }
+    }
+
+    /**
+     * Uninstall a plugin package
+     *
+     * If it's of type composer-installer it is unregistered from the installers
+     * instead for BC
+     *
+     * @param PackageInterface $package
+     *
+     * @throws \UnexpectedValueException
+     */
+    public function uninstallPackage(PackageInterface $package)
+    {
+        if ($this->disablePlugins) {
+            return;
+        }
+
+        $oldInstallerPlugin = ($package->getType() === 'composer-installer');
+
+        if (!isset($this->registeredPlugins[$package->getName()])) {
+            return;
+        }
+
+        if ($oldInstallerPlugin) {
+            $this->deactivatePackage($package);
+        } else {
+            $plugin = $this->registeredPlugins[$package->getName()];
+            unset($this->registeredPlugins[$package->getName()]);
+            $this->removePlugin($plugin);
+            $this->uninstallPlugin($plugin);
         }
     }
 
@@ -238,6 +304,44 @@ class PluginManager
         if ($plugin instanceof EventSubscriberInterface) {
             $this->composer->getEventDispatcher()->addSubscriber($plugin);
         }
+    }
+
+    /**
+     * Removes a plugin, deactivates it and removes any listener the plugin has set on the plugin instance
+     *
+     * Ideally plugin packages should be deactivated via deactivatePackage, but if you use Composer
+     * programmatically and want to deregister a plugin class directly this is a valid way
+     * to do it.
+     *
+     * @param PluginInterface $plugin plugin instance
+     */
+    public function removePlugin(PluginInterface $plugin)
+    {
+        $index = array_search($plugin, $this->plugins, true);
+        if ($index === false) {
+            return;
+        }
+
+        $this->io->writeError('Unloading plugin '.get_class($plugin), true, IOInterface::DEBUG);
+        unset($this->plugins[$index]);
+        $plugin->deactivate($this->composer, $this->io);
+
+        $this->composer->getEventDispatcher()->removeListener($plugin);
+    }
+
+    /**
+     * Notifies a plugin it is being uninstalled and should clean up
+     *
+     * Ideally plugin packages should be uninstalled via uninstallPackage, but if you use Composer
+     * programmatically and want to deregister a plugin class directly this is a valid way
+     * to do it.
+     *
+     * @param PluginInterface $plugin plugin instance
+     */
+    public function uninstallPlugin(PluginInterface $plugin)
+    {
+        $this->io->writeError('Uninstalling plugin '.get_class($plugin), true, IOInterface::DEBUG);
+        $plugin->uninstall($this->composer, $this->io);
     }
 
     /**

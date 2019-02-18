@@ -13,6 +13,17 @@ class Plugin8 implements PluginInterface, Capable
 
     public function activate(Composer $composer, IOInterface $io)
     {
+        $io->write('activate v8');
+    }
+
+    public function deactivate(Composer $composer, IOInterface $io)
+    {
+        $io->write('deactivate v8');
+    }
+
+    public function uninstall(Composer $composer, IOInterface $io)
+    {
+        $io->write('uninstall v8');
     }
 
     public function getCapabilities()
