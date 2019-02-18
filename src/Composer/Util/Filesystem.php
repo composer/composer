@@ -199,9 +199,15 @@ class Filesystem
      */
     public function unlink($path)
     {
-        if (!@$this->unlinkImplementation($path)) {
+        $unlinked = @$this->unlinkImplementation($path);
+        if (!$unlinked) {
             // retry after a bit on windows since it tends to be touchy with mass removals
-            if (!Platform::isWindows() || (usleep(350000) && !@$this->unlinkImplementation($path))) {
+            if (Platform::isWindows()) {
+                usleep(350000);
+                $unlinked = @$this->unlinkImplementation($path);
+            }
+            
+            if (!$unlinked) {
                 $error = error_get_last();
                 $message = 'Could not delete '.$path.': ' . @$error['message'];
                 if (Platform::isWindows()) {
@@ -224,9 +230,15 @@ class Filesystem
      */
     public function rmdir($path)
     {
-        if (!@rmdir($path)) {
+        $deleted = @rmdir($path);
+        if (!$deleted) {
             // retry after a bit on windows since it tends to be touchy with mass removals
-            if (!Platform::isWindows() || (usleep(350000) && !@rmdir($path))) {
+            if (Platform::isWindows()) {
+                usleep(350000);
+                $deleted = @rmdir($path);
+            }
+            
+            if (!$deleted) {
                 $error = error_get_last();
                 $message = 'Could not delete '.$path.': ' . @$error['message'];
                 if (Platform::isWindows()) {
@@ -648,6 +660,20 @@ class Filesystem
     /**
      * Returns whether the target directory is a Windows NTFS Junction.
      *
+     * We test if the path is a directory and not an ordinary link, then check
+     * that the mode value returned from lstat (which gives the status of the
+     * link itself) is not a directory, by replicating the POSIX S_ISDIR test.
+     *
+     * This logic works because PHP does not set the mode value for a junction,
+     * since there is no universal file type flag for it. Unfortunately an
+     * uninitialized variable in PHP prior to 7.2.16 and 7.3.3 may cause a
+     * random value to be returned. See https://bugs.php.net/bug.php?id=77552
+     *
+     * If this random value passes the S_ISDIR test, then a junction will not be
+     * detected and a recursive delete operation could lead to loss of data in
+     * the target directory. Note that Windows rmdir can handle this situation
+     * and will only delete the junction (from Windows 7 onwards).
+     *
      * @param  string $junction Path to check.
      * @return bool
      */
@@ -659,22 +685,13 @@ class Filesystem
         if (!is_dir($junction) || is_link($junction)) {
             return false;
         }
-        /**
-         * According to MSDN at https://msdn.microsoft.com/en-us/library/14h5k7ff.aspx we can detect a junction now
-         * using the 'mode' value from stat: "The _S_IFDIR bit is set if path specifies a directory; the _S_IFREG bit
-         * is set if path specifies an ordinary file or a device." We have just tested for a directory above, so if
-         * we have a directory that isn't one according to lstat(...) we must have a junction.
-         *
-         * #define	_S_IFDIR	0x4000
-         * #define	_S_IFREG	0x8000
-         *
-         * Stat cache should be cleared before to avoid accidentally reading wrong information from previous installs.
-         */
+
+        // Important to clear all caches first
         clearstatcache(true, $junction);
-        clearstatcache(false);
         $stat = lstat($junction);
 
-        return !($stat['mode'] & 0xC000);
+        // S_ISDIR test (S_IFDIR is 0x4000, S_IFMT is 0xF000 bitmask)
+        return $stat ? 0x4000 !== ($stat['mode'] & 0xF000) : false;
     }
 
     /**
@@ -692,9 +709,7 @@ class Filesystem
         if (!$this->isJunction($junction)) {
             throw new IOException(sprintf('%s is not a junction and thus cannot be removed as one', $junction));
         }
-        $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape($junction));
-        clearstatcache(true, $junction);
 
-        return ($this->getProcess()->execute($cmd, $output) === 0);
+        return $this->rmdir($junction);
     }
 }
