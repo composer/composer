@@ -13,13 +13,14 @@
 namespace Composer\IO;
 
 use Composer\Config;
+use Psr\Log\LoggerInterface;
 
 /**
  * The Input/Output helper interface.
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
-interface IOInterface
+interface IOInterface extends LoggerInterface
 {
     const QUIET = 1;
     const NORMAL = 2;

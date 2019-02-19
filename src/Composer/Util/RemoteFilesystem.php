@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
-use Psr\Log\LoggerInterface;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
@@ -61,8 +60,7 @@ class RemoteFilesystem
         // Setup TLS options
         // The cafile option can be set via config.json
         if ($disableTls === false) {
-            $logger = $io instanceof LoggerInterface ? $io : null;
-            $this->options = StreamContextFactory::getTlsDefaults($options, $logger);
+            $this->options = StreamContextFactory::getTlsDefaults($options, $io);
         } else {
             $this->disableTls = true;
         }
