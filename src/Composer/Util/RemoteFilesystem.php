@@ -82,7 +82,7 @@ class RemoteFilesystem
      * @param bool   $progress  Display the progression
      * @param array  $options   Additional context options
      *
-     * @return bool|string true
+     * @return bool true
      */
     public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array())
     {

@@ -202,7 +202,6 @@ class Bitbucket
 
         $this->storeInAuthConfig($originUrl, $consumerKey, $consumerSecret);
 
-        /** @var array $this->token */
         return $this->token['access_token'];
     }
 
