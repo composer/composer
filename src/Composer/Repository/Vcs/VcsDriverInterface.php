@@ -73,7 +73,7 @@ interface VcsDriverInterface
 
     /**
      * @param  string $identifier Any identifier to a specific branch/tag/commit
-     * @return ?array  With type, url reference and shasum keys.
+     * @return array|null  With type, url reference and shasum keys.
      */
     public function getDist($identifier);
 
