@@ -514,7 +514,7 @@ class Solver
             );
         }
 
-        $newRule = new GenericRule($learnedLiterals, Rule::RULE_LEARNED, null);
+        $newRule = new GenericRule($learnedLiterals, Rule::RULE_LEARNED, $why);
 
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
