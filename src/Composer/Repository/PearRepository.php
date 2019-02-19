@@ -97,7 +97,7 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
      *
      * @param  ChannelInfo         $channelInfo
      * @param  SemverVersionParser $versionParser
-     * @return CompletePackage
+     * @return CompletePackage[]
      */
     private function buildComposerPackages(ChannelInfo $channelInfo, SemverVersionParser $versionParser)
     {

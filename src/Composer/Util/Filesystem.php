@@ -292,6 +292,7 @@ class Filesystem
         $this->ensureDirectoryExists($target);
 
         $result = true;
+        /** @var RecursiveDirectoryIterator $ri */
         foreach ($ri as $file) {
             $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
             if ($file->isDir()) {

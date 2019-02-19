@@ -76,7 +76,7 @@ interface PackageInterface
     /**
      * Returns the package targetDir property
      *
-     * @return string The package targetDir
+     * @return string|null The package targetDir
      */
     public function getTargetDir();
 

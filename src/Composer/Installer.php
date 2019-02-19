@@ -959,7 +959,7 @@ class Installer
      * @param  RepositoryInterface         $lockedRepository
      * @param  string                      $task
      * @param  array|null                  $operations
-     * @return array
+     * @return array|null
      */
     private function processDevPackages($localRepo, Pool $pool, $policy, $repositories, $installedRepo, $lockedRepository, $task, array $operations = null)
     {

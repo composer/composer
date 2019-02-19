@@ -176,12 +176,12 @@ class PoolBuilder
             if (!isset($this->loadedNames[$require])) {
                 $loadNames[$require] = null;
             }
-            if ($link->getConstraint()) {
+            if ($linkConstraint = $link->getConstraint()) {
                 if (!array_key_exists($require, $this->nameConstraints)) {
-                    $this->nameConstraints[$require] = new MultiConstraint(array($link->getConstraint()), false);
+                    $this->nameConstraints[$require] = new MultiConstraint(array($linkConstraint), false);
                 } elseif ($this->nameConstraints[$require]) {
                     // TODO addConstraint function?
-                    $this->nameConstraints[$require] = new MultiConstraint(array_merge(array($link->getConstraint()), $this->nameConstraints[$require]->getConstraints()), false);
+                    $this->nameConstraints[$require] = new MultiConstraint(array_merge(array($linkConstraint), $this->nameConstraints[$require]->getConstraints()), false);
                 }
             } else {
                 $this->nameConstraints[$require] = null;

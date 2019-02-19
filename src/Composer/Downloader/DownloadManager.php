@@ -294,9 +294,7 @@ class DownloadManager
 
         // if downloader type changed, or update failed and user asks for reinstall,
         // we wipe the dir and do a new install instead of updating it
-        if ($initialDownloader) {
-            $initialDownloader->remove($initial, $targetDir);
-        }
+        $initialDownloader->remove($initial, $targetDir);
         $this->install($target, $targetDir);
     }
 

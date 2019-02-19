@@ -108,7 +108,7 @@ interface IOInterface extends LoggerInterface
      * @param string $default  The default answer if none is given by the user
      *
      * @throws \RuntimeException If there is no data to read in the input stream
-     * @return string            The user answer
+     * @return string|null       The user answer
      */
     public function ask($question, $default = null);
 
@@ -146,7 +146,7 @@ interface IOInterface extends LoggerInterface
      *
      * @param string $question The question to ask
      *
-     * @return string The answer
+     * @return string|null The answer
      */
     public function askAndHideAnswer($question);
 
@@ -161,7 +161,7 @@ interface IOInterface extends LoggerInterface
      * @param bool        $multiselect  Select more than one value separated by comma
      *
      * @throws \InvalidArgumentException
-     * @return int|string|array          The selected value or values (the key of the choices array)
+     * @return int|string|array|bool    The selected value or values (the key of the choices array)
      */
     public function select($question, $choices, $default, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false);
 
