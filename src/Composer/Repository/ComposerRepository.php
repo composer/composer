@@ -591,8 +591,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         foreach ($packageNames as $name => $constraint) {
             $name = strtolower($name);
 
+            $realName = preg_replace('{~dev$}', '', $name);
             // skip platform packages, root package and composer-plugin-api
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $realName) || '__root__' === $realName || 'composer-plugin-api' === $realName) {
                 continue;
             }
 
@@ -606,16 +607,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
-                ->then(function ($response) use (&$packages, $contents, $name, $constraint, $repo, $isPackageAcceptableCallable) {
+                ->then(function ($response) use (&$packages, $contents, $realName, $constraint, $repo, $isPackageAcceptableCallable) {
                     if (true === $response) {
                         $response = $contents;
                     }
 
-                    if (!isset($response['packages'][$name])) {
+                    if (!isset($response['packages'][$realName])) {
                         return;
                     }
 
-                    $versions = $response['packages'][$name];
+                    $versions = $response['packages'][$realName];
 
                     if (isset($response['minified']) && $response['minified'] === 'composer/2.0') {
                         // TODO extract in other method
@@ -649,7 +650,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     foreach ($versions as $version) {
                         if (isset($version['version_normalizeds'])) {
                             foreach ($version['version_normalizeds'] as $index => $normalizedVersion) {
-                                if (!$repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $name, $normalizedVersion)) {
+                                if (!$repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $realName, $normalizedVersion)) {
                                     foreach ($uniqKeys as $key) {
                                         unset($version[$key.'s'][$index]);
                                     }
@@ -663,7 +664,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                                 $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
                             }
 
-                            if ($repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $name, $version['version_normalized'])) {
+                            if ($repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $realName, $version['version_normalized'])) {
                                 $versionsToLoad[] = $version;
                             }
                         }
