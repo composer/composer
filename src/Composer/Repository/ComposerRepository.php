@@ -103,7 +103,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $this->baseUrl = rtrim(preg_replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
         $this->io = $io;
-        $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
+        $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$~');
         $this->versionParser = new VersionParser();
         $this->loader = new ArrayLoader($this->versionParser);
         $this->httpDownloader = $httpDownloader;
@@ -139,9 +139,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return;
             }
 
-            $packages = $this->loadAsyncPackages(array($name => $constraint), function ($name, $stability) {
-                return true;
-            });
+            $packages = $this->loadAsyncPackages(array($name => $constraint));
 
             return reset($packages);
         }
@@ -181,9 +179,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return array();
             }
 
-            return $this->loadAsyncPackages(array($name => $constraint ?: new EmptyConstraint()), function ($name, $stability) {
-                return true;
-            });
+            return $this->loadAsyncPackages(array($name => $constraint));
         }
 
         if ($hasProviders) {
@@ -241,7 +237,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $packageMap[$name] = new EmptyConstraint();
                 }
 
-                return array_values($this->loadAsyncPackages($packageMap, function ($name, $stability) { return true; }));
+                return array_values($this->loadAsyncPackages($packageMap));
             }
 
             throw new \LogicException('Composer repositories that have lazy providers and no available-packages list can not load the complete list of packages, use getProviderNames instead.');
@@ -513,11 +509,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 if (!isset($versionsToLoad[$version['uid']])) {
-                    if ($isPackageAcceptableCallable && !call_user_func($isPackageAcceptableCallable, $normalizedName, VersionParser::parseStability($version['version']))) {
-                        continue;
+                    if (!isset($version['version_normalized'])) {
+                        $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                     }
 
-                    $versionsToLoad[$version['uid']] = $version;
+                    if ($this->isVersionAcceptable($isPackageAcceptableCallable, null, $normalizedName, $version)) {
+                        $versionsToLoad[$version['uid']] = $version;
+                    }
                 }
             }
         }
@@ -569,7 +567,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->configurePackageTransportOptions($package);
     }
 
-    private function loadAsyncPackages(array $packageNames, $isPackageAcceptableCallable)
+    /**
+     * @param array $packageNames array of package name => ConstraintInterface|null - if a constraint is provided, only packages matching it will be loaded
+     */
+    private function loadAsyncPackages(array $packageNames, $isPackageAcceptableCallable = null)
     {
         $this->loadRootServerFile();
 
@@ -598,7 +599,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
-            $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
+            $cacheKey = 'provider-'.strtr($name, '/', '~').'.json';
 
             $lastModified = null;
             if ($contents = $this->cache->read($cacheKey)) {
@@ -651,7 +652,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                             $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
                         }
 
-                        if ($repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $realName, $version['version_normalized'])) {
+                        if ($repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $realName, $version)) {
                             $versionsToLoad[] = $version;
                         }
                     }
@@ -659,9 +660,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $loadedPackages = $repo->createPackages($versionsToLoad, 'Composer\Package\CompletePackage');
                     foreach ($loadedPackages as $package) {
                         $package->setRepository($repo);
-
                         $packages[spl_object_hash($package)] = $package;
+
                         if ($package instanceof AliasPackage && !isset($packages[spl_object_hash($package->getAliasOf())])) {
+                            $package->getAliasOf()->setRepository($repo);
                             $packages[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
                         }
                     }
@@ -677,19 +679,30 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * TODO v3 should make this private once we can drop PHP 5.3 support
      *
+     * @param string $name package name (must be lowercased already)
      * @private
      */
-    public function isVersionAcceptable($isPackageAcceptableCallable, $constraint, $name, $versionNormalized)
+    public function isVersionAcceptable($isPackageAcceptableCallable, $constraint, $name, $versionData)
     {
-        if (!call_user_func($isPackageAcceptableCallable, strtolower($name), VersionParser::parseStability($versionNormalized))) {
-            return false;
+        $versions = array($versionData['version_normalized']);
+
+        if ($alias = $this->loader->getBranchAlias($versionData)) {
+            $versions[] = $alias;
         }
 
-        if ($constraint && !$constraint->matches(new Constraint('==', $versionNormalized))) {
-            return false;
+        foreach ($versions as $version) {
+            if ($isPackageAcceptableCallable && !call_user_func($isPackageAcceptableCallable, $name, VersionParser::parseStability($version))) {
+                continue;
+            }
+
+            if ($constraint && !$constraint->matches(new Constraint('==', $version))) {
+                continue;
+            }
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     protected function loadRootServerFile()

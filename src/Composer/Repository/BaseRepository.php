@@ -32,9 +32,11 @@ abstract class BaseRepository implements RepositoryInterface
 
         $result = array();
         foreach ($packages as $package) {
-            if (array_key_exists($package->getName(), $packageMap) &&
-                (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion()))) &&
-                call_user_func($isPackageAcceptableCallable, $package->getNames(), $package->getStability())) {
+            if (
+                array_key_exists($package->getName(), $packageMap)
+                && (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
+                && call_user_func($isPackageAcceptableCallable, $package->getNames(), $package->getStability())
+            ) {
                 $result[spl_object_hash($package)] = $package;
                 if ($package instanceof AliasPackage && !isset($result[spl_object_hash($package->getAliasOf())])) {
                     $result[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
