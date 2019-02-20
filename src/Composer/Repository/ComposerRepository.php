@@ -645,28 +645,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         unset($expanded, $expandedVersion, $versionData);
                     }
 
-                    static $uniqKeys = array('version', 'version_normalized', 'source', 'dist', 'time');
                     $versionsToLoad = array();
                     foreach ($versions as $version) {
-                        if (isset($version['version_normalizeds'])) {
-                            foreach ($version['version_normalizeds'] as $index => $normalizedVersion) {
-                                if (!$repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $realName, $normalizedVersion)) {
-                                    foreach ($uniqKeys as $key) {
-                                        unset($version[$key.'s'][$index]);
-                                    }
-                                }
-                            }
-                            if (count($version['version_normalizeds'])) {
-                                $versionsToLoad[] = $version;
-                            }
-                        } else {
-                            if (!isset($version['version_normalized'])) {
-                                $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
-                            }
+                        if (!isset($version['version_normalized'])) {
+                            $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
+                        }
 
-                            if ($repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $realName, $version['version_normalized'])) {
-                                $versionsToLoad[] = $version;
-                            }
+                        if ($repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $realName, $version['version_normalized'])) {
+                            $versionsToLoad[] = $version;
                         }
                     }
 
