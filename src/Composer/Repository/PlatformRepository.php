@@ -16,15 +16,18 @@ use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginInterface;
+use Composer\Util\ProcessExecutor;
 use Composer\Util\Silencer;
+use Composer\Util\Platform;
 use Composer\XdebugHandler\XdebugHandler;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class PlatformRepository extends ArrayRepository
 {
-    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[^/ ]+)$}i';
+    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-plugin-api)$}iD';
 
     private $versionParser;
 
@@ -37,8 +40,11 @@ class PlatformRepository extends ArrayRepository
      */
     private $overrides = array();
 
-    public function __construct(array $packages = array(), array $overrides = array())
+    private $process;
+
+    public function __construct(array $packages = array(), array $overrides = array(), ProcessExecutor $process = null)
     {
+        $this->process = $process === null ? (new ProcessExecutor()) : $process;
         foreach ($overrides as $name => $version) {
             $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
         }
@@ -220,12 +226,27 @@ class PlatformRepository extends ArrayRepository
             $this->addPackage($lib);
         }
 
-        if (defined('HHVM_VERSION')) {
+        $hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;
+        if ($hhvmVersion === null && !Platform::isWindows()) {
+            $finder = new ExecutableFinder();
+            $hhvm = $finder->find('hhvm');
+            if ($hhvm !== null) {
+                $exitCode = $this->process->execute(
+                    ProcessExecutor::escape($hhvm).
+                    ' --php -d hhvm.jit=0 -r "echo HHVM_VERSION;" 2>/dev/null',
+                    $hhvmVersion
+                );
+                if ($exitCode !== 0) {
+                    $hhvmVersion = null;
+                }
+            }
+        }
+        if ($hhvmVersion) {
             try {
-                $prettyVersion = HHVM_VERSION;
+                $prettyVersion = $hhvmVersion;
                 $version = $this->versionParser->normalize($prettyVersion);
             } catch (\UnexpectedValueException $e) {
-                $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', HHVM_VERSION);
+                $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', $hhvmVersion);
                 $version = $this->versionParser->normalize($prettyVersion);
             }
 

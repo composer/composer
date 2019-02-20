@@ -1,0 +1,42 @@
+parameters:
+    level: 0
+    excludes_analyse:
+        - 'tests/Composer/Test/Fixtures'
+        - 'tests/Composer/Test/Autoload/Fixtures'
+        - 'tests/Composer/Test/Plugin/Fixtures'
+    ignoreErrors:
+        # unused parameters
+        - '~^Constructor of class Composer\\Repository\\VcsRepository has an unused parameter \$dispatcher\.$~'
+        - '~^Constructor of class Composer\\Repository\\PearRepository has an unused parameter \$dispatcher\.$~'
+        - '~^Constructor of class Composer\\Util\\Http\\CurlDownloader has an unused parameter \$disableTls\.$~'
+        - '~^Constructor of class Composer\\Util\\Http\\CurlDownloader has an unused parameter \$options\.$~'
+        - '~^Constructor of class Composer\\Repository\\PearRepository has an unused parameter \$config\.$~'
+
+        # unused uses
+        - '~^Anonymous function has an unused use \$io\.$~'
+        - '~^Anonymous function has an unused use \$cache\.$~'
+        - '~^Anonymous function has an unused use \$path\.$~'
+        - '~^Anonymous function has an unused use \$fileName\.$~'
+
+        # ion cube is not installed
+        - '~^Function ioncube_loader_\w+ not found\.$~'
+        # rar is not installed
+        - '~^Call to static method open\(\) on an unknown class RarArchive\.$~'
+        # imagick is not installed
+        - '~^Instantiated class Imagick not found\.$~'
+
+        # variables from global scope
+        - '~^Undefined variable: \$vendorDir$~'
+        - '~^Undefined variable: \$baseDir$~'
+
+        # variable defined in eval
+        - '~^Undefined variable: \$res$~'
+
+        # always checked whether the class exists
+        - '~^Instantiated class Symfony\\Component\\Console\\Terminal not found\.$~'
+        - '~^Class Symfony\\Component\\Console\\Input\\StreamableInputInterface not found\.$~'
+        - '~^Call to an undefined static method Symfony\\Component\\Process\\Process::fromShellCommandline\(\).$~'
+
+        # parent call in test mocks
+        - '~^Composer\\Test\\Mock\\HttpDownloaderMock::__construct\(\) does not call parent constructor from Composer\\Util\\HttpDownloader\.$~'
+        - '~^Composer\\Test\\Mock\\InstallationManagerMock::__construct\(\) does not call parent constructor from Composer\\Installer\\InstallationManager\.$~'

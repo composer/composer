@@ -150,10 +150,15 @@ class ArchiveManager
             $sourcePath = sys_get_temp_dir().'/composer_archive'.uniqid();
             $filesystem->ensureDirectoryExists($sourcePath);
 
-            // Download sources
-            $promise = $this->downloadManager->download($package, $sourcePath);
-            $this->loop->wait(array($promise));
-            $this->downloadManager->install($package, $sourcePath);
+            try {
+                // Download sources
+                $promise = $this->downloadManager->download($package, $sourcePath);
+                $this->loop->wait(array($promise));
+                $this->downloadManager->install($package, $sourcePath);
+            } catch (\Exception $e) {
+                $filesystem->removeDirectory($sourcePath);
+                throw  $e;
+            }
 
             // Check exclude from downloaded composer.json
             if (file_exists($composerJsonPath = $sourcePath.'/composer.json')) {

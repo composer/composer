@@ -125,6 +125,12 @@ class ArchiveManagerTest extends ArchiverTest
             throw new \RuntimeException('Could not config: '.$this->process->getErrorOutput());
         }
 
+        $result = $this->process->execute('git config commit.gpgsign false', $output, $this->testDir);
+        if ($result > 0) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not config: '.$this->process->getErrorOutput());
+        }
+
         $result = $this->process->execute('git config user.name "Your Name"', $output, $this->testDir);
         if ($result > 0) {
             chdir($currentWorkDir);

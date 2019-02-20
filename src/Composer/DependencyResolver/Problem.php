@@ -106,7 +106,7 @@ class Problem
 
                     $msg = "\n    - This package requires ".$job['packageName'].$this->constraintToText($job['constraint']).' but ';
 
-                    if (defined('HHVM_VERSION')) {
+                    if (defined('HHVM_VERSION') || count($available)) {
                         return $msg . 'your HHVM version does not satisfy that requirement.';
                     }
 
@@ -180,7 +180,7 @@ class Problem
      * Store a reason descriptor but ignore duplicates
      *
      * @param string $id     A canonical identifier for the reason
-     * @param string $reason The reason descriptor
+     * @param string|array $reason The reason descriptor
      */
     protected function addReason($id, $reason)
     {

@@ -171,6 +171,49 @@ class EventDispatcherTest extends TestCase
         return $rm;
     }
 
+    public function testDispatcherRemoveListener()
+    {
+        $composer = $this->createComposerInstance();
+
+        $composer->setRepositoryManager($this->getRepositoryManagerMockForDevModePassingTest());
+        $composer->setInstallationManager($this->getMockBuilder('Composer\Installer\InstallationManager')->disableOriginalConstructor()->getMock());
+
+        $dispatcher = new EventDispatcher(
+            $composer,
+            $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+            $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock()
+        );
+
+        $listener = array($this, 'someMethod');
+        $listener2 = array($this, 'someMethod2');
+        $listener3 = 'Composer\\Test\\EventDispatcher\\EventDispatcherTest::someMethod';
+
+        $dispatcher->addListener('ev1', $listener, 0);
+        $dispatcher->addListener('ev1', $listener, 1);
+        $dispatcher->addListener('ev1', $listener2, 1);
+        $dispatcher->addListener('ev1', $listener3);
+        $dispatcher->addListener('ev2', $listener3);
+        $dispatcher->addListener('ev2', $listener);
+        $dispatcher->dispatch('ev1');
+        $dispatcher->dispatch('ev2');
+
+        $expected = '> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod2'.PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
+
+        $dispatcher->removeListener($this);
+        $dispatcher->dispatch('ev1');
+        $dispatcher->dispatch('ev2');
+
+        $expected .= '> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
+    }
+
     public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack()
     {
         $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
@@ -442,6 +485,11 @@ class EventDispatcherTest extends TestCase
     }
 
     public static function someMethod()
+    {
+        return true;
+    }
+
+    public static function someMethod2()
     {
         return true;
     }

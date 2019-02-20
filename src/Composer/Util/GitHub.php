@@ -22,9 +22,13 @@ use Composer\Downloader\TransportException;
  */
 class GitHub
 {
+    /** @var IOInterface */
     protected $io;
+    /** @var Config */
     protected $config;
+    /** @var ProcessExecutor */
     protected $process;
+    /** @var HttpDownloader */
     protected $httpDownloader;
 
     /**

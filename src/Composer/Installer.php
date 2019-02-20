@@ -959,7 +959,7 @@ class Installer
      * @param  RepositoryInterface         $lockedRepository
      * @param  string                      $task
      * @param  array|null                  $operations
-     * @return array
+     * @return array|null
      */
     private function processDevPackages($localRepo, Pool $pool, $policy, $repositories, $installedRepo, $lockedRepository, $task, array $operations = null)
     {
@@ -1294,11 +1294,6 @@ class Installer
 
         $rootRequires = array_merge($rootRequires, $rootDevRequires);
 
-        $requiredPackageNames = array();
-        foreach ($rootRequires as $require) {
-            $requiredPackageNames[] = $require->getTarget();
-        }
-
         $skipPackages = array();
         if (!$this->whitelistAllDependencies) {
             foreach ($rootRequires as $require) {
@@ -1315,13 +1310,20 @@ class Installer
 
         foreach ($this->updateWhitelist as $packageName => $void) {
             $packageQueue = new \SplQueue;
+            $nameMatchesRequiredPackage = false;
 
             $depPackages = $repositorySet->findPackages($packageName, null, false);
-
-            $nameMatchesRequiredPackage = in_array($packageName, $requiredPackageNames, true);
+            $matchesByPattern = array();
 
             // check if the name is a glob pattern that did not match directly
-            if (!$nameMatchesRequiredPackage) {
+            if (empty($depPackages)) {
+                // add any installed package matching the whitelisted name/pattern
+                $whitelistPatternSearchRegexp = BasePackage::packageNameToRegexp($packageName, '^%s$');
+                foreach ($localOrLockRepo->search($whitelistPatternSearchRegexp) as $installedPackage) {
+                    $matchesByPattern[] = $repositorySet->findPackages($installedPackage['name'], null, false);
+                }
+
+                // add root requirements which match the whitelisted name/pattern
                 $whitelistPatternRegexp = BasePackage::packageNameToRegexp($packageName);
                 foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
                     if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
@@ -1329,6 +1331,10 @@ class Installer
                         break;
                     }
                 }
+            }
+
+            if (!empty($matchesByPattern)) {
+                $depPackages = array_merge($depPackages, call_user_func_array('array_merge', $matchesByPattern));
             }
 
             if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
@@ -1362,7 +1368,7 @@ class Installer
                             continue;
                         }
 
-                        if (isset($skipPackages[$requirePackage->getName()])) {
+                        if (isset($skipPackages[$requirePackage->getName()]) && !preg_match(BasePackage::packageNameToRegexp($packageName), $requirePackage->getName())) {
                             $this->io->writeError('<warning>Dependency "' . $requirePackage->getName() . '" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>');
                             continue;
                         }

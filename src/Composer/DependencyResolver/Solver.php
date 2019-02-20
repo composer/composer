@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\IO\IOInterface;
+use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositorySet;
@@ -44,7 +45,7 @@ class Solver
     protected $watchGraph;
     /** @var Decisions */
     protected $decisions;
-    /** @var int[] */
+    /** @var PackageInterface[] */
     protected $installedMap;
 
     /** @var int */
@@ -57,6 +58,9 @@ class Solver
     protected $learnedPool = array();
     /** @var array */
     protected $learnedWhy = array();
+
+    /** @var bool */
+    public $testFlagLearnedPositiveLiteral = false;
 
     /** @var IOInterface */
     protected $io;
@@ -478,7 +482,10 @@ class Solver
                 unset($seen[abs($literal)]);
 
                 if ($num && 0 === --$num) {
-                    $learnedLiterals[0] = -abs($literal);
+                    if ($literal < 0) {
+                        $this->testFlagLearnedPositiveLiteral = true;
+                    }
+                    $learnedLiterals[0] = -$literal;
 
                     if (!$l1num) {
                         break 2;
@@ -685,7 +692,7 @@ class Solver
         /**
          * @todo this makes $disableRules always false; determine the rationale and possibly remove dead code?
          */
-        $disableRules = array();
+        $disableRules = false;
 
         $level = 1;
         $systemLevel = $level + 1;

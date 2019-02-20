@@ -21,6 +21,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Config;
 use Composer\Config\JsonConfigSource;
 use Composer\Factory;
+use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Semver\VersionParser;
 use Composer\Package\BasePackage;
@@ -225,7 +226,7 @@ EOT
         }
 
         $settingKey = $input->getArgument('setting-key');
-        if (!$settingKey) {
+        if (!$settingKey || !is_string($settingKey)) {
             return 0;
         }
 
@@ -284,7 +285,7 @@ EOT
                 $value = json_encode($value);
             }
 
-            $this->getIO()->write($value);
+            $this->getIO()->write($value, true, IOInterface::QUIET);
 
             return 0;
         }
@@ -302,6 +303,7 @@ EOT
         $uniqueConfigValues = array(
             'process-timeout' => array('is_numeric', 'intval'),
             'use-include-path' => array($booleanValidator, $booleanNormalizer),
+            'use-github-api' => array($booleanValidator, $booleanNormalizer),
             'preferred-install' => array(
                 function ($val) {
                     return in_array($val, array('auto', 'source', 'dist'), true);
@@ -455,6 +457,10 @@ EOT
         );
 
         if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {
+            if ($settingKey === 'disable-tls' && $this->config->get('disable-tls')) {
+                $this->getIO()->writeError('<info>You are now running Composer with SSL/TLS protection enabled.</info>');
+            }
+
             return $this->configSource->removeConfigSetting($settingKey);
         }
         if (isset($uniqueConfigValues[$settingKey])) {
@@ -639,7 +645,17 @@ EOT
             ));
         }
 
-        return call_user_func(array($this->configSource, $method), $key, $normalizer($values[0]));
+        $normalizedValue = $normalizer($values[0]);
+
+        if ($key === 'disable-tls') {
+            if (!$normalizedValue && $this->config->get('disable-tls')) {
+                $this->getIO()->writeError('<info>You are now running Composer with SSL/TLS protection enabled.</info>');
+            } elseif ($normalizedValue && !$this->config->get('disable-tls')) {
+                $this->getIO()->writeError('<warning>You are now running Composer with SSL/TLS protection disabled.</warning>');
+            }
+        }
+
+        return call_user_func(array($this->configSource, $method), $key, $normalizedValue);
     }
 
     protected function handleMultiValue($key, array $callbacks, array $values, $method)
@@ -695,9 +711,9 @@ EOT
             }
 
             if (is_string($rawVal) && $rawVal != $value) {
-                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>');
+                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>', true, IOInterface::QUIET);
             } else {
-                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
+                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>', true, IOInterface::QUIET);
             }
         }
     }

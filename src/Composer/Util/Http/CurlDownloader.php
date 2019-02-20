@@ -20,7 +20,6 @@ use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
-use Psr\Log\LoggerInterface;
 use React\Promise\Promise;
 
 /**

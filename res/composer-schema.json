@@ -271,6 +271,10 @@
                         "type": "string"
                     }
                 },
+                "use-github-api": {
+                    "type": "boolean",
+                    "description": "Defaults to true.  If set to false, globally disables the use of the GitHub API for all GitHub repositories and clones the repository as it would for any other repository."
+                },
                 "archive-format": {
                     "type": "string",
                     "description": "The default archiving format when not provided on cli, defaults to \"tar\"."

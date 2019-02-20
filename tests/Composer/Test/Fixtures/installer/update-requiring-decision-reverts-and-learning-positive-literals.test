@@ -1,0 +1,100 @@
+--TEST--
+Update a project which requires decision reverts and learning a positive literal to arrive at a correct solution.
+
+Tests for solver regression in commit 451bab1c2cd58e05af6e21639b829408ad023463. See also SolverTest testLearnPositiveLiteral
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "spryker-feature/product",
+                    "require": {
+                        "spryker-feature/spryker-core": "1.0.0",
+                        "spryker-shop/product-search-widget": ">=1.0.0",
+                        "spryker/product-category-filter-gui": "1.0.0"
+                    },
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "spryker-feature/spryker-core",
+                    "version": "1.0.0",
+                    "require": {
+                        "spryker/store": "1.0.0"
+                    }
+                },
+                {
+                    "name": "spryker/store",
+                    "version": "1.0.0",
+                    "require": {
+                        "spryker/kernel": "<=2.0.0"
+                    }
+                },
+                {
+                    "name": "spryker-shop/product-search-widget",
+                    "version": "1.0.0",
+                    "require": {
+                        "spryker/catalog": "1.0.0"
+                    }
+                },
+                {
+                    "name": "spryker-shop/product-search-widget",
+                    "version": "2.0.0",
+                    "require": {
+                        "spryker/catalog": "1.0.0",
+                        "spryker/kernel": ">=1.0.0"
+                    }
+                },
+                {
+                    "name": "spryker/product-category-filter-gui",
+                    "version": "1.0.0",
+                    "require": {
+                        "spryker/catalog": ">=1.0.0"
+                    }
+                },
+                {
+                    "name": "spryker/catalog",
+                    "version": "1.0.0",
+                    "require": { }
+                },
+                {
+                    "name": "spryker/catalog",
+                    "version": "2.0.0",
+                    "require": { }
+                },
+
+                {
+                    "name": "spryker/kernel",
+                    "version": "1.0.0",
+                    "require": { }
+                },
+                {
+                    "name": "spryker/kernel",
+                    "version": "2.0.0",
+                    "require": {
+                    }
+                },
+                {
+                    "name": "spryker/kernel",
+                    "version": "3.0.0",
+                    "require": { }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "spryker-feature/product": "1.0.0"
+    }
+}
+--RUN--
+update
+--EXPECT--
+Installing spryker/catalog (1.0.0)
+Installing spryker/product-category-filter-gui (1.0.0)
+Installing spryker/kernel (2.0.0)
+Installing spryker-shop/product-search-widget (2.0.0)
+Installing spryker/store (1.0.0)
+Installing spryker-feature/spryker-core (1.0.0)
+Installing spryker-feature/product (1.0.0)
+

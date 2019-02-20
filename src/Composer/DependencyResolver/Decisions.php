@@ -196,4 +196,16 @@ class Decisions implements \Iterator, \Countable
             $this->decisionMap[$packageId] = -$level;
         }
     }
+
+    public function __toString()
+    {
+        $decisionMap = $this->decisionMap;
+        ksort($decisionMap);
+        $str = '[';
+        foreach ($decisionMap as $packageId => $level) {
+            $str .= $packageId.':'.$level.',';
+        }
+        $str .= ']';
+        return $str;
+    }
 }

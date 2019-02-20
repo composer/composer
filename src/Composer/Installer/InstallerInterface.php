@@ -48,7 +48,7 @@ interface InstallerInterface
      *
      * @param  PackageInterface $package     package instance
      * @param  PackageInterface $prevPackage previous package instance in case of an update
-     * @return PromiseInterface
+     * @return PromiseInterface|null
      */
     public function download(PackageInterface $package, PackageInterface $prevPackage = null);
 

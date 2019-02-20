@@ -27,6 +27,8 @@ use Symfony\Component\Console\Command\Command;
 /**
  * Base class for Composer commands
  *
+ * @method Application getApplication()
+ *
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
@@ -46,7 +48,7 @@ abstract class BaseCommand extends Command
      * @param  bool              $required
      * @param  bool|null         $disablePlugins
      * @throws \RuntimeException
-     * @return Composer
+     * @return Composer|null
      */
     public function getComposer($required = true, $disablePlugins = null)
     {
@@ -173,7 +175,7 @@ abstract class BaseCommand extends Command
 
         if ($input->getOption('prefer-source') || $input->getOption('prefer-dist') || ($keepVcsRequiresPreferSource && $input->hasOption('keep-vcs') && $input->getOption('keep-vcs'))) {
             $preferSource = $input->getOption('prefer-source') || ($keepVcsRequiresPreferSource && $input->hasOption('keep-vcs') && $input->getOption('keep-vcs'));
-            $preferDist = $input->getOption('prefer-dist');
+            $preferDist = (bool) $input->getOption('prefer-dist');
         }
 
         return array($preferSource, $preferDist);

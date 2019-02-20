@@ -313,9 +313,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
                 }
+
+                // add aliases of matched packages even if they did not match the constraint
                 foreach ($candidates as $candidate) {
                     if ($candidate instanceof AliasPackage) {
-                        if (isset($result[spl_object_hash($candidate->getAliasOf())])) {
+                        if (isset($matches[spl_object_hash($candidate->getAliasOf())])) {
                             $matches[spl_object_hash($candidate)] = $candidate;
                         }
                     }
@@ -579,11 +581,19 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             throw new \LogicException('loadAsyncPackages only supports v2 protocol composer repos with a metadata-url');
         }
 
+        // load ~dev variants as well if present
+        // TODO ideally there should be a flag set from the repositoryset/poolbuilder to know which packages should have the dev packages loaded
+        // so we can optimize away some requests entirely
+        foreach ($packageNames as $name => $constraint) {
+            $packageNames[$name.'~dev'] = $constraint;
+        }
+
         foreach ($packageNames as $name => $constraint) {
             $name = strtolower($name);
 
+            $realName = preg_replace('{~dev$}', '', $name);
             // skip platform packages, root package and composer-plugin-api
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $realName) || '__root__' === $realName || 'composer-plugin-api' === $realName) {
                 continue;
             }
 
@@ -597,16 +607,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
-                ->then(function ($response) use (&$packages, $contents, $name, $constraint, $repo, $isPackageAcceptableCallable) {
+                ->then(function ($response) use (&$packages, $contents, $realName, $constraint, $repo, $isPackageAcceptableCallable) {
                     if (true === $response) {
                         $response = $contents;
                     }
 
-                    if (!isset($response['packages'][$name])) {
+                    if (!isset($response['packages'][$realName])) {
                         return;
                     }
 
-                    $versions = $response['packages'][$name];
+                    $versions = $response['packages'][$realName];
 
                     if (isset($response['minified']) && $response['minified'] === 'composer/2.0') {
                         // TODO extract in other method
@@ -641,7 +651,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                             $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
                         }
 
-                        if ($repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $name, $version['version_normalized'])) {
+                        if ($repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $realName, $version['version_normalized'])) {
                             $versionsToLoad[] = $version;
                         }
                     }

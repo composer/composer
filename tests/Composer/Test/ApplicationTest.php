@@ -32,6 +32,11 @@ class ApplicationTest extends TestCase
             ->will($this->returnValue(true));
 
         $inputMock->expects($this->at($index++))
+            ->method('hasParameterOption')
+            ->with($this->equalTo('--no-cache'))
+            ->will($this->returnValue(false));
+
+        $inputMock->expects($this->at($index++))
             ->method('getParameterOption')
             ->with($this->equalTo(array('--working-dir', '-d')))
             ->will($this->returnValue(false));
@@ -42,7 +47,7 @@ class ApplicationTest extends TestCase
 
         $index = 0;
         $outputMock->expects($this->at($index++))
-            ->method("writeError");
+            ->method("write");
 
         if (extension_loaded('xdebug')) {
             $outputMock->expects($this->at($index++))
@@ -83,6 +88,11 @@ class ApplicationTest extends TestCase
             ->method('hasParameterOption')
             ->with($this->equalTo('--no-plugins'))
             ->will($this->returnValue(true));
+
+        $inputMock->expects($this->at($index++))
+            ->method('hasParameterOption')
+            ->with($this->equalTo('--no-cache'))
+            ->will($this->returnValue(false));
 
         $inputMock->expects($this->at($index++))
             ->method('getParameterOption')

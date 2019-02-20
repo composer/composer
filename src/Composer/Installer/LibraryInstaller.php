@@ -43,7 +43,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
      *
      * @param IOInterface     $io
      * @param Composer        $composer
-     * @param string          $type
+     * @param string|null     $type
      * @param Filesystem      $filesystem
      * @param BinaryInstaller $binaryInstaller
      */

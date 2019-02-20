@@ -17,7 +17,6 @@ use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
 use Composer\Util\Http\Response;
-use Psr\Log\LoggerInterface;
 use React\Promise\Promise;
 
 /**
@@ -58,8 +57,7 @@ class HttpDownloader
         // Setup TLS options
         // The cafile option can be set via config.json
         if ($disableTls === false) {
-            $logger = $io instanceof LoggerInterface ? $io : null;
-            $this->options = StreamContextFactory::getTlsDefaults($options, $logger);
+            $this->options = StreamContextFactory::getTlsDefaults($options, $io);
         } else {
             $this->disableTls = true;
         }
@@ -119,7 +117,7 @@ class HttpDownloader
     /**
      * Merges new options
      *
-     * @return array $options
+     * @return void
      */
     public function setOptions(array $options)
     {

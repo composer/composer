@@ -121,7 +121,7 @@ class PerforceDownloaderTest extends TestCase
      * @depends testInitPerforceInstantiatesANewPerforceObject
      * @depends testInitPerforceDoesNothingIfPerforceAlreadySet
      */
-    public function testDoDownloadWithTag()
+    public function testDoInstallWithTag()
     {
         //I really don't like this test but the logic of each Perforce method is tested in the Perforce class.  Really I am just enforcing workflow.
         $ref = 'SOURCE_REF@123';
@@ -129,7 +129,7 @@ class PerforceDownloaderTest extends TestCase
         $this->package->expects($this->once())->method('getSourceReference')->will($this->returnValue($ref));
         $this->io->expects($this->once())->method('writeError')->with($this->stringContains('Cloning '.$ref));
         $perforceMethods = array('setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec');
-        $perforce = $this->getMockBuilder('Composer\Util\Perforce', $perforceMethods)->disableOriginalConstructor()->getMock();
+        $perforce = $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
         $perforce->expects($this->at(0))->method('initializePath')->with($this->equalTo($this->testPath));
         $perforce->expects($this->at(1))->method('setStream')->with($this->equalTo($ref));
         $perforce->expects($this->at(2))->method('p4Login');
@@ -145,14 +145,14 @@ class PerforceDownloaderTest extends TestCase
      * @depends testInitPerforceInstantiatesANewPerforceObject
      * @depends testInitPerforceDoesNothingIfPerforceAlreadySet
      */
-    public function testDoDownloadWithNoTag()
+    public function testDoInstallWithNoTag()
     {
         $ref = 'SOURCE_REF';
         $label = null;
         $this->package->expects($this->once())->method('getSourceReference')->will($this->returnValue($ref));
         $this->io->expects($this->once())->method('writeError')->with($this->stringContains('Cloning '.$ref));
         $perforceMethods = array('setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec');
-        $perforce = $this->getMockBuilder('Composer\Util\Perforce', $perforceMethods)->disableOriginalConstructor()->getMock();
+        $perforce = $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
         $perforce->expects($this->at(0))->method('initializePath')->with($this->equalTo($this->testPath));
         $perforce->expects($this->at(1))->method('setStream')->with($this->equalTo($ref));
         $perforce->expects($this->at(2))->method('p4Login');

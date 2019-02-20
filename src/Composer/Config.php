@@ -61,6 +61,7 @@ class Config
         'archive-format' => 'tar',
         'archive-dir' => '.',
         'htaccess-protect' => true,
+        'use-github-api' => true,
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth
@@ -216,7 +217,6 @@ class Config
             case 'cache-vcs-dir':
             case 'cafile':
             case 'capath':
-            case 'htaccess-protect':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
@@ -229,6 +229,13 @@ class Config
                 }
 
                 return (($flags & self::RELATIVE_PATHS) == self::RELATIVE_PATHS) ? $val : $this->realpath($val);
+
+            case 'htaccess-protect':
+                $value = $this->getComposerEnv('COMPOSER_HTACCESS_PROTECT');
+                if (false === $value) {
+                    $value = $this->config[$key];
+                }
+                return $value !== 'false' && (bool) $value;
 
             case 'cache-ttl':
                 return (int) $this->config[$key];
@@ -317,10 +324,10 @@ class Config
 
             case 'disable-tls':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
-
             case 'secure-http':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
-
+            case 'use-github-api':
+                return $this->config[$key] !== 'false' && (bool) $this->config[$key];
             default:
                 if (!isset($this->config[$key])) {
                     return null;

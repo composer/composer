@@ -23,9 +23,13 @@ use Composer\Json\JsonFile;
  */
 class GitLab
 {
+    /** @var IOInterface */
     protected $io;
+    /** @var Config */
     protected $config;
+    /** @var ProcessExecutor */
     protected $process;
+    /** @var HttpDownloader */
     protected $httpDownloader;
 
     /**

@@ -165,6 +165,16 @@ class Factory
             'data-dir' => self::getDataDir($home),
         )));
 
+        // load global config
+        $file = new JsonFile($config->get('home').'/config.json');
+        if ($file->exists()) {
+            if ($io && $io->isDebug()) {
+                $io->writeError('Loading config file ' . $file->getPath());
+            }
+            $config->merge($file->read());
+        }
+        $config->setConfigSource(new JsonConfigSource($file));
+
         $htaccessProtect = (bool) $config->get('htaccess-protect');
         if ($htaccessProtect) {
             // Protect directory against web access. Since HOME could be
@@ -180,16 +190,6 @@ class Factory
                 }
             }
         }
-
-        // load global config
-        $file = new JsonFile($config->get('home').'/config.json');
-        if ($file->exists()) {
-            if ($io && $io->isDebug()) {
-                $io->writeError('Loading config file ' . $file->getPath());
-            }
-            $config->merge($file->read());
-        }
-        $config->setConfigSource(new JsonConfigSource($file));
 
         // load global auth file
         $file = new JsonFile($config->get('home').'/auth.json');
@@ -349,7 +349,7 @@ class Factory
         // load package
         $parser = new VersionParser;
         $guesser = new VersionGuesser($config, new ProcessExecutor($io), $parser);
-        $loader = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser);
+        $loader = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser, $io);
         $package = $loader->load($localConfig, 'Composer\Package\RootPackage', $cwd);
         $composer->setPackage($package);
 
@@ -413,7 +413,7 @@ class Factory
     /**
      * @param  IOInterface $io             IO instance
      * @param  bool        $disablePlugins Whether plugins should not be loaded
-     * @return Composer
+     * @return Composer|null
      */
     public static function createGlobal(IOInterface $io, $disablePlugins = false)
     {
@@ -542,7 +542,7 @@ class Factory
         $im->addInstaller(new Installer\LibraryInstaller($io, $composer, null));
         $im->addInstaller(new Installer\PearInstaller($io, $composer, 'pear-library'));
         $im->addInstaller(new Installer\PluginInstaller($io, $composer));
-        $im->addInstaller(new Installer\MetapackageInstaller());
+        $im->addInstaller(new Installer\MetapackageInstaller($io));
     }
 
     /**

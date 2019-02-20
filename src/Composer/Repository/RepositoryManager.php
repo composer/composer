@@ -125,13 +125,7 @@ class RepositoryManager
 
         $class = $this->repositoryClasses[$type];
 
-        $reflMethod = new \ReflectionMethod($class, '__construct');
-        $params = $reflMethod->getParameters();
-        if (isset($params[3]) && $params[3]->getClass() && $params[3]->getClass()->getName() === 'Composer\Util\HttpDownloader') {
-            return new $class($config, $this->io, $this->config, $this->httpDownloader, $this->eventDispatcher);
-        }
-
-        return new $class($config, $this->io, $this->config, $this->eventDispatcher);
+        return new $class($config, $this->io, $this->config, $this->httpDownloader, $this->eventDispatcher);
     }
 
     /**
