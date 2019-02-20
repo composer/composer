@@ -152,8 +152,8 @@ class GitHubDriver extends VcsDriver
             }
 
             $composer = $this->getBaseComposerInformation($identifier);
-            if ($composer) {
 
+            if ($composer) {
                 // specials for github
                 if (!isset($composer['support']['source'])) {
                     $label = array_search($identifier, $this->getTags()) ?: array_search($identifier, $this->getBranches()) ?: $identifier;

@@ -124,50 +124,52 @@ abstract class BitbucketDriver extends VcsDriver
 
             $composer = $this->getBaseComposerInformation($identifier);
 
-            // specials for bitbucket
-            if (!isset($composer['support']['source'])) {
-                $label = array_search(
-                    $identifier,
-                    $this->getTags()
-                ) ?: array_search(
-                    $identifier,
-                    $this->getBranches()
-                ) ?: $identifier;
+            if ($composer) {
+                // specials for bitbucket
+                if (!isset($composer['support']['source'])) {
+                    $label = array_search(
+                        $identifier,
+                        $this->getTags()
+                    ) ?: array_search(
+                        $identifier,
+                        $this->getBranches()
+                    ) ?: $identifier;
 
-                if (array_key_exists($label, $tags = $this->getTags())) {
-                    $hash = $tags[$label];
-                } elseif (array_key_exists($label, $branches = $this->getBranches())) {
-                    $hash = $branches[$label];
+                    if (array_key_exists($label, $tags = $this->getTags())) {
+                        $hash = $tags[$label];
+                    } elseif (array_key_exists($label, $branches = $this->getBranches())) {
+                        $hash = $branches[$label];
+                    }
+
+                    if (! isset($hash)) {
+                        $composer['support']['source'] = sprintf(
+                            'https://%s/%s/%s/src',
+                            $this->originUrl,
+                            $this->owner,
+                            $this->repository
+                        );
+                    } else {
+                        $composer['support']['source'] = sprintf(
+                            'https://%s/%s/%s/src/%s/?at=%s',
+                            $this->originUrl,
+                            $this->owner,
+                            $this->repository,
+                            $hash,
+                            $label
+                        );
+                    }
                 }
-
-                if (! isset($hash)) {
-                    $composer['support']['source'] = sprintf(
-                        'https://%s/%s/%s/src',
+                if (!isset($composer['support']['issues']) && $this->hasIssues) {
+                    $composer['support']['issues'] = sprintf(
+                        'https://%s/%s/%s/issues',
                         $this->originUrl,
                         $this->owner,
                         $this->repository
                     );
-                } else {
-                    $composer['support']['source'] = sprintf(
-                        'https://%s/%s/%s/src/%s/?at=%s',
-                        $this->originUrl,
-                        $this->owner,
-                        $this->repository,
-                        $hash,
-                        $label
-                    );
                 }
-            }
-            if (!isset($composer['support']['issues']) && $this->hasIssues) {
-                $composer['support']['issues'] = sprintf(
-                    'https://%s/%s/%s/issues',
-                    $this->originUrl,
-                    $this->owner,
-                    $this->repository
-                );
-            }
-            if (!isset($composer['homepage'])) {
-                $composer['homepage'] = empty($this->website) ? $this->homeUrl : $this->website;
+                if (!isset($composer['homepage'])) {
+                    $composer['homepage'] = empty($this->website) ? $this->homeUrl : $this->website;
+                }
             }
 
             $this->infoCache[$identifier] = $composer;
