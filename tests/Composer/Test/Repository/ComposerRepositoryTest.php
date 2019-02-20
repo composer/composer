@@ -99,7 +99,13 @@ class ComposerRepositoryTest extends TestCase
     public function testWhatProvides()
     {
         $repo = $this->getMockBuilder('Composer\Repository\ComposerRepository')
-            ->disableOriginalConstructor()
+            ->setConstructorArgs(array(
+                array('url' => 'https://dummy.test.link'),
+                new NullIO,
+                FactoryMock::createConfig(),
+                $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
+                $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
+            ))
             ->setMethods(array('fetchFile'))
             ->getMock();
 
