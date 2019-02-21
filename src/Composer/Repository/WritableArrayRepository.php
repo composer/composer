@@ -24,7 +24,7 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
     /**
      * {@inheritDoc}
      */
-    public function write()
+    public function write($devMode)
     {
     }
 
