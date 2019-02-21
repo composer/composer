@@ -189,24 +189,21 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     }
 
     /**
-     * Returns true if junctions can be safely used on Windows
+     * Returns true if junctions can be created and safely used on Windows
      *
      * A PHP bug makes junction detection fragile, leading to possible data loss
      * when removing a package. See https://bugs.php.net/bug.php?id=77552
      *
      * For safety we require a minimum version of Windows 7, so we can call the
-     * system rmdir which can detect junctions and not delete target content.
+     * system rmdir which will preserve target content if given a junction.
+     *
+     * The PHP bug was fixed in 7.2.16 and 7.3.3 (requires at least Windows 7).
      *
      * @return bool
      */
     private function safeJunctions()
     {
-        // Bug fixed in 7.3.3 and 7.2.16
-        if (PHP_VERSION_ID >= 70303 || (PHP_VERSION_ID >= 70216 && PHP_VERSION_ID < 70300)) {
-            return true;
-        }
-
-        // Windows 7 is version 6.1
+        // We need to call mklink, and rmdir on Windows 7 (version 6.1)
         return function_exists('proc_open') &&
             (PHP_WINDOWS_VERSION_MAJOR > 6 ||
             (PHP_WINDOWS_VERSION_MAJOR === 6 && PHP_WINDOWS_VERSION_MINOR >= 1));
