@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
 use Composer\Util\Http\Response;
+use Composer\Composer;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\Constraint;
 use React\Promise\Promise;
