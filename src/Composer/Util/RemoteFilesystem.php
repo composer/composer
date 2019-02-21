@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
+use Composer\Util\HttpDownloader;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
@@ -291,15 +292,12 @@ class RemoteFilesystem
 
             if (!empty($http_response_header[0])) {
                 $statusCode = $this->findStatusCode($http_response_header);
+                if ($statusCode >= 400 && $this->findHeaderValue($http_response_header, 'content-type') === 'application/json') {
+                    HttpDownloader::outputWarnings($this->io, $originUrl, json_decode($result, true));
+                }
+
                 if (in_array($statusCode, array(401, 403)) && $this->retryAuthFailure) {
-                    $warning = null;
-                    if ($this->findHeaderValue($http_response_header, 'content-type') === 'application/json') {
-                        $data = json_decode($result, true);
-                        if (!empty($data['warning'])) {
-                            $warning = $data['warning'];
-                        }
-                    }
-                    $this->promptAuthAndRetry($statusCode, $this->findStatusMessage($http_response_header), $warning, $http_response_header);
+                    $this->promptAuthAndRetry($statusCode, $this->findStatusMessage($http_response_header), $http_response_header);
                 }
             }
 
@@ -613,9 +611,9 @@ class RemoteFilesystem
         }
     }
 
-    protected function promptAuthAndRetry($httpStatus, $reason = null, $warning = null, $headers = array())
+    protected function promptAuthAndRetry($httpStatus, $reason = null, $headers = array())
     {
-        $result = $this->authHelper->promptAuthIfNeeded($this->fileUrl, $this->originUrl, $httpStatus, $reason, $warning, $headers);
+        $result = $this->authHelper->promptAuthIfNeeded($this->fileUrl, $this->originUrl, $httpStatus, $reason, $headers);
 
         $this->storeAuth = $result['storeAuth'];
         $this->retry = $result['retry'];

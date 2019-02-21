@@ -962,7 +962,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 $data = $response->decodeJson();
-                $this->outputWarnings($data);
+                HttpDownloader::outputWarnings($this->io, $this->url, $data);
 
                 if ($cacheKey) {
                     if ($storeLastModifiedTime) {
@@ -1036,7 +1036,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 $data = $response->decodeJson();
-                $this->outputWarnings($data);
+                HttpDownloader::outputWarnings($this->io, $this->url, $data);
 
                 $lastModifiedDate = $response->getHeader('last-modified');
                 $response->collect();
@@ -1101,7 +1101,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $data = $response->decodeJson();
-            $this->outputWarnings($data);
+            HttpDownloader::outputWarnings($io, $url, $data);
 
             $lastModifiedDate = $response->getHeader('last-modified');
             $response->collect();
@@ -1160,25 +1160,5 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         // wipe rootData as it is fully consumed at this point and this saves some memory
         $this->rootData = true;
-    }
-
-    private function outputWarnings($data)
-    {
-        foreach (array('warning', 'info') as $type) {
-            if (empty($data[$type])) {
-                continue;
-            }
-
-            if (!empty($data[$type . '-versions'])) {
-                $versionParser = new VersionParser();
-                $constraint = $versionParser->parseConstraints($data[$type . '-versions']);
-                $composer = new Constraint('==', $versionParser->normalize(Composer::getVersion()));
-                if (!$constraint->matches($composer)) {
-                    continue;
-                }
-            }
-
-            $this->io->writeError('<'.$type.'>'.ucfirst($type).' from '.$this->url.': '.$data[$type].'</'.$type.'>');
-        }
     }
 }

@@ -17,6 +17,8 @@ use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
 use Composer\Util\Http\Response;
+use Composer\Package\Version\VersionParser;
+use Composer\Semver\Constraint\Constraint;
 use React\Promise\Promise;
 
 /**
@@ -312,5 +314,25 @@ class HttpDownloader
         unset($this->jobs[$index]);
 
         return $resp;
+    }
+
+    public static function outputWarnings(IOInterface $io, $url, $data)
+    {
+        foreach (array('warning', 'info') as $type) {
+            if (empty($data[$type])) {
+                continue;
+            }
+
+            if (!empty($data[$type . '-versions'])) {
+                $versionParser = new VersionParser();
+                $constraint = $versionParser->parseConstraints($data[$type . '-versions']);
+                $composer = new Constraint('==', $versionParser->normalize(Composer::getVersion()));
+                if (!$constraint->matches($composer)) {
+                    continue;
+                }
+            }
+
+            $io->writeError('<'.$type.'>'.ucfirst($type).' from '.$url.': '.$data[$type].'</'.$type.'>');
+        }
     }
 }

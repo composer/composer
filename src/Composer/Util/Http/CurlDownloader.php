@@ -20,6 +20,7 @@ use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
+use Composer\Util\HttpDownloader;
 use React\Promise\Promise;
 
 /**
@@ -261,6 +262,10 @@ class CurlDownloader
                     $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
                 }
 
+                if ($response->getStatusCode() >= 400 && $response->getHeader('content-type') === 'application/json') {
+                    HttpDownloader::outputWarnings($this->io, $job['origin'], json_decode($response->getBody(), true));
+                }
+
                 $result = $this->isAuthenticatedRetryNeeded($job, $response);
                 if ($result['retry']) {
                     if ($job['filename']) {
@@ -371,15 +376,7 @@ class CurlDownloader
     private function isAuthenticatedRetryNeeded(array $job, Response $response)
     {
         if (in_array($response->getStatusCode(), array(401, 403)) && $job['attributes']['retryAuthFailure']) {
-            $warning = null;
-            if ($response->getHeader('content-type') === 'application/json') {
-                $data = json_decode($response->getBody(), true);
-                if (!empty($data['warning'])) {
-                    $warning = $data['warning'];
-                }
-            }
-
-            $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $warning, $response->getHeaders());
+            $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $response->getHeaders());
 
             if ($result['retry']) {
                 return $result;
