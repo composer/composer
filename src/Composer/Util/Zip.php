@@ -38,7 +38,7 @@ class Zip
             return null;
         }
 
-        $foundFileIndex = static::locateFile($zip, $filename);
+        $foundFileIndex = self::locateFile($zip, $filename);
         if (false === $foundFileIndex) {
             $zip->close();
 
