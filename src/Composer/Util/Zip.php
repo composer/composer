@@ -20,8 +20,8 @@ class Zip
     /**
      * Finds the path to a file inside a ZIP archive.
      *
-     * @param $pathToZip
-     * @param $filename
+     * @param string $pathToZip
+     * @param string $filename
      *
      * @return string|null
      */
@@ -55,7 +55,8 @@ class Zip
      * Find a file by name, returning the one that has the shortest path.
      *
      * @param \ZipArchive $zip
-     * @param string $filename
+     * @param string      $filename
+     *
      * @return bool|int
      */
     private static function locateFile(\ZipArchive $zip, $filename)
