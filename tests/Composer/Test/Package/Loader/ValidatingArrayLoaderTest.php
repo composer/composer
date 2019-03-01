@@ -341,6 +341,18 @@ class ValidatingArrayLoaderTest extends TestCase
                 array(
                     'name' => 'foo/bar',
                     'require' => array(
+                        'Foo/Baz' => '^1.0',
+                    ),
+                ),
+                array(
+                    'Deprecation warning: require.Foo/Baz is invalid, it should not contain uppercase characters. Please use foo/baz instead. Make sure you fix this as Composer 2.0 will error.',
+                ),
+                false,
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'require' => array(
                         'bar/unstable' => '0.3.0',
                     ),
                 ),
