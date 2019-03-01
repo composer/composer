@@ -18,15 +18,19 @@ namespace Composer\Util;
 class Zip
 {
     /**
-     * Finds the path to a file inside a ZIP archive.
+     * Finds the path to the root composer.json inside a ZIP archive.
      *
      * @param string $pathToZip
      * @param string $filename
      *
      * @return string|null
      */
-    public static function findFile($pathToZip, $filename)
+    public static function findComposerJson($pathToZip)
     {
+        if (!extension_loaded('zip')) {
+            throw new \RuntimeException('The Zip Util requires PHP\'s zip extension');
+        }
+
         $zip = new \ZipArchive();
         if ($zip->open($pathToZip) !== true) {
             return null;
@@ -38,7 +42,7 @@ class Zip
             return null;
         }
 
-        $foundFileIndex = self::locateFile($zip, $filename);
+        $foundFileIndex = self::locateFile($zip, 'composer.json');
         if (false === $foundFileIndex) {
             $zip->close();
 
@@ -68,7 +72,7 @@ class Zip
             $stat = $zip->statIndex($i);
             if (strcmp(basename($stat['name']), $filename) === 0) {
                 $directoryName = dirname($stat['name']);
-                if ($directoryName == '.') {
+                if ($directoryName === '.') {
                     //if composer.json is in root directory
                     //it has to be the one to use.
                     return $i;
