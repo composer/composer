@@ -176,7 +176,7 @@ class JsonManipulator
 
             foreach ($nodes as $node) {
                 if (!array_key_exists($node, $pointer)) {
-                    $pointer[$node] = [];
+                    $pointer[$node] = array();
                 }
 
                 $pointer = &$pointer[$node];
