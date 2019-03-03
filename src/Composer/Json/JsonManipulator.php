@@ -168,7 +168,25 @@ class JsonManipulator
     public function addProperty($name, $value)
     {
         if (substr($name, 0, 6) === 'extra.') {
-            return $this->addSubNode('extra', substr($name, 6), $value);
+            $decoded = JsonFile::parseJson($this->contents);
+
+            $nodes = explode('.', $name);
+
+            $pointer = &$decoded;
+
+            foreach ($nodes as $node) {
+                if (!array_key_exists($node, $pointer)) {
+                    $pointer[$node] = [];
+                }
+
+                $pointer = &$pointer[$node];
+            }
+
+            $pointer = $value;
+
+            $this->contents = JsonFile::encode($decoded);
+
+            return true;
         }
 
         if (substr($name, 0, 8) === 'scripts.') {
