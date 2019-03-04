@@ -397,6 +397,7 @@ class Application extends BaseApplication
             new Command\AboutCommand(),
             new Command\ConfigCommand(),
             new Command\DependsCommand(),
+            new Command\DocumentationCommand(),
             new Command\ProhibitsCommand(),
             new Command\InitCommand(),
             new Command\InstallCommand(),
