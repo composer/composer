@@ -56,6 +56,7 @@ package in the specified version and writes it to the specified directory.
 
 <info>php composer.phar archive [--format=zip] [--dir=/foo] [package [version]]</info>
 
+Read more at https://getcomposer.org/doc/03-cli.md#archive
 EOT
             )
         ;

@@ -52,6 +52,7 @@ class StatusCommand extends BaseCommand
 The status command displays a list of dependencies that have
 been modified locally.
 
+Read more at https://getcomposer.org/doc/03-cli.md#status
 EOT
             )
         ;

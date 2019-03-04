@@ -104,6 +104,7 @@ controlled code by appending the <info>'--prefer-source'</info> flag.
 To install a package from another repository than the default one you
 can pass the <info>'--repository=https://myrepository.org'</info> flag.
 
+Read more at https://getcomposer.org/doc/03-cli.md#create-project
 EOT
             )
         ;
