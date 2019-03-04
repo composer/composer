@@ -13,7 +13,7 @@
 namespace Composer\Util;
 
 /**
- * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Andreas Schempp <andreas.schempp@terminal42.ch>
  */
 class Zip
 {
