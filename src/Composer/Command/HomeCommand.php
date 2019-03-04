@@ -49,6 +49,8 @@ homepage in your default browser.
 
 To open the homepage by default, use -H or --homepage.
 To show instead of open the repository or homepage URL, use -s or --show.
+
+Read more at https://getcomposer.org/doc/03-cli.md#browse-home
 EOT
             );
     }

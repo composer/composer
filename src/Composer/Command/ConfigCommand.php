@@ -125,6 +125,8 @@ You can always pass more than one option. As an example, if you want to edit the
 global config.json file.
 
     <comment>%command.full_name% --editor --global</comment>
+
+Read more at https://getcomposer.org/doc/03-cli.md#config
 EOT
             )
         ;

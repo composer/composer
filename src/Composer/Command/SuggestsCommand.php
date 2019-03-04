@@ -38,6 +38,7 @@ The <info>%command.name%</info> command shows a sorted list of suggested package
 
 Enabling <info>-v</info> implies <info>--by-package --by-suggestion</info>, showing both lists.
 
+Read more at https://getcomposer.org/doc/03-cli.md#suggests
 EOT
             )
         ;
