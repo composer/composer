@@ -38,7 +38,7 @@ class ExecCommand extends BaseCommand
             ))
             ->setHelp(
                 <<<EOT
-Executes a vendored binary/script
+Executes a vendored binary/script.
                 
 Read more at https://getcomposer.org/doc/03-cli.md#exec
 EOT
