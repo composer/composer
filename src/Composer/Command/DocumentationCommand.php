@@ -45,17 +45,14 @@ EOT
         $docs = [];
         $aliases = [];
 
-        $lines = explode("\n", file_get_contents($this->documentationUri) );
+        $lines = explode("\n", file_get_contents($this->documentationUri));
 
-        for ($i=0; $i < sizeof($lines); $i++) 
-        { 
-            if( substr($lines[$i], 0, 3) == '## '  &&  $i < (sizeof($lines) - 1) )
-            {
-                $command = trim( substr($lines[$i], 3) );
+        for ($i=0; $i < sizeof($lines); $i++) {
+            if (substr($lines[$i], 0, 3) == '## '  &&  $i < (sizeof($lines) - 1)) {
+                $command = trim(substr($lines[$i], 3));
 
                 // get alias separated by "/"
-                if( strpos($command, '/') )
-                {
+                if (strpos($command, '/')) {
                     $alias = explode('/', $command);
 
                     $command = trim($alias[0]);
@@ -64,8 +61,7 @@ EOT
                 }
 
                 // get alias in ()
-                if( false !== $pos = stripos($command, "(") )
-                {
+                if (false !== $pos = stripos($command, "(")) {
                     $alias[0] = trim(substr($command, 0, $pos));
                     $alias[1] = trim(substr($command, $pos), '()');
                     $command = $alias[0];
@@ -76,8 +72,7 @@ EOT
 
                 $i++;
 
-                while( $i < sizeof($lines)  && substr($lines[$i], 0, 3) != '## ' )
-                {               
+                while ($i < sizeof($lines)  && substr($lines[$i], 0, 3) != '## ') {
                     $docs[$command] .= isset($lines[$i])  ?  $lines[$i].PHP_EOL  :  '';
                     $i++;
                 }
@@ -89,18 +84,12 @@ EOT
         $io = $this->getIO();
         $name = $input->getArgument('name');
 
-        if( array_key_exists($name, $docs) )
-        {
+        if (array_key_exists($name, $docs)) {
             $io->write(PHP_EOL.$docs[$name].PHP_EOL);
-        }
-        elseif( array_key_exists($name, $aliases) )
-        {
-             $io->write(PHP_EOL.$docs[$aliases[$name]].PHP_EOL);
-        }
-        else
-        {
+        } elseif (array_key_exists($name, $aliases)) {
+            $io->write(PHP_EOL.$docs[$aliases[$name]].PHP_EOL);
+        } else {
             $io->writeError('<error>Command "'.$name.'"not found in documentation.</error>');
         }
     }
-
 }
