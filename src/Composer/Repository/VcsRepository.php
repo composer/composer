@@ -223,7 +223,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
                 $this->addPackage($this->loader->load($this->preProcess($driver, $data, $identifier)));
             } catch (\Exception $e) {
-                if ($e instanceof TransportException) {
+                if ($e instanceof TransportException && $e->getCode() === 404) {
                     $this->emptyReferences[] = $identifier;
                 }
                 if ($verbose) {
@@ -303,7 +303,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 }
                 $this->addPackage($package);
             } catch (TransportException $e) {
-                $this->emptyReferences[] = $identifier;
+                if ($e->getCode() === 404) {
+                    $this->emptyReferences[] = $identifier;
+                }
                 if ($verbose) {
                     $this->io->writeError('<warning>Skipped branch '.$branch.', no composer file was found</warning>');
                 }
