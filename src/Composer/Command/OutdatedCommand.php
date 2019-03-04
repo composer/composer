@@ -50,7 +50,7 @@ The color coding (or signage if you have ANSI colors disabled) for dependency ve
   may involve work.
 - <highlight>red</highlight> (!): Dependency has a new version that is semver-compatible and you should upgrade it.
 
-
+Read more at https://getcomposer.org/doc/03-cli.md#outdated
 EOT
             )
         ;

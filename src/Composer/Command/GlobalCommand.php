@@ -50,6 +50,7 @@ XDG_CONFIG_HOME or default to /home/<user>/.config/composer
 Note: This path may vary depending on customizations to bin-dir in
 composer.json or the environmental variable COMPOSER_BIN_DIR.
 
+Read more at https://getcomposer.org/doc/03-cli.md#global
 EOT
             )
         ;

@@ -55,6 +55,7 @@ Exit codes in case of errors are:
 2 validation error(s)
 3 file unreadable or missing
 
+Read more at https://getcomposer.org/doc/03-cli.md#validate
 EOT
             );
     }

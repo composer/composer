@@ -37,6 +37,7 @@ Displays detailed information about where a package is referenced.
 
 <info>php composer.phar depends composer/composer</info>
 
+Read more at https://getcomposer.org/doc/03-cli.md#depends-why-
 EOT
             )
         ;

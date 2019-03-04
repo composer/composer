@@ -41,6 +41,7 @@ class LicensesCommand extends BaseCommand
 The license command displays detailed information about the licenses of
 the installed dependencies.
 
+Read more at https://getcomposer.org/doc/03-cli.md#licenses
 EOT
             )
         ;

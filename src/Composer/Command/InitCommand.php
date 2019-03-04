@@ -72,6 +72,7 @@ in the current directory.
 
 <info>php composer.phar init</info>
 
+Read more at https://getcomposer.org/doc/03-cli.md#init
 EOT
             )
         ;
