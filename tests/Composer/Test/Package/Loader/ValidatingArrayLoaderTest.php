@@ -300,6 +300,30 @@ class ValidatingArrayLoaderTest extends TestCase
             ),
             array(
                 array(
+                    'name' => 'foo/bar.json',
+                ),
+                array(
+                    'Deprecation warning: Your package name foo/bar.json is invalid, package names can not end in .json, consider renaming it or perhaps using a -json suffix instead. Make sure you fix this as Composer 2.0 will error.',
+                ),
+            ),
+            array(
+                array(
+                    'name' => 'com1/foo',
+                ),
+                array(
+                    'Deprecation warning: Your package name com1/foo is reserved, package and vendor names can not match any of: nul, con, prn, aux, com1, com2, com3, com4, com5, com6, com7, com8, com9, lpt1, lpt2, lpt3, lpt4, lpt5, lpt6, lpt7, lpt8, lpt9. Make sure you fix this as Composer 2.0 will error.',
+                ),
+            ),
+            array(
+                array(
+                    'name' => 'Foo/Bar',
+                ),
+                array(
+                    'Deprecation warning: Your package name Foo/Bar is invalid, it should not contain uppercase characters. We suggest using foo/bar instead. Make sure you fix this as Composer 2.0 will error.',
+                ),
+            ),
+            array(
+                array(
                     'name' => 'foo/bar',
                     'support' => array(
                         'source' => 'foo:bar',
