@@ -49,6 +49,10 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->warnings = array();
         $this->config = $config;
 
+        if ($err = self::hasPackageNamingError($config['name'])) {
+            $this->warnings[] = 'Deprecation warning: Your package name '.$err.' Make sure you fix this as Composer 2.0 will error.';
+        }
+
         if ($this->strictName) {
             $this->validateRegex('name', '[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*', true);
         } else {
