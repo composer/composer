@@ -12,12 +12,6 @@ parameters:
         - '~^Constructor of class Composer\\Util\\Http\\CurlDownloader has an unused parameter \$options\.$~'
         - '~^Constructor of class Composer\\Repository\\PearRepository has an unused parameter \$config\.$~'
 
-        # unused uses
-        - '~^Anonymous function has an unused use \$io\.$~'
-        - '~^Anonymous function has an unused use \$cache\.$~'
-        - '~^Anonymous function has an unused use \$path\.$~'
-        - '~^Anonymous function has an unused use \$fileName\.$~'
-
         # ion cube is not installed
         - '~^Function ioncube_loader_\w+ not found\.$~'
         # rar is not installed
