@@ -599,6 +599,12 @@ class Package extends BasePackage
                     $mirrorUrl = ComposerMirror::processGitUrl($mirror['url'], $this->name, $url, $type);
                 } elseif ($urlType === 'source' && $type === 'hg') {
                     $mirrorUrl = ComposerMirror::processHgUrl($mirror['url'], $this->name, $url, $type);
+                } else {
+                    throw new \InvalidArgumentException(sprintf(
+                        "Package: Unknown \$urlType %s (\"%s\"). Please report at https://github.com/composer/composer/issues/new.",
+                        gettype($urlType),
+                        $urlType
+                    ));
                 }
                 if (!in_array($mirrorUrl, $urls)) {
                     $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';

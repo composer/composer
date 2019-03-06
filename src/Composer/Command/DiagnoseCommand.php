@@ -625,6 +625,9 @@ EOT
                         $text = PHP_EOL."The openssl extension is missing, which means that secure HTTPS transfers are impossible.".PHP_EOL;
                         $text .= "If possible you should enable it or recompile php with --with-openssl";
                         break;
+
+                    default:
+                        throw new \InvalidArgumentException(sprintf("DiagnoseCommand: Unknown error type \"%s\". Please report at https://github.com/composer/composer/issues/new.", $error));
                 }
                 $out($text, 'error');
             }
@@ -684,6 +687,9 @@ EOT
                         $text .= "  xdebug.profiler_enabled = 0";
                         $displayIniMessage = true;
                         break;
+
+                    default:
+                        throw new \InvalidArgumentException(sprintf("DiagnoseCommand: Unknown warning type \"%s\". Please report at https://github.com/composer/composer/issues/new.", $warning));
                 }
                 $out($text, 'comment');
             }

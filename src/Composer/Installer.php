@@ -974,6 +974,8 @@ class Installer
 
         if ($this->update && $this->updateWhitelist) {
             $currentPackages = $this->getCurrentPackages($installedRepo);
+        } else {
+            $currentPackages = array();
         }
 
         foreach ($localRepo->getCanonicalPackages() as $package) {

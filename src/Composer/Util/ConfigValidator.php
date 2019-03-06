@@ -184,7 +184,7 @@ class ConfigValidator
             $errors = array_merge($errors, $e->getErrors());
         }
 
-        $warnings = array_merge($warnings, $loader->getWarnings());
+        $warnings = array_merge($warnings, isset($loader) ? $loader->getWarnings() : array());
 
         return array($errors, $publishErrors, $warnings);
     }

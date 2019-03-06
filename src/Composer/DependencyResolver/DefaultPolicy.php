@@ -68,6 +68,10 @@ class DefaultPolicy implements PolicyInterface
             });
         }
 
+        if (!isset($policy)) {
+            throw new \InvalidArgumentException("DefaultPolicy: Empty packages. Please report at https://github.com/composer/composer/issues/new.");
+        }
+
         foreach ($packages as &$literals) {
             $literals = $this->pruneToHighestPriorityOrInstalled($pool, $installedMap, $literals);
 

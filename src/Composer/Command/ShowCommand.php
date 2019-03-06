@@ -542,6 +542,7 @@ EOT
         $repositorySet->addRepository($repos);
 
         $matchedPackage = null;
+        $package = null;
         $versions = array();
         $matches = $repositorySet->findPackages($name, $constraint);
         foreach ($matches as $index => $package) {

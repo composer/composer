@@ -347,6 +347,10 @@ class JsonManipulator
             $childrenClean = $children;
         }
 
+        if (!isset($childrenClean)) {
+            throw new \InvalidArgumentException("JsonManipulator: \$childrenClean is not defined. Please report at https://github.com/composer/composer/issues/new.");
+        }
+
         // no child data left, $name was the only key in
         $this->pregMatch('#^{ \s*? (?P<content>\S+.*?)? (?P<trailingspace>\s*) }$#sx', $childrenClean, $match);
         if (empty($match['content'])) {

@@ -479,6 +479,10 @@ class Solver
                     }
                 }
 
+                if (!isset($literal)) {
+                    throw new \InvalidArgumentException("Solver: \$literal is not defined. Please report at https://github.com/composer/composer/issues/new.");
+                }
+
                 unset($seen[abs($literal)]);
 
                 if ($num && 0 === --$num) {

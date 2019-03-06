@@ -287,6 +287,7 @@ class RemoteFilesystem
             }
             $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
         });
+        $http_response_header = array();
         try {
             $result = $this->getRemoteContents($originUrl, $fileUrl, $ctx, $http_response_header);
 
@@ -553,6 +554,8 @@ class RemoteFilesystem
      */
     protected function getRemoteContents($originUrl, $fileUrl, $context, array &$responseHeaders = null)
     {
+        $result = false;
+
         try {
             $e = null;
             $result = file_get_contents($fileUrl, false, $context);
