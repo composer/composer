@@ -171,8 +171,8 @@ class ConfigValidator
             $warnings[] = "Defining autoload.psr-4 with an empty namespace prefix is a bad idea for performance";
         }
 
+        $loader = new ValidatingArrayLoader(new ArrayLoader(), true, null, $arrayLoaderValidationFlags);
         try {
-            $loader = new ValidatingArrayLoader(new ArrayLoader(), true, null, $arrayLoaderValidationFlags);
             if (!isset($manifest['version'])) {
                 $manifest['version'] = '1.0.0';
             }
@@ -184,7 +184,7 @@ class ConfigValidator
             $errors = array_merge($errors, $e->getErrors());
         }
 
-        $warnings = array_merge($warnings, isset($loader) ? $loader->getWarnings() : array());
+        $warnings = array_merge($warnings, $loader->getWarnings());
 
         return array($errors, $publishErrors, $warnings);
     }
