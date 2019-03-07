@@ -18,10 +18,6 @@ parameters:
         - '~^Call to static method open\(\) on an unknown class RarArchive\.$~'
         # imagick is not installed
         - '~^Instantiated class Imagick not found\.$~'
-        # xsl could not be installed
-        #-
-        #    message: '~^Constant LIBXSLT_DOTTED_VERSION not found\.$~'
-        #    path: '%currentWorkingDirectory%/src/Composer/Repository/PlatformRepository.php'
         # windows specific constants
         -
             message: '~^Constant PHP_WINDOWS_VERSION_MAJOR not found\.$~'
