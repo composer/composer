@@ -40,9 +40,8 @@ class JsonLoader
             $config = JsonFile::parseJson($json);
         } else {
             throw new \InvalidArgumentException(sprintf(
-                "JsonLoader: Unknown \$json parameter %s (\"%s\"). Please report at https://github.com/composer/composer/issues/new.",
-                gettype($json),
-                $json
+                "JsonLoader: Unknown \$json parameter %s. Please report at https://github.com/composer/composer/issues/new.",
+                gettype($json)
             ));
         }
 
