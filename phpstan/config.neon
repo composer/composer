@@ -21,10 +21,10 @@ parameters:
         # windows specific constants
         -
             message: '~^Constant PHP_WINDOWS_VERSION_MAJOR not found\.$~'
-            path: '%currentWorkingDirectory%/src/Composer/Downloader/PathDownloader.php'
+            path: '*/src/Composer/Downloader/PathDownloader.php'
         -
             message: '~^Constant PHP_WINDOWS_VERSION_MINOR not found\.$~'
-            path: '%currentWorkingDirectory%/src/Composer/Downloader/PathDownloader.php'
+            path: '*/src/Composer/Downloader/PathDownloader.php'
 
         # variables from global scope
         - '~^Undefined variable: \$vendorDir$~'
