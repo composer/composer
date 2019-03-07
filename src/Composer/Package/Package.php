@@ -601,9 +601,10 @@ class Package extends BasePackage
                     $mirrorUrl = ComposerMirror::processHgUrl($mirror['url'], $this->name, $url, $type);
                 } else {
                     throw new \InvalidArgumentException(sprintf(
-                        "Package: Unknown \$urlType %s (\"%s\"). Please report at https://github.com/composer/composer/issues/new.",
-                        gettype($urlType),
-                        $urlType
+                        "Package: Unknown \$urlType \"%s\" and \$type \"%s\". Please report to maintainer of package \"%s\".",
+                        $urlType,
+                        $type,
+                        $this->name
                     ));
                 }
                 if (!in_array($mirrorUrl, $urls)) {
