@@ -60,16 +60,12 @@ class DefaultPolicy implements PolicyInterface
     public function selectPreferredPackages(Pool $pool, array $installedMap, array $literals, $requiredPackage = null)
     {
         $packages = $this->groupLiteralsByNamePreferInstalled($pool, $installedMap, $literals);
+        $policy = $this;
 
         foreach ($packages as &$literals) {
-            $policy = $this;
             usort($literals, function ($a, $b) use ($policy, $pool, $installedMap, $requiredPackage) {
                 return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage, true);
             });
-        }
-
-        if (!isset($policy)) {
-            throw new \InvalidArgumentException("DefaultPolicy: Empty packages. Please report at https://github.com/composer/composer/issues/new.");
         }
 
         foreach ($packages as &$literals) {
