@@ -153,6 +153,10 @@ class ConsoleIO extends BaseIO
             $memoryUsage = memory_get_usage() / 1024 / 1024;
             $timeSpent = microtime(true) - $this->startTime;
             $messages = array_map(function ($message) use ($memoryUsage, $timeSpent) {
+                if(strstr($message, "\x08") || strlen(trim($message)) == 0) {
+                    // If this is a backspace, or an empty filler line, then don't print profiling info
+                    return $message;
+                }
                 return sprintf('[%.1fMiB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
             }, (array) $messages);
         }
@@ -160,7 +164,6 @@ class ConsoleIO extends BaseIO
         if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
             $this->output->getErrorOutput()->write($messages, $newline, $sfVerbosity);
             $this->lastMessageErr = implode($newline ? "\n" : '', (array) $messages);
-
             return;
         }
 
