@@ -116,17 +116,28 @@ class ConsoleIO extends BaseIO
     /**
      * {@inheritDoc}
      */
-    public function write($messages, $newline = true, $verbosity = self::NORMAL)
+    public function isProfiling()
     {
-        $this->doWrite($messages, $newline, false, $verbosity);
+        if(null != $this->startTime) {
+            return true;
+        }
+        return false;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function writeError($messages, $newline = true, $verbosity = self::NORMAL)
+    public function write($messages, $newline = true, $verbosity = self::NORMAL, $skipProfiling = false)
     {
-        $this->doWrite($messages, $newline, true, $verbosity);
+        $this->doWrite($messages, $newline, false, $verbosity, $skipProfiling);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function writeError($messages, $newline = true, $verbosity = self::NORMAL, $skipProfiling = false)
+    {
+        $this->doWrite($messages, $newline, true, $verbosity, $skipProfiling);
     }
 
     /**
@@ -135,7 +146,7 @@ class ConsoleIO extends BaseIO
      * @param bool         $stderr
      * @param int          $verbosity
      */
-    private function doWrite($messages, $newline, $stderr, $verbosity)
+    private function doWrite($messages, $newline, $stderr, $verbosity, $skipProfiling)
     {
         $sfVerbosity = $this->verbosityMap[$verbosity];
         if ($sfVerbosity > $this->output->getVerbosity()) {
@@ -149,14 +160,10 @@ class ConsoleIO extends BaseIO
             $sfVerbosity = OutputInterface::OUTPUT_NORMAL;
         }
 
-        if (null !== $this->startTime) {
+        if ($skipProfiling == false && $this->isProfiling()) {
             $memoryUsage = memory_get_usage() / 1024 / 1024;
             $timeSpent = microtime(true) - $this->startTime;
             $messages = array_map(function ($message) use ($memoryUsage, $timeSpent) {
-                if(strstr($message, "\x08") || strlen(trim($message)) == 0) {
-                    // If this is a backspace, or an empty filler line, then don't print profiling info
-                    return $message;
-                }
                 return sprintf('[%.1fMiB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
             }, (array) $messages);
         }
@@ -174,17 +181,17 @@ class ConsoleIO extends BaseIO
     /**
      * {@inheritDoc}
      */
-    public function overwrite($messages, $newline = true, $size = null, $verbosity = self::NORMAL)
+    public function overwrite($messages, $newline = true, $size = null, $verbosity = self::NORMAL, $skipProfiling = false)
     {
-        $this->doOverwrite($messages, $newline, $size, false, $verbosity);
+        $this->doOverwrite($messages, $newline, $size, false, $verbosity, $skipProfiling);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function overwriteError($messages, $newline = true, $size = null, $verbosity = self::NORMAL)
+    public function overwriteError($messages, $newline = true, $size = null, $verbosity = self::NORMAL, $skipProfiling = false)
     {
-        $this->doOverwrite($messages, $newline, $size, true, $verbosity);
+        $this->doOverwrite($messages, $newline, $size, true, $verbosity, $skipProfiling);
     }
 
     /**
@@ -194,7 +201,7 @@ class ConsoleIO extends BaseIO
      * @param bool         $stderr
      * @param int          $verbosity
      */
-    private function doOverwrite($messages, $newline, $size, $stderr, $verbosity)
+    private function doOverwrite($messages, $newline, $size, $stderr, $verbosity, $skipProfiling)
     {
         // messages can be an array, let's convert it to string anyway
         $messages = implode($newline ? "\n" : '', (array) $messages);
@@ -205,10 +212,10 @@ class ConsoleIO extends BaseIO
             $size = strlen(strip_tags($stderr ? $this->lastMessageErr : $this->lastMessage));
         }
         // ...let's fill its length with backspaces
-        $this->doWrite(str_repeat("\x08", $size), false, $stderr, $verbosity);
+        $this->doWrite(str_repeat("\x08", $size), false, $stderr, $verbosity, $skipProfiling);
 
         // write the new message
-        $this->doWrite($messages, false, $stderr, $verbosity);
+        $this->doWrite($messages, false, $stderr, $verbosity, $skipProfiling);
 
         // In cmd.exe on Win8.1 (possibly 10?), the line can not be cleared, so we need to
         // track the length of previous output and fill it with spaces to make sure the line is cleared.
@@ -216,13 +223,13 @@ class ConsoleIO extends BaseIO
         $fill = $size - strlen(strip_tags($messages));
         if ($fill > 0) {
             // whitespace whatever has left
-            $this->doWrite(str_repeat(' ', $fill), false, $stderr, $verbosity);
+            $this->doWrite(str_repeat(' ', $fill), false, $stderr, $verbosity, $skipProfiling);
             // move the cursor back
-            $this->doWrite(str_repeat("\x08", $fill), false, $stderr, $verbosity);
+            $this->doWrite(str_repeat("\x08", $fill), false, $stderr, $verbosity, $skipProfiling);
         }
 
         if ($newline) {
-            $this->doWrite('', true, $stderr, $verbosity);
+            $this->doWrite('', true, $stderr, $verbosity, $skipProfiling);
         }
 
         if ($stderr) {

@@ -307,7 +307,7 @@ class RemoteFilesystem
         }
 
         if ($this->progress && !$isRedirect) {
-            $this->io->writeError("Downloading (<comment>connecting...</comment>)", false);
+            $this->io->writeError("Downloading (<comment>connecting...</comment>)", false, IOInterface::NORMAL, true);
         }
 
         $errorMessage = '';
@@ -432,7 +432,7 @@ class RemoteFilesystem
         if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
             if (!$this->retry) {
                 if ($this->progress && !$this->retry && !$isRedirect) {
-                    $this->io->overwriteError("Downloading (<error>failed</error>)", false);
+                    $this->io->overwriteError("Downloading (<error>failed</error>)", false, null, IOInterface::NORMAL, true);
                 }
 
                 $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
@@ -445,7 +445,7 @@ class RemoteFilesystem
         }
 
         if ($this->progress && !$this->retry && !$isRedirect) {
-            $this->io->overwriteError("Downloading (".($result === false ? '<error>failed</error>' : '<comment>100%</comment>').")", false);
+            $this->io->overwriteError("Downloading (".($result === false ? '<error>failed</error>' : '<comment>100%</comment>').")", false, null, IOInterface::NORMAL, true);
         }
 
         // decode gzip
@@ -637,7 +637,7 @@ class RemoteFilesystem
 
                     if ((0 === $progression % 5) && 100 !== $progression && $progression !== $this->lastProgress) {
                         $this->lastProgress = $progression;
-                        $this->io->overwriteError("Downloading (<comment>$progression%</comment>)", false);
+                        $this->io->overwriteError("Downloading (<comment>$progression%</comment>)", false, null, IOInterface::NORMAL, true);
                     }
                 }
                 break;

@@ -139,7 +139,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
             // use from cache if it is present and has a valid checksum or we have no checksum to check against
             if ($this->cache && (!$checksum || $checksum === $this->cache->sha1($cacheKey)) && $this->cache->copyTo($cacheKey, $fileName)) {
-                $this->io->writeError('Loading from cache', false);
+                $this->io->writeError('Loading from cache', false, IOInterface::NORMAL, true);
             } else {
                 // download if cache restore failed
                 if (!$this->outputProgress) {

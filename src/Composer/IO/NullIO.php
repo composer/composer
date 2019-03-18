@@ -62,6 +62,14 @@ class NullIO extends BaseIO
     /**
      * {@inheritDoc}
      */
+    public function isProfiling()
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function write($messages, $newline = true, $verbosity = self::NORMAL)
     {
     }

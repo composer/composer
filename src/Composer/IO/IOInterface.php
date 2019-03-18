@@ -63,6 +63,13 @@ interface IOInterface
     public function isDecorated();
 
     /**
+     * Is this output in profiling mode?
+     *
+     * @return bool
+     */
+    public function isProfiling();
+
+    /**
      * Writes a message to the output.
      *
      * @param string|array $messages  The message as an array of lines or a single string
