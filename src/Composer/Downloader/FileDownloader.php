@@ -112,7 +112,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
 
         if ($output) {
-            $this->io->writeError('');
+            $this->io->writeError('', true, IOInterface::NORMAL, true);
         }
 
         return $fileName;
