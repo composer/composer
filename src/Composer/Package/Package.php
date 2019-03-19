@@ -600,12 +600,7 @@ class Package extends BasePackage
                 } elseif ($urlType === 'source' && $type === 'hg') {
                     $mirrorUrl = ComposerMirror::processHgUrl($mirror['url'], $this->name, $url, $type);
                 } else {
-                    throw new \InvalidArgumentException(sprintf(
-                        "Package: Unknown \$urlType \"%s\" and \$type \"%s\". Please report to maintainer of package \"%s\".",
-                        $urlType,
-                        $type,
-                        $this->name
-                    ));
+                    continue;
                 }
                 if (!in_array($mirrorUrl, $urls)) {
                     $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';
