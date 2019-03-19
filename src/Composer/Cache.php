@@ -189,7 +189,8 @@ class Cache
     public function clear()
     {
         if ($this->enabled) {
-            return $this->filesystem->removeDirectory($this->root);
+            $this->filesystem->emptyDirectory($this->root);
+            return true;
         }
 
         return false;
