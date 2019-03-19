@@ -10,7 +10,7 @@ Composer is **not** a package manager in the same sense as Yum or Apt are. Yes,
 it deals with "packages" or libraries, but it manages them on a per-project
 basis, installing them in a directory (e.g. `vendor`) inside your project. By
 default it does not install anything globally. Thus, it is a dependency
-manager. It does however support a "global" project for convenience via the
+manager. It does however support a "global" project for convenience via the 
 [global](03-cli.md#global) command.
 
 This idea is not new and Composer is strongly inspired by node's
@@ -47,7 +47,7 @@ Linux and macOS.
 ### Downloading the Composer Executable
 
 Composer offers a convenient installer that you can execute directly from the
-commandline. Feel free to [download this file](https://getcomposer.org/installer)
+command line. Feel free to [download this file](https://getcomposer.org/installer)
 or review it on [GitHub](https://github.com/composer/getcomposer.org/blob/master/web/installer)
 if you wish to know more about the inner workings of the installer. The source
 is plain PHP.
@@ -82,7 +82,7 @@ Now run `php bin/composer` in order to run Composer.
 #### Globally
 
 You can place the Composer PHAR anywhere you wish. If you put it in a directory
-that is part of your `PATH`, you can access it globally. On unixy systems you
+that is part of your `PATH`, you can access it globally. On Unix systems you
 can even make it executable and invoke it without directly using the `php`
 interpreter.
 
