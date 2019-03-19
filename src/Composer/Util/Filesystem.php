@@ -440,7 +440,7 @@ class Filesystem
      */
     public function isAbsolutePath($path)
     {
-        return substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':';
+        return substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':' || substr($path, 0, 2) === '\\\\';
     }
 
     /**
