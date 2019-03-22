@@ -758,7 +758,11 @@ class SolverTest extends TestCase
             $msg .= "    - Can only install one of: B[0.9, 1.0].\n";
             $msg .= "    - A 1.0 requires b >= 1.0 -> satisfiable by B[1.0].\n";
             $msg .= "    - Installation request for a -> satisfiable by A[1.0].\n";
-            $this->assertEquals($msg, $e->getMessage());
+            // Accept problem details ordered differently.
+            $this->assertCount(
+                0,
+                array_diff(explode("\n", $msg), explode("\n", $e->getMessage()))
+            );
         }
     }
 

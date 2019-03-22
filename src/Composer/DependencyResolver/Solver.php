@@ -217,7 +217,7 @@ class Solver
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
-        $this->watchGraph = new RuleWatchGraph;
+        $this->watchGraph = new RuleWatchGraph($this->pool);
 
         foreach ($this->rules as $rule) {
             $this->watchGraph->insert(new RuleWatchNode($rule));

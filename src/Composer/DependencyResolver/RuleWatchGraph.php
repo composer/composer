@@ -25,6 +25,12 @@ namespace Composer\DependencyResolver;
 class RuleWatchGraph
 {
     protected $watchChains = array();
+    protected $pool;
+
+    public function __construct(Pool $pool)
+    {
+        $this->pool = $pool;
+    }
 
     /**
      * Inserts a rule node into the appropriate chains within the graph
@@ -46,7 +52,7 @@ class RuleWatchGraph
 
         foreach (array($node->watch1, $node->watch2) as $literal) {
             if (!isset($this->watchChains[$literal])) {
-                $this->watchChains[$literal] = new RuleWatchChain;
+                $this->watchChains[$literal] = new RuleWatchChain($literal , $this->pool);
             }
 
             $this->watchChains[$literal]->unshift($node);
@@ -84,10 +90,14 @@ class RuleWatchGraph
         $literal = -$decidedLiteral;
 
         if (!isset($this->watchChains[$literal])) {
-            return null;
+            if ($literal < 0) {
+                $chain = new RuleWatchChain($literal, $this->pool);
+            } else {
+                return null;
+            }
+        } else {
+            $chain = $this->watchChains[$literal];
         }
-
-        $chain = $this->watchChains[$literal];
 
         $chain->rewind();
         while ($chain->valid()) {
@@ -134,7 +144,7 @@ class RuleWatchGraph
     protected function moveWatch($fromLiteral, $toLiteral, $node)
     {
         if (!isset($this->watchChains[$toLiteral])) {
-            $this->watchChains[$toLiteral] = new RuleWatchChain;
+            $this->watchChains[$toLiteral] = new RuleWatchChain($toLiteral, $this->pool);
         }
 
         $node->moveWatch($fromLiteral, $toLiteral);

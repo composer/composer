@@ -225,9 +225,6 @@ class RuleSetGenerator
 
                 if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
                     $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($provider), Rule::RULE_PACKAGE_ALIAS, $package));
-                } elseif (!$this->obsoleteImpossibleForAlias($package, $provider)) {
-                    $reason = ($packageName == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $provider, $reason, $package));
                 }
             }
         }
@@ -276,7 +273,7 @@ class RuleSetGenerator
         }
     }
 
-    protected function obsoleteImpossibleForAlias($package, $provider)
+    public static function obsoleteImpossibleForAlias($package, $provider)
     {
         $packageIsAlias = $package instanceof AliasPackage;
         $providerIsAlias = $provider instanceof AliasPackage;
