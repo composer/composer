@@ -88,10 +88,6 @@ class FilesystemRepository extends WritableArrayRepository
             $data[] = $dumper->dump($package);
         }
 
-        usort($data, function ($a, $b) {
-            return strcmp($a['name'], $b['name']);
-        });
-
         $this->file->write($data);
     }
 }
