@@ -40,3 +40,12 @@ wget https://raw.githubusercontent.com/composer/getcomposer.org/76a7060ccb93902c
 
 You may replace the commit hash by whatever the last commit hash is on
 https://github.com/composer/getcomposer.org/commits/master
+
+In case you would like to get the latest version of the web installer (from
+the `master` branch), just replace the original `blob` part of a standard
+GitHub URL after opening a file and it'll return its raw content you can pipe
+to `php`:
+
+```bash
+wget https://github.com/composer/getcomposer.org/raw/master/web/installer -O - -q | php -- --quiet
+```
