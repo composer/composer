@@ -13,6 +13,9 @@
 namespace Composer\Util;
 
 use Composer\Config;
+use Composer\Composer;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Package\Version\VersionParser;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
@@ -324,15 +327,12 @@ class RemoteFilesystem
 
             if (!empty($http_response_header[0])) {
                 $statusCode = $this->findStatusCode($http_response_header);
+                if ($statusCode >= 400 && $this->findHeaderValue($http_response_header, 'content-type') === 'application/json') {
+                    self::outputWarnings($this->io, $originUrl, json_decode($result, true));
+                }
+
                 if (in_array($statusCode, array(401, 403)) && $this->retryAuthFailure) {
-                    $warning = null;
-                    if ($this->findHeaderValue($http_response_header, 'content-type') === 'application/json') {
-                        $data = json_decode($result, true);
-                        if (!empty($data['warning'])) {
-                            $warning = $data['warning'];
-                        }
-                    }
-                    $this->promptAuthAndRetry($statusCode, $this->findStatusMessage($http_response_header), $warning, $http_response_header);
+                    $this->promptAuthAndRetry($statusCode, $this->findStatusMessage($http_response_header), null, $http_response_header);
                 }
             }
 
@@ -741,10 +741,6 @@ class RemoteFilesystem
                 throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
             }
 
-            $this->io->overwriteError('');
-            if ($warning) {
-                $this->io->writeError('    <warning>'.$warning.'</warning>');
-            }
             $this->io->writeError('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');
@@ -1089,5 +1085,25 @@ class RemoteFilesystem
         $pathParts = explode('/', $path);
 
         return count($pathParts) >= 4 && $pathParts[3] == 'downloads';
+    }
+
+    public static function outputWarnings(IOInterface $io, $url, $data)
+    {
+        foreach (array('warning', 'info') as $type) {
+            if (empty($data[$type])) {
+                continue;
+            }
+
+            if (!empty($data[$type . '-versions'])) {
+                $versionParser = new VersionParser();
+                $constraint = $versionParser->parseConstraints($data[$type . '-versions']);
+                $composer = new Constraint('==', $versionParser->normalize(Composer::getVersion()));
+                if (!$constraint->matches($composer)) {
+                    continue;
+                }
+            }
+
+            $io->writeError('<'.$type.'>'.ucfirst($type).' from '.$url.': '.$data[$type].'</'.$type.'>');
+        }
     }
 }
