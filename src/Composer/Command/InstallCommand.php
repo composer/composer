@@ -61,6 +61,7 @@ exist it will look for composer.json and do the same.
 
 <info>php composer.phar install</info>
 
+Read more at https://getcomposer.org/doc/03-cli.md#install-i
 EOT
             )
         ;

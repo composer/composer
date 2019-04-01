@@ -55,6 +55,7 @@ The <info>diagnose</info> command checks common errors to help debugging problem
 
 The process exit code will be 1 in case of warnings and 2 for errors.
 
+Read more at https://getcomposer.org/doc/03-cli.md#diagnose
 EOT
             )
         ;
