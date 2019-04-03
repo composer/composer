@@ -33,12 +33,18 @@ class Fail5
 
 }
 ANOTHER
-. <<<	'ONEMORE'
+. <<<	"ONEMORE"
 class Fail6
 {
 
 }
-ONEMORE;
+ONEMORE
+. <<<PHP73
+  class Heredoc
+  {
+
+  }
+  PHP73;
     }
 
     public function test2()
