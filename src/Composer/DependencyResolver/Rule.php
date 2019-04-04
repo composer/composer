@@ -271,7 +271,7 @@ abstract class Rule
                 break;
         }
 
-        return simplifyRuleText($prettyRuleText);
+        return $this->simplifyRuleText($prettyRuleText);
     }
 
     /**
