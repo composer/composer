@@ -138,21 +138,27 @@ abstract class Rule
             $ruleText .= $pool->literalToPrettyString($literal, $installedMap);
         }
 
+        $prettyRuleText = "";
+
         switch ($this->getReason()) {
             case self::RULE_INTERNAL_ALLOW_UPDATE:
-                return $ruleText;
+                $prettyRuleText = $ruleText;
+                break;
 
             case self::RULE_JOB_INSTALL:
-                return "Install command rule ($ruleText)";
+                $prettyRuleText = "Install command rule ($ruleText)";
+                break;
 
             case self::RULE_JOB_REMOVE:
-                return "Remove command rule ($ruleText)";
+                $prettyRuleText = "Remove command rule ($ruleText)";
+                break;
 
             case self::RULE_PACKAGE_CONFLICT:
                 $package1 = $pool->literalToPackage($literals[0]);
                 $package2 = $pool->literalToPackage($literals[1]);
 
-                return $package1->getPrettyString().' conflicts with '.$this->formatPackagesUnique($pool, array($package2)).'.';
+                $prettyRuleText = $package1->getPrettyString().' conflicts with '.$this->formatPackagesUnique($pool, array($package2)).'.';
+                break;
 
             case self::RULE_PACKAGE_REQUIRES:
                 $sourceLiteral = array_shift($literals);
@@ -172,7 +178,8 @@ abstract class Rule
                     if ($targetName === 'php' || $targetName === 'php-64bit' || $targetName === 'hhvm') {
                         // handle php/hhvm
                         if (defined('HHVM_VERSION')) {
-                            return $text . ' -> your HHVM version does not satisfy that requirement.';
+                            $prettyRuleText = $text . ' -> your HHVM version does not satisfy that requirement.';
+                            break;
                         }
 
                         $packages = $pool->whatProvides($targetName);
@@ -180,15 +187,18 @@ abstract class Rule
 
                         if ($targetName === 'hhvm') {
                             if ($package instanceof CompletePackage) {
-                                return $text . ' -> your HHVM version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
+                                $prettyRuleText = $text . ' -> your HHVM version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
+                                break;
                             } else {
-                                return $text . ' -> you are running this with PHP and not HHVM.';
+                                $prettyRuleText = $text . ' -> you are running this with PHP and not HHVM.';
+                                break;
                             }
                         }
 
 
                         if (!($package instanceof CompletePackage)) {
-                            return $text . ' -> your PHP version ('.phpversion().') does not satisfy that requirement.';
+                            $prettyRuleText = $text . ' -> your PHP version ('.phpversion().') does not satisfy that requirement.';
+                            break;
                         }
 
                         $extra = $package->getExtra();
@@ -199,7 +209,8 @@ abstract class Rule
                             $text .= ' -> your PHP version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
                         }
 
-                        return $text;
+                        $prettyRuleText = $text;
+                        break;
                     }
 
                     if (0 === strpos($targetName, 'ext-')) {
@@ -207,40 +218,60 @@ abstract class Rule
                         $ext = substr($targetName, 4);
                         $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
 
-                        return $text . ' -> the requested PHP extension '.$ext.' '.$error.'.';
+                        $prettyRuleText = $text . ' -> the requested PHP extension '.$ext.' '.$error.'.';
+                        break;
                     }
 
                     if (0 === strpos($targetName, 'lib-')) {
                         // handle linked libs
                         $lib = substr($targetName, 4);
 
-                        return $text . ' -> the requested linked library '.$lib.' has the wrong version installed or is missing from your system, make sure to have the extension providing it.';
+                        $prettyRuleText = $text . ' -> the requested linked library '.$lib.' has the wrong version installed or is missing from your system, make sure to have the extension providing it.';
+                        break;
                     }
 
                     if ($providers = $pool->whatProvides($targetName, $this->reasonData->getConstraint(), true, true)) {
-                        return $text . ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $providers) .' but these conflict with your requirements or minimum-stability.';
+                        $prettyRuleText = $text . ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $providers) .' but these conflict with your requirements or minimum-stability.';
+                        break;
                     }
 
-                    return $text . ' -> no matching package found.';
+                    $prettyRuleText = $text . ' -> no matching package found.';
+                    break;
                 }
 
-                return $text;
+                $prettyRuleText = $text;
+                break;
 
             case self::RULE_PACKAGE_OBSOLETES:
-                return $ruleText;
+                $prettyRuleText = $ruleText;
+                break;
+
             case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
-                return $ruleText;
+                $prettyRuleText = $ruleText;
+                break;
+
             case self::RULE_PACKAGE_SAME_NAME:
-                return 'Can only install one of: ' . $this->formatPackagesUnique($pool, $literals) . '.';
+                $prettyRuleText = 'Can only install one of: ' . $this->formatPackagesUnique($pool, $literals) . '.';
+                break;
+
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
-                return $ruleText;
+                $prettyRuleText = $ruleText;
+                break;
+
             case self::RULE_LEARNED:
-                return 'Conclusion: '.$ruleText;
+                $prettyRuleText =  'Conclusion: '.$ruleText;
+                break;
+
             case self::RULE_PACKAGE_ALIAS:
-                return $ruleText;
+                $prettyRuleText = $ruleText;
+                break;
+
             default:
-                return '('.$ruleText.')';
+                $prettyRuleText = '('.$ruleText.')';
+                break;
         }
+
+        return simplifyRuleText($prettyRuleText);
     }
 
     /**
@@ -264,5 +295,39 @@ abstract class Rule
         }
 
         return implode(', ', $prepared);
+    }
+
+    /**
+     * Simplifies some rule texts so that they're more human readable and actionable.
+     * @param   string    $prettyRuleText
+     * 
+     * @return  string
+     */
+    private function simplifyRuleText($prettyRuleText) {
+        // Simplifying multiple "don't install" messages
+        $texts = explode('|', $prettyRuleText);
+        $occurances = array();
+        $count = 0;
+        foreach($texts as $text) {
+            preg_match_all('/(don\'t\sinstall)\s(.+.)/', $text, $matches);
+            if($matches[0]) {
+                $count++;
+                array_push($occurances,$matches);
+            }
+        }
+        if($count >=2) {
+            $prefix = "Install at most one of these : ";
+            $separator = ", ";
+            $packageNames = "";
+            foreach($occurances as $i => $match) {
+                $packageNames.=$match[2][0];
+                if($i !== $count-1) {
+                    $packageNames.=$separator;
+                }
+            }
+            $prettyText = $prefix.$packageNames;
+            return $prettyText;
+        }
+        return $prettyRuleText;
     }
 }
