@@ -49,6 +49,10 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->warnings = array();
         $this->config = $config;
 
+        if ($err = self::hasPackageNamingError($config['name'])) {
+            $this->warnings[] = 'Deprecation warning: Your package name '.$err.' Make sure you fix this as Composer 2.0 will error.';
+        }
+
         if ($this->strictName) {
             $this->validateRegex('name', '[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*', true);
         } else {
@@ -195,7 +199,9 @@ class ValidatingArrayLoader implements LoaderInterface
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
             if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
                 foreach ($this->config[$linkType] as $package => $constraint) {
-                    if (!preg_match('{^[A-Za-z0-9_./-]+$}', $package)) {
+                    if ($err = self::hasPackageNamingError($package, true)) {
+                        $this->warnings[] = 'Deprecation warning: '.$linkType.'.'.$err.' Make sure you fix this as Composer 2.0 will error.';
+                    } elseif (!preg_match('{^[A-Za-z0-9_./-]+$}', $package)) {
                         $this->warnings[] = $linkType.'.'.$package.' : invalid key, package names must be strings containing only [A-Za-z0-9_./-]';
                     }
                     if (!is_string($constraint)) {
