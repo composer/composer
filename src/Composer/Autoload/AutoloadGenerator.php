@@ -28,7 +28,6 @@ use Composer\Script\ScriptEvents;
  */
 class AutoloadGenerator
 {
-
     /**
      * @var EventDispatcher
      */
