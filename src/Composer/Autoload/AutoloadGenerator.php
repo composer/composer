@@ -28,6 +28,7 @@ use Composer\Script\ScriptEvents;
  */
 class AutoloadGenerator
 {
+
     /**
      * @var EventDispatcher
      */
@@ -959,7 +960,7 @@ INITIALIZER;
      * @param  array $packageMap
      * @return array
      */
-    protected function sortPackageMap(array $packageMap)
+    public function sortPackageMap(array $packageMap)
     {
         $packages = array();
         $paths = array();

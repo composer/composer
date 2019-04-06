@@ -15,10 +15,10 @@ namespace Composer\Plugin;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
+use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
-use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
@@ -253,8 +253,13 @@ class PluginManager
      */
     private function loadRepository(RepositoryInterface $repo)
     {
-        foreach ($repo->getPackages() as $package) { /** @var PackageInterface $package */
-            if ($package instanceof AliasPackage) {
+        $packages = $repo->getPackages();
+        $generator = $this->composer->getAutoloadGenerator();
+        $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $this->composer->getPackage(), $packages);
+        $sortedPackageMap = array_reverse($generator->sortPackageMap($packageMap));
+        foreach ($sortedPackageMap as $fullPackage) {
+            $package = $fullPackage[0]; /** @var PackageInterface $package */
+            if (!($package instanceof CompletePackage)) {
                 continue;
             }
             if ('composer-plugin' === $package->getType()) {
