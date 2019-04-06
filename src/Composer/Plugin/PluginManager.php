@@ -255,7 +255,8 @@ class PluginManager
     {
         $packages = $repo->getPackages();
         $generator = $this->composer->getAutoloadGenerator();
-        $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $this->composer->getPackage(), $packages);
+        $rootPackage = $this->composer->getPackage(); /** @var PackageInterface $rootPackage */
+        $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $rootPackage, $packages);
         $sortedPackageMap = array_reverse($generator->sortPackageMap($packageMap));
         foreach ($sortedPackageMap as $fullPackage) {
             $package = $fullPackage[0]; /** @var PackageInterface $package */
