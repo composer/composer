@@ -21,6 +21,7 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
+use Composer\Util\PackageHelper;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -330,7 +331,12 @@ EOT
         // prepare to resolve dependencies
         $repos = $this->getRepos();
         $preferredStability = $minimumStability ?: 'stable';
-        $phpVersion = $repos->findPackage('php', '*')->getPrettyVersion();
+
+        if ($input->hasOption('ignore-platform-reqs') && $input->getOption('ignore-platform-reqs')) {
+            $phpVersion = null;
+        } else {
+            $phpVersion = $repos->findPackage('php', '*')->getPrettyVersion();
+        }
 
         $question = 'Would you like to define your dependencies (require) interactively [<comment>yes</comment>]? ';
         $require = $input->getOption('require');
@@ -390,6 +396,10 @@ EOT
 
     protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null, $preferredStability = 'stable', $checkProvidedVersions = true)
     {
+        $packageHelper = new PackageHelper($this->getRepos());
+        $ignorePlatformRequirements = $input->hasOption('ignore-platform-reqs') && $input->getOption('ignore-platform-reqs');
+        $minimumStability = $this->getMinimumStability($input);
+
         if ($requires) {
             $requires = $this->normalizeRequirements($requires);
             $result = array();
@@ -398,7 +408,14 @@ EOT
             foreach ($requires as $requirement) {
                 if (!isset($requirement['version'])) {
                     // determine the best version automatically
-                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $phpVersion, $preferredStability);
+                    list($name, $version) = $packageHelper->findBestVersionAndNameForPackage(
+                        $requirement['name'],
+                        $preferredStability,
+                        $minimumStability,
+                        $phpVersion,
+                        null,
+                        $ignorePlatformRequirements
+                    );
                     $requirement['version'] = $version;
 
                     // replace package name from packagist.org
@@ -411,7 +428,14 @@ EOT
                     ));
                 } else {
                     // check that the specified version/constraint exists before we proceed
-                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $phpVersion, $preferredStability, $checkProvidedVersions ? $requirement['version'] : null, 'dev');
+                    list($name, $version) = $packageHelper->findBestVersionAndNameForPackage(
+                        $requirement['name'],
+                        $preferredStability,
+                        'dev',
+                        $phpVersion,
+                        $checkProvidedVersions ? $requirement['version'] : null,
+                        $ignorePlatformRequirements
+                    );
 
                     // replace package name from packagist.org
                     $requirement['name'] = $name;
@@ -512,7 +536,12 @@ EOT
                     );
 
                     if (false === $constraint) {
-                        list($name, $constraint) = $this->findBestVersionAndNameForPackage($input, $package, $phpVersion, $preferredStability);
+                        list($name, $constraint) = $packageHelper->findBestVersionAndNameForPackage(
+                            $package,
+                            $preferredStability,
+                            $minimumStability,
+                            $phpVersion
+                        );
 
                         $io->writeError(sprintf(
                             'Using version <info>%s</info> for <info>%s</info>',
@@ -613,6 +642,11 @@ EOT
         return false;
     }
 
+    /**
+     * @param array $requirements
+     *
+     * @return array[]
+     */
     protected function normalizeRequirements(array $requirements)
     {
         $parser = new VersionParser();
@@ -620,6 +654,11 @@ EOT
         return $parser->parseNameVersionPairs($requirements);
     }
 
+    /**
+     * @param string $ignoreFile
+     *
+     * @param string $vendor
+     */
     protected function addVendorIgnore($ignoreFile, $vendor = '/vendor/')
     {
         $contents = "";
@@ -634,6 +673,11 @@ EOT
         file_put_contents($ignoreFile, $contents . $vendor. "\n");
     }
 
+    /**
+     * @param string $email
+     *
+     * @return bool
+     */
     protected function isValidEmail($email)
     {
         // assume it's valid if we can't validate it
@@ -649,18 +693,12 @@ EOT
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 
-    private function getPool(InputInterface $input, $minimumStability = null)
-    {
-        $key = $minimumStability ?: 'default';
 
-        if (!isset($this->pools[$key])) {
-            $this->pools[$key] = $pool = new Pool($minimumStability ?: $this->getMinimumStability($input));
-            $pool->addRepository($this->getRepos());
-        }
-
-        return $this->pools[$key];
-    }
-
+    /**
+     * @param InputInterface $input
+     *
+     * @return string
+     */
     private function getMinimumStability(InputInterface $input)
     {
         if ($input->hasOption('stability')) {
@@ -678,116 +716,9 @@ EOT
     }
 
     /**
-     * Given a package name, this determines the best version to use in the require key.
-     *
-     * This returns a version with the ~ operator prefixed when possible.
-     *
-     * @param  InputInterface            $input
-     * @param  string                    $name
-     * @param  string|null               $phpVersion
-     * @param  string                    $preferredStability
-     * @param  string|null               $requiredVersion
-     * @param  string                    $minimumStability
-     * @throws \InvalidArgumentException
-     * @return array                     name version
+     * @param OutputInterface $output
      */
-    private function findBestVersionAndNameForPackage(InputInterface $input, $name, $phpVersion, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null)
-    {
-        // find the latest version allowed in this pool
-        $versionSelector = new VersionSelector($this->getPool($input, $minimumStability));
-        $ignorePlatformReqs = $input->hasOption('ignore-platform-reqs') && $input->getOption('ignore-platform-reqs');
-
-        // ignore phpVersion if platform requirements are ignored
-        if ($ignorePlatformReqs) {
-            $phpVersion = null;
-        }
-
-        $package = $versionSelector->findBestCandidate($name, $requiredVersion, $phpVersion, $preferredStability);
-
-        if (!$package) {
-            // platform packages can not be found in the pool in versions other than the local platform's has
-            // so if platform reqs are ignored we just take the user's word for it
-            if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
-                return array($name, $requiredVersion ?: '*');
-            }
-
-            // Check whether the PHP version was the problem
-            if ($phpVersion && $versionSelector->findBestCandidate($name, $requiredVersion, null, $preferredStability)) {
-                throw new \InvalidArgumentException(sprintf(
-                    'Package %s at version %s has a PHP requirement incompatible with your PHP version (%s)',
-                    $name,
-                    $requiredVersion,
-                    $phpVersion
-                ));
-            }
-            // Check whether the required version was the problem
-            if ($requiredVersion && $versionSelector->findBestCandidate($name, null, $phpVersion, $preferredStability)) {
-                throw new \InvalidArgumentException(sprintf(
-                    'Could not find package %s in a version matching %s',
-                    $name,
-                    $requiredVersion
-                ));
-            }
-            // Check whether the PHP version was the problem
-            if ($phpVersion && $versionSelector->findBestCandidate($name)) {
-                throw new \InvalidArgumentException(sprintf(
-                    'Could not find package %s in any version matching your PHP version (%s)',
-                    $name,
-                    $phpVersion
-                ));
-            }
-
-            // Check for similar names/typos
-            $similar = $this->findSimilar($name);
-            if ($similar) {
-                // Check whether the minimum stability was the problem but the package exists
-                if ($requiredVersion === null && in_array($name, $similar, true)) {
-                    throw new \InvalidArgumentException(sprintf(
-                        'Could not find a version of package %s matching your minimum-stability (%s). Require it with an explicit version constraint allowing its desired stability.',
-                        $name,
-                        $this->getMinimumStability($input)
-                    ));
-                }
-
-                throw new \InvalidArgumentException(sprintf(
-                    "Could not find package %s.\n\nDid you mean " . (count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
-                    $name,
-                    implode("\n    ", $similar)
-                ));
-            }
-
-            throw new \InvalidArgumentException(sprintf(
-                'Could not find a matching version of package %s. Check the package spelling, your version constraint and that the package is available in a stability which matches your minimum-stability (%s).',
-                $name,
-                $this->getMinimumStability($input)
-            ));
-        }
-
-        return array(
-            $package->getPrettyName(),
-            $versionSelector->findRecommendedRequireVersion($package),
-        );
-    }
-
-    private function findSimilar($package)
-    {
-        try {
-            $results = $this->repos->search($package);
-        } catch (\Exception $e) {
-            // ignore search errors
-            return array();
-        }
-        $similarPackages = array();
-
-        foreach ($results as $result) {
-            $similarPackages[$result['name']] = levenshtein($package, $result['name']);
-        }
-        asort($similarPackages);
-
-        return array_keys(array_slice($similarPackages, 0, 5));
-    }
-
-    private function installDependencies($output)
+    private function installDependencies(OutputInterface $output)
     {
         try {
             $installCommand = $this->getApplication()->find('install');
@@ -795,10 +726,14 @@ EOT
         } catch (\Exception $e) {
             $this->getIO()->writeError('Could not install dependencies. Run `composer install` to see more information.');
         }
-
     }
 
-    private function hasDependencies($options)
+    /**
+     * @param array $options
+     *
+     * @return bool
+     */
+    private function hasDependencies(array $options)
     {
         $requires = (array) $options['require'];
         $devRequires = isset($options['require-dev']) ? (array) $options['require-dev'] : array();
