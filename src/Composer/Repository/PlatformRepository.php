@@ -166,8 +166,14 @@ class PlatformRepository extends ArrayRepository
                 case 'imagick':
                     $imagick = new \Imagick();
                     $imageMagickVersion = $imagick->getVersion();
-                    preg_match('/^ImageMagick ([\d.]+)-(\d+)/', $imageMagickVersion['versionString'], $matches);
-                    $prettyVersion = "{$matches[1]}.{$matches[2]}";
+                    // 6.x: ImageMagick 6.2.9 08/24/06 Q16 http://www.imagemagick.org
+                    // 7.x: ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org
+                    preg_match('/^ImageMagick ([\d.]+)(?:-(\d+))?/', $imageMagickVersion['versionString'], $matches);
+                    if (isset($matches[2])) {
+                        $prettyVersion = "{$matches[1]}.{$matches[2]}";
+                    } else {
+                        $prettyVersion = $matches[1];
+                    }
                     break;
 
                 case 'libxml':

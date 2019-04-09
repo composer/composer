@@ -16,6 +16,7 @@ use Composer\Config\ConfigSourceInterface;
 use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Util\Platform;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -458,5 +459,21 @@ class Config
                 $this->warnedHosts[$host] = true;
             }
         }
+    }
+
+    /**
+     * Used by long-running custom scripts in composer.json
+     *
+     * "scripts": {
+     *   "watch": [
+     *     "Composer\\Config::disableProcessTimeout",
+     *     "vendor/bin/long-running-script --watch"
+     *   ]
+     * }
+     */
+    public static function disableProcessTimeout()
+    {
+        // Override global timeout set earlier by environment or config
+        ProcessExecutor::setTimeout(0);
     }
 }
