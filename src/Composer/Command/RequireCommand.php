@@ -25,6 +25,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\IO\IOInterface;
 
 /**
  * @author Jérémy Romey <jeremy@free-agent.fr>
@@ -160,15 +161,26 @@ EOT
         if ($input->getOption('no-update')) {
             return 0;
         }
-        $updateDevMode = !$input->getOption('update-no-dev');
-        $optimize = $input->getOption('optimize-autoloader') || $composer->getConfig()->get('optimize-autoloader');
-        $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
-        $apcu = $input->getOption('apcu-autoloader') || $composer->getConfig()->get('apcu-autoloader');
 
+        try {
+            return $this->doUpdate($input, $output, $io, $requirements);
+        } catch (\Exception $e) {
+            $this->revertComposerFile(false);
+            throw $e;
+        }
+    }
+
+    private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements)
+    {
         // Update packages
         $this->resetComposer();
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
+
+        $updateDevMode = !$input->getOption('update-no-dev');
+        $optimize = $input->getOption('optimize-autoloader') || $composer->getConfig()->get('optimize-autoloader');
+        $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
+        $apcu = $input->getOption('apcu-autoloader') || $composer->getConfig()->get('apcu-autoloader');
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
