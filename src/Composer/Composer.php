@@ -45,14 +45,14 @@ class Composer
      * const SOURCE_VERSION = '';
      *
      * source (git clone):
-     * const VERSION = '@package_version@';
-     * const BRANCH_ALIAS_VERSION = '@package_branch_alias_version@';
-     * const RELEASE_DATE = '@release_date@';
+     * const VERSION = '1.8.5';
+     * const BRANCH_ALIAS_VERSION = '';
+     * const RELEASE_DATE = '2019-04-09 17:46:47';
      * const SOURCE_VERSION = '1.8-dev+source';
      */
-    const VERSION = '@package_version@';
-    const BRANCH_ALIAS_VERSION = '@package_branch_alias_version@';
-    const RELEASE_DATE = '@release_date@';
+    const VERSION = '1.8.5';
+    const BRANCH_ALIAS_VERSION = '';
+    const RELEASE_DATE = '2019-04-09 17:46:47';
     const SOURCE_VERSION = '1.8-dev+source';
 
     public static function getVersion()
