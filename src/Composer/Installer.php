@@ -104,11 +104,6 @@ class Installer
      */
     protected $autoloadGenerator;
 
-    /**
-     * @var array
-     */
-    protected $rootRequirements;
-
     protected $preferSource = false;
     protected $preferDist = false;
     protected $optimizeAutoloader = false;
@@ -392,8 +387,11 @@ class Installer
             $repositorySet->addRepository($lockedRepository);
         }
 
-        // creating requirements request
+        // Creating requirements request
         $request = $this->createRequest($this->package, $platformRepo);
+
+        // An exclusive list of install requests to be used exclusively for Pool Builer
+        $installRequests = array();
 
         if ($this->update) {
             // remove unstable packages from the localRepo if they don't match the current stability settings
@@ -412,13 +410,22 @@ class Installer
 
             $request->updateAll();
 
-            // A simple list of root requirements to be used exclusively for Pool Builer
-            $rootRequirements = array();
+            // To avoid bluntly adding '~dev' to package names later on while hitting packagist
+            $packageRequirements = $this->package->getRequires();
+            $packageDevRequirements = $this->package->getDevRequires();
 
-            $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
+            $links = array_merge($packageRequirements, $packageDevRequirements);
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
+            }
+
+            foreach($packageRequirements as $link) {
+                $installRequests[$link->getTarget()] = $link->getConstraint();
+            }
+            foreach($packageDevRequirements as $link) {
+                $installRequests[$link->getTarget()] = $link->getConstraint();
+                $installRequests[$link->getTarget().'~dev'] = $link->getConstraint();
             }
 
             // if the updateWhitelist is enabled, packages not in it are also fixed
@@ -446,25 +453,13 @@ class Installer
                                 $requiredAt = isset($rootRequires[$candidate]) ? ', required as ' . $rootRequires[$candidate]->getPrettyConstraint() : '';
                                 $constraint->setPrettyString($description . ' ' . $curPackage->getPrettyVersion() . $requiredAt . ')');
                                 $request->install($curPackage->getName(), $constraint);
-                                $rootRequirements[$curPackage->getName()] = $constraint;
+                                $installRequests[$curPackage->getName()] = $constraint;
                             }
                             break;
                         }
                     }
                 }
-            }
-
-            $packageRequirements = $this->package->getRequires();
-            $packageDevRequirements = $this->package->getDevRequires();
-            foreach($packageRequirements as $link) {
-                $rootRequirements[$link->getTarget()] = $link->getConstraint();
-            }
-            foreach($packageDevRequirements as $link) {
-                // Stable releases are required in general as well
-                $rootRequirements[$link->getTarget()] = $link->getConstraint();
-                $rootRequirements[$link->getTarget().'~dev'] = $link->getConstraint();
-            }
-            $this->rootRequirements = $rootRequirements;
+            }            
         } else {
             $this->io->writeError('<info>Installing dependencies'.($this->devMode ? ' (including require-dev)' : '').' from lock file</info>');
 
@@ -480,18 +475,18 @@ class Installer
                 $constraint = new Constraint('=', $version);
                 $constraint->setPrettyString($package->getPrettyVersion());
                 $request->install($package->getName(), $constraint);
-                $this->rootRequirements[$package->getName()] = $constraint;
+                $installRequests[$package->getName()] = $constraint;
             }
 
             foreach ($this->locker->getPlatformRequirements($this->devMode) as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
-                $this->rootRequirements[$link->getTarget()] = $link->getConstraint();
+                $installRequests[$link->getTarget()] = $link->getConstraint();
             }
         }
 
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
 
-        $pool = $repositorySet->createPool($this->rootRequirements);
+        $pool = $repositorySet->createPool($installRequests);
 
         // force dev packages to have the latest links if we update or install from a (potentially new) lock
         $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, 'force-links');
@@ -718,15 +713,17 @@ class Installer
         $repositorySet->addRepository($installedRepo);
 
         // creating requirements request without dev requirements
+        $installRequests = array();
         $request = $this->createRequest($this->package, $platformRepo);
         $request->updateAll();
         foreach ($this->package->getRequires() as $link) {
             $request->install($link->getTarget(), $link->getConstraint());
+            $installRequests[$link->getTarget()] = $link->getConstraint();
         }
 
         // solve deps to see which get removed
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $repositorySet, $installedRepo, $request);
-        $solver = new Solver($policy, $repositorySet->createPool($this->rootRequirements), $installedRepo, $this->io);
+        $solver = new Solver($policy, $repositorySet->createPool($installRequests), $installedRepo, $this->io);
         $ops = $solver->solve($request, $this->ignorePlatformReqs);
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $repositorySet, $installedRepo, $request, $ops);
 
