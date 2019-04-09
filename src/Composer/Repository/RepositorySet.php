@@ -145,11 +145,11 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPool(Request $request)
+    public function createPool(array $requirements)
     {
         $poolBuilder = new PoolBuilder(array($this, 'isPackageAcceptable'), $this->filterRequires);
 
-        return $this->pool = $poolBuilder->buildPool($this->repositories, $this->rootAliases, $request);
+        return $this->pool = $poolBuilder->buildPool($this->repositories, $this->rootAliases, $requirements);
     }
 
     // TODO unify this with above in some simpler version without "request"?
@@ -160,12 +160,12 @@ class RepositorySet
 
     public function createPoolForPackages($packageNames)
     {
-        $request = new Request();
-        foreach ($packageNames as $packageName) {
-            $request->install($packageName);
+        $requirement = array();
+        for ($i = 0; $i < count($packageNames); $i++) {
+            $name = strtolower($packageNames[$i]);
+            $requirement[$name] = null;
         }
-
-        return $this->createPool($request);
+        return $this->createPool($requirement);
     }
 
     /**

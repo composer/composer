@@ -46,20 +46,16 @@ class PoolBuilder
         $this->filterRequires = $filterRequires;
     }
 
-    public function buildPool(array $repositories, array $rootAliases, Request $request)
+    public function buildPool(array $repositories, array $rootAliases, array $requirements)
     {
         $pool = new Pool($this->filterRequires);
         $this->rootAliases = $rootAliases;
 
-        // TODO do we really want the request here? kind of want a root requirements thingy instead
         $loadNames = array();
-        foreach ($request->getJobs() as $job) {
-            switch ($job['cmd']) {
-                case 'install':
-                    $loadNames[$job['packageName']] = $job['constraint'];
-                    $this->nameConstraints[$job['packageName']] = $job['constraint'] ? new MultiConstraint(array($job['constraint']), false) : null;
-                    break;
-            }
+        foreach ($requirements as $name => $constraint) {
+            $name = strtolower($name);
+            $loadNames[$name] = $constraint;
+            $this->nameConstraints[$name] = $constraint ? new MultiConstraint(array($constraint), false) : null;
         }
 
         while (!empty($loadNames)) {
@@ -113,6 +109,7 @@ class PoolBuilder
                 foreach ($aliasedPackages as $packageOrAlias) {
                     if ($constraint->matches(new Constraint('==', $packageOrAlias->getVersion()))) {
                         $found = true;
+                        break;
                     }
                 }
                 if (!$found) {

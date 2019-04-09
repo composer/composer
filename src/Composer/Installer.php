@@ -104,6 +104,11 @@ class Installer
      */
     protected $autoloadGenerator;
 
+    /**
+     * @var array
+     */
+    protected $rootRequirements;
+
     protected $preferSource = false;
     protected $preferDist = false;
     protected $optimizeAutoloader = false;
@@ -413,6 +418,20 @@ class Installer
                 $request->install($link->getTarget(), $link->getConstraint());
             }
 
+            // A simple list of root requirements to be used exclusively for Pool Builer
+            $rootRequirements = array();
+            $packageRequirements = $this->package->getRequires();
+            $packageDevRequirements = $this->package->getDevRequires();
+            foreach($packageRequirements as $link) {
+                $rootRequirements[$link->getTarget()] = $link->getConstraint();
+            }
+            foreach($packageDevRequirements as $link) {
+                // Stable releases are required in general as well
+                $rootRequirements[$link->getTarget()] = $link->getConstraint();
+                $rootRequirements[$link->getTarget().'~dev'] = $link->getConstraint();
+            }
+            $this->rootRequirements = $rootRequirements;
+
             // if the updateWhitelist is enabled, packages not in it are also fixed
             // to the version specified in the lock, or their currently installed version
             if ($this->updateWhitelist) {
@@ -468,7 +487,7 @@ class Installer
 
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
 
-        $pool = $repositorySet->createPool($request);
+        $pool = $repositorySet->createPool($rootRequirements);
 
         // force dev packages to have the latest links if we update or install from a (potentially new) lock
         $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, 'force-links');
@@ -703,7 +722,7 @@ class Installer
 
         // solve deps to see which get removed
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $repositorySet, $installedRepo, $request);
-        $solver = new Solver($policy, $repositorySet->createPool($request), $installedRepo, $this->io);
+        $solver = new Solver($policy, $repositorySet->createPool($this->rootRequirements), $installedRepo, $this->io);
         $ops = $solver->solve($request, $this->ignorePlatformReqs);
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $repositorySet, $installedRepo, $request, $ops);
 

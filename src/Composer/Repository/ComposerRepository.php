@@ -583,13 +583,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             throw new \LogicException('loadAsyncPackages only supports v2 protocol composer repos with a metadata-url');
         }
 
-        // load ~dev variants as well if present
-        // TODO ideally there should be a flag set from the repositoryset/poolbuilder to know which packages should have the dev packages loaded
-        // so we can optimize away some requests entirely
-        foreach ($packageNames as $name => $constraint) {
-            $packageNames[$name.'~dev'] = $constraint;
-        }
-
         foreach ($packageNames as $name => $constraint) {
             $name = strtolower($name);
 
