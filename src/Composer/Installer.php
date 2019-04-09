@@ -412,25 +412,14 @@ class Installer
 
             $request->updateAll();
 
+            // A simple list of root requirements to be used exclusively for Pool Builer
+            $rootRequirements = array();
+
             $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
-
-            // A simple list of root requirements to be used exclusively for Pool Builer
-            $rootRequirements = array();
-            $packageRequirements = $this->package->getRequires();
-            $packageDevRequirements = $this->package->getDevRequires();
-            foreach($packageRequirements as $link) {
-                $rootRequirements[$link->getTarget()] = $link->getConstraint();
-            }
-            foreach($packageDevRequirements as $link) {
-                // Stable releases are required in general as well
-                $rootRequirements[$link->getTarget()] = $link->getConstraint();
-                $rootRequirements[$link->getTarget().'~dev'] = $link->getConstraint();
-            }
-            $this->rootRequirements = $rootRequirements;
 
             // if the updateWhitelist is enabled, packages not in it are also fixed
             // to the version specified in the lock, or their currently installed version
@@ -457,12 +446,25 @@ class Installer
                                 $requiredAt = isset($rootRequires[$candidate]) ? ', required as ' . $rootRequires[$candidate]->getPrettyConstraint() : '';
                                 $constraint->setPrettyString($description . ' ' . $curPackage->getPrettyVersion() . $requiredAt . ')');
                                 $request->install($curPackage->getName(), $constraint);
+                                $rootRequirements[$curPackage->getName()] = $constraint;
                             }
                             break;
                         }
                     }
                 }
             }
+
+            $packageRequirements = $this->package->getRequires();
+            $packageDevRequirements = $this->package->getDevRequires();
+            foreach($packageRequirements as $link) {
+                $rootRequirements[$link->getTarget()] = $link->getConstraint();
+            }
+            foreach($packageDevRequirements as $link) {
+                // Stable releases are required in general as well
+                $rootRequirements[$link->getTarget()] = $link->getConstraint();
+                $rootRequirements[$link->getTarget().'~dev'] = $link->getConstraint();
+            }
+            $this->rootRequirements = $rootRequirements;
         } else {
             $this->io->writeError('<info>Installing dependencies'.($this->devMode ? ' (including require-dev)' : '').' from lock file</info>');
 
@@ -478,16 +480,18 @@ class Installer
                 $constraint = new Constraint('=', $version);
                 $constraint->setPrettyString($package->getPrettyVersion());
                 $request->install($package->getName(), $constraint);
+                $this->rootRequirements[$package->getName()] = $constraint;
             }
 
             foreach ($this->locker->getPlatformRequirements($this->devMode) as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
+                $this->rootRequirements[$link->getTarget()] = $link->getConstraint();
             }
         }
 
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
 
-        $pool = $repositorySet->createPool($rootRequirements);
+        $pool = $repositorySet->createPool($this->rootRequirements);
 
         // force dev packages to have the latest links if we update or install from a (potentially new) lock
         $this->processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, 'force-links');
