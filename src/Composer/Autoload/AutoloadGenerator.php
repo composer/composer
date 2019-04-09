@@ -17,6 +17,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
@@ -956,27 +957,18 @@ INITIALIZER;
      *
      * Packages of equal weight retain the original order
      *
-     * @param  array $packageMap
+     * @param  array $packages
      * @return array
      */
-    public function sortPackageMap(array $packageMap)
-    {
-        $packages = array();
-        $paths = array();
+    public function sortPackages(array $packages) {
         $usageList = array();
 
-        foreach ($packageMap as $item) {
-            list($package, $path) = $item;
-            $name = $package->getName();
-            $packages[$name] = $package;
-            $paths[$name] = $path;
-
-            foreach (array_merge($package->getRequires(), $package->getDevRequires()) as $link) {
+        foreach ($packages as $package) { /** @var PackageInterface $package */
+            foreach (array_merge($package->getRequires(), $package->getDevRequires()) as $link) { /** @var Link $link */
                 $target = $link->getTarget();
-                $usageList[$target][] = $name;
+                $usageList[$target][] = $package->getName();
             }
         }
-
         $computing = array();
         $computed = array();
         $computeImportance = function ($name) use (&$computeImportance, &$computing, &$computed, $usageList) {
@@ -1034,9 +1026,41 @@ INITIALIZER;
 
         $stable_sort($weightList);
 
-        $sortedPackageMap = array();
+        $sortedPackages = array();
 
         foreach (array_keys($weightList) as $name) {
+            $sortedPackages[] = $packages[$name];
+        }
+        return $sortedPackages;
+    }
+
+    /**
+     * Sorts packages by dependency weight
+     *
+     * Packages of equal weight retain the original order
+     *
+     * @param  array $packageMap
+     * @return array
+     */
+    public function sortPackageMap(array $packageMap)
+    {
+        $packages = array();
+        $paths = array();
+
+        foreach ($packageMap as $item) {
+            list($package, $path) = $item;
+            $name = $package->getName();
+            $packages[$name] = $package;
+            $paths[$name] = $path;
+        }
+
+        $sortedPackages = $this->sortPackages($packages);
+
+
+        $sortedPackageMap = array();
+
+        foreach ($sortedPackages as $package) {
+            $name = $package->getName();
             $sortedPackageMap[] = array($packages[$name], $paths[$name]);
         }
 
