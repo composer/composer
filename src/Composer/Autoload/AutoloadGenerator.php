@@ -960,7 +960,7 @@ INITIALIZER;
      * @param  array $packageMap
      * @return array
      */
-    public function sortPackageMap(array $packageMap)
+    protected function sortPackageMap(array $packageMap)
     {
         $packages = array();
         $paths = array();
