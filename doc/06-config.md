@@ -9,6 +9,20 @@ Defaults to `300`. The duration processes like git clones can run before
 Composer assumes they died out. You may need to make this higher if you have a
 slow connection or huge vendors.
 
+To disable the process timeout on a custom command under `scripts`, a static
+helper is available:
+
+```json
+{
+    "scripts": {
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "phpunit"
+        ]
+    }
+}
+```
+
 ## use-include-path
 
 Defaults to `false`. If `true`, the Composer autoloader will also look for classes

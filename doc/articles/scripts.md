@@ -221,6 +221,26 @@ to the `phpunit` script.
 > are easily accessible. In this example no matter if the `phpunit` binary is
 > actually in `vendor/bin/phpunit` or `bin/phpunit` it will be found and executed.
 
+Although Composer is not intended to manage long-running processes and other
+such aspects of PHP projects, it can sometimes be handy to disable the process
+timeout on custom commands. This timeout defaults to 300 seconds and can be
+overridden for all commands using the config key `process-timeout`, or for
+specific commands using an argument to the `run-script` command.
+
+A static helper also exists that can disable the process timeout for a specific
+script directly in composer.json:
+
+```json
+{
+    "scripts": {
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "phpunit"
+        ]
+    }
+}
+```
+
 ## Referencing scripts
 
 To enable script re-use and avoid duplicates, you can call a script from another
