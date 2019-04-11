@@ -486,6 +486,47 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated, even if empty.");
     }
 
+    public function testPharAutoload()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a'),
+        ));
+
+        $package->setAutoload(array(
+            'psr-0' => array(
+                'Foo' => 'foo.phar',
+                'Bar' => 'dir/bar.phar/src',
+            ),
+            'psr-4' => array(
+                'Baz\\' => 'baz.phar',
+                'Qux\\' => 'dir/qux.phar/src',
+            ),
+        ));
+
+        $vendorPackage = new Package('a/a', '1.0', '1.0');
+        $vendorPackage->setAutoload(array(
+            'psr-0' => array(
+                'Lorem' => 'lorem.phar',
+                'Ipsum' => 'dir/ipsum.phar/src',
+            ),
+            'psr-4' => array(
+                'Dolor\\' => 'dolor.phar',
+                'Sit\\' => 'dir/sit.phar/src',
+            ),
+        ));
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue(array($vendorPackage)));
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, 'Phar');
+
+        $this->assertAutoloadFiles('phar', $this->vendorDir . '/composer');
+        $this->assertAutoloadFiles('phar_psr4', $this->vendorDir . '/composer', 'psr4');
+        $this->assertAutoloadFiles('phar_static', $this->vendorDir . '/composer', 'static');
+    }
+
     public function testPSRToClassMapIgnoresNonExistingDir()
     {
         $package = new Package('a', '1.0', '1.0');

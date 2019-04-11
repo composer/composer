@@ -545,7 +545,7 @@ EOF;
             }
         }
 
-        if (preg_match('/\.phar.+$/', $path)) {
+        if (strpos($path, '.phar') !== false) {
             $baseDir = "'phar://' . " . $baseDir;
         }
 
@@ -769,10 +769,14 @@ HEADER;
         $filesystem = new Filesystem();
 
         $vendorPathCode = ' => ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true) . " . '/";
+        $vendorPharPathCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true) . " . '/";
         $appBaseDirCode = ' => ' . $filesystem->findShortestPathCode(realpath($targetDir), $basePath, true, true) . " . '/";
+        $appBaseDirPharCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(realpath($targetDir), $basePath, true, true) . " . '/";
 
         $absoluteVendorPathCode = ' => ' . substr(var_export(rtrim($vendorDir, '\\/') . '/', true), 0, -1);
+        $absoluteVendorPharPathCode = ' => ' . substr(var_export(rtrim('phar://' . $vendorDir, '\\/') . '/', true), 0, -1);
         $absoluteAppBaseDirCode = ' => ' . substr(var_export(rtrim($baseDir, '\\/') . '/', true), 0, -1);
+        $absoluteAppBaseDirPharCode = ' => ' . substr(var_export(rtrim('phar://' . $baseDir, '\\/') . '/', true), 0, -1);
 
         $initializer = '';
         $prefix = "\0Composer\Autoload\ClassLoader\0";
@@ -795,9 +799,15 @@ HEADER;
                 // See https://bugs.php.net/68057
                 $staticPhpVersion = 70000;
             }
-            $value = var_export($value, true);
-            $value = str_replace($absoluteVendorPathCode, $vendorPathCode, $value);
-            $value = str_replace($absoluteAppBaseDirCode, $appBaseDirCode, $value);
+            $value = strtr(
+                var_export($value, true),
+                array(
+                    $absoluteVendorPathCode => $vendorPathCode,
+                    $absoluteVendorPharPathCode => $vendorPharPathCode,
+                    $absoluteAppBaseDirCode => $appBaseDirCode,
+                    $absoluteAppBaseDirPharCode => $appBaseDirPharCode,
+                )
+            );
             $value = ltrim(preg_replace('/^ */m', '    $0$0', $value));
 
             $file .= sprintf("    public static $%s = %s;\n\n", $prop, $value);
