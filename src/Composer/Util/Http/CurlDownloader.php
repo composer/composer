@@ -51,11 +51,9 @@ class CurlDownloader
         'http' => array(
             'method' => CURLOPT_CUSTOMREQUEST,
             'content' => CURLOPT_POSTFIELDS,
-            'proxy' => CURLOPT_PROXY,
             'header' => CURLOPT_HTTPHEADER,
         ),
         'ssl' => array(
-            'ciphers' => CURLOPT_SSL_CIPHER_LIST,
             'cafile' => CURLOPT_CAINFO,
             'capath' => CURLOPT_CAPATH,
         ),
