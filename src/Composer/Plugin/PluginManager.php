@@ -253,7 +253,15 @@ class PluginManager
      */
     private function loadRepository(RepositoryInterface $repo)
     {
-        foreach ($repo->getPackages() as $package) { /** @var PackageInterface $package */
+        $packages = $repo->getPackages();
+        foreach ($packages as $i => $package) {
+            if ($package->getName() == 'composer/installers') {
+                unset($packages[$i]);
+                array_unshift($packages, $package);
+                break;
+            }
+        }
+        foreach ($packages as $package) { /** @var PackageInterface $package */
             if ($package instanceof AliasPackage) {
                 continue;
             }
