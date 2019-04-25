@@ -22,6 +22,7 @@ use Composer\Package\Loader\LoaderInterface;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Config;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -36,6 +37,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     protected $versionParser;
     protected $type;
     protected $loader;
+    protected $process;
     protected $repoConfig;
     protected $branchErrorOccurred = false;
     private $drivers;
@@ -80,6 +82,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $this->loader = $loader;
     }
 
+    public function setProcess(ProcessExecutor $process)
+    {
+        $this->process = $process;
+    }
+
     public function getDriver()
     {
         if ($this->driver) {
@@ -88,7 +95,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         if (isset($this->drivers[$this->type])) {
             $class = $this->drivers[$this->type];
-            $this->driver = new $class($this->repoConfig, $this->io, $this->config);
+            $this->driver = new $class($this->repoConfig, $this->io, $this->config, $this->process);
             $this->driver->initialize();
 
             return $this->driver;
@@ -96,7 +103,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->config, $this->url)) {
-                $this->driver = new $driver($this->repoConfig, $this->io, $this->config);
+                $this->driver = new $driver($this->repoConfig, $this->io, $this->config, $this->process);
                 $this->driver->initialize();
 
                 return $this->driver;
@@ -105,7 +112,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->config, $this->url, true)) {
-                $this->driver = new $driver($this->repoConfig, $this->io, $this->config);
+                $this->driver = new $driver($this->repoConfig, $this->io, $this->config, $this->process);
                 $this->driver->initialize();
 
                 return $this->driver;
