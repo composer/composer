@@ -26,10 +26,12 @@ class ProcessExecutor
     protected $captureOutput;
     protected $errorOutput;
     protected $io;
+    protected $env;
 
-    public function __construct(IOInterface $io = null)
+    public function __construct(IOInterface $io = null, array $env = array())
     {
         $this->io = $io;
+        $this->env = $env;
     }
 
     /**
@@ -65,9 +67,9 @@ class ProcessExecutor
 
         // TODO in v3, commands should be passed in as arrays of cmd + args
         if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+            $process = Process::fromShellCommandline($command, $cwd, $this->env, null, static::getTimeout());
         } else {
-            $process = new Process($command, $cwd, null, null, static::getTimeout());
+            $process = new Process($command, $cwd, $this->env, null, static::getTimeout());
         }
 
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
