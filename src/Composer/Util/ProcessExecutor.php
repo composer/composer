@@ -28,7 +28,7 @@ class ProcessExecutor
     protected $io;
     protected $env;
 
-    public function __construct(IOInterface $io = null, array $env = array())
+    public function __construct(IOInterface $io = null, $env = null)
     {
         $this->io = $io;
         $this->env = $env;
