@@ -218,6 +218,13 @@ abstract class BitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getChangeDate($identifier);
         }
 
+        if (strpos($identifier, '/') !== false) {
+            $branches = $this->getBranches();
+            if (isset($branches[$identifier])) {
+                $identifier = $branches[$identifier];
+            }
+        }
+
         $resource = sprintf(
             'https://api.bitbucket.org/2.0/repositories/%s/%s/commit/%s?fields=date',
             $this->owner,
