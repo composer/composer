@@ -1,0 +1,21 @@
+--TEST--
+Install in ignore-platform-reqs mode
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "require": { "ext-testdummy": "*", "php": "^99" } },
+                { "name": "a/a", "version": "2.0.0", "require": { "ext-testdummy": "*", "php": "^100" } }
+            ]
+        }
+    ],
+    "require": {
+        "php": "99.9"
+    }
+}
+--RUN--
+require a/a --pretend-match-platform-reqs
+--EXPECT--
+Installing a/a (1.0.0)
