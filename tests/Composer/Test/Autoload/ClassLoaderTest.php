@@ -59,4 +59,16 @@ class ClassLoaderTest extends TestCase
         $loader = new ClassLoader();
         $this->assertEmpty($loader->getPrefixes());
     }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testPsr0DoubleNamespaceSeparator()
+    {
+        $loader = new ClassLoader();
+        $loader->add('Namespaced\\', __DIR__ . '/Fixtures/');
+
+        $this->assertFalse($loader->findFile('Namespaced\\\\Foo'));
+        $this->assertInternalType('string', $loader->findFile('Namespaced\\Foo'));
+    }
 }
