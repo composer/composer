@@ -204,4 +204,47 @@ class ComposerRepositoryTest extends TestCase
             $repository->search('foo', RepositoryInterface::SEARCH_FULLTEXT, 'library')
         );
     }
+
+    /**
+     * @dataProvider canonicalizeUrlProvider
+     *
+     * @param string $expected
+     * @param string $url
+     * @param string $repositoryUrl
+     */
+    public function testCanonicalizeUrl($expected, $url, $repositoryUrl)
+    {
+        $repository = new ComposerRepository(
+            array('url' => $repositoryUrl),
+            new NullIO(),
+            FactoryMock::createConfig()
+        );
+
+        $object = new \ReflectionObject($repository);
+        $method = $object->getMethod('canonicalizeUrl');
+        $method->setAccessible(true);
+
+        $this->assertSame($expected, $method->invoke($repository, $url));
+    }
+
+    public function canonicalizeUrlProvider()
+    {
+        return array(
+            array(
+                'https://example.org/path/to/file',
+                '/path/to/file',
+                'https://example.org',
+            ),
+            array(
+                'file:///path/to/repository/file',
+                '/path/to/repository/file',
+                'file:///path/to/repository',
+            ),
+            array(
+                'https://otherdomain.example.org/path/to/file',
+                'https://otherdomain.example.org/path/to/file',
+                'https://example.org',
+            ),
+        );
+    }
 }
