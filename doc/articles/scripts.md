@@ -268,7 +268,7 @@ To disable the timeout of a single script call, you must use the `run-script` co
 command and specify the `--timeout` parameter:
 
 ```
-composer run-script test --timeout=0
+composer run-script --timeout=0 test
 ```
 
 ## Referencing scripts
