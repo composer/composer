@@ -264,11 +264,11 @@ of all following scripts in the current terminal environment:
 export COMPOSER_PROCESS_TIMEOUT=0
 ```
 
-To disable the timeout of a single script call, you must use the `run` composer
+To disable the timeout of a single script call, you must use the `run-script` composer
 command and specify the `--timeout` parameter:
 
 ```
-composer run test --timeout=0
+composer run-script test --timeout=0
 ```
 
 ## Referencing scripts
