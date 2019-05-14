@@ -224,10 +224,13 @@ to the `phpunit` script.
 Although Composer is not intended to manage long-running processes and other
 such aspects of PHP projects, it can sometimes be handy to disable the process
 timeout on custom commands. This timeout defaults to 300 seconds and can be
-overridden in a variety of ways depending on the desired effect: it's possible
-to disable it for all command using the config key `process-timeout`, or for
-a specific call using the `--timeout` parameter of the `run` (`run-scripts`)
-command, or using a static helper for specific scripts.
+overridden in a variety of ways depending on the desired effect:
+
+- disable it for all commands using the config key `process-timeout`,
+- disable it for the current or future invocations of composer using the
+  environment variable `COMPOSER_PROCESS_TIMEOUT`,
+- for a specific invocation using the `--timeout` flag of the `run-script` command,
+- using a static helper for specific scripts.
 
 To disable the timeout for specific scripts with the static helper directly in
 composer.json:
