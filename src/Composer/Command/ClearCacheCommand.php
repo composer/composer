@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Cache;
 use Composer\Factory;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -69,6 +70,17 @@ EOT
             $cache->clear();
         }
 
+        $delay = 30;
+        $progressBar = new ProgressBar($output, $delay);
+        $progressBar->start();
+
+        $i = 0;
+        while ($i++ < $delay) {
+            sleep(1);
+            $progressBar->advance();
+        }
+        $progressBar->finish(); 
+        
         $io->writeError('<info>All caches cleared.</info>');
     }
 }
