@@ -22,11 +22,13 @@ use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Silencer;
@@ -79,6 +81,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('remove-vcs', null, InputOption::VALUE_NONE, 'Whether to force deletion of the vcs folder without prompting.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('update', null, InputOption::VALUE_NONE, 'Overwrite an existing root package.'),
             ))
             ->setHelp(
                 <<<EOT
@@ -142,11 +145,12 @@ EOT
             $input->getOption('no-progress'),
             $input->getOption('no-install'),
             $input->getOption('ignore-platform-reqs'),
-            !$input->getOption('no-secure-http')
+            !$input->getOption('no-secure-http'),
+            $input->getOption('update')
         );
     }
 
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true)
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true, $update = false)
     {
         $oldCwd = getcwd();
 
@@ -156,7 +160,7 @@ EOT
         $this->suggestedPackagesReporter = new SuggestedPackagesReporter($io);
 
         if ($packageName !== null) {
-            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repository, $disablePlugins, $noScripts, $noProgress, $ignorePlatformReqs, $secureHttp);
+            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repository, $disablePlugins, $noScripts, $noProgress, $ignorePlatformReqs, $secureHttp, $update);
         } else {
             $installedFromVcs = false;
         }
@@ -258,7 +262,7 @@ EOT
         return 0;
     }
 
-    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $ignorePlatformReqs = false, $secureHttp = true)
+    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $ignorePlatformReqs = false, $secureHttp = true, $update = false)
     {
         if (!$secureHttp) {
             $config->merge(array('config' => array('secure-http' => false)));
@@ -351,11 +355,17 @@ EOT
             ->setPreferDist($preferDist)
             ->setOutputProgress(!$noProgress);
 
-        $projectInstaller = new ProjectInstaller($directory, $dm);
+        $projectInstaller = new ProjectInstaller($directory, $dm, $this->getComposer());
         $im = $this->createInstallationManager();
         $im->addInstaller($projectInstaller);
-        $im->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
-        $im->notifyInstalls($io);
+
+        if ($update === true) {
+            $initialRootPackage = $this->getComposer()->getPackage();
+            $im->update(new InstalledArrayRepository(array($initialRootPackage)), new UpdateOperation($initialRootPackage, $package));
+        } else {
+            $im->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
+            $im->notifyInstalls($io);
+        }
 
         // collect suggestions
         $this->suggestedPackagesReporter->addSuggestionsFromPackage($package);

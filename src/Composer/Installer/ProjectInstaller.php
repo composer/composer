@@ -12,10 +12,12 @@
 
 namespace Composer\Installer;
 
+use Composer\Composer;
 use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Project Installer is used to install a single package into a directory as
@@ -25,12 +27,21 @@ use Composer\Util\Filesystem;
  */
 class ProjectInstaller implements InstallerInterface
 {
+    /** @var Composer */
+    private $composer;
+
+    /** @var string */
     private $installPath;
+
+    /** @var DownloadManager */
     private $downloadManager;
+
+    /** @var Filesystem */
     private $filesystem;
 
-    public function __construct($installPath, DownloadManager $dm)
+    public function __construct($installPath, DownloadManager $dm, Composer $composer)
     {
+        $this->composer = $composer;
         $this->installPath = rtrim(strtr($installPath, '\\', '/'), '/').'/';
         $this->downloadManager = $dm;
         $this->filesystem = new Filesystem;
@@ -75,7 +86,28 @@ class ProjectInstaller implements InstallerInterface
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
-        throw new \InvalidArgumentException("not supported");
+        if ($initial->getName() !== $target->getName()) {
+            throw new \InvalidArgumentException(\sprintf(
+                "Project directory does not contain the same package. Expected %s, but found %s.",
+                $target->getName(),
+                $initial->getName()
+            ));
+        }
+
+        $tmpDir = $this->composer->getConfig()->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
+
+        $this->downloadManager->download($target, $tmpDir);
+
+        $finder = Finder::create()
+            ->ignoreVCS(false)
+            ->ignoreDotFiles(false)
+            ->depth(0)
+            ->in($tmpDir);
+        foreach ($finder as $f) {
+            $this->filesystem->rename($f->getPathname(), $this->installPath . $f->getRelativePathname());
+        }
+
+        $this->filesystem->remove($tmpDir);
     }
 
     /**

@@ -185,16 +185,15 @@ class InstallationManager
         $initial = $operation->getInitialPackage();
         $target = $operation->getTargetPackage();
 
-        $initialType = $initial->getType();
-        $targetType = $target->getType();
+        $initialInstaller = $this->getInstaller($initial->getType());
+        $targetInstaller = $this->getInstaller($target->getType());
 
-        if ($initialType === $targetType) {
-            $installer = $this->getInstaller($initialType);
-            $installer->update($repo, $initial, $target);
+        if ($initialInstaller === $targetInstaller) {
+            $initialInstaller->update($repo, $initial, $target);
             $this->markForNotification($target);
         } else {
-            $this->getInstaller($initialType)->uninstall($repo, $initial);
-            $this->getInstaller($targetType)->install($repo, $target);
+            $initialInstaller->uninstall($repo, $initial);
+            $targetInstaller->install($repo, $target);
         }
     }
 
