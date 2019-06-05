@@ -307,3 +307,11 @@ Composer can unpack zipballs using either a system-provided `unzip` utility or P
 native `ZipArchive` class. The `ZipArchive` class is preferred on Windows. On other
 OSes where ZIP files can contain permissions and symlinks, the `unzip` utility is
 preferred. You're advised to install it if you need these features.
+
+## Token Github issue 
+
+if you have this error 'Your github oauth token for github.com contains invalid characters: ""'  after the command : ```docker-compose up luceo```
+Verify if you have your token created here : https://github.com/settings/tokens
+Else you don't have added the token github so execute that : ```export COMPOSER_AUTH_TOKEN=[your-token-here]```
+and verify : ```cat ~/.bash_profile```
+
