@@ -189,7 +189,7 @@ composer run-script [--dev] [--no-dev] script
 ```
 
 For example `composer run-script post-install-cmd` will run any
-**post-install-cmd** scripts that have been defined.
+**post-install-cmd** scripts and [plugins](plugins.md) that have been defined.
 
 You can also give additional arguments to the script handler by appending `--`
 followed by the handler arguments. e.g.

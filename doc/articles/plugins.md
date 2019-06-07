@@ -261,6 +261,11 @@ Now the `custom-plugin-command` is available alongside Composer commands.
 
 > _Composer commands are based on the [Symfony Console Component][10]._
 
+## Running plugins manually
+
+Plugins for an event can be run manually by the `run-script` command. This works the same way as 
+[running scripts manually](scripts.md#running-scripts-manually).
+
 ## Using Plugins
 
 Plugin packages are automatically loaded as soon as they are installed and will
