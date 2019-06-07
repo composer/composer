@@ -351,10 +351,6 @@ TAGSPUBKEY
                 @copy($localFilename, $backupTarget);
             }
 
-            if ($targetFilename = getenv('COMPOSER_SELF_UPDATE_TARGET')) {
-                $localFilename = realpath($targetFilename) ?: $targetFilename;
-            }
-
             rename($newFilename, $localFilename);
 
             return null;

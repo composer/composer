@@ -917,10 +917,6 @@ if you use Composer as super user at all times like in docker containers.
 
 If set, the value is used as php's memory_limit.
 
-### COMPOSER_SELF_UPDATE_TARGET
-
-If set, makes the self-update command write the new Composer phar file into that path instead of overwriting itself. Useful for updating Composer on read-only filesystem.
-
 ### COMPOSER_MIRROR_PATH_REPOS
 
 If set to 1, this env changes the default path repository strategy to `mirror` instead
