@@ -21,6 +21,7 @@ use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Script\ScriptEvents;
+use Composer\Util\PackageSorter;
 
 /**
  * @author Igor Wiedler <igor@wiedler.ch>
@@ -973,80 +974,21 @@ INITIALIZER;
     {
         $packages = array();
         $paths = array();
-        $usageList = array();
 
         foreach ($packageMap as $item) {
             list($package, $path) = $item;
             $name = $package->getName();
             $packages[$name] = $package;
             $paths[$name] = $path;
-
-            foreach (array_merge($package->getRequires(), $package->getDevRequires()) as $link) {
-                $target = $link->getTarget();
-                $usageList[$target][] = $name;
-            }
         }
 
-        $computing = array();
-        $computed = array();
-        $computeImportance = function ($name) use (&$computeImportance, &$computing, &$computed, $usageList) {
-            // reusing computed importance
-            if (isset($computed[$name])) {
-                return $computed[$name];
-            }
+        $sortedPackages = PackageSorter::sortPackages($packages);
 
-            // canceling circular dependency
-            if (isset($computing[$name])) {
-                return 0;
-            }
-
-            $computing[$name] = true;
-            $weight = 0;
-
-            if (isset($usageList[$name])) {
-                foreach ($usageList[$name] as $user) {
-                    $weight -= 1 - $computeImportance($user);
-                }
-            }
-
-            unset($computing[$name]);
-            $computed[$name] = $weight;
-
-            return $weight;
-        };
-
-        $weightList = array();
-
-        foreach ($packages as $name => $package) {
-            $weight = $computeImportance($name);
-            $weightList[$name] = $weight;
-        }
-
-        $stable_sort = function (&$array) {
-            static $transform, $restore;
-
-            $i = 0;
-
-            if (!$transform) {
-                $transform = function (&$v, $k) use (&$i) {
-                    $v = array($v, ++$i, $k, $v);
-                };
-
-                $restore = function (&$v, $k) {
-                    $v = $v[3];
-                };
-            }
-
-            array_walk($array, $transform);
-            asort($array);
-            array_walk($array, $restore);
-        };
-
-        $stable_sort($weightList);
 
         $sortedPackageMap = array();
 
-        foreach (array_keys($weightList) as $name) {
+        foreach ($sortedPackages as $package) {
+            $name = $package->getName();
             $sortedPackageMap[] = array($packages[$name], $paths[$name]);
         }
 
