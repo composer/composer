@@ -204,4 +204,71 @@ class ComposerRepositoryTest extends TestCase
             $repository->search('foo', RepositoryInterface::SEARCH_FULLTEXT, 'library')
         );
     }
+
+    /**
+     * @dataProvider canonicalizeUrlProvider
+     *
+     * @param string $expected
+     * @param string $url
+     * @param string $repositoryUrl
+     */
+    public function testCanonicalizeUrl($expected, $url, $repositoryUrl)
+    {
+        $repository = new ComposerRepository(
+            array('url' => $repositoryUrl),
+            new NullIO(),
+            FactoryMock::createConfig()
+        );
+
+        $object = new \ReflectionObject($repository);
+
+        $method = $object->getMethod('canonicalizeUrl');
+        $method->setAccessible(true);
+
+        // ComposerRepository::__construct ensures that the repository URL has a
+        // protocol, so reset it here in order to test all cases.
+        $property = $object->getProperty('url');
+        $property->setAccessible(true);
+        $property->setValue($repository, $repositoryUrl);
+
+        $this->assertSame($expected, $method->invoke($repository, $url));
+    }
+
+    public function canonicalizeUrlProvider()
+    {
+        return array(
+            array(
+                'https://example.org/path/to/file',
+                '/path/to/file',
+                'https://example.org',
+            ),
+            array(
+                'https://example.org/canonic_url',
+                'https://example.org/canonic_url',
+                'https://should-not-see-me.test',
+            ),
+            array(
+                'file:///path/to/repository/file',
+                '/path/to/repository/file',
+                'file:///path/to/repository',
+            ),
+            array(
+                // Assert that the repository URL is returned unchanged if it is
+                // not a URL.
+                // (Backward compatibility test)
+                'invalid_repo_url',
+                '/path/to/file',
+                'invalid_repo_url',
+            ),
+            array(
+                // Assert that URLs can contain sequences resembling pattern
+                // references as understood by preg_replace() without messing up
+                // the result.
+                // (Regression test)
+                'https://example.org/path/to/unusual_$0_filename',
+                '/path/to/unusual_$0_filename',
+                'https://example.org',
+            ),
+        );
+    }
 }

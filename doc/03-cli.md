@@ -920,6 +920,10 @@ If you use a proxy but it does not support the request_fulluri flag for HTTPS
 requests, then you should set this env var to `false` or `0` to prevent Composer
 from setting the request_fulluri option.
 
+### COMPOSER_SELF_UPDATE_TARGET
+
+If set, makes the self-update command write the new Composer phar file into that path instead of overwriting itself. Useful for updating Composer on read-only filesystem.
+
 ### no_proxy or NO_PROXY
 
 If you are behind a proxy and would like to disable it for certain domains, you

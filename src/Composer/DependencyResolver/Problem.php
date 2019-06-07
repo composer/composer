@@ -108,7 +108,7 @@ class Problem
 
                     $msg = "\n    - This package requires ".$packageName.$this->constraintToText($constraint).' but ';
 
-                    if (defined('HHVM_VERSION') || count($available)) {
+                    if (defined('HHVM_VERSION') || (count($available) && $packageName === 'hhvm')) {
                         return $msg . 'your HHVM version does not satisfy that requirement.';
                     }
 
