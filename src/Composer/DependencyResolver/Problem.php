@@ -106,7 +106,7 @@ class Problem
 
                     $msg = "\n    - This package requires ".$job['packageName'].$this->constraintToText($job['constraint']).' but ';
 
-                    if (defined('HHVM_VERSION') || count($available)) {
+                    if (defined('HHVM_VERSION') || (count($available) && $job['packageName'] === 'hhvm')) {
                         return $msg . 'your HHVM version does not satisfy that requirement.';
                     }
 
