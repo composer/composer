@@ -562,7 +562,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected function canonicalizeUrl($url)
     {
         if ('/' === $url[0]) {
-            if (preg_match('{^[^:]+://[^/]*}', $this->url, $matches)) {
+            if (preg_match('{^[^:]++://[^/]*+}', $this->url, $matches)) {
                 return $matches[0] . $url;
             }
 
