@@ -2376,4 +2376,24 @@ class JsonManipulatorTest extends TestCase
 }
 ', $manipulator->getContents());
     }
+
+    public function testEscapedUnicodeDoesNotCauseBacktrackLimitErrorGithubIssue8131()
+    {
+        $manipulator = new JsonManipulator('{
+  "description": "Some U\u00F1icode",
+  "require": {
+    "foo/bar": "^1.0"
+  }
+}');
+
+        $this->assertTrue($manipulator->addLink('require', 'foo/baz', '^1.0'));
+        $this->assertEquals('{
+  "description": "Some U\u00F1icode",
+  "require": {
+    "foo/bar": "^1.0",
+    "foo/baz": "^1.0"
+  }
+}
+', $manipulator->getContents());
+    }
 }
