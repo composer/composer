@@ -39,11 +39,11 @@ class NoProxyPattern
      */
     public function test($url)
     {
-        $host = parse_url($url, PHP_URL_HOST);
-        $port = parse_url($url, PHP_URL_PORT);
+        $host = parse_url($url, \PHP_URL_HOST);
+        $port = parse_url($url, \PHP_URL_PORT);
 
         if (empty($port)) {
-            switch (parse_url($url, PHP_URL_SCHEME)) {
+            switch (parse_url($url, \PHP_URL_SCHEME)) {
                 case 'http':
                     $port = 80;
                     break;
@@ -63,7 +63,7 @@ class NoProxyPattern
             list($ruleHost) = explode(':', $rule);
             list($base) = explode('/', $ruleHost);
 
-            if (filter_var($base, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            if (filter_var($base, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV4)) {
                 // ip or cidr match
 
                 if (!isset($ip)) {

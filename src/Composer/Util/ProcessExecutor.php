@@ -60,7 +60,7 @@ class ProcessExecutor
             $cwd = realpath(getcwd());
         }
 
-        $this->captureOutput = func_num_args() > 1;
+        $this->captureOutput = \func_num_args() > 1;
         $this->errorOutput = null;
 
         // TODO in v3, commands should be passed in as arrays of cmd + args
@@ -70,10 +70,10 @@ class ProcessExecutor
             $process = new Process($command, $cwd, null, null, static::getTimeout());
         }
 
-        $callback = is_callable($output) ? $output : array($this, 'outputHandler');
+        $callback = \is_callable($output) ? $output : array($this, 'outputHandler');
         $process->run($callback);
 
-        if ($this->captureOutput && !is_callable($output)) {
+        if ($this->captureOutput && !\is_callable($output)) {
             $output = $process->getOutput();
         }
 
@@ -153,14 +153,14 @@ class ProcessExecutor
         //Fix for PHP bug #49446 escapeshellarg doesn't work on Windows
         //@see https://bugs.php.net/bug.php?id=43784
         //@see https://bugs.php.net/bug.php?id=49446
-        if ('\\' === DIRECTORY_SEPARATOR) {
+        if ('\\' === \DIRECTORY_SEPARATOR) {
             if ('' === $argument) {
                 return escapeshellarg($argument);
             }
 
             $escapedArgument = '';
             $quote = false;
-            foreach (preg_split('/(")/', $argument, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE) as $part) {
+            foreach (preg_split('/(")/', $argument, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE) as $part) {
                 if ('"' === $part) {
                     $escapedArgument .= '\\"';
                 } elseif (self::isSurroundedBy($part, '%')) {
@@ -187,6 +187,6 @@ class ProcessExecutor
 
     private static function isSurroundedBy($arg, $char)
     {
-        return 2 < strlen($arg) && $char === $arg[0] && $char === $arg[strlen($arg) - 1];
+        return 2 < \strlen($arg) && $char === $arg[0] && $char === $arg[\strlen($arg) - 1];
     }
 }

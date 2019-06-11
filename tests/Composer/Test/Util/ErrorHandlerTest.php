@@ -52,6 +52,6 @@ class ErrorHandlerTest extends TestCase
     {
         ErrorHandler::register();
 
-        @trigger_error('test', E_USER_NOTICE);
+        @trigger_error('test', \E_USER_NOTICE);
     }
 }

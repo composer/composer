@@ -48,7 +48,7 @@ class ApplicationTest extends TestCase
         $outputMock->expects($this->at($index++))
             ->method("writeError");
 
-        if (extension_loaded('xdebug')) {
+        if (\extension_loaded('xdebug')) {
             $outputMock->expects($this->at($index++))
                 ->method("getVerbosity")
                 ->willReturn(OutputInterface::VERBOSITY_NORMAL);
@@ -66,8 +66,8 @@ class ApplicationTest extends TestCase
             ->method("write")
             ->with($this->equalTo(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF'])));
 
-        if (!defined('COMPOSER_DEV_WARNING_TIME')) {
-            define('COMPOSER_DEV_WARNING_TIME', time() - 1);
+        if (!\defined('COMPOSER_DEV_WARNING_TIME')) {
+            \define('COMPOSER_DEV_WARNING_TIME', time() - 1);
         }
 
         $application->doRun($inputMock, $outputMock);
@@ -105,8 +105,8 @@ class ApplicationTest extends TestCase
         $outputMock->expects($this->never())
             ->method("writeln");
 
-        if (!defined('COMPOSER_DEV_WARNING_TIME')) {
-            define('COMPOSER_DEV_WARNING_TIME', time() - 1);
+        if (!\defined('COMPOSER_DEV_WARNING_TIME')) {
+            \define('COMPOSER_DEV_WARNING_TIME', time() - 1);
         }
 
         $application->doRun($inputMock, $outputMock);

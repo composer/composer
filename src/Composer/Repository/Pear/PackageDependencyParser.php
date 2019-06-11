@@ -27,7 +27,7 @@ class PackageDependencyParser
      */
     public function buildDependencyInfo($depArray)
     {
-        if (!is_array($depArray)) {
+        if (!\is_array($depArray)) {
             return new DependencyInfo(array(), array());
         }
         if (!$this->isHash($depArray)) {
@@ -56,7 +56,7 @@ class PackageDependencyParser
         $result = array();
 
         foreach ($depArray as $depItem) {
-            if (empty($depItem['rel']) || !array_key_exists($depItem['rel'], $dep10toOperatorMap)) {
+            if (empty($depItem['rel']) || !\array_key_exists($depItem['rel'], $dep10toOperatorMap)) {
                 // 'unknown rel type:' . $depItem['rel'];
                 continue;
             }
@@ -124,7 +124,7 @@ class PackageDependencyParser
         $optionals = array();
         $defaultOptionals = array();
         foreach ($depArray as $depType => $depTypeGroup) {
-            if (!is_array($depTypeGroup)) {
+            if (!\is_array($depTypeGroup)) {
                 continue;
             }
             if ('required' == $depType || 'optional' == $depType) {
@@ -177,7 +177,7 @@ class PackageDependencyParser
             }
         }
 
-        if (count($defaultOptionals) > 0) {
+        if (\count($defaultOptionals) > 0) {
             $optionals['*'] = $defaultOptionals;
         }
 
@@ -229,7 +229,7 @@ class PackageDependencyParser
 
         $result = array();
         foreach ($depItem as $subDepItem) {
-            if (!array_key_exists('channel', $subDepItem)) {
+            if (!\array_key_exists('channel', $subDepItem)) {
                 $subDepItem['channel'] = $subDepItem['uri'];
             }
             $depChannelName = $subDepItem['channel'];
@@ -262,7 +262,7 @@ class PackageDependencyParser
 
         $versions = array();
         $values = array_intersect_key($data, $dep20toOperatorMap);
-        if (0 == count($values)) {
+        if (0 == \count($values)) {
             return '*';
         }
         if (isset($values['min']) && isset($values['exclude']) && $data['min'] == $data['exclude']) {
@@ -271,7 +271,7 @@ class PackageDependencyParser
             $versions[] = '<' . $this->parseVersion($values['max']);
         } else {
             foreach ($values as $op => $version) {
-                if ('exclude' == $op && is_array($version)) {
+                if ('exclude' == $op && \is_array($version)) {
                     foreach ($version as $versionPart) {
                         $versions[] = $dep20toOperatorMap[$op] . $this->parseVersion($versionPart);
                     }
@@ -312,6 +312,6 @@ class PackageDependencyParser
      */
     private function isHash(array $array)
     {
-        return !array_key_exists(1, $array) && !array_key_exists(0, $array);
+        return !\array_key_exists(1, $array) && !\array_key_exists(0, $array);
     }
 }

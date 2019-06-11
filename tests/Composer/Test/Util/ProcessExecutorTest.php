@@ -23,7 +23,7 @@ class ProcessExecutorTest extends TestCase
     {
         $process = new ProcessExecutor;
         $process->execute('echo foo', $output);
-        $this->assertEquals("foo".PHP_EOL, $output);
+        $this->assertEquals("foo".\PHP_EOL, $output);
     }
 
     public function testExecuteOutputsIfNotCaptured()
@@ -32,7 +32,7 @@ class ProcessExecutorTest extends TestCase
         ob_start();
         $process->execute('echo foo');
         $output = ob_get_clean();
-        $this->assertEquals("foo".PHP_EOL, $output);
+        $this->assertEquals("foo".\PHP_EOL, $output);
     }
 
     public function testUseIOIsNotNullAndIfNotCaptured()
@@ -40,7 +40,7 @@ class ProcessExecutorTest extends TestCase
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io->expects($this->once())
             ->method('write')
-            ->with($this->equalTo('foo'.PHP_EOL), false);
+            ->with($this->equalTo('foo'.\PHP_EOL), false);
 
         $process = new ProcessExecutor($io);
         $process->execute('echo foo');

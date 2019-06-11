@@ -223,9 +223,9 @@ class EventDispatcherTest extends TestCase
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
 
-        $expected = '> post-install-cmd: echo -n foo'.PHP_EOL.
-            '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL.
-            '> post-install-cmd: echo -n bar'.PHP_EOL;
+        $expected = '> post-install-cmd: echo -n foo'.\PHP_EOL.
+            '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.\PHP_EOL.
+            '> post-install-cmd: echo -n bar'.\PHP_EOL;
         $this->assertEquals($expected, $io->getOutput());
     }
 
@@ -266,11 +266,11 @@ class EventDispatcherTest extends TestCase
             }));
 
         $dispatcher->dispatch('root', new CommandEvent('root', $composer, $io));
-        $expected = '> root: @group'.PHP_EOL.
-            '> group: echo -n foo'.PHP_EOL.
-            '> group: @subgroup'.PHP_EOL.
-            '> subgroup: echo -n baz'.PHP_EOL.
-            '> group: echo -n bar'.PHP_EOL;
+        $expected = '> root: @group'.\PHP_EOL.
+            '> group: echo -n foo'.\PHP_EOL.
+            '> group: @subgroup'.\PHP_EOL.
+            '> subgroup: echo -n baz'.\PHP_EOL.
+            '> group: echo -n bar'.\PHP_EOL;
         $this->assertEquals($expected, $io->getOutput());
     }
 
@@ -307,8 +307,8 @@ class EventDispatcherTest extends TestCase
             }));
 
         $dispatcher->dispatch('helloWorld', new CommandEvent('helloWorld', $composer, $io));
-        $expected = "> helloWorld: @hello World".PHP_EOL.
-            "> hello: echo Hello " .escapeshellarg('World').PHP_EOL;
+        $expected = "> helloWorld: @hello World".\PHP_EOL.
+            "> hello: echo Hello " .escapeshellarg('World').\PHP_EOL;
 
         $this->assertEquals($expected, $io->getOutput());
     }
@@ -395,7 +395,7 @@ class EventDispatcherTest extends TestCase
 
         $io->expects($this->once())
             ->method('write')
-            ->with($this->equalTo('foo'.PHP_EOL), false);
+            ->with($this->equalTo('foo'.\PHP_EOL), false);
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }

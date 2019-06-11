@@ -73,9 +73,9 @@ class Problem
      */
     public function getPrettyString(array $installedMap = array())
     {
-        $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
+        $reasons = \call_user_func_array('array_merge', array_reverse($this->reasons));
 
-        if (count($reasons) === 1) {
+        if (\count($reasons) === 1) {
             reset($reasons);
             $reason = current($reasons);
 
@@ -97,7 +97,7 @@ class Problem
                     $version = phpversion();
                     $available = $this->pool->whatProvides($packageName);
 
-                    if (count($available)) {
+                    if (\count($available)) {
                         $firstAvailable = reset($available);
                         $version = $firstAvailable->getPrettyVersion();
                         $extra = $firstAvailable->getExtra();
@@ -108,7 +108,7 @@ class Problem
 
                     $msg = "\n    - This package requires ".$packageName.$this->constraintToText($constraint).' but ';
 
-                    if (defined('HHVM_VERSION') || (count($available) && $packageName === 'hhvm')) {
+                    if (\defined('HHVM_VERSION') || (\count($available) && $packageName === 'hhvm')) {
                         return $msg . 'your HHVM version does not satisfy that requirement.';
                     }
 
@@ -126,7 +126,7 @@ class Problem
                     }
 
                     $ext = substr($packageName, 4);
-                    $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
+                    $error = \extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
 
                     return "\n    - The requested PHP extension ".$packageName.$this->constraintToText($constraint).' '.$error.'. Install or enable PHP\'s '.$ext.' extension.';
                 }
@@ -134,7 +134,7 @@ class Problem
                 // handle linked libs
                 if (0 === stripos($packageName, 'lib-')) {
                     if (strtolower($packageName) === 'lib-icu') {
-                        $error = extension_loaded('intl') ? 'has the wrong version installed, try upgrading the intl extension.' : 'is missing from your system, make sure the intl extension is loaded.';
+                        $error = \extension_loaded('intl') ? 'has the wrong version installed, try upgrading the intl extension.' : 'is missing from your system, make sure the intl extension is loaded.';
 
                         return "\n    - The requested linked library ".$packageName.$this->constraintToText($constraint).' '.$error;
                     }

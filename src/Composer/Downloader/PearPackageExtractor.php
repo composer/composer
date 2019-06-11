@@ -95,9 +95,9 @@ class PearPackageExtractor
             throw new \RuntimeException('Invalid PEAR package. package.xml defines file that is not located inside tarball.');
         }
 
-        $this->filesystem->ensureDirectoryExists(dirname($to));
+        $this->filesystem->ensureDirectoryExists(\dirname($to));
 
-        if (0 == count($tasks)) {
+        if (0 == \count($tasks)) {
             $copied = copy($from, $to);
         } else {
             $content = file_get_contents($from);
@@ -213,7 +213,7 @@ class PearPackageExtractor
                     $fileName = (string) ($child['name'] ?: $child[0]); // $child[0] means text content
                     $fileSource = $this->combine($source, $fileName);
                     $fileTarget = $this->combine((string) $child['baseinstalldir'] ?: $target, $fileName);
-                    if (!in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
+                    if (!\in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
                         $fileTarget = $packageName . '/' . $fileTarget;
                     }
                     $result[(string) $child['name']] = array('from' => $fileSource, 'to' => $fileTarget, 'role' => $fileRole, 'tasks' => array());
@@ -248,7 +248,7 @@ class PearPackageExtractor
                             $fileTasks[] = array('from' => (string) $taskNode->attributes()->from, 'to' => (string) $taskNode->attributes()->to);
                         }
                     }
-                    if (!in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
+                    if (!\in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
                         $fileTarget = $packageName . '/' . $fileTarget;
                     }
                     $result[(string) $child['name']] = array('from' => $fileSource, 'to' => $fileTarget, 'role' => $fileRole, 'tasks' => $fileTasks);

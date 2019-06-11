@@ -173,7 +173,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
      */
     protected function replaceSelfVersionDependencies(array $links, $linkType)
     {
-        if (in_array($linkType, array('conflicts', 'provides', 'replaces'), true)) {
+        if (\in_array($linkType, array('conflicts', 'provides', 'replaces'), true)) {
             $newLinks = array();
             foreach ($links as $link) {
                 // link is self.version, but must be replacing also the replaced version

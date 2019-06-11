@@ -123,7 +123,7 @@ class CompositeRepositoryTest extends TestCase
 
         $repo = new CompositeRepository(array($arrayRepoOne, $arrayRepoTwo));
 
-        $this->assertEquals(2, count($repo), "Should return '2' for count(\$repo)");
+        $this->assertEquals(2, \count($repo), "Should return '2' for count(\$repo)");
     }
 
     /**
@@ -132,7 +132,7 @@ class CompositeRepositoryTest extends TestCase
     public function testNoRepositories($method, $args)
     {
         $repo = new CompositeRepository(array());
-        $this->assertEquals(array(), call_user_func_array(array($repo, $method), $args));
+        $this->assertEquals(array(), \call_user_func_array(array($repo, $method), $args));
     }
 
     public function provideMethodCalls()

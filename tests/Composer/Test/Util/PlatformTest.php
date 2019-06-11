@@ -33,7 +33,7 @@ class PlatformTest extends TestCase
     public function testIsWindows()
     {
         // Compare 2 common tests for Windows to the built-in Windows test
-        $this->assertEquals(('\\' === DIRECTORY_SEPARATOR), Platform::isWindows());
-        $this->assertEquals(defined('PHP_WINDOWS_VERSION_MAJOR'), Platform::isWindows());
+        $this->assertEquals(('\\' === \DIRECTORY_SEPARATOR), Platform::isWindows());
+        $this->assertEquals(\defined('PHP_WINDOWS_VERSION_MAJOR'), Platform::isWindows());
     }
 }

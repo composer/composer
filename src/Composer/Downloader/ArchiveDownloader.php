@@ -56,7 +56,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 $contentDir = $this->getFolderContent($temporaryDir);
 
                 // only one dir in the archive, extract its contents out of it
-                if (1 === count($contentDir) && is_dir(reset($contentDir))) {
+                if (1 === \count($contentDir) && is_dir(reset($contentDir))) {
                     $contentDir = $this->getFolderContent((string) reset($contentDir));
                 }
 
@@ -102,7 +102,7 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return rtrim($path.'/'.md5($path.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
+        return rtrim($path.'/'.md5($path.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), \PHP_URL_PATH), \PATHINFO_EXTENSION), '.');
     }
 
     /**

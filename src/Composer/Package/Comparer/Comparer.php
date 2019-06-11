@@ -36,7 +36,7 @@ class Comparer
     public function getChanged($toString = false, $explicated = false)
     {
         $changed = $this->changed;
-        if (!count($changed)) {
+        if (!\count($changed)) {
             return false;
         }
         if ($explicated) {
@@ -67,13 +67,13 @@ class Comparer
         $currentDirectory = getcwd();
         chdir($this->source);
         $source = $this->doTree('.', $source);
-        if (!is_array($source)) {
+        if (!\is_array($source)) {
             return;
         }
         chdir($currentDirectory);
         chdir($this->update);
         $destination = $this->doTree('.', $destination);
-        if (!is_array($destination)) {
+        if (!\is_array($destination)) {
             exit;
         }
         chdir($currentDirectory);
@@ -103,7 +103,7 @@ class Comparer
             while ($file = readdir($dh)) {
                 if ($file !== '.' && $file !== '..') {
                     if (is_dir($dir.'/'.$file)) {
-                        if (!count($array)) {
+                        if (!\count($array)) {
                             $array[0] = 'Temp';
                         }
                         if (!$this->doTree($dir.'/'.$file, $array)) {
@@ -117,7 +117,7 @@ class Comparer
                     }
                 }
             }
-            if (count($array) > 1 && isset($array['0'])) {
+            if (\count($array) > 1 && isset($array['0'])) {
                 unset($array['0']);
             }
 

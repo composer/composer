@@ -145,7 +145,7 @@ class PluginManager
 
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
 
-        if (in_array($package->getName(), $this->registeredPlugins)) {
+        if (\in_array($package->getName(), $this->registeredPlugins)) {
             return;
         }
 
@@ -153,7 +153,7 @@ class PluginManager
         if (empty($extra['class'])) {
             throw new \UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
         }
-        $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
+        $classes = \is_array($extra['class']) ? $extra['class'] : array($extra['class']);
 
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
@@ -190,7 +190,7 @@ class PluginManager
                 }
                 $code = preg_replace('{^((?:final\s+)?(?:\s*))class\s+('.preg_quote($className).')}mi', '$1class $2_composer_tmp'.self::$classCounter, $code, 1);
                 $code = str_replace('__FILE__', var_export($path, true), $code);
-                $code = str_replace('__DIR__', var_export(dirname($path), true), $code);
+                $code = str_replace('__DIR__', var_export(\dirname($path), true), $code);
                 $code = str_replace('__CLASS__', var_export($class, true), $code);
                 $code = preg_replace('/^\s*<\?(php)?/i', '', $code, 1);
                 eval($code);
@@ -232,7 +232,7 @@ class PluginManager
      */
     public function addPlugin(PluginInterface $plugin)
     {
-        $this->io->writeError('Loading plugin '.get_class($plugin), true, IOInterface::DEBUG);
+        $this->io->writeError('Loading plugin '.\get_class($plugin), true, IOInterface::DEBUG);
         $this->plugins[] = $plugin;
         $plugin->activate($this->composer, $this->io);
 
@@ -344,15 +344,15 @@ class PluginManager
 
         $capabilities = (array) $plugin->getCapabilities();
 
-        if (!empty($capabilities[$capability]) && is_string($capabilities[$capability]) && trim($capabilities[$capability])) {
+        if (!empty($capabilities[$capability]) && \is_string($capabilities[$capability]) && trim($capabilities[$capability])) {
             return trim($capabilities[$capability]);
         }
 
         if (
-            array_key_exists($capability, $capabilities)
-            && (empty($capabilities[$capability]) || !is_string($capabilities[$capability]) || !trim($capabilities[$capability]))
+            \array_key_exists($capability, $capabilities)
+            && (empty($capabilities[$capability]) || !\is_string($capabilities[$capability]) || !trim($capabilities[$capability]))
         ) {
-            throw new \UnexpectedValueException('Plugin '.get_class($plugin).' provided invalid capability class name(s), got '.var_export($capabilities[$capability], 1));
+            throw new \UnexpectedValueException('Plugin '.\get_class($plugin).' provided invalid capability class name(s), got '.var_export($capabilities[$capability], 1));
         }
     }
 
@@ -368,7 +368,7 @@ class PluginManager
     {
         if ($capabilityClass = $this->getCapabilityImplementationClassName($plugin, $capabilityClassName)) {
             if (!class_exists($capabilityClass)) {
-                throw new \RuntimeException("Cannot instantiate Capability, as class $capabilityClass from plugin ".get_class($plugin)." does not exist.");
+                throw new \RuntimeException("Cannot instantiate Capability, as class $capabilityClass from plugin ".\get_class($plugin)." does not exist.");
             }
 
             $ctorArgs['plugin'] = $plugin;

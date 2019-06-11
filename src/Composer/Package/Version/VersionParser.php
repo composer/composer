@@ -47,7 +47,7 @@ class VersionParser extends SemverVersionParser
         $pairs = array_values($pairs);
         $result = array();
 
-        for ($i = 0, $count = count($pairs); $i < $count; $i++) {
+        for ($i = 0, $count = \count($pairs); $i < $count; $i++) {
             $pair = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
             if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/') && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $pairs[$i + 1])) {
                 $pair .= ' '.$pairs[$i + 1];

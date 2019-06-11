@@ -71,7 +71,7 @@ abstract class BaseChannelReader
     protected function requestXml($origin, $path)
     {
         // http://components.ez.no/p/packages.xml is malformed. to read it we must ignore parsing errors.
-        $xml = simplexml_load_string($this->requestContent($origin, $path), "SimpleXMLElement", LIBXML_NOERROR);
+        $xml = simplexml_load_string($this->requestContent($origin, $path), "SimpleXMLElement", \LIBXML_NOERROR);
 
         if (false === $xml) {
             throw new \UnexpectedValueException(sprintf('The PEAR channel at ' . $origin . ' is broken. (Invalid XML at file `%s`)', $path));

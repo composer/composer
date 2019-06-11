@@ -439,17 +439,17 @@ JSON;
             array('http://gitlab.com/foo/bar.git', true),
             array('http://gitlab.com/foo/bar.git', true),
             array('http://gitlab.com/foo/bar.baz.git', true),
-            array('https://gitlab.com/foo/bar', extension_loaded('openssl')), // Platform requirement
-            array('https://gitlab.mycompany.com:5443/foo/bar', extension_loaded('openssl')), // Platform requirement
-            array('git@gitlab.com:foo/bar.git', extension_loaded('openssl')),
+            array('https://gitlab.com/foo/bar', \extension_loaded('openssl')), // Platform requirement
+            array('https://gitlab.mycompany.com:5443/foo/bar', \extension_loaded('openssl')), // Platform requirement
+            array('git@gitlab.com:foo/bar.git', \extension_loaded('openssl')),
             array('git@example.com:foo/bar.git', false),
             array('http://example.com/foo/bar', false),
             array('http://mycompany.com/gitlab/mygroup/myproject', true),
-            array('https://mycompany.com/gitlab/mygroup/myproject', extension_loaded('openssl')),
+            array('https://mycompany.com/gitlab/mygroup/myproject', \extension_loaded('openssl')),
             array('http://othercompany.com/nested/gitlab/mygroup/myproject', true),
-            array('https://othercompany.com/nested/gitlab/mygroup/myproject', extension_loaded('openssl')),
+            array('https://othercompany.com/nested/gitlab/mygroup/myproject', \extension_loaded('openssl')),
             array('http://gitlab.com/mygroup/mysubgroup/mysubsubgroup/myproject', true),
-            array('https://gitlab.com/mygroup/mysubgroup/mysubsubgroup/myproject', extension_loaded('openssl')),
+            array('https://gitlab.com/mygroup/mysubgroup/mysubsubgroup/myproject', \extension_loaded('openssl')),
         );
     }
 

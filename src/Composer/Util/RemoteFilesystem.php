@@ -217,7 +217,7 @@ class RemoteFilesystem
      */
     protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
     {
-        if (strpos($originUrl, '.github.com') === (strlen($originUrl) - 11)) {
+        if (strpos($originUrl, '.github.com') === (\strlen($originUrl) - 11)) {
             $originUrl = 'github.com';
         }
 
@@ -225,9 +225,9 @@ class RemoteFilesystem
         // is the host without the path, so we look for the registered gitlab-domains matching the host here
         if (
             $this->config
-            && is_array($this->config->get('gitlab-domains'))
+            && \is_array($this->config->get('gitlab-domains'))
             && false === strpos($originUrl, '/')
-            && !in_array($originUrl, $this->config->get('gitlab-domains'))
+            && !\in_array($originUrl, $this->config->get('gitlab-domains'))
         ) {
             foreach ($this->config->get('gitlab-domains') as $gitlabDomain) {
                 if (0 === strpos($gitlabDomain, $originUrl)) {
@@ -238,7 +238,7 @@ class RemoteFilesystem
             unset($gitlabDomain);
         }
 
-        $this->scheme = parse_url($fileUrl, PHP_URL_SCHEME);
+        $this->scheme = parse_url($fileUrl, \PHP_URL_SCHEME);
         $this->bytesMax = 0;
         $this->originUrl = $originUrl;
         $this->fileUrl = $fileUrl;
@@ -331,7 +331,7 @@ class RemoteFilesystem
                     self::outputWarnings($this->io, $originUrl, json_decode($result, true));
                 }
 
-                if (in_array($statusCode, array(401, 403)) && $this->retryAuthFailure) {
+                if (\in_array($statusCode, array(401, 403)) && $this->retryAuthFailure) {
                     $this->promptAuthAndRetry($statusCode, $this->findStatusMessage($http_response_header), null, $http_response_header);
                 }
             }
@@ -348,7 +348,7 @@ class RemoteFilesystem
                 throw $e;
             }
 
-            if (PHP_VERSION_ID < 50600 && !empty($options['ssl']['peer_fingerprint'])) {
+            if (\PHP_VERSION_ID < 50600 && !empty($options['ssl']['peer_fingerprint'])) {
                 // Emulate fingerprint validation on PHP < 5.6
                 $params = stream_context_get_params($ctx);
                 $expectedPeerFingerprint = $options['ssl']['peer_fingerprint'];
@@ -369,7 +369,7 @@ class RemoteFilesystem
             }
             $result = false;
         }
-        if ($errorMessage && !filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
+        if ($errorMessage && !filter_var(ini_get('allow_url_fopen'), \FILTER_VALIDATE_BOOLEAN)) {
             $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
         }
         restore_error_handler();
@@ -412,7 +412,7 @@ class RemoteFilesystem
 
         // check for gitlab 404 when downloading archives
         if ($statusCode === 404
-            && $this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)
+            && $this->config && \in_array($originUrl, $this->config->get('gitlab-domains'), true)
             && false !== strpos($fileUrl, 'archive.zip')
         ) {
             $result = false;
@@ -449,13 +449,13 @@ class RemoteFilesystem
         }
 
         // decode gzip
-        if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http' && !$hasFollowedRedirect) {
+        if ($result && \extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http' && !$hasFollowedRedirect) {
             $contentEncoding = $this->findHeaderValue($http_response_header, 'content-encoding');
             $decode = $contentEncoding && 'gzip' === strtolower($contentEncoding);
 
             if ($decode) {
                 try {
-                    if (PHP_VERSION_ID >= 50400) {
+                    if (\PHP_VERSION_ID >= 50400) {
                         $result = zlib_decode($result);
                     } else {
                         // work around issue with gzuncompress & co that do not work with all gzip checksums
@@ -503,7 +503,7 @@ class RemoteFilesystem
         }
 
         // Handle SSL cert match issues
-        if (false === $result && false !== strpos($errorMessage, 'Peer certificate') && PHP_VERSION_ID < 50600) {
+        if (false === $result && false !== strpos($errorMessage, 'Peer certificate') && \PHP_VERSION_ID < 50600) {
             // Certificate name error, PHP doesn't support subjectAltName on PHP < 5.6
             // The procedure to handle sAN for older PHP's is:
             //
@@ -532,7 +532,7 @@ class RemoteFilesystem
                 $this->io->writeError('');
                 $this->io->writeError(sprintf(
                     '<error>Your version of PHP, %s, is affected by CVE-2013-6420 and cannot safely perform certificate validation, we strongly suggest you upgrade.</error>',
-                    PHP_VERSION
+                    \PHP_VERSION
                 ));
             }
         }
@@ -619,7 +619,7 @@ class RemoteFilesystem
     protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
     {
         switch ($notificationCode) {
-            case STREAM_NOTIFY_FAILURE:
+            case \STREAM_NOTIFY_FAILURE:
                 if (400 === $messageCode) {
                     // This might happen if your host is secured by ssl client certificate authentication
                     // but you do not send an appropriate certificate
@@ -627,11 +627,11 @@ class RemoteFilesystem
                 }
                 break;
 
-            case STREAM_NOTIFY_FILE_SIZE_IS:
+            case \STREAM_NOTIFY_FILE_SIZE_IS:
                 $this->bytesMax = $bytesMax;
                 break;
 
-            case STREAM_NOTIFY_PROGRESS:
+            case \STREAM_NOTIFY_PROGRESS:
                 if ($this->bytesMax > 0 && $this->progress) {
                     $progression = min(100, round($bytesTransferred / $this->bytesMax * 100));
 
@@ -649,7 +649,7 @@ class RemoteFilesystem
 
     protected function promptAuthAndRetry($httpStatus, $reason = null, $warning = null, $headers = array())
     {
-        if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
+        if ($this->config && \in_array($this->originUrl, $this->config->get('github-domains'), true)) {
             $gitHubUtil = new GitHub($this->io, $this->config, null);
             $message = "\n";
 
@@ -681,7 +681,7 @@ class RemoteFilesystem
             ) {
                 throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
-        } elseif ($this->config && in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
+        } elseif ($this->config && \in_array($this->originUrl, $this->config->get('gitlab-domains'), true)) {
             $message = "\n".'Could not fetch '.$this->fileUrl.', enter your ' . $this->originUrl . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
 
@@ -741,7 +741,7 @@ class RemoteFilesystem
                 throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
             }
 
-            $this->io->writeError('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+            $this->io->writeError('    Authentication required (<info>'.parse_url($this->fileUrl, \PHP_URL_HOST).'</info>):');
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');
             $this->io->setAuthentication($this->originUrl, $username, $password);
@@ -757,10 +757,10 @@ class RemoteFilesystem
         $tlsOptions = array();
 
         // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
-        if ($this->disableTls === false && PHP_VERSION_ID < 50600 && !stream_is_local($this->fileUrl)) {
-            $host = parse_url($this->fileUrl, PHP_URL_HOST);
+        if ($this->disableTls === false && \PHP_VERSION_ID < 50600 && !stream_is_local($this->fileUrl)) {
+            $host = parse_url($this->fileUrl, \PHP_URL_HOST);
 
-            if (PHP_VERSION_ID < 50304) {
+            if (\PHP_VERSION_ID < 50304) {
                 // PHP < 5.3.4 does not support follow_location, for those people
                 // do some really nasty hard coded transformations. These will
                 // still breakdown if the site redirects to a domain we don't
@@ -797,7 +797,7 @@ class RemoteFilesystem
 
         $headers = array();
 
-        if (extension_loaded('zlib')) {
+        if (\extension_loaded('zlib')) {
             $headers[] = 'Accept-Encoding: gzip';
         }
 
@@ -813,7 +813,7 @@ class RemoteFilesystem
             $auth = $this->io->getAuthentication($originUrl);
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
                 $options['github-token'] = $auth['username'];
-            } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
+            } elseif ($this->config && \in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
                 } elseif ($auth['password'] === 'private-token') {
@@ -833,7 +833,7 @@ class RemoteFilesystem
 
         $options['http']['follow_location'] = 0;
 
-        if (isset($options['http']['header']) && !is_array($options['http']['header'])) {
+        if (isset($options['http']['header']) && !\is_array($options['http']['header'])) {
             $options['http']['header'] = explode("\r\n", trim($options['http']['header'], "\r\n"));
         }
         foreach ($headers as $header) {
@@ -846,15 +846,15 @@ class RemoteFilesystem
     private function handleRedirect(array $http_response_header, array $additionalOptions, $result)
     {
         if ($locationHeader = $this->findHeaderValue($http_response_header, 'location')) {
-            if (parse_url($locationHeader, PHP_URL_SCHEME)) {
+            if (parse_url($locationHeader, \PHP_URL_SCHEME)) {
                 // Absolute URL; e.g. https://example.com/composer
                 $targetUrl = $locationHeader;
-            } elseif (parse_url($locationHeader, PHP_URL_HOST)) {
+            } elseif (parse_url($locationHeader, \PHP_URL_HOST)) {
                 // Scheme relative; e.g. //example.com/foo
                 $targetUrl = $this->scheme.':'.$locationHeader;
             } elseif ('/' === $locationHeader[0]) {
                 // Absolute path; e.g. /foo
-                $urlHost = parse_url($this->fileUrl, PHP_URL_HOST);
+                $urlHost = parse_url($this->fileUrl, \PHP_URL_HOST);
 
                 // Replace path using hostname as an anchor.
                 $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $this->fileUrl);
@@ -873,7 +873,7 @@ class RemoteFilesystem
 
             $additionalOptions['redirects'] = $this->redirects;
 
-            return $this->get(parse_url($targetUrl, PHP_URL_HOST), $targetUrl, $additionalOptions, $this->fileName, $this->progress);
+            return $this->get(parse_url($targetUrl, \PHP_URL_HOST), $targetUrl, $additionalOptions, $this->fileName, $this->progress);
         }
 
         if (!$this->retry) {
@@ -985,7 +985,7 @@ class RemoteFilesystem
         /**
          * Disable TLS compression to prevent CRIME attacks where supported.
          */
-        if (PHP_VERSION_ID >= 50413) {
+        if (\PHP_VERSION_ID >= 50413) {
             $defaults['ssl']['disable_compression'] = true;
         }
 
@@ -999,7 +999,7 @@ class RemoteFilesystem
      */
     private function getCertificateCnAndFp($url, $options)
     {
-        if (PHP_VERSION_ID >= 50600) {
+        if (\PHP_VERSION_ID >= 50600) {
             throw new \BadMethodCallException(sprintf(
                 '%s must not be used on PHP >= 5.6',
                 __METHOD__
@@ -1028,7 +1028,7 @@ class RemoteFilesystem
         if (!empty($params['options']['ssl']['peer_certificate'])) {
             $peerCertificate = $params['options']['ssl']['peer_certificate'];
 
-            if (TlsHelper::checkCertificateHost($peerCertificate, parse_url($url, PHP_URL_HOST), $commonName)) {
+            if (TlsHelper::checkCertificateHost($peerCertificate, parse_url($url, \PHP_URL_HOST), $commonName)) {
                 return array(
                     'cn' => $commonName,
                     'fp' => TlsHelper::getCertificateFingerprint($peerCertificate),
@@ -1047,7 +1047,7 @@ class RemoteFilesystem
             'ssh2.scp' => 22,
         );
 
-        $scheme = parse_url($url, PHP_URL_SCHEME);
+        $scheme = parse_url($url, \PHP_URL_SCHEME);
 
         if (!isset($defaultPorts[$scheme])) {
             throw new \InvalidArgumentException(sprintf(
@@ -1057,9 +1057,9 @@ class RemoteFilesystem
         }
 
         $defaultPort = $defaultPorts[$scheme];
-        $port = parse_url($url, PHP_URL_PORT) ?: $defaultPort;
+        $port = parse_url($url, \PHP_URL_PORT) ?: $defaultPort;
 
-        return parse_url($url, PHP_URL_HOST).':'.$port;
+        return parse_url($url, \PHP_URL_HOST).':'.$port;
     }
 
     /**
@@ -1071,20 +1071,20 @@ class RemoteFilesystem
      */
     private function isPublicBitBucketDownload($urlToBitBucketFile)
     {
-        $domain = parse_url($urlToBitBucketFile, PHP_URL_HOST);
+        $domain = parse_url($urlToBitBucketFile, \PHP_URL_HOST);
         if (strpos($domain, 'bitbucket.org') === false) {
             // Bitbucket downloads are hosted on amazonaws.
             // We do not need to authenticate there at all
             return true;
         }
 
-        $path = parse_url($urlToBitBucketFile, PHP_URL_PATH);
+        $path = parse_url($urlToBitBucketFile, \PHP_URL_PATH);
 
         // Path for a public download follows this pattern /{user}/{repo}/downloads/{whatever}
         // {@link https://blog.bitbucket.org/2009/04/12/new-feature-downloads/}
         $pathParts = explode('/', $path);
 
-        return count($pathParts) >= 4 && $pathParts[3] == 'downloads';
+        return \count($pathParts) >= 4 && $pathParts[3] == 'downloads';
     }
 
     public static function outputWarnings(IOInterface $io, $url, $data)

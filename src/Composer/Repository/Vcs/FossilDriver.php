@@ -79,7 +79,7 @@ class FossilDriver extends VcsDriver
         $fs = new Filesystem();
         $fs->ensureDirectoryExists($this->checkoutDir);
 
-        if (!is_writable(dirname($this->checkoutDir))) {
+        if (!is_writable(\dirname($this->checkoutDir))) {
             throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$this->checkoutDir.'" directory is not writable by the current user.');
         }
 

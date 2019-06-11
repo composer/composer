@@ -322,11 +322,11 @@ EOT
 
         if (null === $directory) {
             $parts = explode("/", $name, 2);
-            $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
+            $directory = getcwd() . \DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
         // handler Ctrl+C for unix-like systems
-        if (function_exists('pcntl_async_signals')) {
+        if (\function_exists('pcntl_async_signals')) {
             @mkdir($directory, 0777, true);
             if ($realDir = realpath($directory)) {
                 pcntl_async_signals(true);

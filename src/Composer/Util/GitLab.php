@@ -53,7 +53,7 @@ class GitLab
      */
     public function authorizeOAuth($originUrl)
     {
-        if (!in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
+        if (!\in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
             return false;
         }
 
@@ -105,7 +105,7 @@ class GitLab
             } catch (TransportException $e) {
                 // 401 is bad credentials,
                 // 403 is max login attempts exceeded
-                if (in_array($e->getCode(), array(403, 401))) {
+                if (\in_array($e->getCode(), array(403, 401))) {
                     if (401 === $e->getCode()) {
                         $this->io->writeError('Bad credentials.');
                     } else {

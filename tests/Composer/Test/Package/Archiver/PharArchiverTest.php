@@ -28,7 +28,7 @@ class PharArchiverTest extends ArchiverTest
         $archiver->archive($package->getSourceUrl(), $target, 'tar', array('foo/bar', 'baz', '!/foo/bar/baz'));
         $this->assertFileExists($target);
 
-        $this->filesystem->removeDirectory(dirname($target));
+        $this->filesystem->removeDirectory(\dirname($target));
     }
 
     public function testZipArchive()
@@ -43,7 +43,7 @@ class PharArchiverTest extends ArchiverTest
         $archiver->archive($package->getSourceUrl(), $target, 'zip');
         $this->assertFileExists($target);
 
-        $this->filesystem->removeDirectory(dirname($target));
+        $this->filesystem->removeDirectory(\dirname($target));
     }
 
     /**
@@ -65,8 +65,8 @@ class PharArchiverTest extends ArchiverTest
 
     protected function writeFile($path, $content, $currentWorkDir)
     {
-        if (!file_exists(dirname($path))) {
-            mkdir(dirname($path), 0777, true);
+        if (!file_exists(\dirname($path))) {
+            mkdir(\dirname($path), 0777, true);
         }
 
         $result = file_put_contents($path, 'a');

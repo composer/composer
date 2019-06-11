@@ -188,7 +188,7 @@ class BinaryInstaller
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
 
-        $binDir = ProcessExecutor::escape(dirname($binPath));
+        $binDir = ProcessExecutor::escape(\dirname($binPath));
         $binFile = basename($binPath);
 
         $proxyCode = <<<PROXY

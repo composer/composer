@@ -120,15 +120,15 @@ EOT
             $io->write('Checking github.com rate limit: ', false);
             try {
                 $rate = $this->getGithubRateLimit('github.com');
-                if (!is_array($rate)) {
+                if (!\is_array($rate)) {
                     $this->outputResult($rate);
                 } elseif (10 > $rate['remaining']) {
                     $io->write('<warning>WARNING</warning>');
                     $io->write(sprintf(
                         '<comment>Github has a rate limit on their API. '
                         . 'You currently have <options=bold>%u</options=bold> '
-                        . 'out of <options=bold>%u</options=bold> requests left.' . PHP_EOL
-                        . 'See https://developer.github.com/v3/#rate-limiting and also' . PHP_EOL
+                        . 'out of <options=bold>%u</options=bold> requests left.' . \PHP_EOL
+                        . 'See https://developer.github.com/v3/#rate-limiting and also' . \PHP_EOL
                         . '    https://getcomposer.org/doc/articles/troubleshooting.md#api-rate-limit-and-oauth-tokens</comment>',
                         $rate['remaining'],
                         $rate['limit']
@@ -168,8 +168,8 @@ EOT
 
         $io->write(sprintf('PHP version: <comment>%s</comment>', $phpVersion));
 
-        if (defined('PHP_BINARY')) {
-            $io->write(sprintf('PHP binary path: <comment>%s</comment>', PHP_BINARY));
+        if (\defined('PHP_BINARY')) {
+            $io->write(sprintf('PHP binary path: <comment>%s</comment>', \PHP_BINARY));
         }
 
         return $this->exitCode;
@@ -189,7 +189,7 @@ EOT
             $output = '';
             foreach ($messages as $style => $msgs) {
                 foreach ($msgs as $msg) {
-                    $output .= '<' . $style . '>' . $msg . '</' . $style . '>' . PHP_EOL;
+                    $output .= '<' . $style . '>' . $msg . '</' . $style . '>' . \PHP_EOL;
                 }
             }
 
@@ -222,7 +222,7 @@ EOT
             $disableTls = true;
             $result[] = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
         }
-        if ($proto === 'https' && !extension_loaded('openssl') && !$disableTls) {
+        if ($proto === 'https' && !\extension_loaded('openssl') && !$disableTls) {
             $result[] = '<error>Composer is configured to use SSL/TLS protection but the openssl extension is not available.</error>';
         }
 
@@ -230,15 +230,15 @@ EOT
             $this->rfs->getContents('packagist.org', $proto . '://repo.packagist.org/packages.json', false);
         } catch (TransportException $e) {
             if (false !== strpos($e->getMessage(), 'cafile')) {
-                $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
+                $result[] = '<error>[' . \get_class($e) . '] ' . $e->getMessage() . '</error>';
                 $result[] = '<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>';
                 $result[] = '<error>You can alternatively disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>';
             } else {
-                array_unshift($result, '[' . get_class($e) . '] ' . $e->getMessage());
+                array_unshift($result, '[' . \get_class($e) . '] ' . $e->getMessage());
             }
         }
 
-        if (count($result) > 0) {
+        if (\count($result) > 0) {
             return $result;
         }
 
@@ -252,7 +252,7 @@ EOT
             return $result;
         }
 
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
+        $protocol = \extension_loaded('openssl') ? 'https' : 'http';
         try {
             $json = json_decode($this->rfs->getContents('packagist.org', $protocol . '://repo.packagist.org/packages.json', false), true);
             $hash = reset($json['provider-includes']);
@@ -314,7 +314,7 @@ EOT
             return $result;
         }
 
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             return 'You need the openssl extension installed for this check';
         }
 
@@ -454,14 +454,14 @@ EOT
         $hadError = false;
         $hadWarning = false;
         if ($result instanceof \Exception) {
-            $result = '<error>['.get_class($result).'] '.$result->getMessage().'</error>';
+            $result = '<error>['.\get_class($result).'] '.$result->getMessage().'</error>';
         }
 
         if (!$result) {
             // falsey results should be considered as an error, even if there is nothing to output
             $hadError = true;
         } else {
-            if (!is_array($result)) {
+            if (!\is_array($result)) {
                 $result = array($result);
             }
             foreach ($result as $message) {
@@ -492,7 +492,7 @@ EOT
     {
         $output = '';
         $out = function ($msg, $style) use (&$output) {
-            $output .= '<'.$style.'>'.$msg.'</'.$style.'>'.PHP_EOL;
+            $output .= '<'.$style.'>'.$msg.'</'.$style.'>'.\PHP_EOL;
         };
 
         // code below taken from getcomposer.org/installer, any changes should be made there and replicated here
@@ -500,63 +500,63 @@ EOT
         $warnings = array();
         $displayIniMessage = false;
 
-        $iniMessage = PHP_EOL.PHP_EOL.IniHelper::getMessage();
-        $iniMessage .= PHP_EOL.'If you can not modify the ini file, you can also run `php -d option=value` to modify ini values on the fly. You can use -d multiple times.';
+        $iniMessage = \PHP_EOL.\PHP_EOL.IniHelper::getMessage();
+        $iniMessage .= \PHP_EOL.'If you can not modify the ini file, you can also run `php -d option=value` to modify ini values on the fly. You can use -d multiple times.';
 
-        if (!function_exists('json_decode')) {
+        if (!\function_exists('json_decode')) {
             $errors['json'] = true;
         }
 
-        if (!extension_loaded('Phar')) {
+        if (!\extension_loaded('Phar')) {
             $errors['phar'] = true;
         }
 
-        if (!extension_loaded('filter')) {
+        if (!\extension_loaded('filter')) {
             $errors['filter'] = true;
         }
 
-        if (!extension_loaded('hash')) {
+        if (!\extension_loaded('hash')) {
             $errors['hash'] = true;
         }
 
-        if (!extension_loaded('iconv') && !extension_loaded('mbstring')) {
+        if (!\extension_loaded('iconv') && !\extension_loaded('mbstring')) {
             $errors['iconv_mbstring'] = true;
         }
 
-        if (!filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
+        if (!filter_var(ini_get('allow_url_fopen'), \FILTER_VALIDATE_BOOLEAN)) {
             $errors['allow_url_fopen'] = true;
         }
 
-        if (extension_loaded('ionCube Loader') && ioncube_loader_iversion() < 40009) {
+        if (\extension_loaded('ionCube Loader') && ioncube_loader_iversion() < 40009) {
             $errors['ioncube'] = ioncube_loader_version();
         }
 
-        if (PHP_VERSION_ID < 50302) {
-            $errors['php'] = PHP_VERSION;
+        if (\PHP_VERSION_ID < 50302) {
+            $errors['php'] = \PHP_VERSION;
         }
 
-        if (!isset($errors['php']) && PHP_VERSION_ID < 50304) {
-            $warnings['php'] = PHP_VERSION;
+        if (!isset($errors['php']) && \PHP_VERSION_ID < 50304) {
+            $warnings['php'] = \PHP_VERSION;
         }
 
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             $errors['openssl'] = true;
         }
 
-        if (extension_loaded('openssl') && OPENSSL_VERSION_NUMBER < 0x1000100f) {
+        if (\extension_loaded('openssl') && \OPENSSL_VERSION_NUMBER < 0x1000100f) {
             $warnings['openssl_version'] = true;
         }
 
-        if (!defined('HHVM_VERSION') && !extension_loaded('apcu') && filter_var(ini_get('apc.enable_cli'), FILTER_VALIDATE_BOOLEAN)) {
+        if (!\defined('HHVM_VERSION') && !\extension_loaded('apcu') && filter_var(ini_get('apc.enable_cli'), \FILTER_VALIDATE_BOOLEAN)) {
             $warnings['apc_cli'] = true;
         }
 
-        if (!extension_loaded('zlib')) {
+        if (!\extension_loaded('zlib')) {
             $warnings['zlib'] = true;
         }
 
         ob_start();
-        phpinfo(INFO_GENERAL);
+        phpinfo(\INFO_GENERAL);
         $phpinfo = ob_get_clean();
         if (preg_match('{Configure Command(?: *</td><td class="v">| *=> *)(.*?)(?:</td>|$)}m', $phpinfo, $match)) {
             $configure = $match[1];
@@ -570,9 +570,9 @@ EOT
             }
         }
 
-        if (filter_var(ini_get('xdebug.profiler_enabled'), FILTER_VALIDATE_BOOLEAN)) {
+        if (filter_var(ini_get('xdebug.profiler_enabled'), \FILTER_VALIDATE_BOOLEAN)) {
             $warnings['xdebug_profile'] = true;
-        } elseif (extension_loaded('xdebug')) {
+        } elseif (\extension_loaded('xdebug')) {
             $warnings['xdebug_loaded'] = true;
         }
 
@@ -580,122 +580,122 @@ EOT
             foreach ($errors as $error => $current) {
                 switch ($error) {
                     case 'json':
-                        $text = PHP_EOL."The json extension is missing.".PHP_EOL;
+                        $text = \PHP_EOL."The json extension is missing.".\PHP_EOL;
                         $text .= "Install it or recompile php without --disable-json";
                         break;
 
                     case 'phar':
-                        $text = PHP_EOL."The phar extension is missing.".PHP_EOL;
+                        $text = \PHP_EOL."The phar extension is missing.".\PHP_EOL;
                         $text .= "Install it or recompile php without --disable-phar";
                         break;
 
                     case 'filter':
-                        $text = PHP_EOL."The filter extension is missing.".PHP_EOL;
+                        $text = \PHP_EOL."The filter extension is missing.".\PHP_EOL;
                         $text .= "Install it or recompile php without --disable-filter";
                         break;
 
                     case 'hash':
-                        $text = PHP_EOL."The hash extension is missing.".PHP_EOL;
+                        $text = \PHP_EOL."The hash extension is missing.".\PHP_EOL;
                         $text .= "Install it or recompile php without --disable-hash";
                         break;
 
                     case 'iconv_mbstring':
-                        $text = PHP_EOL."The iconv OR mbstring extension is required and both are missing.".PHP_EOL;
+                        $text = \PHP_EOL."The iconv OR mbstring extension is required and both are missing.".\PHP_EOL;
                         $text .= "Install either of them or recompile php without --disable-iconv";
                         break;
 
                     case 'unicode':
-                        $text = PHP_EOL."The detect_unicode setting must be disabled.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
+                        $text = \PHP_EOL."The detect_unicode setting must be disabled.".\PHP_EOL;
+                        $text .= "Add the following to the end of your `php.ini`:".\PHP_EOL;
                         $text .= "    detect_unicode = Off";
                         $displayIniMessage = true;
                         break;
 
                     case 'suhosin':
-                        $text = PHP_EOL."The suhosin.executor.include.whitelist setting is incorrect.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini` or suhosin.ini (Example path [for Debian]: /etc/php5/cli/conf.d/suhosin.ini):".PHP_EOL;
+                        $text = \PHP_EOL."The suhosin.executor.include.whitelist setting is incorrect.".\PHP_EOL;
+                        $text .= "Add the following to the end of your `php.ini` or suhosin.ini (Example path [for Debian]: /etc/php5/cli/conf.d/suhosin.ini):".\PHP_EOL;
                         $text .= "    suhosin.executor.include.whitelist = phar ".$current;
                         $displayIniMessage = true;
                         break;
 
                     case 'php':
-                        $text = PHP_EOL."Your PHP ({$current}) is too old, you must upgrade to PHP 5.3.2 or higher.";
+                        $text = \PHP_EOL."Your PHP ({$current}) is too old, you must upgrade to PHP 5.3.2 or higher.";
                         break;
 
                     case 'allow_url_fopen':
-                        $text = PHP_EOL."The allow_url_fopen setting is incorrect.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
+                        $text = \PHP_EOL."The allow_url_fopen setting is incorrect.".\PHP_EOL;
+                        $text .= "Add the following to the end of your `php.ini`:".\PHP_EOL;
                         $text .= "    allow_url_fopen = On";
                         $displayIniMessage = true;
                         break;
 
                     case 'ioncube':
-                        $text = PHP_EOL."Your ionCube Loader extension ($current) is incompatible with Phar files.".PHP_EOL;
-                        $text .= "Upgrade to ionCube 4.0.9 or higher or remove this line (path may be different) from your `php.ini` to disable it:".PHP_EOL;
+                        $text = \PHP_EOL."Your ionCube Loader extension ($current) is incompatible with Phar files.".\PHP_EOL;
+                        $text .= "Upgrade to ionCube 4.0.9 or higher or remove this line (path may be different) from your `php.ini` to disable it:".\PHP_EOL;
                         $text .= "    zend_extension = /usr/lib/php5/20090626+lfs/ioncube_loader_lin_5.3.so";
                         $displayIniMessage = true;
                         break;
 
                     case 'openssl':
-                        $text = PHP_EOL."The openssl extension is missing, which means that secure HTTPS transfers are impossible.".PHP_EOL;
+                        $text = \PHP_EOL."The openssl extension is missing, which means that secure HTTPS transfers are impossible.".\PHP_EOL;
                         $text .= "If possible you should enable it or recompile php with --with-openssl";
                         break;
                 }
                 $out($text, 'error');
             }
 
-            $output .= PHP_EOL;
+            $output .= \PHP_EOL;
         }
 
         if (!empty($warnings)) {
             foreach ($warnings as $warning => $current) {
                 switch ($warning) {
                     case 'apc_cli':
-                        $text = "The apc.enable_cli setting is incorrect.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
+                        $text = "The apc.enable_cli setting is incorrect.".\PHP_EOL;
+                        $text .= "Add the following to the end of your `php.ini`:".\PHP_EOL;
                         $text .= "  apc.enable_cli = Off";
                         $displayIniMessage = true;
                         break;
 
                     case 'zlib':
-                        $text = 'The zlib extension is not loaded, this can slow down Composer a lot.'.PHP_EOL;
-                        $text .= 'If possible, enable it or recompile php with --with-zlib'.PHP_EOL;
+                        $text = 'The zlib extension is not loaded, this can slow down Composer a lot.'.\PHP_EOL;
+                        $text .= 'If possible, enable it or recompile php with --with-zlib'.\PHP_EOL;
                         $displayIniMessage = true;
                         break;
 
                     case 'sigchild':
-                        $text = "PHP was compiled with --enable-sigchild which can cause issues on some platforms.".PHP_EOL;
-                        $text .= "Recompile it without this flag if possible, see also:".PHP_EOL;
+                        $text = "PHP was compiled with --enable-sigchild which can cause issues on some platforms.".\PHP_EOL;
+                        $text .= "Recompile it without this flag if possible, see also:".\PHP_EOL;
                         $text .= "  https://bugs.php.net/bug.php?id=22999";
                         break;
 
                     case 'curlwrappers':
-                        $text = "PHP was compiled with --with-curlwrappers which will cause issues with HTTP authentication and GitHub.".PHP_EOL;
+                        $text = "PHP was compiled with --with-curlwrappers which will cause issues with HTTP authentication and GitHub.".\PHP_EOL;
                         $text .= " Recompile it without this flag if possible";
                         break;
 
                     case 'php':
-                        $text = "Your PHP ({$current}) is quite old, upgrading to PHP 5.3.4 or higher is recommended.".PHP_EOL;
+                        $text = "Your PHP ({$current}) is quite old, upgrading to PHP 5.3.4 or higher is recommended.".\PHP_EOL;
                         $text .= " Composer works with 5.3.2+ for most people, but there might be edge case issues.";
                         break;
 
                     case 'openssl_version':
                         // Attempt to parse version number out, fallback to whole string value.
-                        $opensslVersion = strstr(trim(strstr(OPENSSL_VERSION_TEXT, ' ')), ' ', true);
-                        $opensslVersion = $opensslVersion ?: OPENSSL_VERSION_TEXT;
+                        $opensslVersion = strstr(trim(strstr(\OPENSSL_VERSION_TEXT, ' ')), ' ', true);
+                        $opensslVersion = $opensslVersion ?: \OPENSSL_VERSION_TEXT;
 
-                        $text = "The OpenSSL library ({$opensslVersion}) used by PHP does not support TLSv1.2 or TLSv1.1.".PHP_EOL;
+                        $text = "The OpenSSL library ({$opensslVersion}) used by PHP does not support TLSv1.2 or TLSv1.1.".\PHP_EOL;
                         $text .= "If possible you should upgrade OpenSSL to version 1.0.1 or above.";
                         break;
 
                     case 'xdebug_loaded':
-                        $text = "The xdebug extension is loaded, this can slow down Composer a little.".PHP_EOL;
+                        $text = "The xdebug extension is loaded, this can slow down Composer a little.".\PHP_EOL;
                         $text .= " Disabling it when using Composer is recommended.";
                         break;
 
                     case 'xdebug_profile':
-                        $text = "The xdebug.profiler_enabled setting is enabled, this can slow down Composer a lot.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini` to disable it:".PHP_EOL;
+                        $text = "The xdebug.profiler_enabled setting is enabled, this can slow down Composer a lot.".\PHP_EOL;
+                        $text .= "Add the following to the end of your `php.ini` to disable it:".\PHP_EOL;
                         $text .= "  xdebug.profiler_enabled = 0";
                         $displayIniMessage = true;
                         break;

@@ -64,14 +64,14 @@ EOT
         foreach ($tokens as $token) {
             if ($token && $token[0] !== '-') {
                 $args[] = $token;
-                if (count($args) >= 2) {
+                if (\count($args) >= 2) {
                     break;
                 }
             }
         }
 
         // show help for this command if no command was found
-        if (count($args) < 2) {
+        if (\count($args) < 2) {
             return parent::run($input, $output);
         }
 

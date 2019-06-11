@@ -21,7 +21,7 @@ class PlatformRepositoryTest extends TestCase
 {
     public function testHHVMVersionWhenExecutingInHHVM()
     {
-        if (!defined('HHVM_VERSION_ID')) {
+        if (!\defined('HHVM_VERSION_ID')) {
             $this->markTestSkipped('Not running with HHVM');
 
             return;
@@ -42,12 +42,12 @@ class PlatformRepositoryTest extends TestCase
 
     public function testHHVMVersionWhenExecutingInPHP()
     {
-        if (defined('HHVM_VERSION_ID')) {
+        if (\defined('HHVM_VERSION_ID')) {
             $this->markTestSkipped('Running with HHVM');
 
             return;
         }
-        if (PHP_VERSION_ID < 50400) {
+        if (\PHP_VERSION_ID < 50400) {
             $this->markTestSkipped('Test only works on PHP 5.4+');
 
             return;

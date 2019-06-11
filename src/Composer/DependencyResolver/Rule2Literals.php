@@ -77,7 +77,7 @@ class Rule2Literals extends Rule
         }
 
         $literals = $rule->getLiterals();
-        if (2 != count($literals)) {
+        if (2 != \count($literals)) {
             return false;
         }
 

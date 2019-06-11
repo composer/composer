@@ -195,7 +195,7 @@ class ArrayRepository extends BaseRepository
      */
     public function count()
     {
-        return count($this->packages);
+        return \count($this->packages);
     }
 
     /**

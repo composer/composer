@@ -32,7 +32,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     public function __construct(array $repoConfig, IOInterface $io)
     {
         parent::__construct();
-        if (!extension_loaded('zip')) {
+        if (!\extension_loaded('zip')) {
             throw new \RuntimeException('The artifact repository requires PHP\'s zip extension');
         }
 
@@ -95,7 +95,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $stat = $zip->statIndex($i);
             if (strcmp(basename($stat['name']), $filename) === 0) {
-                $directoryName = dirname($stat['name']);
+                $directoryName = \dirname($stat['name']);
                 if ($directoryName == '.') {
                     //if composer.json is in root directory
                     //it has to be the one to use.
@@ -108,7 +108,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
                     continue;
                 }
 
-                $length = strlen($stat['name']);
+                $length = \strlen($stat['name']);
                 if ($indexOfShortestMatch === false || $length < $lengthOfShortestMatch) {
                     //Check it's not a directory.
                     $contents = $zip->getFromIndex($i);

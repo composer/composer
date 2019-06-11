@@ -75,10 +75,10 @@ class PlatformRepository extends ArrayRepository
         $this->addPackage($composerPluginApi);
 
         try {
-            $prettyVersion = PHP_VERSION;
+            $prettyVersion = \PHP_VERSION;
             $version = $this->versionParser->normalize($prettyVersion);
         } catch (\UnexpectedValueException $e) {
-            $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', PHP_VERSION);
+            $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', \PHP_VERSION);
             $version = $this->versionParser->normalize($prettyVersion);
         }
 
@@ -86,19 +86,19 @@ class PlatformRepository extends ArrayRepository
         $php->setDescription('The PHP interpreter');
         $this->addPackage($php);
 
-        if (PHP_DEBUG) {
+        if (\PHP_DEBUG) {
             $phpdebug = new CompletePackage('php-debug', $version, $prettyVersion);
             $phpdebug->setDescription('The PHP interpreter, with debugging symbols');
             $this->addPackage($phpdebug);
         }
 
-        if (defined('PHP_ZTS') && PHP_ZTS) {
+        if (\defined('PHP_ZTS') && \PHP_ZTS) {
             $phpzts = new CompletePackage('php-zts', $version, $prettyVersion);
             $phpzts->setDescription('The PHP interpreter, with Zend Thread Safety');
             $this->addPackage($phpzts);
         }
 
-        if (PHP_INT_SIZE === 8) {
+        if (\PHP_INT_SIZE === 8) {
             $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
             $php64->setDescription('The PHP interpreter, 64bit');
             $this->addPackage($php64);
@@ -106,7 +106,7 @@ class PlatformRepository extends ArrayRepository
 
         // The AF_INET6 constant is only defined if ext-sockets is available but
         // IPv6 support might still be available.
-        if (defined('AF_INET6') || Silencer::call('inet_pton', '::') !== false) {
+        if (\defined('AF_INET6') || Silencer::call('inet_pton', '::') !== false) {
             $phpIpv6 = new CompletePackage('php-ipv6', $version, $prettyVersion);
             $phpIpv6->setDescription('The PHP interpreter, with IPv6 support');
             $this->addPackage($phpIpv6);
@@ -116,7 +116,7 @@ class PlatformRepository extends ArrayRepository
 
         // Extensions scanning
         foreach ($loadedExtensions as $name) {
-            if (in_array($name, array('standard', 'Core'))) {
+            if (\in_array($name, array('standard', 'Core'))) {
                 continue;
             }
 
@@ -126,7 +126,7 @@ class PlatformRepository extends ArrayRepository
         }
 
         // Check for xdebug in a restarted process
-        if (!in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = XdebugHandler::getSkippedVersion())) {
+        if (!\in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = XdebugHandler::getSkippedVersion())) {
             $this->addExtension('xdebug', $prettyVersion);
         }
 
@@ -143,12 +143,12 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'iconv':
-                    $prettyVersion = ICONV_VERSION;
+                    $prettyVersion = \ICONV_VERSION;
                     break;
 
                 case 'intl':
                     $name = 'ICU';
-                    if (defined('INTL_ICU_VERSION')) {
+                    if (\defined('INTL_ICU_VERSION')) {
                         $prettyVersion = INTL_ICU_VERSION;
                     } else {
                         $reflector = new \ReflectionExtension('intl');
@@ -177,7 +177,7 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'libxml':
-                    $prettyVersion = LIBXML_DOTTED_VERSION;
+                    $prettyVersion = \LIBXML_DOTTED_VERSION;
                     break;
 
                 case 'openssl':
@@ -194,18 +194,18 @@ class PlatformRepository extends ArrayRepository
                             return 0;
                         }
 
-                        $len = strlen($match[2]);
+                        $len = \strlen($match[2]);
                         $patchVersion = ($len - 1) * 26; // All Z
-                        $patchVersion += ord($match[2][$len - 1]) - 96;
+                        $patchVersion += \ord($match[2][$len - 1]) - 96;
 
                         return $match[1].'.'.$patchVersion;
-                    }, OPENSSL_VERSION_TEXT);
+                    }, \OPENSSL_VERSION_TEXT);
 
-                    $description = OPENSSL_VERSION_TEXT;
+                    $description = \OPENSSL_VERSION_TEXT;
                     break;
 
                 case 'pcre':
-                    $prettyVersion = preg_replace('{^(\S+).*}', '$1', PCRE_VERSION);
+                    $prettyVersion = preg_replace('{^(\S+).*}', '$1', \PCRE_VERSION);
                     break;
 
                 case 'uuid':
@@ -232,7 +232,7 @@ class PlatformRepository extends ArrayRepository
             $this->addPackage($lib);
         }
 
-        $hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;
+        $hhvmVersion = \defined('HHVM_VERSION') ? HHVM_VERSION : null;
         if ($hhvmVersion === null && !Platform::isWindows()) {
             $finder = new ExecutableFinder();
             $hhvm = $finder->find('hhvm');

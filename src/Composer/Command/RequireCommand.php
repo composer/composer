@@ -82,7 +82,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (function_exists('pcntl_async_signals')) {
+        if (\function_exists('pcntl_async_signals')) {
             pcntl_async_signals(true);
             pcntl_signal(SIGINT, array($this, 'revertComposerFile'));
             pcntl_signal(SIGTERM, array($this, 'revertComposerFile'));

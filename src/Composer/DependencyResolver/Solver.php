@@ -83,16 +83,16 @@ class Solver
      */
     public function getRuleSetSize()
     {
-        return count($this->rules);
+        return \count($this->rules);
     }
 
     // aka solver_makeruledecisions
 
     private function makeAssertionRuleDecisions()
     {
-        $decisionStart = count($this->decisions) - 1;
+        $decisionStart = \count($this->decisions) - 1;
 
-        $rulesCount = count($this->rules);
+        $rulesCount = \count($this->rules);
         for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
             $rule = $this->rules->ruleById[$ruleIndex];
 
@@ -299,10 +299,10 @@ class Solver
             }
 
             $this->decisions->revertLast();
-            $this->propagateIndex = count($this->decisions);
+            $this->propagateIndex = \count($this->decisions);
         }
 
-        while (!empty($this->branches) && $this->branches[count($this->branches) - 1][self::BRANCH_LEVEL] >= $level) {
+        while (!empty($this->branches) && $this->branches[\count($this->branches) - 1][self::BRANCH_LEVEL] >= $level) {
             array_pop($this->branches);
         }
     }
@@ -389,7 +389,7 @@ class Solver
         $selectedLiteral = array_shift($literals);
 
         // if there are multiple candidates, then branch
-        if (count($literals)) {
+        if (\count($literals)) {
             $this->branches[] = array($literals, $level);
         }
 
@@ -410,12 +410,12 @@ class Solver
         $seen = array();
         $learnedLiterals = array(null);
 
-        $decisionId = count($this->decisions);
+        $decisionId = \count($this->decisions);
 
         $this->learnedPool[] = array();
 
         while (true) {
-            $this->learnedPool[count($this->learnedPool) - 1][] = $rule;
+            $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
 
             foreach ($rule->getLiterals() as $literal) {
                 // skip the one true literal
@@ -497,7 +497,7 @@ class Solver
             $rule = $decision[Decisions::DECISION_REASON];
         }
 
-        $why = count($this->learnedPool) - 1;
+        $why = \count($this->learnedPool) - 1;
 
         if (!$learnedLiterals[0]) {
             throw new SolverBugException(
@@ -587,7 +587,7 @@ class Solver
         }
 
         if ($disableRules) {
-            foreach ($this->problems[count($this->problems) - 1] as $reason) {
+            foreach ($this->problems[\count($this->problems) - 1] as $reason) {
                 $this->disableProblem($reason['rule']);
             }
 
@@ -719,10 +719,10 @@ class Solver
                             }
                         }
 
-                        if ($noneSatisfied && count($decisionQueue)) {
+                        if ($noneSatisfied && \count($decisionQueue)) {
                             // prune all update packages until installed version
                             // except for requested updates
-                            if (count($this->installed) != count($this->updateMap)) {
+                            if (\count($this->installed) != \count($this->updateMap)) {
                                 $prunedQueue = array();
                                 foreach ($decisionQueue as $literal) {
                                     if (isset($this->installedMap[abs($literal)])) {
@@ -737,7 +737,7 @@ class Solver
                             }
                         }
 
-                        if ($noneSatisfied && count($decisionQueue)) {
+                        if ($noneSatisfied && \count($decisionQueue)) {
                             $oLevel = $level;
                             $level = $this->selectAndInstall($level, $decisionQueue, $disableRules, $rule);
 
@@ -764,7 +764,7 @@ class Solver
                 $systemLevel = $level;
             }
 
-            $rulesCount = count($this->rules);
+            $rulesCount = \count($this->rules);
             $pass = 1;
 
             $this->io->writeError('Looking at all rules.', true, IOInterface::DEBUG);
@@ -811,7 +811,7 @@ class Solver
                 }
 
                 // need to have at least 2 item to pick from
-                if (count($decisionQueue) < 2) {
+                if (\count($decisionQueue) < 2) {
                     continue;
                 }
 
@@ -822,7 +822,7 @@ class Solver
                 }
 
                 // something changed, so look at all rules again
-                $rulesCount = count($this->rules);
+                $rulesCount = \count($this->rules);
                 $n = -1;
             }
 
@@ -831,13 +831,13 @@ class Solver
             }
 
             // minimization step
-            if (count($this->branches)) {
+            if (\count($this->branches)) {
                 $lastLiteral = null;
                 $lastLevel = null;
                 $lastBranchIndex = 0;
                 $lastBranchOffset = 0;
 
-                for ($i = count($this->branches) - 1; $i >= 0; $i--) {
+                for ($i = \count($this->branches) - 1; $i >= 0; $i--) {
                     list($literals, $l) = $this->branches[$i];
 
                     foreach ($literals as $offset => $literal) {

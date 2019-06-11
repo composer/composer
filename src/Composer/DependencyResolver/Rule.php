@@ -171,12 +171,12 @@ abstract class Rule
 
                     if ($targetName === 'php' || $targetName === 'php-64bit' || $targetName === 'hhvm') {
                         // handle php/hhvm
-                        if (defined('HHVM_VERSION')) {
+                        if (\defined('HHVM_VERSION')) {
                             return $text . ' -> your HHVM version does not satisfy that requirement.';
                         }
 
                         $packages = $pool->whatProvides($targetName);
-                        $package = count($packages) ? current($packages) : phpversion();
+                        $package = \count($packages) ? current($packages) : phpversion();
 
                         if ($targetName === 'hhvm') {
                             if ($package instanceof CompletePackage) {
@@ -204,7 +204,7 @@ abstract class Rule
                     if (0 === strpos($targetName, 'ext-')) {
                         // handle php extensions
                         $ext = substr($targetName, 4);
-                        $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
+                        $error = \extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
 
                         return $text . ' -> the requested PHP extension '.$ext.' '.$error.'.';
                     }
@@ -252,7 +252,7 @@ abstract class Rule
     {
         $prepared = array();
         foreach ($packages as $package) {
-            if (!is_object($package)) {
+            if (!\is_object($package)) {
                 $package = $pool->literalToPackage($package);
             }
             $prepared[$package->getName()]['name'] = $package->getPrettyName();

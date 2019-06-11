@@ -199,7 +199,7 @@ class ConsoleIO extends BaseIO
         // since overwrite is supposed to overwrite last message...
         if (!isset($size)) {
             // removing possible formatting of lastMessage with strip_tags
-            $size = strlen(strip_tags($stderr ? $this->lastMessageErr : $this->lastMessage));
+            $size = \strlen(strip_tags($stderr ? $this->lastMessageErr : $this->lastMessage));
         }
         // ...let's fill its length with backspaces
         $this->doWrite(str_repeat("\x08", $size), false, $stderr, $verbosity);
@@ -210,7 +210,7 @@ class ConsoleIO extends BaseIO
         // In cmd.exe on Win8.1 (possibly 10?), the line can not be cleared, so we need to
         // track the length of previous output and fill it with spaces to make sure the line is cleared.
         // See https://github.com/composer/composer/pull/5836 for more details
-        $fill = $size - strlen(strip_tags($messages));
+        $fill = $size - \strlen(strip_tags($messages));
         if ($fill > 0) {
             // whitespace whatever has left
             $this->doWrite(str_repeat(' ', $fill), false, $stderr, $verbosity);
@@ -294,13 +294,13 @@ class ConsoleIO extends BaseIO
 
         $result = $helper->ask($this->input, $this->getErrorOutput(), $question);
 
-        if (!is_array($result)) {
+        if (!\is_array($result)) {
             return (string) array_search($result, $choices, true);
         }
 
         $results = array();
         foreach ($choices as $index => $choice) {
-            if (in_array($choice, $result, true)) {
+            if (\in_array($choice, $result, true)) {
                 $results[] = (string) $index;
             }
         }

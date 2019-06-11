@@ -194,7 +194,7 @@ class JsonConfigSource implements ConfigSourceInterface
         $this->manipulateJson('removeSubNode', $type, $name, function (&$config, $type, $name) {
             unset($config[$type][$name]);
 
-            if (0 === count($config[$type])) {
+            if (0 === \count($config[$type])) {
                 unset($config[$type]);
             }
         });
@@ -202,7 +202,7 @@ class JsonConfigSource implements ConfigSourceInterface
 
     protected function manipulateJson($method, $args, $fallback)
     {
-        $args = func_get_args();
+        $args = \func_get_args();
         // remove method & fallback
         array_shift($args);
         $fallback = array_pop($args);
@@ -239,13 +239,13 @@ class JsonConfigSource implements ConfigSourceInterface
         }
 
         // try to update cleanly
-        if (call_user_func_array(array($manipulator, $method), $args)) {
+        if (\call_user_func_array(array($manipulator, $method), $args)) {
             file_put_contents($this->file->getPath(), $manipulator->getContents());
         } else {
             // on failed clean update, call the fallback and rewrite the whole file
             $config = $this->file->read();
             $this->arrayUnshiftRef($args, $config);
-            call_user_func_array($fallback, $args);
+            \call_user_func_array($fallback, $args);
             $this->file->write($config);
         }
 

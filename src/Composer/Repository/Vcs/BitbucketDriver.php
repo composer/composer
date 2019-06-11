@@ -135,9 +135,9 @@ abstract class BitbucketDriver extends VcsDriver
                         $this->getBranches()
                     ) ?: $identifier;
 
-                    if (array_key_exists($label, $tags = $this->getTags())) {
+                    if (\array_key_exists($label, $tags = $this->getTags())) {
                         $hash = $tags[$label];
-                    } elseif (array_key_exists($label, $branches = $this->getBranches())) {
+                    } elseif (\array_key_exists($label, $branches = $this->getBranches())) {
                         $hash = $branches[$label];
                     }
 

@@ -60,16 +60,16 @@ class AllFunctionalTest extends TestCase
     public static function tearDownAfterClass()
     {
         $fs = new Filesystem;
-        $fs->removeDirectory(dirname(self::$pharPath));
+        $fs->removeDirectory(\dirname(self::$pharPath));
     }
 
     public function testBuildPhar()
     {
-        if (defined('HHVM_VERSION')) {
+        if (\defined('HHVM_VERSION')) {
             $this->markTestSkipped('Building the phar does not work on HHVM.');
         }
 
-        $target = dirname(self::$pharPath);
+        $target = \dirname(self::$pharPath);
         $fs = new Filesystem();
         chdir($target);
 
@@ -77,7 +77,7 @@ class AllFunctionalTest extends TestCase
         $ri = new \RecursiveIteratorIterator($it, \RecursiveIteratorIterator::SELF_FIRST);
 
         foreach ($ri as $file) {
-            $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
+            $targetPath = $target . \DIRECTORY_SEPARATOR . $ri->getSubPathName();
             if ($file->isDir()) {
                 $fs->ensureDirectoryExists($targetPath);
             } else {
@@ -140,7 +140,7 @@ class AllFunctionalTest extends TestCase
 
     private function parseTestFile(\SplFileInfo $file)
     {
-        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), null, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), null, \PREG_SPLIT_DELIM_CAPTURE);
         $data = array();
         $section = null;
 
@@ -161,7 +161,7 @@ class AllFunctionalTest extends TestCase
             }
         };
 
-        for ($i = 0, $c = count($tokens); $i < $c; $i++) {
+        for ($i = 0, $c = \count($tokens); $i < $c; $i++) {
             if ('' === $tokens[$i] && null === $section) {
                 continue;
             }
@@ -218,7 +218,7 @@ class AllFunctionalTest extends TestCase
     {
         $processed = '';
 
-        for ($i = 0; $i < strlen($output); $i++) {
+        for ($i = 0; $i < \strlen($output); $i++) {
             if ($output[$i] === "\x08") {
                 $processed = substr($processed, 0, -1);
             } elseif ($output[$i] !== "\r") {

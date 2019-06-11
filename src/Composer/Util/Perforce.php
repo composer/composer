@@ -204,11 +204,11 @@ class Perforce
     public function queryP4User()
     {
         $this->getUser();
-        if (strlen($this->p4User) > 0) {
+        if (\strlen($this->p4User) > 0) {
             return;
         }
         $this->p4User = $this->getP4variable('P4USER');
-        if (strlen($this->p4User) > 0) {
+        if (\strlen($this->p4User) > 0) {
             return;
         }
         $this->p4User = $this->io->ask('Enter P4 User:');
@@ -226,7 +226,7 @@ class Perforce
             $command = 'p4 set';
             $this->executeCommand($command);
             $result = trim($this->commandResult);
-            $resArray = explode(PHP_EOL, $result);
+            $resArray = explode(\PHP_EOL, $result);
             foreach ($resArray as $line) {
                 $fields = explode('=', $line);
                 if (strcmp($name, $fields[0]) == 0) {
@@ -258,7 +258,7 @@ class Perforce
             return $this->p4Password;
         }
         $password = $this->getP4variable('P4PASSWD');
-        if (strlen($password) <= 0) {
+        if (\strlen($password) <= 0) {
             $password = $this->io->askAndHideAnswer('Enter password for Perforce user ' . $this->getUser() . ': ');
         }
         $this->p4Password = $password;
@@ -320,23 +320,23 @@ class Perforce
 
     public function writeClientSpecToFile($spec)
     {
-        fwrite($spec, 'Client: ' . $this->getClient() . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'Update: ' . date('Y/m/d H:i:s') . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'Access: ' . date('Y/m/d H:i:s') . PHP_EOL);
-        fwrite($spec, 'Owner:  ' . $this->getUser() . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'Description:' . PHP_EOL);
-        fwrite($spec, '  Created by ' . $this->getUser() . ' from composer.' . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'Root: ' . $this->getPath() . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'Options:  noallwrite noclobber nocompress unlocked modtime rmdir' . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'SubmitOptions:  revertunchanged' . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'LineEnd:  local' . PHP_EOL . PHP_EOL);
+        fwrite($spec, 'Client: ' . $this->getClient() . \PHP_EOL . \PHP_EOL);
+        fwrite($spec, 'Update: ' . date('Y/m/d H:i:s') . \PHP_EOL . \PHP_EOL);
+        fwrite($spec, 'Access: ' . date('Y/m/d H:i:s') . \PHP_EOL);
+        fwrite($spec, 'Owner:  ' . $this->getUser() . \PHP_EOL . \PHP_EOL);
+        fwrite($spec, 'Description:' . \PHP_EOL);
+        fwrite($spec, '  Created by ' . $this->getUser() . ' from composer.' . \PHP_EOL . \PHP_EOL);
+        fwrite($spec, 'Root: ' . $this->getPath() . \PHP_EOL . \PHP_EOL);
+        fwrite($spec, 'Options:  noallwrite noclobber nocompress unlocked modtime rmdir' . \PHP_EOL . \PHP_EOL);
+        fwrite($spec, 'SubmitOptions:  revertunchanged' . \PHP_EOL . \PHP_EOL);
+        fwrite($spec, 'LineEnd:  local' . \PHP_EOL . \PHP_EOL);
         if ($this->isStream()) {
-            fwrite($spec, 'Stream:' . PHP_EOL);
-            fwrite($spec, '  ' . $this->getStreamWithoutLabel($this->p4Stream) . PHP_EOL);
+            fwrite($spec, 'Stream:' . \PHP_EOL);
+            fwrite($spec, '  ' . $this->getStreamWithoutLabel($this->p4Stream) . \PHP_EOL);
         } else {
             fwrite(
                 $spec,
-                'View:  ' . $this->getStream() . '/...  //' . $this->getClient() . '/... ' . PHP_EOL
+                'View:  ' . $this->getStream() . '/...  //' . $this->getClient() . '/... ' . \PHP_EOL
             );
         }
     }
@@ -461,10 +461,10 @@ class Perforce
             $command = $this->generateP4Command('streams '.ProcessExecutor::escape('//' . $this->p4Depot . '/...'));
             $this->executeCommand($command);
             $result = $this->commandResult;
-            $resArray = explode(PHP_EOL, $result);
+            $resArray = explode(\PHP_EOL, $result);
             foreach ($resArray as $line) {
                 $resBits = explode(' ', $line);
-                if (count($resBits) > 4) {
+                if (\count($resBits) > 4) {
                     $branch = preg_replace('/[^A-Za-z0-9 ]/', '', $resBits[4]);
                     $possibleBranches[$branch] = $resBits[1];
                 }
@@ -473,7 +473,7 @@ class Perforce
         $command = $this->generateP4Command('changes '. ProcessExecutor::escape($this->getStream() . '/...'), false);
         $this->executeCommand($command);
         $result = $this->commandResult;
-        $resArray = explode(PHP_EOL, $result);
+        $resArray = explode(\PHP_EOL, $result);
         $lastCommit = $resArray[0];
         $lastCommitArr = explode(' ', $lastCommit);
         $lastCommitNum = $lastCommitArr[1];
@@ -488,7 +488,7 @@ class Perforce
         $command = $this->generateP4Command('labels');
         $this->executeCommand($command);
         $result = $this->commandResult;
-        $resArray = explode(PHP_EOL, $result);
+        $resArray = explode(\PHP_EOL, $result);
         $tags = array();
         foreach ($resArray as $line) {
             if (strpos($line, 'Label') !== false) {
@@ -505,7 +505,7 @@ class Perforce
         $command = $this->generateP4Command('depots', false);
         $this->executeCommand($command);
         $result = $this->commandResult;
-        $resArray = explode(PHP_EOL, $result);
+        $resArray = explode(\PHP_EOL, $result);
         foreach ($resArray as $line) {
             if (strpos($line, 'Depot') !== false) {
                 $fields = explode(' ', $line);

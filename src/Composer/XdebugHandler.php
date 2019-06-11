@@ -14,7 +14,7 @@ namespace Composer;
 
 use Symfony\Component\Console\Output\OutputInterface;
 
-trigger_error('The ' . __NAMESPACE__ . '\XdebugHandler class is deprecated, use Composer\XdebugHandler\XdebugHandler instead,', E_USER_DEPRECATED);
+trigger_error('The ' . __NAMESPACE__ . '\XdebugHandler class is deprecated, use Composer\XdebugHandler\XdebugHandler instead,', \E_USER_DEPRECATED);
 
 /**
  * @deprecated use Composer\XdebugHandler\XdebugHandler instead

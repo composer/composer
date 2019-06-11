@@ -252,7 +252,7 @@ class Installer
                 continue;
             }
 
-            $replacement = is_string($package->getReplacementPackage())
+            $replacement = \is_string($package->getReplacementPackage())
                 ? 'Use ' . $package->getReplacementPackage() . ' instead'
                 : 'No replacement was suggested';
 
@@ -325,7 +325,7 @@ class Installer
         }
 
         // re-enable GC except on HHVM which triggers a warning here
-        if (!defined('HHVM_VERSION')) {
+        if (!\defined('HHVM_VERSION')) {
             gc_enable();
         }
 
@@ -488,7 +488,7 @@ class Installer
 
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
 
-        $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
+        $this->io->writeError("Analyzed ".\count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
         $this->io->writeError("Analyzed ".$solver->getRuleSetSize()." rules to resolve dependencies", true, IOInterface::VERBOSE);
 
         // execute operations
@@ -524,12 +524,12 @@ class Installer
 
             $this->io->writeError(sprintf(
                 "<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
-                count($installs),
-                1 === count($installs) ? '' : 's',
-                count($updates),
-                1 === count($updates) ? '' : 's',
-                count($uninstalls),
-                1 === count($uninstalls) ? '' : 's'
+                \count($installs),
+                1 === \count($installs) ? '' : 's',
+                \count($updates),
+                1 === \count($updates) ? '' : 's',
+                \count($uninstalls),
+                1 === \count($uninstalls) ? '' : 's'
             ));
             if ($installs) {
                 $this->io->writeError("Installs: ".implode(', ', $installs), true, IOInterface::VERBOSE);
@@ -581,8 +581,8 @@ class Installer
             }
 
             $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($jobType);
-            if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
+            if (\defined($event) && $this->runScripts) {
+                $this->eventDispatcher->dispatchPackageEvent(\constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
 
             // output non-alias ops when not executing operations (i.e. dry run), output alias ops in debug verbosity
@@ -595,7 +595,7 @@ class Installer
             $this->installationManager->execute($localRepo, $operation);
 
             // output reasons why the operation was ran, only for install/update operations
-            if ($this->verbose && $this->io->isVeryVerbose() && in_array($jobType, array('install', 'update'))) {
+            if ($this->verbose && $this->io->isVeryVerbose() && \in_array($jobType, array('install', 'update'))) {
                 $reason = $operation->getReason();
                 if ($reason instanceof Rule) {
                     switch ($reason->getReason()) {
@@ -616,8 +616,8 @@ class Installer
             }
 
             $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($jobType);
-            if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
+            if (\defined($event) && $this->runScripts) {
+                $this->eventDispatcher->dispatchPackageEvent(\constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
             }
         }
 
@@ -776,14 +776,14 @@ class Installer
             $isPlugin = $package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer';
 
             // is this a plugin or a dependency of a plugin?
-            if ($isPlugin || count(array_intersect($package->getNames(), $pluginRequires))) {
+            if ($isPlugin || \count(array_intersect($package->getNames(), $pluginRequires))) {
                 // get the package's requires, but filter out any platform requirements or 'composer-plugin-api'
                 $requires = array_filter(array_keys($package->getRequires()), function ($req) {
                     return $req !== 'composer-plugin-api' && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
                 });
 
                 // is this a plugin with no meaningful dependencies?
-                if ($isPlugin && !count($requires)) {
+                if ($isPlugin && !\count($requires)) {
                     // plugins with no dependencies go to the very front
                     array_unshift($pluginsNoDeps, $op);
                 } else {
@@ -1014,7 +1014,7 @@ class Installer
                 $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()));
                 foreach ($matches as $index => $match) {
                     // skip local packages
-                    if (!in_array($match->getRepository(), $repositories, true)) {
+                    if (!\in_array($match->getRepository(), $repositories, true)) {
                         unset($matches[$index]);
                         continue;
                     }
@@ -1149,7 +1149,7 @@ class Installer
             $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()));
             foreach ($matches as $index => $match) {
                 // skip local packages
-                if (!in_array($match->getRepository(), $repositories, true)) {
+                if (!\in_array($match->getRepository(), $repositories, true)) {
                     unset($matches[$index]);
                     continue;
                 }
@@ -1340,10 +1340,10 @@ class Installer
             }
 
             if (!empty($matchesByPattern)) {
-                $depPackages = array_merge($depPackages, call_user_func_array('array_merge', $matchesByPattern));
+                $depPackages = array_merge($depPackages, \call_user_func_array('array_merge', $matchesByPattern));
             }
 
-            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
+            if (\count($depPackages) == 0 && !$nameMatchesRequiredPackage && !\in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
                 $this->io->writeError('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 

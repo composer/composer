@@ -80,7 +80,7 @@ class ArchivableFilesFinderTest extends TestCase
 
         foreach ($fileTree as $relativePath) {
             $path = $this->sources.'/'.$relativePath;
-            $fs->ensureDirectoryExists(dirname($path));
+            $fs->ensureDirectoryExists(\dirname($path));
             file_put_contents($path, '');
         }
     }

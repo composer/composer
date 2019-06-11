@@ -102,7 +102,7 @@ EOT
         }
 
         // check if current dir is writable and if not try the cache dir from settings
-        $tmpDir = is_writable(dirname($localFilename)) ? dirname($localFilename) : $cacheDir;
+        $tmpDir = is_writable(\dirname($localFilename)) ? \dirname($localFilename) : $cacheDir;
 
         // check for permissions in local filesystem before start connection process
         if (!is_writable($tmpDir)) {
@@ -110,7 +110,7 @@ EOT
         }
 
         // check if composer is running as the same user that owns the directory root, only if POSIX is defined and callable
-        if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
+        if (\function_exists('posix_getpwuid') && \function_exists('posix_geteuid')) {
             $composeUser = posix_getpwuid(posix_geteuid());
             $homeOwner = posix_getpwuid(fileowner($home));
             if (isset($composeUser['name']) && isset($homeOwner['name']) && $composeUser['name'] !== $homeOwner['name']) {
@@ -168,10 +168,10 @@ EOT
         }
 
         // verify phar signature
-        if (!extension_loaded('openssl') && $config->get('disable-tls')) {
+        if (!\extension_loaded('openssl') && $config->get('disable-tls')) {
             $io->writeError('<warning>Skipping phar signature verification as you have disabled OpenSSL via config.disable-tls</warning>');
         } else {
-            if (!extension_loaded('openssl')) {
+            if (!\extension_loaded('openssl')) {
                 throw new \RuntimeException('The openssl extension is required for phar signatures to be verified but it is not available. '
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
             }
@@ -220,8 +220,8 @@ TAGSPUBKEY
             }
 
             $pubkeyid = openssl_pkey_get_public($sigFile);
-            $algo = defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
-            if (!in_array('sha384', array_map('strtolower', openssl_get_md_methods()))) {
+            $algo = \defined('OPENSSL_ALGO_SHA384') ? \OPENSSL_ALGO_SHA384 : 'SHA384';
+            if (!\in_array('sha384', array_map('strtolower', openssl_get_md_methods()))) {
                 throw new \RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
             }
             $signature = json_decode($signature, true);
@@ -385,7 +385,7 @@ TAGSPUBKEY
         $finder->sortByName();
         $files = iterator_to_array($finder);
 
-        if (count($files)) {
+        if (\count($files)) {
             return basename(end($files), self::OLD_INSTALL_EXT);
         }
 

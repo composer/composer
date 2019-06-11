@@ -250,7 +250,7 @@ class GitHubDriver extends VcsDriver
                 $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
                 foreach ($branchData as $branch) {
                     $name = substr($branch['ref'], 11);
-                    if (!in_array($name, $branchBlacklist)) {
+                    if (!\in_array($name, $branchBlacklist)) {
                         $this->branches[$name] = $branch['object']['sha'];
                     }
                 }
@@ -272,11 +272,11 @@ class GitHubDriver extends VcsDriver
         }
 
         $originUrl = !empty($matches[2]) ? $matches[2] : $matches[3];
-        if (!in_array(preg_replace('{^www\.}i', '', $originUrl), $config->get('github-domains'))) {
+        if (!\in_array(preg_replace('{^www\.}i', '', $originUrl), $config->get('github-domains'))) {
             return false;
         }
 
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             $io->writeError('Skipping GitHub driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
 
             return false;
@@ -346,7 +346,7 @@ class GitHubDriver extends VcsDriver
                     $scopesFailed = array_diff($scopesNeeded, $scopesIssued);
                     // non-authenticated requests get no scopesNeeded, so ask for credentials
                     // authenticated requests which failed some scopes should ask for new credentials too
-                    if (!$headers || !count($scopesNeeded) || count($scopesFailed)) {
+                    if (!$headers || !\count($scopesNeeded) || \count($scopesFailed)) {
                         $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
                     }
 

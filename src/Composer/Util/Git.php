@@ -62,8 +62,8 @@ class Git
         }
 
         $protocols = $this->config->get('github-protocols');
-        if (!is_array($protocols)) {
-            throw new \RuntimeException('Config value "github-protocols" must be an array, got ' . gettype($protocols));
+        if (!\is_array($protocols)) {
+            throw new \RuntimeException('Config value "github-protocols" must be an array, got ' . \gettype($protocols));
         }
         // public github, autoswitch protocols
         if (preg_match('{^(?:https?|git)://' . self::getGitHubDomainsRegex($this->config) . '/(.*)}', $url, $match)) {
@@ -75,7 +75,7 @@ class Git
                     $protoUrl = $protocol . "://" . $match[1] . "/" . $match[2];
                 }
 
-                if (0 === $this->process->execute(call_user_func($commandCallable, $protoUrl), $ignoredOutput, $cwd)) {
+                if (0 === $this->process->execute(\call_user_func($commandCallable, $protoUrl), $ignoredOutput, $cwd)) {
                     return;
                 }
                 $messages[] = '- ' . $protoUrl . "\n" . preg_replace('#^#m', '  ', $this->process->getErrorOutput());
@@ -89,9 +89,9 @@ class Git
         }
 
         // if we have a private github url and the ssh protocol is disabled then we skip it and directly fallback to https
-        $bypassSshForGitHub = preg_match('{^git@' . self::getGitHubDomainsRegex($this->config) . ':(.+?)\.git$}i', $url) && !in_array('ssh', $protocols, true);
+        $bypassSshForGitHub = preg_match('{^git@' . self::getGitHubDomainsRegex($this->config) . ':(.+?)\.git$}i', $url) && !\in_array('ssh', $protocols, true);
 
-        $command = call_user_func($commandCallable, $url);
+        $command = \call_user_func($commandCallable, $url);
 
         $auth = null;
         if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
@@ -109,7 +109,7 @@ class Git
                 if ($this->io->hasAuthentication($match[1])) {
                     $auth = $this->io->getAuthentication($match[1]);
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
-                    $command = call_user_func($commandCallable, $authUrl);
+                    $command = \call_user_func($commandCallable, $authUrl);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
                     }
@@ -141,14 +141,14 @@ class Git
                     $auth = $this->io->getAuthentication($match[1]);
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
 
-                    $command = call_user_func($commandCallable, $authUrl);
+                    $command = \call_user_func($commandCallable, $authUrl);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
                     }
                 } else { // Falling back to ssh
                     $sshUrl = 'git@bitbucket.org:' . $match[2] . '.git';
                     $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
-                    $command = call_user_func($commandCallable, $sshUrl);
+                    $command = \call_user_func($commandCallable, $sshUrl);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
                     }
@@ -170,7 +170,7 @@ class Git
                     } else {
                         $authUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . '/' . $match[3];
                     }
-                    $command = call_user_func($commandCallable, $authUrl);
+                    $command = \call_user_func($commandCallable, $authUrl);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
                     }
@@ -193,7 +193,7 @@ class Git
                         }
                     }
 
-                    $this->io->writeError('    Authentication required (<info>' . parse_url($url, PHP_URL_HOST) . '</info>):');
+                    $this->io->writeError('    Authentication required (<info>' . parse_url($url, \PHP_URL_HOST) . '</info>):');
                     $auth = array(
                         'username' => $this->io->ask('      Username: ', $defaultUsername),
                         'password' => $this->io->askAndHideAnswer('      Password: '),
@@ -204,7 +204,7 @@ class Git
                 if ($auth) {
                     $authUrl = $match[1] . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . $match[3];
 
-                    $command = call_user_func($commandCallable, $authUrl);
+                    $command = \call_user_func($commandCallable, $authUrl);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
                         $authHelper = new AuthHelper($this->io, $this->config);
@@ -291,7 +291,7 @@ class Git
 
     public static function cleanEnv()
     {
-        if (PHP_VERSION_ID < 50400 && ini_get('safe_mode') && false === strpos(ini_get('safe_mode_allowed_env_vars'), 'GIT_ASKPASS')) {
+        if (\PHP_VERSION_ID < 50400 && ini_get('safe_mode') && false === strpos(ini_get('safe_mode_allowed_env_vars'), 'GIT_ASKPASS')) {
             throw new \RuntimeException('safe_mode is enabled and safe_mode_allowed_env_vars does not contain GIT_ASKPASS, can not set env var. You can disable safe_mode with "-dsafe_mode=0" when running composer');
         }
 

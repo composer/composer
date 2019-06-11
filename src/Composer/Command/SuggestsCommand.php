@@ -86,7 +86,7 @@ EOT
         $suggested = array();
         foreach ($packages as $package) {
             $packageName = $package['name'];
-            if ((!empty($filter) && !in_array($packageName, $filter)) || empty($package['suggest'])) {
+            if ((!empty($filter) && !\in_array($packageName, $filter)) || empty($package['suggest'])) {
                 continue;
             }
             foreach ($package['suggest'] as $suggestion => $reason) {

@@ -54,8 +54,8 @@ class ZipArchiverTest extends ArchiverTest
 
     protected function writeFile($path, $content, $currentWorkDir)
     {
-        if (!file_exists(dirname($path))) {
-            mkdir(dirname($path), 0777, true);
+        if (!file_exists(\dirname($path))) {
+            mkdir(\dirname($path), 0777, true);
         }
 
         $result = file_put_contents($path, 'a');

@@ -428,13 +428,13 @@ EOT
         while (null !== $package = $io->ask('Search for a package: ')) {
             $matches = $this->findPackages($package);
 
-            if (count($matches)) {
+            if (\count($matches)) {
                 $exactMatch = null;
                 $choices = array();
                 foreach ($matches as $position => $foundPackage) {
                     $abandoned = '';
                     if (isset($foundPackage['abandoned'])) {
-                        if (is_string($foundPackage['abandoned'])) {
+                        if (\is_string($foundPackage['abandoned'])) {
                             $replacement = sprintf('Use %s instead', $foundPackage['abandoned']);
                         } else {
                             $replacement = 'No replacement was suggested';
@@ -453,7 +453,7 @@ EOT
                 if (!$exactMatch) {
                     $io->writeError(array(
                         '',
-                        sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
+                        sprintf('Found <info>%s</info> packages matching <info>%s</info>', \count($matches), $package),
                         '',
                     ));
 
@@ -568,7 +568,7 @@ EOT
 
         if ($cmd->isSuccessful()) {
             $this->gitConfig = array();
-            preg_match_all('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches, PREG_SET_ORDER);
+            preg_match_all('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches, \PREG_SET_ORDER);
             foreach ($matches as $match) {
                 $this->gitConfig[$match[1]] = $match[2];
             }
@@ -603,7 +603,7 @@ EOT
 
         $pattern = sprintf('{^/?%s(/\*?)?$}', preg_quote($vendor));
 
-        $lines = file($ignoreFile, FILE_IGNORE_NEW_LINES);
+        $lines = file($ignoreFile, \FILE_IGNORE_NEW_LINES);
         foreach ($lines as $line) {
             if (preg_match($pattern, $line)) {
                 return true;
@@ -637,16 +637,16 @@ EOT
     protected function isValidEmail($email)
     {
         // assume it's valid if we can't validate it
-        if (!function_exists('filter_var')) {
+        if (!\function_exists('filter_var')) {
             return true;
         }
 
         // php <5.3.3 has a very broken email validator, so bypass checks
-        if (PHP_VERSION_ID < 50303) {
+        if (\PHP_VERSION_ID < 50303) {
             return true;
         }
 
-        return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
+        return false !== filter_var($email, \FILTER_VALIDATE_EMAIL);
     }
 
     private function getPool(InputInterface $input, $minimumStability = null)
@@ -668,7 +668,7 @@ EOT
         }
 
         $file = Factory::getComposerFile();
-        if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
+        if (is_file($file) && is_readable($file) && \is_array($composer = json_decode(file_get_contents($file), true))) {
             if (!empty($composer['minimum-stability'])) {
                 return $composer['minimum-stability'];
             }
@@ -741,7 +741,7 @@ EOT
             $similar = $this->findSimilar($name);
             if ($similar) {
                 // Check whether the minimum stability was the problem but the package exists
-                if ($requiredVersion === null && in_array($name, $similar, true)) {
+                if ($requiredVersion === null && \in_array($name, $similar, true)) {
                     throw new \InvalidArgumentException(sprintf(
                         'Could not find a version of package %s matching your minimum-stability (%s). Require it with an explicit version constraint allowing its desired stability.',
                         $name,
@@ -750,7 +750,7 @@ EOT
                 }
 
                 throw new \InvalidArgumentException(sprintf(
-                    "Could not find package %s.\n\nDid you mean " . (count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
+                    "Could not find package %s.\n\nDid you mean " . (\count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
                     $name,
                     implode("\n    ", $similar)
                 ));
@@ -784,7 +784,7 @@ EOT
         }
         asort($similarPackages);
 
-        return array_keys(array_slice($similarPackages, 0, 5));
+        return array_keys(\array_slice($similarPackages, 0, 5));
     }
 
     private function installDependencies($output)

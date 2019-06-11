@@ -45,7 +45,7 @@ class FilesystemTest extends TestCase
             $this->fs->removeDirectory($this->workingDir);
         }
         if (is_file($this->testFile)) {
-            $this->fs->removeDirectory(dirname($this->testFile));
+            $this->fs->removeDirectory(\dirname($this->testFile));
         }
     }
 
@@ -289,7 +289,7 @@ class FilesystemTest extends TestCase
         $fs = new Filesystem();
 
         // Non-Windows systems do not support this and will return false on all tests, and an exception on creation
-        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (!\defined('PHP_WINDOWS_VERSION_BUILD')) {
             $this->assertFalse($fs->isJunction($this->workingDir));
             $this->assertFalse($fs->removeJunction($this->workingDir));
             $this->setExpectedException('LogicException', 'not available on non-Windows platform');

@@ -66,12 +66,12 @@ class Application extends BaseApplication
     {
         static $shutdownRegistered = false;
 
-        if (function_exists('ini_set') && extension_loaded('xdebug')) {
+        if (\function_exists('ini_set') && \extension_loaded('xdebug')) {
             ini_set('xdebug.show_exception_trace', false);
             ini_set('xdebug.scream', false);
         }
 
-        if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
+        if (\function_exists('date_default_timezone_set') && \function_exists('date_default_timezone_get')) {
             date_default_timezone_set(Silencer::call('date_default_timezone_get'));
         }
 
@@ -143,12 +143,12 @@ class Application extends BaseApplication
         }
 
         // prompt user for dir change if no composer.json is present in current dir
-        if ($io->isInteractive() && !$newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project'), true) && !file_exists(Factory::getComposerFile())) {
-            $dir = dirname(getcwd());
+        if ($io->isInteractive() && !$newWorkDir && !\in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project'), true) && !file_exists(Factory::getComposerFile())) {
+            $dir = \dirname(getcwd());
             $home = realpath(getenv('HOME') ?: getenv('USERPROFILE') ?: '/');
 
             // abort when we reach the home dir or top of the filesystem
-            while (dirname($dir) !== $dir && $dir !== $home) {
+            while (\dirname($dir) !== $dir && $dir !== $home) {
                 if (file_exists($dir.'/'.Factory::getComposerFile())) {
                     if ($io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ', true)) {
                         $oldWorkingDir = getcwd();
@@ -156,7 +156,7 @@ class Application extends BaseApplication
                     }
                     break;
                 }
-                $dir = dirname($dir);
+                $dir = \dirname($dir);
             }
         }
 
@@ -164,7 +164,7 @@ class Application extends BaseApplication
             try {
                 foreach ($this->getPluginCommands() as $command) {
                     if ($this->has($command->getName())) {
-                        $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
+                        $io->writeError('<warning>Plugin command '.$command->getName().' ('.\get_class($command).') would override a Composer command and has been skipped</warning>');
                     } else {
                         $this->add($command);
                     }
@@ -192,19 +192,19 @@ class Application extends BaseApplication
                 'Running %s (%s) with %s on %s',
                 Composer::getVersion(),
                 Composer::RELEASE_DATE,
-                defined('HHVM_VERSION') ? 'HHVM '.HHVM_VERSION : 'PHP '.PHP_VERSION,
-                function_exists('php_uname') ? php_uname('s') . ' / ' . php_uname('r') : 'Unknown OS'
+                \defined('HHVM_VERSION') ? 'HHVM '.HHVM_VERSION : 'PHP '.\PHP_VERSION,
+                \function_exists('php_uname') ? php_uname('s') . ' / ' . php_uname('r') : 'Unknown OS'
             ), true, IOInterface::DEBUG);
 
-            if (PHP_VERSION_ID < 50302) {
-                $io->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
+            if (\PHP_VERSION_ID < 50302) {
+                $io->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.\PHP_VERSION.', upgrading is strongly recommended.</warning>');
             }
 
-            if (extension_loaded('xdebug') && !getenv('COMPOSER_DISABLE_XDEBUG_WARN')) {
+            if (\extension_loaded('xdebug') && !getenv('COMPOSER_DISABLE_XDEBUG_WARN')) {
                 $io->writeError('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>');
             }
 
-            if (defined('COMPOSER_DEV_WARNING_TIME') && $commandName !== 'self-update' && $commandName !== 'selfupdate' && time() > COMPOSER_DEV_WARNING_TIME) {
+            if (\defined('COMPOSER_DEV_WARNING_TIME') && $commandName !== 'self-update' && $commandName !== 'selfupdate' && time() > COMPOSER_DEV_WARNING_TIME) {
                 $io->writeError(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
             }
 
@@ -212,8 +212,8 @@ class Application extends BaseApplication
                 $input->setInteractive(false);
             }
 
-            if (!Platform::isWindows() && function_exists('exec') && !getenv('COMPOSER_ALLOW_SUPERUSER')) {
-                if (function_exists('posix_getuid') && posix_getuid() === 0) {
+            if (!Platform::isWindows() && \function_exists('exec') && !getenv('COMPOSER_ALLOW_SUPERUSER')) {
+                if (\function_exists('posix_getuid') && posix_getuid() === 0) {
                     if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                         $io->writeError('<warning>Do not run Composer as root/super user! See https://getcomposer.org/root for details</warning>');
                     }
@@ -237,10 +237,10 @@ class Application extends BaseApplication
 
             // add non-standard scripts as own commands
             $file = Factory::getComposerFile();
-            if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
-                if (isset($composer['scripts']) && is_array($composer['scripts'])) {
+            if (is_file($file) && is_readable($file) && \is_array($composer = json_decode(file_get_contents($file), true))) {
+                if (isset($composer['scripts']) && \is_array($composer['scripts'])) {
                     foreach ($composer['scripts'] as $script => $dummy) {
-                        if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
+                        if (!\defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                             if ($this->has($script)) {
                                 $io->writeError('<warning>A script named '.$script.' would override a Composer command and has been skipped</warning>');
                             } else {
@@ -358,8 +358,8 @@ class Application extends BaseApplication
                     exit(1);
                 }
             } catch (JsonValidationException $e) {
-                $errors = ' - ' . implode(PHP_EOL . ' - ', $e->getErrors());
-                $message = $e->getMessage() . ':' . PHP_EOL . $errors;
+                $errors = ' - ' . implode(\PHP_EOL . ' - ', $e->getErrors());
+                $message = $e->getMessage() . ':' . \PHP_EOL . $errors;
                 throw new JsonValidationException($message);
             }
         }
@@ -474,12 +474,12 @@ class Application extends BaseApplication
             $pm = $composer->getPluginManager();
             foreach ($pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', array('composer' => $composer, 'io' => $this->io)) as $capability) {
                 $newCommands = $capability->getCommands();
-                if (!is_array($newCommands)) {
-                    throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' failed to return an array from getCommands');
+                if (!\is_array($newCommands)) {
+                    throw new \UnexpectedValueException('Plugin capability '.\get_class($capability).' failed to return an array from getCommands');
                 }
                 foreach ($newCommands as $command) {
                     if (!$command instanceof Command\BaseCommand) {
-                        throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' returned an invalid value, we expected an array of Composer\Command\BaseCommand objects');
+                        throw new \UnexpectedValueException('Plugin capability '.\get_class($capability).' returned an invalid value, we expected an array of Composer\Command\BaseCommand objects');
                     }
                 }
                 $commands = array_merge($commands, $newCommands);

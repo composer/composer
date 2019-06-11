@@ -73,7 +73,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $repoConfig['url'] = rtrim($repoConfig['url'], '/');
 
         if ('https?' === substr($repoConfig['url'], 0, 6)) {
-            $repoConfig['url'] = (extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
+            $repoConfig['url'] = (\extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
         }
 
         $urlBits = parse_url($repoConfig['url']);
@@ -206,7 +206,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
             $url = str_replace(array('%query%', '%type%'), array($query, $type), $this->searchUrl);
 
-            $hostname = parse_url($url, PHP_URL_HOST) ?: $url;
+            $hostname = parse_url($url, \PHP_URL_HOST) ?: $url;
             $json = $this->rfs->getContents($hostname, $url, false);
             $search = JsonFile::parseJson($json, $url);
 
@@ -483,7 +483,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $this->rootData;
         }
 
-        if (!extension_loaded('openssl') && 'https' === substr($this->url, 0, 5)) {
+        if (!\extension_loaded('openssl') && 'https' === substr($this->url, 0, 5)) {
             throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
 
@@ -528,7 +528,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->lazyProvidersUrl = $this->canonicalizeUrl($data['providers-lazy-url']);
             $this->hasProviders = true;
 
-            $this->hasPartialPackages = !empty($data['packages']) && is_array($data['packages']);
+            $this->hasPartialPackages = !empty($data['packages']) && \is_array($data['packages']);
         }
 
         if ($this->allowSslDowngrade) {
@@ -582,7 +582,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected function loadProviderListings($data)
     {
         if (isset($data['providers'])) {
-            if (!is_array($this->providerListing)) {
+            if (!\is_array($this->providerListing)) {
                 $this->providerListing = array();
             }
             $this->providerListing = array_merge($this->providerListing, $data['providers']);
@@ -657,7 +657,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             return $package;
         } catch (\Exception $e) {
-            throw new \RuntimeException('Could not load package '.(isset($data['name']) ? $data['name'] : json_encode($data)).' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
+            throw new \RuntimeException('Could not load package '.(isset($data['name']) ? $data['name'] : json_encode($data)).' in '.$this->url.': ['.\get_class($e).'] '.$e->getMessage(), 0, $e);
         }
     }
 
@@ -681,7 +681,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                 }
 
-                $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
+                $hostname = parse_url($filename, \PHP_URL_HOST) ?: $filename;
                 $rfs = $preFileDownloadEvent->getRemoteFilesystem();
 
                 $json = $rfs->getContents($hostname, $filename, false);
@@ -760,7 +760,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                 }
 
-                $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
+                $hostname = parse_url($filename, \PHP_URL_HOST) ?: $filename;
                 $rfs = $preFileDownloadEvent->getRemoteFilesystem();
                 $options = array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime)));
                 $json = $rfs->getContents($hostname, $filename, false, $options);
@@ -814,12 +814,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $package = strtolower($package);
             foreach ($versions as $version) {
                 $this->partialPackagesByName[$package][] = $version;
-                if (!empty($version['provide']) && is_array($version['provide'])) {
+                if (!empty($version['provide']) && \is_array($version['provide'])) {
                     foreach ($version['provide'] as $provided => $providedVersion) {
                         $this->partialPackagesByName[strtolower($provided)][] = $version;
                     }
                 }
-                if (!empty($version['replace']) && is_array($version['replace'])) {
+                if (!empty($version['replace']) && \is_array($version['replace'])) {
                     foreach ($version['replace'] as $provided => $providedVersion) {
                         $this->partialPackagesByName[strtolower($provided)][] = $version;
                     }

@@ -25,7 +25,7 @@ class PathRepositoryTest extends TestCase
         $config = new \Composer\Config();
         $versionGuesser = null;
 
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'with-version'));
+        $repositoryUrl = implode(\DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'with-version'));
         $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
         $repository->getPackages();
 
@@ -41,7 +41,7 @@ class PathRepositoryTest extends TestCase
         $config = new \Composer\Config();
         $versionGuesser = null;
 
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'without-version'));
+        $repositoryUrl = implode(\DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'without-version'));
         $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
         $packages = $repository->getPackages();
 
@@ -62,7 +62,7 @@ class PathRepositoryTest extends TestCase
         $config = new \Composer\Config();
         $versionGuesser = null;
 
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
+        $repositoryUrl = implode(\DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
         $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
         $packages = $repository->getPackages();
         $names = array();
@@ -92,10 +92,10 @@ class PathRepositoryTest extends TestCase
 
         // realpath() does not fully expand the paths
         // PHP Bug https://bugs.php.net/bug.php?id=72642
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(realpath(realpath(__DIR__)), 'Fixtures', 'path', 'with-version'));
+        $repositoryUrl = implode(\DIRECTORY_SEPARATOR, array(realpath(realpath(__DIR__)), 'Fixtures', 'path', 'with-version'));
         // getcwd() not necessarily match __DIR__
         // PHP Bug https://bugs.php.net/bug.php?id=73797
-        $relativeUrl = ltrim(substr($repositoryUrl, strlen(realpath(realpath(getcwd())))), DIRECTORY_SEPARATOR);
+        $relativeUrl = ltrim(substr($repositoryUrl, \strlen(realpath(realpath(getcwd())))), \DIRECTORY_SEPARATOR);
 
         $repository = new PathRepository(array('url' => $relativeUrl), $ioInterface, $config);
         $packages = $repository->getPackages();
@@ -106,7 +106,7 @@ class PathRepositoryTest extends TestCase
         $this->assertEquals('test/path-versioned', $package->getName());
 
         // Convert platform specific separators back to generic URL slashes
-        $relativeUrl = str_replace(DIRECTORY_SEPARATOR, '/', $relativeUrl);
+        $relativeUrl = str_replace(\DIRECTORY_SEPARATOR, '/', $relativeUrl);
         $this->assertEquals($relativeUrl, $package->getDistUrl());
     }
 }

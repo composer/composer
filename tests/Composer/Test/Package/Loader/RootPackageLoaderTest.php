@@ -115,7 +115,7 @@ class RootPackageLoaderTest extends TestCase
 
     public function testFeatureBranchPrettyVersion()
     {
-        if (!function_exists('proc_open')) {
+        if (!\function_exists('proc_open')) {
             $this->markTestSkipped('proc_open() is not available');
         }
 
@@ -165,7 +165,7 @@ class RootPackageLoaderTest extends TestCase
 
     public function testNonFeatureBranchPrettyVersion()
     {
-        if (!function_exists('proc_open')) {
+        if (!\function_exists('proc_open')) {
             $this->markTestSkipped('proc_open() is not available');
         }
 

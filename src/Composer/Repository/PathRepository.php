@@ -126,7 +126,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         parent::initialize();
 
         foreach ($this->getUrlMatches() as $url) {
-            $path = realpath($url) . DIRECTORY_SEPARATOR;
+            $path = realpath($url) . \DIRECTORY_SEPARATOR;
             $composerFilePath = $path.'composer.json';
 
             if (!file_exists($composerFilePath)) {
@@ -159,7 +159,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             }
 
             $output = '';
-            if (is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
+            if (is_dir($path . \DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
                 $package['dist']['reference'] = trim($output);
             }
             $package = $this->loader->load($package);
@@ -174,17 +174,17 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      */
     private function getUrlMatches()
     {
-        $flags = GLOB_MARK | GLOB_ONLYDIR;
+        $flags = \GLOB_MARK | \GLOB_ONLYDIR;
 
-        if (defined('GLOB_BRACE')) {
-            $flags |= GLOB_BRACE;
+        if (\defined('GLOB_BRACE')) {
+            $flags |= \GLOB_BRACE;
         } elseif (strpos($this->url, '{') !== false || strpos($this->url, '}') !== false) {
             throw new \RuntimeException('The operating system does not support GLOB_BRACE which is required for the url '. $this->url);
         }
 
         // Ensure environment-specific path separators are normalized to URL separators
         return array_map(function ($val) {
-            return rtrim(str_replace(DIRECTORY_SEPARATOR, '/', $val), '/');
+            return rtrim(str_replace(\DIRECTORY_SEPARATOR, '/', $val), '/');
         }, glob($this->url, $flags));
     }
 }

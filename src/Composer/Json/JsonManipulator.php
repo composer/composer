@@ -196,7 +196,7 @@ class JsonManipulator
         $decoded = JsonFile::parseJson($this->contents);
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
+        if (\in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
@@ -220,7 +220,7 @@ class JsonManipulator
                 return false;
             }
         } catch (\RuntimeException $e) {
-            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+            if ($e->getCode() === \PREG_BACKTRACK_LIMIT_ERROR) {
                 return false;
             }
             throw $e;
@@ -240,7 +240,7 @@ class JsonManipulator
             $children = preg_replace_callback($childRegex, function ($matches) use ($subName, $value, $that) {
                 if ($subName !== null) {
                     $curVal = json_decode($matches['content'], true);
-                    if (!is_array($curVal)) {
+                    if (!\is_array($curVal)) {
                         $curVal = array();
                     }
                     $curVal[$subName] = $value;
@@ -302,7 +302,7 @@ class JsonManipulator
                 return false;
             }
         } catch (\RuntimeException $e) {
-            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+            if ($e->getCode() === \PREG_BACKTRACK_LIMIT_ERROR) {
                 return false;
             }
             throw $e;
@@ -316,7 +316,7 @@ class JsonManipulator
         }
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
+        if (\in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
@@ -331,7 +331,7 @@ class JsonManipulator
             if (preg_match_all('{'.self::$DEFINES.'"'.preg_quote($name).'"\s*:\s*(?:(?&json))}x', $children, $matches)) {
                 $bestMatch = '';
                 foreach ($matches[0] as $match) {
-                    if (strlen($bestMatch) < strlen($match)) {
+                    if (\strlen($bestMatch) < \strlen($match)) {
                         $bestMatch = $match;
                     }
                 }
@@ -425,7 +425,7 @@ class JsonManipulator
     {
         $decoded = JsonFile::parseJson($this->contents);
 
-        if (!array_key_exists($key, $decoded)) {
+        if (!\array_key_exists($key, $decoded)) {
             return true;
         }
 
@@ -456,7 +456,7 @@ class JsonManipulator
 
     public function format($data, $depth = 0)
     {
-        if (is_array($data)) {
+        if (\is_array($data)) {
             reset($data);
 
             if (is_numeric(key($data))) {
@@ -494,20 +494,20 @@ class JsonManipulator
 
         if ($count === false) {
             switch (preg_last_error()) {
-                case PREG_NO_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_NO_ERROR', PREG_NO_ERROR);
-                case PREG_INTERNAL_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_INTERNAL_ERROR', PREG_INTERNAL_ERROR);
-                case PREG_BACKTRACK_LIMIT_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_BACKTRACK_LIMIT_ERROR', PREG_BACKTRACK_LIMIT_ERROR);
-                case PREG_RECURSION_LIMIT_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_RECURSION_LIMIT_ERROR', PREG_RECURSION_LIMIT_ERROR);
-                case PREG_BAD_UTF8_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_ERROR', PREG_BAD_UTF8_ERROR);
-                case PREG_BAD_UTF8_OFFSET_ERROR:
-                    throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_OFFSET_ERROR', PREG_BAD_UTF8_OFFSET_ERROR);
+                case \PREG_NO_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_NO_ERROR', \PREG_NO_ERROR);
+                case \PREG_INTERNAL_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_INTERNAL_ERROR', \PREG_INTERNAL_ERROR);
+                case \PREG_BACKTRACK_LIMIT_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_BACKTRACK_LIMIT_ERROR', \PREG_BACKTRACK_LIMIT_ERROR);
+                case \PREG_RECURSION_LIMIT_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_RECURSION_LIMIT_ERROR', \PREG_RECURSION_LIMIT_ERROR);
+                case \PREG_BAD_UTF8_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_ERROR', \PREG_BAD_UTF8_ERROR);
+                case \PREG_BAD_UTF8_OFFSET_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_OFFSET_ERROR', \PREG_BAD_UTF8_OFFSET_ERROR);
                 case 6: // PREG_JIT_STACKLIMIT_ERROR
-                    if (PHP_VERSION_ID > 70000) {
+                    if (\PHP_VERSION_ID > 70000) {
                         throw new \RuntimeException('Failed to execute regex: PREG_JIT_STACKLIMIT_ERROR', 6);
                     }
                     // no break

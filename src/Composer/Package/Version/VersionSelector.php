@@ -144,7 +144,7 @@ class VersionSelector
         $semanticVersionParts = explode('.', $version);
 
         // check to see if we have a semver-looking version
-        if (count($semanticVersionParts) == 4 && preg_match('{^0\D?}', $semanticVersionParts[3])) {
+        if (\count($semanticVersionParts) == 4 && preg_match('{^0\D?}', $semanticVersionParts[3])) {
             // remove the last parts (i.e. the patch version number and any extra)
             if ($semanticVersionParts[0] === '0') {
                 unset($semanticVersionParts[3]);

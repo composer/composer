@@ -166,7 +166,7 @@ EOT
 
         $authConfigFile = $input->getOption('global')
             ? ($this->config->get('home') . '/auth.json')
-            : dirname(realpath($configFile)) . '/auth.json';
+            : \dirname(realpath($configFile)) . '/auth.json';
 
         $this->authConfigFile = new JsonFile($authConfigFile, null, $io);
         $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);
@@ -277,13 +277,13 @@ EOT
                 $value = $data;
             } elseif (isset($data['config'][$settingKey])) {
                 $value = $this->config->get($settingKey, $input->getOption('absolute') ? 0 : Config::RELATIVE_PATHS);
-            } elseif (in_array($settingKey, $properties, true) && isset($rawData[$settingKey])) {
+            } elseif (\in_array($settingKey, $properties, true) && isset($rawData[$settingKey])) {
                 $value = $rawData[$settingKey];
             } else {
                 throw new \RuntimeException($settingKey.' is not defined');
             }
 
-            if (is_array($value)) {
+            if (\is_array($value)) {
                 $value = json_encode($value);
             }
 
@@ -295,7 +295,7 @@ EOT
         $values = $input->getArgument('setting-value'); // what the user is trying to add/change
 
         $booleanValidator = function ($val) {
-            return in_array($val, array('true', 'false', '1', '0'), true);
+            return \in_array($val, array('true', 'false', '1', '0'), true);
         };
         $booleanNormalizer = function ($val) {
             return $val !== 'false' && (bool) $val;
@@ -308,7 +308,7 @@ EOT
             'use-github-api' => array($booleanValidator, $booleanNormalizer),
             'preferred-install' => array(
                 function ($val) {
-                    return in_array($val, array('auto', 'source', 'dist'), true);
+                    return \in_array($val, array('auto', 'source', 'dist'), true);
                 },
                 function ($val) {
                     return $val;
@@ -316,7 +316,7 @@ EOT
             ),
             'store-auths' => array(
                 function ($val) {
-                    return in_array($val, array('true', 'false', 'prompt'), true);
+                    return \in_array($val, array('true', 'false', 'prompt'), true);
                 },
                 function ($val) {
                     if ('prompt' === $val) {
@@ -366,7 +366,7 @@ EOT
             ),
             'bin-compat' => array(
                 function ($val) {
-                    return in_array($val, array('auto', 'full'));
+                    return \in_array($val, array('auto', 'full'));
                 },
                 function ($val) {
                     return $val;
@@ -374,7 +374,7 @@ EOT
             ),
             'discard-changes' => array(
                 function ($val) {
-                    return in_array($val, array('stash', 'true', 'false', '1', '0'), true);
+                    return \in_array($val, array('stash', 'true', 'false', '1', '0'), true);
                 },
                 function ($val) {
                     if ('stash' === $val) {
@@ -416,12 +416,12 @@ EOT
         $multiConfigValues = array(
             'github-protocols' => array(
                 function ($vals) {
-                    if (!is_array($vals)) {
+                    if (!\is_array($vals)) {
                         return 'array expected';
                     }
 
                     foreach ($vals as $val) {
-                        if (!in_array($val, array('git', 'https', 'ssh'))) {
+                        if (!\in_array($val, array('git', 'https', 'ssh'))) {
                             return 'valid protocols include: git, https, ssh';
                         }
                     }
@@ -434,7 +434,7 @@ EOT
             ),
             'github-domains' => array(
                 function ($vals) {
-                    if (!is_array($vals)) {
+                    if (!\is_array($vals)) {
                         return 'array expected';
                     }
 
@@ -446,7 +446,7 @@ EOT
             ),
             'gitlab-domains' => array(
                 function ($vals) {
-                    if (!is_array($vals)) {
+                    if (!\is_array($vals)) {
                         return 'array expected';
                     }
 
@@ -502,7 +502,7 @@ EOT
         $multiProps = array(
             'keywords' => array(
                 function ($vals) {
-                    if (!is_array($vals)) {
+                    if (!\is_array($vals)) {
                         return 'array expected';
                     }
 
@@ -514,7 +514,7 @@ EOT
             ),
             'license' => array(
                 function ($vals) {
-                    if (!is_array($vals)) {
+                    if (!\is_array($vals)) {
                         return 'array expected';
                     }
 
@@ -545,14 +545,14 @@ EOT
                 return $this->configSource->removeRepository($matches[1]);
             }
 
-            if (2 === count($values)) {
+            if (2 === \count($values)) {
                 return $this->configSource->addRepository($matches[1], array(
                     'type' => $values[0],
                     'url' => $values[1],
                 ));
             }
 
-            if (1 === count($values)) {
+            if (1 === \count($values)) {
                 $value = strtolower($values[0]);
                 if (true === $booleanValidator($value)) {
                     if (false === $booleanNormalizer($value)) {
@@ -599,20 +599,20 @@ EOT
             }
 
             if ($matches[1] === 'bitbucket-oauth') {
-                if (2 !== count($values)) {
-                    throw new \RuntimeException('Expected two arguments (consumer-key, consumer-secret), got '.count($values));
+                if (2 !== \count($values)) {
+                    throw new \RuntimeException('Expected two arguments (consumer-key, consumer-secret), got '.\count($values));
                 }
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('consumer-key' => $values[0], 'consumer-secret' => $values[1]));
-            } elseif (in_array($matches[1], array('github-oauth', 'gitlab-oauth', 'gitlab-token'), true)) {
-                if (1 !== count($values)) {
+            } elseif (\in_array($matches[1], array('github-oauth', 'gitlab-oauth', 'gitlab-token'), true)) {
+                if (1 !== \count($values)) {
                     throw new \RuntimeException('Too many arguments, expected only one token');
                 }
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], $values[0]);
             } elseif ($matches[1] === 'http-basic') {
-                if (2 !== count($values)) {
-                    throw new \RuntimeException('Expected two arguments (username, password), got '.count($values));
+                if (2 !== \count($values)) {
+                    throw new \RuntimeException('Expected two arguments (username, password), got '.\count($values));
                 }
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'password' => $values[1]));
@@ -627,7 +627,7 @@ EOT
                 return $this->configSource->removeProperty($settingKey);
             }
 
-            return $this->configSource->addProperty($settingKey, count($values) > 1 ? $values : $values[0]);
+            return $this->configSource->addProperty($settingKey, \count($values) > 1 ? $values : $values[0]);
         }
 
         throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
@@ -636,7 +636,7 @@ EOT
     protected function handleSingleValue($key, array $callbacks, array $values, $method)
     {
         list($validator, $normalizer) = $callbacks;
-        if (1 !== count($values)) {
+        if (1 !== \count($values)) {
             throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
         }
 
@@ -657,7 +657,7 @@ EOT
             }
         }
 
-        return call_user_func(array($this->configSource, $method), $key, $normalizedValue);
+        return \call_user_func(array($this->configSource, $method), $key, $normalizedValue);
     }
 
     protected function handleMultiValue($key, array $callbacks, array $values, $method)
@@ -670,7 +670,7 @@ EOT
             ));
         }
 
-        return call_user_func(array($this->configSource, $method), $key, $normalizer($values));
+        return \call_user_func(array($this->configSource, $method), $key, $normalizer($values));
     }
 
     /**
@@ -686,13 +686,13 @@ EOT
         $origK = $k;
         $io = $this->getIO();
         foreach ($contents as $key => $value) {
-            if ($k === null && !in_array($key, array('config', 'repositories'))) {
+            if ($k === null && !\in_array($key, array('config', 'repositories'))) {
                 continue;
             }
 
             $rawVal = isset($rawContents[$key]) ? $rawContents[$key] : null;
 
-            if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
+            if (\is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
                 $k .= preg_replace('{^config\.}', '', $key . '.');
                 $this->listConfiguration($value, $rawVal, $output, $k);
                 $k = $origK;
@@ -700,19 +700,19 @@ EOT
                 continue;
             }
 
-            if (is_array($value)) {
+            if (\is_array($value)) {
                 $value = array_map(function ($val) {
-                    return is_array($val) ? json_encode($val) : $val;
+                    return \is_array($val) ? json_encode($val) : $val;
                 }, $value);
 
                 $value = '['.implode(', ', $value).']';
             }
 
-            if (is_bool($value)) {
+            if (\is_bool($value)) {
                 $value = var_export($value, true);
             }
 
-            if (is_string($rawVal) && $rawVal != $value) {
+            if (\is_string($rawVal) && $rawVal != $value) {
                 $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>', true, IOInterface::QUIET);
             } else {
                 $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>', true, IOInterface::QUIET);

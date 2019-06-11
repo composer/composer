@@ -60,7 +60,7 @@ class ClassMapGenerator
      */
     public static function createMap($path, $blacklist = null, IOInterface $io = null, $namespace = null)
     {
-        if (is_string($path)) {
+        if (\is_string($path)) {
             if (is_file($path)) {
                 $path = array(new \SplFileInfo($path));
             } elseif (is_dir($path)) {
@@ -79,7 +79,7 @@ class ClassMapGenerator
 
         foreach ($path as $file) {
             $filePath = $file->getPathname();
-            if (!in_array(pathinfo($filePath, PATHINFO_EXTENSION), array('php', 'inc', 'hh'))) {
+            if (!\in_array(pathinfo($filePath, \PATHINFO_EXTENSION), array('php', 'inc', 'hh'))) {
                 continue;
             }
 
@@ -130,8 +130,8 @@ class ClassMapGenerator
      */
     private static function findClasses($path)
     {
-        $extraTypes = PHP_VERSION_ID < 50400 ? '' : '|trait';
-        if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>=')) {
+        $extraTypes = \PHP_VERSION_ID < 50400 ? '' : '|trait';
+        if (\defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>=')) {
             $extraTypes .= '|enum';
         }
 
@@ -151,7 +151,7 @@ class ClassMapGenerator
             }
             $error = error_get_last();
             if (isset($error['message'])) {
-                $message .= PHP_EOL . 'The following message may be helpful:' . PHP_EOL . $error['message'];
+                $message .= \PHP_EOL . 'The following message may be helpful:' . \PHP_EOL . $error['message'];
             }
             throw new \RuntimeException(sprintf($message, $path));
         }
@@ -194,7 +194,7 @@ class ClassMapGenerator
         $classes = array();
         $namespace = '';
 
-        for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
+        for ($i = 0, $len = \count($matches['type']); $i < $len; $i++) {
             if (!empty($matches['ns'][$i])) {
                 $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
             } else {

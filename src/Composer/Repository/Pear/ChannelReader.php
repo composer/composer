@@ -91,7 +91,7 @@ class ChannelReader extends BaseChannelReader
             }
 
             // Fallback to non-https if it does not exist.
-            if (count($testResult) > 0) {
+            if (\count($testResult) > 0) {
                 return array('version' => $version, 'baseUrl' => (string) $testResult[0]);
             }
         }

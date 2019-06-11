@@ -406,7 +406,7 @@ class Locker
      */
     private function getPackageTime(PackageInterface $package)
     {
-        if (!function_exists('proc_open')) {
+        if (!\function_exists('proc_open')) {
             return null;
         }
 
@@ -414,7 +414,7 @@ class Locker
         $sourceType = $package->getSourceType();
         $datetime = null;
 
-        if ($path && in_array($sourceType, array('git', 'hg'))) {
+        if ($path && \in_array($sourceType, array('git', 'hg'))) {
             $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
             switch ($sourceType) {
                 case 'git':
@@ -433,6 +433,6 @@ class Locker
             }
         }
 
-        return $datetime ? $datetime->format(DATE_RFC3339) : null;
+        return $datetime ? $datetime->format(\DATE_RFC3339) : null;
     }
 }

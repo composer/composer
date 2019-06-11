@@ -86,7 +86,7 @@ class PearBinaryInstaller extends BinaryInstaller
                     "pushd .\r\n".
                     "cd %~dp0\r\n".
                     "set PHP_PROXY=%CD%\\composer-php.bat\r\n".
-                    "cd ".ProcessExecutor::escape(dirname($binPath))."\r\n".
+                    "cd ".ProcessExecutor::escape(\dirname($binPath))."\r\n".
                     "set BIN_TARGET=%CD%\\".basename($binPath)."\r\n".
                     "popd\r\n".
                     "%PHP_PROXY% \"%BIN_TARGET%\" %*\r\n";
@@ -96,7 +96,7 @@ class PearBinaryInstaller extends BinaryInstaller
         return "@echo off\r\n".
             "pushd .\r\n".
             "cd %~dp0\r\n".
-            "cd ".ProcessExecutor::escape(dirname($binPath))."\r\n".
+            "cd ".ProcessExecutor::escape(\dirname($binPath))."\r\n".
             "set BIN_TARGET=%CD%\\".basename($binPath)."\r\n".
             "popd\r\n".
             $caller." \"%BIN_TARGET%\" %*\r\n";

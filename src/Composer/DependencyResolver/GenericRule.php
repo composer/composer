@@ -65,7 +65,7 @@ class GenericRule extends Rule
 
     public function isAssertion()
     {
-        return 1 === count($this->literals);
+        return 1 === \count($this->literals);
     }
 
     /**

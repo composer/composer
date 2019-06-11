@@ -63,7 +63,7 @@ class VersionGuesser
      */
     public function guessVersion(array $packageConfig, $path)
     {
-        if (function_exists('proc_open')) {
+        if (\function_exists('proc_open')) {
             $versionData = $this->guessGitVersion($packageConfig, $path);
             if (null !== $versionData && null !== $versionData['version']) {
                 return $this->postprocess($versionData);
@@ -213,7 +213,7 @@ class VersionGuesser
             || strpos(json_encode($packageConfig), '"self.version"')
         ) {
             $branch = preg_replace('{^dev-}', '', $version);
-            $length = PHP_INT_MAX;
+            $length = \PHP_INT_MAX;
 
             $nonFeatureBranches = '';
             if (!empty($packageConfig['non-feature-branches'])) {
@@ -236,8 +236,8 @@ class VersionGuesser
                     continue;
                 }
 
-                if (strlen($output) < $length) {
-                    $length = strlen($output);
+                if (\strlen($output) < $length) {
+                    $length = \strlen($output);
                     $version = $this->versionParser->normalizeBranch($candidate);
                     $prettyVersion = 'dev-' . $match[1];
                 }

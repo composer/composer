@@ -99,13 +99,13 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             } catch (\Exception $e) {
                 if ($this->io->isDebug()) {
                     $this->io->writeError('');
-                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
-                } elseif (count($urls)) {
+                    $this->io->writeError('Failed: ['.\get_class($e).'] '.$e->getCode().': '.$e->getMessage());
+                } elseif (\count($urls)) {
                     $this->io->writeError('');
                     $this->io->writeError(' Failed, trying the next URL ('.$e->getCode().': '.$e->getMessage().')', false);
                 }
 
-                if (!count($urls)) {
+                if (!\count($urls)) {
                     throw $e;
                 }
             }
@@ -125,7 +125,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $fileName = $this->getFileName($package, $path);
 
         $processedUrl = $this->processUrl($package, $url);
-        $hostname = parse_url($processedUrl, PHP_URL_HOST);
+        $hostname = parse_url($processedUrl, \PHP_URL_HOST);
 
         $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $processedUrl);
         if ($this->eventDispatcher) {
@@ -154,7 +154,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                         break;
                     } catch (TransportException $e) {
                         // if we got an http response with a proper code, then requesting again will probably not help, abort
-                        if ((0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
+                        if ((0 !== $e->getCode() && !\in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
                             throw $e;
                         }
                         $this->io->writeError('');
@@ -249,7 +249,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
+        return $path.'/'.pathinfo(parse_url($package->getDistUrl(), \PHP_URL_PATH), \PATHINFO_BASENAME);
     }
 
     /**
@@ -262,7 +262,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     protected function processUrl(PackageInterface $package, $url)
     {
-        if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
+        if (!\extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
             throw new \RuntimeException('You must enable the openssl extension to download files via https');
         }
 

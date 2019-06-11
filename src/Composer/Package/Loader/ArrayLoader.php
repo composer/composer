@@ -60,7 +60,7 @@ class ArrayLoader implements LoaderInterface
             $package->setTargetDir($config['target-dir']);
         }
 
-        if (isset($config['extra']) && is_array($config['extra'])) {
+        if (isset($config['extra']) && \is_array($config['extra'])) {
             $package->setExtra($config['extra']);
         }
 
@@ -124,7 +124,7 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-        if (isset($config['suggest']) && is_array($config['suggest'])) {
+        if (isset($config['suggest']) && \is_array($config['suggest'])) {
             foreach ($config['suggest'] as $target => $reason) {
                 if ('self.version' === trim($reason)) {
                     $config['suggest'][$target] = $package->getPrettyVersion();
@@ -164,33 +164,33 @@ class ArrayLoader implements LoaderInterface
         }
 
         if ($package instanceof Package\CompletePackageInterface) {
-            if (isset($config['scripts']) && is_array($config['scripts'])) {
+            if (isset($config['scripts']) && \is_array($config['scripts'])) {
                 foreach ($config['scripts'] as $event => $listeners) {
                     $config['scripts'][$event] = (array) $listeners;
                 }
                 if (isset($config['scripts']['composer'])) {
-                    trigger_error('The `composer` script name is reserved for internal use, please avoid defining it', E_USER_DEPRECATED);
+                    trigger_error('The `composer` script name is reserved for internal use, please avoid defining it', \E_USER_DEPRECATED);
                 }
                 $package->setScripts($config['scripts']);
             }
 
-            if (!empty($config['description']) && is_string($config['description'])) {
+            if (!empty($config['description']) && \is_string($config['description'])) {
                 $package->setDescription($config['description']);
             }
 
-            if (!empty($config['homepage']) && is_string($config['homepage'])) {
+            if (!empty($config['homepage']) && \is_string($config['homepage'])) {
                 $package->setHomepage($config['homepage']);
             }
 
-            if (!empty($config['keywords']) && is_array($config['keywords'])) {
+            if (!empty($config['keywords']) && \is_array($config['keywords'])) {
                 $package->setKeywords($config['keywords']);
             }
 
             if (!empty($config['license'])) {
-                $package->setLicense(is_array($config['license']) ? $config['license'] : array($config['license']));
+                $package->setLicense(\is_array($config['license']) ? $config['license'] : array($config['license']));
             }
 
-            if (!empty($config['authors']) && is_array($config['authors'])) {
+            if (!empty($config['authors']) && \is_array($config['authors'])) {
                 $package->setAuthors($config['authors']);
             }
 
@@ -229,8 +229,8 @@ class ArrayLoader implements LoaderInterface
     {
         $res = array();
         foreach ($links as $target => $constraint) {
-            if (!is_string($constraint)) {
-                throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.gettype($constraint) . ' (' . var_export($constraint, true) . ')');
+            if (!\is_string($constraint)) {
+                throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.\gettype($constraint) . ' (' . var_export($constraint, true) . ')');
             }
             if ('self.version' === $constraint) {
                 $parsedConstraint = $this->versionParser->parseConstraints($sourceVersion);
@@ -254,7 +254,7 @@ class ArrayLoader implements LoaderInterface
     {
         if (('dev-' !== substr($config['version'], 0, 4) && '-dev' !== substr($config['version'], -4))
             || !isset($config['extra']['branch-alias'])
-            || !is_array($config['extra']['branch-alias'])
+            || !\is_array($config['extra']['branch-alias'])
         ) {
             return;
         }

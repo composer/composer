@@ -314,7 +314,7 @@ EOF;
             ));
         }
 
-        return count($classMap);
+        return \count($classMap);
     }
 
     private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, array $classMap = array())
@@ -464,8 +464,8 @@ EOF;
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
 
-            if (null !== $package->getTargetDir() && strlen($package->getTargetDir()) > 0) {
-                $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
+            if (null !== $package->getTargetDir() && \strlen($package->getTargetDir()) > 0) {
+                $installPath = substr($installPath, 0, -\strlen('/'.$package->getTargetDir()));
             }
 
             foreach ($package->getIncludePaths() as $includePath) {
@@ -532,7 +532,7 @@ EOF;
 
         $baseDir = '';
         if (strpos($path.'/', $vendorPath.'/') === 0) {
-            $path = substr($path, strlen($vendorPath));
+            $path = substr($path, \strlen($vendorPath));
             $baseDir = '$vendorDir';
 
             if ($path !== false) {
@@ -555,7 +555,7 @@ EOF;
 
     protected function getAutoloadFile($vendorPathToTargetDirCode, $suffix)
     {
-        $lastChar = $vendorPathToTargetDirCode[strlen($vendorPathToTargetDirCode) - 1];
+        $lastChar = $vendorPathToTargetDirCode[\strlen($vendorPathToTargetDirCode) - 1];
         if ("'" === $lastChar || '"' === $lastChar) {
             $vendorPathToTargetDirCode = substr($vendorPathToTargetDirCode, 0, -1).'/autoload_real.php'.$lastChar;
         } else {
@@ -781,7 +781,7 @@ HEADER;
 
         $initializer = '';
         $prefix = "\0Composer\Autoload\ClassLoader\0";
-        $prefixLen = strlen($prefix);
+        $prefixLen = \strlen($prefix);
         if (file_exists($targetDir . '/autoload_files.php')) {
             $maps = array('files' => require $targetDir . '/autoload_files.php');
         } else {
@@ -795,7 +795,7 @@ HEADER;
         }
 
         foreach ($maps as $prop => $value) {
-            if (count($value) > 32767) {
+            if (\count($value) > 32767) {
                 // Static arrays are limited to 32767 values on PHP 5.6
                 // See https://bugs.php.net/68057
                 $staticPhpVersion = 70000;
@@ -842,11 +842,11 @@ INITIALIZER;
             }
 
             // skip misconfigured packages
-            if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
+            if (!isset($autoload[$type]) || !\is_array($autoload[$type])) {
                 continue;
             }
             if (null !== $package->getTargetDir() && $package !== $mainPackage) {
-                $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
+                $installPath = substr($installPath, 0, -\strlen('/'.$package->getTargetDir()));
             }
 
             foreach ($autoload[$type] as $namespace => $paths) {

@@ -51,7 +51,7 @@ class GitDownloaderTest extends TestCase
             $config = new Config();
         }
         if (!$config->has('home')) {
-            $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
+            $tmpDir = realpath(sys_get_temp_dir()).\DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
             $config->merge(array('config' => array('home' => $tmpDir)));
         }
 

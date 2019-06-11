@@ -27,7 +27,7 @@ class RemoteFilesystemTest extends TestCase
         ;
 
         $res = $this->callGetOptionsForUrl($io, array('http://example.org', array()));
-        $this->assertTrue(isset($res['http']['header']) && is_array($res['http']['header']), 'getOptions must return an array with headers');
+        $this->assertTrue(isset($res['http']['header']) && \is_array($res['http']['header']), 'getOptions must return an array with headers');
     }
 
     public function testGetOptionsForUrlWithAuthorization()
@@ -96,13 +96,13 @@ class RemoteFilesystemTest extends TestCase
         }
 
         $this->assertTrue($found, 'getOptions must have a Foo: bar header');
-        $this->assertGreaterThan(1, count($res['http']['header']));
+        $this->assertGreaterThan(1, \count($res['http']['header']));
     }
 
     public function testCallbackGetFileSize()
     {
         $fs = new RemoteFilesystem($this->getMockBuilder('Composer\IO\IOInterface')->getMock());
-        $this->callCallbackGet($fs, STREAM_NOTIFY_FILE_SIZE_IS, 0, '', 0, 0, 20);
+        $this->callCallbackGet($fs, \STREAM_NOTIFY_FILE_SIZE_IS, 0, '', 0, 0, 20);
         $this->assertAttributeEquals(20, 'bytesMax', $fs);
     }
 
@@ -118,7 +118,7 @@ class RemoteFilesystemTest extends TestCase
         $this->setAttribute($fs, 'bytesMax', 20);
         $this->setAttribute($fs, 'progress', true);
 
-        $this->callCallbackGet($fs, STREAM_NOTIFY_PROGRESS, 0, '', 0, 10, 20);
+        $this->callCallbackGet($fs, \STREAM_NOTIFY_PROGRESS, 0, '', 0, 10, 20);
         $this->assertAttributeEquals(50, 'lastProgress', $fs);
     }
 
@@ -126,7 +126,7 @@ class RemoteFilesystemTest extends TestCase
     {
         $fs = new RemoteFilesystem($this->getMockBuilder('Composer\IO\IOInterface')->getMock());
 
-        $this->assertNull($this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0));
+        $this->assertNull($this->callCallbackGet($fs, \STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0));
     }
 
     /**
@@ -180,12 +180,12 @@ class RemoteFilesystemTest extends TestCase
         $this->assertTrue($res['ssl']['verify_peer']);
         $this->assertTrue($res['ssl']['SNI_enabled']);
         $this->assertEquals(7, $res['ssl']['verify_depth']);
-        if (PHP_VERSION_ID < 50600) {
+        if (\PHP_VERSION_ID < 50600) {
             $this->assertEquals('www.example.org', $res['ssl']['CN_match']);
             $this->assertEquals('www.example.org', $res['ssl']['SNI_server_name']);
         }
         $this->assertEquals('/some/path/file.crt', $res['ssl']['cafile']);
-        if (version_compare(PHP_VERSION, '5.4.13') >= 0) {
+        if (version_compare(\PHP_VERSION, '5.4.13') >= 0) {
             $this->assertTrue($res['ssl']['disable_compression']);
         } else {
             $this->assertFalse(isset($res['ssl']['disable_compression']));
@@ -219,7 +219,7 @@ class RemoteFilesystemTest extends TestCase
             ->getMock();
 
         $rfs = new RemoteFilesystem($io);
-        $hostname = parse_url($url, PHP_URL_HOST);
+        $hostname = parse_url($url, \PHP_URL_HOST);
 
         $result = $rfs->getContents($hostname, $url, false);
 
@@ -268,7 +268,7 @@ class RemoteFilesystemTest extends TestCase
             ));
 
         $rfs = new RemoteFilesystem($io, $config);
-        $hostname = parse_url($url, PHP_URL_HOST);
+        $hostname = parse_url($url, \PHP_URL_HOST);
 
         $result = $rfs->getContents($hostname, $url, false);
 

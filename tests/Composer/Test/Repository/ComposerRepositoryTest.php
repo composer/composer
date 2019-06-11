@@ -59,7 +59,7 @@ class ComposerRepositoryTest extends TestCase
         $packages = $repository->getPackages();
 
         // Final sanity check, ensure the correct number of packages were added.
-        $this->assertCount(count($expected), $packages);
+        $this->assertCount(\count($expected), $packages);
     }
 
     public function loadDataProvider()

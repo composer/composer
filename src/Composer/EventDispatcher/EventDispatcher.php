@@ -154,8 +154,8 @@ class EventDispatcher
         $binDir = $this->composer->getConfig()->get('bin-dir');
         if (is_dir($binDir)) {
             $binDir = realpath($binDir);
-            if (isset($_SERVER[$pathStr]) && !preg_match('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $_SERVER[$pathStr])) {
-                $_SERVER[$pathStr] = $binDir.PATH_SEPARATOR.getenv($pathStr);
+            if (isset($_SERVER[$pathStr]) && !preg_match('{(^|'.\PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.\PATH_SEPARATOR.')}', $_SERVER[$pathStr])) {
+                $_SERVER[$pathStr] = $binDir.\PATH_SEPARATOR.getenv($pathStr);
                 putenv($pathStr.'='.$_SERVER[$pathStr]);
             }
         }
@@ -166,14 +166,14 @@ class EventDispatcher
 
         $return = 0;
         foreach ($listeners as $callable) {
-            if (!is_string($callable)) {
-                if (!is_callable($callable)) {
-                    $className = is_object($callable[0]) ? get_class($callable[0]) : $callable[0];
+            if (!\is_string($callable)) {
+                if (!\is_callable($callable)) {
+                    $className = \is_object($callable[0]) ? \get_class($callable[0]) : $callable[0];
 
                     throw new \RuntimeException('Subscriber '.$className.'::'.$callable[1].' for event '.$event->getName().' is not callable, make sure the function is defined and public');
                 }
                 $event = $this->checkListenerExpectedEvent($callable, $event);
-                $return = false === call_user_func($callable, $event) ? 1 : 0;
+                $return = false === \call_user_func($callable, $event) ? 1 : 0;
             } elseif ($this->isComposerScript($callable)) {
                 $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable), true, IOInterface::VERBOSE);
 
@@ -210,7 +210,7 @@ class EventDispatcher
                     $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
                     continue;
                 }
-                if (!is_callable($callable)) {
+                if (!\is_callable($callable)) {
                     $this->io->writeError('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
                     continue;
                 }
@@ -310,7 +310,7 @@ class EventDispatcher
      */
     protected function checkListenerExpectedEvent($target, Event $event)
     {
-        if (in_array($event->getName(), array(
+        if (\in_array($event->getName(), array(
             'init',
             'command',
             'pre-file-download',
@@ -334,7 +334,7 @@ class EventDispatcher
 
         // BC support
         if (!$event instanceof $expected && $expected === 'Composer\Script\CommandEvent') {
-            trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
+            trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.\get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', \E_USER_DEPRECATED);
             $event = new \Composer\Script\CommandEvent(
                 $event->getName(),
                 $event->getComposer(),
@@ -344,7 +344,7 @@ class EventDispatcher
             );
         }
         if (!$event instanceof $expected && $expected === 'Composer\Script\PackageEvent') {
-            trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
+            trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.\get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', \E_USER_DEPRECATED);
             $event = new \Composer\Script\PackageEvent(
                 $event->getName(),
                 $event->getComposer(),
@@ -359,7 +359,7 @@ class EventDispatcher
             );
         }
         if (!$event instanceof $expected && $expected === 'Composer\Script\Event') {
-            trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', E_USER_DEPRECATED);
+            trigger_error('The callback '.$this->serializeCallback($target).' declared at '.$reflected->getDeclaringFunction()->getFileName().' accepts a '.$expected.' but '.$event->getName().' events use a '.\get_class($event).' instance. Please adjust your type hint accordingly, see https://getcomposer.org/doc/articles/scripts.md#event-classes', \E_USER_DEPRECATED);
             $event = new \Composer\Script\Event(
                 $event->getName(),
                 $event->getComposer(),
@@ -375,15 +375,15 @@ class EventDispatcher
 
     private function serializeCallback($cb)
     {
-        if (is_array($cb) && count($cb) === 2) {
-            if (is_object($cb[0])) {
-                $cb[0] = get_class($cb[0]);
+        if (\is_array($cb) && \count($cb) === 2) {
+            if (\is_object($cb[0])) {
+                $cb[0] = \get_class($cb[0]);
             }
-            if (is_string($cb[0]) && is_string($cb[1])) {
+            if (\is_string($cb[0]) && \is_string($cb[1])) {
                 $cb = implode('::', $cb);
             }
         }
-        if (is_string($cb)) {
+        if (\is_string($cb)) {
             return $cb;
         }
 
@@ -412,9 +412,9 @@ class EventDispatcher
     public function addSubscriber(EventSubscriberInterface $subscriber)
     {
         foreach ($subscriber->getSubscribedEvents() as $eventName => $params) {
-            if (is_string($params)) {
+            if (\is_string($params)) {
                 $this->addListener($eventName, array($subscriber, $params));
-            } elseif (is_string($params[0])) {
+            } elseif (\is_string($params[0])) {
                 $this->addListener($eventName, array($subscriber, $params[0]), isset($params[1]) ? $params[1] : 0);
             } else {
                 foreach ($params as $listener) {
@@ -442,7 +442,7 @@ class EventDispatcher
         $listeners = $this->listeners;
         $listeners[$event->getName()][0] = array_merge($listeners[$event->getName()][0], $scriptListeners);
 
-        return call_user_func_array('array_merge', $listeners[$event->getName()]);
+        return \call_user_func_array('array_merge', $listeners[$event->getName()]);
     }
 
     /**
@@ -455,7 +455,7 @@ class EventDispatcher
     {
         $listeners = $this->getListeners($event);
 
-        return count($listeners) > 0;
+        return \count($listeners) > 0;
     }
 
     /**
@@ -523,7 +523,7 @@ class EventDispatcher
     protected function pushEvent(Event $event)
     {
         $eventName = $event->getName();
-        if (in_array($eventName, $this->eventStack)) {
+        if (\in_array($eventName, $this->eventStack)) {
             throw new \RuntimeException(sprintf("Circular call to script handler '%s' detected", $eventName));
         }
 

@@ -165,7 +165,7 @@ class Pool implements \Countable
      */
     public function count()
     {
-        return count($this->packages);
+        return \count($this->packages);
     }
 
     /**

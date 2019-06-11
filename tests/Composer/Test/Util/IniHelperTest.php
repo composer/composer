@@ -90,6 +90,6 @@ class IniHelperTest extends TestCase
 
     protected function setEnv(array $paths)
     {
-        putenv('COMPOSER_ORIGINAL_INIS='.implode(PATH_SEPARATOR, $paths));
+        putenv('COMPOSER_ORIGINAL_INIS='.implode(\PATH_SEPARATOR, $paths));
     }
 }

@@ -142,7 +142,7 @@ class PerforceTest extends TestCase
         $this->perforce->setUser(null);
         $expectedCommand = 'p4 set';
         $callback = function ($command, &$output) {
-            $output = 'P4USER=TEST_P4VARIABLE_USER' . PHP_EOL;
+            $output = 'P4USER=TEST_P4VARIABLE_USER' . \PHP_EOL;
 
             return true;
         };
@@ -160,7 +160,7 @@ class PerforceTest extends TestCase
         $this->perforce->setUser(null);
         $expectedCommand = 'echo $P4USER';
         $callback = function ($command, &$output) {
-            $output = 'TEST_P4VARIABLE_USER' . PHP_EOL;
+            $output = 'TEST_P4VARIABLE_USER' . \PHP_EOL;
 
             return true;
         };
@@ -236,7 +236,7 @@ class PerforceTest extends TestCase
         $this->createNewPerforceWithWindowsFlag(true);
         $expectedCommand = 'p4 set';
         $callback = function ($command, &$output) {
-            $output = 'P4PASSWD=TEST_P4VARIABLE_PASSWORD' . PHP_EOL;
+            $output = 'P4PASSWD=TEST_P4VARIABLE_PASSWORD' . \PHP_EOL;
 
             return true;
         };
@@ -253,7 +253,7 @@ class PerforceTest extends TestCase
         $this->createNewPerforceWithWindowsFlag(false);
         $expectedCommand = 'echo $P4PASSWD';
         $callback = function ($command, &$output) {
-            $output = 'TEST_P4VARIABLE_PASSWORD' . PHP_EOL;
+            $output = 'TEST_P4VARIABLE_PASSWORD' . \PHP_EOL;
 
             return true;
         };
@@ -352,7 +352,7 @@ class PerforceTest extends TestCase
             ->will(
                 $this->returnCallback(
                     function ($command, &$output) {
-                        $output = 'Stream //depot/branch mainline none \'branch\'' . PHP_EOL;
+                        $output = 'Stream //depot/branch mainline none \'branch\'' . \PHP_EOL;
 
                         return true;
                     }
@@ -398,7 +398,7 @@ class PerforceTest extends TestCase
             ->will(
                 $this->returnCallback(
                     function ($command, &$output) {
-                        $output = 'Label 0.0.1 2013/07/31 \'First Label!\'' . PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . PHP_EOL;
+                        $output = 'Label 0.0.1 2013/07/31 \'First Label!\'' . \PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . \PHP_EOL;
 
                         return true;
                     }
@@ -421,7 +421,7 @@ class PerforceTest extends TestCase
             ->will(
                 $this->returnCallback(
                     function ($command, &$output) {
-                        $output = 'Label 0.0.1 2013/07/31 \'First Label!\'' . PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . PHP_EOL;
+                        $output = 'Label 0.0.1 2013/07/31 \'First Label!\'' . \PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . \PHP_EOL;
 
                         return true;
                     }
@@ -674,23 +674,23 @@ class PerforceTest extends TestCase
     {
         $expectedArray = array(
             'Client: composer_perforce_TEST_depot',
-            PHP_EOL,
+            \PHP_EOL,
             'Update:',
-            PHP_EOL,
+            \PHP_EOL,
             'Access:',
             'Owner:  user',
-            PHP_EOL,
+            \PHP_EOL,
             'Description:',
             '  Created by user from composer.',
-            PHP_EOL,
+            \PHP_EOL,
             'Root: path',
-            PHP_EOL,
+            \PHP_EOL,
             'Options:  noallwrite noclobber nocompress unlocked modtime rmdir',
-            PHP_EOL,
+            \PHP_EOL,
             'SubmitOptions:  revertunchanged',
-            PHP_EOL,
+            \PHP_EOL,
             'LineEnd:  local',
-            PHP_EOL,
+            \PHP_EOL,
         );
         if ($withStream) {
             $expectedArray[] = 'Stream:';

@@ -219,7 +219,7 @@ class BaseDependencyCommand extends BaseCommand
      */
     protected function printTree($results, $prefix = '', $level = 1)
     {
-        $count = count($results);
+        $count = \count($results);
         $idx = 0;
         foreach ($results as $result) {
             /**
@@ -229,8 +229,8 @@ class BaseDependencyCommand extends BaseCommand
              */
             list($package, $link, $children) = $result;
 
-            $color = $this->colors[$level % count($this->colors)];
-            $prevColor = $this->colors[($level - 1) % count($this->colors)];
+            $color = $this->colors[$level % \count($this->colors)];
+            $prevColor = $this->colors[($level - 1) % \count($this->colors)];
             $isLast = (++$idx == $count);
             $versionText = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '' : $package->getPrettyVersion();
             $packageText = rtrim(sprintf('<%s>%s</%1$s> %s', $color, $package->getPrettyName(), $versionText));

@@ -152,7 +152,7 @@ class StreamContextFactoryTest extends TestCase
                 'SNI_server_name' => 'example.org',
             ),
         );
-        if (PHP_VERSION_ID >= 50600) {
+        if (\PHP_VERSION_ID >= 50600) {
             unset($expected['ssl']['SNI_server_name']);
         }
         $this->assertEquals($expected, $options);
@@ -160,7 +160,7 @@ class StreamContextFactoryTest extends TestCase
 
     public function testHttpsProxyOverride()
     {
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
         }
 
@@ -183,7 +183,7 @@ class StreamContextFactoryTest extends TestCase
                 'SNI_server_name' => 'example.org',
             ),
         );
-        if (PHP_VERSION_ID >= 50600) {
+        if (\PHP_VERSION_ID >= 50600) {
             unset($expected['ssl']['SNI_server_name']);
         }
         $this->assertEquals($expected, $options);
@@ -196,7 +196,7 @@ class StreamContextFactoryTest extends TestCase
     {
         $_SERVER['http_proxy'] = $proxy;
 
-        if (extension_loaded('openssl')) {
+        if (\extension_loaded('openssl')) {
             $context = StreamContextFactory::getContext('http://example.org', array('http' => array('header' => 'User-Agent: foo')));
             $options = stream_context_get_options($context);
 

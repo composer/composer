@@ -105,7 +105,7 @@ EOT
             $url = $package->getHomepage();
         }
 
-        if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
+        if (!$url || !filter_var($url, \FILTER_VALIDATE_URL)) {
             return false;
         }
 
