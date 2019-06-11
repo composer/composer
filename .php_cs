@@ -30,6 +30,8 @@ return PhpCsFixer\Config::create()
         'header_comment' => array('header' => $header),
         'include' => true,
         'class_attributes_separation' => array('elements' => array('method')),
+        'native_constant_invocation' => true,
+        'native_function_invocation' => array('include' => array('@compiler_optimized')),
         'no_blank_lines_after_class_opening' => true,
         'no_blank_lines_after_phpdoc' => true,
         'no_empty_statement' => true,
