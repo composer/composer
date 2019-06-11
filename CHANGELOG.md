@@ -1,3 +1,9 @@
+### [1.8.6] 2019-06-11
+
+  * Fixed handling of backslash-escapes handling in compoesr.json when using the require command
+  * Fixed create-project not following classmap-authoritative and apcu-autoloader config values
+  * Fixed HHVM version warning showing up in some cases when it was not in use
+
 ### [1.8.5] 2019-04-09
 
   * HHVM 4.0 is no longer compatible with Composer. Please use PHP instead going forward.
@@ -745,6 +751,7 @@
 
   * Initial release
 
+[1.8.6]: https://github.com/composer/composer/compare/1.8.5...1.8.6
 [1.8.5]: https://github.com/composer/composer/compare/1.8.4...1.8.5
 [1.8.4]: https://github.com/composer/composer/compare/1.8.3...1.8.4
 [1.8.3]: https://github.com/composer/composer/compare/1.8.2...1.8.3
