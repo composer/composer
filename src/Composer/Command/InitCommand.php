@@ -795,7 +795,6 @@ EOT
         } catch (\Exception $e) {
             $this->getIO()->writeError('Could not install dependencies. Run `composer install` to see more information.');
         }
-
     }
 
     private function hasDependencies($options)

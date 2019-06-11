@@ -12,9 +12,7 @@
 
 namespace Composer\Test\Repository;
 
-use Composer\Package\Loader\ArrayLoader;
 use Composer\Repository\PathRepository;
-use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
 
 class PathRepositoryTest extends TestCase

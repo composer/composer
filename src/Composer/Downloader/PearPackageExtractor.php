@@ -72,11 +72,11 @@ class PearPackageExtractor
     /**
      * Perform copy actions on files
      *
-     * @param array $files array of copy actions ('from', 'to') with relative paths
+     * @param array  $files  array of copy actions ('from', 'to') with relative paths
      * @param string $source path to source dir.
      * @param string $target path to destination dir
-     * @param array $roles array [role => roleRoot] relative root for files having that role
-     * @param array $vars  list of values can be used for replacement tasks
+     * @param array  $roles  array [role => roleRoot] relative root for files having that role
+     * @param array  $vars   list of values can be used for replacement tasks
      */
     private function copyFiles($files, $source, $target, $roles, $vars)
     {

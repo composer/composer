@@ -160,7 +160,7 @@ final class StreamContextFactory
      * This method fixes the array by moving the content-type header to the end
      *
      * @link https://bugs.php.net/bug.php?id=61548
-     * @param string|array $header
+     * @param  string|array $header
      * @return array
      */
     private static function fixHttpHeaderField($header)

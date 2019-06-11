@@ -83,8 +83,8 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * Find a file by name, returning the one that has the shortest path.
      *
-     * @param \ZipArchive $zip
-     * @param string $filename
+     * @param  \ZipArchive $zip
+     * @param  string      $filename
      * @return bool|int
      */
     private function locateFile(\ZipArchive $zip, $filename)

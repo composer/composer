@@ -44,7 +44,7 @@ class ChannelReader extends BaseChannelReader
     /**
      * Reads PEAR channel through REST interface and builds list of packages
      *
-     * @param string $url PEAR Channel url
+     * @param  string                    $url PEAR Channel url
      * @throws \UnexpectedValueException
      * @return ChannelInfo
      */
@@ -70,9 +70,9 @@ class ChannelReader extends BaseChannelReader
     /**
      * Reads channel supported REST interfaces and selects one of them
      *
-     * @param \SimpleXMLElement $channelXml
-     * @param string[] $supportedVersions supported PEAR REST protocols
-     * @return array|null hash with selected version and baseUrl
+     * @param  \SimpleXMLElement $channelXml
+     * @param  string[]          $supportedVersions supported PEAR REST protocols
+     * @return array|null        hash with selected version and baseUrl
      */
     private function selectRestVersion($channelXml, $supportedVersions)
     {
