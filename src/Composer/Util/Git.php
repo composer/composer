@@ -206,6 +206,7 @@ class Git
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             try {
                 $commandCallable = function ($url) {
+                    $url = $this->wrapperAlias($url);
                     return sprintf('git remote set-url origin %s && git remote update --prune origin', ProcessExecutor::escape($url));
                 };
                 $this->runCommand($commandCallable, $url, $dir);
@@ -220,12 +221,32 @@ class Git
         $this->filesystem->removeDirectory($dir);
 
         $commandCallable = function ($url) use ($dir) {
+            $url = $this->wrapperAlias($url);
             return sprintf('git clone --mirror %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
         };
 
         $this->runCommand($commandCallable, $url, $dir, true);
 
         return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function wrapperAlias($url)
+    {
+        if (!$sshConfig = $this->config->get('ssh-alias')) {
+            return $url;
+        }
+
+        foreach ($sshConfig as $hostName => $aliasName) {
+            if (strpos($url, $hostName) !== false) {
+                $url = str_replace($hostName, $aliasName, $url);
+                break;
+            }
+        }
+
+        return $url;
     }
 
     public function fetchRefOrSyncMirror($url, $dir, $ref)

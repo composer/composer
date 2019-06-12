@@ -69,6 +69,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $this->io->writeError($msg);
 
         $commandCallable = function ($url) use ($path, $command, $cachePath) {
+            $url = $this->gitUtil->wrapperAlias($url);
             return str_replace(
                 array('%url%', '%path%', '%cachePath%'),
                 array(
@@ -121,6 +122,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $command = 'git remote set-url composer %s && git rev-parse --quiet --verify %s || (git fetch composer && git fetch --tags composer)';
 
         $commandCallable = function ($url) use ($command, $ref) {
+            $url = $this->gitUtil->wrapperAlias($url);
             return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($ref.'^{commit}'));
         };
 
@@ -399,6 +401,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
     protected function updateOriginUrl($path, $url)
     {
+        $url = $this->gitUtil->wrapperAlias($url);
         $this->process->execute(sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
         $this->setPushUrl($path, $url);
     }
@@ -412,6 +415,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             if (!in_array('ssh', $protocols, true)) {
                 $pushUrl = 'https://' . $match[1] . '/'.$match[2].'/'.$match[3].'.git';
             }
+
+            $pushUrl = $this->gitUtil->wrapperAlias($pushUrl);
             $cmd = sprintf('git remote set-url --push origin %s', ProcessExecutor::escape($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);
         }
