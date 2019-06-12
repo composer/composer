@@ -1,6 +1,6 @@
 ### [1.8.6] 2019-06-11
 
-  * Fixed handling of backslash-escapes handling in compoesr.json when using the require command
+  * Fixed handling of backslash-escapes handling in composer.json when using the require command
   * Fixed create-project not following classmap-authoritative and apcu-autoloader config values
   * Fixed HHVM version warning showing up in some cases when it was not in use
 
