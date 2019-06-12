@@ -39,6 +39,11 @@ class Event extends BaseEvent
      */
     private $devMode;
 
+  /**
+   * @var BaseEvent
+   */
+    private $originatingEvent;
+
     /**
      * Constructor.
      *
@@ -55,6 +60,7 @@ class Event extends BaseEvent
         $this->composer = $composer;
         $this->io = $io;
         $this->devMode = $devMode;
+        $this->originatingEvent = null;
     }
 
     /**
@@ -85,5 +91,28 @@ class Event extends BaseEvent
     public function isDevMode()
     {
         return $this->devMode;
+    }
+
+    /**
+     * Set the originating event.
+     *
+     * @return \Composer\EventDispatcher\Event|null
+     */
+    public function getOriginatingEvent()
+    {
+      return $this->originatingEvent;
+    }
+
+  /**
+   * Get the originating event.
+   *
+   * @param \Composer\EventDispatcher\Event $event
+   * @return $this
+   */
+    public function setOriginatingEvent(BaseEvent $event)
+    {
+      $this->originatingEvent = $event;
+
+      return $this;
     }
 }
