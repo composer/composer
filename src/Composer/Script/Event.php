@@ -103,16 +103,31 @@ class Event extends BaseEvent
       return $this->originatingEvent;
     }
 
-  /**
-   * Get the originating event.
-   *
-   * @param \Composer\EventDispatcher\Event $event
-   * @return $this
-   */
+    /**
+     * Set the originating event.
+     *
+     * @param \Composer\EventDispatcher\Event $event
+     * @return $this
+     */
     public function setOriginatingEvent(BaseEvent $event)
     {
-      $this->originatingEvent = $event;
+      $this->originatingEvent = $this->calculateOriginatingEvent($event);
 
       return $this;
+    }
+
+    /**
+     * Returns the upper-most event in chain.
+     *
+     * @param \Composer\EventDispatcher\Event $event
+     * @return \Composer\EventDispatcher\Event
+     */
+    private function calculateOriginatingEvent(BaseEvent $event)
+    {
+      if ($event instanceof Event && $event->getOriginatingEvent()) {
+        return $this->calculateOriginatingEvent($event->getOriginatingEvent());
+      }
+
+      return $event;
     }
 }
