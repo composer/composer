@@ -25,6 +25,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\IO\IOInterface;
 
 /**
  * @author Jérémy Romey <jeremy@free-agent.fr>
@@ -73,6 +74,7 @@ If you do not specify a version constraint, composer will choose a suitable one 
 
 If you do not want to install the new dependencies immediately you can call it with --no-update
 
+Read more at https://getcomposer.org/doc/03-cli.md#require
 EOT
             )
         ;
@@ -159,14 +161,25 @@ EOT
         if ($input->getOption('no-update')) {
             return 0;
         }
+
+        try {
+            return $this->doUpdate($input, $output, $io, $requirements);
+        } catch (\Exception $e) {
+            $this->revertComposerFile(false);
+            throw $e;
+        }
+    }
+
+    private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements)
+    {
+        // Update packages
+        $this->resetComposer();
+        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+
         $updateDevMode = !$input->getOption('update-no-dev');
         $optimize = $input->getOption('optimize-autoloader') || $composer->getConfig()->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
         $apcu = $input->getOption('apcu-autoloader') || $composer->getConfig()->get('apcu-autoloader');
-
-        // Update packages
-        $this->resetComposer();
-        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);

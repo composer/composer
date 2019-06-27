@@ -47,7 +47,7 @@ class EventDispatcher
     protected $io;
     protected $loader;
     protected $process;
-    protected $listeners;
+    protected $listeners = array();
     private $eventStack;
 
     /**
@@ -173,6 +173,9 @@ class EventDispatcher
 
                     throw new \RuntimeException('Subscriber '.$className.'::'.$callable[1].' for event '.$event->getName().' is not callable, make sure the function is defined and public');
                 }
+                if (is_array($callable) && (is_string($callable[0]) || is_object($callable[0])) && is_string($callable[1])) {
+                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1] ), true, IOInterface::VERBOSE);
+                }
                 $event = $this->checkListenerExpectedEvent($callable, $event);
                 $return = false === call_user_func($callable, $event) ? 1 : 0;
             } elseif ($this->isComposerScript($callable)) {
@@ -197,6 +200,7 @@ class EventDispatcher
                     }
 
                     try {
+                        /** @var InstallerEvent $event */
                         $return = $this->dispatch($scriptName, new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode(), $args, $flags));
                     } catch (ScriptExecutionException $e) {
                         $this->io->writeError(sprintf('<error>Script %s was called via %s</error>', $callable, $event->getName()), true, IOInterface::QUIET);
@@ -366,6 +370,22 @@ class EventDispatcher
     }
 
     /**
+     * @param callable|object $listener A callable or an object instance for which all listeners should be removed
+     */
+    public function removeListener($listener)
+    {
+        foreach ($this->listeners as $eventName => $priorities) {
+            foreach ($priorities as $priority => $listeners) {
+                foreach ($listeners as $index => $candidate) {
+                    if ($listener === $candidate || (is_array($candidate) && is_object($listener) && $candidate[0] === $listener)) {
+                        unset($this->listeners[$eventName][$priority][$index]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Adds object methods as listeners for the events in getSubscribedEvents
      *
      * @see EventSubscriberInterface
@@ -481,7 +501,7 @@ class EventDispatcher
      *
      * @param  Event             $event
      * @throws \RuntimeException
-     * @return number
+     * @return int
      */
     protected function pushEvent(Event $event)
     {

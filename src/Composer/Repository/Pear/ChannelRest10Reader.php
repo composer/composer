@@ -150,7 +150,7 @@ class ChannelRest10Reader extends BaseChannelReader
      * @param string $baseUrl
      * @param string $packageName
      * @param string $version
-     * @return DependencyInfo[]
+     * @return DependencyInfo
      */
     private function readPackageReleaseDependencies($baseUrl, $packageName, $version)
     {

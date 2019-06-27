@@ -304,7 +304,7 @@ class Svn
             $this->createAuthFromUrl();
         }
 
-        return $this->hasAuth;
+        return (bool) $this->hasAuth;
     }
 
     /**

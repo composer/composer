@@ -42,7 +42,7 @@ class SolverTest extends TestCase
         $this->repoInstalled = new InstalledArrayRepository;
         $this->repoLocked = new ArrayRepository;
 
-        $this->request = new Request($this->repoSet);
+        $this->request = new Request();
         $this->policy = new DefaultPolicy;
     }
 
@@ -901,6 +901,8 @@ class SolverTest extends TestCase
         $this->reposComplete();
 
         $this->request->install('A');
+
+        $this->createSolver();
 
         // check correct setup for assertion later
         $this->assertFalse($this->solver->testFlagLearnedPositiveLiteral);

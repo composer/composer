@@ -72,6 +72,7 @@ in the current directory.
 
 <info>php composer.phar init</info>
 
+Read more at https://getcomposer.org/doc/03-cli.md#init
 EOT
             )
         ;
@@ -694,15 +695,22 @@ EOT
     {
         // find the latest version allowed in this repo set
         $versionSelector = new VersionSelector($this->getRepositorySet($input, $minimumStability));
-        $package = $versionSelector->findBestCandidate($name, $requiredVersion, $phpVersion, $preferredStability);
+        $ignorePlatformReqs = $input->hasOption('ignore-platform-reqs') && $input->getOption('ignore-platform-reqs');
 
-        // retry without phpVersion if platform requirements are ignored in case nothing was found
-        if ($input->hasOption('ignore-platform-reqs') && $input->getOption('ignore-platform-reqs')) {
+        // ignore phpVersion if platform requirements are ignored
+        if ($ignorePlatformReqs) {
             $phpVersion = null;
-            $package = $versionSelector->findBestCandidate($name, $requiredVersion, $phpVersion, $preferredStability);
         }
 
+        $package = $versionSelector->findBestCandidate($name, $requiredVersion, $phpVersion, $preferredStability);
+
         if (!$package) {
+            // platform packages can not be found in the pool in versions other than the local platform's has
+            // so if platform reqs are ignored we just take the user's word for it
+            if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
+                return array($name, $requiredVersion ?: '*');
+            }
+
             // Check whether the PHP version was the problem
             if ($phpVersion && $versionSelector->findBestCandidate($name, $requiredVersion, null, $preferredStability)) {
                 throw new \InvalidArgumentException(sprintf(

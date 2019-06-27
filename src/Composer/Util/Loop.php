@@ -20,7 +20,7 @@ use React\Promise\Promise;
  */
 class Loop
 {
-    private $io;
+    private $httpDownloader;
 
     public function __construct(HttpDownloader $httpDownloader)
     {
@@ -29,6 +29,7 @@ class Loop
 
     public function wait(array $promises)
     {
+        /** @var \Exception|null */
         $uncaught = null;
 
         \React\Promise\all($promises)->then(

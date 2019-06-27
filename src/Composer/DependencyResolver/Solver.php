@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\IO\IOInterface;
+use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositorySet;
@@ -39,7 +40,7 @@ class Solver
     protected $watchGraph;
     /** @var Decisions */
     protected $decisions;
-    /** @var Package[] */
+    /** @var PackageInterface[] */
     protected $fixedMap;
 
     /** @var int */
@@ -659,7 +660,7 @@ class Solver
         /**
          * @todo this makes $disableRules always false; determine the rationale and possibly remove dead code?
          */
-        $disableRules = array();
+        $disableRules = false;
 
         $level = 1;
         $systemLevel = $level + 1;

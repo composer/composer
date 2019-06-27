@@ -189,7 +189,7 @@ composer run-script [--dev] [--no-dev] script
 ```
 
 For example `composer run-script post-install-cmd` will run any
-**post-install-cmd** scripts that have been defined.
+**post-install-cmd** scripts and [plugins](plugins.md) that have been defined.
 
 You can also give additional arguments to the script handler by appending `--`
 followed by the handler arguments. e.g.
@@ -220,6 +220,56 @@ to the `phpunit` script.
 > on top of the PATH environment variable so that binaries of dependencies
 > are easily accessible. In this example no matter if the `phpunit` binary is
 > actually in `vendor/bin/phpunit` or `bin/phpunit` it will be found and executed.
+
+Although Composer is not intended to manage long-running processes and other
+such aspects of PHP projects, it can sometimes be handy to disable the process
+timeout on custom commands. This timeout defaults to 300 seconds and can be
+overridden in a variety of ways depending on the desired effect:
+
+- disable it for all commands using the config key `process-timeout`,
+- disable it for the current or future invocations of composer using the
+  environment variable `COMPOSER_PROCESS_TIMEOUT`,
+- for a specific invocation using the `--timeout` flag of the `run-script` command,
+- using a static helper for specific scripts.
+
+To disable the timeout for specific scripts with the static helper directly in
+composer.json:
+
+```json
+{
+    "scripts": {
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "phpunit"
+        ]
+    }
+}
+```
+
+To disable the timeout for every script on a given project, you can use the
+composer.json configuration:
+
+```json
+{
+    "config": {
+        "process-timeout": 0
+    }
+}
+```
+
+It's also possible to set the global environment variable to disable the timeout
+of all following scripts in the current terminal environment:
+
+```
+export COMPOSER_PROCESS_TIMEOUT=0
+```
+
+To disable the timeout of a single script call, you must use the `run-script` composer
+command and specify the `--timeout` parameter:
+
+```
+composer run-script --timeout=0 test
+```
 
 ## Referencing scripts
 

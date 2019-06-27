@@ -17,7 +17,9 @@ use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
 use Composer\Util\Http\Response;
-use Psr\Log\LoggerInterface;
+use Composer\Composer;
+use Composer\Package\Version\VersionParser;
+use Composer\Semver\Constraint\Constraint;
 use React\Promise\Promise;
 
 /**
@@ -58,8 +60,7 @@ class HttpDownloader
         // Setup TLS options
         // The cafile option can be set via config.json
         if ($disableTls === false) {
-            $logger = $io instanceof LoggerInterface ? $io : null;
-            $this->options = StreamContextFactory::getTlsDefaults($options, $logger);
+            $this->options = StreamContextFactory::getTlsDefaults($options, $io);
         } else {
             $this->disableTls = true;
         }
@@ -119,7 +120,7 @@ class HttpDownloader
     /**
      * Merges new options
      *
-     * @return array $options
+     * @return void
      */
     public function setOptions(array $options)
     {
@@ -314,5 +315,25 @@ class HttpDownloader
         unset($this->jobs[$index]);
 
         return $resp;
+    }
+
+    public static function outputWarnings(IOInterface $io, $url, $data)
+    {
+        foreach (array('warning', 'info') as $type) {
+            if (empty($data[$type])) {
+                continue;
+            }
+
+            if (!empty($data[$type . '-versions'])) {
+                $versionParser = new VersionParser();
+                $constraint = $versionParser->parseConstraints($data[$type . '-versions']);
+                $composer = new Constraint('==', $versionParser->normalize(Composer::getVersion()));
+                if (!$constraint->matches($composer)) {
+                    continue;
+                }
+            }
+
+            $io->writeError('<'.$type.'>'.ucfirst($type).' from '.$url.': '.$data[$type].'</'.$type.'>');
+        }
     }
 }

@@ -25,8 +25,10 @@ matrix:
     - php: 7.1
     - php: 7.2
     - php: 7.3
+      env: PHPSTAN=1
     - php: 7.3
-      env: deps=high
+      env:
+        - deps=high
     - php: nightly
   fast_finish: true
   allow_failures:
@@ -58,6 +60,11 @@ before_script:
 script:
   # run test suite directories in parallel using GNU parallel
   - ls -d tests/Composer/Test/* | grep -v TestCase.php | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && exit 1);'
+  # Run PHPStan
+  - if [[ $PHPSTAN == "1" ]]; then
+      composer require --dev phpstan/phpstan-shim:^0.11 --ignore-platform-reqs &&
+      vendor/bin/phpstan.phar analyse src tests --configuration=phpstan/config.neon --autoload-file=phpstan/autoload.php;
+    fi
 
 before_deploy:
   - php -d phar.readonly=0 bin/compile

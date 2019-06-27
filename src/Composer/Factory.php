@@ -413,7 +413,7 @@ class Factory
     /**
      * @param  IOInterface $io             IO instance
      * @param  bool        $disablePlugins Whether plugins should not be loaded
-     * @return Composer
+     * @return Composer|null
      */
     public static function createGlobal(IOInterface $io, $disablePlugins = false)
     {

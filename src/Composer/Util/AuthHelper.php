@@ -71,12 +71,11 @@ class AuthHelper
      * @param string $origin
      * @param int $statusCode HTTP status code that triggered this call
      * @param string|null $reason a message/description explaining why this was called
-     * @param string $warning an authentication warning returned by the server as {"warning": ".."}, if present
      * @param string[] $headers
-     * @return array containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
+     * @return array|null containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
      *               retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
      */
-    public function promptAuthIfNeeded($url, $origin, $statusCode, $reason = null, $warning = null, $headers = array())
+    public function promptAuthIfNeeded($url, $origin, $statusCode, $reason = null, $headers = array())
     {
         $storeAuth = false;
         $retry = false;
@@ -173,10 +172,6 @@ class AuthHelper
                 throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
             }
 
-            $this->io->overwriteError('');
-            if ($warning) {
-                $this->io->writeError('    <warning>'.$warning.'</warning>');
-            }
             $this->io->writeError('    Authentication required (<info>'.parse_url($url, PHP_URL_HOST).'</info>):');
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');

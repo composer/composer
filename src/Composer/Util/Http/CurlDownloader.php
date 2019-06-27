@@ -20,7 +20,7 @@ use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
-use Psr\Log\LoggerInterface;
+use Composer\Util\HttpDownloader;
 use React\Promise\Promise;
 
 /**
@@ -51,11 +51,9 @@ class CurlDownloader
         'http' => array(
             'method' => CURLOPT_CUSTOMREQUEST,
             'content' => CURLOPT_POSTFIELDS,
-            'proxy' => CURLOPT_PROXY,
             'header' => CURLOPT_HTTPHEADER,
         ),
         'ssl' => array(
-            'ciphers' => CURLOPT_SSL_CIPHER_LIST,
             'cafile' => CURLOPT_CAINFO,
             'capath' => CURLOPT_CAPATH,
         ),
@@ -251,23 +249,27 @@ class CurlDownloader
 
                 // prepare response object
                 if ($job['filename']) {
-                    fclose($job['bodyHandle']);
-                    $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $job['filename'].'~');
+                    $contents = $job['filename'].'~';
+                    if ($statusCode >= 300) {
+                        rewind($job['bodyHandle']);
+                        $contents = stream_get_contents($job['bodyHandle']);
+                    }
+                    $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
                     $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
                 } else {
                     rewind($job['bodyHandle']);
                     $contents = stream_get_contents($job['bodyHandle']);
-                    fclose($job['bodyHandle']);
                     $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
                     $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
+                }
+                fclose($job['bodyHandle']);
+
+                if ($response->getStatusCode() >= 400 && $response->getHeader('content-type') === 'application/json') {
+                    HttpDownloader::outputWarnings($this->io, $job['origin'], json_decode($response->getBody(), true));
                 }
 
                 $result = $this->isAuthenticatedRetryNeeded($job, $response);
                 if ($result['retry']) {
-                    if ($job['filename']) {
-                        @unlink($job['filename'].'~');
-                    }
-
                     $this->restartJob($job, $job['url'], array('storeAuth' => $result['storeAuth']));
                     continue;
                 }
@@ -372,15 +374,7 @@ class CurlDownloader
     private function isAuthenticatedRetryNeeded(array $job, Response $response)
     {
         if (in_array($response->getStatusCode(), array(401, 403)) && $job['attributes']['retryAuthFailure']) {
-            $warning = null;
-            if ($response->getHeader('content-type') === 'application/json') {
-                $data = json_decode($response->getBody(), true);
-                if (!empty($data['warning'])) {
-                    $warning = $data['warning'];
-                }
-            }
-
-            $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $warning, $response->getHeaders());
+            $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $response->getHeaders());
 
             if ($result['retry']) {
                 return $result;
@@ -426,6 +420,10 @@ class CurlDownloader
 
     private function restartJob(array $job, $url, array $attributes = array())
     {
+        if ($job['filename']) {
+            @unlink($job['filename'].'~');
+        }
+
         $attributes = array_merge($job['attributes'], $attributes);
         $origin = Url::getOrigin($this->config, $url);
 
@@ -434,6 +432,10 @@ class CurlDownloader
 
     private function failResponse(array $job, Response $response, $errorMessage)
     {
+        if ($job['filename']) {
+            @unlink($job['filename'].'~');
+        }
+
         return new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')', $response->getStatusCode());
     }
 

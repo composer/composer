@@ -1,7 +1,7 @@
 {
     "name": "composer/composer",
     "type": "library",
-    "description": "Composer helps you declare, manage and install dependencies of PHP projects, ensuring you have the right stack everywhere.",
+    "description": "Composer helps you declare, manage and install dependencies of PHP projects. It ensures you have the right stack everywhere.",
     "keywords": [
         "package",
         "dependency",
@@ -56,7 +56,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.9-dev"
+            "dev-master": "2.0-dev"
         }
     },
     "autoload": {

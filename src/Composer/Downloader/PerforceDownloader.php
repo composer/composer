@@ -78,7 +78,7 @@ class PerforceDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
-        $this->doDownload($target, $path, $url);
+        $this->doInstall($target, $path, $url);
     }
 
     /**
@@ -88,7 +88,7 @@ class PerforceDownloader extends VcsDownloader
     {
         $this->io->writeError('Perforce driver does not check for local changes before overriding', true);
 
-        return;
+        return null;
     }
 
     /**

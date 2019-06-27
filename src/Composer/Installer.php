@@ -399,6 +399,8 @@ class Installer
         $solver = new Solver($policy, $pool, $this->io);
         try {
             $lockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
+            $ruleSetSize = $solver->getRuleSetSize();
+            $solver = null;
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
             $this->io->writeError($e->getMessage());
@@ -413,7 +415,7 @@ class Installer
         //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $lockedRepository, $request, $lockTransaction);
 
         $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
-        $this->io->writeError("Analyzed ".$solver->getRuleSetSize()." rules to resolve dependencies", true, IOInterface::VERBOSE);
+        $this->io->writeError("Analyzed ".$ruleSetSize." rules to resolve dependencies", true, IOInterface::VERBOSE);
 
         if (!$lockTransaction->getOperations()) {
             $this->io->writeError('Nothing to modify in lock file');
@@ -559,6 +561,7 @@ class Installer
             $solver = new Solver($policy, $pool, $this->io);
             try {
                 $lockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
+                $solver = null;
 
                 // installing the locked packages on this platfom resulted in lock modifying operations, there wasn't a conflict, but the lock file as-is seems to not work on this system
                 if (0 !== count($lockTransaction->getOperations())) {

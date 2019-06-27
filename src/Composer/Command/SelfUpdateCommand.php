@@ -60,6 +60,7 @@ versions of composer and if found, installs the latest.
 
 <info>php composer.phar self-update</info>
 
+Read more at https://getcomposer.org/doc/03-cli.md#self-update-selfupdate-
 EOT
             )
         ;

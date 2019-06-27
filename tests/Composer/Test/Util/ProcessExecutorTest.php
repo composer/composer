@@ -61,11 +61,25 @@ class ProcessExecutorTest extends TestCase
         ProcessExecutor::setTimeout(60);
     }
 
-    public function testHidePasswords()
+    /**
+     * @dataProvider hidePasswordProvider
+     */
+    public function testHidePasswords($command, $expectedCommandOutput)
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
-        $process->execute('echo https://foo:bar@example.org/ && echo http://foo@example.org && echo http://abcdef1234567890234578:x-oauth-token@github.com/', $output);
-        $this->assertEquals('Executing command (CWD): echo https://foo:***@example.org/ && echo http://foo@example.org && echo http://***:***@github.com/', trim($buffer->getOutput()));
+        $process->execute($command, $output);
+        $this->assertEquals('Executing command (CWD): ' . $expectedCommandOutput, trim($buffer->getOutput()));
+    }
+
+    public function hidePasswordProvider()
+    {
+        return array(
+            array('echo https://foo:bar@example.org/', 'echo https://foo:***@example.org/'),
+            array('echo http://foo@example.org', 'echo http://foo@example.org'),
+            array('echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://***:***@github.com/'),
+            array("svn ls --verbose --non-interactive  --username 'foo' --password 'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"),
+            array("svn ls --verbose --non-interactive  --username 'foo' --password 'bar \'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"),
+        );
     }
 
     public function testDoesntHidePorts()

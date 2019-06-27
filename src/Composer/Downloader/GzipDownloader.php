@@ -28,6 +28,7 @@ use Composer\IO\IOInterface;
  */
 class GzipDownloader extends ArchiveDownloader
 {
+    /** @var ProcessExecutor */
     protected $process;
 
     public function __construct(IOInterface $io, Config $config, HttpDownloader $downloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null)

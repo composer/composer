@@ -49,6 +49,7 @@ class SearchCommand extends BaseCommand
 The search command searches for packages by its name
 <info>php composer.phar search symfony composer</info>
 
+Read more at https://getcomposer.org/doc/03-cli.md#search
 EOT
             )
         ;

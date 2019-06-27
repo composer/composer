@@ -76,7 +76,7 @@ interface PackageInterface
     /**
      * Returns the package targetDir property
      *
-     * @return string The package targetDir
+     * @return string|null The package targetDir
      */
     public function getTargetDir();
 
@@ -358,4 +358,32 @@ interface PackageInterface
      * @return array
      */
     public function getTransportOptions();
+
+    /**
+     * @param string $reference
+     *
+     * @return void
+     */
+    public function setSourceReference($reference);
+
+    /**
+     * @param string $url
+     *
+     * @return void
+     */
+    public function setDistUrl($url);
+
+    /**
+     * @param string $type
+     *
+     * @return void
+     */
+    public function setDistType($type);
+
+    /**
+     * @param string $reference
+     *
+     * @return void
+     */
+    public function setDistReference($reference);
 }

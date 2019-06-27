@@ -14,6 +14,7 @@ namespace Composer\Util;
 
 use Composer\Composer;
 use Composer\CaBundle\CaBundle;
+use Composer\Downloader\TransportException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -163,7 +164,7 @@ final class StreamContextFactory
         if (!isset($options['http']['header']) || false === stripos(implode('', $options['http']['header']), 'user-agent')) {
             $options['http']['header'][] = sprintf(
                 'User-Agent: Composer/%s (%s; %s; %s; %s%s)',
-                Composer::VERSION === '@package_version@' ? Composer::SOURCE_VERSION : Composer::VERSION,
+                Composer::getVersion(),
                 function_exists('php_uname') ? php_uname('s') : 'Unknown',
                 function_exists('php_uname') ? php_uname('r') : 'Unknown',
                 $phpVersion,
