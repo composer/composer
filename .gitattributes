@@ -10,3 +10,8 @@
 
 # Exclude non-essential files from dist
 /tests export-ignore
+.github export-ignore
+.php_cs export-ignore
+.travis.yml export-ignore
+appveyor.yml export-ignore
+phpunit.xml.dist export-ignore

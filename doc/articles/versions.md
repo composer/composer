@@ -32,7 +32,7 @@ repository:*
 v1
 v2
 my-feature
-nother-feature
+another-feature
 
 ~/my-library$ git tag
 v1.0

@@ -1,3 +1,17 @@
+### [1.8.6] 2019-06-11
+
+  * Fixed handling of backslash-escapes handling in composer.json when using the require command
+  * Fixed create-project not following classmap-authoritative and apcu-autoloader config values
+  * Fixed HHVM version warning showing up in some cases when it was not in use
+
+### [1.8.5] 2019-04-09
+
+  * HHVM 4.0 is no longer compatible with Composer. Please use PHP instead going forward.
+  * Added forward compatibility with upcoming 2.0 changes
+  * Fixed support for PHP 7.3-style heredoc/nowdoc syntax changes in autoload generation
+  * Fixed require command usage when combined with --ignore-platform-reqs
+  * Fixed and cleaned up various Windows junctions handling issues
+
 ### [1.8.4] 2019-02-11
 
   * Fixed long standing solver bug leading to odd solving issues in edge cases, see #7946
@@ -737,6 +751,8 @@
 
   * Initial release
 
+[1.8.6]: https://github.com/composer/composer/compare/1.8.5...1.8.6
+[1.8.5]: https://github.com/composer/composer/compare/1.8.4...1.8.5
 [1.8.4]: https://github.com/composer/composer/compare/1.8.3...1.8.4
 [1.8.3]: https://github.com/composer/composer/compare/1.8.2...1.8.3
 [1.8.2]: https://github.com/composer/composer/compare/1.8.1...1.8.2

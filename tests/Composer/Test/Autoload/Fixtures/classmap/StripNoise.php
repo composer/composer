@@ -7,42 +7,81 @@ namespace Foo;
  */
 class StripNoise
 {
-    public function test()
+    public function test_heredoc()
     {
-        return <<<A
-class Fail2
+        return <<<HEREDOC
+class FailHeredocBasic
 {
-
 }
-A
-. <<<  AB
-class Fail3
+HEREDOC . <<<  WHITESPACE
+class FailHeredocWhitespace
 {
-
 }
-AB
-. <<<'TEST'
-class Fail4
+WHITESPACE . <<<"DOUBLEQUOTES"
+class FailHeredocDoubleQuotes
 {
-
 }
-TEST
-. <<< 'ANOTHER'
-class Fail5
+DOUBLEQUOTES . <<<	"DOUBLEQUOTESTABBED"
+class FailHeredocDoubleQuotesTabbed
 {
-
 }
-ANOTHER
-. <<<	'ONEMORE'
-class Fail6
-{
-
-}
-ONEMORE;
+DOUBLEQUOTESTABBED . <<<HEREDOCPHP73
+  class FailHeredocPHP73
+  {
+  }
+  HEREDOCPHP73;
     }
 
-    public function test2()
+    public function test_nowdoc()
     {
-        $class = 'class Fail4 {}';
+        return <<<'NOWDOC'
+class FailNowdocBasic
+{
+}
+NOWDOC . <<<  'WHITESPACE'
+class FailNowdocWhitespace
+{
+}
+WHITESPACE . <<<	'NOWDOCTABBED'
+class FailNowdocTabbed
+{
+}
+NOWDOCTABBED . <<<'NOWDOCPHP73'
+  class FailNowdocPHP73
+  {
+  }
+  NOWDOCPHP73;
+    }
+
+    public function test_followed_by_parentheses()
+    {
+        return array(<<<PARENTHESES
+            class FailParentheses
+            {
+            }
+            PARENTHESES);
+    }
+
+    public function test_followed_by_comma()
+    {
+        return array(1, 2, <<<COMMA
+            class FailComma
+            {
+            }
+            COMMA, 3, 4);
+    }
+
+    public function test_followed_by_period()
+    {
+        return <<<PERIOD
+            class FailPeriod
+            {
+            }
+            PERIOD.'?>';
+    }
+
+    public function test_simple_string()
+    {
+        return 'class FailSimpleString {}';
     }
 }

@@ -21,6 +21,7 @@ use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Script\ScriptEvents;
+use Composer\Util\PackageSorter;
 
 /**
  * @author Igor Wiedler <igor@wiedler.ch>
@@ -545,7 +546,7 @@ EOF;
             }
         }
 
-        if (preg_match('/\.phar.+$/', $path)) {
+        if (strpos($path, '.phar') !== false) {
             $baseDir = "'phar://' . " . $baseDir;
         }
 
@@ -769,10 +770,14 @@ HEADER;
         $filesystem = new Filesystem();
 
         $vendorPathCode = ' => ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true) . " . '/";
+        $vendorPharPathCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true) . " . '/";
         $appBaseDirCode = ' => ' . $filesystem->findShortestPathCode(realpath($targetDir), $basePath, true, true) . " . '/";
+        $appBaseDirPharCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(realpath($targetDir), $basePath, true, true) . " . '/";
 
         $absoluteVendorPathCode = ' => ' . substr(var_export(rtrim($vendorDir, '\\/') . '/', true), 0, -1);
+        $absoluteVendorPharPathCode = ' => ' . substr(var_export(rtrim('phar://' . $vendorDir, '\\/') . '/', true), 0, -1);
         $absoluteAppBaseDirCode = ' => ' . substr(var_export(rtrim($baseDir, '\\/') . '/', true), 0, -1);
+        $absoluteAppBaseDirPharCode = ' => ' . substr(var_export(rtrim('phar://' . $baseDir, '\\/') . '/', true), 0, -1);
 
         $initializer = '';
         $prefix = "\0Composer\Autoload\ClassLoader\0";
@@ -795,9 +800,15 @@ HEADER;
                 // See https://bugs.php.net/68057
                 $staticPhpVersion = 70000;
             }
-            $value = var_export($value, true);
-            $value = str_replace($absoluteVendorPathCode, $vendorPathCode, $value);
-            $value = str_replace($absoluteAppBaseDirCode, $appBaseDirCode, $value);
+            $value = strtr(
+                var_export($value, true),
+                array(
+                    $absoluteVendorPathCode => $vendorPathCode,
+                    $absoluteVendorPharPathCode => $vendorPharPathCode,
+                    $absoluteAppBaseDirCode => $appBaseDirCode,
+                    $absoluteAppBaseDirPharCode => $appBaseDirPharCode,
+                )
+            );
             $value = ltrim(preg_replace('/^ */m', '    $0$0', $value));
 
             $file .= sprintf("    public static $%s = %s;\n\n", $prop, $value);
@@ -963,80 +974,21 @@ INITIALIZER;
     {
         $packages = array();
         $paths = array();
-        $usageList = array();
 
         foreach ($packageMap as $item) {
             list($package, $path) = $item;
             $name = $package->getName();
             $packages[$name] = $package;
             $paths[$name] = $path;
-
-            foreach (array_merge($package->getRequires(), $package->getDevRequires()) as $link) {
-                $target = $link->getTarget();
-                $usageList[$target][] = $name;
-            }
         }
 
-        $computing = array();
-        $computed = array();
-        $computeImportance = function ($name) use (&$computeImportance, &$computing, &$computed, $usageList) {
-            // reusing computed importance
-            if (isset($computed[$name])) {
-                return $computed[$name];
-            }
+        $sortedPackages = PackageSorter::sortPackages($packages);
 
-            // canceling circular dependency
-            if (isset($computing[$name])) {
-                return 0;
-            }
-
-            $computing[$name] = true;
-            $weight = 0;
-
-            if (isset($usageList[$name])) {
-                foreach ($usageList[$name] as $user) {
-                    $weight -= 1 - $computeImportance($user);
-                }
-            }
-
-            unset($computing[$name]);
-            $computed[$name] = $weight;
-
-            return $weight;
-        };
-
-        $weightList = array();
-
-        foreach ($packages as $name => $package) {
-            $weight = $computeImportance($name);
-            $weightList[$name] = $weight;
-        }
-
-        $stable_sort = function (&$array) {
-            static $transform, $restore;
-
-            $i = 0;
-
-            if (!$transform) {
-                $transform = function (&$v, $k) use (&$i) {
-                    $v = array($v, ++$i, $k, $v);
-                };
-
-                $restore = function (&$v, $k) {
-                    $v = $v[3];
-                };
-            }
-
-            array_walk($array, $transform);
-            asort($array);
-            array_walk($array, $restore);
-        };
-
-        $stable_sort($weightList);
 
         $sortedPackageMap = array();
 
-        foreach (array_keys($weightList) as $name) {
+        foreach ($sortedPackages as $package) {
+            $name = $package->getName();
             $sortedPackageMap[] = array($packages[$name], $paths[$name]);
         }
 
