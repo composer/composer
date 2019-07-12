@@ -227,7 +227,9 @@ class ComposerRepositoryTest extends TestCase
         $repository = new ComposerRepository(
             array('url' => $repositoryUrl),
             new NullIO(),
-            FactoryMock::createConfig()
+            FactoryMock::createConfig(),
+            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
+            $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
 
         $object = new \ReflectionObject($repository);
