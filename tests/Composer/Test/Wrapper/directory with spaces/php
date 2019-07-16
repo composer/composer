@@ -1,0 +1,4 @@
+#!/usr/bin/env php
+<?php
+
+echo 'I was called with ' . implode(' ', array_slice($_SERVER['argv'], 1));
