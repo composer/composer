@@ -186,7 +186,6 @@ abstract class Rule
                             }
                         }
 
-
                         if (!($package instanceof CompletePackage)) {
                             return $text . ' -> your PHP version ('.phpversion().') does not satisfy that requirement.';
                         }

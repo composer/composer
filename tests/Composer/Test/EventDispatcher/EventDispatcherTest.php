@@ -14,7 +14,6 @@ namespace Composer\Test\EventDispatcher;
 
 use Composer\EventDispatcher\Event;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Installer\InstallerEvents;
 use Composer\Config;
 use Composer\Composer;
@@ -282,10 +281,10 @@ class EventDispatcherTest extends TestCase
             ->setConstructorArgs(array(
                 $composer = $this->createComposerInstance(),
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
-                $process
+                $process,
             ))
             ->setMethods(array(
-                'getListeners'
+                'getListeners',
             ))
             ->getMock();
 
@@ -296,11 +295,11 @@ class EventDispatcherTest extends TestCase
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
             ->will($this->returnCallback(function (Event $event) {
-                if($event->getName() === 'hello') {
+                if ($event->getName() === 'hello') {
                     return array('echo Hello');
                 }
 
-                if($event->getName() === 'helloWorld') {
+                if ($event->getName() === 'helloWorld') {
                     return array('@hello World');
                 }
 

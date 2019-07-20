@@ -206,7 +206,7 @@ class Filesystem
                 usleep(350000);
                 $unlinked = @$this->unlinkImplementation($path);
             }
-            
+
             if (!$unlinked) {
                 $error = error_get_last();
                 $message = 'Could not delete '.$path.': ' . @$error['message'];
@@ -237,7 +237,7 @@ class Filesystem
                 usleep(350000);
                 $deleted = @rmdir($path);
             }
-            
+
             if (!$deleted) {
                 $error = error_get_last();
                 $message = 'Could not delete '.$path.': ' . @$error['message'];
@@ -276,8 +276,8 @@ class Filesystem
     /**
      * Copies a file or directory from $source to $target.
      *
-     * @param string $source
-     * @param string $target
+     * @param  string $source
+     * @param  string $target
      * @return bool
      */
     public function copy($source, $target)

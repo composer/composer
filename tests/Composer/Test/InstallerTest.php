@@ -29,7 +29,6 @@ use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Formatter\OutputFormatter;
-use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
 
 class InstallerTest extends TestCase

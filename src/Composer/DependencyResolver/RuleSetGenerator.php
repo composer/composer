@@ -50,7 +50,7 @@ class RuleSetGenerator
      *                                      reason for generating this rule
      * @param  mixed            $reasonData Any data, e.g. the requirement name,
      *                                      that goes with the reason
-     * @return Rule|null             The generated rule or null if tautological
+     * @return Rule|null        The generated rule or null if tautological
      */
     protected function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
     {
@@ -117,7 +117,7 @@ class RuleSetGenerator
      *                                      reason for generating this rule
      * @param  mixed            $reasonData Any data, e.g. the package name, that
      *                                      goes with the reason
-     * @return Rule|null             The generated rule
+     * @return Rule|null        The generated rule
      */
     protected function createRule2Literals(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
     {
@@ -249,7 +249,6 @@ class RuleSetGenerator
                     if ($conflictMatch === Pool::MATCH || $conflictMatch === Pool::MATCH_REPLACE) {
                         $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $possibleConflict, Rule::RULE_PACKAGE_CONFLICT, $link));
                     }
-
                 }
             }
 

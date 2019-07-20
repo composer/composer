@@ -13,7 +13,6 @@
 namespace Composer\Test;
 
 use Composer\Config;
-use Composer\Test\TestCase;
 
 class DefaultConfigTest extends TestCase
 {

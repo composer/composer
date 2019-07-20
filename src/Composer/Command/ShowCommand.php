@@ -783,9 +783,9 @@ EOT
     /**
      * Generate the package tree
      *
-     * @param  PackageInterface $package
-     * @param  RepositoryInterface     $installedRepo
-     * @param  RepositoryInterface     $distantRepos
+     * @param  PackageInterface    $package
+     * @param  RepositoryInterface $installedRepo
+     * @param  RepositoryInterface $distantRepos
      * @return array
      */
     protected function generatePackageTree(
