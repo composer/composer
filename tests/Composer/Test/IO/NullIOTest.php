@@ -24,7 +24,7 @@ class NullIOTest extends TestCase
         $this->assertFalse($io->isInteractive());
     }
 
-    public function testhasAuthentication()
+    public function testHasAuthentication()
     {
         $io = new NullIO();
 
@@ -38,7 +38,7 @@ class NullIOTest extends TestCase
         $this->assertNull($io->askAndHideAnswer('foo'));
     }
 
-    public function testgetAuthentications()
+    public function testGetAuthentications()
     {
         $io = new NullIO();
 
