@@ -58,7 +58,7 @@ class Composer
     public static function getVersion()
     {
         // no replacement done, this must be a source checkout
-        if (self::VERSION === '@package_version'.'@') {
+        if (self::VERSION === '@package_version@') {
             return self::SOURCE_VERSION;
         }
 
