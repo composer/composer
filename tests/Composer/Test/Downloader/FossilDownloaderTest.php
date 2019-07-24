@@ -164,7 +164,7 @@ class FossilDownloaderTest extends TestCase
 
     public function testGetInstallationSource()
     {
-        $downloader = $this->getDownloaderMock(null);
+        $downloader = $this->getDownloaderMock();
 
         $this->assertEquals('source', $downloader->getInstallationSource());
     }

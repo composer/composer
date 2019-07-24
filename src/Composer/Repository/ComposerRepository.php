@@ -401,7 +401,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     }
 
                     // load acceptable packages in the providers
-                    $package = $this->createPackage($version, 'Composer\Package\CompletePackage');
+                    $package = $this->createPackage($version);
                     $package->setRepository($this);
 
                     if ($package instanceof AliasPackage) {
@@ -462,7 +462,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $repoData = $this->loadDataFromServer();
 
         foreach ($repoData as $package) {
-            $this->addPackage($this->createPackage($package, 'Composer\Package\CompletePackage'));
+            $this->addPackage($this->createPackage($package));
         }
     }
 
