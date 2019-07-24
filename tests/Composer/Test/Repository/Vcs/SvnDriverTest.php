@@ -70,15 +70,6 @@ class SvnDriverTest extends TestCase
         $svn->initialize();
     }
 
-    private function getCmd($cmd)
-    {
-        if (Platform::isWindows()) {
-            return strtr($cmd, "'", '"');
-        }
-
-        return $cmd;
-    }
-
     public static function supportProvider()
     {
         return array(
