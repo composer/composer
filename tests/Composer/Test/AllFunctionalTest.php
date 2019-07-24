@@ -151,15 +151,12 @@ class AllFunctionalTest extends TestCase
         $variableReplacer = function ($match) use (&$data, $testDir) {
             list(, $var) = $match;
 
-            switch ($var) {
-                case 'testDir':
-                    $data['test_dir'] = $testDir;
-
-                    return $testDir;
-
-                default:
-                    throw new \InvalidArgumentException(sprintf('Unknown variable "%s". Supported variables: "testDir"', $var));
+            if ($var != 'testDir') {
+                throw new \InvalidArgumentException(sprintf('Unknown variable "%s". Supported variables: "testDir"', $var));
             }
+
+            $data['test_dir'] = $testDir;
+            return $testDir;
         };
 
         for ($i = 0, $c = count($tokens); $i < $c; $i++) {
