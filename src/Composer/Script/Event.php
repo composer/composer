@@ -39,9 +39,9 @@ class Event extends BaseEvent
      */
     private $devMode;
 
-  /**
-   * @var BaseEvent
-   */
+    /**
+     * @var BaseEvent
+     */
     private $originatingEvent;
 
     /**
@@ -100,7 +100,7 @@ class Event extends BaseEvent
      */
     public function getOriginatingEvent()
     {
-      return $this->originatingEvent;
+        return $this->originatingEvent;
     }
 
     /**
@@ -111,9 +111,9 @@ class Event extends BaseEvent
      */
     public function setOriginatingEvent(BaseEvent $event)
     {
-      $this->originatingEvent = $this->calculateOriginatingEvent($event);
+        $this->originatingEvent = $this->calculateOriginatingEvent($event);
 
-      return $this;
+        return $this;
     }
 
     /**
@@ -124,10 +124,10 @@ class Event extends BaseEvent
      */
     private function calculateOriginatingEvent(BaseEvent $event)
     {
-      if ($event instanceof Event && $event->getOriginatingEvent()) {
-        return $this->calculateOriginatingEvent($event->getOriginatingEvent());
-      }
+        if ($event instanceof Event && $event->getOriginatingEvent()) {
+            return $this->calculateOriginatingEvent($event->getOriginatingEvent());
+        }
 
-      return $event;
+        return $event;
     }
 }
