@@ -32,6 +32,14 @@ abstract class BaseIO implements IOInterface, LoggerInterface
     /**
      * {@inheritDoc}
      */
+    public function resetAuthentications()
+    {
+        $this->authentications = array();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function hasAuthentication($repositoryName)
     {
         return isset($this->authentications[$repositoryName]);

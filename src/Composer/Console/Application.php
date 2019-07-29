@@ -373,6 +373,9 @@ class Application extends BaseApplication
     public function resetComposer()
     {
         $this->composer = null;
+        if ($this->getIO() && method_exists($this->getIO(), 'resetAuthentications')) {
+            $this->getIO()->resetAuthentications();
+        }
     }
 
     /**
