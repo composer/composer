@@ -34,6 +34,8 @@ class CheckPlatformReqsCommand extends BaseCommand
                 <<<EOT
 Checks that your PHP and extensions versions match the platform requirements of the installed packages.
 
+Unlike update/install, this command will ignore config.platform settings and check the real platform packages so you can be certain you have the required platform dependencies.
+
 <info>php composer.phar check-platform-reqs</info>
 
 EOT

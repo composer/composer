@@ -259,6 +259,10 @@ match the platform requirements of the installed packages. This can be used
 to verify that a production server has all the extensions needed to run a
 project after installing it for example.
 
+Unlike update/install, this command will ignore config.platform settings and
+check the real platform packages so you can be certain you have the required
+platform dependencies.
+
 ## global
 
 The global command allows you to run other commands like `install`, `remove`, `require`
