@@ -363,8 +363,6 @@ class Perforce
         while ($line !== false) {
             $line = fgets($pipe);
         }
-
-        return;
     }
 
     public function windowsLogin($password)
