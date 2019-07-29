@@ -23,12 +23,9 @@ use RecursiveIteratorIterator;
  */
 class GitHubTest extends TestCase
 {
-    private $username = 'username';
     private $password = 'password';
-    private $authcode = 'authcode';
     private $message = 'mymessage';
     private $origin = 'github.com';
-    private $token = 'githubtoken';
 
     public function testUsernamePasswordAuthenticationFlow()
     {
