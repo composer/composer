@@ -28,9 +28,11 @@ matrix:
     - php: 7.3
       env: deps=high
     - php: nightly
+    - php: 7.4snapshot
   fast_finish: true
   allow_failures:
     - php: nightly
+    - php: 7.4snapshot
 
 before_install:
   # disable xdebug if available
