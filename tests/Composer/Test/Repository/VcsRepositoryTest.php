@@ -42,7 +42,7 @@ class VcsRepositoryTest extends TestCase
 
             return;
         }
-        if (!@mkdir(self::$gitRepo) || !@chdir(self::$gitRepo)) {
+        if (!@chdir(self::$gitRepo)) {
             $this->skipped = 'Could not create and move into the temp git repo '.self::$gitRepo;
 
             return;
@@ -83,6 +83,22 @@ class VcsRepositoryTest extends TestCase
 
         // add version to composer.json
         $exec('git checkout master');
+
+        // update master to 0.7.0
+        $composer['version'] = '0.7.0';
+        file_put_contents('composer.json', json_encode($composer));
+        $exec('git add composer.json');
+        $exec('git commit -m addversion_07_0');
+        $exec('git tag ver/0.7/0');
+
+        // update master to 0.8.0
+        $composer['version'] = '0.8.0';
+        file_put_contents('composer.json', json_encode($composer));
+        $exec('git add composer.json');
+        $exec('git commit -m addversion_080');
+        $exec('git tag ver/0.8.0');
+
+        // update master to 1.0.0
         $composer['version'] = '1.0.0';
         file_put_contents('composer.json', json_encode($composer));
         $exec('git add composer.json');
@@ -112,6 +128,9 @@ class VcsRepositoryTest extends TestCase
         $exec('git add composer.json');
         $exec('git commit -m bump-version');
 
+        // add 2.0 branch
+        $exec('git branch rel/2.0');
+
         chdir($oldCwd);
     }
 
@@ -136,12 +155,15 @@ class VcsRepositoryTest extends TestCase
     {
         $expected = array(
             '0.6.0' => true,
+            '0.7.0' => true,
+            '0.8.0' => true,
             '1.0.0' => true,
             '1.0.x-dev' => true,
             '1.1.x-dev' => true,
             'dev-feature-b' => true,
             'dev-feature/a-1.0-B' => true,
             'dev-master' => true,
+            '2.0.x-dev' => true,
         );
 
         $config = new Config();
@@ -150,7 +172,15 @@ class VcsRepositoryTest extends TestCase
                 'home' => self::$composerHome,
             ),
         ));
-        $repo = new VcsRepository(array('url' => self::$gitRepo, 'type' => 'vcs'), new NullIO, $config);
+        $repo = new VcsRepository(array(
+            'url' => self::$gitRepo,
+            'type' => 'vcs',
+            'tagConvert' => array(
+                's/^ver\/(\d+\.\d+\.\d+)$/$1/',
+                's/^ver\/(\d+\.\d+)\/(\d+)$/$1.$2/',
+            ),
+            'branchConvert' => 's/^rel\/(.+)$/$1/',
+        ), new NullIO, $config);
         $packages = $repo->getPackages();
         $dumper = new ArrayDumper();
 
