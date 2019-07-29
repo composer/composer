@@ -38,6 +38,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     protected $type;
     protected $loader;
     protected $repoConfig;
+    protected $tagConverters;
+    protected $branchConverters;
     protected $branchErrorOccurred = false;
     private $drivers;
     /** @var VcsDriverInterface */
@@ -70,6 +72,13 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $this->config = $config;
         $this->repoConfig = $repoConfig;
         $this->versionCache = $versionCache;
+
+        if (isset($repoConfig['tagConvert'])) {
+            $this->tagConverters = $this->parseConverters($repoConfig['tagConvert']);
+        }
+        if (isset($repoConfig['branchConvert'])) {
+            $this->branchConverters = $this->parseConverters($repoConfig['branchConvert']);
+        }
     }
 
     public function getRepoConfig()
@@ -160,6 +169,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             } elseif ($isVerbose) {
                 $this->io->overwriteError($msg, false);
             }
+
+            // try to convert
+            $tag = $this->convert($this->tagConverters, $tag);
 
             // strip the release- prefix from tags if present
             $tag = str_replace('release-', '', $tag);
@@ -255,6 +267,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 }
                 continue;
             }
+
+            // try to convert
+            $branch = $this->convert($this->branchConverters, $branch);
 
             if (!$parsedBranch = $this->validateBranch($branch)) {
                 if ($isVeryVerbose) {
@@ -406,5 +421,48 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         return null;
+    }
+
+    private function parseConverters($rawConverters)
+    {
+        $converters = array();
+        foreach ((array) $rawConverters as $converter) {
+            if ($converter = $this->parseConverter($converter)) {
+                $converters[] = $converter;
+            }
+        }
+        return empty($converters) ? null : $converters;
+    }
+
+    private function parseConverter($converter)
+    {
+        if (is_callable($converter)) {
+            return $converter;
+        }
+
+        if (!preg_match('/^s\/(.+)\/(.+)\/([iADSUXu]*)$/', $converter, $match)) {
+            $this->io->writeError('<warning>Invalid replace pattern "' . $converter . '". Ignoring.</warning>');
+            return null;
+        }
+
+        list($str, $pattern, $replacement, $flags) = $match;
+        $regex = "/$pattern/$flags";
+
+        return function ($tag) use ($regex, $replacement) {
+            $newTag = preg_replace($regex, $replacement, $tag);
+            return $newTag === $tag ? null : $newTag;
+        };
+    }
+
+    private function convert(&$converters, $tag)
+    {
+        if ($converters) {
+            foreach ($converters as $converter) {
+                if ($newTag = $converter($tag)) {
+                    return $newTag;
+                }
+            }
+        }
+        return $tag;
     }
 }
