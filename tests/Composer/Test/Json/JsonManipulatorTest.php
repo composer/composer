@@ -1450,6 +1450,22 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             ),
+            'works on simple ones escaped slash' => array(
+                '{
+    "repositories": {
+        "foo\/bar": {
+            "bar": "baz"
+        }
+    }
+}',
+                'foo/bar',
+                true,
+                '{
+    "repositories": {
+    }
+}
+',
+            ),
             'works on simple ones middle' => array(
                 '{
     "repositories": {
