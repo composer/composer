@@ -145,7 +145,12 @@ EOT
 
         // validate requirements format
         $versionParser = new VersionParser();
-        foreach ($requirements as $constraint) {
+        foreach ($requirements as $package => $constraint) {
+            if (strtolower($package) === $composer->getPackage()->getName()) {
+                $io->writeError(sprintf('<error>Root package \'%s\' cannot require itself in its composer.json</error>', $package));
+
+                return 1;
+            }
             $versionParser->parseConstraints($constraint);
         }
 
