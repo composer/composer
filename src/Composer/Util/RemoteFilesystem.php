@@ -1110,4 +1110,17 @@ class RemoteFilesystem
             $io->writeError('<'.$type.'>'.ucfirst($type).' from '.$url.': '.$data[$type].'</'.$type.'>');
         }
     }
+
+    public static function getOrigin($urlOrPath)
+    {
+        $hostPort = parse_url($urlOrPath, PHP_URL_HOST);
+        if (!$hostPort) {
+            return $urlOrPath;
+        }
+        if (parse_url($urlOrPath, PHP_URL_PORT)) {
+            $hostPort .= ':'.parse_url($urlOrPath, PHP_URL_PORT);
+        }
+
+        return $hostPort;
+    }
 }

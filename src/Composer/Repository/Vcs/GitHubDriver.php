@@ -304,6 +304,10 @@ class GitHubDriver extends VcsDriver
      */
     protected function generateSshUrl()
     {
+        if (false !== strpos($this->originUrl, ':')) {
+            return 'ssh://git@' . $this->originUrl . '/'.$this->owner.'/'.$this->repository.'.git';
+        }
+
         return 'git@' . $this->originUrl . ':'.$this->owner.'/'.$this->repository.'.git';
     }
 

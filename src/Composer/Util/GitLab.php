@@ -53,7 +53,10 @@ class GitLab
      */
     public function authorizeOAuth($originUrl)
     {
-        if (!in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
+        // before composer 1.9, origin URLs had no port number in them
+        $bcOriginUrl = preg_replace('{:\d+}', '', $originUrl);
+
+        if (!in_array($originUrl, $this->config->get('gitlab-domains'), true) && !in_array($bcOriginUrl, $this->config->get('gitlab-domains'), true)) {
             return false;
         }
 
@@ -69,6 +72,12 @@ class GitLab
 
         if (isset($authTokens[$originUrl])) {
             $this->io->setAuthentication($originUrl, $authTokens[$originUrl], 'private-token');
+
+            return true;
+        }
+
+        if (isset($authTokens[$bcOriginUrl])) {
+            $this->io->setAuthentication($originUrl, $authTokens[$bcOriginUrl], 'private-token');
 
             return true;
         }
