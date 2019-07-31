@@ -498,13 +498,20 @@ class GitLabDriver extends VcsDriver
     private static function determineOrigin(array $configuredDomains, $guessedDomain, array &$urlParts, $portNumber)
     {
         if (in_array($guessedDomain, $configuredDomains) || ($portNumber && in_array($guessedDomain.':'.$portNumber, $configuredDomains))) {
+            if ($portNumber) {
+                return $guessedDomain.':'.$portNumber;
+            }
             return $guessedDomain;
+        }
+
+        if ($portNumber) {
+            $guessedDomain .= ':'.$portNumber;
         }
 
         while (null !== ($part = array_shift($urlParts))) {
             $guessedDomain .= '/' . $part;
 
-            if (in_array($guessedDomain, $configuredDomains) || ($portNumber && in_array(preg_replace('{/}', ':'.$portNumber.'/', $guessedDomain, 1), $configuredDomains))) {
+            if (in_array($guessedDomain, $configuredDomains) || ($portNumber && in_array(preg_replace('{:\d+}', '', $guessedDomain), $configuredDomains))) {
                 return $guessedDomain;
             }
         }
