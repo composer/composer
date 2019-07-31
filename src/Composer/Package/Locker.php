@@ -368,6 +368,9 @@ class Locker
             $spec = $this->dumper->dump($package);
             unset($spec['version_normalized']);
 
+            // Remove require-dev as it is root-only
+            unset($spec['require-dev']);
+
             // always move time to the end of the package definition
             $time = isset($spec['time']) ? $spec['time'] : null;
             unset($spec['time']);
