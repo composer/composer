@@ -42,7 +42,8 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
                 {
                     "name": "f/f", "version": "dev-master",
                     "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/f/newf", "type": "git" },
-                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/f/newf/tarball/2222222222222222222222222222222222222222", "type": "tar", "shasum": "newsum" }
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/f/newf/tarball/2222222222222222222222222222222222222222", "type": "tar", "shasum": "newsum" },
+                    "transport-options": { "foo": "bar2" }
                 },
                 {
                     "name": "g/g", "version": "dev-master",
@@ -87,12 +88,14 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
     {
         "name": "f/f", "version": "dev-master",
         "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/f/f", "type": "git" },
-        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/f/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": "oldsum" }
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/f/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": "oldsum" },
+        "transport-options": { "foo": "bar" }
     },
     {
         "name": "g/g", "version": "dev-master",
         "source": { "reference": "0000000000000000000000000000000000000000", "url": "https://github.com/g/g", "type": "git" },
-        "dist": { "reference": "0000000000000000000000000000000000000000", "url": "https://api.github.com/repos/g/g/zipball/0000000000000000000000000000000000000000", "type": "zip", "shasum": "oldsum" }
+        "dist": { "reference": "0000000000000000000000000000000000000000", "url": "https://api.github.com/repos/g/g/zipball/0000000000000000000000000000000000000000", "type": "zip", "shasum": "oldsum" },
+        "transport-options": { "foo": "bar" }
     }
 ]
 --EXPECT-LOCK--
@@ -132,7 +135,8 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
             "name": "f/f", "version": "dev-master",
             "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/f/newf", "type": "git" },
             "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/newf/tarball/1111111111111111111111111111111111111111", "type": "tar", "shasum": "newsum" },
-            "type": "library"
+            "type": "library",
+            "transport-options": { "foo": "bar2" }
         },
         {
             "name": "g/g", "version": "dev-master",

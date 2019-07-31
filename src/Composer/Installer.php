@@ -1178,7 +1178,7 @@ class Installer
                     $newReference = $rootRefs[$package->getName()];
                 }
 
-                $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newReference, $newPackage->getDistUrl(), $newPackage->getDistType(), $newPackage->getDistSha1Checksum());
+                $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newReference, $newPackage->getDistUrl(), $newPackage->getDistType(), $newPackage->getDistSha1Checksum(), $newPackage);
 
                 if ($package instanceof CompletePackage && $newPackage instanceof CompletePackage) {
                     $package->setAbandoned($newPackage->getReplacementPackage() ?: $newPackage->isAbandoned());
@@ -1186,6 +1186,7 @@ class Installer
 
                 $package->setDistMirrors($newPackage->getDistMirrors());
                 $package->setSourceMirrors($newPackage->getSourceMirrors());
+                $package->setTransportOptions($newPackage->getTransportOptions());
             }
         }
     }
