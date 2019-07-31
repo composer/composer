@@ -70,6 +70,9 @@ class Url
         }
 
         $origin = (string) parse_url($url, PHP_URL_HOST);
+        if ($port = parse_url($url, PHP_URL_PORT)) {
+            $origin .= ':'.$port;
+        }
 
         if (strpos($origin, '.github.com') === (strlen($origin) - 11)) {
             return 'github.com';

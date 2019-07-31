@@ -152,11 +152,4 @@ class RuleSetTest extends TestCase
 
         $this->assertContains('JOB     : Install command rule (install foo 2.1)', $ruleSet->getPrettyString($pool));
     }
-
-    private function getRuleMock()
-    {
-        return $this->getMockBuilder('Composer\DependencyResolver\Rule')
-            ->disableOriginalConstructor()
-            ->getMock();
-    }
 }

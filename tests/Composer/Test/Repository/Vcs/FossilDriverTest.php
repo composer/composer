@@ -40,15 +40,6 @@ class FossilDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    private function getCmd($cmd)
-    {
-        if (Platform::isWindows()) {
-            return strtr($cmd, "'", '"');
-        }
-
-        return $cmd;
-    }
-
     public static function supportProvider()
     {
         return array(

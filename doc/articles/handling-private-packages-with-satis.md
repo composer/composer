@@ -112,6 +112,19 @@ Note that this will still need to pull and scan all of your VCS repositories
 because any VCS repository might contain (on any branch) one of the selected
 packages.
 
+If you want to scan only the selected package and not all VCS repositories you need
+to declare a *name* for all your package (this only work on VCS repositories type) :
+
+```json
+{
+  "repositories": [
+    { "name": "company/privaterepo", "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
+    { "name": "private/repo", "type": "vcs", "url": "http://svn.example.org/private/repo" },
+    { "name": "mycompany/privaterepo2", "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
+  ]
+}
+```
+
 If you want to scan only a single repository and update all packages found in
 it, pass the VCS repository URL as an optional argument:
 

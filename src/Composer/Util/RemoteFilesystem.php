@@ -286,6 +286,8 @@ class RemoteFilesystem
                 $errorMessage .= "\n";
             }
             $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
+
+            return true;
         });
         try {
             $result = $this->getRemoteContents($originUrl, $fileUrl, $ctx, $http_response_header);
@@ -459,6 +461,8 @@ class RemoteFilesystem
                     $errorMessage .= "\n";
                 }
                 $errorMessage .= preg_replace('{^file_put_contents\(.*?\): }', '', $msg);
+
+                return true;
             });
             $result = (bool) file_put_contents($fileName, $result);
             restore_error_handler();

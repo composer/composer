@@ -162,18 +162,18 @@ class AllFunctionalTest extends TestCase
             }
         };
 
-        for ($i = 0, $c = count($tokens); $i < $c; $i++) {
-            if ('' === $tokens[$i] && null === $section) {
+        foreach ($tokens as $token) {
+            if ('' === $token && null === $section) {
                 continue;
             }
 
             // Handle section headers.
             if (null === $section) {
-                $section = $tokens[$i];
+                $section = $token;
                 continue;
             }
 
-            $sectionData = $tokens[$i];
+            $sectionData = $token;
 
             // Allow sections to validate, or modify their section data.
             switch ($section) {
