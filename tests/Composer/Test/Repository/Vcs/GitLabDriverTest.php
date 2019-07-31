@@ -207,7 +207,7 @@ JSON;
 JSON;
 
         $this->remoteFilesystem
-            ->getContents($domain, $apiUrl, false, array())
+            ->getContents($domain.':'.$port, $apiUrl, false, array())
             ->willReturn(sprintf($projectData, $domain, $port, $namespace))
             ->shouldBeCalledTimes(1);
 
