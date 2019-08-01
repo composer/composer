@@ -49,7 +49,12 @@ class FilesystemRepository extends WritableArrayRepository
         }
 
         try {
-            $packages = $this->file->read();
+            $data = $this->file->read();
+            if (isset($data['packages'])) {
+                $packages = $data['packages'];
+            } else {
+                $packages = $data;
+            }
 
             // forward compatibility for composer v2 installed.json
             if (isset($packages['packages'])) {
@@ -79,16 +84,16 @@ class FilesystemRepository extends WritableArrayRepository
     /**
      * Writes writable repository.
      */
-    public function write()
+    public function write($devMode)
     {
-        $data = array();
+        $data = array('packages' => array(), 'dev' => $devMode);
         $dumper = new ArrayDumper();
 
         foreach ($this->getCanonicalPackages() as $package) {
-            $data[] = $dumper->dump($package);
+            $data['packages'][] = $dumper->dump($package);
         }
 
-        usort($data, function ($a, $b) {
+        usort($data['packages'], function ($a, $b) {
             return strcmp($a['name'], $b['name']);
         });
 
