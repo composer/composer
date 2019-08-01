@@ -74,8 +74,15 @@ final class StreamContextFactory
                 $proxyURL .= ":443";
             }
 
-            // http(s):// is not supported in proxy
-            $proxyURL = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $proxyURL);
+            /*
+             * When accessing https resources, PHP sends a HTTP CONNECT request
+             * to the proxy to open a tunnel. This tunnel is then used to
+             * forward TLS traffic. The CONNECT request is sent through
+             * plaintext, therefore we set the 'tcp://' protocol.
+             * This does not mean that the traffic to the remote server is
+             * unencrypted.
+             */
+            $proxyURL = str_replace(array('http://', 'https://'), 'tcp://', $proxyURL);
 
             if (preg_match('{^https://}i', $url) && !extension_loaded('openssl')) {
                 throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
