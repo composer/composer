@@ -172,7 +172,7 @@ class StreamContextFactoryTest extends TestCase
 
         $expected = array(
             'http' => array(
-                'proxy' => 'ssl://woopproxy.net:443',
+                'proxy' => 'tcp://woopproxy.net:443',
                 'request_fulluri' => true,
                 'method' => 'GET',
                 'max_redirects' => 20,
@@ -220,8 +220,8 @@ class StreamContextFactoryTest extends TestCase
     public function dataSSLProxy()
     {
         return array(
-            array('ssl://proxyserver:443', 'https://proxyserver/'),
-            array('ssl://proxyserver:8443', 'https://proxyserver:8443'),
+            array('tcp://proxyserver:443', 'https://proxyserver/'),
+            array('tcp://proxyserver:8443', 'https://proxyserver:8443'),
         );
     }
 
