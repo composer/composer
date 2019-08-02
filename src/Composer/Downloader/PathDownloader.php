@@ -49,6 +49,18 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             ));
         }
 
+        if (realpath($path) === $realUrl) {
+            if ($output) {
+                $this->io->writeError(sprintf(
+                    '  - Installing <info>%s</info> (<comment>%s</comment>): Source already present',
+                    $package->getName(),
+                    $package->getFullPrettyVersion()
+                ));
+            }
+
+            return;
+        }
+
         if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
             // IMPORTANT NOTICE: If you wish to change this, don't. You are wasting your time and ours.
             //
@@ -146,6 +158,16 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      */
     public function remove(PackageInterface $package, $path, $output = true)
     {
+        $realUrl = realpath($package->getDistUrl());
+
+        if (realpath($path) === $realUrl) {
+            if ($output) {
+                $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>), source is still present in $path");
+            }
+
+            return;
+        }
+
         /**
          * For junctions don't blindly rely on Filesystem::removeDirectory as it may be overzealous. If a process
          * inadvertently locks the file the removal will fail, but it would fall back to recursive delete which
