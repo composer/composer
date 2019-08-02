@@ -101,7 +101,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             );
         }
 
-        $this->filesystem->emptyDirectory($path);
         $fileName = $this->getFileName($package, $path);
 
         $io = $this->io;
@@ -229,6 +228,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
         }
 
+        $this->filesystem->emptyDirectory($path);
         $this->filesystem->ensureDirectoryExists($path);
         $this->filesystem->rename($this->getFileName($package, $path), $path . pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME));
     }

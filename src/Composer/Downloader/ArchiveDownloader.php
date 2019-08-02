@@ -38,6 +38,8 @@ abstract class ArchiveDownloader extends FileDownloader
             $this->io->writeError('Extracting archive', false);
         }
 
+        $this->filesystem->emptyDirectory($path);
+
         $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
         $fileName = $this->getFileName($package, $path);
 
