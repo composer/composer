@@ -82,6 +82,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     $package->getName(),
                     $package->getFullPrettyVersion()
                 ));
+            } else {
+                $this->io->writeError('Source already present', false);
             }
 
             return;
@@ -163,7 +165,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             $fileSystem->mirror($realUrl, $path, $iterator);
         }
 
-        $this->io->writeError('');
+        if ($output) {
+            $this->io->writeError('');
+        }
     }
 
     /**
@@ -173,7 +177,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     {
         $realUrl = realpath($package->getDistUrl());
 
-        if (realpath($path) === $realUrl) {
+        if ($path === $realUrl) {
             if ($output) {
                 $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>), source is still present in $path");
             }
