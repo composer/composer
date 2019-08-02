@@ -1,3 +1,15 @@
+### [1.9.0] 2019-08-02
+
+  * Added a `--no-cache` flag available on all commands to run with the cache disabled
+  * Added PHP_BINARY as env var pointing to the PHP process when executing Composer scripts as shell scripts
+  * Added a `use-github-api` config option which can set the `no-api` flag on all GitHub VCS repositories declared
+  * Added a static helper you can preprend to a script to avoid process timeouts, `"Composer\\Config::disableProcessTimeout"`
+  * Added Event::getOriginatingEvent to retrieve an event's original event when a script handler forwards to another one
+  * Added support for autoloading directly from a phar file
+  * Fixed loading order of plugins to always initialize them in order of dependencies
+  * Fixed various network-mount related issues
+  * Fixed --ignore-platform-reqs not ignoring conflict rules against platform packages
+
 ### [1.8.6] 2019-06-11
 
   * Fixed handling of backslash-escapes handling in composer.json when using the require command
@@ -751,6 +763,7 @@
 
   * Initial release
 
+[1.9.0]: https://github.com/composer/composer/compare/1.8.6...1.9.0
 [1.8.6]: https://github.com/composer/composer/compare/1.8.5...1.8.6
 [1.8.5]: https://github.com/composer/composer/compare/1.8.4...1.8.5
 [1.8.4]: https://github.com/composer/composer/compare/1.8.3...1.8.4
