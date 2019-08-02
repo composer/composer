@@ -101,6 +101,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             );
         }
 
+        $this->filesystem->ensureDirectoryExists($path);
         $fileName = $this->getFileName($package, $path);
 
         $io = $this->io;
