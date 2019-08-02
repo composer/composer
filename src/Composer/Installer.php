@@ -1178,7 +1178,7 @@ class Installer
                     $newReference = $rootRefs[$package->getName()];
                 }
 
-                $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newReference, $newPackage->getDistUrl(), $newPackage->getDistType(), $newPackage->getDistSha1Checksum(), $newPackage);
+                $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newReference, $newPackage->getDistUrl(), $newPackage->getDistType(), $newPackage->getDistSha1Checksum());
 
                 if ($package instanceof CompletePackage && $newPackage instanceof CompletePackage) {
                     $package->setAbandoned($newPackage->getReplacementPackage() ?: $newPackage->isAbandoned());
