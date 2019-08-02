@@ -618,7 +618,7 @@ class Installer
             }
 
             if ($this->executeOperations || $this->writeLock) {
-                $localRepo->write($this->devMode);
+                $localRepo->write($this->devMode, $this->installationManager);
             }
 
             $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($jobType);
@@ -630,7 +630,7 @@ class Installer
         if ($this->executeOperations) {
             // force source/dist urls to be updated for all packages
             $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
-            $localRepo->write($this->devMode);
+            $localRepo->write($this->devMode, $this->installationManager);
         }
 
         return array(0, $devPackages);

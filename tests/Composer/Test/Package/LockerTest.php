@@ -24,7 +24,7 @@ class LockerTest extends TestCase
         $locker = new Locker(
             new NullIO,
             $json,
-            $this->createRepositoryManagerMock(),
+            $this->createInstallationManagerMock(),
             $this->getJsonContent()
         );
 
@@ -259,7 +259,7 @@ class LockerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
     }
-    
+
     private function createInstallationManagerMock()
     {
         $mock = $this->getMockBuilder('Composer\Installer\InstallationManager')

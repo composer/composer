@@ -15,6 +15,8 @@ namespace Composer\Repository;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Installer\InstallationManager;
+use Composer\Util\Filesystem;
 
 /**
  * Filesystem repository.
@@ -84,13 +86,18 @@ class FilesystemRepository extends WritableArrayRepository
     /**
      * Writes writable repository.
      */
-    public function write($devMode)
+    public function write($devMode, InstallationManager $installationManager)
     {
         $data = array('packages' => array(), 'dev' => $devMode);
         $dumper = new ArrayDumper();
+        $fs = new Filesystem();
+        $repoDir = dirname($fs->normalizePath($this->file->getPath()));
 
         foreach ($this->getCanonicalPackages() as $package) {
-            $data['packages'][] = $dumper->dump($package);
+            $pkgArray = $dumper->dump($package);
+            $path = $installationManager->getInstallPath($package);
+            $pkgArray['install-path'] = ('' !== $path && null !== $path) ? $fs->findShortestPath($repoDir, $path, true) : null;
+            $data['packages'][] = $pkgArray;
         }
 
         usort($data['packages'], function ($a, $b) {
