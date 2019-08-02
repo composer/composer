@@ -61,20 +61,7 @@ class Response
 
     public function getHeader($name)
     {
-        $value = null;
-        foreach ($this->headers as $header) {
-            if (preg_match('{^'.$name.':\s*(.+?)\s*$}i', $header, $match)) {
-                $value = $match[1];
-            } elseif (preg_match('{^HTTP/}i', $header)) {
-                // TODO ideally redirects would be handled in CurlDownloader/RemoteFilesystem and this becomes unnecessary
-                //
-                // In case of redirects, headers contains the headers of all responses
-                // so we reset the flag when a new response is being parsed as we are only interested in the last response
-                $value = null;
-            }
-        }
-
-        return $value;
+        return self::findHeaderValue($this->headers, $name);
     }
 
     public function getBody()
@@ -90,5 +77,28 @@ class Response
     public function collect()
     {
         $this->request = $this->code = $this->headers = $this->body = null;
+    }
+
+    /**
+     * @param  array       $headers array of returned headers like from getLastHeaders()
+     * @param  string      $name    header name (case insensitive)
+     * @return string|null
+     */
+    public static function findHeaderValue(array $headers, $name)
+    {
+        $value = null;
+        foreach ($headers as $header) {
+            if (preg_match('{^'.preg_quote($name).':\s*(.+?)\s*$}i', $header, $match)) {
+                $value = $match[1];
+            } elseif (preg_match('{^HTTP/}i', $header)) {
+                // TODO ideally redirects would be handled in CurlDownloader/RemoteFilesystem and this becomes unnecessary
+                //
+                // In case of redirects, http_response_headers contains the headers of all responses
+                // so we reset the flag when a new response is being parsed as we are only interested in the last response
+                $value = null;
+            }
+        }
+
+        return $value;
     }
 }

@@ -19,7 +19,6 @@ use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Util\GitHub;
 use Composer\Util\Http\Response;
-use Composer\Util\RemoteFilesystem;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -346,10 +345,10 @@ class GitHubDriver extends VcsDriver
                     $scopesIssued = array();
                     $scopesNeeded = array();
                     if ($headers = $e->getHeaders()) {
-                        if ($scopes = RemoteFilesystem::findHeaderValue($headers, 'X-OAuth-Scopes')) {
+                        if ($scopes = Response::findHeaderValue($headers, 'X-OAuth-Scopes')) {
                             $scopesIssued = explode(' ', $scopes);
                         }
-                        if ($scopes = RemoteFilesystem::findHeaderValue($headers, 'X-Accepted-OAuth-Scopes')) {
+                        if ($scopes = Response::findHeaderValue($headers, 'X-Accepted-OAuth-Scopes')) {
                             $scopesNeeded = explode(' ', $scopes);
                         }
                     }
