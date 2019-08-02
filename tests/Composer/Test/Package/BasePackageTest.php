@@ -20,7 +20,7 @@ class BasePackageTest extends TestCase
     public function testSetSameRepository()
     {
         $package = $this->getMockForAbstractClass('Composer\Package\BasePackage', array('foo'));
-        $repository = $this->getMock('Composer\Repository\RepositoryInterface');
+        $repository = $this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock();
 
         $package->setRepository($repository);
         try {
@@ -37,8 +37,8 @@ class BasePackageTest extends TestCase
     {
         $package = $this->getMockForAbstractClass('Composer\Package\BasePackage', array('foo'));
 
-        $package->setRepository($this->getMock('Composer\Repository\RepositoryInterface'));
-        $package->setRepository($this->getMock('Composer\Repository\RepositoryInterface'));
+        $package->setRepository($this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock());
+        $package->setRepository($this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock());
     }
 
     /**

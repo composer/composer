@@ -25,7 +25,7 @@ class SuggestedPackagesReporterTest extends TestCase
 
     protected function setUp()
     {
-        $this->io = $this->getMock('Composer\IO\IOInterface');
+        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
         $this->suggestedPackagesReporter = new SuggestedPackagesReporter($this->io);
     }
@@ -145,6 +145,20 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::output
      */
+    public function testOutputWithNoSuggestedPackage()
+    {
+        $this->suggestedPackagesReporter->addPackage('a', 'b', '');
+
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('a suggests installing b');
+
+        $this->suggestedPackagesReporter->output();
+    }
+
+    /**
+     * @covers ::output
+     */
     public function testOutputIgnoresFormatting()
     {
         $this->suggestedPackagesReporter->addPackage('source', 'target1', "\x1b[1;37;42m Like us\r\non Facebook \x1b[0m");
@@ -185,9 +199,9 @@ class SuggestedPackagesReporterTest extends TestCase
      */
     public function testOutputSkipInstalledPackages()
     {
-        $repository = $this->getMock('Composer\Repository\RepositoryInterface');
-        $package1 = $this->getMock('Composer\Package\PackageInterface');
-        $package2 = $this->getMock('Composer\Package\PackageInterface');
+        $repository = $this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock();
+        $package1 = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+        $package2 = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
 
         $package1->expects($this->once())
             ->method('getNames')
@@ -219,7 +233,7 @@ class SuggestedPackagesReporterTest extends TestCase
      */
     public function testOutputNotGettingInstalledPackagesWhenNoSuggestions()
     {
-        $repository = $this->getMock('Composer\Repository\RepositoryInterface');
+        $repository = $this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock();
         $repository->expects($this->exactly(0))
             ->method('getPackages');
 

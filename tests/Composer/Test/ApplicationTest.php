@@ -13,7 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Console\Application;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ApplicationTest extends TestCase
@@ -22,14 +22,19 @@ class ApplicationTest extends TestCase
     {
         $application = new Application;
 
-        $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
-        $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
+        $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
+        $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
 
         $index = 0;
         $inputMock->expects($this->at($index++))
             ->method('hasParameterOption')
             ->with($this->equalTo('--no-plugins'))
             ->will($this->returnValue(true));
+
+        $inputMock->expects($this->at($index++))
+            ->method('hasParameterOption')
+            ->with($this->equalTo('--no-cache'))
+            ->will($this->returnValue(false));
 
         $inputMock->expects($this->at($index++))
             ->method('getParameterOption')
@@ -42,7 +47,7 @@ class ApplicationTest extends TestCase
 
         $index = 0;
         $outputMock->expects($this->at($index++))
-            ->method("writeError");
+            ->method("write");
 
         if (extension_loaded('xdebug')) {
             $outputMock->expects($this->at($index++))
@@ -75,14 +80,19 @@ class ApplicationTest extends TestCase
 
         $application->add(new \Composer\Command\SelfUpdateCommand);
 
-        $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
-        $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
+        $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
+        $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
 
         $index = 0;
         $inputMock->expects($this->at($index++))
             ->method('hasParameterOption')
             ->with($this->equalTo('--no-plugins'))
             ->will($this->returnValue(true));
+
+        $inputMock->expects($this->at($index++))
+            ->method('hasParameterOption')
+            ->with($this->equalTo('--no-cache'))
+            ->will($this->returnValue(false));
 
         $inputMock->expects($this->at($index++))
             ->method('getParameterOption')

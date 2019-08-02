@@ -18,6 +18,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
+use Composer\Util\Platform;
 
 /**
  * Package installation manager.
@@ -42,7 +43,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
      *
      * @param IOInterface     $io
      * @param Composer        $composer
-     * @param string          $type
+     * @param string|null     $type
      * @param Filesystem      $filesystem
      * @param BinaryInstaller $binaryInstaller
      */
@@ -71,7 +72,25 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
      */
     public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        return $repo->hasPackage($package) && is_readable($this->getInstallPath($package));
+        if (!$repo->hasPackage($package)) {
+            return false;
+        }
+
+        $installPath = $this->getInstallPath($package);
+
+        if (is_readable($installPath)) {
+            return true;
+        }
+
+        return (Platform::isWindows() && $this->filesystem->isJunction($installPath)) || is_link($installPath);
+    }
+
+    public function download(PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+        $this->initializeVendorDir();
+        $downloadPath = $this->getInstallPath($package);
+
+        return $this->downloadManager->download($package, $downloadPath, $prevPackage);
     }
 
     /**
@@ -183,7 +202,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     protected function installCode(PackageInterface $package)
     {
         $downloadPath = $this->getInstallPath($package);
-        $this->downloadManager->download($package, $downloadPath);
+        $this->downloadManager->install($package, $downloadPath);
     }
 
     protected function updateCode(PackageInterface $initial, PackageInterface $target)

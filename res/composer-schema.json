@@ -33,6 +33,10 @@
             "description": "Homepage URL for the project.",
             "format": "uri"
         },
+        "readme": {
+            "type": "string",
+            "description": "Relative path to the readme document."
+        },
         "version": {
             "type": "string",
             "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
@@ -267,6 +271,10 @@
                         "type": "string"
                     }
                 },
+                "use-github-api": {
+                    "type": "boolean",
+                    "description": "Defaults to true.  If set to false, globally disables the use of the GitHub API for all GitHub repositories and clones the repository as it would for any other repository."
+                },
                 "archive-format": {
                     "type": "string",
                     "description": "The default archiving format when not provided on cli, defaults to \"tar\"."
@@ -278,6 +286,10 @@
                 "htaccess-protect": {
                     "type": "boolean",
                     "description": "Defaults to true. If set to false, Composer will not create .htaccess files in the composer home, cache, and data directories."
+                },
+                "sort-packages": {
+                    "type": "boolean",
+                    "description": "Defaults to false. If set to true, Composer will sort packages when adding/updating a new dependency."
                 }
             }
         },
@@ -364,8 +376,8 @@
             "description": "If set to true, stable packages will be preferred to dev packages when possible, even if the minimum-stability allows unstable packages."
         },
         "bin": {
-            "type": ["array"],
-            "description": "A set of files that should be treated as binaries and symlinked into bin-dir (from config).",
+            "type": ["string", "array"],
+            "description": "A set of files, or a single file, that should be treated as binaries and symlinked into bin-dir (from config).",
             "items": {
                 "type": "string"
             }
@@ -480,6 +492,11 @@
                 "irc": {
                     "type": "string",
                     "description": "IRC channel for support, as irc://server/channel.",
+                    "format": "uri"
+                },
+                "chat": {
+                    "type": "string",
+                    "description": "URL to the support chat.",
                     "format": "uri"
                 },
                 "source": {
@@ -670,15 +687,14 @@
                         { "$ref": "#/definitions/inline-package" },
                         {
                             "type": "array",
-                            "items": {
-                                "type": { "$ref": "#/definitions/inline-package" }
-                            }
+                            "items": { "$ref": "#/definitions/inline-package" }
                         }
                     ]
                 }
             }
         },
         "inline-package": {
+            "type": "object",
             "required": ["name", "version"],
             "properties": {
                 "name": {
@@ -772,8 +788,8 @@
                     }
                 },
                 "bin": {
-                    "type": ["array"],
-                    "description": "A set of files that should be treated as binaries and symlinked into bin-dir (from config).",
+                    "type": ["string", "array"],
+                    "description": "A set of files, or a single file, that should be treated as binaries and symlinked into bin-dir (from config).",
                     "items": {
                         "type": "string"
                     }

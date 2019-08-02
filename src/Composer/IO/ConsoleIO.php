@@ -153,7 +153,7 @@ class ConsoleIO extends BaseIO
             $memoryUsage = memory_get_usage() / 1024 / 1024;
             $timeSpent = microtime(true) - $this->startTime;
             $messages = array_map(function ($message) use ($memoryUsage, $timeSpent) {
-                return sprintf('[%.1fMB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
+                return sprintf('[%.1fMiB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
             }, (array) $messages);
         }
 
@@ -272,9 +272,12 @@ class ConsoleIO extends BaseIO
      */
     public function askAndHideAnswer($question)
     {
-        $this->writeError($question, false);
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        $question = new Question($question);
+        $question->setHidden(true);
 
-        return \Seld\CliPrompt\CliPrompt::hiddenPrompt(true);
+        return $helper->ask($this->input, $this->getErrorOutput(), $question);
     }
 
     /**
@@ -289,7 +292,20 @@ class ConsoleIO extends BaseIO
         $question->setErrorMessage($errorMessage);
         $question->setMultiselect($multiselect);
 
-        return $helper->ask($this->input, $this->getErrorOutput(), $question);
+        $result = $helper->ask($this->input, $this->getErrorOutput(), $question);
+
+        if (!is_array($result)) {
+            return (string) array_search($result, $choices, true);
+        }
+
+        $results = array();
+        foreach ($choices as $index => $choice) {
+            if (in_array($choice, $result, true)) {
+                $results[] = (string) $index;
+            }
+        }
+
+        return $results;
     }
 
     /**

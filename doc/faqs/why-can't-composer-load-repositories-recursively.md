@@ -15,7 +15,7 @@ associated with inline VCS repositories.
 There are three ways the dependency solver could work with custom repositories:
 
 - Fetch the repositories of root package, get all the packages from the defined
-repositories, resolve requirements. This is the current state and it works well
+repositories, then resolve requirements. This is the current state and it works well
 except for the limitation of not loading repositories recursively.
 
 - Fetch the repositories of root package, while initializing packages from the

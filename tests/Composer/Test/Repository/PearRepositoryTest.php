@@ -13,7 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Repository\PearRepository;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * @group legacy
@@ -28,7 +28,7 @@ class PearRepositoryTest extends TestCase
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
      */
-    private $remoteFilesystem;
+    private $httpDownloader;
 
     public function testComposerShouldSetIncludePath()
     {
@@ -48,7 +48,8 @@ class PearRepositoryTest extends TestCase
 
         foreach ($expectedPackages as $expectedPackage) {
             $package = $this->repository->findPackage($expectedPackage['name'], $expectedPackage['version']);
-            $this->assertInstanceOf('Composer\Package\PackageInterface',
+            $this->assertInstanceOf(
+                'Composer\Package\PackageInterface',
                 $package,
                 'Expected package ' . $expectedPackage['name'] . ', version ' . $expectedPackage['version'] .
                 ' not found in pear channel ' . $url
@@ -74,7 +75,8 @@ class PearRepositoryTest extends TestCase
 
         $this->createRepository($repoConfig);
         foreach ($expectedPackages as $expectedPackage) {
-            $this->assertInstanceOf('Composer\Package\PackageInterface',
+            $this->assertInstanceOf(
+                'Composer\Package\PackageInterface',
                 $this->repository->findPackage($expectedPackage['name'], $expectedPackage['version']),
                 'Expected package ' . $expectedPackage['name'] . ', version ' . $expectedPackage['version'] .
                 ' not found in pear channel ' . $url
@@ -131,7 +133,7 @@ class PearRepositoryTest extends TestCase
 
         $config = new \Composer\Config();
 
-        $this->remoteFilesystem = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+        $this->httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -141,6 +143,6 @@ class PearRepositoryTest extends TestCase
     protected function tearDown()
     {
         $this->repository = null;
-        $this->remoteFilesystem = null;
+        $this->httpDownloader = null;
     }
 }

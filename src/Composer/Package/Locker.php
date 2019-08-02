@@ -14,9 +14,9 @@ namespace Composer\Package;
 
 use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
+use Composer\Repository\LockArrayRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
-use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Util\Git as GitUtil;
@@ -31,12 +31,19 @@ use Seld\JsonLint\ParsingException;
  */
 class Locker
 {
+    /** @var JsonFile */
     private $lockFile;
+    /** @var InstallationManager */
     private $installationManager;
+    /** @var string */
     private $hash;
+    /** @var string */
     private $contentHash;
+    /** @var ArrayLoader */
     private $loader;
+    /** @var ArrayDumper */
     private $dumper;
+    /** @var ProcessExecutor */
     private $process;
     private $lockDataCache;
 
@@ -99,7 +106,7 @@ class Locker
     }
 
     /**
-     * Checks whether locker were been locked (lockfile found).
+     * Checks whether locker has been locked (lockfile found).
      *
      * @return bool
      */
@@ -147,7 +154,7 @@ class Locker
     public function getLockedRepository($withDevReqs = false)
     {
         $lockData = $this->getLockData();
-        $packages = new ArrayRepository();
+        $packages = new LockArrayRepository();
 
         $lockedPackages = $lockData['packages'];
         if ($withDevReqs) {
@@ -286,7 +293,7 @@ class Locker
     {
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
-                               'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
+                               'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies',
                                'This file is @gener'.'ated automatically', ),
             'content-hash' => $this->contentHash,
             'packages' => null,
@@ -357,7 +364,8 @@ class Locker
 
             if (!$name || !$version) {
                 throw new \LogicException(sprintf(
-                    'Package "%s" has no version or name and can not be locked', $package
+                    'Package "%s" has no version or name and can not be locked',
+                    $package
                 ));
             }
 

@@ -13,7 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Repository\FilesystemRepository;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class FilesystemRepositoryTest extends TestCase
 {
@@ -95,11 +95,12 @@ class FilesystemRepositoryTest extends TestCase
             ->expects($this->once())
             ->method('write')
             ->with(array(
-                array('name' => 'mypkg', 'type' => 'library', 'version' => '0.1.10', 'version_normalized' => '0.1.10.0'),
+                'packages' => array(array('name' => 'mypkg', 'type' => 'library', 'version' => '0.1.10', 'version_normalized' => '0.1.10.0')),
+                'dev' => true,
             ));
 
         $repository->addPackage($this->getPackage('mypkg', '0.1.10'));
-        $repository->write();
+        $repository->write(true);
     }
 
     private function createJsonFileMock()

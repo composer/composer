@@ -19,7 +19,8 @@ use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Installer;
 use Composer\IO\IOInterface;
-use Composer\TestCase;
+use Composer\Test\TestCase;
+use Composer\Util\Loop;
 
 class FactoryMock extends Factory
 {
@@ -39,9 +40,9 @@ class FactoryMock extends Factory
     {
     }
 
-    protected function createInstallationManager()
+    public function createInstallationManager(Loop $loop)
     {
-        return new InstallationManagerMock;
+        return new InstallationManagerMock();
     }
 
     protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io)

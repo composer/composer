@@ -14,7 +14,7 @@ namespace Composer\Test\Repository\Pear;
 
 use Composer\Repository\Pear\DependencyConstraint;
 use Composer\Repository\Pear\PackageDependencyParser;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class PackageDependencyParserTest extends TestCase
 {

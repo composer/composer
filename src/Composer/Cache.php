@@ -44,7 +44,7 @@ class Cache
         $this->whitelist = $whitelist;
         $this->filesystem = $filesystem ?: new Filesystem();
 
-        if (preg_match('{(^|[\\\\/])(\$null|NUL|/dev/null)([\\\\/]|$)}', $cacheDir)) {
+        if (!self::isUsable($cacheDir)) {
             $this->enabled = false;
 
             return;
@@ -59,6 +59,11 @@ class Cache
         }
     }
 
+    public static function isUsable($path)
+    {
+        return !preg_match('{(^|[\\\\/])(\$null|nul|NUL|/dev/null)([\\\\/]|$)}', $path);
+    }
+
     public function isEnabled()
     {
         return $this->enabled;
@@ -71,11 +76,13 @@ class Cache
 
     public function read($file)
     {
-        $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
-        if ($this->enabled && file_exists($this->root . $file)) {
-            $this->io->writeError('Reading '.$this->root . $file.' from cache', true, IOInterface::DEBUG);
+        if ($this->enabled) {
+            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            if (file_exists($this->root . $file)) {
+                $this->io->writeError('Reading '.$this->root . $file.' from cache', true, IOInterface::DEBUG);
 
-            return file_get_contents($this->root . $file);
+                return file_get_contents($this->root . $file);
+            }
         }
 
         return false;
@@ -142,19 +149,21 @@ class Cache
      */
     public function copyTo($file, $target)
     {
-        $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
-        if ($this->enabled && file_exists($this->root . $file)) {
-            try {
-                touch($this->root . $file, filemtime($this->root . $file), time());
-            } catch (\ErrorException $e) {
-                // fallback in case the above failed due to incorrect ownership
-                // see https://github.com/composer/composer/issues/4070
-                Silencer::call('touch', $this->root . $file);
+        if ($this->enabled) {
+            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            if (file_exists($this->root . $file)) {
+                try {
+                    touch($this->root . $file, filemtime($this->root . $file), time());
+                } catch (\ErrorException $e) {
+                    // fallback in case the above failed due to incorrect ownership
+                    // see https://github.com/composer/composer/issues/4070
+                    Silencer::call('touch', $this->root . $file);
+                }
+
+                $this->io->writeError('Reading '.$this->root . $file.' from cache', true, IOInterface::DEBUG);
+
+                return copy($this->root . $file, $target);
             }
-
-            $this->io->writeError('Reading '.$this->root . $file.' from cache', true, IOInterface::DEBUG);
-
-            return copy($this->root . $file, $target);
         }
 
         return false;
@@ -167,9 +176,11 @@ class Cache
 
     public function remove($file)
     {
-        $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
-        if ($this->enabled && file_exists($this->root . $file)) {
-            return $this->filesystem->unlink($this->root . $file);
+        if ($this->enabled) {
+            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            if (file_exists($this->root . $file)) {
+                return $this->filesystem->unlink($this->root . $file);
+            }
         }
 
         return false;
@@ -178,7 +189,8 @@ class Cache
     public function clear()
     {
         if ($this->enabled) {
-            return $this->filesystem->removeDirectory($this->root);
+            $this->filesystem->emptyDirectory($this->root);
+            return true;
         }
 
         return false;
@@ -216,9 +228,11 @@ class Cache
 
     public function sha1($file)
     {
-        $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
-        if ($this->enabled && file_exists($this->root . $file)) {
-            return sha1_file($this->root . $file);
+        if ($this->enabled) {
+            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            if (file_exists($this->root . $file)) {
+                return sha1_file($this->root . $file);
+            }
         }
 
         return false;
@@ -226,9 +240,11 @@ class Cache
 
     public function sha256($file)
     {
-        $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
-        if ($this->enabled && file_exists($this->root . $file)) {
-            return hash_file('sha256', $this->root . $file);
+        if ($this->enabled) {
+            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            if (file_exists($this->root . $file)) {
+                return hash_file('sha256', $this->root . $file);
+            }
         }
 
         return false;

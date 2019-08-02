@@ -14,6 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Downloader\TransportException;
 use Composer\Util\GitLab;
+use Composer\Util\Http\Response;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -23,7 +24,6 @@ class GitLabTest extends TestCase
 {
     private $username = 'username';
     private $password = 'password';
-    private $authcode = 'authcode';
     private $message = 'mymessage';
     private $origin = 'gitlab.com';
     private $token = 'gitlabtoken';
@@ -49,17 +49,15 @@ class GitLabTest extends TestCase
             ->willReturn($this->password)
         ;
 
-        $rfs = $this->getRemoteFilesystemMock();
-        $rfs
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader
             ->expects($this->once())
-            ->method('getContents')
+            ->method('get')
             ->with(
-                $this->equalTo($this->origin),
-                $this->equalTo(sprintf('http://%s/oauth/token', $this->origin)),
-                $this->isFalse(),
+                $this->equalTo($url = sprintf('http://%s/oauth/token', $this->origin)),
                 $this->anything()
             )
-            ->willReturn(sprintf('{"access_token": "%s", "token_type": "bearer", "expires_in": 7200}', $this->token))
+            ->willReturn(new Response(array('url' => $url), 200, array(), sprintf('{"access_token": "%s", "token_type": "bearer", "expires_in": 7200}', $this->token)));
         ;
 
         $config = $this->getConfigMock();
@@ -69,7 +67,7 @@ class GitLabTest extends TestCase
             ->willReturn($this->getAuthJsonMock())
         ;
 
-        $gitLab = new GitLab($io, $config, null, $rfs);
+        $gitLab = new GitLab($io, $config, null, $httpDownloader);
 
         $this->assertTrue($gitLab->authorizeOAuthInteractively('http', $this->origin, $this->message));
     }
@@ -94,10 +92,10 @@ class GitLabTest extends TestCase
             ->willReturn($this->password)
         ;
 
-        $rfs = $this->getRemoteFilesystemMock();
-        $rfs
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader
             ->expects($this->exactly(5))
-            ->method('getContents')
+            ->method('get')
             ->will($this->throwException(new TransportException('', 401)))
         ;
 
@@ -108,7 +106,7 @@ class GitLabTest extends TestCase
             ->willReturn($this->getAuthJsonMock())
         ;
 
-        $gitLab = new GitLab($io, $config, null, $rfs);
+        $gitLab = new GitLab($io, $config, null, $httpDownloader);
 
         $gitLab->authorizeOAuthInteractively('https', $this->origin);
     }
@@ -126,18 +124,18 @@ class GitLabTest extends TestCase
 
     private function getConfigMock()
     {
-        return $this->getMock('Composer\Config');
+        return $this->getMockBuilder('Composer\Config')->getMock();
     }
 
-    private function getRemoteFilesystemMock()
+    private function getHttpDownloaderMock()
     {
-        $rfs = $this
-            ->getMockBuilder('Composer\Util\RemoteFilesystem')
+        $httpDownloader = $this
+            ->getMockBuilder('Composer\Util\HttpDownloader')
             ->disableOriginalConstructor()
             ->getMock()
         ;
 
-        return $rfs;
+        return $httpDownloader;
     }
 
     private function getAuthJsonMock()

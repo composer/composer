@@ -27,7 +27,7 @@ interface PluginInterface
      *
      * @var string
      */
-    const PLUGIN_API_VERSION = '1.1.0';
+    const PLUGIN_API_VERSION = '2.0.0';
 
     /**
      * Apply plugin modifications to Composer
@@ -36,4 +36,22 @@ interface PluginInterface
      * @param IOInterface $io
      */
     public function activate(Composer $composer, IOInterface $io);
+
+    /**
+     * Remove any hooks from Composer
+     *
+     * @param Composer    $composer
+     * @param IOInterface $io
+     */
+    public function deactivate(Composer $composer, IOInterface $io);
+
+    /**
+     * Prepare the plugin to be uninstalled
+     *
+     * This will be called after deactivate
+     *
+     * @param Composer    $composer
+     * @param IOInterface $io
+     */
+    public function uninstall(Composer $composer, IOInterface $io);
 }

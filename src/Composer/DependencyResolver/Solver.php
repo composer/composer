@@ -13,8 +13,10 @@
 namespace Composer\DependencyResolver;
 
 use Composer\IO\IOInterface;
+use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -27,10 +29,10 @@ class Solver
     /** @var PolicyInterface */
     protected $policy;
     /** @var Pool */
-    protected $pool;
+    protected $pool = null;
     /** @var RepositoryInterface */
     protected $installed;
-    /** @var Ruleset */
+    /** @var RuleSet */
     protected $rules;
     /** @var RuleSetGenerator */
     protected $ruleSetGenerator;
@@ -43,7 +45,7 @@ class Solver
     protected $watchGraph;
     /** @var Decisions */
     protected $decisions;
-    /** @var int[] */
+    /** @var PackageInterface[] */
     protected $installedMap;
 
     /** @var int */
@@ -56,6 +58,9 @@ class Solver
     protected $learnedPool = array();
     /** @var array */
     protected $learnedWhy = array();
+
+    /** @var bool */
+    public $testFlagLearnedPositiveLiteral = false;
 
     /** @var IOInterface */
     protected $io;
@@ -72,7 +77,6 @@ class Solver
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
-        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
     }
 
     /**
@@ -81,6 +85,11 @@ class Solver
     public function getRuleSetSize()
     {
         return count($this->rules);
+    }
+
+    public function getPool()
+    {
+        return $this->pool;
     }
 
     // aka solver_makeruledecisions
@@ -100,7 +109,7 @@ class Solver
             $literals = $rule->getLiterals();
             $literal = $literals[0];
 
-            if (!$this->decisions->decided(abs($literal))) {
+            if (!$this->decisions->decided($literal)) {
                 $this->decisions->decide($literal, 1, $rule);
                 continue;
             }
@@ -211,6 +220,9 @@ class Solver
         $this->jobs = $request->getJobs();
 
         $this->setupInstalledMap();
+
+        $this->io->writeError('Generating rules', true, IOInterface::DEBUG);
+        $this->ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
@@ -226,6 +238,7 @@ class Solver
         $this->io->writeError('Resolving dependencies through SAT', true, IOInterface::DEBUG);
         $before = microtime(true);
         $this->runSat(true);
+        $this->io->writeError('', true, IOInterface::DEBUG);
         $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
         // decide to remove everything that's installed and undecided
@@ -236,7 +249,7 @@ class Solver
         }
 
         if ($this->problems) {
-            throw new SolverProblemsException($this->problems, $this->installedMap);
+            throw new SolverProblemsException($this->problems, $this->installedMap, $this->learnedPool);
         }
 
         $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisions);
@@ -469,7 +482,10 @@ class Solver
                 unset($seen[abs($literal)]);
 
                 if ($num && 0 === --$num) {
-                    $learnedLiterals[0] = -abs($literal);
+                    if ($literal < 0) {
+                        $this->testFlagLearnedPositiveLiteral = true;
+                    }
+                    $learnedLiterals[0] = -$literal;
 
                     if (!$l1num) {
                         break 2;
@@ -509,9 +525,8 @@ class Solver
      */
     private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule)
     {
-        $why = spl_object_hash($conflictRule);
-
         if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
+            $why = spl_object_hash($conflictRule);
             $learnedWhy = $this->learnedWhy[$why];
             $problemRules = $this->learnedPool[$learnedWhy];
 
@@ -677,7 +692,7 @@ class Solver
         /**
          * @todo this makes $disableRules always false; determine the rationale and possibly remove dead code?
          */
-        $disableRules = array();
+        $disableRules = false;
 
         $level = 1;
         $systemLevel = $level + 1;
@@ -759,10 +774,19 @@ class Solver
             }
 
             $rulesCount = count($this->rules);
+            $pass = 1;
 
+            $this->io->writeError('Looking at all rules.', true, IOInterface::DEBUG);
             for ($i = 0, $n = 0; $n < $rulesCount; $i++, $n++) {
                 if ($i == $rulesCount) {
+                    if (1 === $pass) {
+                        $this->io->writeError("Something's changed, looking at all rules again (pass #$pass)", false, IOInterface::DEBUG);
+                    } else {
+                        $this->io->overwriteError("Something's changed, looking at all rules again (pass #$pass)", false, null, IOInterface::DEBUG);
+                    }
+
                     $i = 0;
+                    $pass++;
                 }
 
                 $rule = $this->rules->ruleById[$i];
@@ -782,14 +806,14 @@ class Solver
                 //
                 foreach ($literals as $literal) {
                     if ($literal <= 0) {
-                        if (!$this->decisions->decidedInstall(abs($literal))) {
+                        if (!$this->decisions->decidedInstall($literal)) {
                             continue 2; // next rule
                         }
                     } else {
-                        if ($this->decisions->decidedInstall(abs($literal))) {
+                        if ($this->decisions->decidedInstall($literal)) {
                             continue 2; // next rule
                         }
-                        if ($this->decisions->undecided(abs($literal))) {
+                        if ($this->decisions->undecided($literal)) {
                             $decisionQueue[] = $literal;
                         }
                     }

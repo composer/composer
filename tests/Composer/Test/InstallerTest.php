@@ -14,6 +14,7 @@ namespace Composer\Test;
 
 use Composer\Installer;
 use Composer\Console\Application;
+use Composer\IO\BufferIO;
 use Composer\Json\JsonFile;
 use Composer\Util\Filesystem;
 use Composer\Repository\ArrayRepository;
@@ -29,8 +30,6 @@ use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Formatter\OutputFormatter;
-use Composer\TestCase;
-use Composer\IO\BufferIO;
 
 class InstallerTest extends TestCase
 {
@@ -57,12 +56,16 @@ class InstallerTest extends TestCase
      */
     public function testInstaller(RootPackageInterface $rootPackage, $repositories, array $options)
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = new BufferIO('', OutputInterface::VERBOSITY_NORMAL, new OutputFormatter(false));
 
-        $downloadManager = $this->getMock('Composer\Downloader\DownloadManager', array(), array($io));
-        $config = $this->getMock('Composer\Config');
+        $downloadManager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
+            ->setConstructorArgs(array($io))
+            ->getMock();
+        $config = $this->getMockBuilder('Composer\Config')->getMock();
 
-        $repositoryManager = new RepositoryManager($io, $config);
+        $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $repositoryManager = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher);
         $repositoryManager->setLocalRepository(new InstalledArrayRepository());
 
         if (!is_array($repositories)) {
@@ -75,12 +78,13 @@ class InstallerTest extends TestCase
         $locker = $this->getMockBuilder('Composer\Package\Locker')->disableOriginalConstructor()->getMock();
         $installationManager = new InstallationManagerMock();
 
-        $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
         $autoloadGenerator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')->disableOriginalConstructor()->getMock();
 
         $installer = new Installer($io, $config, clone $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
         $result = $installer->run();
-        $this->assertSame(0, $result);
+
+        $output = str_replace("\r", '', $io->getOutput());
+        $this->assertEquals(0, $result, $output);
 
         $expectedInstalled = isset($options['install']) ? $options['install'] : array();
         $expectedUpdated = isset($options['update']) ? $options['update'] : array();
@@ -202,7 +206,9 @@ class InstallerTest extends TestCase
         $composer->setLocker($locker);
 
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
-        $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator', array(), array($eventDispatcher));
+        $autoloadGenerator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')
+            ->setConstructorArgs(array($eventDispatcher))
+            ->getMock();
         $composer->setAutoloadGenerator($autoloadGenerator);
         $composer->setEventDispatcher($eventDispatcher);
 

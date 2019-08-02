@@ -14,10 +14,9 @@ namespace Composer\IO;
 
 use Composer\Config;
 use Composer\Util\ProcessExecutor;
-use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
-abstract class BaseIO implements IOInterface, LoggerInterface
+abstract class BaseIO implements IOInterface
 {
     protected $authentications = array();
 
@@ -27,6 +26,14 @@ abstract class BaseIO implements IOInterface, LoggerInterface
     public function getAuthentications()
     {
         return $this->authentications;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function resetAuthentications()
+    {
+        $this->authentications = array();
     }
 
     /**

@@ -15,7 +15,7 @@ namespace Composer\Test\Command;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Script\Event as ScriptEvent;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class RunScriptCommandTest extends TestCase
 {
@@ -28,7 +28,7 @@ class RunScriptCommandTest extends TestCase
     {
         $scriptName = 'testScript';
 
-        $input = $this->getMock('Symfony\Component\Console\Input\InputInterface');
+        $input = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $input
             ->method('getOption')
             ->will($this->returnValueMap(array(
@@ -48,7 +48,7 @@ class RunScriptCommandTest extends TestCase
             ->with('command')
             ->willReturn(false);
 
-        $output = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
+        $output = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
 
         $expectedDevMode = $dev || !$noDev;
 

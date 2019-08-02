@@ -31,17 +31,22 @@ class SuggestsCommand extends BaseCommand
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Exclude suggestions from require-dev packages'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that you want to list suggestions from.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 
 The <info>%command.name%</info> command shows a sorted list of suggested packages.
 
 Enabling <info>-v</info> implies <info>--by-package --by-suggestion</info>, showing both lists.
 
+Read more at https://getcomposer.org/doc/03-cli.md#suggests
 EOT
             )
         ;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $lock = $this->getComposer()->getLocker()->getLockData();
@@ -116,7 +121,7 @@ EOT
                 $io->write(sprintf('<info>%s</info>', $suggestion));
             }
 
-            return;
+            return null;
         }
 
         // Grouped by package

@@ -12,19 +12,22 @@
 
 namespace Composer\Repository;
 
-use Composer\XdebugHandler;
 use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginInterface;
+use Composer\Util\ProcessExecutor;
 use Composer\Util\Silencer;
+use Composer\Util\Platform;
+use Composer\XdebugHandler\XdebugHandler;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class PlatformRepository extends ArrayRepository
 {
-    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[^/]+)$}i';
+    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-plugin-api)$}iD';
 
     private $versionParser;
 
@@ -37,8 +40,11 @@ class PlatformRepository extends ArrayRepository
      */
     private $overrides = array();
 
-    public function __construct(array $packages = array(), array $overrides = array())
+    private $process;
+
+    public function __construct(array $packages = array(), array $overrides = array(), ProcessExecutor $process = null)
     {
+        $this->process = $process === null ? (new ProcessExecutor()) : $process;
         foreach ($overrides as $name => $version) {
             $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
         }
@@ -120,7 +126,7 @@ class PlatformRepository extends ArrayRepository
         }
 
         // Check for xdebug in a restarted process
-        if (!in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = strval(getenv(XdebugHandler::ENV_VERSION)))) {
+        if (!in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = XdebugHandler::getSkippedVersion())) {
             $this->addExtension('xdebug', $prettyVersion);
         }
 
@@ -155,6 +161,19 @@ class PlatformRepository extends ArrayRepository
                         $prettyVersion = $matches[1];
                     }
 
+                    break;
+
+                case 'imagick':
+                    $imagick = new \Imagick();
+                    $imageMagickVersion = $imagick->getVersion();
+                    // 6.x: ImageMagick 6.2.9 08/24/06 Q16 http://www.imagemagick.org
+                    // 7.x: ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org
+                    preg_match('/^ImageMagick ([\d.]+)(?:-(\d+))?/', $imageMagickVersion['versionString'], $matches);
+                    if (isset($matches[2])) {
+                        $prettyVersion = "{$matches[1]}.{$matches[2]}";
+                    } else {
+                        $prettyVersion = $matches[1];
+                    }
                     break;
 
                 case 'libxml':
@@ -213,12 +232,27 @@ class PlatformRepository extends ArrayRepository
             $this->addPackage($lib);
         }
 
-        if (defined('HHVM_VERSION')) {
+        $hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;
+        if ($hhvmVersion === null && !Platform::isWindows()) {
+            $finder = new ExecutableFinder();
+            $hhvm = $finder->find('hhvm');
+            if ($hhvm !== null) {
+                $exitCode = $this->process->execute(
+                    ProcessExecutor::escape($hhvm).
+                    ' --php -d hhvm.jit=0 -r "echo HHVM_VERSION;" 2>/dev/null',
+                    $hhvmVersion
+                );
+                if ($exitCode !== 0) {
+                    $hhvmVersion = null;
+                }
+            }
+        }
+        if ($hhvmVersion) {
             try {
-                $prettyVersion = HHVM_VERSION;
+                $prettyVersion = $hhvmVersion;
                 $version = $this->versionParser->normalize($prettyVersion);
             } catch (\UnexpectedValueException $e) {
-                $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', HHVM_VERSION);
+                $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', $hhvmVersion);
                 $version = $this->versionParser->normalize($prettyVersion);
             }
 
@@ -236,7 +270,12 @@ class PlatformRepository extends ArrayRepository
         // Skip if overridden
         if (isset($this->overrides[$package->getName()])) {
             $overrider = $this->findPackage($package->getName(), '*');
-            $overrider->setDescription($overrider->getDescription().' (actual: '.$package->getPrettyVersion().')');
+            if ($package->getVersion() === $overrider->getVersion()) {
+                $actualText = 'same as actual';
+            } else {
+                $actualText = 'actual: '.$package->getPrettyVersion();
+            }
+            $overrider->setDescription($overrider->getDescription().' ('.$actualText.')');
 
             return;
         }
@@ -244,7 +283,12 @@ class PlatformRepository extends ArrayRepository
         // Skip if PHP is overridden and we are adding a php-* package
         if (isset($this->overrides['php']) && 0 === strpos($package->getName(), 'php-')) {
             $overrider = $this->addOverriddenPackage($this->overrides['php'], $package->getPrettyName());
-            $overrider->setDescription($overrider->getDescription().' (actual: '.$package->getPrettyVersion().')');
+            if ($package->getVersion() === $overrider->getVersion()) {
+                $actualText = 'same as actual';
+            } else {
+                $actualText = 'actual: '.$package->getPrettyVersion();
+            }
+            $overrider->setDescription($overrider->getDescription().' ('.$actualText.')');
 
             return;
         }
@@ -291,6 +335,10 @@ class PlatformRepository extends ArrayRepository
         $this->addPackage($ext);
     }
 
+    /**
+     * @param string $name
+     * @return string
+     */
     private function buildPackageName($name)
     {
         return 'ext-' . str_replace(' ', '-', $name);

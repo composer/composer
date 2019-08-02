@@ -12,7 +12,7 @@
 
 namespace Composer\Repository\Pear;
 
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 
 /**
  * Base PEAR Channel reader.
@@ -33,26 +33,30 @@ abstract class BaseChannelReader
     const ALL_RELEASES_NS = 'http://pear.php.net/dtd/rest.allreleases';
     const PACKAGE_INFO_NS = 'http://pear.php.net/dtd/rest.package';
 
-    /** @var RemoteFilesystem */
-    private $rfs;
+    /** @var HttpDownloader */
+    private $httpDownloader;
 
-    protected function __construct(RemoteFilesystem $rfs)
+    protected function __construct(HttpDownloader $httpDownloader)
     {
-        $this->rfs = $rfs;
+        $this->httpDownloader = $httpDownloader;
     }
 
     /**
      * Read content from remote filesystem.
      *
-     * @param $origin string server
-     * @param $path   string relative path to content
+     * @param string $origin server
+     * @param string $path   relative path to content
      * @throws \UnexpectedValueException
-     * @return \SimpleXMLElement
+     * @return string
      */
     protected function requestContent($origin, $path)
     {
         $url = rtrim($origin, '/') . '/' . ltrim($path, '/');
-        $content = $this->rfs->getContents($origin, $url, false);
+        try {
+            $content = $this->httpDownloader->get($url)->getBody();
+        } catch (\Exception $e) {
+            throw new \UnexpectedValueException('The PEAR channel at ' . $url . ' did not respond.', 0, $e);
+        }
         if (!$content) {
             throw new \UnexpectedValueException('The PEAR channel at ' . $url . ' did not respond.');
         }
@@ -63,8 +67,8 @@ abstract class BaseChannelReader
     /**
      * Read xml content from remote filesystem
      *
-     * @param $origin string server
-     * @param $path   string relative path to content
+     * @param string $origin server
+     * @param string $path   relative path to content
      * @throws \UnexpectedValueException
      * @return \SimpleXMLElement
      */

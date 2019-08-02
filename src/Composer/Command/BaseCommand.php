@@ -15,8 +15,11 @@ namespace Composer\Command;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Console\Application;
+use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
+use Composer\Plugin\PreCommandRunEvent;
+use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
@@ -24,13 +27,15 @@ use Symfony\Component\Console\Command\Command;
 /**
  * Base class for Composer commands
  *
+ * @method Application getApplication()
+ *
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
 abstract class BaseCommand extends Command
 {
     /**
-     * @var Composer
+     * @var Composer|null
      */
     private $composer;
 
@@ -43,7 +48,7 @@ abstract class BaseCommand extends Command
      * @param  bool              $required
      * @param  bool|null         $disablePlugins
      * @throws \RuntimeException
-     * @return Composer
+     * @return Composer|null
      */
     public function getComposer($required = true, $disablePlugins = null)
     {
@@ -123,6 +128,17 @@ abstract class BaseCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
+        // initialize a plugin-enabled Composer instance, either local or global
+        $disablePlugins = $input->hasParameterOption('--no-plugins');
+        $composer = $this->getComposer(false, $disablePlugins);
+        if (null === $composer) {
+            $composer = Factory::createGlobal($this->getIO(), $disablePlugins);
+        }
+        if ($composer) {
+            $preCommandRunEvent = new PreCommandRunEvent(PluginEvents::PRE_COMMAND_RUN, $input, $this->getName());
+            $composer->getEventDispatcher()->dispatch($preCommandRunEvent->getName(), $preCommandRunEvent);
+        }
+
         if (true === $input->hasParameterOption(array('--no-ansi')) && $input->hasOption('no-progress')) {
             $input->setOption('no-progress', true);
         }
@@ -159,7 +175,7 @@ abstract class BaseCommand extends Command
 
         if ($input->getOption('prefer-source') || $input->getOption('prefer-dist') || ($keepVcsRequiresPreferSource && $input->hasOption('keep-vcs') && $input->getOption('keep-vcs'))) {
             $preferSource = $input->getOption('prefer-source') || ($keepVcsRequiresPreferSource && $input->hasOption('keep-vcs') && $input->getOption('keep-vcs'));
-            $preferDist = $input->getOption('prefer-dist');
+            $preferDist = (bool) $input->getOption('prefer-dist');
         }
 
         return array($preferSource, $preferDist);

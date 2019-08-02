@@ -13,7 +13,7 @@
 namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\ArchivableFilesFinder;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Symfony\Component\Process\Process;
 
@@ -185,9 +185,11 @@ class ArchivableFilesFinderTest extends TestCase
 
         $this->finder = new ArchivableFilesFinder($this->sources, array());
 
-        $this->assertArchivableFiles($this->getArchivedFiles('git init && '.
+        $this->assertArchivableFiles($this->getArchivedFiles(
+            'git init && '.
             'git config user.email "you@example.com" && '.
             'git config user.name "Your Name" && '.
+            'git config commit.gpgsign false && '.
             'git add .git* && '.
             'git commit -m "ignore rules" && '.
             'git add . && '.
@@ -222,7 +224,8 @@ class ArchivableFilesFinderTest extends TestCase
 
         $this->finder = new ArchivableFilesFinder($this->sources, array());
 
-        $expectedFiles = $this->getArchivedFiles('hg init && '.
+        $expectedFiles = $this->getArchivedFiles(
+            'hg init && '.
             'hg add && '.
             'hg commit -m "init" && '.
             'hg archive archive.zip'

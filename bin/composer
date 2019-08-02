@@ -1,24 +1,27 @@
 #!/usr/bin/env php
 <?php
 
-if (PHP_SAPI !== 'cli') {
+if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
     echo 'Warning: Composer should be invoked via the CLI version of PHP, not the '.PHP_SAPI.' SAPI'.PHP_EOL;
 }
 
+setlocale(LC_ALL, 'C');
 require __DIR__.'/../src/bootstrap.php';
 
-use Composer\Factory;
-use Composer\XdebugHandler;
 use Composer\Console\Application;
+use Composer\XdebugHandler\XdebugHandler;
 
 error_reporting(-1);
 
-// Create output for XdebugHandler and Application
-$output = Factory::createOutput();
-
-$xdebug = new XdebugHandler($output);
+// Restart without xdebug
+$xdebug = new XdebugHandler('Composer', '--ansi');
 $xdebug->check();
 unset($xdebug);
+
+if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '4.0', '>=')) {
+    echo 'HHVM 4.0 has dropped support for Composer, please use PHP instead. Aborting.'.PHP_EOL;
+    exit(1);
+}
 
 if (function_exists('ini_set')) {
     @ini_set('display_errors', 1);
@@ -45,6 +48,10 @@ if (function_exists('ini_set')) {
     if ($memoryLimit != -1 && $memoryInBytes($memoryLimit) < 1024 * 1024 * 1536) {
         @ini_set('memory_limit', '1536M');
     }
+    // Set user defined memory limit
+    if ($memoryLimit = getenv('COMPOSER_MEMORY_LIMIT')) {
+        @ini_set('memory_limit', $memoryLimit);
+    }
     unset($memoryInBytes, $memoryLimit);
 }
 
@@ -52,4 +59,4 @@ putenv('COMPOSER_BINARY='.realpath($_SERVER['argv'][0]));
 
 // run the command application
 $application = new Application();
-$application->run(null, $output);
+$application->run();

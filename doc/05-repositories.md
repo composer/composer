@@ -11,7 +11,7 @@ understand some of the basic concepts that Composer is built on.
 ### Package
 
 Composer is a dependency manager. It installs packages locally. A package is
-essentially just a directory containing something. In this case it is PHP
+essentially a directory containing something. In this case it is PHP
 code, but in theory it could be anything. And it contains a package
 description which has a name and a version. The name and the version are used
 to identify the package.
@@ -57,9 +57,9 @@ The main repository type is the `composer` repository. It uses a single
 `packages.json` file that contains all of the package metadata.
 
 This is also the repository type that packagist uses. To reference a
-`composer` repository, just supply the path before the `packages.json` file.
+`composer` repository, supply the path before the `packages.json` file.
 In the case of packagist, that file is located at `/packages.json`, so the URL of
-the repository would be `packagist.org`. For `example.org/packages.json` the
+the repository would be `repo.packagist.org`. For `example.org/packages.json` the
 repository URL would be `example.org`.
 
 #### packages
@@ -93,7 +93,7 @@ Here is a minimal package definition:
     "name": "smarty/smarty",
     "version": "3.1.7",
     "dist": {
-        "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+        "url": "https://www.smarty.net/files/Smarty-3.1.7.zip",
         "type": "zip"
     }
 }
@@ -177,7 +177,7 @@ integrity, for example:
 The file above declares that acme/foo and acme/bar can be found in this
 repository, by loading the file referenced by `providers-url`, replacing
 `%package%` by the vendor namespaced package name and `%hash%` by the
-sha256 field. Those files themselves just contain package definitions as
+sha256 field. Those files themselves contain package definitions as
 described [above](#packages).
 
 These fields are optional. You probably don't need them for your own custom
@@ -205,7 +205,7 @@ project to use the patched version. If the library is on GitHub (this is the
 case most of the time), you can simply fork it there and push your changes to
 your fork. After that you update the project's `composer.json`. All you have
 to do is add your fork as a repository and update the version constraint to
-point to your custom branch. In `composer.json`, you should prefix your custom 
+point to your custom branch. In `composer.json`, you should prefix your custom
 branch name with `"dev-"`. For version constraint naming conventions see
 [Libraries](02-libraries.md) for more information.
 
@@ -284,8 +284,9 @@ VCS repository provides `dist`s for them that fetch the packages as zips.
 * **BitBucket:** [bitbucket.org](https://bitbucket.org) (Git and Mercurial)
 
 The VCS driver to be used is detected automatically based on the URL. However,
-should you need to specify one for whatever reason, you can use `fossil`, `git`,
-`svn` or `hg` as the repository type instead of `vcs`.
+should you need to specify one for whatever reason, you can use `git-bitbucket`,
+`hg-bitbucket`, `github`, `gitlab`, `perforce`, `fossil`, `git`, `svn` or `hg`
+as the repository type instead of `vcs`.
 
 If you set the `no-api` key to `true` on a github repository it will clone the
 repository as it would with any other git repository instead of using the
@@ -300,18 +301,15 @@ Please note:
 
 The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs and you will need to create an OAuth consumer to use the driver, please refer to [Atlassian's Documentation](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). You will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and is not used by Composer.
 
-After creating an OAuth consumer in the BitBucket control panel, you need to setup your auth.json file with 
+After creating an OAuth consumer in the BitBucket control panel, you need to setup your auth.json file with
 the credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
 ```json
 {
-    "config": {
-        "bitbucket-oauth": {
-            "bitbucket.org": {
-                "consumer-key": "myKey", 
-                "consumer-secret": "mySecret"
-            }
+    "bitbucket-oauth": {
+        "bitbucket.org": {
+            "consumer-key": "myKey",
+            "consumer-secret": "mySecret"
         }
-        
     }
 }
 ```
@@ -488,7 +486,7 @@ Here is an example for the smarty template engine:
                 "name": "smarty/smarty",
                 "version": "3.1.7",
                 "dist": {
-                    "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+                    "url": "https://www.smarty.net/files/Smarty-3.1.7.zip",
                     "type": "zip"
                 },
                 "source": {
@@ -518,7 +516,7 @@ Typically you would leave the source part off, as you don't really need it.
 >   reference you will have to delete the package to force an update, and will
 >   have to deal with an unstable lock file.
 
-The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:  
+The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:
 
 ```json
 {
@@ -606,7 +604,7 @@ private packages:
 }
 ```
 
-Each zip artifact is just a ZIP archive with `composer.json` in root folder:
+Each zip artifact is a ZIP archive with `composer.json` in root folder:
 
 ```sh
 unzip -l acme-corp-parser-10.3.5.zip
@@ -659,7 +657,7 @@ be explicitly defined in the package's `composer.json` file. If the version
 cannot be resolved by these means, it is assumed to be `dev-master`.
 
 The local package will be symlinked if possible, in which case the output in
-the console will read `Symlinked from ../../packages/my-package`. If symlinking
+the console will read `Symlinking from ../../packages/my-package`. If symlinking
 is _not_ possible the package will be copied. In that case, the console will
 output `Mirrored from ../../packages/my-package`.
 
@@ -667,6 +665,10 @@ Instead of default fallback strategy you can force to use symlink with
 `"symlink": true` or mirroring with `"symlink": false` option. Forcing
 mirroring can be useful when deploying or generating package from a
 monolithic repository.
+
+> **Note:** On Windows, directory symlinks are implemented using NTFS junctions
+> because they can be created by non-admin users. Mirroring will always be used
+> on versions below Windows 7 or if `proc_open` has been disabled.
 
 ```json
 {
@@ -708,7 +710,7 @@ You can disable the default Packagist.org repository by adding this to your
 
 You can disable Packagist.org globally by using the global config flag:
 
-```
+```bash
 composer config -g repo.packagist false
 ```
 

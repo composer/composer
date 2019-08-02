@@ -21,8 +21,12 @@ class LockerTest extends TestCase
     public function testIsLocked()
     {
         $json = $this->createJsonFileMock();
-        $locker = new Locker(new NullIO, $json, $this->createInstallationManagerMock(),
-            $this->getJsonContent());
+        $locker = new Locker(
+            new NullIO,
+            $json,
+            $this->createRepositoryManagerMock(),
+            $this->getJsonContent()
+        );
 
         $json
             ->expects($this->any())
@@ -130,7 +134,7 @@ class LockerTest extends TestCase
             ->method('write')
             ->with(array(
                 '_readme' => array('This file locks the dependencies of your project to a known state',
-                                   'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
+                                   'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies',
                                    'This file is @gener'.'ated automatically', ),
                 'content-hash' => $contentHash,
                 'packages' => array(

@@ -12,14 +12,14 @@
 
 namespace Composer\Test\Repository\Pear;
 
-use Composer\TestCase;
-use Composer\Test\Mock\RemoteFilesystemMock;
+use Composer\Test\TestCase;
+use Composer\Test\Mock\HttpDownloaderMock;
 
 class ChannelRest10ReaderTest extends TestCase
 {
     public function testShouldBuildPackagesFromPearSchema()
     {
-        $rfs = new RemoteFilesystemMock(array(
+        $httpDownloader = new HttpDownloaderMock(array(
             'http://test.loc/rest10/p/packages.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/packages.xml'),
             'http://test.loc/rest10/p/http_client/info.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_client_info.xml'),
             'http://test.loc/rest10/r/http_client/allreleases.xml' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_client_allreleases.xml'),
@@ -29,9 +29,9 @@ class ChannelRest10ReaderTest extends TestCase
             'http://test.loc/rest10/r/http_request/deps.1.4.0.txt' => file_get_contents(__DIR__ . '/Fixtures/Rest1.0/http_request_deps.1.4.0.txt'),
         ));
 
-        $reader = new \Composer\Repository\Pear\ChannelRest10Reader($rfs);
+        $reader = new \Composer\Repository\Pear\ChannelRest10Reader($httpDownloader);
 
-        /** @var $packages \Composer\Package\PackageInterface[] */
+        /** @var \Composer\Package\PackageInterface[] $packages */
         $packages = $reader->read('http://test.loc/rest10');
 
         $this->assertCount(2, $packages);

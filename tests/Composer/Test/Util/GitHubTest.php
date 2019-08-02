@@ -14,6 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Downloader\TransportException;
 use Composer\Util\GitHub;
+use Composer\Util\Http\Response;
 use PHPUnit\Framework\TestCase;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
@@ -23,12 +24,9 @@ use RecursiveIteratorIterator;
  */
 class GitHubTest extends TestCase
 {
-    private $username = 'username';
     private $password = 'password';
-    private $authcode = 'authcode';
     private $message = 'mymessage';
     private $origin = 'github.com';
-    private $token = 'githubtoken';
 
     public function testUsernamePasswordAuthenticationFlow()
     {
@@ -45,17 +43,15 @@ class GitHubTest extends TestCase
             ->willReturn($this->password)
         ;
 
-        $rfs = $this->getRemoteFilesystemMock();
-        $rfs
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader
             ->expects($this->once())
-            ->method('getContents')
+            ->method('get')
             ->with(
-                $this->equalTo($this->origin),
-                $this->equalTo(sprintf('https://api.%s/', $this->origin)),
-                $this->isFalse(),
+                $this->equalTo($url = sprintf('https://api.%s/', $this->origin)),
                 $this->anything()
             )
-            ->willReturn('{}')
+            ->willReturn(new Response(array('url' => $url), 200, array(), '{}'));
         ;
 
         $config = $this->getConfigMock();
@@ -70,7 +66,7 @@ class GitHubTest extends TestCase
             ->willReturn($this->getConfJsonMock())
         ;
 
-        $github = new GitHub($io, $config, null, $rfs);
+        $github = new GitHub($io, $config, null, $httpDownloader);
 
         $this->assertTrue($github->authorizeOAuthInteractively($this->origin, $this->message));
     }
@@ -85,10 +81,10 @@ class GitHubTest extends TestCase
             ->willReturn($this->password)
         ;
 
-        $rfs = $this->getRemoteFilesystemMock();
-        $rfs
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader
             ->expects($this->exactly(1))
-            ->method('getContents')
+            ->method('get')
             ->will($this->throwException(new TransportException('', 401)))
         ;
 
@@ -99,7 +95,7 @@ class GitHubTest extends TestCase
             ->willReturn($this->getAuthJsonMock())
         ;
 
-        $github = new GitHub($io, $config, null, $rfs);
+        $github = new GitHub($io, $config, null, $httpDownloader);
 
         $this->assertFalse($github->authorizeOAuthInteractively($this->origin));
     }
@@ -117,18 +113,18 @@ class GitHubTest extends TestCase
 
     private function getConfigMock()
     {
-        return $this->getMock('Composer\Config');
+        return $this->getMockBuilder('Composer\Config')->getMock();
     }
 
-    private function getRemoteFilesystemMock()
+    private function getHttpDownloaderMock()
     {
-        $rfs = $this
-            ->getMockBuilder('Composer\Util\RemoteFilesystem')
+        $httpDownloader = $this
+            ->getMockBuilder('Composer\Util\HttpDownloader')
             ->disableOriginalConstructor()
             ->getMock()
         ;
 
-        return $rfs;
+        return $httpDownloader;
     }
 
     private function getAuthJsonMock()

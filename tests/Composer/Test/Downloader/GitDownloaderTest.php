@@ -14,7 +14,7 @@ namespace Composer\Test\Downloader;
 
 use Composer\Downloader\GitDownloader;
 use Composer\Config;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 
@@ -60,9 +60,9 @@ class GitDownloaderTest extends TestCase
 
     protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
     {
-        $io = $io ?: $this->getMock('Composer\IO\IOInterface');
-        $executor = $executor ?: $this->getMock('Composer\Util\ProcessExecutor');
-        $filesystem = $filesystem ?: $this->getMock('Composer\Util\Filesystem');
+        $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $executor = $executor ?: $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $filesystem = $filesystem ?: $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $config = $this->setupConfig($config);
 
         return new GitDownloader($io, $config, $executor, $filesystem);
@@ -73,18 +73,18 @@ class GitDownloaderTest extends TestCase
      */
     public function testDownloadForPackageWithoutSourceReference()
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
             ->method('getSourceReference')
             ->will($this->returnValue(null));
 
         $downloader = $this->getDownloaderMock();
-        $downloader->download($packageMock, '/path');
+        $downloader->install($packageMock, '/path');
     }
 
     public function testDownload()
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('1234567890123456789012345678901234567890'));
@@ -97,7 +97,7 @@ class GitDownloaderTest extends TestCase
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('dev-master'));
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
         $processExecutor->expects($this->at(0))
             ->method('execute')
@@ -130,12 +130,12 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, null, $processExecutor);
-        $downloader->download($packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
     }
 
     public function testDownloadWithCache()
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('1234567890123456789012345678901234567890'));
@@ -148,7 +148,7 @@ class GitDownloaderTest extends TestCase
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('dev-master'));
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
         $processExecutor->expects($this->at(0))
             ->method('execute')
@@ -195,13 +195,13 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, $config, $processExecutor);
-        $downloader->download($packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
         @rmdir($cachePath);
     }
 
     public function testDownloadUsesVariousProtocolsAndSetsPushUrlForGithub()
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
@@ -214,7 +214,7 @@ class GitDownloaderTest extends TestCase
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
         $processExecutor->expects($this->at(0))
             ->method('execute')
@@ -265,7 +265,7 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, new Config(), $processExecutor);
-        $downloader->download($packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
     }
 
     public function pushUrlProvider()
@@ -285,7 +285,7 @@ class GitDownloaderTest extends TestCase
      */
     public function testDownloadAndSetPushUrlUseCustomVariousProtocolsForGithub($protocols, $url, $pushUrl)
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
@@ -298,7 +298,7 @@ class GitDownloaderTest extends TestCase
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
         $processExecutor->expects($this->at(0))
             ->method('execute')
@@ -329,7 +329,7 @@ class GitDownloaderTest extends TestCase
         $config->merge(array('config' => array('github-protocols' => $protocols)));
 
         $downloader = $this->getDownloaderMock(null, $config, $processExecutor);
-        $downloader->download($packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
     }
 
     /**
@@ -338,14 +338,14 @@ class GitDownloaderTest extends TestCase
     public function testDownloadThrowsRuntimeExceptionIfGitCommandFails()
     {
         $expectedGitCommand = $this->winCompat("git clone --no-checkout 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer 'https://example.com/composer/composer' && git fetch composer");
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->any())
             ->method('getSourceUrls')
             ->will($this->returnValue(array('https://example.com/composer/composer')));
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($this->winCompat('git --version')))
@@ -360,7 +360,7 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(1));
 
         $downloader = $this->getDownloaderMock(null, null, $processExecutor);
-        $downloader->download($packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
     }
 
     /**
@@ -368,8 +368,8 @@ class GitDownloaderTest extends TestCase
      */
     public function testUpdateforPackageWithoutSourceReference()
     {
-        $initialPackageMock = $this->getMock('Composer\Package\PackageInterface');
-        $sourcePackageMock = $this->getMock('Composer\Package\PackageInterface');
+        $initialPackageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+        $sourcePackageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $sourcePackageMock->expects($this->once())
             ->method('getSourceReference')
             ->will($this->returnValue(null));
@@ -382,7 +382,7 @@ class GitDownloaderTest extends TestCase
     {
         $expectedGitUpdateCommand = $this->winCompat("git remote set-url composer 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)");
 
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
@@ -390,9 +390,9 @@ class GitDownloaderTest extends TestCase
             ->method('getSourceUrls')
             ->will($this->returnValue(array('https://github.com/composer/composer')));
         $packageMock->expects($this->any())
-            ->method('getPrettyVersion')
-            ->will($this->returnValue('1.0.0'));
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+            ->method('getVersion')
+            ->will($this->returnValue('1.0.0.0'));
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git show-ref --head -d")))
@@ -431,7 +431,7 @@ class GitDownloaderTest extends TestCase
     {
         $expectedGitUpdateCommand = $this->winCompat("git remote set-url composer 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)");
 
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
@@ -442,9 +442,9 @@ class GitDownloaderTest extends TestCase
             ->method('getSourceUrl')
             ->will($this->returnValue('https://github.com/composer/composer'));
         $packageMock->expects($this->any())
-            ->method('getPrettyVersion')
-            ->will($this->returnValue('1.0.0'));
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+            ->method('getVersion')
+            ->will($this->returnValue('1.0.0.0'));
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git show-ref --head -d")))
@@ -503,14 +503,17 @@ composer https://github.com/old/url (push)
     {
         $expectedGitUpdateCommand = $this->winCompat("git remote set-url composer 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)");
 
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->any())
             ->method('getSourceUrls')
             ->will($this->returnValue(array('https://github.com/composer/composer')));
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $packageMock->expects($this->any())
+            ->method('getVersion')
+            ->will($this->returnValue('1.0.0.0'));
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git show-ref --head -d")))
@@ -542,14 +545,17 @@ composer https://github.com/old/url (push)
         $expectedFirstGitUpdateCommand = $this->winCompat("git remote set-url composer '' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)");
         $expectedSecondGitUpdateCommand = $this->winCompat("git remote set-url composer 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)");
 
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->any())
+            ->method('getVersion')
+            ->will($this->returnValue('1.0.0.0'));
+        $packageMock->expects($this->any())
             ->method('getSourceUrls')
             ->will($this->returnValue(array('/foo/bar', 'https://github.com/composer/composer')));
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git show-ref --head -d")))
@@ -596,17 +602,101 @@ composer https://github.com/old/url (push)
         $downloader->update($packageMock, $packageMock, $this->workingDir);
     }
 
+    public function testDowngradeShowsAppropriateMessage()
+    {
+        $oldPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+        $oldPackage->expects($this->any())
+            ->method('getVersion')
+            ->will($this->returnValue('1.2.0.0'));
+        $oldPackage->expects($this->any())
+            ->method('getFullPrettyVersion')
+            ->will($this->returnValue('1.2.0'));
+        $oldPackage->expects($this->any())
+            ->method('getSourceReference')
+            ->will($this->returnValue('ref'));
+        $oldPackage->expects($this->any())
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('/foo/bar', 'https://github.com/composer/composer')));
+
+        $newPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+        $newPackage->expects($this->any())
+            ->method('getSourceReference')
+            ->will($this->returnValue('ref'));
+        $newPackage->expects($this->any())
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://github.com/composer/composer')));
+        $newPackage->expects($this->any())
+            ->method('getVersion')
+            ->will($this->returnValue('1.0.0.0'));
+        $newPackage->expects($this->any())
+            ->method('getFullPrettyVersion')
+            ->will($this->returnValue('1.0.0'));
+
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $processExecutor->expects($this->any())
+            ->method('execute')
+            ->will($this->returnValue(0));
+
+        $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $ioMock->expects($this->at(0))
+            ->method('writeError')
+            ->with($this->stringContains('Downgrading'));
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
+        $downloader = $this->getDownloaderMock($ioMock, null, $processExecutor);
+        $downloader->update($oldPackage, $newPackage, $this->workingDir);
+    }
+
+    public function testNotUsingDowngradingWithReferences()
+    {
+        $oldPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+        $oldPackage->expects($this->any())
+            ->method('getVersion')
+            ->will($this->returnValue('dev-ref'));
+        $oldPackage->expects($this->any())
+            ->method('getSourceReference')
+            ->will($this->returnValue('ref'));
+        $oldPackage->expects($this->any())
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('/foo/bar', 'https://github.com/composer/composer')));
+
+        $newPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+        $newPackage->expects($this->any())
+            ->method('getSourceReference')
+            ->will($this->returnValue('ref'));
+        $newPackage->expects($this->any())
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://github.com/composer/composer')));
+        $newPackage->expects($this->any())
+            ->method('getVersion')
+            ->will($this->returnValue('dev-ref2'));
+
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $processExecutor->expects($this->any())
+            ->method('execute')
+            ->will($this->returnValue(0));
+
+        $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $ioMock->expects($this->at(0))
+            ->method('writeError')
+            ->with($this->stringContains('updating'));
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
+        $downloader = $this->getDownloaderMock($ioMock, null, $processExecutor);
+        $downloader->update($oldPackage, $newPackage, $this->workingDir);
+    }
+
     public function testRemove()
     {
         $expectedGitResetCommand = $this->winCompat("cd 'composerPath' && git status --porcelain --untracked-files=no");
 
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->any())
             ->method('execute')
             ->with($this->equalTo($expectedGitResetCommand))
             ->will($this->returnValue(0));
-        $filesystem = $this->getMock('Composer\Util\Filesystem');
+        $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $filesystem->expects($this->any())
             ->method('removeDirectory')
             ->with($this->equalTo('composerPath'))

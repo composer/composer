@@ -36,8 +36,10 @@ class OutdatedCommand extends ShowCommand
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
+                new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it with the --outdated option if you don\'t want to be informed about new versions of some packages.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The outdated command is just a proxy for `composer show -l`
 
 The color coding (or signage if you have ANSI colors disabled) for dependency versions is as such:
@@ -48,7 +50,7 @@ The color coding (or signage if you have ANSI colors disabled) for dependency ve
   may involve work.
 - <highlight>red</highlight> (!): Dependency has a new version that is semver-compatible and you should upgrade it.
 
-
+Read more at https://getcomposer.org/doc/03-cli.md#outdated
 EOT
             )
         ;
@@ -76,6 +78,7 @@ EOT
             $args['--minor-only'] = true;
         }
         $args['--format'] = $input->getOption('format');
+        $args['--ignore'] = $input->getOption('ignore');
 
         $input = new ArrayInput($args);
 

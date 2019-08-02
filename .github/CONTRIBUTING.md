@@ -21,6 +21,11 @@ If your issue involves installing, updating or resolving dependencies, the
 chance of us being able to reproduce your issue will be much higher if you
 share your `composer.json` with us.
 
+Coding Style Fixes
+------------------
+
+We do not accept CS fixes pull requests. Fixes are done by the project maintainers when appropriate to avoid causing too many unnecessary conflicts between branches and pull requests.
+
 Security Reports
 ----------------
 

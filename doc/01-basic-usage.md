@@ -9,13 +9,13 @@ a logging library. If you have not yet installed Composer, refer to the
 > **Note:** for the sake of simplicity, this introduction will assume you
 > have performed a [local](00-intro.md#locally) install of Composer.
 
-## `composer.json`: Project Setup
+## `composer.json`: Project setup
 
 To start using Composer in your project, all you need is a `composer.json`
 file. This file describes the dependencies of your project and may contain
 other metadata as well.
 
-### The `require` Key
+### The `require` key
 
 The first (and often only) thing you specify in `composer.json` is the
 [`require`](04-schema.md#require) key. You are simply telling Composer which
@@ -41,10 +41,10 @@ assumed that the `monolog/monolog` package is registered on Packagist. (See more
 about Packagist [below](#packagist), or read more about repositories
 [here](05-repositories.md)).
 
-### Package Names
+### Package names
 
 The package name consists of a vendor name and the project's name. Often these
-will be identical - the vendor name just exists to prevent naming clashes. For
+will be identical - the vendor name only exists to prevent naming clashes. For
 example, it would allow two different people to create a library named `json`.
 One might be named `igorw/json` while the other might be `seldaek/json`.
 
@@ -53,10 +53,10 @@ Read more about publishing packages and package naming [here](02-libraries.md).
 you to require certain versions of server software. See
 [platform packages](#platform-packages) below.)
 
-### Package Version Constraints
+### Package version constraints
 
 In our example, we are requesting the Monolog package with the version constraint
-[`1.0.*`](http://semver.mwl.be/#?package=monolog%2Fmonolog&version=1.0.*).
+[`1.0.*`](https://semver.mwl.be/#?package=monolog%2Fmonolog&version=1.0.*).
 This means any version in the `1.0` development branch, or any version that is
 greater than or equal to 1.0 and less than 1.1 (`>=1.0 <1.1`).
 
@@ -84,9 +84,9 @@ versions, how versions relate to each other, and on version constraints.
 > versions of a package. Read more about stability flags and the `minimum-stability`
 > key on the [schema page](04-schema.md).
 
-## Installing Dependencies
+## Installing dependencies
 
-To install the defined dependencies for your project, just run the
+To install the defined dependencies for your project, run the
 [`install`](03-cli.md#install) command.
 
 ```sh
@@ -95,7 +95,7 @@ php composer.phar install
 
 When you run this command, one of two things may happen:
 
-### Installing Without `composer.lock`
+### Installing without `composer.lock`
 
 If you have never run the command before and there is also no `composer.lock` file present,
 Composer simply resolves all dependencies listed in your `composer.json` file and downloads
@@ -114,7 +114,7 @@ of them that it downloaded to the `composer.lock` file, locking the project to t
 versions. You should commit the `composer.lock` file to your project repo so that all people
 working on the project are locked to the same versions of dependencies (more below).
 
-### Installing With `composer.lock`
+### Installing with `composer.lock`
 
 This brings us to the second scenario. If there is already a `composer.lock` file as well as a
 `composer.json` file when you run `composer install`, it means either you ran the
@@ -130,7 +130,7 @@ working on your project. As a result you will have all dependencies requested by
 the file was created). This is by design, it ensures that your project does not break because of
 unexpected changes in dependencies.
 
-### Commit Your `composer.lock` File to Version Control
+### Commit your `composer.lock` file to version control
 
 Committing this file to VC is important because it will cause anyone who sets
 up the project to use the exact same
@@ -142,7 +142,7 @@ reinstalling the project you can feel confident the dependencies installed are
 still working even if your dependencies released many new versions since then.
 (See note below about using the `update` command.)
 
-## Updating Dependencies to their Latest Versions
+## Updating dependencies to their latest versions
 
 As mentioned above, the `composer.lock` file prevents you from automatically getting
 the latest versions of your dependencies. To update to the latest versions, use the
@@ -154,8 +154,10 @@ and running `install` again.)
 ```sh
 php composer.phar update
 ```
+
 > **Note:** Composer will display a Warning when executing an `install` command
-> if `composer.lock` and `composer.json` are not synchronized.
+> if the `composer.lock` has not been updated since changes were made to the
+> `composer.json` that might affect dependency resolution.
 
 If you only want to install or update one dependency, you can whitelist them:
 
@@ -188,15 +190,15 @@ installed on the system but are not actually installable by Composer. This
 includes PHP itself, PHP extensions and some system libraries.
 
 * `php` represents the PHP version of the user, allowing you to apply
-  constraints, e.g. `>=5.4.0`. To require a 64bit version of php, you can
+  constraints, e.g. `^7.1`. To require a 64bit version of php, you can
   require the `php-64bit` package.
 
 * `hhvm` represents the version of the HHVM runtime and allows you to apply
-  a constraint, e.g., '>=2.3.3'.
+  a constraint, e.g., `^2.3`.
 
 * `ext-<name>` allows you to require PHP extensions (includes core
   extensions). Versioning can be quite inconsistent here, so it's often
-  a good idea to just set the constraint to `*`.  An example of an extension
+  a good idea to set the constraint to `*`.  An example of an extension
   package name is `ext-gd`.
 
 * `lib-<name>` allows constraints to be made on versions of libraries used by
@@ -255,10 +257,10 @@ In addition to PSR-4 autoloading, Composer also supports PSR-0, classmap and
 files autoloading. See the [`autoload`](04-schema.md#autoload) reference for
 more information.
 
-See also the docs on [`optimizing the autoloader`](articles/autoloader-optimization.md).
+See also the docs on [optimizing the autoloader](articles/autoloader-optimization.md).
 
 > **Note:** Composer provides its own autoloader. If you don't want to use that
-> one, you can just include `vendor/composer/autoload_*.php` files, which return
+> one, you can include `vendor/composer/autoload_*.php` files, which return
 > associative arrays allowing you to configure your own autoloader.
 
 &larr; [Intro](00-intro.md)  |  [Libraries](02-libraries.md) &rarr;

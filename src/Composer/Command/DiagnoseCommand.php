@@ -16,12 +16,13 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\Config;
 use Composer\Downloader\TransportException;
+use Composer\Repository\PlatformRepository;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\ConfigValidator;
 use Composer\Util\IniHelper;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\Util\StreamContextFactory;
 use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
@@ -34,8 +35,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DiagnoseCommand extends BaseCommand
 {
-    /** @var RemoteFileSystem */
-    protected $rfs;
+    /** @var HttpDownloader */
+    protected $httpDownloader;
 
     /** @var ProcessExecutor */
     protected $process;
@@ -48,11 +49,13 @@ class DiagnoseCommand extends BaseCommand
         $this
             ->setName('diagnose')
             ->setDescription('Diagnoses the system to identify common errors.')
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The <info>diagnose</info> command checks common errors to help debugging problems.
 
 The process exit code will be 1 in case of warnings and 2 for errors.
 
+Read more at https://getcomposer.org/doc/03-cli.md#diagnose
 EOT
             )
         ;
@@ -81,9 +84,9 @@ EOT
         }
 
         $config->merge(array('config' => array('secure-http' => false)));
-        $config->prohibitUrlByConfig('http://packagist.org', new NullIO);
+        $config->prohibitUrlByConfig('http://repo.packagist.org', new NullIO);
 
-        $this->rfs = Factory::createRemoteFilesystem($io, $config);
+        $this->httpDownloader = Factory::createHttpDownloader($io, $config);
         $this->process = new ProcessExecutor($io);
 
         $io->write('Checking platform settings: ', false);
@@ -117,8 +120,9 @@ EOT
             $io->write('Checking github.com rate limit: ', false);
             try {
                 $rate = $this->getGithubRateLimit('github.com');
-                $this->outputResult(true);
-                if (10 > $rate['remaining']) {
+                if (!is_array($rate)) {
+                    $this->outputResult($rate);
+                } elseif (10 > $rate['remaining']) {
                     $io->write('<warning>WARNING</warning>');
                     $io->write(sprintf(
                         '<comment>Github has a rate limit on their API. '
@@ -129,6 +133,8 @@ EOT
                         $rate['remaining'],
                         $rate['limit']
                     ));
+                } else {
+                    $this->outputResult(true);
                 }
             } catch (\Exception $e) {
                 if ($e instanceof TransportException && $e->getCode() === 401) {
@@ -150,9 +156,17 @@ EOT
             $this->outputResult($this->checkVersion($config));
         }
 
-        $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::VERSION));
+        $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::getVersion()));
 
-        $io->write(sprintf('PHP version: <comment>%s</comment>', PHP_VERSION));
+        $platformOverrides = $config->get('platform') ?: array();
+        $platformRepo = new PlatformRepository(array(), $platformOverrides);
+        $phpPkg = $platformRepo->findPackage('php', '*');
+        $phpVersion = $phpPkg->getPrettyVersion();
+        if (false !== strpos($phpPkg->getDescription(), 'overridden')) {
+            $phpVersion .= ' - ' . $phpPkg->getDescription();
+        }
+
+        $io->write(sprintf('PHP version: <comment>%s</comment>', $phpVersion));
 
         if (defined('PHP_BINARY')) {
             $io->write(sprintf('PHP binary path: <comment>%s</comment>', PHP_BINARY));
@@ -197,6 +211,11 @@ EOT
 
     private function checkHttp($proto, Config $config)
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         $disableTls = false;
         $result = array();
         if ($proto === 'https' && $config->get('disable-tls') === true) {
@@ -208,7 +227,7 @@ EOT
         }
 
         try {
-            $this->rfs->getContents('packagist.org', $proto . '://packagist.org/packages.json', false);
+            $this->httpDownloader->get($proto . '://repo.packagist.org/packages.json');
         } catch (TransportException $e) {
             if (false !== strpos($e->getMessage(), 'cafile')) {
                 $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
@@ -228,13 +247,18 @@ EOT
 
     private function checkHttpProxy()
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $json = json_decode($this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false), true);
+            $json = $this->httpDownloader->get($protocol . '://repo.packagist.org/packages.json')->decodeJson();
             $hash = reset($json['provider-includes']);
             $hash = $hash['sha256'];
             $path = str_replace('%hash%', $hash, key($json['provider-includes']));
-            $provider = $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/'.$path, false);
+            $provider = $this->httpDownloader->get($protocol . '://repo.packagist.org/'.$path)->getBody();
 
             if (hash('sha256', $provider) !== $hash) {
                 return 'It seems that your proxy is modifying http traffic on the fly';
@@ -255,12 +279,17 @@ EOT
      */
     private function checkHttpProxyFullUriRequestParam()
     {
-        $url = 'http://packagist.org/packages.json';
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
+        $url = 'http://repo.packagist.org/packages.json';
         try {
-            $this->rfs->getContents('packagist.org', $url, false);
+            $this->httpDownloader->get($url);
         } catch (TransportException $e) {
             try {
-                $this->rfs->getContents('packagist.org', $url, false, array('http' => array('request_fulluri' => false)));
+                $this->httpDownloader->get($url, array('http' => array('request_fulluri' => false)));
             } catch (TransportException $e) {
                 return 'Unable to assess the situation, maybe packagist.org is down ('.$e->getMessage().')';
             }
@@ -280,16 +309,21 @@ EOT
      */
     private function checkHttpsProxyFullUriRequestParam()
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         if (!extension_loaded('openssl')) {
             return 'You need the openssl extension installed for this check';
         }
 
         $url = 'https://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0';
         try {
-            $this->rfs->getContents('github.com', $url, false);
+            $this->httpDownloader->get($url);
         } catch (TransportException $e) {
             try {
-                $this->rfs->getContents('github.com', $url, false, array('http' => array('request_fulluri' => false)));
+                $this->httpDownloader->get($url, array('http' => array('request_fulluri' => false)));
             } catch (TransportException $e) {
                 return 'Unable to assess the situation, maybe github is down ('.$e->getMessage().')';
             }
@@ -302,11 +336,16 @@ EOT
 
     private function checkGithubOauth($domain, $token)
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         $this->getIO()->setAuthentication($domain, $token, 'x-oauth-basic');
         try {
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/' : 'https://'.$domain.'/api/v3/';
 
-            return $this->rfs->getContents($domain, $url, false, array(
+            return $this->httpDownloader->get($url, array(
                 'retry-auth-failure' => false,
             )) ? true : 'Unexpected error';
         } catch (\Exception $e) {
@@ -322,17 +361,21 @@ EOT
      * @param  string             $domain
      * @param  string             $token
      * @throws TransportException
-     * @return array
+     * @return array|string
      */
     private function getGithubRateLimit($domain, $token = null)
     {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
         if ($token) {
             $this->getIO()->setAuthentication($domain, $token, 'x-oauth-basic');
         }
 
         $url = $domain === 'github.com' ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
-        $json = $this->rfs->getContents($domain, $url, false, array('retry-auth-failure' => false));
-        $data = json_decode($json, true);
+        $data = $this->httpDownloader->get($url, array('retry-auth-failure' => false))->decodeJson();
 
         return $data['resources']['core'];
     }
@@ -380,7 +423,12 @@ EOT
 
     private function checkVersion($config)
     {
-        $versionsUtil = new Versions($config, $this->rfs);
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
+        $versionsUtil = new Versions($config, $this->httpDownloader);
         $latest = $versionsUtil->getLatest();
 
         if (Composer::VERSION !== $latest['version'] && Composer::VERSION !== '@package_version@') {
@@ -403,6 +451,7 @@ EOT
         }
 
         $hadError = false;
+        $hadWarning = false;
         if ($result instanceof \Exception) {
             $result = '<error>['.get_class($result).'] '.$result->getMessage().'</error>';
         }
@@ -417,16 +466,18 @@ EOT
             foreach ($result as $message) {
                 if (false !== strpos($message, '<error>')) {
                     $hadError = true;
+                } elseif (false !== strpos($message, '<warning>')) {
+                    $hadWarning = true;
                 }
             }
         }
 
         if ($hadError) {
             $io->write('<error>FAIL</error>');
-            $this->exitCode = 2;
-        } else {
+            $this->exitCode = max($this->exitCode, 2);
+        } elseif ($hadWarning) {
             $io->write('<warning>WARNING</warning>');
-            $this->exitCode = 1;
+            $this->exitCode = max($this->exitCode, 1);
         }
 
         if ($result) {
@@ -471,7 +522,7 @@ EOT
             $errors['iconv_mbstring'] = true;
         }
 
-        if (!ini_get('allow_url_fopen')) {
+        if (!filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
             $errors['allow_url_fopen'] = true;
         }
 
@@ -495,7 +546,7 @@ EOT
             $warnings['openssl_version'] = true;
         }
 
-        if (!defined('HHVM_VERSION') && !extension_loaded('apcu') && ini_get('apc.enable_cli')) {
+        if (!defined('HHVM_VERSION') && !extension_loaded('apcu') && filter_var(ini_get('apc.enable_cli'), FILTER_VALIDATE_BOOLEAN)) {
             $warnings['apc_cli'] = true;
         }
 
@@ -518,7 +569,7 @@ EOT
             }
         }
 
-        if (ini_get('xdebug.profiler_enabled')) {
+        if (filter_var(ini_get('xdebug.profiler_enabled'), FILTER_VALIDATE_BOOLEAN)) {
             $warnings['xdebug_profile'] = true;
         } elseif (extension_loaded('xdebug')) {
             $warnings['xdebug_loaded'] = true;
@@ -550,20 +601,6 @@ EOT
                     case 'iconv_mbstring':
                         $text = PHP_EOL."The iconv OR mbstring extension is required and both are missing.".PHP_EOL;
                         $text .= "Install either of them or recompile php without --disable-iconv";
-                        break;
-
-                    case 'unicode':
-                        $text = PHP_EOL."The detect_unicode setting must be disabled.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini`:".PHP_EOL;
-                        $text .= "    detect_unicode = Off";
-                        $displayIniMessage = true;
-                        break;
-
-                    case 'suhosin':
-                        $text = PHP_EOL."The suhosin.executor.include.whitelist setting is incorrect.".PHP_EOL;
-                        $text .= "Add the following to the end of your `php.ini` or suhosin.ini (Example path [for Debian]: /etc/php5/cli/conf.d/suhosin.ini):".PHP_EOL;
-                        $text .= "    suhosin.executor.include.whitelist = phar ".$current;
-                        $displayIniMessage = true;
                         break;
 
                     case 'php':
@@ -657,5 +694,21 @@ EOT
         }
 
         return !$warnings && !$errors ? true : $output;
+    }
+
+
+    /**
+     * Check if allow_url_fopen is ON
+     *
+     * @return true|string
+     */
+    private function checkConnectivity()
+    {
+        if (!ini_get('allow_url_fopen')) {
+            $result = '<info>Skipped because allow_url_fopen is missing.</info>';
+            return $result;
+        }
+
+        return true;
     }
 }

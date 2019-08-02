@@ -17,6 +17,7 @@ use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\PlatformRepository;
 
@@ -26,8 +27,14 @@ class CheckPlatformReqsCommand extends BaseCommand
     {
         $this->setName('check-platform-reqs')
             ->setDescription('Check that platform requirements are satisfied.')
-            ->setHelp(<<<EOT
+            ->setDefinition(array(
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables checking of require-dev packages requirements.'),
+            ))
+            ->setHelp(
+                <<<EOT
 Checks that your PHP and extensions versions match the platform requirements of the installed packages.
+
+Unlike update/install, this command will ignore config.platform settings and check the real platform packages so you can be certain you have the required platform dependencies.
 
 <info>php composer.phar check-platform-reqs</info>
 
@@ -39,22 +46,27 @@ EOT
     {
         $composer = $this->getComposer();
 
-        $repos = $composer->getRepositoryManager()->getLocalRepository();
-
-        $allPackages = array_merge(array($composer->getPackage()), $repos->getPackages());
-        $requires = $composer->getPackage()->getDevRequires();
+        $requires = $composer->getPackage()->getRequires();
+        if ($input->getOption('no-dev')) {
+            $dependencies = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'))->getPackages();
+        } else {
+            $dependencies = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
+            // fallback to lockfile if installed repo is empty
+            if (!$dependencies) {
+                $dependencies = $composer->getLocker()->getLockedRepository(true)->getPackages();
+            }
+            $requires += $composer->getPackage()->getDevRequires();
+        }
         foreach ($requires as $require => $link) {
             $requires[$require] = array($link);
         }
 
-        /**
-         * @var PackageInterface $package
-         */
-        foreach ($allPackages as $package) {
+        foreach ($dependencies as $package) {
             foreach ($package->getRequires() as $require => $link) {
                 $requires[$require][] = $link;
             }
         }
+
         ksort($requires);
 
         $platformRepo = new PlatformRepository(array(), array());
@@ -73,7 +85,7 @@ EOT
         $exitCode = 0;
 
         /**
-         * @var Link $require
+         * @var Link[] $links
          */
         foreach ($requires as $require => $links) {
             if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $require)) {
@@ -142,8 +154,9 @@ EOT
         // Render table
         $renderer = new Table($output);
         $renderer->setStyle('compact');
-        $renderer->getStyle()->setVerticalBorderChar('');
-        $renderer->getStyle()->setCellRowContentFormat('%s  ');
+        $rendererStyle = $renderer->getStyle();
+        $rendererStyle->setVerticalBorderChar('');
+        $rendererStyle->setCellRowContentFormat('%s  ');
         $renderer->setRows($table)->render();
     }
 }

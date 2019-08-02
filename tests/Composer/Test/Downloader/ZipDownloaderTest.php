@@ -14,8 +14,10 @@ namespace Composer\Test\Downloader;
 
 use Composer\Downloader\ZipDownloader;
 use Composer\Package\PackageInterface;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\HttpDownloader;
+use Composer\Util\Loop;
 
 class ZipDownloaderTest extends TestCase
 {
@@ -23,13 +25,19 @@ class ZipDownloaderTest extends TestCase
      * @var string
      */
     private $testDir;
-    private $prophet;
+    private $httpDownloader;
+    private $io;
+    private $config;
+    private $package;
 
     public function setUp()
     {
         $this->testDir = $this->getUniqueTmpDirectory();
-        $this->io = $this->getMock('Composer\IO\IOInterface');
-        $this->config = $this->getMock('Composer\Config');
+        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $this->config = $this->getMockBuilder('Composer\Config')->getMock();
+        $dlConfig = $this->getMockBuilder('Composer\Config')->getMock();
+        $this->httpDownloader = new HttpDownloader($this->io, $dlConfig);
+        $this->package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
     }
 
     public function tearDown()
@@ -46,9 +54,9 @@ class ZipDownloaderTest extends TestCase
         $reflectedProperty = $reflectionClass->getProperty($name);
         $reflectedProperty->setAccessible(true);
         if ($obj === null) {
-            $reflectedProperty = $reflectedProperty->setValue($value);
+            $reflectedProperty->setValue($value);
         } else {
-            $reflectedProperty = $reflectedProperty->setValue($obj, $value);
+            $reflectedProperty->setValue($obj, $value);
         }
     }
 
@@ -63,41 +71,32 @@ class ZipDownloaderTest extends TestCase
 
         $this->config->expects($this->at(0))
             ->method('get')
-            ->with('disable-tls')
-            ->will($this->returnValue(false));
-        $this->config->expects($this->at(1))
-            ->method('get')
-            ->with('cafile')
-            ->will($this->returnValue(null));
-        $this->config->expects($this->at(2))
-            ->method('get')
-            ->with('capath')
-            ->will($this->returnValue(null));
-        $this->config->expects($this->at(3))
-            ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));
 
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
-        $packageMock->expects($this->any())
+        $this->package->expects($this->any())
             ->method('getDistUrl')
             ->will($this->returnValue($distUrl = 'file://'.__FILE__))
         ;
-        $packageMock->expects($this->any())
+        $this->package->expects($this->any())
             ->method('getDistUrls')
             ->will($this->returnValue(array($distUrl)))
         ;
-        $packageMock->expects($this->atLeastOnce())
+        $this->package->expects($this->atLeastOnce())
             ->method('getTransportOptions')
             ->will($this->returnValue(array()))
         ;
 
-        $downloader = new ZipDownloader($this->io, $this->config);
+        $downloader = new ZipDownloader($this->io, $this->config, $this->httpDownloader);
 
         $this->setPrivateProperty('hasSystemUnzip', false);
 
         try {
-            $downloader->download($packageMock, sys_get_temp_dir().'/composer-zip-test');
+            $promise = $downloader->download($this->package, $path = sys_get_temp_dir().'/composer-zip-test');
+            $loop = new Loop($this->httpDownloader);
+            $loop->wait(array($promise));
+            $downloader->install($this->package, $path);
+
             $this->fail('Download of invalid zip files should throw an exception');
         } catch (\Exception $e) {
             $this->assertContains('is not a zip archive', $e->getMessage());
@@ -116,9 +115,8 @@ class ZipDownloaderTest extends TestCase
 
         $this->setPrivateProperty('hasSystemUnzip', false);
         $this->setPrivateProperty('hasZipArchive', true);
-        $downloader = new MockedZipDownloader($this->io, $this->config);
-
-        $zipArchive = $this->getMock('ZipArchive');
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader);
+        $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
         $zipArchive->expects($this->at(0))
             ->method('open')
             ->will($this->returnValue(true));
@@ -127,7 +125,7 @@ class ZipDownloaderTest extends TestCase
             ->will($this->returnValue(false));
 
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract('testfile.zip', 'vendor/dir');
+        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
 
     /**
@@ -142,9 +140,8 @@ class ZipDownloaderTest extends TestCase
 
         $this->setPrivateProperty('hasSystemUnzip', false);
         $this->setPrivateProperty('hasZipArchive', true);
-        $downloader = new MockedZipDownloader($this->io, $this->config);
-
-        $zipArchive = $this->getMock('ZipArchive');
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader);
+        $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
         $zipArchive->expects($this->at(0))
             ->method('open')
             ->will($this->returnValue(true));
@@ -153,7 +150,7 @@ class ZipDownloaderTest extends TestCase
             ->will($this->throwException(new \ErrorException('Not a directory')));
 
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract('testfile.zip', 'vendor/dir');
+        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
 
     /**
@@ -167,9 +164,8 @@ class ZipDownloaderTest extends TestCase
 
         $this->setPrivateProperty('hasSystemUnzip', false);
         $this->setPrivateProperty('hasZipArchive', true);
-        $downloader = new MockedZipDownloader($this->io, $this->config);
-
-        $zipArchive = $this->getMock('ZipArchive');
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader);
+        $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
         $zipArchive->expects($this->at(0))
             ->method('open')
             ->will($this->returnValue(true));
@@ -178,7 +174,7 @@ class ZipDownloaderTest extends TestCase
             ->will($this->returnValue(true));
 
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract('testfile.zip', 'vendor/dir');
+        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
 
     /**
@@ -193,13 +189,13 @@ class ZipDownloaderTest extends TestCase
 
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', false);
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->will($this->returnValue(1));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
-        $downloader->extract('testfile.zip', 'vendor/dir');
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
+        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
 
     public function testSystemUnzipOnlyGood()
@@ -210,13 +206,13 @@ class ZipDownloaderTest extends TestCase
 
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', false);
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->will($this->returnValue(0));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
-        $downloader->extract('testfile.zip', 'vendor/dir');
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
+        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
 
     public function testNonWindowsFallbackGood()
@@ -229,12 +225,12 @@ class ZipDownloaderTest extends TestCase
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', true);
 
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->will($this->returnValue(1));
 
-        $zipArchive = $this->getMock('ZipArchive');
+        $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
         $zipArchive->expects($this->at(0))
             ->method('open')
             ->will($this->returnValue(true));
@@ -242,9 +238,9 @@ class ZipDownloaderTest extends TestCase
             ->method('extractTo')
             ->will($this->returnValue(true));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract('testfile.zip', 'vendor/dir');
+        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
 
     /**
@@ -261,12 +257,12 @@ class ZipDownloaderTest extends TestCase
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', true);
 
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->at(0))
           ->method('execute')
           ->will($this->returnValue(1));
 
-        $zipArchive = $this->getMock('ZipArchive');
+        $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
         $zipArchive->expects($this->at(0))
           ->method('open')
           ->will($this->returnValue(true));
@@ -274,9 +270,9 @@ class ZipDownloaderTest extends TestCase
           ->method('extractTo')
           ->will($this->returnValue(false));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract('testfile.zip', 'vendor/dir');
+        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
 
     public function testWindowsFallbackGood()
@@ -289,12 +285,12 @@ class ZipDownloaderTest extends TestCase
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', true);
 
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->atLeastOnce())
             ->method('execute')
             ->will($this->returnValue(0));
 
-        $zipArchive = $this->getMock('ZipArchive');
+        $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
         $zipArchive->expects($this->at(0))
             ->method('open')
             ->will($this->returnValue(true));
@@ -302,9 +298,9 @@ class ZipDownloaderTest extends TestCase
             ->method('extractTo')
             ->will($this->returnValue(false));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract('testfile.zip', 'vendor/dir');
+        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
 
     /**
@@ -321,12 +317,12 @@ class ZipDownloaderTest extends TestCase
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', true);
 
-        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->atLeastOnce())
           ->method('execute')
           ->will($this->returnValue(1));
 
-        $zipArchive = $this->getMock('ZipArchive');
+        $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
         $zipArchive->expects($this->at(0))
           ->method('open')
           ->will($this->returnValue(true));
@@ -334,9 +330,9 @@ class ZipDownloaderTest extends TestCase
           ->method('extractTo')
           ->will($this->returnValue(false));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract('testfile.zip', 'vendor/dir');
+        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
 }
 
@@ -347,8 +343,13 @@ class MockedZipDownloader extends ZipDownloader
         return;
     }
 
-    public function extract($file, $path)
+    public function install(PackageInterface $package, $path, $output = true)
     {
-        parent::extract($file, $path);
+        return;
+    }
+
+    public function extract(PackageInterface $package, $file, $path)
+    {
+        parent::extract($package, $file, $path);
     }
 }

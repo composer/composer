@@ -6,8 +6,6 @@ Composer helps you declare, manage, and install dependencies of PHP projects.
 See [https://getcomposer.org/](https://getcomposer.org/) for more information and documentation.
 
 [![Build Status](https://travis-ci.org/composer/composer.svg?branch=master)](https://travis-ci.org/composer/composer)
-[![Dependency Status](https://www.versioneye.com/php/composer:composer/dev-master/badge.svg)](https://www.versioneye.com/php/composer:composer/dev-master)
-[![Reference Status](https://www.versioneye.com/php/composer:composer/reference_badge.svg?style=flat)](https://www.versioneye.com/php/composer:composer/references)
 
 Installation / Usage
 --------------------
@@ -62,5 +60,3 @@ Acknowledgments
 
 - This project's Solver started out as a PHP port of openSUSE's
   [Libzypp satsolver](https://en.opensuse.org/openSUSE:Libzypp_satsolver).
-- This project uses hiddeninput.exe to prompt for passwords on windows, sources
-  and details can be found on the [github page of the project](https://github.com/Seldaek/hidden-input).

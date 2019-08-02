@@ -9,6 +9,20 @@ Defaults to `300`. The duration processes like git clones can run before
 Composer assumes they died out. You may need to make this higher if you have a
 slow connection or huge vendors.
 
+To disable the process timeout on a custom command under `scripts`, a static
+helper is available:
+
+```json
+{
+    "scripts": {
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "phpunit"
+        ]
+    }
+}
+```
+
 ## use-include-path
 
 Defaults to `false`. If `true`, the Composer autoloader will also look for classes
@@ -65,13 +79,17 @@ an OAuth token for GitHub.
 
 A list of domain names and oauth keys. For example using `{"gitlab.com":
 "oauthtoken"}` as the value of this option will use `oauthtoken` to access
-private repositories on gitlab.
+private repositories on gitlab. Please note: If the package is not hosted at 
+gitlab.com the domain names must be also specified with the 
+[`gitlab-domains`](06-config.md#gitlab-domains) option.
 
 ## gitlab-token
 
 A list of domain names and private tokens. For example using `{"gitlab.com":
 "privatetoken"}` as the value of this option will use `privatetoken` to access
-private repositories on gitlab.
+private repositories on gitlab. Please note: If the package is not hosted at 
+gitlab.com the domain names must be also specified with the 
+[`gitlab-domains`](06-config.md#gitlab-domains) option.
 
 ## disable-tls
 
@@ -120,7 +138,7 @@ value of this option will let Composer authenticate against example.org.
 
 Lets you fake platform packages (PHP and extensions) so that you can emulate a
 production env or define your target platform in the config. Example: `{"php":
-"5.4", "ext-something": "4.0"}`.
+"7.0.3", "ext-something": "4.0.3"}`.
 
 ## vendor-dir
 
@@ -229,6 +247,14 @@ github API will have a date instead of the machine hostname.
 
 Defaults to `["gitlab.com"]`. A list of domains of GitLab servers.
 This is used if you use the `gitlab` repository type.
+
+## use-github-api
+
+Defaults to `true`.  Similar to the `no-api` key on a specific repository,
+setting `use-github-api` to `false` will define the global behavior for all
+GitHub repositories to clone the repository as it would with any other git
+repository instead of using the GitHub API. But unlike using the `git`
+driver directly, Composer will still attempt to use GitHub's zip files.
 
 ## notify-on-install
 

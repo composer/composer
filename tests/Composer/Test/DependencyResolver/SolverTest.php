@@ -20,26 +20,28 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
-use Composer\TestCase;
+use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\RepositorySet;
+use Composer\Test\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
 
 class SolverTest extends TestCase
 {
-    protected $pool;
+    protected $repoSet;
     protected $repo;
     protected $repoInstalled;
     protected $request;
     protected $policy;
+    protected $solver;
 
     public function setUp()
     {
-        $this->pool = new Pool;
+        $this->repoSet = new RepositorySet(array());
         $this->repo = new ArrayRepository;
-        $this->repoInstalled = new ArrayRepository;
+        $this->repoInstalled = new InstalledArrayRepository;
 
-        $this->request = new Request($this->pool);
+        $this->request = new Request();
         $this->policy = new DefaultPolicy;
-        $this->solver = new Solver($this->policy, $this->pool, $this->repoInstalled, new NullIO());
     }
 
     public function testSolverInstallSingle()
@@ -71,6 +73,7 @@ class SolverTest extends TestCase
 
         $this->request->install('B', $this->getVersionConstraint('==', '1'));
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -90,9 +93,9 @@ class SolverTest extends TestCase
         $repo1->addPackage($foo1 = $this->getPackage('foo', '1'));
         $repo2->addPackage($foo2 = $this->getPackage('foo', '1'));
 
-        $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($repo1);
-        $this->pool->addRepository($repo2);
+        $this->repoSet->addRepository($this->repoInstalled);
+        $this->repoSet->addRepository($repo1);
+        $this->repoSet->addRepository($repo2);
 
         $this->request->install('foo');
 
@@ -445,6 +448,7 @@ class SolverTest extends TestCase
 
         // must explicitly pick the provider, so error in this case
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -478,6 +482,7 @@ class SolverTest extends TestCase
         $this->request->install('A');
 
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -650,6 +655,7 @@ class SolverTest extends TestCase
 
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
 
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -666,6 +672,7 @@ class SolverTest extends TestCase
         $this->request->install('A');
         $this->request->install('B');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -695,6 +702,7 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -742,6 +750,7 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -837,14 +846,93 @@ class SolverTest extends TestCase
         ));
     }
 
+    /**
+     * Tests for a bug introduced in commit 451bab1c2cd58e05af6e21639b829408ad023463 Solver.php line 554/523
+     *
+     * Every package and link in this test matters, only a combination this complex will run into the situation in which
+     * a negatively decided literal will need to be learned inverted as a positive assertion.
+     *
+     * In particular in this case the goal is to first have the solver decide X 2.0 should not be installed to later
+     * decide to learn that X 2.0 must be installed and revert decisions to retry solving with this new assumption.
+     */
+    public function testLearnPositiveLiteral()
+    {
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repo->addPackage($packageC1 = $this->getPackage('C', '1.0'));
+        $this->repo->addPackage($packageC2 = $this->getPackage('C', '2.0'));
+        $this->repo->addPackage($packageD = $this->getPackage('D', '1.0'));
+        $this->repo->addPackage($packageE = $this->getPackage('E', '1.0'));
+        $this->repo->addPackage($packageF1 = $this->getPackage('F', '1.0'));
+        $this->repo->addPackage($packageF2 = $this->getPackage('F', '2.0'));
+        $this->repo->addPackage($packageG1 = $this->getPackage('G', '1.0'));
+        $this->repo->addPackage($packageG2 = $this->getPackage('G', '2.0'));
+        $this->repo->addPackage($packageG3 = $this->getPackage('G', '3.0'));
+
+        $packageA->setRequires(array(
+            'b' => new Link('A', 'B', $this->getVersionConstraint('==', '1.0'), 'requires'),
+            'c' => new Link('A', 'C', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            'd' => new Link('A', 'D', $this->getVersionConstraint('==', '1.0'), 'requires'),
+        ));
+
+        $packageB->setRequires(array(
+            'e' => new Link('B', 'E', $this->getVersionConstraint('==', '1.0'), 'requires'),
+        ));
+
+        $packageC1->setRequires(array(
+            'f' => new Link('C', 'F', $this->getVersionConstraint('==', '1.0'), 'requires'),
+        ));
+        $packageC2->setRequires(array(
+            'f' => new Link('C', 'F', $this->getVersionConstraint('==', '1.0'), 'requires'),
+            'g' => new Link('C', 'G', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+        ));
+
+        $packageD->setRequires(array(
+            'f' => new Link('D', 'F', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+        ));
+
+        $packageE->setRequires(array(
+            'g' => new Link('E', 'G', $this->getVersionConstraint('<=', '2.0'), 'requires'),
+        ));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->createSolver();
+
+        // check correct setup for assertion later
+        $this->assertFalse($this->solver->testFlagLearnedPositiveLiteral);
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageF1),
+            array('job' => 'install', 'package' => $packageD),
+            array('job' => 'install', 'package' => $packageG2),
+            array('job' => 'install', 'package' => $packageC2),
+            array('job' => 'install', 'package' => $packageE),
+            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+
+        // verify that the code path leading to a negative literal resulting in a positive learned literal is actually
+        // executed
+        $this->assertTrue($this->solver->testFlagLearnedPositiveLiteral);
+    }
+
     protected function reposComplete()
     {
-        $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($this->repo);
+        $this->repoSet->addRepository($this->repoInstalled);
+        $this->repoSet->addRepository($this->repo);
+    }
+
+    protected function createSolver()
+    {
+        $this->solver = new Solver($this->policy, $this->repoSet->createPool($this->request), $this->repoInstalled, new NullIO());
     }
 
     protected function checkSolverResult(array $expected)
     {
+        $this->createSolver();
         $transaction = $this->solver->solve($this->request);
 
         $result = array();

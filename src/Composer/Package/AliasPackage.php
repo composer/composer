@@ -401,4 +401,14 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return parent::__toString().' (alias of '.$this->aliasOf->getVersion().')';
     }
+
+    public function setDistUrl($url)
+    {
+        return $this->aliasOf->setDistUrl($url);
+    }
+
+    public function setDistType($type)
+    {
+        return $this->aliasOf->setDistType($type);
+    }
 }

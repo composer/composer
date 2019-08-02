@@ -13,10 +13,11 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\XzDownloader;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\Loop;
+use Composer\Util\HttpDownloader;
 
 class XzDownloaderTest extends TestCase
 {
@@ -46,7 +47,7 @@ class XzDownloaderTest extends TestCase
 
     public function testErrorMessages()
     {
-        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getDistUrl')
             ->will($this->returnValue($distUrl = 'file://'.__FILE__))
@@ -60,16 +61,20 @@ class XzDownloaderTest extends TestCase
             ->will($this->returnValue(array()))
         ;
 
-        $io = $this->getMock('Composer\IO\IOInterface');
-        $config = $this->getMock('Composer\Config');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $config = $this->getMockBuilder('Composer\Config')->getMock();
         $config->expects($this->any())
             ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));
-        $downloader = new XzDownloader($io, $config, null, null, null, new RemoteFilesystem($io));
+        $downloader = new XzDownloader($io, $config, $httpDownloader = new HttpDownloader($io, $this->getMockBuilder('Composer\Config')->getMock()), null, null, null);
 
         try {
-            $downloader->download($packageMock, $this->getUniqueTmpDirectory());
+            $promise = $downloader->download($packageMock, $this->testDir);
+            $loop = new Loop($httpDownloader);
+            $loop->wait(array($promise));
+            $downloader->install($packageMock, $this->testDir);
+
             $this->fail('Download of invalid tarball should throw an exception');
         } catch (\RuntimeException $e) {
             $this->assertRegexp('/(File format not recognized|Unrecognized archive format)/i', $e->getMessage());

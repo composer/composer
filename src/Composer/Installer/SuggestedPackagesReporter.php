@@ -115,10 +115,10 @@ class SuggestedPackagesReporter
             }
 
             $this->io->writeError(sprintf(
-                '%s suggests installing %s (%s)',
+                '%s suggests installing %s%s',
                 $suggestion['source'],
                 $this->escapeOutput($suggestion['target']),
-                $this->escapeOutput($suggestion['reason'])
+                $this->escapeOutput('' !== $suggestion['reason'] ? ' ('.$suggestion['reason'].')' : '')
             ));
         }
 

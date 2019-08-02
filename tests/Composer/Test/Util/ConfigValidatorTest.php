@@ -14,7 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\IO\NullIO;
 use Composer\Util\ConfigValidator;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * ConfigValidator test case
@@ -31,6 +31,17 @@ class ConfigValidatorTest extends TestCase
 
         $this->assertContains(
             'The package "some/package" is pointing to a commit-ref, this is bad practice and can cause unforeseen issues.',
+            $warnings
+        );
+    }
+
+    public function testConfigValidatorWarnsOnScriptDescriptionForNonexistentScript()
+    {
+        $configValidator = new ConfigValidator(new NullIO());
+        list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-descriptions.json');
+
+        $this->assertContains(
+            'Description for non-existent script "phpcsxxx" found in "scripts-descriptions"',
             $warnings
         );
     }

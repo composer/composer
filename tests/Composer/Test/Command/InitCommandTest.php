@@ -13,7 +13,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Command\InitCommand;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 
 class InitCommandTest extends TestCase
 {
@@ -59,7 +59,8 @@ class InitCommandTest extends TestCase
     {
         $command = new InitCommand;
         $author = $command->parseAuthorString(
-                'Johnathon "Johnny" Smith <john@example.com>');
+                'Johnathon "Johnny" Smith <john@example.com>'
+        );
         $this->assertEquals('Johnathon "Johnny" Smith', $author['name']);
         $this->assertEquals('john@example.com', $author['email']);
     }
@@ -72,7 +73,8 @@ class InitCommandTest extends TestCase
     {
         $command = new InitCommand;
         $author = $command->parseAuthorString(
-                'Johnathon (Johnny) Smith <john@example.com>');
+                'Johnathon (Johnny) Smith <john@example.com>'
+        );
         $this->assertEquals('Johnathon (Johnny) Smith', $author['name']);
         $this->assertEquals('john@example.com', $author['email']);
     }

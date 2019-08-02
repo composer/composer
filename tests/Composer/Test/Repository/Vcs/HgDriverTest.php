@@ -13,7 +13,7 @@
 namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\HgDriver;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
 
@@ -28,7 +28,7 @@ class HgDriverTest extends TestCase
 
     public function setUp()
     {
-        $this->io = $this->getMock('Composer\IO\IOInterface');
+        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->home = $this->getUniqueTmpDirectory();
         $this->config = new Config();
         $this->config->merge(array(

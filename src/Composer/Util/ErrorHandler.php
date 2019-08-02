@@ -33,6 +33,7 @@ class ErrorHandler
      *
      * @static
      * @throws \ErrorException
+     * @return bool
      */
     public static function handle($level, $message, $file, $line)
     {
@@ -41,7 +42,7 @@ class ErrorHandler
             return;
         }
 
-        if (ini_get('xdebug.scream')) {
+        if (filter_var(ini_get('xdebug.scream'), FILTER_VALIDATE_BOOLEAN)) {
             $message .= "\n\nWarning: You have xdebug.scream enabled, the warning above may be".
             "\na legitimately suppressed error that you were not supposed to see.";
         }
@@ -63,6 +64,8 @@ class ErrorHandler
                 }, array_slice(debug_backtrace(), 2))));
             }
         }
+
+        return true;
     }
 
     /**

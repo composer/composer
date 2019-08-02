@@ -13,7 +13,6 @@ If a package contains other scripts that are not needed by the package
 users (like build or compile scripts) that code should not be listed
 as a vendor binary.
 
-
 ## How is it defined?
 
 It is defined by adding the `bin` key to a project's `composer.json`.
@@ -34,11 +33,9 @@ for any project that **depends** on that project.
 This is a convenient way to expose useful scripts that would
 otherwise be hidden deep in the `vendor/` directory.
 
-
 ## What happens when Composer is run on a composer.json that defines vendor binaries?
 
 For the binaries that a package defines directly, nothing happens.
-
 
 ## What happens when Composer is run on a composer.json that has dependencies with vendor binaries listed?
 
@@ -69,12 +66,11 @@ Say project `my-vendor/project-b` has requirements setup like this:
 ```
 
 Running `composer install` for this `composer.json` will look at
-all of project-b's dependencies and install them to `vendor/bin`.
+all of project-a's binaries and install them to `vendor/bin`.
 
 In this case, Composer will make `vendor/my-vendor/project-a/bin/project-a-bin`
 available as `vendor/bin/project-a-bin`. On a Unix-like platform
 this is accomplished by creating a symlink.
-
 
 ## What about Windows and .bat files?
 
@@ -89,7 +85,6 @@ of binaries in a special way when run in a Windows environment:
 Packages that need to support workflows that may not include Composer
 are welcome to maintain custom `.bat` files. In this case, the package
 should **not** list the `.bat` file as a binary as it is not needed.
-
 
 ## Can vendor binaries be installed somewhere other than vendor/bin?
 

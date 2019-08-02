@@ -1450,6 +1450,22 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             ),
+            'works on simple ones escaped slash' => array(
+                '{
+    "repositories": {
+        "foo\/bar": {
+            "bar": "baz"
+        }
+    }
+}',
+                'foo/bar',
+                true,
+                '{
+    "repositories": {
+    }
+}
+',
+            ),
             'works on simple ones middle' => array(
                 '{
     "repositories": {
@@ -2310,6 +2326,22 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testRemoveMainKeyRemovesKeyWhereValueIsNull()
+    {
+        $manipulator = new JsonManipulator(json_encode(array(
+            'foo' => 9000,
+            'bar' => null,
+        )));
+
+        $manipulator->removeMainKey('bar');
+
+        $expected = json_encode(array(
+            'foo' => 9000,
+        ));
+
+        $this->assertJsonStringEqualsJsonString($expected, $manipulator->getContents());
+    }
+
     public function testIndentDetection()
     {
         $manipulator = new JsonManipulator('{
@@ -2357,6 +2389,26 @@ class JsonManipulatorTest extends TestCase
     "require": {
         "package/a": "*"
     }
+}
+', $manipulator->getContents());
+    }
+
+    public function testEscapedUnicodeDoesNotCauseBacktrackLimitErrorGithubIssue8131()
+    {
+        $manipulator = new JsonManipulator('{
+  "description": "Some U\u00F1icode",
+  "require": {
+    "foo/bar": "^1.0"
+  }
+}');
+
+        $this->assertTrue($manipulator->addLink('require', 'foo/baz', '^1.0'));
+        $this->assertEquals('{
+  "description": "Some U\u00F1icode",
+  "require": {
+    "foo/bar": "^1.0",
+    "foo/baz": "^1.0"
+  }
 }
 ', $manipulator->getContents());
     }

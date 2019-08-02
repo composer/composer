@@ -13,6 +13,8 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Config;
+use Composer\Cache;
+use Composer\Util\Hg as HgUtils;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
@@ -36,6 +38,10 @@ class HgDriver extends VcsDriver
         if (Filesystem::isLocalPath($this->url)) {
             $this->repoDir = $this->url;
         } else {
+            if (!Cache::isUsable($this->config->get('cache-vcs-dir'))) {
+                throw new \RuntimeException('HgDriver requires a usable cache directory, and it looks like you set it to be disabled');
+            }
+
             $cacheDir = $this->config->get('cache-vcs-dir');
             $this->repoDir = $cacheDir . '/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
 
@@ -49,6 +55,8 @@ class HgDriver extends VcsDriver
             // Ensure we are allowed to use this URL by config
             $this->config->prohibitUrlByConfig($this->url, $this->io);
 
+            $hgUtils = new HgUtils($this->io, $this->config, $this->process);
+
             // update the repo if it is a valid hg repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {
                 if (0 !== $this->process->execute('hg pull', $output, $this->repoDir)) {
@@ -58,15 +66,12 @@ class HgDriver extends VcsDriver
                 // clean up directory and do a fresh clone into it
                 $fs->removeDirectory($this->repoDir);
 
-                if (0 !== $this->process->execute(sprintf('hg clone --noupdate %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoDir)), $output, $cacheDir)) {
-                    $output = $this->process->getErrorOutput();
+                $repoDir = $this->repoDir;
+                $command = function ($url) use ($repoDir) {
+                    return sprintf('hg clone --noupdate %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($repoDir));
+                };
 
-                    if (0 !== $this->process->execute('hg --version', $ignoredOutput)) {
-                        throw new \RuntimeException('Failed to clone '.$this->url.', hg was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
-                    }
-
-                    throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it' . "\n\n" .$output);
-                }
+                $hgUtils->runCommand($command, $this->url, $this->repoDir);
             }
         }
 
@@ -212,7 +217,7 @@ class HgDriver extends VcsDriver
                 return false;
             }
 
-            $process = new ProcessExecutor();
+            $process = new ProcessExecutor($io);
             // check whether there is a hg repo in that path
             if ($process->execute('hg summary', $output, $url) === 0) {
                 return true;
@@ -223,7 +228,7 @@ class HgDriver extends VcsDriver
             return false;
         }
 
-        $processExecutor = new ProcessExecutor();
+        $processExecutor = new ProcessExecutor($io);
         $exit = $processExecutor->execute(sprintf('hg identify %s', ProcessExecutor::escape($url)), $ignored);
 
         return $exit === 0;

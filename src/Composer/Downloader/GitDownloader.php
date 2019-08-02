@@ -19,6 +19,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
+use Composer\Cache;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -38,7 +39,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function doDownload(PackageInterface $package, $path, $url)
+    public function doInstall(PackageInterface $package, $path, $url)
     {
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
@@ -51,7 +52,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $msg = "Cloning ".$this->getShortHash($ref);
 
         $command = 'git clone --no-checkout %url% %path% && cd '.$flag.'%path% && git remote add composer %url% && git fetch composer';
-        if ($gitVersion && version_compare($gitVersion, '2.3.0-rc0', '>=')) {
+        if ($gitVersion && version_compare($gitVersion, '2.3.0-rc0', '>=') && Cache::isUsable($cachePath)) {
             $this->io->writeError('', true, IOInterface::DEBUG);
             $this->io->writeError(sprintf('    Cloning to cache at %s', ProcessExecutor::escape($cachePath)), true, IOInterface::DEBUG);
             try {
@@ -361,7 +362,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         ) {
             $command = sprintf('git checkout '.$force.'-B %s %s -- && git reset --hard %2$s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
             if (0 === $this->process->execute($command, $output, $path)) {
-                return;
+                return null;
             }
         }
 
@@ -379,14 +380,14 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             ) {
                 $command = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
                 if (0 === $this->process->execute($command, $output, $path)) {
-                    return;
+                    return null;
                 }
             }
         }
 
         $command = sprintf($template, ProcessExecutor::escape($gitRef));
         if (0 === $this->process->execute($command, $output, $path)) {
-            return;
+            return null;
         }
 
         // reference was not found (prints "fatal: reference is not a tree: $ref")
@@ -423,7 +424,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
         $path = $this->normalizePath($path);
-        $command = sprintf('git log %s..%s --pretty=format:"%%h - %%an: %%s"', $fromReference, $toReference);
+        $command = sprintf('git log %s..%s --pretty=format:"%%h - %%an: %%s"', ProcessExecutor::escape($fromReference), ProcessExecutor::escape($toReference));
 
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
@@ -433,7 +434,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * @param $path
+     * @param string $path
      * @throws \RuntimeException
      */
     protected function discardChanges($path)
@@ -447,7 +448,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * @param $path
+     * @param string $path
      * @throws \RuntimeException
      */
     protected function stashChanges($path)
@@ -461,7 +462,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * @param $path
+     * @param string $path
      * @throws \RuntimeException
      */
     protected function viewDiff($path)

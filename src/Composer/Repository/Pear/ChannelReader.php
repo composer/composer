@@ -12,7 +12,7 @@
 
 namespace Composer\Repository\Pear;
 
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 
 /**
  * PEAR Channel package reader.
@@ -26,12 +26,12 @@ class ChannelReader extends BaseChannelReader
     /** @var array of ('xpath test' => 'rest implementation') */
     private $readerMap;
 
-    public function __construct(RemoteFilesystem $rfs)
+    public function __construct(HttpDownloader $httpDownloader)
     {
-        parent::__construct($rfs);
+        parent::__construct($httpDownloader);
 
-        $rest10reader = new ChannelRest10Reader($rfs);
-        $rest11reader = new ChannelRest11Reader($rfs);
+        $rest10reader = new ChannelRest10Reader($httpDownloader);
+        $rest11reader = new ChannelRest11Reader($httpDownloader);
 
         $this->readerMap = array(
             'REST1.3' => $rest11reader,
@@ -44,7 +44,7 @@ class ChannelReader extends BaseChannelReader
     /**
      * Reads PEAR channel through REST interface and builds list of packages
      *
-     * @param $url string PEAR Channel url
+     * @param string $url PEAR Channel url
      * @throws \UnexpectedValueException
      * @return ChannelInfo
      */
@@ -70,8 +70,8 @@ class ChannelReader extends BaseChannelReader
     /**
      * Reads channel supported REST interfaces and selects one of them
      *
-     * @param $channelXml \SimpleXMLElement
-     * @param $supportedVersions string[] supported PEAR REST protocols
+     * @param \SimpleXMLElement $channelXml
+     * @param string[] $supportedVersions supported PEAR REST protocols
      * @return array|null hash with selected version and baseUrl
      */
     private function selectRestVersion($channelXml, $supportedVersions)

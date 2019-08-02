@@ -60,19 +60,19 @@ Branch aliases are great for aliasing main development lines. But in order to
 use them you need to have control over the source repository, and you need to
 commit changes to version control.
 
-This is not really fun when you just want to try a bugfix of some library that
+This is not really fun when you want to try a bugfix of some library that
 is a dependency of your local project.
 
 For this reason, you can alias packages in your `require` and `require-dev`
 fields. Let's say you found a bug in the `monolog/monolog` package. You cloned
-[Monolog](https://github.com/Seldaek/monolog) on GitHub and fixed the issue in 
-a branch named `bugfix`. Now you want to install that version of monolog in your 
+[Monolog](https://github.com/Seldaek/monolog) on GitHub and fixed the issue in
+a branch named `bugfix`. Now you want to install that version of monolog in your
 local project.
 
 You are using `symfony/monolog-bundle` which requires `monolog/monolog` version
 `1.*`. So you need your `dev-bugfix` to match that constraint.
 
-Just add this to your project's root `composer.json`:
+Add this to your project's root `composer.json`:
 
 ```json
 {
@@ -89,16 +89,23 @@ Just add this to your project's root `composer.json`:
 }
 ```
 
+Or let composer add it for you with:
+
+```
+php composer.phar require monolog/monolog:"dev-bugfix as 1.0.x-dev"
+```
+
 That will fetch the `dev-bugfix` version of `monolog/monolog` from your GitHub
 and alias it to `1.0.x-dev`.
 
-> **Note:** If a package with inline aliases is required, the alias (right of
-> the `as`) is used as the version constraint. The part left of the `as` is
-> discarded. As a consequence, if A requires B and B requires `monolog/monolog`
-> version `dev-bugfix as 1.0.x-dev`, installing A will make B require
-> `1.0.x-dev`, which may exist as a branch alias or an actual `1.0` branch. If
-> it does not, it must be re-inline-aliased in A's `composer.json`.
+> **Note:** Inline aliasing is a root-only feature. If a package with inline
+> aliases is required, the alias (right of the `as`) is used as the version
+> constraint. The part left of the `as` is discarded. As a consequence, if
+> A requires B and B requires `monolog/monolog` version `dev-bugfix as 1.0.x-dev`,
+> installing A will make B require `1.0.x-dev`, which may exist as a branch
+> alias or an actual `1.0` branch. If it does not, it must be
+> inline-aliased again in A's `composer.json`.
 
 > **Note:** Inline aliasing should be avoided, especially for published
-> packages. If you found a bug, try and get your fix merged upstream. This
-> helps to avoid issues for users of your package.
+> packages/libraries. If you found a bug, try and get your fix merged upstream.
+> This helps to avoid issues for users of your package.

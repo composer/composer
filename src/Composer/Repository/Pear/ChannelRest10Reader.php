@@ -13,6 +13,7 @@
 namespace Composer\Repository\Pear;
 
 use Composer\Downloader\TransportException;
+use Composer\Util\HttpDownloader;
 
 /**
  * Read PEAR packages using REST 1.0 interface
@@ -29,9 +30,9 @@ class ChannelRest10Reader extends BaseChannelReader
 {
     private $dependencyReader;
 
-    public function __construct($rfs)
+    public function __construct(HttpDownloader $httpDownloader)
     {
-        parent::__construct($rfs);
+        parent::__construct($httpDownloader);
 
         $this->dependencyReader = new PackageDependencyParser();
     }
@@ -39,7 +40,7 @@ class ChannelRest10Reader extends BaseChannelReader
     /**
      * Reads package descriptions using PEAR Rest 1.0 interface
      *
-     * @param $baseUrl  string base Url interface
+     * @param string $baseUrl base Url interface
      *
      * @return PackageInfo[]
      */
@@ -52,7 +53,7 @@ class ChannelRest10Reader extends BaseChannelReader
      * Read list of packages from
      *  {baseUrl}/p/packages.xml
      *
-     * @param $baseUrl string
+     * @param string $baseUrl
      * @return PackageInfo[]
      */
     private function readPackages($baseUrl)
@@ -75,8 +76,8 @@ class ChannelRest10Reader extends BaseChannelReader
      * Read package info from
      *  {baseUrl}/p/{package}/info.xml
      *
-     * @param $baseUrl      string
-     * @param $packageName  string
+     * @param string $baseUrl
+     * @param string $packageName
      * @return PackageInfo
      */
     private function readPackage($baseUrl, $packageName)
@@ -105,8 +106,8 @@ class ChannelRest10Reader extends BaseChannelReader
      * Read package releases from
      *  {baseUrl}/p/{package}/allreleases.xml
      *
-     * @param $baseUrl      string
-     * @param $packageName  string
+     * @param string $baseUrl
+     * @param string $packageName
      * @throws \Composer\Downloader\TransportException|\Exception
      * @return ReleaseInfo[]                                      hash array with keys as version numbers
      */
@@ -146,10 +147,10 @@ class ChannelRest10Reader extends BaseChannelReader
      * Read package dependencies from
      *  {baseUrl}/p/{package}/deps.{version}.txt
      *
-     * @param $baseUrl      string
-     * @param $packageName  string
-     * @param $version      string
-     * @return DependencyInfo[]
+     * @param string $baseUrl
+     * @param string $packageName
+     * @param string $version
+     * @return DependencyInfo
      */
     private function readPackageReleaseDependencies($baseUrl, $packageName, $version)
     {

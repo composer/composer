@@ -17,6 +17,7 @@ use Composer\Repository\Vcs\HgDriver;
 use Composer\IO\NullIO;
 use Composer\Semver\VersionParser as SemverVersionParser;
 use Composer\Util\Git as GitUtil;
+use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
 
@@ -88,7 +89,7 @@ class VersionGuesser
 
     private function postprocess(array $versionData)
     {
-        if ('-dev' === substr($versionData['version'], -4)) {
+        if ('-dev' === substr($versionData['version'], -4) && preg_match('{\.9{7}}', $versionData['version'])) {
             $versionData['pretty_version'] = preg_replace('{(\.9{7})+}', '.x', $versionData['version']);
         }
 
@@ -120,9 +121,6 @@ class VersionGuesser
                         $version = $this->versionParser->normalizeBranch($match[1]);
                         $prettyVersion = 'dev-' . $match[1];
                         $isFeatureBranch = 0 === strpos($version, 'dev-');
-                        if ('9999999-dev' === $version) {
-                            $version = $prettyVersion;
-                        }
                     }
 
                     if ($match[2]) {
@@ -187,7 +185,7 @@ class VersionGuesser
             $isFeatureBranch = 0 === strpos($version, 'dev-');
 
             if ('9999999-dev' === $version) {
-                $version = 'dev-' . $branch;
+                return array('version' => $version, 'commit' => null, 'pretty_version' => 'dev-'.$branch);
             }
 
             if (!$isFeatureBranch) {
@@ -195,7 +193,8 @@ class VersionGuesser
             }
 
             // re-use the HgDriver to fetch branches (this properly includes bookmarks)
-            $driver = new HgDriver(array('url' => $path), new NullIO(), $this->config, $this->process);
+            $io = new NullIO();
+            $driver = new HgDriver(array('url' => $path), $io, $this->config, new HttpDownloader($io, $this->config), $this->process);
             $branches = array_keys($driver->getBranches());
 
             // try to find the best (nearest) version branch to assume this feature's version
@@ -243,9 +242,6 @@ class VersionGuesser
                     $length = strlen($output);
                     $version = $this->versionParser->normalizeBranch($candidate);
                     $prettyVersion = 'dev-' . $match[1];
-                    if ('9999999-dev' === $version) {
-                        $version = $prettyVersion;
-                    }
                 }
             }
         }
@@ -263,10 +259,6 @@ class VersionGuesser
             $branch = trim($output);
             $version = $this->versionParser->normalizeBranch($branch);
             $prettyVersion = 'dev-' . $branch;
-
-            if ('9999999-dev' === $version) {
-                $version = $prettyVersion;
-            }
         }
 
         // try to fetch current version from fossil tags
@@ -298,9 +290,6 @@ class VersionGuesser
                     // we are in a branches path
                     $version = $this->versionParser->normalizeBranch($matches[3]);
                     $prettyVersion = 'dev-' . $matches[3];
-                    if ('9999999-dev' === $version) {
-                        $version = $prettyVersion;
-                    }
 
                     return array('version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion);
                 }

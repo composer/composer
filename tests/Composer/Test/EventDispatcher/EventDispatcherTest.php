@@ -14,13 +14,14 @@ namespace Composer\Test\EventDispatcher;
 
 use Composer\EventDispatcher\Event;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Installer\InstallerEvents;
 use Composer\Config;
 use Composer\Composer;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
 use Composer\Script\ScriptEvents;
-use Composer\Script\CommandEvent;
+use Composer\Script\Event as ScriptEvent;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -31,7 +32,7 @@ class EventDispatcherTest extends TestCase
      */
     public function testListenerExceptionsAreCaught()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $dispatcher = $this->getDispatcherStubForListenersTest(array(
             'Composer\Test\EventDispatcher\EventDispatcherTest::call',
         ), $io);
@@ -52,39 +53,16 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error_Deprecated
-     */
-    public function testDispatcherCanConvertScriptEventToCommandEventForListener()
-    {
-        $io = $this->getMock('Composer\IO\IOInterface');
-        $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsCommandEvent',
-        ), $io);
-
-        $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
-    }
-
-    public function testDispatcherDoesNotAttemptConversionForListenerWithoutTypehint()
-    {
-        $io = $this->getMock('Composer\IO\IOInterface');
-        $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsVariableEvent',
-        ), $io);
-
-        $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
-    }
-
-    /**
      * @dataProvider getValidCommands
      * @param string $command
      */
     public function testDispatcherCanExecuteSingleCommandLineScript($command)
     {
-        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->createComposerInstance(),
-                $this->getMock('Composer\IO\IOInterface'),
+                $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
                 $process,
             ))
             ->setMethods(array('getListeners'))
@@ -118,17 +96,17 @@ class EventDispatcherTest extends TestCase
 
         $composer->setAutoloadGenerator($generator);
 
-        $package = $this->getMock('Composer\Package\RootPackageInterface');
+        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
         $package->method('getScripts')->will($this->returnValue(array('scriptName' => array('scriptName'))));
         $composer->setPackage($package);
 
         $composer->setRepositoryManager($this->getRepositoryManagerMockForDevModePassingTest());
-        $composer->setInstallationManager($this->getMock('Composer\Installer\InstallationManager'));
+        $composer->setInstallationManager($this->getMockBuilder('Composer\Installer\InstallationManager')->disableOriginalConstructor()->getMock());
 
         $dispatcher = new EventDispatcher(
             $composer,
-            $this->getMock('Composer\IO\IOInterface'),
-            $this->getMock('Composer\Util\ProcessExecutor')
+            $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
+            $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock()
         );
 
         $event = $this->getMockBuilder('Composer\Script\Event')
@@ -169,7 +147,7 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnValue(array()));
         $generator
             ->method('createLoader')
-            ->will($this->returnValue($this->getMock('Composer\Autoload\ClassLoader')));
+            ->will($this->returnValue($this->getMockBuilder('Composer\Autoload\ClassLoader')->getMock()));
 
         return $generator;
     }
@@ -181,7 +159,7 @@ class EventDispatcherTest extends TestCase
             ->setMethods(array('getLocalRepository'))
             ->getMock();
 
-        $repo = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
+        $repo = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
         $repo
             ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
@@ -193,9 +171,52 @@ class EventDispatcherTest extends TestCase
         return $rm;
     }
 
+    public function testDispatcherRemoveListener()
+    {
+        $composer = $this->createComposerInstance();
+
+        $composer->setRepositoryManager($this->getRepositoryManagerMockForDevModePassingTest());
+        $composer->setInstallationManager($this->getMockBuilder('Composer\Installer\InstallationManager')->disableOriginalConstructor()->getMock());
+
+        $dispatcher = new EventDispatcher(
+            $composer,
+            $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+            $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock()
+        );
+
+        $listener = array($this, 'someMethod');
+        $listener2 = array($this, 'someMethod2');
+        $listener3 = 'Composer\\Test\\EventDispatcher\\EventDispatcherTest::someMethod';
+
+        $dispatcher->addListener('ev1', $listener, 0);
+        $dispatcher->addListener('ev1', $listener, 1);
+        $dispatcher->addListener('ev1', $listener2, 1);
+        $dispatcher->addListener('ev1', $listener3);
+        $dispatcher->addListener('ev2', $listener3);
+        $dispatcher->addListener('ev2', $listener);
+        $dispatcher->dispatch('ev1');
+        $dispatcher->dispatch('ev2');
+
+        $expected = '> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod2'.PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
+
+        $dispatcher->removeListener($this);
+        $dispatcher->dispatch('ev1');
+        $dispatcher->dispatch('ev2');
+
+        $expected .= '> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
+    }
+
     public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack()
     {
-        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->createComposerInstance(),
@@ -231,7 +252,7 @@ class EventDispatcherTest extends TestCase
 
     public function testDispatcherCanExecuteComposerScriptGroups()
     {
-        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $composer = $this->createComposerInstance(),
@@ -265,7 +286,7 @@ class EventDispatcherTest extends TestCase
                 return array();
             }));
 
-        $dispatcher->dispatch('root', new CommandEvent('root', $composer, $io));
+        $dispatcher->dispatch('root', new ScriptEvent('root', $composer, $io));
         $expected = '> root: @group'.PHP_EOL.
             '> group: echo -n foo'.PHP_EOL.
             '> group: @subgroup'.PHP_EOL.
@@ -274,16 +295,55 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals($expected, $io->getOutput());
     }
 
+    public function testRecursionInScriptsNames()
+    {
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs(array(
+                $composer = $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process
+            ))
+            ->setMethods(array(
+                'getListeners'
+            ))
+            ->getMock();
+
+        $process->expects($this->exactly(1))
+            ->method('execute')
+            ->will($this->returnValue(0));
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnCallback(function (Event $event) {
+                if($event->getName() === 'hello') {
+                    return array('echo Hello');
+                }
+
+                if($event->getName() === 'helloWorld') {
+                    return array('@hello World');
+                }
+
+                return array();
+            }));
+
+        $dispatcher->dispatch('helloWorld', new ScriptEvent('helloWorld', $composer, $io));
+        $expected = "> helloWorld: @hello World".PHP_EOL.
+            "> hello: echo Hello " .escapeshellarg('World').PHP_EOL;
+
+        $this->assertEquals($expected, $io->getOutput());
+    }
+
     /**
      * @expectedException RuntimeException
      */
     public function testDispatcherDetectInfiniteRecursion()
     {
-        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
         ->setConstructorArgs(array(
             $composer = $this->createComposerInstance(),
-            $io = $this->getMock('Composer\IO\IOInterface'),
+            $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
             $process,
         ))
         ->setMethods(array(
@@ -305,7 +365,7 @@ class EventDispatcherTest extends TestCase
                 return array();
             }));
 
-        $dispatcher->dispatch('root', new CommandEvent('root', $composer, $io));
+        $dispatcher->dispatch('root', new ScriptEvent('root', $composer, $io));
     }
 
     private function getDispatcherStubForListenersTest($listeners, $io)
@@ -339,7 +399,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->createComposerInstance(),
-                $io = $this->getMock('Composer\IO\IOInterface'),
+                $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
                 new ProcessExecutor($io),
             ))
             ->setMethods(array('getListeners'))
@@ -366,7 +426,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->createComposerInstance(),
-                $io = $this->getMock('Composer\IO\IOInterface'),
+                $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
                 new ProcessExecutor,
             ))
             ->setMethods(array('getListeners'))
@@ -396,11 +456,11 @@ class EventDispatcherTest extends TestCase
 
     public function testDispatcherInstallerEvents()
     {
-        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                     $this->createComposerInstance(),
-                    $this->getMock('Composer\IO\IOInterface'),
+                    $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
                     $process,
                 ))
             ->setMethods(array('getListeners'))
@@ -410,13 +470,13 @@ class EventDispatcherTest extends TestCase
             ->method('getListeners')
             ->will($this->returnValue(array()));
 
-        $policy = $this->getMock('Composer\DependencyResolver\PolicyInterface');
-        $pool = $this->getMockBuilder('Composer\DependencyResolver\Pool')->disableOriginalConstructor()->getMock();
+        $policy = $this->getMockBuilder('Composer\DependencyResolver\PolicyInterface')->getMock();
+        $repositorySet = $this->getMockBuilder('Composer\Repository\RepositorySet')->disableOriginalConstructor()->getMock();
         $installedRepo = $this->getMockBuilder('Composer\Repository\CompositeRepository')->disableOriginalConstructor()->getMock();
         $request = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
 
-        $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, true, $policy, $pool, $installedRepo, $request);
-        $dispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, true, $policy, $pool, $installedRepo, $request, array());
+        $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, true, $policy, $repositorySet, $installedRepo, $request);
+        $dispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, true, $policy, $repositorySet, $installedRepo, $request, array());
     }
 
     public static function call()
@@ -424,17 +484,12 @@ class EventDispatcherTest extends TestCase
         throw new \RuntimeException();
     }
 
-    public static function expectsCommandEvent(CommandEvent $event)
-    {
-        return false;
-    }
-
-    public static function expectsVariableEvent($event)
-    {
-        return false;
-    }
-
     public static function someMethod()
+    {
+        return true;
+    }
+
+    public static function someMethod2()
     {
         return true;
     }
@@ -444,7 +499,7 @@ class EventDispatcherTest extends TestCase
         $composer = new Composer;
         $config = new Config;
         $composer->setConfig($config);
-        $package = $this->getMock('Composer\Package\RootPackageInterface');
+        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
         $composer->setPackage($package);
 
         return $composer;

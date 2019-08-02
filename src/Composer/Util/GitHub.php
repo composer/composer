@@ -22,10 +22,14 @@ use Composer\Downloader\TransportException;
  */
 class GitHub
 {
+    /** @var IOInterface */
     protected $io;
+    /** @var Config */
     protected $config;
+    /** @var ProcessExecutor */
     protected $process;
-    protected $remoteFilesystem;
+    /** @var HttpDownloader */
+    protected $httpDownloader;
 
     /**
      * Constructor.
@@ -33,14 +37,14 @@ class GitHub
      * @param IOInterface      $io               The IO instance
      * @param Config           $config           The composer configuration
      * @param ProcessExecutor  $process          Process instance, injectable for mocking
-     * @param RemoteFilesystem $remoteFilesystem Remote Filesystem, injectable for mocking
+     * @param HttpDownloader $httpDownloader Remote Filesystem, injectable for mocking
      */
-    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
+    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null)
     {
         $this->io = $io;
         $this->config = $config;
-        $this->process = $process ?: new ProcessExecutor;
-        $this->remoteFilesystem = $remoteFilesystem ?: Factory::createRemoteFilesystem($this->io, $config);
+        $this->process = $process ?: new ProcessExecutor($io);
+        $this->httpDownloader = $httpDownloader ?: Factory::createHttpDownloader($this->io, $config);
     }
 
     /**
@@ -104,7 +108,7 @@ class GitHub
         try {
             $apiUrl = ('github.com' === $originUrl) ? 'api.github.com/' : $originUrl . '/api/v3/';
 
-            $this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl, false, array(
+            $this->httpDownloader->get('https://'. $apiUrl, array(
                 'retry-auth-failure' => false,
             ));
         } catch (TransportException $e) {
@@ -125,5 +129,56 @@ class GitHub
         $this->io->writeError('<info>Token stored successfully.</info>');
 
         return true;
+    }
+
+    /**
+     * Extract ratelimit from response.
+     *
+     * @param array $headers Headers from Composer\Downloader\TransportException.
+     *
+     * @return array Associative array with the keys limit and reset.
+     */
+    public function getRateLimit(array $headers)
+    {
+        $rateLimit = array(
+            'limit' => '?',
+            'reset' => '?',
+        );
+
+        foreach ($headers as $header) {
+            $header = trim($header);
+            if (false === strpos($header, 'X-RateLimit-')) {
+                continue;
+            }
+            list($type, $value) = explode(':', $header, 2);
+            switch ($type) {
+                case 'X-RateLimit-Limit':
+                    $rateLimit['limit'] = (int) trim($value);
+                    break;
+                case 'X-RateLimit-Reset':
+                    $rateLimit['reset'] = date('Y-m-d H:i:s', (int) trim($value));
+                    break;
+            }
+        }
+
+        return $rateLimit;
+    }
+
+    /**
+     * Finds whether a request failed due to rate limiting
+     *
+     * @param array $headers Headers from Composer\Downloader\TransportException.
+     *
+     * @return bool
+     */
+    public function isRateLimited(array $headers)
+    {
+        foreach ($headers as $header) {
+            if (preg_match('{^X-RateLimit-Remaining: *0$}i', trim($header))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

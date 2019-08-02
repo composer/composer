@@ -19,7 +19,7 @@ use Composer\Package\PackageInterface;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\IO\IOInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use ZipArchive;
@@ -33,13 +33,15 @@ class ZipDownloader extends ArchiveDownloader
     private static $hasZipArchive;
     private static $isWindows;
 
+    /** @var ProcessExecutor */
     protected $process;
+    /** @var ZipArchive|null */
     private $zipArchiveObject;
 
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null, RemoteFilesystem $rfs = null)
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $downloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null)
     {
         $this->process = $process ?: new ProcessExecutor($io);
-        parent::__construct($io, $config, $eventDispatcher, $cache, $rfs);
+        parent::__construct($io, $config, $downloader, $eventDispatcher, $cache);
     }
 
     /**
@@ -56,16 +58,22 @@ class ZipDownloader extends ArchiveDownloader
             self::$hasZipArchive = class_exists('ZipArchive');
         }
 
-        if (null === self::$isWindows) {
-            self::$isWindows = Platform::isWindows();
-        }
-
         if (!self::$hasZipArchive && !self::$hasSystemUnzip) {
             // php.ini path is added to the error message to help users find the correct file
             $iniMessage = IniHelper::getMessage();
             $error = "The zip extension and unzip command are both missing, skipping.\n" . $iniMessage;
 
             throw new \RuntimeException($error);
+        }
+
+        if (null === self::$isWindows) {
+            self::$isWindows = Platform::isWindows();
+
+            if (!self::$isWindows && !self::$hasSystemUnzip) {
+                $this->io->writeError("<warning>As there is no 'unzip' command installed zip files are being unpacked using the PHP zip extension.</warning>");
+                $this->io->writeError("<warning>This may cause invalid reports of corrupted archives. Besides, any UNIX permissions (e.g. executable) defined in the archives will be lost.</warning>");
+                $this->io->writeError("<warning>Installing 'unzip' may remediate them.</warning>");
+            }
         }
 
         return parent::download($package, $path, $output);
@@ -179,7 +187,7 @@ class ZipDownloader extends ArchiveDownloader
      * @param string $file File to extract
      * @param string $path Path where to extract file
      */
-    public function extract($file, $path)
+    public function extract(PackageInterface $package, $file, $path)
     {
         // Each extract calls its alternative if not available or fails
         if (self::$isWindows) {

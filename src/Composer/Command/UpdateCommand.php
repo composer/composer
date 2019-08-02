@@ -34,7 +34,7 @@ class UpdateCommand extends BaseCommand
     {
         $this
             ->setName('update')
-            ->setAliases(array('upgrade'))
+            ->setAliases(array('u', 'upgrade'))
             ->setDescription('Upgrades your dependencies to the latest version according to composer.json, and updates the composer.lock file.')
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that should be updated, if not provided all packages are.'),
@@ -61,7 +61,8 @@ class UpdateCommand extends BaseCommand
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The <info>update</info> command reads the composer.json file from the
 current directory, processes it, and updates, removes or installs all the
 dependencies.
@@ -80,6 +81,7 @@ from a specific vendor:
 
 To select packages names interactively with auto-completion use <info>-i</info>.
 
+Read more at https://getcomposer.org/doc/03-cli.md#update-u
 EOT
             )
         ;
@@ -118,8 +120,6 @@ EOT
                 $packages = $require;
             }
         }
-
-        $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);

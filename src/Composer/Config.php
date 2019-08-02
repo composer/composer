@@ -16,6 +16,7 @@ use Composer\Config\ConfigSourceInterface;
 use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Util\Platform;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -61,6 +62,7 @@ class Config
         'archive-format' => 'tar',
         'archive-dir' => '.',
         'htaccess-protect' => true,
+        'use-github-api' => true,
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth
@@ -72,7 +74,7 @@ class Config
     public static $defaultRepositories = array(
         'packagist.org' => array(
             'type' => 'composer',
-            'url' => 'https?://packagist.org',
+            'url' => 'https?://repo.packagist.org',
             'allow_ssl_downgrade' => true,
         ),
     );
@@ -216,7 +218,6 @@ class Config
             case 'cache-vcs-dir':
             case 'cafile':
             case 'capath':
-            case 'htaccess-protect':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
@@ -229,6 +230,13 @@ class Config
                 }
 
                 return (($flags & self::RELATIVE_PATHS) == self::RELATIVE_PATHS) ? $val : $this->realpath($val);
+
+            case 'htaccess-protect':
+                $value = $this->getComposerEnv('COMPOSER_HTACCESS_PROTECT');
+                if (false === $value) {
+                    $value = $this->config[$key];
+                }
+                return $value !== 'false' && (bool) $value;
 
             case 'cache-ttl':
                 return (int) $this->config[$key];
@@ -245,9 +253,11 @@ class Config
                         case 'g':
                             $size *= 1024;
                             // intentional fallthrough
+                            // no break
                         case 'm':
                             $size *= 1024;
                             // intentional fallthrough
+                            // no break
                         case 'k':
                             $size *= 1024;
                             break;
@@ -315,10 +325,10 @@ class Config
 
             case 'disable-tls':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
-
             case 'secure-http':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
-
+            case 'use-github-api':
+                return $this->config[$key] !== 'false' && (bool) $this->config[$key];
             default:
                 if (!isset($this->config[$key])) {
                     return null;
@@ -449,5 +459,21 @@ class Config
                 $this->warnedHosts[$host] = true;
             }
         }
+    }
+
+    /**
+     * Used by long-running custom scripts in composer.json
+     *
+     * "scripts": {
+     *   "watch": [
+     *     "Composer\\Config::disableProcessTimeout",
+     *     "vendor/bin/long-running-script --watch"
+     *   ]
+     * }
+     */
+    public static function disableProcessTimeout()
+    {
+        // Override global timeout set earlier by environment or config
+        ProcessExecutor::setTimeout(0);
     }
 }

@@ -41,6 +41,7 @@ abstract class Rule
     const BITFIELD_DISABLED = 16;
 
     protected $bitfield;
+    protected $job;
     protected $reasonData;
 
     /**
@@ -67,7 +68,7 @@ abstract class Rule
 
     public function getJob()
     {
-        return isset($this->job) ? $this->job : null;
+        return $this->job;
     }
 
     abstract public function equals(Rule $rule);
@@ -110,7 +111,7 @@ abstract class Rule
 
     public function enable()
     {
-        $this->bitfield = $this->bitfield & ~(255 << self::BITFIELD_DISABLED);
+        $this->bitfield &= ~(255 << self::BITFIELD_DISABLED);
     }
 
     public function isDisabled()
@@ -125,7 +126,7 @@ abstract class Rule
 
     abstract public function isAssertion();
 
-    public function getPrettyString(Pool $pool, array $installedMap = array())
+    public function getPrettyString(Pool $pool, array $installedMap = array(), array $learnedPool = array())
     {
         $literals = $this->getLiterals();
 
@@ -174,12 +175,17 @@ abstract class Rule
                             return $text . ' -> your HHVM version does not satisfy that requirement.';
                         }
 
-                        if ($targetName === 'hhvm') {
-                            return $text . ' -> you are running this with PHP and not HHVM.';
-                        }
-
                         $packages = $pool->whatProvides($targetName);
                         $package = count($packages) ? current($packages) : phpversion();
+
+                        if ($targetName === 'hhvm') {
+                            if ($package instanceof CompletePackage) {
+                                return $text . ' -> your HHVM version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
+                            } else {
+                                return $text . ' -> you are running this with PHP and not HHVM.';
+                            }
+                        }
+
 
                         if (!($package instanceof CompletePackage)) {
                             return $text . ' -> your PHP version ('.phpversion().') does not satisfy that requirement.';
@@ -229,7 +235,18 @@ abstract class Rule
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
                 return $ruleText;
             case self::RULE_LEARNED:
-                return 'Conclusion: '.$ruleText;
+                // TODO not sure this is a good idea, most of these rules should be listed in the problem anyway
+                $learnedString = '(learned rule, ';
+                if (isset($learnedPool[$this->reasonData])) {
+                    foreach ($learnedPool[$this->reasonData] as $learnedRule) {
+                        $learnedString .= $learnedRule->getPrettyString($pool, $installedMap, $learnedPool);
+                    }
+                } else {
+                    $learnedString .= 'reasoning unavailable';
+                }
+                $learnedString .= ')';
+
+                return 'Conclusion: '.$ruleText.' '.$learnedString;
             case self::RULE_PACKAGE_ALIAS:
                 return $ruleText;
             default:

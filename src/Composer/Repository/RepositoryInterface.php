@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\PackageInterface;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * Repository interface.
@@ -38,8 +39,8 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches for the first match of a package by name and version.
      *
-     * @param string                                                 $name       package name
-     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
+     * @param string                     $name       package name
+     * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface|null
      */
@@ -48,13 +49,14 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches for all packages matching a name and optionally a version.
      *
-     * @param string                                                 $name       package name
-     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
+     * @param string                     $name       package name
+     * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface[]
      */
     public function findPackages($name, $constraint = null);
 
+    // TODO this should really not be in this generic interface anymore
     /**
      * Returns list of registered packages.
      *
@@ -63,12 +65,22 @@ interface RepositoryInterface extends \Countable
     public function getPackages();
 
     /**
+     * Returns list of registered packages with the supplied name
+     *
+     * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
+     * @param $isPackageAcceptableCallable
+     * @return PackageInterface[]
+     */
+    public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable);
+
+    /**
      * Searches the repository for packages containing the query
      *
      * @param string $query search query
      * @param int    $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only
+     * @param string $type  The type of package to search for. Defaults to all types of packages
      *
-     * @return \array[] an array of array('name' => '...', 'description' => '...')
+     * @return array[] an array of array('name' => '...', 'description' => '...')
      */
-    public function search($query, $mode = 0);
+    public function search($query, $mode = 0, $type = null);
 }

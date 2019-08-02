@@ -16,7 +16,7 @@ use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 
 /**
  * Repositories manager.
@@ -33,14 +33,14 @@ class RepositoryManager
     private $io;
     private $config;
     private $eventDispatcher;
-    private $rfs;
+    private $httpDownloader;
 
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
     {
         $this->io = $io;
         $this->config = $config;
+        $this->httpDownloader = $httpDownloader;
         $this->eventDispatcher = $eventDispatcher;
-        $this->rfs = $rfs;
     }
 
     /**
@@ -54,6 +54,7 @@ class RepositoryManager
     public function findPackage($name, $constraint)
     {
         foreach ($this->repositories as $repository) {
+            /** @var RepositoryInterface $repository */
             if ($package = $repository->findPackage($name, $constraint)) {
                 return $package;
             }
@@ -68,13 +69,13 @@ class RepositoryManager
      * @param string                                                 $name       package name
      * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
      *
-     * @return array
+     * @return PackageInterface[]
      */
     public function findPackages($name, $constraint)
     {
         $packages = array();
 
-        foreach ($this->repositories as $repository) {
+        foreach ($this->getRepositories() as $repository) {
             $packages = array_merge($packages, $repository->findPackages($name, $constraint));
         }
 
@@ -124,13 +125,7 @@ class RepositoryManager
 
         $class = $this->repositoryClasses[$type];
 
-        $reflMethod = new \ReflectionMethod($class, '__construct');
-        $params = $reflMethod->getParameters();
-        if (isset($params[4]) && $params[4]->getClass() && $params[4]->getClass()->getName() === 'Composer\Util\RemoteFilesystem') {
-            return new $class($config, $this->io, $this->config, $this->eventDispatcher, $this->rfs);
-        }
-
-        return new $class($config, $this->io, $this->config, $this->eventDispatcher);
+        return new $class($config, $this->io, $this->config, $this->httpDownloader, $this->eventDispatcher);
     }
 
     /**
@@ -147,7 +142,7 @@ class RepositoryManager
     /**
      * Returns all repositories, except local one.
      *
-     * @return array
+     * @return RepositoryInterface[]
      */
     public function getRepositories()
     {

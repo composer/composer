@@ -17,37 +17,38 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
                 {
                     "name": "a/a", "version": "dev-master",
                     "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/a/newa", "type": "git" },
-                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/a/newa/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/a/newa/tarball/2222222222222222222222222222222222222222", "type": "tar", "shasum": "newsum" }
                 },
                 {
                     "name": "b/b", "version": "2.0.3",
                     "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/b/newb", "type": "git" },
-                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/b/newb/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/b/newb/tarball/2222222222222222222222222222222222222222", "type": "tar", "shasum": "newsum" }
                 },
                 {
                     "name": "c/c", "version": "1.0.0",
                     "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/c/newc", "type": "git" },
-                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/c/newc/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/c/newc/tarball/2222222222222222222222222222222222222222", "type": "tar", "shasum": "newsum" }
                 },
                 {
                     "name": "d/d", "version": "dev-master",
                     "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/d/newd", "type": "git" },
-                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/d/newd/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/d/newd/tarball/2222222222222222222222222222222222222222", "type": "tar", "shasum": "newsum" }
                 },
                 {
                     "name": "e/e", "version": "dev-master",
                     "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/e/newe", "type": "git" },
-                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/e/newe/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/e/newe/tarball/2222222222222222222222222222222222222222", "type": "tar", "shasum": "newsum" }
                 },
                 {
                     "name": "f/f", "version": "dev-master",
                     "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/f/newf", "type": "git" },
-                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/f/newf/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/f/newf/tarball/2222222222222222222222222222222222222222", "type": "tar", "shasum": "newsum" },
+                    "transport-options": { "foo": "bar2" }
                 },
                 {
                     "name": "g/g", "version": "dev-master",
                     "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/g/newg", "type": "git" },
-                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/g/newg/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/g/newg/tarball/2222222222222222222222222222222222222222", "type": "tar", "shasum": "newsum" }
                 }
             ]
         }
@@ -67,32 +68,34 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
     {
         "name": "a/a", "version": "dev-master",
         "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/a/a", "type": "git" },
-        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/a/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/a/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": "oldsum" }
     },
     {
         "name": "b/b", "version": "2.0.3",
         "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/b/b", "type": "git" },
-        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/b/b/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/b/b/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": "oldsum" }
     },
     {
         "name": "c/c", "version": "1.0.0",
         "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/c/c", "type": "git" },
-        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/c/c/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/c/c/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": "oldsum" }
     },
     {
         "name": "d/d", "version": "dev-master",
         "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/d/d", "type": "git" },
-        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/d/d/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/d/d/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": "oldsum" }
     },
     {
         "name": "f/f", "version": "dev-master",
         "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/f/f", "type": "git" },
-        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/f/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/f/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": "oldsum" },
+        "transport-options": { "foo": "bar" }
     },
     {
         "name": "g/g", "version": "dev-master",
         "source": { "reference": "0000000000000000000000000000000000000000", "url": "https://github.com/g/g", "type": "git" },
-        "dist": { "reference": "0000000000000000000000000000000000000000", "url": "https://api.github.com/repos/g/g/zipball/0000000000000000000000000000000000000000", "type": "zip" }
+        "dist": { "reference": "0000000000000000000000000000000000000000", "url": "https://api.github.com/repos/g/g/zipball/0000000000000000000000000000000000000000", "type": "zip", "shasum": "oldsum" },
+        "transport-options": { "foo": "bar" }
     }
 ]
 --EXPECT-LOCK--
@@ -101,43 +104,44 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
         {
             "name": "a/a", "version": "dev-master",
             "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/a/newa", "type": "git" },
-            "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/a/newa/zipball/2222222222222222222222222222222222222222", "type": "zip", "shasum": null },
+            "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/a/newa/tarball/2222222222222222222222222222222222222222", "type": "tar", "shasum": "newsum" },
             "type": "library"
         },
         {
             "name": "b/b", "version": "2.0.3",
             "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/b/newb", "type": "git" },
-            "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/b/newb/zipball/2222222222222222222222222222222222222222", "type": "zip", "shasum": null },
+            "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/b/newb/tarball/2222222222222222222222222222222222222222", "type": "tar", "shasum": "newsum" },
             "type": "library"
         },
         {
             "name": "c/c", "version": "1.0.0",
             "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/c/newc", "type": "git" },
-            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/c/newc/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/c/newc/tarball/1111111111111111111111111111111111111111", "type": "tar", "shasum": "newsum" },
             "type": "library"
         },
         {
             "name": "d/d", "version": "dev-master",
             "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/d/newd", "type": "git" },
-            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/d/newd/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/d/newd/tarball/1111111111111111111111111111111111111111", "type": "tar", "shasum": "newsum" },
             "type": "library"
         },
         {
             "name": "e/e", "version": "dev-master",
             "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/e/newe", "type": "git" },
-            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/e/newe/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/e/newe/tarball/1111111111111111111111111111111111111111", "type": "tar", "shasum": "newsum" },
             "type": "library"
         },
         {
             "name": "f/f", "version": "dev-master",
             "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/f/newf", "type": "git" },
-            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/newf/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
-            "type": "library"
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/newf/tarball/1111111111111111111111111111111111111111", "type": "tar", "shasum": "newsum" },
+            "type": "library",
+            "transport-options": { "foo": "bar2" }
         },
         {
             "name": "g/g", "version": "dev-master",
             "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/g/newg", "type": "git" },
-            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/g/newg/zipball/1111111111111111111111111111111111111111", "type": "zip", "shasum": null },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/g/newg/tarball/1111111111111111111111111111111111111111", "type": "tar", "shasum": "newsum" },
             "type": "library"
         }
     ],

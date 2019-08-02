@@ -20,7 +20,7 @@ class InstalledFilesystemRepositoryMock extends InstalledFilesystemRepository
     {
     }
 
-    public function write()
+    public function write($devMode)
     {
     }
 }

@@ -54,7 +54,7 @@ class HgExcludeFilter extends BaseExcludeFilter
      *
      * @param string $line A line from .hgignore
      *
-     * @return array An exclude pattern for filter()
+     * @return array|null An exclude pattern for filter()
      */
     public function parseHgIgnoreLine($line)
     {

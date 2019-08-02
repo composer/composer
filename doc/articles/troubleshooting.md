@@ -140,13 +140,19 @@ Debian-like systems):
 memory_limit = -1
 ```
 
+Composer also respects a memory limit defined by the `COMPOSER_MEMORY_LIMIT` environment variable:
+
+```sh
+COMPOSER_MEMORY_LIMIT=-1 composer.phar <...>
+```
+
 Or, you can increase the limit with a command-line argument:
 
 ```sh
 php -d memory_limit=-1 composer.phar <...>
 ```
 
-This issue can also happen on cPanel instances, when the shell fork bomb protection is activated. For more information, see the [documentation](https://documentation.cpanel.net/display/ALD/Shell+Fork+Bomb+Protection) of the fork bomb feature on the cPanel site.
+This issue can also happen on cPanel instances, when the shell fork bomb protection is activated. For more information, see the [documentation](https://documentation.cpanel.net/display/68Docs/Shell+Fork+Bomb+Protection) of the fork bomb feature on the cPanel site.
 
 ## Xdebug impact on Composer
 
@@ -163,7 +169,7 @@ please report this [issue](https://github.com/composer/composer/issues).
 2. Search for an `AutoRun` key inside `HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor`,
    `HKEY_CURRENT_USER\Software\Microsoft\Command Processor`
    or `HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Command Processor`.
-3. Check if it contains any path to non-existent file, if it's the case, just remove them.
+3. Check if it contains any path to non-existent file, if it's the case, remove them.
 
 ## API rate limit and OAuth tokens
 
@@ -244,7 +250,7 @@ following workarounds:
 On linux, it seems that running this command helps to make ipv4 traffic have a
 higher prio than ipv6, which is a better alternative than disabling ipv6 entirely:
 
-```Bash
+```bash
 sudo sh -c "echo 'precedence ::ffff:0:0/96 100' >> /etc/gai.conf"
 ```
 
@@ -256,13 +262,13 @@ On windows the only way is to disable ipv6 entirely I am afraid (either in windo
 
 Get name of your network device:
 
-```
+```bash
 networksetup -listallnetworkservices
 ```
 
 Disable IPv6 on that device (in this case "Wi-Fi"):
 
-```
+```bash
 networksetup -setv6off Wi-Fi
 ```
 
@@ -270,7 +276,7 @@ Run composer ...
 
 You can enable IPv6 again with:
 
-```
+```bash
 networksetup -setv6automatic Wi-Fi
 ```
 
@@ -281,14 +287,14 @@ for everyone.
 ## Composer hangs with SSH ControlMaster
 
 When you try to install packages from a Git repository and you use the `ControlMaster`
-setting for your SSH connection, Composer might just hang endlessly and you see a `sh`
+setting for your SSH connection, Composer might hang endlessly and you see a `sh`
 process in the `defunct` state in your process list.
 
 The reason for this is a SSH Bug: https://bugzilla.mindrot.org/show_bug.cgi?id=1988
 
 As a workaround, open a SSH connection to your Git host before running Composer:
 
-```
+```bash
 ssh -t git@mygitserver.tld
 composer update
 ```

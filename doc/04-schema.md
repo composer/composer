@@ -43,7 +43,7 @@ Required for published packages (libraries).
 
 ### description
 
-A short description of the package. Usually this is just one line long.
+A short description of the package. Usually this is one line long.
 
 Required for published packages (libraries).
 
@@ -104,7 +104,7 @@ Out of the box, Composer supports four types:
   [dedicated article](articles/custom-installers.md).
 
 Only use a custom type if you need custom logic during installation. It is
-recommended to omit this field and have it just default to `library`.
+recommended to omit this field and have it default to `library`.
 
 ### keywords
 
@@ -127,6 +127,12 @@ An URL to the website of the project.
 
 Optional.
 
+### readme
+
+A relative path to the readme document.
+
+Optional.
+
 ### time
 
 Release date of the version.
@@ -145,14 +151,14 @@ The recommended notation for the most common licenses is (alphabetical):
 - BSD-2-Clause
 - BSD-3-Clause
 - BSD-4-Clause
-- GPL-2.0
-- GPL-3.0
-- LGPL-2.1
-- LGPL-3.0
+- GPL-2.0-only / GPL-2.0-or-later
+- GPL-3.0-only / GPL-3.0-or-later
+- LGPL-2.1-only / LGPL-2.1-or-later
+- LGPL-3.0-only / LGPL-3.0-or-later
 - MIT
 
 Optional, but it is highly recommended to supply this. More identifiers are
-listed at the [SPDX Open Source License Registry](https://www.spdx.org/licenses/).
+listed at the [SPDX Open Source License Registry](https://spdx.org/licenses/).
 
 For closed-source software, you may use `"proprietary"` as the license identifier.
 
@@ -172,8 +178,8 @@ An Example for disjunctive licenses:
 ```json
 {
     "license": [
-       "LGPL-2.1",
-       "GPL-3.0+"
+       "LGPL-2.1-only",
+       "GPL-3.0-or-later"
     ]
 }
 ```
@@ -182,7 +188,7 @@ Alternatively they can be separated with "or" and enclosed in parenthesis;
 
 ```json
 {
-    "license": "(LGPL-2.1 or GPL-3.0+)"
+    "license": "(LGPL-2.1-only or GPL-3.0-or-later)"
 }
 ```
 
@@ -214,7 +220,7 @@ An example:
         {
             "name": "Jordi Boggiano",
             "email": "j.boggiano@seld.be",
-            "homepage": "http://seld.be",
+            "homepage": "https://seld.be",
             "role": "Developer"
         }
     ]
@@ -237,6 +243,7 @@ Support information includes the following:
 * **source:** URL to browse or download the sources.
 * **docs:** URL to the documentation.
 * **rss:** URL to the RSS feed.
+* **chat:** URL to the chat channel.
 
 An example:
 
@@ -272,7 +279,7 @@ All links are optional fields.
 `require` and `require-dev` additionally support stability flags ([root-only](04-schema.md#root-package)).
 These allow you to further restrict or expand the stability of a package beyond
 the scope of the [minimum-stability](#minimum-stability) setting. You can apply
-them to a constraint, or just apply them to an empty constraint if you want to
+them to a constraint, or apply them to an empty constraint if you want to
 allow unstable packages of a dependency for example.
 
 Example:
@@ -307,7 +314,9 @@ releases for the `doctrine/data-fixtures` package :
 `require` and `require-dev` additionally support explicit references (i.e.
 commit) for dev versions to make sure they are locked to a given state, even
 when you run update. These only work if you explicitly require a dev version
-and append the reference with `#<ref>`.
+and append the reference with `#<ref>`. This is also a
+[root-only](04-schema.md#root-package) feature and will be ignored in
+dependencies.
 
 Example:
 
@@ -355,7 +364,6 @@ Example:
 > your system. You may use it to help you compile the list of extensions you
 > use and require. Alternatively you may use third party tools to analyze
 > your project for the list of extensions used.
-
 
 #### require
 
@@ -407,7 +415,7 @@ simply list it in `provide`.
 #### suggest
 
 Suggested packages that can enhance or work well with this package. These are
-just informational and are displayed after the package is installed, to give
+informational and are displayed after the package is installed, to give
 your users a hint that they could add more packages, even though they are not
 strictly required.
 
@@ -571,7 +579,7 @@ Example:
 #### Files
 
 If you want to require certain files explicitly on every request then you can use
-the 'files' autoloading mechanism. This is useful if your package includes PHP functions
+the `files` autoloading mechanism. This is useful if your package includes PHP functions
 that cannot be autoloaded by PHP.
 
 Example:
@@ -586,7 +594,7 @@ Example:
 
 #### Exclude files from classmaps
 
-If you want to exclude some files or folders from the classmap you can use the 'exclude-from-classmap' property.
+If you want to exclude some files or folders from the classmap you can use the `exclude-from-classmap` property.
 This might be useful to exclude test classes in your live environment, for example, as those will be skipped
 from the classmap even when building an optimized autoloader.
 
@@ -608,7 +616,7 @@ Example:
 
 The autoloader can have quite a substantial impact on your request time
 (50-100ms per request in large frameworks using a lot of classes). See the
-[`article about optimizing the autoloader`](articles/autoloader-optimization.md)
+[article about optimizing the autoloader](articles/autoloader-optimization.md)
 for more details on how to reduce this impact.
 
 ### autoload-dev <span>([root-only](04-schema.md#root-package))</span>
@@ -712,7 +720,7 @@ Use `"prefer-stable": true` to enable.
 
 Custom package repositories to use.
 
-By default Composer just uses the packagist repository. By specifying
+By default Composer only uses the packagist repository. By specifying
 repositories you can get packages from elsewhere.
 
 Repositories are not resolved recursively. You can only add them to your main
@@ -732,7 +740,7 @@ The following repository types are supported:
   project.
 * **package:** If you depend on a project that does not have any support for
   composer whatsoever you can define the package inline using a `package`
-  repository. You basically just inline the `composer.json` object.
+  repository. You basically inline the `composer.json` object.
 
 For more information on any of these, see [Repositories](05-repositories.md).
 
@@ -768,7 +776,7 @@ Example:
                 "name": "smarty/smarty",
                 "version": "3.1.7",
                 "dist": {
-                    "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+                    "url": "https://www.smarty.net/files/Smarty-3.1.7.zip",
                     "type": "zip"
                 },
                 "source": {
@@ -862,6 +870,22 @@ The example will include `/dir/foo/bar/file`, `/foo/bar/baz`, `/file.php`,
 
 Optional.
 
+### abandoned
+
+Indicates whether this package has been abandoned.
+
+It can be boolean or a package name/URL pointing to a recommended alternative.
+
+Examples:
+
+Use `"abandoned": true` to indicates this package is abandoned.
+Use `"abandoned": "monolog/monolog"` to indicates this package is abandoned and the
+recommended alternative is  `monolog/monolog`.
+
+Defaults to false.
+
+Optional.
+
 ### non-feature-branches
 
 A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something),
@@ -883,7 +907,7 @@ but the same branch is installed (in the example: latest-testing).
 An example:
 
 If you have a testing branch, that is heavily maintained during a testing phase and is
-deployed to your staging environment, normally "composer show -s" will give you `versions : * dev-master`.
+deployed to your staging environment, normally `composer show -s` will give you `versions : * dev-master`.
 
 If you configure `latest-.*` as a pattern for non-feature-branches like this:
 
@@ -893,7 +917,7 @@ If you configure `latest-.*` as a pattern for non-feature-branches like this:
 }
 ```
 
-Then "composer show -s" will give you `versions : * dev-latest-testing`.
+Then `composer show -s` will give you `versions : * dev-latest-testing`.
 
 Optional.
 

@@ -14,7 +14,7 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\FossilDriver;
 use Composer\Config;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 
@@ -40,15 +40,6 @@ class FossilDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    private function getCmd($cmd)
-    {
-        if (Platform::isWindows()) {
-            return strtr($cmd, "'", '"');
-        }
-
-        return $cmd;
-    }
-
     public static function supportProvider()
     {
         return array(
@@ -64,7 +55,7 @@ class FossilDriverTest extends TestCase
     public function testSupport($url, $assertion)
     {
         $config = new Config();
-        $result = FossilDriver::supports($this->getMock('Composer\IO\IOInterface'), $config, $url);
+        $result = FossilDriver::supports($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $config, $url);
         $this->assertEquals($assertion, $result);
     }
 }

@@ -12,7 +12,7 @@
 
 namespace Composer\SelfUpdate;
 
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\Config;
 use Composer\Json\JsonFile;
 
@@ -21,13 +21,13 @@ use Composer\Json\JsonFile;
  */
 class Versions
 {
-    private $rfs;
+    private $httpDownloader;
     private $config;
     private $channel;
 
-    public function __construct(Config $config, RemoteFilesystem $rfs)
+    public function __construct(Config $config, HttpDownloader $httpDownloader)
     {
-        $this->rfs = $rfs;
+        $this->httpDownloader = $httpDownloader;
         $this->config = $config;
     }
 
@@ -62,7 +62,7 @@ class Versions
     public function getLatest()
     {
         $protocol = extension_loaded('openssl') ? 'https' : 'http';
-        $versions = JsonFile::parseJson($this->rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/versions', false));
+        $versions = $this->httpDownloader->get($protocol . '://getcomposer.org/versions')->decodeJson();
 
         foreach ($versions[$this->getChannel()] as $version) {
             if ($version['min-php'] <= PHP_VERSION_ID) {

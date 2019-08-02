@@ -36,6 +36,13 @@ class ExecCommand extends BaseCommand
                     'Arguments to pass to the binary. Use <info>--</info> to separate from composer arguments'
                 ),
             ))
+            ->setHelp(
+                <<<EOT
+Executes a vendored binary/script.
+                
+Read more at https://getcomposer.org/doc/03-cli.md#exec
+EOT
+            )
         ;
     }
 
@@ -53,7 +60,8 @@ class ExecCommand extends BaseCommand
                 throw new \RuntimeException("No binaries found in composer.json or in bin-dir ($binDir)");
             }
 
-            $this->getIO()->write(<<<EOT
+            $this->getIO()->write(
+                <<<EOT
 <comment>Available binaries:</comment>
 EOT
             );
@@ -66,7 +74,8 @@ EOT
 
                 $previousBin = $bin;
                 $bin = basename($bin);
-                $this->getIO()->write(<<<EOT
+                $this->getIO()->write(
+                    <<<EOT
 <info>- $bin</info>
 EOT
                 );

@@ -12,6 +12,7 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Cache;
 use Composer\Config;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
@@ -45,6 +46,10 @@ class FossilDriver extends VcsDriver
         if (Filesystem::isLocalPath($this->url) && is_dir($this->url)) {
             $this->checkoutDir = $this->url;
         } else {
+            if (!Cache::isUsable($this->config->get('cache-repo-dir')) || !Cache::isUsable($this->config->get('cache-vcs-dir'))) {
+                throw new \RuntimeException('FossilDriver requires a usable cache directory, and it looks like you set it to be disabled');
+            }
+
             $localName = preg_replace('{[^a-z0-9]}i', '-', $this->url);
             $this->repoFile = $this->config->get('cache-repo-dir') . '/' . $localName . '.fossil';
             $this->checkoutDir = $this->config->get('cache-vcs-dir') . '/' . $localName . '/';
@@ -96,7 +101,7 @@ class FossilDriver extends VcsDriver
                 throw new \RuntimeException('Failed to clone '.$this->url.' to repository ' . $this->repoFile . "\n\n" .$output);
             }
 
-            if (0 !== $this->process->execute(sprintf('fossil open %s', ProcessExecutor::escape($this->repoFile)), $output, $this->checkoutDir)) {
+            if (0 !== $this->process->execute(sprintf('fossil open %s --nested', ProcessExecutor::escape($this->repoFile)), $output, $this->checkoutDir)) {
                 $output = $this->process->getErrorOutput();
 
                 throw new \RuntimeException('Failed to open repository '.$this->repoFile.' in ' . $this->checkoutDir . "\n\n" .$output);
@@ -226,7 +231,7 @@ class FossilDriver extends VcsDriver
                 return false;
             }
 
-            $process = new ProcessExecutor();
+            $process = new ProcessExecutor($io);
             // check whether there is a fossil repo in that path
             if ($process->execute('fossil info', $output, $url) === 0) {
                 return true;

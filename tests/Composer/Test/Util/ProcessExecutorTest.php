@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\ProcessExecutor;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
 use Symfony\Component\Console\Output\StreamOutput;
 
@@ -37,7 +37,7 @@ class ProcessExecutorTest extends TestCase
 
     public function testUseIOIsNotNullAndIfNotCaptured()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io->expects($this->once())
             ->method('write')
             ->with($this->equalTo('foo'.PHP_EOL), false);
@@ -61,11 +61,25 @@ class ProcessExecutorTest extends TestCase
         ProcessExecutor::setTimeout(60);
     }
 
-    public function testHidePasswords()
+    /**
+     * @dataProvider hidePasswordProvider
+     */
+    public function testHidePasswords($command, $expectedCommandOutput)
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
-        $process->execute('echo https://foo:bar@example.org/ && echo http://foo@example.org && echo http://abcdef1234567890234578:x-oauth-token@github.com/', $output);
-        $this->assertEquals('Executing command (CWD): echo https://foo:***@example.org/ && echo http://foo@example.org && echo http://***:***@github.com/', trim($buffer->getOutput()));
+        $process->execute($command, $output);
+        $this->assertEquals('Executing command (CWD): ' . $expectedCommandOutput, trim($buffer->getOutput()));
+    }
+
+    public function hidePasswordProvider()
+    {
+        return array(
+            array('echo https://foo:bar@example.org/', 'echo https://foo:***@example.org/'),
+            array('echo http://foo@example.org', 'echo http://foo@example.org'),
+            array('echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://***:***@github.com/'),
+            array("svn ls --verbose --non-interactive  --username 'foo' --password 'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"),
+            array("svn ls --verbose --non-interactive  --username 'foo' --password 'bar \'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"),
+        );
     }
 
     public function testDoesntHidePorts()

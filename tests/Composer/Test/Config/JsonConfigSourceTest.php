@@ -10,11 +10,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\Json;
+namespace Composer\Test\Config;
 
 use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 
 class JsonConfigSourceTest extends TestCase

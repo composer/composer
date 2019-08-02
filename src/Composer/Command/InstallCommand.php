@@ -32,6 +32,7 @@ class InstallCommand extends BaseCommand
     {
         $this
             ->setName('install')
+            ->setAliases(array('i'))
             ->setDescription('Installs the project dependencies from the composer.lock file if present, or falls back on the composer.json.')
             ->setDefinition(array(
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
@@ -51,7 +52,8 @@ class InstallCommand extends BaseCommand
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Should not be provided, use composer require instead to add a given package to composer.json.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+                <<<EOT
 The <info>install</info> command reads the composer.lock file from
 the current directory, processes it, and downloads and installs all the
 libraries and dependencies outlined in that file. If the file does not
@@ -59,6 +61,7 @@ exist it will look for composer.json and do the same.
 
 <info>php composer.phar install</info>
 
+Read more at https://getcomposer.org/doc/03-cli.md#install-i
 EOT
             )
         ;
@@ -83,7 +86,6 @@ EOT
         }
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
-        $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'install', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);

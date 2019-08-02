@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Repository;
 
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Symfony\Component\Process\ExecutableFinder;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\VcsRepository;
@@ -32,17 +32,18 @@ class VcsRepositoryTest extends TestCase
 
     protected function initialize()
     {
-        $oldCwd = getcwd();
-        self::$composerHome = $this->getUniqueTmpDirectory();
-        self::$gitRepo = $this->getUniqueTmpDirectory();
-
         $locator = new ExecutableFinder();
         if (!$locator->find('git')) {
             $this->skipped = 'This test needs a git binary in the PATH to be able to run';
 
             return;
         }
-        if (!@mkdir(self::$gitRepo) || !@chdir(self::$gitRepo)) {
+
+        $oldCwd = getcwd();
+        self::$composerHome = $this->getUniqueTmpDirectory();
+        self::$gitRepo = $this->getUniqueTmpDirectory();
+
+        if (!@chdir(self::$gitRepo)) {
             $this->skipped = 'Could not create and move into the temp git repo '.self::$gitRepo;
 
             return;
@@ -60,6 +61,7 @@ class VcsRepositoryTest extends TestCase
         $exec('git init');
         $exec('git config user.email composertest@example.org');
         $exec('git config user.name ComposerTest');
+        $exec('git config commit.gpgsign false');
         touch('foo');
         $exec('git add foo');
         $exec('git commit -m init');
@@ -150,7 +152,8 @@ class VcsRepositoryTest extends TestCase
                 'home' => self::$composerHome,
             ),
         ));
-        $repo = new VcsRepository(array('url' => self::$gitRepo, 'type' => 'vcs'), new NullIO, $config);
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $repo = new VcsRepository(array('url' => self::$gitRepo, 'type' => 'vcs'), new NullIO, $config, $httpDownloader);
         $packages = $repo->getPackages();
         $dumper = new ArrayDumper();
 

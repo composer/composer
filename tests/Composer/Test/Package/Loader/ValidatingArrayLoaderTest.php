@@ -23,7 +23,7 @@ class ValidatingArrayLoaderTest extends TestCase
      */
     public function testLoadSuccess($config)
     {
-        $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
+        $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $internalLoader
             ->expects($this->once())
             ->method('load')
@@ -71,6 +71,7 @@ class ValidatingArrayLoaderTest extends TestCase
                         'source' => 'http://example.org/',
                         'irc' => 'irc://example.org/example',
                         'rss' => 'http://example.org/rss',
+                        'chat' => 'http://example.org/chat',
                     ),
                     'require' => array(
                         'a/b' => '1.*',
@@ -119,7 +120,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     'repositories' => array(
                         array(
                             'type' => 'composer',
-                            'url' => 'https://packagist.org/',
+                            'url' => 'https://repo.packagist.org/',
                         ),
                     ),
                     'config' => array(
@@ -151,10 +152,16 @@ class ValidatingArrayLoaderTest extends TestCase
                     'transport-options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem')),
                 ),
             ),
-            array( // test as array
+            array( // test licenses as array
                 array(
                     'name' => 'foo/bar',
                     'license' => array('MIT', 'WTFPL'),
+                ),
+            ),
+            array( // test bin as string
+                array(
+                    'name' => 'foo/bar',
+                    'bin' => 'bin1',
                 ),
             ),
         );
@@ -165,7 +172,7 @@ class ValidatingArrayLoaderTest extends TestCase
      */
     public function testLoadFailureThrowsException($config, $expectedErrors)
     {
-        $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
+        $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
         try {
             $loader->load($config);
@@ -183,7 +190,7 @@ class ValidatingArrayLoaderTest extends TestCase
      */
     public function testLoadWarnings($config, $expectedWarnings)
     {
-        $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
+        $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
 
         $loader->load($config);
@@ -203,7 +210,7 @@ class ValidatingArrayLoaderTest extends TestCase
 
             return;
         }
-        $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
+        $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $internalLoader
             ->expects($this->once())
             ->method('load')
@@ -293,12 +300,37 @@ class ValidatingArrayLoaderTest extends TestCase
             ),
             array(
                 array(
+                    'name' => 'foo/bar.json',
+                ),
+                array(
+                    'Deprecation warning: Your package name foo/bar.json is invalid, package names can not end in .json, consider renaming it or perhaps using a -json suffix instead. Make sure you fix this as Composer 2.0 will error.',
+                ),
+            ),
+            array(
+                array(
+                    'name' => 'com1/foo',
+                ),
+                array(
+                    'Deprecation warning: Your package name com1/foo is reserved, package and vendor names can not match any of: nul, con, prn, aux, com1, com2, com3, com4, com5, com6, com7, com8, com9, lpt1, lpt2, lpt3, lpt4, lpt5, lpt6, lpt7, lpt8, lpt9. Make sure you fix this as Composer 2.0 will error.',
+                ),
+            ),
+            array(
+                array(
+                    'name' => 'Foo/Bar',
+                ),
+                array(
+                    'Deprecation warning: Your package name Foo/Bar is invalid, it should not contain uppercase characters. We suggest using foo/bar instead. Make sure you fix this as Composer 2.0 will error.',
+                ),
+            ),
+            array(
+                array(
                     'name' => 'foo/bar',
                     'support' => array(
                         'source' => 'foo:bar',
                         'forum' => 'foo:bar',
                         'issues' => 'foo:bar',
                         'wiki' => 'foo:bar',
+                        'chat' => 'foo:bar',
                     ),
                 ),
                 array(
@@ -306,6 +338,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     'support.forum : invalid value (foo:bar), must be an http/https URL',
                     'support.issues : invalid value (foo:bar), must be an http/https URL',
                     'support.wiki : invalid value (foo:bar), must be an http/https URL',
+                    'support.chat : invalid value (foo:bar), must be an http/https URL',
                 ),
             ),
             array(
@@ -325,6 +358,18 @@ class ValidatingArrayLoaderTest extends TestCase
                     'require.bar/foo : unbound version constraints (dev-master) should be avoided',
                     'require.bar/hacked : unbound version constraints (@stable) should be avoided',
                     'require.bar/woo : exact version constraints (1.0.0) should be avoided if the package follows semantic versioning',
+                ),
+                false,
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'require' => array(
+                        'Foo/Baz' => '^1.0',
+                    ),
+                ),
+                array(
+                    'Deprecation warning: require.Foo/Baz is invalid, it should not contain uppercase characters. Please use foo/baz instead. Make sure you fix this as Composer 2.0 will error.',
                 ),
                 false,
             ),

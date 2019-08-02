@@ -77,7 +77,7 @@ or another constraint if you want really specific versions.
 }
 ```
 
-Once you've done this, you just run:
+Once you've done this, you run:
 
     php bin/satis build <configuration file> <build dir>
 
@@ -111,6 +111,19 @@ like so:
 Note that this will still need to pull and scan all of your VCS repositories
 because any VCS repository might contain (on any branch) one of the selected
 packages.
+
+If you want to scan only the selected package and not all VCS repositories you need
+to declare a *name* for all your package (this only work on VCS repositories type) :
+
+```json
+{
+  "repositories": [
+    { "name": "company/privaterepo", "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
+    { "name": "private/repo", "type": "vcs", "url": "http://svn.example.org/private/repo" },
+    { "name": "mycompany/privaterepo2", "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
+  ]
+}
+```
 
 If you want to scan only a single repository and update all packages found in
 it, pass the VCS repository URL as an optional argument:
@@ -306,7 +319,7 @@ be marked abandoned as well.
 
 It is possible to make satis automatically resolve and add all dependencies for
 your projects. This can be used with the Downloads functionality to have a
-complete local mirror of packages. Just add the following to your `satis.json`:
+complete local mirror of packages. Add the following to your `satis.json`:
 
 ```json
 {
@@ -336,9 +349,8 @@ is set to true.
  * `notify-batch`: optional, specify a URL that will be called every time a
    user installs a package. See [notify-batch].
 
-
 [ssh2 context options]: https://secure.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options
 [ssl context options]: https://secure.php.net/manual/en/context.ssl.php
-[Twig]: http://twig.sensiolabs.org/
+[Twig]: https://twig.sensiolabs.org/
 [config schema]: https://getcomposer.org/doc/04-schema.md#config
 [notify-batch]: https://getcomposer.org/doc/05-repositories.md#notify-batch

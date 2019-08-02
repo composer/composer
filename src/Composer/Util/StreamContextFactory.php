@@ -13,6 +13,9 @@
 namespace Composer\Util;
 
 use Composer\Composer;
+use Composer\CaBundle\CaBundle;
+use Composer\Downloader\TransportException;
+use Psr\Log\LoggerInterface;
 
 /**
  * Allows the creation of a basic context supporting http proxy
@@ -39,8 +42,34 @@ final class StreamContextFactory
             'max_redirects' => 20,
         ));
 
+        $options = array_replace_recursive($options, self::initOptions($url, $defaultOptions));
+        unset($defaultOptions['http']['header']);
+        $options = array_replace_recursive($options, $defaultOptions);
+
+        if (isset($options['http']['header'])) {
+            $options['http']['header'] = self::fixHttpHeaderField($options['http']['header']);
+        }
+
+        return stream_context_create($options, $defaultParams);
+    }
+
+    /**
+     * @param string $url
+     * @param array $options
+     * @return array ['http' => ['header' => [...], 'proxy' => '..', 'request_fulluri' => bool]] formatted as a stream context array
+     */
+    public static function initOptions($url, array $options)
+    {
+        // Make sure the headers are in an array form
+        if (!isset($options['http']['header'])) {
+            $options['http']['header'] = array();
+        }
+        if (is_string($options['http']['header'])) {
+            $options['http']['header'] = explode("\r\n", $options['http']['header']);
+        }
+
         // Handle HTTP_PROXY/http_proxy on CLI only for security reasons
-        if (PHP_SAPI === 'cli' && (!empty($_SERVER['HTTP_PROXY']) || !empty($_SERVER['http_proxy']))) {
+        if ((PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') && (!empty($_SERVER['HTTP_PROXY']) || !empty($_SERVER['http_proxy']))) {
             $proxy = parse_url(!empty($_SERVER['http_proxy']) ? $_SERVER['http_proxy'] : $_SERVER['HTTP_PROXY']);
         }
 
@@ -85,15 +114,15 @@ final class StreamContextFactory
 
             // enabled request_fulluri unless it is explicitly disabled
             switch (parse_url($url, PHP_URL_SCHEME)) {
-                case 'http': // default request_fulluri to true
+                case 'http': // default request_fulluri to true for HTTP
                     $reqFullUriEnv = getenv('HTTP_PROXY_REQUEST_FULLURI');
                     if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
                         $options['http']['request_fulluri'] = true;
                     }
                     break;
-                case 'https': // default request_fulluri to true
+                case 'https': // default request_fulluri to false for HTTPS
                     $reqFullUriEnv = getenv('HTTPS_PROXY_REQUEST_FULLURI');
-                    if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
+                    if (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv) {
                         $options['http']['request_fulluri'] = true;
                     }
                     break;
@@ -109,28 +138,14 @@ final class StreamContextFactory
 
             // handle proxy auth if present
             if (isset($proxy['user'])) {
-                $auth = urldecode($proxy['user']);
+                $auth = rawurldecode($proxy['user']);
                 if (isset($proxy['pass'])) {
-                    $auth .= ':' . urldecode($proxy['pass']);
+                    $auth .= ':' . rawurldecode($proxy['pass']);
                 }
                 $auth = base64_encode($auth);
 
-                // Preserve headers if already set in default options
-                if (isset($defaultOptions['http']['header'])) {
-                    if (is_string($defaultOptions['http']['header'])) {
-                        $defaultOptions['http']['header'] = array($defaultOptions['http']['header']);
-                    }
-                    $defaultOptions['http']['header'][] = "Proxy-Authorization: Basic {$auth}";
-                } else {
-                    $options['http']['header'] = array("Proxy-Authorization: Basic {$auth}");
-                }
+                $options['http']['header'][] = "Proxy-Authorization: Basic {$auth}";
             }
-        }
-
-        $options = array_replace_recursive($options, $defaultOptions);
-
-        if (isset($options['http']['header'])) {
-            $options['http']['header'] = self::fixHttpHeaderField($options['http']['header']);
         }
 
         if (defined('HHVM_VERSION')) {
@@ -139,18 +154,129 @@ final class StreamContextFactory
             $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
         }
 
+        if (extension_loaded('curl')) {
+            $curl = curl_version();
+            $httpVersion = 'curl '.$curl['version'];
+        } else {
+            $httpVersion = 'streams';
+        }
+
         if (!isset($options['http']['header']) || false === stripos(implode('', $options['http']['header']), 'user-agent')) {
             $options['http']['header'][] = sprintf(
-                'User-Agent: Composer/%s (%s; %s; %s%s)',
-                Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
+                'User-Agent: Composer/%s (%s; %s; %s; %s%s)',
+                Composer::getVersion(),
                 function_exists('php_uname') ? php_uname('s') : 'Unknown',
                 function_exists('php_uname') ? php_uname('r') : 'Unknown',
                 $phpVersion,
+                $httpVersion,
                 getenv('CI') ? '; CI' : ''
             );
         }
 
-        return stream_context_create($options, $defaultParams);
+        return $options;
+    }
+
+    /**
+     * @param array $options
+     *
+     * @return array
+     */
+    public static function getTlsDefaults(array $options, LoggerInterface $logger = null)
+    {
+        $ciphers = implode(':', array(
+            'ECDHE-RSA-AES128-GCM-SHA256',
+            'ECDHE-ECDSA-AES128-GCM-SHA256',
+            'ECDHE-RSA-AES256-GCM-SHA384',
+            'ECDHE-ECDSA-AES256-GCM-SHA384',
+            'DHE-RSA-AES128-GCM-SHA256',
+            'DHE-DSS-AES128-GCM-SHA256',
+            'kEDH+AESGCM',
+            'ECDHE-RSA-AES128-SHA256',
+            'ECDHE-ECDSA-AES128-SHA256',
+            'ECDHE-RSA-AES128-SHA',
+            'ECDHE-ECDSA-AES128-SHA',
+            'ECDHE-RSA-AES256-SHA384',
+            'ECDHE-ECDSA-AES256-SHA384',
+            'ECDHE-RSA-AES256-SHA',
+            'ECDHE-ECDSA-AES256-SHA',
+            'DHE-RSA-AES128-SHA256',
+            'DHE-RSA-AES128-SHA',
+            'DHE-DSS-AES128-SHA256',
+            'DHE-RSA-AES256-SHA256',
+            'DHE-DSS-AES256-SHA',
+            'DHE-RSA-AES256-SHA',
+            'AES128-GCM-SHA256',
+            'AES256-GCM-SHA384',
+            'AES128-SHA256',
+            'AES256-SHA256',
+            'AES128-SHA',
+            'AES256-SHA',
+            'AES',
+            'CAMELLIA',
+            'DES-CBC3-SHA',
+            '!aNULL',
+            '!eNULL',
+            '!EXPORT',
+            '!DES',
+            '!RC4',
+            '!MD5',
+            '!PSK',
+            '!aECDH',
+            '!EDH-DSS-DES-CBC3-SHA',
+            '!EDH-RSA-DES-CBC3-SHA',
+            '!KRB5-DES-CBC3-SHA',
+        ));
+
+        /**
+         * CN_match and SNI_server_name are only known once a URL is passed.
+         * They will be set in the getOptionsForUrl() method which receives a URL.
+         *
+         * cafile or capath can be overridden by passing in those options to constructor.
+         */
+        $defaults = array(
+            'ssl' => array(
+                'ciphers' => $ciphers,
+                'verify_peer' => true,
+                'verify_depth' => 7,
+                'SNI_enabled' => true,
+                'capture_peer_cert' => true,
+            ),
+        );
+
+        if (isset($options['ssl'])) {
+            $defaults['ssl'] = array_replace_recursive($defaults['ssl'], $options['ssl']);
+        }
+
+        /**
+         * Attempt to find a local cafile or throw an exception if none pre-set
+         * The user may go download one if this occurs.
+         */
+        if (!isset($defaults['ssl']['cafile']) && !isset($defaults['ssl']['capath'])) {
+            $result = CaBundle::getSystemCaRootBundlePath($logger);
+
+            if (is_dir($result)) {
+                $defaults['ssl']['capath'] = $result;
+            } else {
+                $defaults['ssl']['cafile'] = $result;
+            }
+        }
+
+        if (isset($defaults['ssl']['cafile']) && (!is_readable($defaults['ssl']['cafile']) || !CaBundle::validateCaFile($defaults['ssl']['cafile'], $logger))) {
+            throw new TransportException('The configured cafile was not valid or could not be read.');
+        }
+
+        if (isset($defaults['ssl']['capath']) && (!is_dir($defaults['ssl']['capath']) || !is_readable($defaults['ssl']['capath']))) {
+            throw new TransportException('The configured capath was not valid or could not be read.');
+        }
+
+        /**
+         * Disable TLS compression to prevent CRIME attacks where supported.
+         */
+        if (PHP_VERSION_ID >= 50413) {
+            $defaults['ssl']['disable_compression'] = true;
+        }
+
+        return $defaults;
     }
 
     /**
@@ -160,7 +286,7 @@ final class StreamContextFactory
      * This method fixes the array by moving the content-type header to the end
      *
      * @link https://bugs.php.net/bug.php?id=61548
-     * @param $header
+     * @param string|array $header
      * @return array
      */
     private static function fixHttpHeaderField($header)
@@ -169,7 +295,7 @@ final class StreamContextFactory
             $header = explode("\r\n", $header);
         }
         uasort($header, function ($el) {
-            return preg_match('{^content-type}i', $el) ? 1 : -1;
+            return stripos($el, 'content-type') === 0 ? 1 : -1;
         });
 
         return $header;

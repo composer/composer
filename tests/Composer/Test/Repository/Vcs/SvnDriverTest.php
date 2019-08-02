@@ -14,7 +14,7 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\SvnDriver;
 use Composer\Config;
-use Composer\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 
@@ -45,13 +45,14 @@ class SvnDriverTest extends TestCase
      */
     public function testWrongCredentialsInUrl()
     {
-        $console = $this->getMock('Composer\IO\IOInterface');
+        $console = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
 
         $output = "svn: OPTIONS of 'https://corp.svn.local/repo':";
         $output .= " authorization failed: Could not authenticate to server:";
         $output .= " rejected Basic challenge (https://corp.svn.local/)";
 
-        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $process->expects($this->at(1))
             ->method('execute')
             ->will($this->returnValue(1));
@@ -66,17 +67,8 @@ class SvnDriverTest extends TestCase
             'url' => 'https://till:secret@corp.svn.local/repo',
         );
 
-        $svn = new SvnDriver($repoConfig, $console, $this->config, $process);
+        $svn = new SvnDriver($repoConfig, $console, $this->config, $httpDownloader, $process);
         $svn->initialize();
-    }
-
-    private function getCmd($cmd)
-    {
-        if (Platform::isWindows()) {
-            return strtr($cmd, "'", '"');
-        }
-
-        return $cmd;
     }
 
     public static function supportProvider()
@@ -95,7 +87,7 @@ class SvnDriverTest extends TestCase
     public function testSupport($url, $assertion)
     {
         $config = new Config();
-        $result = SvnDriver::supports($this->getMock('Composer\IO\IOInterface'), $config, $url);
+        $result = SvnDriver::supports($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $config, $url);
         $this->assertEquals($assertion, $result);
     }
 }
