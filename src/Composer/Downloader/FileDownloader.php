@@ -175,7 +175,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $reject = function ($e) use ($io, &$urls, $download, $fileName, $path, $package, &$retries, $filesystem, $self) {
             // clean up
-            $filesystem->removeDirectory($path);
+            if (file_exists($fileName)) {
+                $filesystem->unlink($fileName);
+            }
             $self->clearLastCacheWrite($package);
 
             if ($e instanceof TransportException) {
