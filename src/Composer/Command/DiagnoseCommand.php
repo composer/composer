@@ -156,7 +156,7 @@ EOT
             $this->outputResult($this->checkVersion($config));
         }
 
-        $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::VERSION));
+        $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::getVersion()));
 
         $platformOverrides = $config->get('platform') ?: array();
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
