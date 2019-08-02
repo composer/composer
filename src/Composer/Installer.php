@@ -1171,7 +1171,7 @@ class Installer
                     $newReference = $rootRefs[$package->getName()];
                 }
 
-                $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newReference, $newPackage->getDistUrl());
+                $this->updatePackageUrl($package, $newSourceUrl, $newPackage->getSourceType(), $newReference, $newPackage->getDistUrl(), $newPackage->getDistType(), $newPackage->getDistSha1Checksum(), $newPackage);
 
                 if ($package instanceof CompletePackage && $newPackage instanceof CompletePackage) {
                     $package->setAbandoned($newPackage->getReplacementPackage() ?: $newPackage->isAbandoned());
@@ -1179,11 +1179,12 @@ class Installer
 
                 $package->setDistMirrors($newPackage->getDistMirrors());
                 $package->setSourceMirrors($newPackage->getSourceMirrors());
+                $package->setTransportOptions($newPackage->getTransportOptions());
             }
         }
     }
 
-    private function updatePackageUrl(PackageInterface $package, $sourceUrl, $sourceType, $sourceReference, $distUrl)
+    private function updatePackageUrl(PackageInterface $package, $sourceUrl, $sourceType, $sourceReference, $distUrl, $distType, $distShaSum)
     {
         $oldSourceRef = $package->getSourceReference();
 
@@ -1197,6 +1198,8 @@ class Installer
         // but for other urls this is ambiguous and could result in bad outcomes
         if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $distUrl)) {
             $package->setDistUrl($distUrl);
+            $package->setDistType($distType);
+            $package->setDistSha1Checksum($distShaSum);
             $this->updateInstallReferences($package, $sourceReference);
         }
 
