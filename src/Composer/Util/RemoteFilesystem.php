@@ -17,7 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
 use Composer\Util\HttpDownloader;
-use Composer\Util\Response;
+use Composer\Util\Http\Response;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
