@@ -254,7 +254,7 @@ EOT
 
         $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $json = $this->httpDownloader->get($protocol . '://repo.packagist.org/packages.json')->parseJson();
+            $json = $this->httpDownloader->get($protocol . '://repo.packagist.org/packages.json')->decodeJson();
             $hash = reset($json['provider-includes']);
             $hash = $hash['sha256'];
             $path = str_replace('%hash%', $hash, key($json['provider-includes']));
@@ -375,7 +375,7 @@ EOT
         }
 
         $url = $domain === 'github.com' ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
-        $data = $this->httpDownloader->get($url, array('retry-auth-failure' => false))->parseJson();
+        $data = $this->httpDownloader->get($url, array('retry-auth-failure' => false))->decodeJson();
 
         return $data['resources']['core'];
     }
