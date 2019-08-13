@@ -870,20 +870,30 @@ class Installer
             }
         }
 
-        $rootConstraints = array();
+        $rootRequires = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
             if ($this->ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
                 continue;
             }
             if ($constraint instanceof Link) {
-                $rootConstraints[$req] = $constraint->getConstraint();
+                $rootRequires[$req] = $constraint->getConstraint();
             } else {
-                $rootConstraints[$req] = $constraint;
+                $rootRequires[$req] = $constraint;
             }
         }
 
-        return new Pool($minimumStability, $stabilityFlags, $rootConstraints);
+        $rootConflicts = array();
+
+        foreach ($this->package->getConflicts() as $conflict => $constraint) {
+            if ($constraint instanceof Link) {
+                $rootConflicts[$conflict] = $constraint->getConstraint();
+            } else {
+                $rootConflicts[$conflict] = $constraint;
+            }
+        }
+
+        return new Pool($minimumStability, $stabilityFlags, $rootRequires, $rootConflicts);
     }
 
     /**

@@ -49,11 +49,12 @@ class Pool implements \Countable
     protected $stabilityFlags;
     protected $versionParser;
     protected $providerCache = array();
-    protected $filterRequires;
+    protected $rootRequires = array();
+    protected $rootConflicts = array();
     protected $whitelist = null;
     protected $id = 1;
 
-    public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
+    public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $rootRequires = array(), array $rootConflicts = array())
     {
         $this->versionParser = new VersionParser;
         $this->acceptableStabilities = array();
@@ -63,10 +64,16 @@ class Pool implements \Countable
             }
         }
         $this->stabilityFlags = $stabilityFlags;
-        $this->filterRequires = $filterRequires;
-        foreach ($filterRequires as $name => $constraint) {
+        $this->rootRequires = $rootRequires;
+        foreach ($rootRequires as $name => $constraint) {
             if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
-                unset($this->filterRequires[$name]);
+                unset($this->rootRequires[$name]);
+            }
+        }
+        $this->rootConflicts = $rootConflicts;
+        foreach ($rootConflicts as $name => $constraint) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
+                unset($this->rootConflicts[$name]);
             }
         }
     }
@@ -104,7 +111,7 @@ class Pool implements \Countable
                 foreach ($repo->getPackages() as $package) {
                     $names = $package->getNames();
                     $stability = $package->getStability();
-                    if ($exempt || $this->isPackageAcceptable($names, $stability)) {
+                    if ($exempt || ($this->isPackageAcceptable($names, $stability) && $this->isPackageAllowedByRoot($package))) {
                         $package->setId($this->id++);
                         $this->packages[] = $package;
                         $this->packageByExactName[$package->getName()][$package->id] = $package;
@@ -296,9 +303,29 @@ class Pool implements \Countable
         return $prefix.' '.$package->getPrettyString();
     }
 
+    private function isPackageAllowedByRoot(PackageInterface $package)
+    {
+        // if the package was required by root, we only accept the ones matching the root requirements
+        if (isset($this->rootRequires[$package->getName()])) {
+            $pkgConstraint = new Constraint('==', $package->getVersion());
+            if (!$this->rootRequires[$package->getName()]->matches($pkgConstraint)) {
+                return false;
+            }
+        }
+
+        // if the package conflicts with a root conflict, we do not accept the package
+        if (isset($this->rootConflicts[$package->getName()])) {
+            $pkgConstraint = new Constraint('==', $package->getVersion());
+            if ($this->rootConflicts[$package->getName()]->matches($pkgConstraint)) {
+                return false;
+            }
+        }
+    }
+
     public function isPackageAcceptable($name, $stability)
     {
         foreach ((array) $name as $n) {
+
             // allow if package matches the global stability requirement and has no exception
             if (!isset($this->stabilityFlags[$n]) && isset($this->acceptableStabilities[$stability])) {
                 return true;
@@ -329,8 +356,8 @@ class Pool implements \Countable
         $isDev = $candidate->getStability() === 'dev';
         $isAlias = $candidate instanceof AliasPackage;
 
-        if (!$bypassFilters && !$isDev && !$isAlias && isset($this->filterRequires[$name])) {
-            $requireFilter = $this->filterRequires[$name];
+        if (!$bypassFilters && !$isDev && !$isAlias && isset($this->rootRequires[$name])) {
+            $requireFilter = $this->rootRequires[$name];
         } else {
             $requireFilter = new EmptyConstraint;
         }
