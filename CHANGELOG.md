@@ -1,5 +1,6 @@
 ### [1.9.0] 2019-08-02
 
+  * Breaking: artifact repositories with URLs containing port numbers and requiring authentication now require you to configure http-basic auth for the `host:port` pair explicitly
   * Added a `--no-cache` flag available on all commands to run with the cache disabled
   * Added PHP_BINARY as env var pointing to the PHP process when executing Composer scripts as shell scripts
   * Added a `use-github-api` config option which can set the `no-api` flag on all GitHub VCS repositories declared
