@@ -320,12 +320,13 @@ class Pool implements \Countable
                 return false;
             }
         }
+
+        return true;
     }
 
     public function isPackageAcceptable($name, $stability)
     {
         foreach ((array) $name as $n) {
-
             // allow if package matches the global stability requirement and has no exception
             if (!isset($this->stabilityFlags[$n]) && isset($this->acceptableStabilities[$stability])) {
                 return true;
