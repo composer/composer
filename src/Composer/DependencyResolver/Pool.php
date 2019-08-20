@@ -325,6 +325,16 @@ class Pool implements \Countable
         return true;
     }
 
+    public function isPackageRootRequired($name)
+    {
+        return isset($this->rootRequires[$name]);
+    }
+
+    public function isPackageRootConflict($name)
+    {
+        return isset($this->rootConflicts[$name]);
+    }
+
     public function isPackageAcceptable($name, $stability)
     {
         foreach ((array) $name as $n) {

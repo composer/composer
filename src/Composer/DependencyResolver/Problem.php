@@ -156,6 +156,14 @@ class Problem
                     return "\n    - The requested package ".$packageName.$this->constraintToText($constraint).' exists as '.$this->getPackageList($providers).' but these are rejected by your constraint.';
                 }
 
+                if ($this->pool->isPackageRootConflict($packageName)) {
+                    return "\n    - The requested package ".$packageName.$this->constraintToText($constraint).' was excluded by your own root composer.json "conflict" definition.';
+                }
+
+                if ($this->pool->isPackageRootRequired($packageName)) {
+                    return "\n    - The requested package ".$packageName.$this->constraintToText($constraint).' was excluded by your own root composer.json "require" definition.';
+                }
+
                 return "\n    - The requested package ".$packageName.' could not be found in any version, there may be a typo in the package name.';
             }
         }
