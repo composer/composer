@@ -396,7 +396,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
                 } else {
-                    if (!$bypassFilters && !$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
+                    $stability = VersionParser::parseStability($version['version']);
+
+                    if (!$bypassFilters
+                        && (!$pool->isPackageAcceptable(strtolower($version['name']), $stability))
+                        || !$pool->isPackageAllowedByRoot(strtolower($version['name']), $version['version_normalized'], $stability)
+                    ) {
                         continue;
                     }
 

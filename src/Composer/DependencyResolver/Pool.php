@@ -111,7 +111,8 @@ class Pool implements \Countable
                 foreach ($repo->getPackages() as $package) {
                     $names = $package->getNames();
                     $stability = $package->getStability();
-                    if ($exempt || ($this->isPackageAcceptable($names, $stability) && $this->isPackageAllowedByRoot($package))) {
+
+                    if ($exempt || $this->isPackageAcceptable($names, $stability)) {
                         $package->setId($this->id++);
                         $this->packages[] = $package;
                         $this->packageByExactName[$package->getName()][$package->id] = $package;
@@ -303,20 +304,29 @@ class Pool implements \Countable
         return $prefix.' '.$package->getPrettyString();
     }
 
-    private function isPackageAllowedByRoot(PackageInterface $package)
+    public function isPackageAllowedByRoot($name, $version, $stability = null)
     {
-        // if the package was required by root, we only accept the ones matching the root requirements
-        if (isset($this->rootRequires[$package->getName()])) {
-            $pkgConstraint = new Constraint('==', $package->getVersion());
-            if (!$this->rootRequires[$package->getName()]->matches($pkgConstraint)) {
+        if (null === $stability) {
+            $stability = VersionParser::parseStability($stability);
+        }
+
+        // Only exclude stable versions
+        if ('stable' !== $stability) {
+            return true;
+        }
+
+        $constraint = new Constraint('=', $version);
+
+        // Excluded by root requires
+        if (isset($this->rootRequires[$name])) {
+            if (!$this->rootRequires[$name]->matches($constraint)) {
                 return false;
             }
         }
 
-        // if the package conflicts with a root conflict, we do not accept the package
-        if (isset($this->rootConflicts[$package->getName()])) {
-            $pkgConstraint = new Constraint('==', $package->getVersion());
-            if ($this->rootConflicts[$package->getName()]->matches($pkgConstraint)) {
+        // Excluded by root conflicts
+        if (isset($this->rootConflicts[$name])) {
+            if ($this->rootConflicts[$name]->matches($constraint)) {
                 return false;
             }
         }

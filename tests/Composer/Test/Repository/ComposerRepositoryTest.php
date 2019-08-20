@@ -146,6 +146,9 @@ class ComposerRepositoryTest extends TestCase
         $pool->expects($this->any())
             ->method('isPackageAcceptable')
             ->will($this->returnValue(true));
+        $pool->expects($this->any())
+            ->method('isPackageAllowedByRoot')
+            ->will($this->returnValue(true));
 
         $versionParser = new VersionParser();
         $repo->setRootAliases(array(
