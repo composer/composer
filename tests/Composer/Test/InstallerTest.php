@@ -194,7 +194,7 @@ class InstallerTest extends TestCase
                 ->method('write')
                 ->will($this->returnCallback(function ($hash, $options) use (&$actualLock) {
                     // need to do assertion outside of mock for nice phpunit output
-                    // so store value temporarily in reference for later assetion
+                    // so store value temporarily in reference for later assertion
                     $actualLock = $hash;
                 }));
         }
