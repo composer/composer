@@ -304,17 +304,8 @@ class Pool implements \Countable
         return $prefix.' '.$package->getPrettyString();
     }
 
-    public function isPackageAllowedByRoot($name, $version, $stability = null)
+    public function isPackageAllowedByRoot($name, $version)
     {
-        if (null === $stability) {
-            $stability = VersionParser::parseStability($stability);
-        }
-
-        // Only exclude stable versions
-        if ('stable' !== $stability) {
-            return true;
-        }
-
         $constraint = new Constraint('=', $version);
 
         // Excluded by root requires

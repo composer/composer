@@ -118,6 +118,8 @@ class ComposerRepositoryTest extends TestCase
             $ref->setValue($repo, $value);
         }
 
+        $versionParser = new VersionParser();
+
         $repo->expects($this->any())
             ->method('fetchFile')
             ->will($this->returnValue(array(
@@ -126,18 +128,22 @@ class ComposerRepositoryTest extends TestCase
                         'uid' => 1,
                         'name' => 'a',
                         'version' => 'dev-master',
+                        'version_normalized' => $versionParser->normalize('dev-master'),
                         'extra' => array('branch-alias' => array('dev-master' => '1.0.x-dev')),
                     )),
                     array(array(
                         'uid' => 2,
                         'name' => 'a',
                         'version' => 'dev-develop',
+                        'version_normalized' => $versionParser->normalize('dev-develop'),
                         'extra' => array('branch-alias' => array('dev-develop' => '1.1.x-dev')),
                     )),
                     array(array(
                         'uid' => 3,
                         'name' => 'a',
                         'version' => '0.6',
+                        'version_normalized' => $versionParser->normalize('0.6'),
+
                     )),
                 ),
             )));
@@ -150,7 +156,6 @@ class ComposerRepositoryTest extends TestCase
             ->method('isPackageAllowedByRoot')
             ->will($this->returnValue(true));
 
-        $versionParser = new VersionParser();
         $repo->setRootAliases(array(
             'a' => array(
                 $versionParser->normalize('0.6') => array('alias' => 'dev-feature', 'alias_normalized' => $versionParser->normalize('dev-feature')),
