@@ -221,6 +221,14 @@ abstract class Rule
                         return $text . ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $providers) .' but these conflict with your requirements or minimum-stability.';
                     }
 
+                    if ($pool->isPackageRootConflict($targetName)) {
+                        return $text . ' -> conflicts with your root composer.json "conflict" definition.';
+                    }
+
+                    if ($pool->isPackageRootRequired($targetName)) {
+                        return $text . ' -> conflicts with your root composer.json "require" definition.';
+                    }
+
                     return $text . ' -> no matching package found.';
                 }
 
