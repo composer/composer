@@ -301,7 +301,7 @@ class RemoteFilesystem
 
         $actualContextOptions = stream_context_get_options($ctx);
         $usingProxy = !empty($actualContextOptions['http']['proxy']) ? ' using proxy ' . $actualContextOptions['http']['proxy'] : '';
-        $this->io->writeError((substr($origFileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $origFileUrl . $usingProxy, true, IOInterface::DEBUG);
+        $this->io->writeError((substr($origFileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $this->stripCredentialsFromUrl($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
         unset($origFileUrl, $actualContextOptions);
 
         // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
@@ -873,7 +873,7 @@ class RemoteFilesystem
             $this->redirects++;
 
             $this->io->writeError('', true, IOInterface::DEBUG);
-            $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $targetUrl), true, IOInterface::DEBUG);
+            $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $this->stripCredentialsFromUrl($targetUrl)), true, IOInterface::DEBUG);
 
             $additionalOptions['redirects'] = $this->redirects;
 
@@ -1122,5 +1122,16 @@ class RemoteFilesystem
         }
 
         return $hostPort;
+    }
+
+    private function stripCredentialsFromUrl($url)
+    {
+        // GitHub repository rename result in redirect locations containing the access_token as GET parameter
+        // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
+        if (preg_match('{^(https?://([a-z0-9-]+\.)*github\.com/.*)\?access_token=[a-z0-9]+}', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return $url;
     }
 }
