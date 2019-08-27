@@ -48,7 +48,6 @@ class PoolBuilder
 
     public function buildPool(array $repositories, array $rootAliases, Request $request)
     {
-        $pool = new Pool($this->filterRequires);
         $this->rootAliases = $rootAliases;
 
         // TODO do we really want the request here? kind of want a root requirements thingy instead
@@ -85,7 +84,7 @@ class PoolBuilder
                     $packages = $repository->returnPackages($loadIds[$key]);
                 } else {
                     // TODO should we really pass the callable into here?
-                    $packages = $repository->loadPackages($loadNames, $this->isPackageAcceptableCallable);
+                    $packages = $repository->loadPackages($loadNames, $this->isPackageAcceptableCallable, $this->filterRequires);
                 }
 
                 foreach ($packages as $package) {
@@ -94,6 +93,8 @@ class PoolBuilder
                     }
                 }
             }
+
+            $this->extendFilterRequires();
 
             $loadNames = $newLoadNames;
         }
@@ -133,6 +134,7 @@ class PoolBuilder
             }
         }
 
+        $pool = new Pool($this->filterRequires);
         $pool->setPackages($this->packages, $this->priorities);
 
         unset($this->aliasMap);
@@ -140,6 +142,60 @@ class PoolBuilder
         unset($this->nameConstraints);
 
         return $pool;
+    }
+
+    /**
+     * This method extends the $this->filterRequires array with more information
+     * from the currently loaded packages.
+     *
+     * If all versions of a root dependency require the same package, this
+     * package becomes a root dependency itself with a union of all version
+     * constraints.
+     */
+    private function extendFilterRequires()
+    {
+        $addRequires = array();
+
+        foreach ($this->filterRequires as $name => $constraint) {
+            $count = 0;
+            $subRequireConstraints = array();
+            foreach($this->packages as $package) {
+                if ($package->getName() === $name && $constraint->matches(new Constraint('==', $package->getVersion()))) {
+                    $count++;
+                    foreach ($package->getRequires() as $link) {
+                        $subRequireConstraints[$link->getTarget()][] = $link->getConstraint();
+                    }
+                }
+            }
+            foreach ($subRequireConstraints as $subName => $constraints) {
+                if (\count($constraints) !== $count) {
+                    // The count differs which means that this requirement was
+                    // not part of all versions of this package and must
+                    // therefore not be added as a root requirement.
+                    continue;
+                }
+                $addRequires[$subName][] = new MultiConstraint($this->optimizeConstraints($constraints), false);
+            }
+        }
+        foreach ($addRequires as $name => $constraints) {
+            if (isset($this->filterRequires[$name])) {
+                $constraints[] = $this->filterRequires[$name];
+            }
+            $this->filterRequires[$name] = \count($constraints) > 1 ? new MultiConstraint($constraints, true) : $constraints[0];
+        }
+    }
+
+    private function optimizeConstraints(array $constraints)
+    {
+        // TODO: constraints can possibly be optimized even more, maybe this should go into the MultiConstraint class?
+
+        $constraintsByName = array();
+
+        foreach ($constraints as $constraint) {
+            $constraintsByName[(string) $constraint] = $constraint;
+        }
+
+        return array_values($constraintsByName);
     }
 
     private function loadPackage(PackageInterface $package, $repoIndex)
