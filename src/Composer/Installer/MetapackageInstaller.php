@@ -58,6 +58,22 @@ class MetapackageInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
+    public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+        // noop
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+        // noop
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");

@@ -224,6 +224,10 @@ class Git
 
     public function syncMirror($url, $dir)
     {
+        if (getenv('COMPOSER_DISABLE_NETWORK')) {
+            return false;
+        }
+
         // update the repo if it is a valid git repository
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             try {
@@ -260,9 +264,7 @@ class Git
             }
         }
 
-        $this->syncMirror($url, $dir);
-
-        return false;
+        return $this->syncMirror($url, $dir);
     }
 
     private function isAuthenticationFailure($url, &$match)

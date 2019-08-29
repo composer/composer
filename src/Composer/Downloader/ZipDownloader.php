@@ -47,7 +47,7 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path, $output = true)
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
         if (null === self::$hasSystemUnzip) {
             $finder = new ExecutableFinder;
@@ -76,7 +76,7 @@ class ZipDownloader extends ArchiveDownloader
             }
         }
 
-        return parent::download($package, $path, $output);
+        return parent::download($package, $path, $prevPackage, $output);
     }
 
     /**

@@ -84,7 +84,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path, $output = true)
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
         if (!$package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
@@ -225,6 +225,20 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * {@inheritDoc}
      */
+    public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function install(PackageInterface $package, $path, $output = true)
     {
         if ($output) {
@@ -336,7 +350,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $e = null;
 
         try {
-            $res = $this->download($package, $targetDir.'_compare', false);
+            $res = $this->download($package, $targetDir.'_compare', null, false);
             $this->httpDownloader->wait();
             $res = $this->install($package, $targetDir.'_compare', false);
 

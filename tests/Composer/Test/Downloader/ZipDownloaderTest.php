@@ -338,7 +338,7 @@ class ZipDownloaderTest extends TestCase
 
 class MockedZipDownloader extends ZipDownloader
 {
-    public function download(PackageInterface $package, $path, $output = true)
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
         return;
     }

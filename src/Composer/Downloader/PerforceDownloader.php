@@ -27,6 +27,14 @@ class PerforceDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
+    protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
+    {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function doInstall(PackageInterface $package, $path, $url)
     {
         $ref = $package->getSourceReference();
@@ -76,7 +84,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
+    protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
         $this->doInstall($target, $path, $url);
     }
