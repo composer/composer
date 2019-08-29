@@ -113,6 +113,10 @@ class Application extends BaseApplication
     {
         $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
 
+        if (getenv('COMPOSER_NO_INTERACTION')) {
+            $input->setInteractive(false);
+        }
+
         $io = $this->io = new ConsoleIO($input, $output, new HelperSet(array(
             new QuestionHelper(),
         )));
@@ -206,10 +210,6 @@ class Application extends BaseApplication
 
             if (defined('COMPOSER_DEV_WARNING_TIME') && $commandName !== 'self-update' && $commandName !== 'selfupdate' && time() > COMPOSER_DEV_WARNING_TIME) {
                 $io->writeError(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
-            }
-
-            if (getenv('COMPOSER_NO_INTERACTION')) {
-                $input->setInteractive(false);
             }
 
             if (!Platform::isWindows() && function_exists('exec') && !getenv('COMPOSER_ALLOW_SUPERUSER')) {
