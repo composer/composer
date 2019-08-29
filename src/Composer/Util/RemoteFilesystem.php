@@ -1128,10 +1128,6 @@ class RemoteFilesystem
     {
         // GitHub repository rename result in redirect locations containing the access_token as GET parameter
         // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
-        if (preg_match('{^(https?://([a-z0-9-]+\.)*github\.com/.*)\?access_token=[a-z0-9]+}', $url, $matches)) {
-            return $matches[1];
-        }
-
-        return $url;
+        return preg_replace('{([&?]access_token=)[^&]+}', '$1***', $url);
     }
 }
