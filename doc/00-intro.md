@@ -154,3 +154,4 @@ Now that you've installed Composer, you are ready to use it! Head on over to the
 next chapter for a short and simple demonstration.
 
 [Basic usage](01-basic-usage.md) &rarr;
+
