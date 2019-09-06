@@ -52,7 +52,7 @@ class Request
             $package = $package->getAliasOf();
         }
 
-        $this->fixedPackages[] = $package;
+        $this->fixedPackages[spl_object_hash($package)] = $package;
 
         if (!$lockable) {
             $this->unlockables[] = $package;
@@ -78,6 +78,11 @@ class Request
     public function getFixedPackages()
     {
         return $this->fixedPackages;
+    }
+
+    public function isFixedPackage(PackageInterface $package)
+    {
+        return isset($this->fixedPackages[spl_object_hash($package)]);
     }
 
     public function getPresentMap()

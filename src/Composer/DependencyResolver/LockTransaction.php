@@ -108,7 +108,7 @@ class LockTransaction
     }
 
     // TODO additionalFixedRepository needs to be looked at here as well?
-    public function getNewLockNonDevPackages(array $rootForceReferences)
+    public function getNewLockNonDevPackages()
     {
         $packages = array();
         foreach ($this->decisions as $i => $decision) {
@@ -117,14 +117,6 @@ class LockTransaction
             if ($literal > 0) {
                 $package = $this->pool->literalToPackage($literal);
                 if (!isset($this->unlockableMap[$package->id]) && !($package instanceof AliasPackage) && !($package instanceof RootAliasPackage)) {
-
-                    echo "rootRef? ".$package->getName()."\n";
-                    // TODO can we really just do this for all of them here? What if we're doing a partial update, should this change anyway?
-                    if (isset($rootForceReferences[$package->getName()])) {
-                        echo "rootRef! ".$package->getName()."\n";
-                        $package->setSourceReference($rootForceReferences[$package->getName()]);
-                    }
-
                     $packages[] = $package;
                 }
             }
@@ -135,6 +127,7 @@ class LockTransaction
 
     public function getNewLockDevPackages()
     {
+        // TODO this is empty?
         $packages = array();
         return $packages;
     }

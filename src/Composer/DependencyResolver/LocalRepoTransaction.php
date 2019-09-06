@@ -62,9 +62,10 @@ class LocalRepoTransaction
                 // do we need to update?
                 if ($package->getVersion() != $localPackageMap[$package->getName()]->getVersion()) {
                     $operations[] = new Operation\UpdateOperation($source, $package);
-                } else {
-                    // TODO do we need to update metadata? force update based on reference?
+                } elseif ($package->isDev() && $package->getSourceReference() !== $localPackageMap[$package->getName()]->getSourceReference()) {
+                    $operations[] = new Operation\UpdateOperation($source, $package);
                 }
+                unset($removeMap[$package->getName()]);
             } else {
                 $operations[] = new Operation\InstallOperation($package);
                 unset($removeMap[$package->getName()]);

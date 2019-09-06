@@ -930,7 +930,7 @@ class SolverTest extends TestCase
 
     protected function createSolver()
     {
-        $this->solver = new Solver($this->policy, $this->repoSet->createPool($this->request), $this->repoInstalled, new NullIO());
+        $this->solver = new Solver($this->policy, $this->repoSet->createPool($this->request), new NullIO());
     }
 
     protected function checkSolverResult(array $expected)

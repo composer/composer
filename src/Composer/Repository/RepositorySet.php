@@ -29,6 +29,8 @@ class RepositorySet
 {
     /** @var array */
     private $rootAliases;
+    /** @var array */
+    private $rootReferences;
 
     /** @var RepositoryInterface[] */
     private $repositories = array();
@@ -40,9 +42,10 @@ class RepositorySet
     /** @var Pool */
     private $pool;
 
-    public function __construct(array $rootAliases = array(), $minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
+    public function __construct(array $rootAliases = array(), array $rootReferences = array(), $minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
     {
         $this->rootAliases = $rootAliases;
+        $this->rootReferences = $rootReferences;
 
         $this->acceptableStabilities = array();
         foreach (BasePackage::$stabilities as $stability => $value) {
@@ -151,7 +154,7 @@ class RepositorySet
     {
         $poolBuilder = new PoolBuilder(array($this, 'isPackageAcceptable'), $this->filterRequires);
 
-        return $this->pool = $poolBuilder->buildPool($this->repositories, $this->rootAliases, $request);
+        return $this->pool = $poolBuilder->buildPool($this->repositories, $this->rootAliases, $this->rootReferences, $request);
     }
 
     // TODO unify this with above in some simpler version without "request"?

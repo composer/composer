@@ -14,11 +14,11 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Repository\AsyncRepositoryInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\InstalledRepositoryInterface;
-use Composer\Repository\LockArrayRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MultiConstraint;
@@ -31,6 +31,7 @@ class PoolBuilder
     private $isPackageAcceptableCallable;
     private $filterRequires;
     private $rootAliases;
+    private $rootReferences;
 
     private $aliasMap = array();
     private $nameConstraints = array();
@@ -46,16 +47,17 @@ class PoolBuilder
         $this->filterRequires = $filterRequires;
     }
 
-    public function buildPool(array $repositories, array $rootAliases, Request $request)
+    public function buildPool(array $repositories, array $rootAliases, array $rootReferences, Request $request)
     {
         $pool = new Pool($this->filterRequires);
         $this->rootAliases = $rootAliases;
+        $this->rootReferences = $rootReferences;
 
         // TODO do we really want the request here? kind of want a root requirements thingy instead
         $loadNames = array();
         foreach ($request->getFixedPackages() as $package) {
             // TODO can actually use very specific constraint
-            $loadNames[$package->getname()] = null;
+            $loadNames[$package->getName()] = null;
         }
         foreach ($request->getJobs() as $job) {
             switch ($job['cmd']) {
@@ -94,7 +96,7 @@ class PoolBuilder
 
                 foreach ($packages as $package) {
                     if (call_user_func($this->isPackageAcceptableCallable, $package->getNames(), $package->getStability())) {
-                        $newLoadNames += $this->loadPackage($package, $key);
+                        $newLoadNames += $this->loadPackage($request, $package, $key);
                     }
                 }
             }
@@ -132,7 +134,7 @@ class PoolBuilder
             if ($repository instanceof PlatformRepository ||
                 $repository instanceof InstalledRepositoryInterface) {
                 foreach ($repository->getPackages() as $package) {
-                    $this->loadPackage($package, $key);
+                    $this->loadPackage($request, $package, $key);
                 }
             }
         }
@@ -146,7 +148,7 @@ class PoolBuilder
         return $pool;
     }
 
-    private function loadPackage(PackageInterface $package, $repoIndex)
+    private function loadPackage(Request $request, PackageInterface $package, $repoIndex)
     {
         $index = count($this->packages);
         $this->packages[] = $package;
@@ -156,8 +158,18 @@ class PoolBuilder
             $this->aliasMap[spl_object_hash($package->getAliasOf())][$index] = $package;
         }
 
-        // handle root package aliases
         $name = $package->getName();
+
+        // we're simply setting the root references on all versions for a name here and rely on the solver to pick the
+        // right version. It'd be more work to figure out which versions and which aliases of those versions this may
+        // apply to
+        if (isset($this->rootReferences[$name])) {
+            // do not modify the references on already locked packages
+            if (!$request->isFixedPackage($package)) {
+                $this->setReferences($package, $this->rootReferences[$name]);
+            }
+        }
+
         if (isset($this->rootAliases[$name][$package->getVersion()])) {
             $alias = $this->rootAliases[$name][$package->getVersion()];
             if ($package instanceof AliasPackage) {
@@ -193,6 +205,20 @@ class PoolBuilder
         }
 
         return $loadNames;
+    }
+
+    private function setReferences(Package $package, $reference)
+    {
+        $package->setSourceReference($reference);
+
+        // only bitbucket, github and gitlab have auto generated dist URLs that easily allow replacing the reference in the dist URL
+        // TODO generalize this a bit for self-managed/on-prem versions? Some kind of replace token in dist urls which allow this?
+        if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
+            $package->setDistReference($reference);
+            $package->setDistUrl(preg_replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|$)}i', $reference, $package->getDistUrl()));
+        } elseif ($package->getDistReference()) { // update the dist reference if there was one, but if none was provided ignore it
+            $package->setDistReference($reference);
+        }
     }
 }
 

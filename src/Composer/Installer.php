@@ -39,6 +39,7 @@ use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Package\Package;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Locker;
@@ -375,25 +376,21 @@ class Installer
         // to the version specified in the lock
         if ($this->updateWhitelist) {
             foreach ($lockedRepository->getPackages() as $lockedPackage) {
+                // TODO should this really be checking acceptability here?
                 if (!$this->isUpdateable($lockedPackage) && $repositorySet->isPackageAcceptable($lockedPackage->getNames(), $lockedPackage->getStability())) {
-                    // need to actually allow for metadata updates at all times, so we want to fix the most recent prefered package in the repo set instead
-                    $packages = $repositorySet->findPackages($lockedPackage->getName(), new Constraint('=', $lockedPackage->getVersion()));
-                    $lockedPackage = isset($packages[0]) ? $packages[0] : $lockedPackage;
-
-                    // in how far do we need to reset requirements here, theoretically it's the same version so nothing should have changed, but for a dev version it could have?
-
-
                     // TODO add reason for fix?
                     $request->fixPackage($lockedPackage);
                 }
             }
         }
 
+        // TODO reenable events
         //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
 
         $pool = $repositorySet->createPool($request);
 
         // TODO ensure that the solver always picks most recent reference for dev packages, so they get updated even when just a new commit is pushed but version is unchanged
+        // should already be solved by using the remote package in all cases in the pool
 
         // solve dependencies
         $solver = new Solver($policy, $pool, $this->io);
@@ -426,7 +423,7 @@ class Installer
         $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
 
         $updatedLock = $this->locker->setLockData(
-            $lockTransaction->getNewLockNonDevPackages($this->package->getReferences()),
+            $lockTransaction->getNewLockNonDevPackages(),
             $lockTransaction->getNewLockDevPackages(),
             $platformReqs,
             $platformDevReqs,
@@ -503,6 +500,8 @@ class Installer
                 }
             }
         }
+
+        $this->io->write('foo');
 
         if ($doInstall) {
             // TODO ensure lock is used from locker as-is, since it may not have been written to disk in case of executeOperations == false
@@ -703,7 +702,7 @@ class Installer
         $this->fixedRootPackage->setRequires(array());
         $this->fixedRootPackage->setDevRequires(array());
 
-        $repositorySet = new RepositorySet($rootAliases, $minimumStability, $stabilityFlags, $rootConstraints);
+        $repositorySet = new RepositorySet($rootAliases, $this->package->getReferences(), $minimumStability, $stabilityFlags, $rootConstraints);
         $repositorySet->addRepository(new InstalledArrayRepository(array($this->fixedRootPackage)));
         $repositorySet->addRepository($platformRepo);
         if ($this->additionalFixedRepository) {
@@ -793,28 +792,7 @@ class Installer
         return $normalizedAliases;
     }
 
-    private function updatePackageUrl(PackageInterface $package, $sourceUrl, $sourceType, $sourceReference, $distUrl)
-    {
-        $oldSourceRef = $package->getSourceReference();
-
-        if ($package->getSourceUrl() !== $sourceUrl) {
-            $package->setSourceType($sourceType);
-            $package->setSourceUrl($sourceUrl);
-            $package->setSourceReference($sourceReference);
-        }
-
-        // only update dist url for github/bitbucket/gitlab dists as they use a combination of dist url + dist reference to install
-        // but for other urls this is ambiguous and could result in bad outcomes
-        if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $distUrl)) {
-            $package->setDistUrl($distUrl);
-            $this->updateInstallReferences($package, $sourceReference);
-        }
-
-        if ($this->updateWhitelist && !$this->isUpdateable($package)) {
-            $this->updateInstallReferences($package, $oldSourceRef);
-        }
-    }
-
+    // TODO do we still need this function?
     private function updateInstallReferences(PackageInterface $package, $reference)
     {
         if (!$reference) {
@@ -910,7 +888,7 @@ class Installer
             }
         }
 
-        $repositorySet = new RepositorySet(array(), 'dev');
+        $repositorySet = new RepositorySet(array(), array(), 'dev');
         $repositorySet->addRepository($lockRepo);
 
         $seen = array();
