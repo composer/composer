@@ -33,6 +33,7 @@ class ErrorHandler
      *
      * @static
      * @throws \ErrorException
+     * @return bool
      */
     public static function handle($level, $message, $file, $line)
     {
@@ -63,6 +64,8 @@ class ErrorHandler
                 }, array_slice(debug_backtrace(), 2))));
             }
         }
+
+        return true;
     }
 
     /**

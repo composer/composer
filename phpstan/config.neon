@@ -16,7 +16,6 @@ parameters:
         - '~^Anonymous function has an unused use \$io\.$~'
         - '~^Anonymous function has an unused use \$cache\.$~'
         - '~^Anonymous function has an unused use \$path\.$~'
-        - '~^Anonymous function has an unused use \$fileName\.$~'
 
         # ion cube is not installed
         - '~^Function ioncube_loader_\w+ not found\.$~'

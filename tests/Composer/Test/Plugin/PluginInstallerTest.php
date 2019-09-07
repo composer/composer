@@ -19,6 +19,9 @@ use Composer\Package\CompletePackage;
 use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Plugin\PluginManager;
+use Symfony\Component\Console\Output\OutputInterface;
+use Composer\IO\BufferIO;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
@@ -96,7 +99,7 @@ class PluginInstallerTest extends TestCase
                 return __DIR__.'/Fixtures/'.$package->getPrettyName();
             }));
 
-        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $this->io = new BufferIO();
 
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
         $this->autoloadGenerator = new AutoloadGenerator($dispatcher);
@@ -108,6 +111,7 @@ class PluginInstallerTest extends TestCase
         $this->composer->setRepositoryManager($rm);
         $this->composer->setInstallationManager($im);
         $this->composer->setAutoloadGenerator($this->autoloadGenerator);
+        $this->composer->setEventDispatcher(new EventDispatcher($this->composer, $this->io));
 
         $this->pm = new PluginManager($this->io, $this->composer);
         $this->composer->setPluginManager($this->pm);
@@ -140,6 +144,7 @@ class PluginInstallerTest extends TestCase
 
         $plugins = $this->pm->getPlugins();
         $this->assertEquals('installer-v1', $plugins[0]->version);
+        $this->assertEquals('activate v1'.PHP_EOL, $this->io->getOutput());
     }
 
     public function testInstallMultiplePlugins()
@@ -158,6 +163,7 @@ class PluginInstallerTest extends TestCase
         $this->assertEquals('installer-v4', $plugins[0]->version);
         $this->assertEquals('plugin2', $plugins[1]->name);
         $this->assertEquals('installer-v4', $plugins[1]->version);
+        $this->assertEquals('activate v4-plugin1'.PHP_EOL.'activate v4-plugin2'.PHP_EOL, $this->io->getOutput());
     }
 
     public function testUpgradeWithNewClassName()
@@ -176,7 +182,29 @@ class PluginInstallerTest extends TestCase
         $installer->update($this->repository, $this->packages[0], $this->packages[1]);
 
         $plugins = $this->pm->getPlugins();
+        $this->assertCount(1, $plugins);
         $this->assertEquals('installer-v2', $plugins[1]->version);
+        $this->assertEquals('activate v1'.PHP_EOL.'deactivate v1'.PHP_EOL.'activate v2'.PHP_EOL, $this->io->getOutput());
+    }
+
+    public function testUninstall()
+    {
+        $this->repository
+            ->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue(array($this->packages[0])));
+        $this->repository
+            ->expects($this->exactly(1))
+            ->method('hasPackage')
+            ->will($this->onConsecutiveCalls(true, false));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
+
+        $installer->uninstall($this->repository, $this->packages[0]);
+
+        $plugins = $this->pm->getPlugins();
+        $this->assertCount(0, $plugins);
+        $this->assertEquals('activate v1'.PHP_EOL.'deactivate v1'.PHP_EOL.'uninstall v1'.PHP_EOL, $this->io->getOutput());
     }
 
     public function testUpgradeWithSameClassName()
@@ -196,6 +224,7 @@ class PluginInstallerTest extends TestCase
 
         $plugins = $this->pm->getPlugins();
         $this->assertEquals('installer-v3', $plugins[1]->version);
+        $this->assertEquals('activate v2'.PHP_EOL.'deactivate v2'.PHP_EOL.'activate v3'.PHP_EOL, $this->io->getOutput());
     }
 
     public function testRegisterPluginOnlyOneTime()
@@ -213,6 +242,7 @@ class PluginInstallerTest extends TestCase
         $plugins = $this->pm->getPlugins();
         $this->assertCount(1, $plugins);
         $this->assertEquals('installer-v1', $plugins[0]->version);
+        $this->assertEquals('activate v1'.PHP_EOL, $this->io->getOutput());
     }
 
     /**

@@ -30,9 +30,11 @@ matrix:
       env:
         - deps=high
     - php: nightly
+    - php: 7.4snapshot
   fast_finish: true
   allow_failures:
     - php: nightly
+    - php: 7.4snapshot
 
 before_install:
   # disable xdebug if available
@@ -62,7 +64,7 @@ script:
   - ls -d tests/Composer/Test/* | grep -v TestCase.php | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && exit 1);'
   # Run PHPStan
   - if [[ $PHPSTAN == "1" ]]; then
-      composer require --dev phpstan/phpstan-shim:^0.11 --ignore-platform-reqs &&
+      bin/composer require --dev phpstan/phpstan-shim:^0.11 --ignore-platform-reqs &&
       vendor/bin/phpstan.phar analyse src tests --configuration=phpstan/config.neon --autoload-file=phpstan/autoload.php;
     fi
 

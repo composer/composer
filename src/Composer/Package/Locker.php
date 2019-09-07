@@ -33,8 +33,6 @@ class Locker
 {
     /** @var JsonFile */
     private $lockFile;
-    /** @var RepositoryManager */
-    private $repositoryManager;
     /** @var InstallationManager */
     private $installationManager;
     /** @var string */
@@ -55,14 +53,12 @@ class Locker
      *
      * @param IOInterface         $io
      * @param JsonFile            $lockFile             lockfile loader
-     * @param RepositoryManager   $repositoryManager    repository manager instance
      * @param InstallationManager $installationManager  installation manager instance
      * @param string              $composerFileContents The contents of the composer file
      */
-    public function __construct(IOInterface $io, JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $composerFileContents)
+    public function __construct(IOInterface $io, JsonFile $lockFile, InstallationManager $installationManager, $composerFileContents)
     {
         $this->lockFile = $lockFile;
-        $this->repositoryManager = $repositoryManager;
         $this->installationManager = $installationManager;
         $this->hash = md5($composerFileContents);
         $this->contentHash = self::getContentHash($composerFileContents);

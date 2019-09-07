@@ -165,9 +165,9 @@ class DownloadManager
     /**
      * Downloads package into target dir.
      *
-     * @param PackageInterface $package      package instance
-     * @param string           $targetDir    target dir
-     * @param PackageInterface $prevPackage  previous package instance in case of updates
+     * @param PackageInterface      $package      package instance
+     * @param string                $targetDir    target dir
+     * @param PackageInterface|null $prevPackage  previous package instance in case of updates
      *
      * @return PromiseInterface
      * @throws \InvalidArgumentException if package have no urls to download from
@@ -182,7 +182,7 @@ class DownloadManager
         $io = $this->io;
         $self = $this;
 
-        $download = function ($retry = false) use (&$sources, $io, $package, $self, $targetDir, &$download) {
+        $download = function ($retry = false) use (&$sources, $io, $package, $self, $targetDir, &$download, $prevPackage) {
             $source = array_shift($sources);
             if ($retry) {
                 $io->writeError('    <warning>Now trying to download from ' . $source . '</warning>');
@@ -214,7 +214,7 @@ class DownloadManager
             };
 
             try {
-                $result = $downloader->download($package, $targetDir);
+                $result = $downloader->download($package, $targetDir, $prevPackage);
             } catch (\Exception $e) {
                 return $handleError($e);
             }
@@ -233,11 +233,30 @@ class DownloadManager
     }
 
     /**
+     * Prepares an operation execution
+     *
+     * @param string                $type         one of install/update/uninstall
+     * @param PackageInterface      $package      package instance
+     * @param string                $targetDir    target dir
+     * @param PackageInterface|null $prevPackage  previous package instance in case of updates
+     *
+     * @return PromiseInterface|null
+     */
+    public function prepare($type, PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
+    {
+        $downloader = $this->getDownloaderForPackage($package);
+        if ($downloader) {
+            return $downloader->prepare($type, $package, $targetDir, $prevPackage);
+        }
+    }
+
+    /**
      * Installs package into target dir.
      *
      * @param PackageInterface $package      package instance
      * @param string           $targetDir    target dir
      *
+     * @return PromiseInterface|null
      * @throws \InvalidArgumentException if package have no urls to download from
      * @throws \RuntimeException
      */
@@ -245,7 +264,7 @@ class DownloadManager
     {
         $downloader = $this->getDownloaderForPackage($package);
         if ($downloader) {
-            $downloader->install($package, $targetDir);
+            return $downloader->install($package, $targetDir);
         }
     }
 
@@ -256,6 +275,7 @@ class DownloadManager
      * @param PackageInterface $target    target package version
      * @param string           $targetDir target dir
      *
+     * @return PromiseInterface|null
      * @throws \InvalidArgumentException if initial package is not installed
      */
     public function update(PackageInterface $initial, PackageInterface $target, $targetDir)
@@ -270,17 +290,14 @@ class DownloadManager
 
         // if we have a downloader present before, but not after, the package became a metapackage and its files should be removed
         if (!$downloader) {
-            $initialDownloader->remove($initial, $targetDir);
-            return;
+            return $initialDownloader->remove($initial, $targetDir);
         }
 
         $initialType = $this->getDownloaderType($initialDownloader);
         $targetType = $this->getDownloaderType($downloader);
         if ($initialType === $targetType) {
             try {
-                $downloader->update($initial, $target, $targetDir);
-
-                return;
+                return $downloader->update($initial, $target, $targetDir);
             } catch (\RuntimeException $e) {
                 if (!$this->io->isInteractive()) {
                     throw $e;
@@ -294,8 +311,15 @@ class DownloadManager
 
         // if downloader type changed, or update failed and user asks for reinstall,
         // we wipe the dir and do a new install instead of updating it
-        $initialDownloader->remove($initial, $targetDir);
-        $this->install($target, $targetDir);
+        $promise = $initialDownloader->remove($initial, $targetDir);
+        if ($promise) {
+            $self = $this;
+            return $promise->then(function ($res) use ($self, $target, $targetDir) {
+                return $self->install($target, $targetDir);
+            });
+        }
+
+        return $this->install($target, $targetDir);
     }
 
     /**
@@ -303,12 +327,32 @@ class DownloadManager
      *
      * @param PackageInterface $package   package instance
      * @param string           $targetDir target dir
+     *
+     * @return PromiseInterface|null
      */
     public function remove(PackageInterface $package, $targetDir)
     {
         $downloader = $this->getDownloaderForPackage($package);
         if ($downloader) {
-            $downloader->remove($package, $targetDir);
+            return $downloader->remove($package, $targetDir);
+        }
+    }
+
+    /**
+     * Cleans up a failed operation
+     *
+     * @param string                $type         one of install/update/uninstall
+     * @param PackageInterface      $package      package instance
+     * @param string                $targetDir    target dir
+     * @param PackageInterface|null $prevPackage  previous package instance in case of updates
+     *
+     * @return PromiseInterface|null
+     */
+    public function cleanup($type, PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
+    {
+        $downloader = $this->getDownloaderForPackage($package);
+        if ($downloader) {
+            return $downloader->cleanup($type, $package, $targetDir, $prevPackage);
         }
     }
 

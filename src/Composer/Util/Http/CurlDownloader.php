@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
-use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;

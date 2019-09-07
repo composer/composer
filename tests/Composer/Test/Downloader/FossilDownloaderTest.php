@@ -48,7 +48,7 @@ class FossilDownloaderTest extends TestCase
     /**
      * @expectedException \InvalidArgumentException
      */
-    public function testDownloadForPackageWithoutSourceReference()
+    public function testInstallForPackageWithoutSourceReference()
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
@@ -59,7 +59,7 @@ class FossilDownloaderTest extends TestCase
         $downloader->install($packageMock, '/path');
     }
 
-    public function testDownload()
+    public function testInstall()
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -104,7 +104,9 @@ class FossilDownloaderTest extends TestCase
             ->will($this->returnValue(null));
 
         $downloader = $this->getDownloaderMock();
+        $downloader->prepare('update', $sourcePackageMock, '/path', $initialPackageMock);
         $downloader->update($initialPackageMock, $sourcePackageMock, '/path');
+        $downloader->cleanup('update', $sourcePackageMock, '/path', $initialPackageMock);
     }
 
     public function testUpdate()
@@ -140,7 +142,9 @@ class FossilDownloaderTest extends TestCase
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, null, $processExecutor);
+        $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
         $downloader->update($packageMock, $packageMock, $this->workingDir);
+        $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
     }
 
     public function testRemove()

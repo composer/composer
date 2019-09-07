@@ -632,7 +632,7 @@ class Installer
             $this->installationManager->execute($localRepo, $operation);
 
             if ($this->executeOperations) {
-                $localRepo->write();
+                $localRepo->write($this->devMode, $this->installationManager);
             }
 
             $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($jobType);

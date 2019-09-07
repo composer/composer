@@ -177,11 +177,52 @@ class InstallationManager
             $promise = $installer->download($target, $operation->getInitialPackage());
         }
 
-        if (isset($promise)) {
+        if (!empty($promise)) {
             $this->loop->wait(array($promise));
         }
 
-        $this->$method($repo, $operation);
+        $e = null;
+        try {
+            if ($method === 'install' || $method === 'uninstall') {
+                $package = $operation->getPackage();
+                $installer = $this->getInstaller($package->getType());
+                $promise = $installer->prepare($method, $package);
+            } elseif ($method === 'update') {
+                $target = $operation->getTargetPackage();
+                $targetType = $target->getType();
+                $installer = $this->getInstaller($targetType);
+                $promise = $installer->prepare('update', $target, $operation->getInitialPackage());
+            }
+
+            if (!empty($promise)) {
+                $this->loop->wait(array($promise));
+            }
+
+            $promise = $this->$method($repo, $operation);
+            if (!empty($promise)) {
+                $this->loop->wait(array($promise));
+            }
+        } catch (\Exception $e) {
+        }
+
+        if ($method === 'install' || $method === 'uninstall') {
+            $package = $operation->getPackage();
+            $installer = $this->getInstaller($package->getType());
+            $promise = $installer->cleanup($method, $package);
+        } elseif ($method === 'update') {
+            $target = $operation->getTargetPackage();
+            $targetType = $target->getType();
+            $installer = $this->getInstaller($targetType);
+            $promise = $installer->cleanup('update', $target, $operation->getInitialPackage());
+        }
+
+        if (!empty($promise)) {
+            $this->loop->wait(array($promise));
+        }
+
+        if ($e) {
+            throw $e;
+        }
     }
 
     /**
@@ -194,8 +235,10 @@ class InstallationManager
     {
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
-        $installer->install($repo, $package);
+        $promise = $installer->install($repo, $package);
         $this->markForNotification($package);
+
+        return $promise;
     }
 
     /**
@@ -214,13 +257,15 @@ class InstallationManager
 
         if ($initialType === $targetType) {
             $installer = $this->getInstaller($initialType);
-            $installer->update($repo, $initial, $target);
+            $promise = $installer->update($repo, $initial, $target);
             $this->markForNotification($target);
         } else {
             $this->getInstaller($initialType)->uninstall($repo, $initial);
             $installer = $this->getInstaller($targetType);
-            $installer->install($repo, $target);
+            $promise = $installer->install($repo, $target);
         }
+
+        return $promise;
     }
 
     /**
@@ -233,7 +278,8 @@ class InstallationManager
     {
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
-        $installer->uninstall($repo, $package);
+
+        return $installer->uninstall($repo, $package);
     }
 
     /**

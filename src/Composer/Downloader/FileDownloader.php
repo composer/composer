@@ -84,7 +84,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path, $output = true)
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
         if (!$package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
@@ -101,7 +101,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             );
         }
 
-        $this->filesystem->emptyDirectory($path);
+        $this->filesystem->ensureDirectoryExists($path);
         $fileName = $this->getFileName($package, $path);
 
         $io = $this->io;
@@ -176,7 +176,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $reject = function ($e) use ($io, &$urls, $download, $fileName, $path, $package, &$retries, $filesystem, $self) {
             // clean up
-            $filesystem->removeDirectory($path);
+            if (file_exists($fileName)) {
+                $filesystem->unlink($fileName);
+            }
             $self->clearLastCacheWrite($package);
 
             if ($e instanceof TransportException) {
@@ -223,12 +225,27 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * {@inheritDoc}
      */
+    public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function install(PackageInterface $package, $path, $output = true)
     {
         if ($output) {
             $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
         }
 
+        $this->filesystem->emptyDirectory($path);
         $this->filesystem->ensureDirectoryExists($path);
         $this->filesystem->rename($this->getFileName($package, $path), $path . pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME));
     }
@@ -333,7 +350,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $e = null;
 
         try {
-            $res = $this->download($package, $targetDir.'_compare', false);
+            $res = $this->download($package, $targetDir.'_compare', null, false);
             $this->httpDownloader->wait();
             $res = $this->install($package, $targetDir.'_compare', false);
 

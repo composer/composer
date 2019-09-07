@@ -33,15 +33,15 @@ abstract class ArchiveDownloader extends FileDownloader
     public function install(PackageInterface $package, $path, $output = true)
     {
         if ($output) {
-            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>): Extracting archive");
+        } else {
+            $this->io->writeError('Extracting archive', false);
         }
+
+        $this->filesystem->emptyDirectory($path);
 
         $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
         $fileName = $this->getFileName($package, $path);
-
-        if ($output) {
-            $this->io->writeError('    Extracting archive', true, IOInterface::VERBOSE);
-        }
 
         try {
             $this->filesystem->ensureDirectoryExists($temporaryDir);
