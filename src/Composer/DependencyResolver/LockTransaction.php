@@ -16,7 +16,9 @@ use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\RootPackageInterface;
+use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryInterface;
+use Composer\Test\Repository\ArrayRepositoryTest;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -40,7 +42,8 @@ class LockTransaction
     protected $unlockableMap;
 
     protected $decisions;
-    protected $transaction;
+
+    protected $resultPackages;
 
     public function __construct($policy, $pool, $presentMap, $unlockableMap, $decisions)
     {
@@ -104,31 +107,54 @@ class LockTransaction
             }
         }
 
+        $this->setResultPackages();
+
         return $operations;
     }
 
-    // TODO additionalFixedRepository needs to be looked at here as well?
-    public function getNewLockNonDevPackages()
+    // TODO make this a bit prettier instead of the two text indexes?
+    public function setResultPackages()
     {
-        $packages = array();
+        $this->resultPackages = array('non-dev' => array(), 'dev' => array());
         foreach ($this->decisions as $i => $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
 
             if ($literal > 0) {
                 $package = $this->pool->literalToPackage($literal);
-                if (!isset($this->unlockableMap[$package->id]) && !($package instanceof AliasPackage) && !($package instanceof RootAliasPackage)) {
-                    $packages[] = $package;
+                if (!isset($this->unlockableMap[$package->id])) {
+                    $this->resultPackages['non-dev'][] = $package;
                 }
             }
         }
-
-        return $packages;
     }
 
-    public function getNewLockDevPackages()
+    public function setNonDevPackages(LockTransaction $extractionResult)
     {
-        // TODO this is empty?
+        $packages = $extractionResult->getNewLockPackages(false);
+
+        $this->resultPackages['dev'] = $this->resultPackages['non-dev'];
+        $this->resultPackages['non-dev'] = array();
+
+        foreach ($packages as $package) {
+            foreach ($this->resultPackages['dev'] as $i => $resultPackage) {
+                if ($package->getName() == $resultPackage->getName()) {
+                    $this->resultPackages['non-dev'][] = $resultPackage;
+                    unset($this->resultPackages['dev'][$i]);
+                }
+            }
+        }
+    }
+
+    // TODO additionalFixedRepository needs to be looked at here as well?
+    public function getNewLockPackages($devMode)
+    {
         $packages = array();
+        foreach ($this->resultPackages[$devMode ? 'dev' : 'non-dev'] as $package) {
+            if (!($package instanceof AliasPackage) && !($package instanceof RootAliasPackage)) {
+                $packages[] = $package;
+            }
+        }
+
         return $packages;
     }
 

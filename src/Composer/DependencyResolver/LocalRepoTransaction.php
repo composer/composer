@@ -33,6 +33,9 @@ class LocalRepoTransaction
     /** @var RepositoryInterface */
     protected $localRepository;
 
+    /**
+     * Reassigns ids for all packages in the lockedrepository
+     */
     public function __construct(RepositoryInterface $lockedRepository, $localRepository)
     {
         $this->localRepository = $localRepository;
@@ -50,7 +53,10 @@ class LocalRepoTransaction
             return strcmp($b->getName(), $a->getName());
         };
 
+        $id = 1;
+        $this->lockedPackages = array();
         foreach ($lockedRepository->getPackages() as $package) {
+            $package->id = $id++;
             $this->lockedPackages[$package->id] = $package;
             foreach ($package->getNames() as $name) {
                 $this->lockedPackagesByName[$name][] = $package;

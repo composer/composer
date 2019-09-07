@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\LocalRepoTransaction;
+use Composer\DependencyResolver\LockTransaction;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
@@ -40,6 +41,7 @@ use Composer\Package\Link;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Package;
+use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Locker;
@@ -418,6 +420,8 @@ class Installer
             $this->io->writeError('Nothing to modify in lock file');
         }
 
+        $this->extractDevPackages($lockTransaction, $platformRepo, $aliases, $policy);
+
         // write lock
         $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
         $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
@@ -485,8 +489,8 @@ class Installer
         }
 
         $updatedLock = $this->locker->setLockData(
-            $lockTransaction->getNewLockNonDevPackages(),
-            $lockTransaction->getNewLockDevPackages(),
+            $lockTransaction->getNewLockPackages(false),
+            $lockTransaction->getNewLockPackages(true),
             $platformReqs,
             $platformDevReqs,
             $aliases,
@@ -508,6 +512,124 @@ class Installer
 
         return 0;
     }
+
+    /**
+     * Run the solver a second time on top of the existing update result with only the current result set in the pool
+     * and see what packages would get removed if we only had the non-dev packages in the solver request
+     */
+    protected function extractDevPackages(LockTransaction $lockTransaction, $platformRepo, $aliases, $policy)
+    {
+        if (!$this->package->getDevRequires()) {
+            return array();
+        }
+
+        ;
+
+        $resultRepo = new ArrayRepository(array());
+        $loader = new ArrayLoader(null, true);
+        $dumper = new ArrayDumper();
+        foreach ($lockTransaction->getNewLockPackages(false) as $pkg) {
+            $resultRepo->addPackage($loader->load($dumper->dump($pkg)));
+        }
+
+        $repositorySet = $this->createRepositorySet($platformRepo, $aliases, null);
+        $repositorySet->addRepository($resultRepo);
+
+        $request = $this->createRequest($this->fixedRootPackage, $platformRepo, null);
+
+        $links = $this->package->getRequires();
+        foreach ($links as $link) {
+            $request->install($link->getTarget(), $link->getConstraint());
+        }
+
+        $pool = $repositorySet->createPool($request);
+
+        // solve dependencies
+        $solver = new Solver($policy, $pool, $this->io);
+        try {
+            $nonDevLockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
+            $solver = null;
+        } catch (SolverProblemsException $e) {
+            // TODO change info message here
+            $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
+            $this->io->writeError($e->getMessage());
+
+            return max(1, $e->getCode());
+        }
+
+        $lockTransaction->setNonDevPackages($nonDevLockTransaction);
+    }
+
+
+    // TODO add proper output and events to above function based on old version below
+    /**
+     * Extracts the dev packages out of the localRepo
+     *
+     * This works by faking the operations so we can see what the dev packages
+     * would be at the end of the operation execution. This lets us then remove
+     * the dev packages from the list of operations accordingly if we are in a
+     * --no-dev install or update.
+     *
+     * @return array
+    private function extractDevPackages(array $operations, RepositoryInterface $localRepo, PlatformRepository $platformRepo, array $aliases)
+    {
+        // fake-apply all operations to this clone of the local repo so we see the complete set of package we would end up with
+        $tempLocalRepo = clone $localRepo;
+        foreach ($operations as $operation) {
+            switch ($operation->getJobType()) {
+                case 'install':
+                case 'markAliasInstalled':
+                    if (!$tempLocalRepo->hasPackage($operation->getPackage())) {
+                        $tempLocalRepo->addPackage(clone $operation->getPackage());
+                    }
+                    break;
+                case 'uninstall':
+                case 'markAliasUninstalled':
+                    $tempLocalRepo->removePackage($operation->getPackage());
+                    break;
+                case 'update':
+                    $tempLocalRepo->removePackage($operation->getInitialPackage());
+                    if (!$tempLocalRepo->hasPackage($operation->getTargetPackage())) {
+                        $tempLocalRepo->addPackage(clone $operation->getTargetPackage());
+                    }
+                    break;
+                default:
+                    throw new \LogicException('Unknown type: '.$operation->getJobType());
+            }
+        }
+        // we have to reload the local repo to handle aliases properly
+        // but as it is not persisted on disk we use a loader/dumper
+        // to reload it in memory
+        $localRepo = new InstalledArrayRepository(array());
+        $loader = new ArrayLoader(null, true);
+        $dumper = new ArrayDumper();
+        foreach ($tempLocalRepo->getCanonicalPackages() as $pkg) {
+            $localRepo->addPackage($loader->load($dumper->dump($pkg)));
+        }
+        unset($tempLocalRepo, $loader, $dumper);
+        $policy = $this->createPolicy();
+        $pool = $this->createPool();
+        $installedRepo = $this->createInstalledRepo($localRepo, $platformRepo);
+        $pool->addRepository($installedRepo, $aliases);
+        // creating requirements request without dev requirements
+        $request = $this->createRequest($this->package, $platformRepo);
+        $request->updateAll();
+        foreach ($this->package->getRequires() as $link) {
+            $request->install($link->getTarget(), $link->getConstraint());
+        }
+        // solve deps to see which get removed
+        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request);
+        $solver = new Solver($policy, $pool, $installedRepo, $this->io);
+        $ops = $solver->solve($request, $this->ignorePlatformReqs);
+        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request, $ops);
+        $devPackages = array();
+        foreach ($ops as $op) {
+            if ($op->getJobType() === 'uninstall') {
+                $devPackages[] = $op->getPackage();
+            }
+        }
+        return $devPackages;
+    }*/
 
     /**
      * @param  RepositoryInterface $localRepo
@@ -575,12 +697,6 @@ class Installer
 
             // TODO should we warn people / error if plugins in vendor folder do not match contents of lock file before update?
             //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request, $lockTransaction);
-        } else {
-            // we still need to ensure all packages have an id for correct functionality
-            $id = 1;
-            foreach ($lockedRepository->getPackages() as $package) {
-                $package->id = $id++;
-            }
         }
 
         // TODO in how far do we need to do anything here to ensure dev packages being updated to latest in lock without version change are treated correctly?
@@ -672,6 +788,7 @@ class Installer
 
         // TODO what's the point of rootConstraints at all, we generate the package pool taking them into account anyway?
         // TODO maybe we can drop the lockedRepository here
+        // TODO if this gets called in doInstall, this->update is still true?!
         if ($this->update) {
             $minimumStability = $this->package->getMinimumStability();
             $stabilityFlags = $this->package->getStabilityFlags();
