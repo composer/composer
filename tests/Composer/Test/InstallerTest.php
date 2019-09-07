@@ -97,7 +97,7 @@ class InstallerTest extends TestCase
             }));
 
         $tempLockData = null;
-        $locker = new Locker($io, $lockJsonMock, $repositoryManager, $installationManager, '{}');
+        $locker = new Locker($io, $lockJsonMock, $installationManager, '{}');
 
         $autoloadGenerator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')->disableOriginalConstructor()->getMock();
 

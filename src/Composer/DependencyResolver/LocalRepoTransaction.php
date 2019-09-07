@@ -72,8 +72,6 @@ class LocalRepoTransaction
                 $operations[] = new Operation\InstallOperation($package);
                 unset($removeMap[$package->getName()]);
             }
-
-
 /*
             if (isset($lockedPackages[$package->getName()])) {
                 die("Alias?");
@@ -85,7 +83,10 @@ class LocalRepoTransaction
             $operations[] = new Operation\UninstallOperation($package, null);
         }
 
+        $operations = $this->sortOperations($operations);
         $operations = $this->movePluginsToFront($operations);
+        // TODO fix this:
+        // we have to do this again here even though sortOperations did it because moving plugins moves them before uninstalls
         $operations = $this->moveUninstallsToFront($operations);
 
         // TODO skip updates which don't update? is this needed? we shouldn't schedule this update in the first place?
@@ -105,6 +106,99 @@ class LocalRepoTransaction
                 }
             }
         }*/
+
+        return $operations;
+    }
+
+    // TODO is there a more efficient / better way to do get a "good" install order?
+    public function sortOperations(array $operations)
+    {
+        $packageQueue = $this->lockedRepository->getPackages();
+
+        $packageQueue[] = null; // null is a cycle marker
+
+        $weights = array();
+        $foundWeighables = false;
+
+        // This is sort of a topological sort, the weight represents the distance from a leaf (1 == is leaf)
+        // Since we can have cycles in the dep graph, any node which doesn't have an acyclic connection to all
+        // leaves it's connected to, cannot be assigned a weight and will be unsorted
+        while (!empty($packageQueue)) {
+            $package = array_shift($packageQueue);
+
+            // one full cycle
+            if ($package === null) {
+                // if we were able to assign some weights, keep going
+                if ($foundWeighables) {
+                    $foundWeighables = false;
+                    $packageQueue[] = null;
+                    continue;
+                } else {
+                    foreach ($packageQueue as $package) {
+                        $weights[$package->getName()] = PHP_INT_MAX;
+                    }
+                    // no point in continuing, we are in a cycle
+                    break;
+                }
+            }
+
+            $requires = array_filter(array_keys($package->getRequires()), function ($req) {
+                return $req !== 'composer-plugin-api' && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+            });
+
+            $maxWeight = 0;
+            foreach ($requires as $require) {
+                if (!isset($weights[$require])) {
+                    $maxWeight = null;
+
+                    // needs more calculation, so add to end of queue
+                    $packageQueue[] = $package;
+                    break;
+                }
+
+                $maxWeight = max((int) $maxWeight, $weights[$require]);
+            }
+            if ($maxWeight !== null) {
+                $foundWeighables = true;
+                $weights[$package->getName()] = $maxWeight + 1;
+            }
+        }
+
+        // TODO do we have any alias ops in the local repo transaction?
+        usort($operations, function ($opA, $opB) use ($weights) {
+            // uninstalls come first, if there are multiple, sort by name
+            if ($opA instanceof Operation\UninstallOperation) {
+                $packageA = $opA->getPackage();
+                if ($opB instanceof Operation\UninstallOperation) {
+                    return strcmp($packageA->getName(), $opB->getPackage()->getName());
+                }
+                return -1;
+            } elseif ($opB instanceof Operation\UninstallOperation) {
+                return 1;
+            }
+
+
+            if ($opA instanceof Operation\InstallOperation) {
+                $packageA = $opA->getPackage();
+            } elseif ($opA instanceof Operation\UpdateOperation) {
+                $packageA = $opA->getTargetPackage();
+            }
+
+            if ($opB instanceof Operation\InstallOperation) {
+                $packageB = $opB->getPackage();
+            } elseif ($opB instanceof Operation\UpdateOperation) {
+                $packageB = $opB->getTargetPackage();
+            }
+
+            $weightA = $weights[$packageA->getName()];
+            $weightB = $weights[$packageB->getName()];
+
+            if ($weightA === $weightB) {
+                return strcmp($packageA->getName(),  $packageB->getName());
+            } else {
+                return $weightA < $weightB ? -1 : 1;
+            }
+        });
 
         return $operations;
     }
@@ -176,7 +270,7 @@ class LocalRepoTransaction
     {
         $uninstOps = array();
         foreach ($operations as $idx => $op) {
-            if ($op instanceof UninstallOperation || $op instanceof MarkAliasUninstalledOperation) {
+            if ($op instanceof UninstallOperation) {
                 $uninstOps[] = $op;
                 unset($operations[$idx]);
             }
