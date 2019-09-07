@@ -137,6 +137,7 @@ class LockTransaction
 
         foreach ($packages as $package) {
             foreach ($this->resultPackages['dev'] as $i => $resultPackage) {
+                // TODO this comparison is probably insufficient, aliases, what about modified versions? I guess they aren't possible?
                 if ($package->getName() == $resultPackage->getName()) {
                     $this->resultPackages['non-dev'][] = $resultPackage;
                     unset($this->resultPackages['dev'][$i]);

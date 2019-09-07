@@ -28,6 +28,23 @@ Partial update without lock file should update everything whitelisted, remove ov
     { "name": "c/uptodate", "version": "1.0.0" },
     { "name": "d/removed", "version": "1.0.0" }
 ]
+--LOCK--
+{
+    "packages": [
+        { "name": "a/old", "version": "1.0.0" },
+        { "name": "b/unstable", "version": "1.1.0-alpha" },
+        { "name": "c/uptodate", "version": "1.0.0" },
+        { "name": "d/removed", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --RUN--
 update b/unstable
 --EXPECT-LOCK--

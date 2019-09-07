@@ -30,6 +30,21 @@ Test the error output of solver problems.
     { "name": "stable-requiree-excluded/pkg", "version": "1.0.0" }
 ]
 
+--LOCK--
+{
+    "packages": [
+        { "name": "stable-requiree-excluded/pkg", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+
 --RUN--
 update unstable/package requirer/pkg dependency/pkg
 
@@ -38,7 +53,7 @@ update unstable/package requirer/pkg dependency/pkg
 
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-Updating dependencies (including require-dev)
+Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1

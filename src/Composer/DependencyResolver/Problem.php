@@ -90,7 +90,7 @@ class Problem
                 $packages = array();
             }
 
-            if ($job && $job['cmd'] === 'install' && empty($packages)) {
+            if ($job && ($job['cmd'] === 'install' || $job['cmd'] === 'fix') && empty($packages)) {
 
                 // handle php/hhvm
                 if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
@@ -208,6 +208,13 @@ class Problem
         $packageName = $job['packageName'];
         $constraint = $job['constraint'];
         switch ($job['cmd']) {
+            case 'fix':
+                $package = $job['package'];
+                if ($job['lockable']) {
+                    return 'Package '.$package->getPrettyName().' is locked to version '.$package->getPrettyVersion();
+                } else {
+                    return 'Package '.$package->getPrettyName().' is present at version '.$package->getPrettyVersion() . ' and cannot be modified by Composer';
+                }
             case 'install':
                 $packages = $this->pool->whatProvides($packageName, $constraint);
                 if (!$packages) {

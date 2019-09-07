@@ -12,9 +12,11 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -254,8 +256,10 @@ class RuleSetGenerator
         return $impossible;
     }
 
-    protected function addRulesForRequest($request, $ignorePlatformReqs)
+    protected function addRulesForRequest(Request $request, $ignorePlatformReqs)
     {
+        $unlockableMap = $request->getUnlockableMap();
+
         foreach ($request->getFixedPackages() as $package) {
             $this->addRulesForPackage($package, $ignorePlatformReqs);
 
@@ -263,6 +267,8 @@ class RuleSetGenerator
                 'cmd' => 'fix',
                 'packageName' => $package->getName(),
                 'constraint' => null,
+                'package' => $package,
+                'lockable' => !isset($unlockableMap[$package->id]),
                 'fixed' => true
             ));
             $this->addRule(RuleSet::TYPE_JOB, $rule);
