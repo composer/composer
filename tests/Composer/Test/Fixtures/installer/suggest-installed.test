@@ -20,9 +20,13 @@ Suggestions are not displayed for installed packages
 install
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-Updating dependencies (including require-dev)
-Package operations: 2 installs, 0 updates, 0 removals
+Updating dependencies
+Lock file operations: 2 installs, 0 updates, 0 removals
+  - Installing b/b (1.0.0)
+  - Installing a/a (1.0.0)
 Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
 Generating autoload files
 
 --EXPECT--

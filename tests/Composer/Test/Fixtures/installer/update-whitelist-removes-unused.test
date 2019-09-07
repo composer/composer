@@ -25,6 +25,22 @@ Update with a package whitelist removes unused packages
     { "name": "fixed-dependency", "version": "1.0.0" },
     { "name": "old-dependency", "version": "1.0.0" }
 ]
+--LOCK--
+{
+    "packages": [
+        { "name": "whitelisted", "version": "1.0.0", "require": { "old-dependency": "1.0.0", "fixed-dependency": "1.0.0" } },
+        { "name": "fixed-dependency", "version": "1.0.0" },
+        { "name": "old-dependency", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --RUN--
 update --with-dependencies whitelisted
 --EXPECT--
