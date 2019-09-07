@@ -90,7 +90,7 @@ class Request
         $presentMap = array();
 
         if ($this->lockedRepository) {
-            foreach ($this->lockedRepository as $package) {
+            foreach ($this->lockedRepository->getPackages() as $package) {
                 $presentMap[$package->id] = $package;
             }
         }

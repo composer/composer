@@ -351,7 +351,7 @@ class Installer
         }
         // TODO can we drop any locked packages that we have matching remote versions for?
 
-        $request = $this->createRequest($this->fixedRootPackage, $platformRepo);
+        $request = $this->createRequest($this->fixedRootPackage, $platformRepo, $lockedRepository);
 
         if ($lockedRepository) {
             // TODO do we really always need this? Maybe only to skip fix() in updateWhitelist case cause these packages get removed on full update automatically?
@@ -422,23 +422,6 @@ class Installer
         $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
         $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
 
-        $updatedLock = $this->locker->setLockData(
-            $lockTransaction->getNewLockNonDevPackages(),
-            $lockTransaction->getNewLockDevPackages(),
-            $platformReqs,
-            $platformDevReqs,
-            $aliases,
-            $this->package->getMinimumStability(),
-            $this->package->getStabilityFlags(),
-            $this->preferStable || $this->package->getPreferStable(),
-            $this->preferLowest,
-            $this->config->get('platform') ?: array(),
-            $this->writeLock && $this->executeOperations
-        );
-        if ($updatedLock && $this->writeLock && $this->executeOperations) {
-            $this->io->writeError('<info>Writing lock file</info>');
-        }
-
         if ($lockTransaction->getOperations()) {
             $installs = $updates = $uninstalls = array();
             foreach ($lockTransaction->getOperations() as $operation) {
@@ -501,7 +484,22 @@ class Installer
             }
         }
 
-        $this->io->write('foo');
+        $updatedLock = $this->locker->setLockData(
+            $lockTransaction->getNewLockNonDevPackages(),
+            $lockTransaction->getNewLockDevPackages(),
+            $platformReqs,
+            $platformDevReqs,
+            $aliases,
+            $this->package->getMinimumStability(),
+            $this->package->getStabilityFlags(),
+            $this->preferStable || $this->package->getPreferStable(),
+            $this->preferLowest,
+            $this->config->get('platform') ?: array(),
+            $this->writeLock && $this->executeOperations
+        );
+        if ($updatedLock && $this->writeLock && $this->executeOperations) {
+            $this->io->writeError('<info>Writing lock file</info>');
+        }
 
         if ($doInstall) {
             // TODO ensure lock is used from locker as-is, since it may not have been written to disk in case of executeOperations == false
@@ -530,7 +528,7 @@ class Installer
         $repositorySet = $this->createRepositorySet($platformRepo, $aliases, $lockedRepository);
         $repositorySet->addRepository($lockedRepository);
 
-        $this->io->writeError('<info>Installing dependencies'.($this->devMode ? ' (including require-dev)' : '').' from lock file</info>');
+        $this->io->writeError('<info>Installing dependencies from lock file'.($this->devMode ? ' (including require-dev)' : '').'</info>');
 
         // verify that the lock file works with the current platform repository
         // we can skip this part if we're doing this as the second step after an update
@@ -538,7 +536,7 @@ class Installer
             $this->io->writeError('<info>Verifying lock file contents can be installed on current platform.</info>');
 
             // creating requirements request
-            $request = $this->createRequest($this->fixedRootPackage, $platformRepo);
+            $request = $this->createRequest($this->fixedRootPackage, $platformRepo, $lockedRepository);
 
             if (!$this->locker->isFresh()) {
                 $this->io->writeError('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. Run update to update them.</warning>', true, IOInterface::QUIET);
@@ -627,7 +625,7 @@ class Installer
             }
 
             // output op, but alias op only in debug verbosity
-            if (false === strpos($operation->getJobType(), 'Alias') || $this->io->isDebug()) {
+            if ((!$this->executeOperations && false === strpos($operation->getJobType(), 'Alias')) || $this->io->isDebug()) {
                 $this->io->writeError('  - ' . $operation);
             }
 
@@ -736,13 +734,14 @@ class Installer
     }
 
     /**
-     * @param  RootPackageInterface $rootPackage
-     * @param  PlatformRepository   $platformRepo
+     * @param RootPackageInterface $rootPackage
+     * @param PlatformRepository   $platformRepo
+     * @param RepositoryInterface|null $lockedRepository
      * @return Request
      */
-    private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
+    private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo, $lockedRepository = null)
     {
-        $request = new Request();
+        $request = new Request($lockedRepository);
 
         $request->fixPackage($rootPackage, false);
 

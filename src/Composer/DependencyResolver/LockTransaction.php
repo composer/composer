@@ -78,8 +78,8 @@ class LockTransaction
                     $operations[] = new Operation\UpdateOperation($lockMeansUpdateMap[abs($literal)], $package, $reason);
 
                     // avoid updates to one package from multiple origins
+                    $ignoreRemove[$lockMeansUpdateMap[abs($literal)]->id] = true;
                     unset($lockMeansUpdateMap[abs($literal)]);
-                    $ignoreRemove[$source->id] = true;
                 } else {
                     if ($package instanceof AliasPackage) {
                         $operations[] = new Operation\MarkAliasInstalledOperation($package, $reason);

@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\Package\AliasPackage;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
@@ -85,7 +87,6 @@ class LocalRepoTransaction
 
         $operations = $this->movePluginsToFront($operations);
         $operations = $this->moveUninstallsToFront($operations);
-
 
         // TODO skip updates which don't update? is this needed? we shouldn't schedule this update in the first place?
         /*
@@ -175,7 +176,7 @@ class LocalRepoTransaction
     {
         $uninstOps = array();
         foreach ($operations as $idx => $op) {
-            if ($op instanceof UninstallOperation) {
+            if ($op instanceof UninstallOperation || $op instanceof MarkAliasUninstalledOperation) {
                 $uninstOps[] = $op;
                 unset($operations[$idx]);
             }
