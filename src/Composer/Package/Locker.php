@@ -171,8 +171,19 @@ class Locker
         }
 
         if (isset($lockedPackages[0]['name'])) {
+            $packageByName = array();
             foreach ($lockedPackages as $info) {
-                $packages->addPackage($this->loader->load($info));
+                $package = $this->loader->load($info);
+                $packages->addPackage($package);
+                $packageByName[$package->getName()] = $package;
+            }
+
+            if (isset($lockData['aliases'])) {
+                foreach ($lockData['aliases'] as $alias) {
+                    if (isset($packageByName[$alias['package']])) {
+                        $packages->addPackage(new AliasPackage($packageByName[$alias['package']], $alias['alias_normalized'], $alias['alias']));
+                    }
+                }
             }
 
             return $packages;

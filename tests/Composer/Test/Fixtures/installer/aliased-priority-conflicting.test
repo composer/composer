@@ -43,6 +43,45 @@ Aliases take precedence over default package even if default is selected
     },
     "minimum-stability": "dev"
 }
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "require": { "a/req": "dev-master" },
+            "type": "library"
+        },
+        {
+            "name": "a/b", "version": "dev-master",
+            "require": { "a/req": "dev-master" },
+            "type": "library"
+        },
+        {
+            "name": "a/req", "version": "dev-feature-foo",
+            "source": { "reference": "feat.f", "type": "git", "url": "" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [
+        {
+            "alias": "dev-master",
+            "alias_normalized": "9999999-dev",
+            "version": "dev-feature-foo",
+            "package": "a/req"
+        }
+    ],
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "a/a": 20,
+        "a/b": 20,
+        "a/req": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --RUN--
 install
 --EXPECT--
