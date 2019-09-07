@@ -15,26 +15,52 @@ namespace Composer\DependencyResolver;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\Package\AliasPackage;
+use Composer\Package\Link;
+use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
 class LocalRepoTransaction
 {
-    /** @var RepositoryInterface */
-    protected $lockedRepository;
+    /** @var array */
+    protected $lockedPackages;
+    protected $lockedPackagesByName = array();
 
     /** @var RepositoryInterface */
     protected $localRepository;
 
-    public function __construct($lockedRepository, $localRepository)
+    public function __construct(RepositoryInterface $lockedRepository, $localRepository)
     {
-        $this->lockedRepository = $lockedRepository;
         $this->localRepository = $localRepository;
-
+        $this->setLockedPackageMaps($lockedRepository);
         $this->operations = $this->calculateOperations();
+    }
+
+    private function setLockedPackageMaps($lockedRepository)
+    {
+        $packageSort = function (PackageInterface $a, PackageInterface $b) {
+            // sort alias packages by the same name behind their non alias version
+            if ($a->getName() == $b->getName() && $a instanceof AliasPackage != $b instanceof AliasPackage) {
+                return $a instanceof AliasPackage ? -1 : 1;
+            }
+            return strcmp($b->getName(), $a->getName());
+        };
+
+        foreach ($lockedRepository->getPackages() as $package) {
+            $this->lockedPackages[$package->id] = $package;
+            foreach ($package->getNames() as $name) {
+                $this->lockedPackagesByName[$name][] = $package;
+            }
+        }
+
+        uasort($this->lockedPackages, $packageSort);
+        foreach ($this->lockedPackagesByName as $name => $packages) {
+            uasort($this->lockedPackagesByName[$name], $packageSort);
+        }
     }
 
     public function getOperations()
@@ -48,45 +74,84 @@ class LocalRepoTransaction
 
         $localPackageMap = array();
         $removeMap = array();
+        $localAliasMap = array();
+        $removeAliasMap = array();
         foreach ($this->localRepository->getPackages() as $package) {
-            if (isset($localPackageMap[$package->getName()])) {
-                die("Alias?");
+            if ($package instanceof AliasPackage) {
+                $localAliasMap[$package->getName().'::'.$package->getVersion()] = $package;
+                $removeAliasMap[$package->getName().'::'.$package->getVersion()] = $package;
+            } else {
+                $localPackageMap[$package->getName()] = $package;
+                $removeMap[$package->getName()] = $package;
             }
-            $localPackageMap[$package->getName()] = $package;
-            $removeMap[$package->getName()] = $package;
         }
 
-        $lockedPackages = array();
-        foreach ($this->lockedRepository->getPackages() as $package) {
-            if (isset($localPackageMap[$package->getName()])) {
-                $source = $localPackageMap[$package->getName()];
+        $stack = $this->getRootPackages();
 
-                // do we need to update?
-                if ($package->getVersion() != $localPackageMap[$package->getName()]->getVersion()) {
-                    $operations[] = new Operation\UpdateOperation($source, $package);
-                } elseif ($package->isDev() && $package->getSourceReference() !== $localPackageMap[$package->getName()]->getSourceReference()) {
-                    $operations[] = new Operation\UpdateOperation($source, $package);
+        $visited = array();
+        $processed = array();
+
+        while (!empty($stack)) {
+            $package = array_pop($stack);
+
+            if (isset($processed[$package->id])) {
+                continue;
+            }
+
+            if (!isset($visited[$package->id])) {
+                $visited[$package->id] = true;
+
+                $stack[] = $package;
+                if ($package instanceof AliasPackage) {
+                    $stack[] = $package->getAliasOf();
+                } else {
+                    foreach ($package->getRequires() as $link) {
+                        $possibleRequires = $this->getLockedProviders($link);
+
+                        foreach ($possibleRequires as $require) {
+                            $stack[] = $require;
+                        }
+                    }
                 }
-                unset($removeMap[$package->getName()]);
-            } else {
-                $operations[] = new Operation\InstallOperation($package);
-                unset($removeMap[$package->getName()]);
+            } elseif (!isset($processed[$package->id])) {
+                $processed[$package->id] = true;
+
+                if ($package instanceof AliasPackage) {
+                    $aliasKey = $package->getName().'::'.$package->getVersion();
+                    if (isset($localAliasMap[$aliasKey])) {
+                        unset($removeAliasMap[$aliasKey]);
+                    } else {
+                        $operations[] = new Operation\MarkAliasInstalledOperation($package);
+                    }
+                } else {
+                    if (isset($localPackageMap[$package->getName()])) {
+                        $source = $localPackageMap[$package->getName()];
+
+                        // do we need to update?
+                        if ($package->getVersion() != $localPackageMap[$package->getName()]->getVersion()) {
+                            $operations[] = new Operation\UpdateOperation($source, $package);
+                        } elseif ($package->isDev() && $package->getSourceReference() !== $localPackageMap[$package->getName()]->getSourceReference()) {
+                            $operations[] = new Operation\UpdateOperation($source, $package);
+                        }
+                        unset($removeMap[$package->getName()]);
+                    } else {
+                        $operations[] = new Operation\InstallOperation($package);
+                        unset($removeMap[$package->getName()]);
+                    }
+                }
             }
-/*
-            if (isset($lockedPackages[$package->getName()])) {
-                die("Alias?");
-            }
-            $lockedPackages[$package->getName()] = $package;*/
         }
 
         foreach ($removeMap as $name => $package) {
-            $operations[] = new Operation\UninstallOperation($package, null);
+            array_unshift($operations, new Operation\UninstallOperation($package, null));
+        }
+        foreach ($removeAliasMap as $nameVersion => $package) {
+            $operations[] = new Operation\MarkAliasUninstalledOperation($package, null);
         }
 
-        $operations = $this->sortOperations($operations);
         $operations = $this->movePluginsToFront($operations);
         // TODO fix this:
-        // we have to do this again here even though sortOperations did it because moving plugins moves them before uninstalls
+        // we have to do this again here even though the above stack code did it because moving plugins moves them before uninstalls
         $operations = $this->moveUninstallsToFront($operations);
 
         // TODO skip updates which don't update? is this needed? we shouldn't schedule this update in the first place?
@@ -110,97 +175,43 @@ class LocalRepoTransaction
         return $operations;
     }
 
-    // TODO is there a more efficient / better way to do get a "good" install order?
-    public function sortOperations(array $operations)
+    /**
+     * Determine which packages in the lock file are not required by any other packages in the lock file.
+     *
+     * These serve as a starting point to enumerate packages in a topological order despite potential cycles.
+     * If there are packages with a cycle on the top level the package with the lowest name gets picked
+     *
+     * @return array
+     */
+    private function getRootPackages()
     {
-        $packageQueue = $this->lockedRepository->getPackages();
+        $roots = $this->lockedPackages;
 
-        $packageQueue[] = null; // null is a cycle marker
+        foreach ($this->lockedPackages as $packageId => $package) {
+            if (!isset($roots[$packageId])) {
+                continue;
+            }
 
-        $weights = array();
-        $foundWeighables = false;
+            foreach ($package->getRequires() as $link) {
+                $possibleRequires = $this->getLockedProviders($link);
 
-        // This is sort of a topological sort, the weight represents the distance from a leaf (1 == is leaf)
-        // Since we can have cycles in the dep graph, any node which doesn't have an acyclic connection to all
-        // leaves it's connected to, cannot be assigned a weight and will be unsorted
-        while (!empty($packageQueue)) {
-            $package = array_shift($packageQueue);
-
-            // one full cycle
-            if ($package === null) {
-                // if we were able to assign some weights, keep going
-                if ($foundWeighables) {
-                    $foundWeighables = false;
-                    $packageQueue[] = null;
-                    continue;
-                } else {
-                    foreach ($packageQueue as $package) {
-                        $weights[$package->getName()] = PHP_INT_MAX;
+                foreach ($possibleRequires as $require) {
+                    if ($require !== $package) {
+                        unset($roots[$require->id]);
                     }
-                    // no point in continuing, we are in a cycle
-                    break;
                 }
-            }
-
-            $requires = array_filter(array_keys($package->getRequires()), function ($req) {
-                return $req !== 'composer-plugin-api' && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
-            });
-
-            $maxWeight = 0;
-            foreach ($requires as $require) {
-                if (!isset($weights[$require])) {
-                    $maxWeight = null;
-
-                    // needs more calculation, so add to end of queue
-                    $packageQueue[] = $package;
-                    break;
-                }
-
-                $maxWeight = max((int) $maxWeight, $weights[$require]);
-            }
-            if ($maxWeight !== null) {
-                $foundWeighables = true;
-                $weights[$package->getName()] = $maxWeight + 1;
             }
         }
 
-        // TODO do we have any alias ops in the local repo transaction?
-        usort($operations, function ($opA, $opB) use ($weights) {
-            // uninstalls come first, if there are multiple, sort by name
-            if ($opA instanceof Operation\UninstallOperation) {
-                $packageA = $opA->getPackage();
-                if ($opB instanceof Operation\UninstallOperation) {
-                    return strcmp($packageA->getName(), $opB->getPackage()->getName());
-                }
-                return -1;
-            } elseif ($opB instanceof Operation\UninstallOperation) {
-                return 1;
-            }
+        return $roots;
+    }
 
-
-            if ($opA instanceof Operation\InstallOperation) {
-                $packageA = $opA->getPackage();
-            } elseif ($opA instanceof Operation\UpdateOperation) {
-                $packageA = $opA->getTargetPackage();
-            }
-
-            if ($opB instanceof Operation\InstallOperation) {
-                $packageB = $opB->getPackage();
-            } elseif ($opB instanceof Operation\UpdateOperation) {
-                $packageB = $opB->getTargetPackage();
-            }
-
-            $weightA = $weights[$packageA->getName()];
-            $weightB = $weights[$packageB->getName()];
-
-            if ($weightA === $weightB) {
-                return strcmp($packageA->getName(),  $packageB->getName());
-            } else {
-                return $weightA < $weightB ? -1 : 1;
-            }
-        });
-
-        return $operations;
+    private function getLockedProviders(Link $link)
+    {
+        if (!isset($this->lockedPackagesByName[$link->getTarget()])) {
+            return array();
+        }
+        return $this->lockedPackagesByName[$link->getTarget()];
     }
 
     /**
