@@ -262,14 +262,18 @@ EOT
         $input->setOption('description', $description);
 
         if (null === $author = $input->getOption('author')) {
-            if (!empty($_SERVER['COMPOSER_DEFAULT_AUTHOR'])) {
-                $author_name = $_SERVER['COMPOSER_DEFAULT_AUTHOR'];
+            if (array_key_exists('COMPOSER_DEFAULT_AUTHOR', $_SERVER)) {
+                if (!empty($_SERVER['COMPOSER_DEFAULT_AUTHOR'])) {
+                    $author_name = $_SERVER['COMPOSER_DEFAULT_AUTHOR'];
+                }
             } elseif (isset($git['user.name'])) {
                 $author_name = $git['user.name'];
             }
 
-            if (!empty($_SERVER['COMPOSER_DEFAULT_EMAIL'])) {
-                $author_email = $_SERVER['COMPOSER_DEFAULT_EMAIL'];
+            if (array_key_exists('COMPOSER_DEFAULT_EMAIL', $_SERVER)) {
+                if (!empty($_SERVER['COMPOSER_DEFAULT_EMAIL'])) {
+                    $author_email = $_SERVER['COMPOSER_DEFAULT_EMAIL'];
+                }
             } elseif (isset($git['user.email'])) {
                 $author_email = $git['user.email'];
             }
@@ -281,12 +285,15 @@ EOT
 
         $self = $this;
         $author = $io->askAndValidate(
-            'Author [<comment>'.$author.'</comment>, n to skip]: ',
+            'Author (John Smith <john@example.com>) [<comment>'.($author ?: '[none]').'</comment>, n to skip]: ',
             function ($value) use ($self, $author) {
                 if ($value === 'n' || $value === 'no') {
                     return;
                 }
                 $value = $value ?: $author;
+                if ($value === null) {
+                    return;
+                }
                 $author = $self->parseAuthorString($value);
 
                 return sprintf('%s <%s>', $author['name'], $author['email']);
@@ -296,7 +303,12 @@ EOT
         );
         $input->setOption('author', $author);
 
-        $minimumStability = $input->getOption('stability') ?: null;
+        if (null === $minimumStability = $input->getOption('stability')) {
+            if (!empty($_SERVER['COMPOSER_DEFAULT_MINIMUM_STABILITY'])) {
+                $minimumStability = $_SERVER['COMPOSER_DEFAULT_MINIMUM_STABILITY'];
+            }
+        }
+
         $minimumStability = $io->askAndValidate(
             'Minimum Stability [<comment>'.$minimumStability.'</comment>]: ',
             function ($value) use ($minimumStability) {
@@ -318,7 +330,12 @@ EOT
         );
         $input->setOption('stability', $minimumStability);
 
-        $type = $input->getOption('type') ?: false;
+        if (null === $type = $input->getOption('type')) {
+            if (!empty($_SERVER['COMPOSER_DEFAULT_TYPE'])) {
+                $type = $_SERVER['COMPOSER_DEFAULT_TYPE'];
+            }
+        }
+
         $type = $io->ask(
             'Package Type (e.g. library, project, metapackage, composer-plugin) [<comment>'.$type.'</comment>]: ',
             $type
