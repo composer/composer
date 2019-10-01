@@ -16,6 +16,7 @@ use Composer\Cache;
 use Composer\Factory;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputArgument;
 
 /**
  * @author David Neilsen <petah.p@gmail.com>
@@ -28,10 +29,16 @@ class ClearCacheCommand extends BaseCommand
             ->setName('clear-cache')
             ->setAliases(array('clearcache'))
             ->setDescription('Clears composer\'s internal package cache.')
+            ->setDefinition(array(
+                new InputArgument('vendor', InputArgument::OPTIONAL, 'Optional "vendor" to clear the cache for.'),
+            ))
             ->setHelp(
                 <<<EOT
 The <info>clear-cache</info> deletes all cached packages from composer's
 cache directory.
+
+If you specify a vendor to clear the cache for, composer will only delete
+the cached packages published under that namespace.
 
 Read more at https://getcomposer.org/doc/03-cli.md#clear-cache-clearcache-
 EOT
