@@ -71,6 +71,10 @@ class ProcessExecutor
             $process = new Process($command, $cwd, null, null, static::getTimeout());
         }
 
+        if (!is_dir($cwd)) {
+            @mkdir($cwd, 0777, true);
+        }
+
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
         $process->run($callback);
 
