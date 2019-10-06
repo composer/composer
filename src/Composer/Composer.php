@@ -53,7 +53,7 @@ class Composer
     const VERSION = '@package_version@';
     const BRANCH_ALIAS_VERSION = '@package_branch_alias_version@';
     const RELEASE_DATE = '@release_date@';
-    const SOURCE_VERSION = '1.9-dev+source';
+    const SOURCE_VERSION = '1.10-dev+source';
 
     public static function getVersion()
     {
