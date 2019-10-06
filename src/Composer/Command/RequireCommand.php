@@ -49,6 +49,7 @@ class RequireCommand extends InitCommand
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
+                new InputOption('fixed', null, InputOption::VALUE_NONE, 'Write fixed version to the composer.json.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'Do not show package suggestions.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
@@ -120,6 +121,25 @@ EOT
             return 1;
         }
 
+        if ($input->getOption('fixed') === true) {
+            $config = $this->json->read();
+
+            $packageType = empty($config['type']) ? 'library' : $config['type'];
+
+            /**
+             * @see https://github.com/composer/composer/pull/8313#issuecomment-532637955
+             */
+            if ($packageType !== 'project') {
+                $io->writeError('<error>"--fixed" option is allowed for "project" package types only to prevent possible misuses.</error>');
+
+                if (empty($config['type'])) {
+                    $io->writeError('<error>If your package is not library, you should explicitly specify "type" parameter in composer.json.</error>');
+                }
+
+                return 1;
+            }
+        }
+
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $repos = $composer->getRepositoryManager()->getRepositories();
 
@@ -137,7 +157,7 @@ EOT
         }
 
         $phpVersion = $this->repos->findPackage('php', '*')->getPrettyVersion();
-        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion, $preferredStability, !$input->getOption('no-update'));
+        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion, $preferredStability, !$input->getOption('no-update'), $input->getOption('fixed'));
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
