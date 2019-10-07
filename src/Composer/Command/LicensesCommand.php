@@ -110,6 +110,8 @@ EOT
             default:
                 throw new \RuntimeException(sprintf('Unsupported format "%s".  See help for supported formats.', $format));
         }
+
+        return 0;
     }
 
     /**
