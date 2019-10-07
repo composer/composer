@@ -233,7 +233,7 @@ class Solver
         $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
         // decide to remove everything that's installed and undecided
-        foreach ($this->installedMap as $packageId => $void) {
+        foreach (array_keys($this->installedMap) as $packageId) {
             if ($this->decisions->undecided($packageId)) {
                 $this->decisions->decide(-$packageId, 1, null);
             }

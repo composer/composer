@@ -419,6 +419,7 @@ class Installer
 
                 // collect packages to fixate from root requirements as well as installed packages
                 $candidates = array();
+                $rootRequires = array();
                 foreach ($links as $link) {
                     $candidates[$link->getTarget()] = true;
                     $rootRequires[$link->getTarget()] = $link;
@@ -428,7 +429,7 @@ class Installer
                 }
 
                 // fix them to the version in lock (or currently installed) if they are not updateable
-                foreach ($candidates as $candidate => $dummy) {
+                foreach ($candidates as $candidate => $_) {
                     foreach ($currentPackages as $curPackage) {
                         if ($curPackage->getName() === $candidate) {
                             if (!$this->isUpdateable($curPackage) && !isset($removedUnstablePackages[$curPackage->getName()])) {
@@ -474,7 +475,7 @@ class Installer
         try {
             $operations = $solver->solve($request, $this->ignorePlatformReqs);
             $ruleSetSize = $solver->getRuleSetSize();
-            $solver = null;
+            unset($solver);
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
             $this->io->writeError($e->getMessage());
@@ -967,6 +968,7 @@ class Installer
             $operations = array();
         }
 
+        $currentPackages = array();
         if ($this->update && $this->updateWhitelist) {
             $currentPackages = $this->getCurrentPackages($installedRepo);
         }
@@ -1100,7 +1102,7 @@ class Installer
         if ($this->locker->isLocked()) {
             try {
                 return $this->locker->getLockedRepository(true)->getPackages();
-            } catch (\RuntimeException $e) {
+            } catch (\RuntimeException $_) {
                 // fetch only non-dev packages from lock if doing a dev update fails due to a previously incomplete lock file
                 return $this->locker->getLockedRepository()->getPackages();
             }
@@ -1259,7 +1261,7 @@ class Installer
             throw new \LogicException('isUpdateable should only be called when a whitelist is present');
         }
 
-        foreach ($this->updateWhitelist as $whiteListedPattern => $void) {
+        foreach (array_keys($this->updateWhitelist) as $whiteListedPattern) {
             $patternRegexp = BasePackage::packageNameToRegexp($whiteListedPattern);
             if (preg_match($patternRegexp, $package->getName())) {
                 return true;
@@ -1320,7 +1322,7 @@ class Installer
 
         $rootRequiredPackageNames = array_keys($rootRequires);
 
-        foreach ($this->updateWhitelist as $packageName => $void) {
+        foreach (array_keys($this->updateWhitelist) as $packageName) {
             $packageQueue = new \SplQueue;
             $nameMatchesRequiredPackage = false;
 
