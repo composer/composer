@@ -29,7 +29,6 @@ class PathRepositoryTest extends TestCase
             ->getMock();
 
         $config = new \Composer\Config();
-        $versionGuesser = null;
 
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'missing'));
         $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
