@@ -84,5 +84,7 @@ EOT
         } else {
             $this->getIO()->overwriteError('<info>Generated autoload files containing '. $numberOfClasses .' classes</info>');
         }
+
+        return 0;
     }
 }
