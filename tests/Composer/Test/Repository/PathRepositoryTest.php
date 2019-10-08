@@ -34,7 +34,6 @@ class PathRepositoryTest extends TestCase
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'missing'));
         $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
         $repository->getPackages();
-
     }
 
     public function testLoadPackageFromFileSystemWithVersion()
