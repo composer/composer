@@ -128,7 +128,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         $urlMatches = $this->getUrlMatches();
 
         if (empty($urlMatches)) {
-            throw new \RuntimeException('The `url` supplied for the path repository does not exist');
+            throw new \RuntimeException('The `url` supplied for the path (' . $this->url . ') repository does not exist');
         }
 
         foreach ($urlMatches as $url) {
