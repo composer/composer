@@ -36,6 +36,15 @@ interface RepositoryInterface extends \Countable
     public function hasPackage(PackageInterface $package);
 
     /**
+     * Checks if specified package name is registered (installed).
+     *
+     * @param string $package_name package name (vendor/project)
+     *
+     * @return bool
+     */
+    public function hasPackageName(string $packageName);
+
+    /**
      * Searches for the first match of a package by name and version.
      *
      * @param string                                                 $name       package name

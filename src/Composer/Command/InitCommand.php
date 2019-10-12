@@ -792,7 +792,13 @@ EOT
         }
         $similarPackages = array();
 
+        $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+
         foreach ($results as $result) {
+            if ($installedRepo->hasPackageName($result['name'])) {
+                // Ignore installed package
+                continue;
+            }
             $similarPackages[$result['name']] = levenshtein($package, $result['name']);
         }
         asort($similarPackages);
