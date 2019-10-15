@@ -579,7 +579,6 @@ EOT
     {
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
-        $io->write('<info>homepage</info> : ' . $package->getHomepage());
         $io->write('<info>descrip.</info> : ' . $package->getDescription());
         $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: array()));
         $this->printVersions($package, $versions, $installedRepo);
@@ -591,6 +590,7 @@ EOT
         }
         $io->write('<info>type</info>     : ' . $package->getType());
         $this->printLicenses($package);
+        $io->write('<info>homepage</info> : ' . $package->getHomepage());
         $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
         $io->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
         if ($installedRepo->hasPackage($package)) {
