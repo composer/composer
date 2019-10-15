@@ -579,6 +579,7 @@ EOT
     {
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
+        $io->write('<info>homepage</info> : ' . $package->getHomepage());
         $io->write('<info>descrip.</info> : ' . $package->getDescription());
         $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: array()));
         $this->printVersions($package, $versions, $installedRepo);
