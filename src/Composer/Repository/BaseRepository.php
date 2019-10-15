@@ -74,7 +74,7 @@ abstract class BaseRepository implements RepositoryInterface
                             if ($constraint === null || ($link->getConstraint()->matches($constraint) === !$invert)) {
                                 // already displayed this node's dependencies, cutting short
                                 if (in_array($link->getTarget(), $packagesInTree)) {
-                                    $results[$link->getTarget()] = array($package, $link, false);
+                                    $results[] = array($package, $link, false);
                                     continue;
                                 }
                                 $packagesInTree[] = $link->getTarget();
