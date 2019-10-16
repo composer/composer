@@ -68,6 +68,9 @@ abstract class BaseRepository implements RepositoryInterface
             if (!$invert) {
                 $links += $package->getReplaces();
 
+                // On forward search, check if any replaced package was required and add the replaced
+                // packages to the list of needles. Contrary to the cross-reference link check below,
+                // replaced packages are the target of links.
                 foreach ($package->getReplaces() as $link) {
                     foreach ($needles as $needle) {
                         if ($link->getSource() === $needle) {
