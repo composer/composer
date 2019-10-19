@@ -106,7 +106,8 @@ Linux distributions.
 > `mkdir -p /usr/local/bin`.
 
 > **Note:** For information on changing your PATH, please read the
-> [Wikipedia article](https://en.wikipedia.org/wiki/PATH_(variable)) and/or use Google.
+> [Wikipedia article](https://en.wikipedia.org/wiki/PATH_(variable)) and/or use
+> your search engine of choice.
 
 Now run `composer` in order to run Composer instead of `php composer.phar`.
 
@@ -139,7 +140,7 @@ C:\bin>echo @php "%~dp0composer.phar" %*>composer.bat
 Add the directory to your PATH environment variable if it isn't already.
 For information on changing your PATH variable, please see
 [this article](https://www.computerhope.com/issues/ch000549.htm) and/or
-use Google.
+use your search engine of choice.
 
 Close your current terminal. Test usage with a new terminal:
 
