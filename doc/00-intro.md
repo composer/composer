@@ -44,10 +44,21 @@ Linux and macOS.
 
 ## Installation - macOS
 
-macOS users may follow the Linux / Unix installation instructions for a custom installation, though the easiest way to globally install composer on macOS is with the [Homebrew package manager](https://brew.sh):
+macOS users may follow the Linux / Unix installation instructions for a custom installation, 
+though the easiest way to globally install composer on macOS is with the 
+[Homebrew package manager](https://brew.sh):
 
 ```sh
 brew install composer
+```
+
+To ensure globally installed packages installed in `~/.composer/vendor/bin/` with 
+`composer global require PACKAGE` are available in your shell, you may need to add
+the composer vendor bin path to your `$PATH` shell variable by adding the following
+line to your `.bash_profile` or `.bashrc`:
+
+```sh
+export PATH=~/.composer/vendor/bin:$PATH
 ```
 
 ## Installation - Linux / Unix
