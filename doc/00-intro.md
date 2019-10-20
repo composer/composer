@@ -42,7 +42,15 @@ git, svn, fossil or hg depending on how the package is version-controlled.
 Composer is multi-platform and we strive to make it run equally well on Windows,
 Linux and macOS.
 
-## Installation - Linux / Unix / macOS
+## Installation - macOS
+
+macOS users may follow the Linux / Unix installation instructions for a custom installation, though the easiest way to globally install composer on macOS is with the [Homebrew package manager](https://brew.sh):
+
+```sh
+brew install composer
+```
+
+## Installation - Linux / Unix
 
 ### Downloading the Composer Executable
 
