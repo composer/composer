@@ -1,0 +1,25 @@
+--TEST--
+Updates when no lock file is present without writing a lock file
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "config": {
+        "lock": false
+    }
+}
+--RUN--
+update
+--EXPECT--
+Installing a/a (1.0.0)
+--EXPECT-LOCK--
+false
