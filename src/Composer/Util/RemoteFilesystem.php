@@ -47,6 +47,7 @@ class RemoteFilesystem
     private $degradedMode = false;
     private $redirects;
     private $maxRedirects = 20;
+    private $displayedOriginAuthentications = array();
 
     /**
      * Constructor.
@@ -814,24 +815,35 @@ class RemoteFilesystem
         }
 
         if ($this->io->hasAuthentication($originUrl)) {
+            $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($originUrl);
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
                 $options['github-token'] = $auth['username'];
+                $authenticationDisplayMessage = 'Using GitHub token authentication';
             } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
+                    $authenticationDisplayMessage = 'Using GitLab OAuth token authentication';
                 } elseif ($auth['password'] === 'private-token') {
                     $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
+                    $authenticationDisplayMessage = 'Using GitLab private token authentication';
                 }
             } elseif ('bitbucket.org' === $originUrl
                 && $this->fileUrl !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL && 'x-token-auth' === $auth['username']
             ) {
                 if (!$this->isPublicBitBucketDownload($this->fileUrl)) {
                     $headers[] = 'Authorization: Bearer ' . $auth['password'];
+                    $authenticationDisplayMessage = 'Using Bitbucket OAuth token authentication';
                 }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
+                $authenticationDisplayMessage = 'Using HTTP basic authentication with username "' . $auth['username'] . '"';
+            }
+
+            if ($authenticationDisplayMessage && !in_array($originUrl, $this->displayedOriginAuthentications, true)) {
+                $this->io->writeError($authenticationDisplayMessage, true, IOInterface::DEBUG);
+                $this->displayedOriginAuthentications[] = $originUrl;
             }
         }
 
