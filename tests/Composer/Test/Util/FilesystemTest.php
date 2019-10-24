@@ -300,16 +300,16 @@ class FilesystemTest extends TestCase
 
         // Create and detect junction
         $fs->junction($target, $junction);
-        $this->assertTrue($fs->isJunction($junction));
-        $this->assertFalse($fs->isJunction($target));
-        $this->assertTrue($fs->isJunction($target . '/../../junction'));
-        $this->assertFalse($fs->isJunction($junction . '/../real'));
-        $this->assertTrue($fs->isJunction($junction . '/../junction'));
+        $this->assertTrue($fs->isJunction($junction), $junction . ': is a junction');
+        $this->assertFalse($fs->isJunction($target), $target . ': is not a junction');
+        $this->assertTrue($fs->isJunction($target . '/../../junction'), $target . '/../../junction: is a junction');
+        $this->assertFalse($fs->isJunction($junction . '/../real'), $junction . '/../real: is not a junction');
+        $this->assertTrue($fs->isJunction($junction . '/../junction'), $junction . '/../junction: is a junction');
 
         // Remove junction
-        $this->assertTrue(is_dir($junction));
-        $this->assertTrue($fs->removeJunction($junction));
-        $this->assertFalse(is_dir($junction));
+        $this->assertTrue(is_dir($junction), $junction . ' is a directory');
+        $this->assertTrue($fs->removeJunction($junction), $junction . ' has been removed');
+        $this->assertFalse(is_dir($junction), $junction . ' is not a directory');
     }
 
     public function testCopy()

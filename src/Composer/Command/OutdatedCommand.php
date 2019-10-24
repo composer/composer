@@ -59,7 +59,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $args = array(
-            'show',
+            'command' => 'show',
             '--latest' => true,
         );
         if (!$input->getOption('all')) {
