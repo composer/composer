@@ -197,6 +197,9 @@ class InstallerTest extends TestCase
                     // so store value temporarily in reference for later assetion
                     $actualLock = $hash;
                 }));
+        } elseif ($expectLock === false) {
+            $lockJsonMock->expects($this->never())
+                ->method('write');
         }
 
         $contents = json_encode($composerConfig);
@@ -319,7 +322,11 @@ class InstallerTest extends TestCase
                 }
                 $run = $testData['RUN'];
                 if (!empty($testData['EXPECT-LOCK'])) {
-                    $expectLock = JsonFile::parseJson($testData['EXPECT-LOCK']);
+                    if ($testData['EXPECT-LOCK'] === 'false') {
+                        $expectLock = false;
+                    } else {
+                        $expectLock = JsonFile::parseJson($testData['EXPECT-LOCK']);
+                    }
                 }
                 $expectOutput = isset($testData['EXPECT-OUTPUT']) ? $testData['EXPECT-OUTPUT'] : null;
                 $expect = $testData['EXPECT'];
