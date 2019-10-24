@@ -133,20 +133,6 @@ class ArrayRepository extends BaseRepository
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function hasPackageName(string $packageName)
-    {
-        foreach ($this->getPackages() as $repoPackage) {
-            if ($packageName === $repoPackage->getName()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Adds a new package to the repository
      *
      * @param PackageInterface $package

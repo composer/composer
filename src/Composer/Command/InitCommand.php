@@ -795,7 +795,7 @@ EOT
         $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
 
         foreach ($results as $result) {
-            if ($installedRepo->hasPackageName($result['name'])) {
+            if ($installedRepo->findPackage($result['name'], '*')) {
                 // Ignore installed package
                 continue;
             }

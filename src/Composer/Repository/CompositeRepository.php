@@ -67,21 +67,6 @@ class CompositeRepository extends BaseRepository
     /**
      * {@inheritdoc}
      */
-    public function hasPackageName(string $packageName)
-    {
-        foreach ($this->repositories as $repository) {
-            /* @var $repository RepositoryInterface */
-            if ($repository->hasPackageName($packageName)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function findPackage($name, $constraint)
     {
         foreach ($this->repositories as $repository) {
