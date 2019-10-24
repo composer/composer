@@ -90,7 +90,7 @@ EOT
                 continue;
             }
             foreach ($package['suggest'] as $suggestion => $reason) {
-                if (false === strpos('/', $suggestion) && null !== $platform->findPackage($suggestion, '*')) {
+                if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $suggestion) && null !== $platform->findPackage($suggestion, '*')) {
                     continue;
                 }
                 if (!isset($installed[$suggestion])) {
