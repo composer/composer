@@ -11,7 +11,8 @@
         },
         "type": {
             "description": "Package type, either 'library' for common packages, 'composer-plugin' for plugins, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
         },
         "target-dir": {
             "description": "DEPRECATED: Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
@@ -39,7 +40,8 @@
         },
         "version": {
             "type": "string",
-            "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
+            "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes.",
+            "pattern": "^v?\\d+(((\\.\\d+)?\\.\\d+)?\\.\\d+)?"
         },
         "time": {
             "type": "string",

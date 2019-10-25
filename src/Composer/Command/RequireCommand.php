@@ -100,7 +100,9 @@ EOT
 
             return 1;
         }
-        if (!is_readable($this->file)) {
+        // check for readability by reading the file as is_readable can not be trusted on network-mounts
+        // see https://github.com/composer/composer/issues/8231 and https://bugs.php.net/bug.php?id=68926
+        if (!is_readable($this->file) && false === Silencer::call('file_get_contents', $this->file)) {
             $io->writeError('<error>'.$this->file.' is not readable.</error>');
 
             return 1;
