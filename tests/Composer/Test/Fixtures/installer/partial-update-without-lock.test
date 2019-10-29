@@ -1,5 +1,5 @@
 --TEST--
-Partial update without lock file should update everything whitelisted, remove overly unstable packages
+Partial update without lock file should error
 --COMPOSER--
 {
     "repositories": [
@@ -28,41 +28,10 @@ Partial update without lock file should update everything whitelisted, remove ov
     { "name": "c/uptodate", "version": "1.0.0" },
     { "name": "d/removed", "version": "1.0.0" }
 ]
---LOCK--
-{
-    "packages": [
-        { "name": "a/old", "version": "1.0.0" },
-        { "name": "b/unstable", "version": "1.1.0-alpha" },
-        { "name": "c/uptodate", "version": "1.0.0" },
-        { "name": "d/removed", "version": "1.0.0" }
-    ],
-    "packages-dev": [],
-    "aliases": [],
-    "minimum-stability": "dev",
-    "stability-flags": [],
-    "prefer-stable": false,
-    "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
-}
 --RUN--
 update b/unstable
---EXPECT-LOCK--
-{
-    "packages": [
-        { "name": "a/old", "version": "1.0.0", "type": "library" },
-        { "name": "b/unstable", "version": "1.0.0", "type": "library" },
-        { "name": "c/uptodate", "version": "1.0.0", "type": "library" },
-        { "name": "d/removed", "version": "1.0.0", "type": "library" }
-    ],
-    "packages-dev": [],
-    "aliases": [],
-    "minimum-stability": "stable",
-    "stability-flags": [],
-    "prefer-stable": false,
-    "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
-}
+--EXPECT-OUTPUT--
+Cannot update only a partial set of packages without a lock file present.
+--EXPECT-EXIT-CODE--
+1
 --EXPECT--
-Updating b/unstable (1.1.0-alpha) to b/unstable (1.0.0)
