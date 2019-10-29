@@ -211,10 +211,10 @@ class Problem
             case 'fix':
                 $package = $job['package'];
                 if ($job['lockable']) {
-                    return 'Package '.$package->getPrettyName().' is locked to version '.$package->getPrettyVersion();
-                } else {
-                    return 'Package '.$package->getPrettyName().' is present at version '.$package->getPrettyVersion() . ' and cannot be modified by Composer';
+                    return $package->getPrettyName().' is locked to version '.$package->getPrettyVersion().' and an update of this package was not requested.';
                 }
+
+                return $package->getPrettyName().' is present at version '.$package->getPrettyVersion() . ' and cannot be modified by Composer';
             case 'install':
                 $packages = $this->pool->whatProvides($packageName, $constraint);
                 if (!$packages) {

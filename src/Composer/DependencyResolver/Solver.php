@@ -147,7 +147,6 @@ class Solver
                 if (abs($literal) !== abs($assertRuleLiteral)) {
                     continue;
                 }
-
                 $problem->addRule($assertRule);
                 $this->disableProblem($assertRule);
             }

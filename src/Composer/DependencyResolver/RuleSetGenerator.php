@@ -261,6 +261,10 @@ class RuleSetGenerator
         $unlockableMap = $request->getUnlockableMap();
 
         foreach ($request->getFixedPackages() as $package) {
+            if ($package->id == -1) {
+                throw new \RuntimeException("Fixed package ".$package->getName()." was not added to solver pool.");
+            }
+
             $this->addRulesForPackage($package, $ignorePlatformReqs);
 
             $rule = $this->createInstallOneOfRule(array($package), Rule::RULE_JOB_INSTALL, array(

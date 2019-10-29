@@ -523,8 +523,6 @@ class Installer
             return array();
         }
 
-        ;
-
         $resultRepo = new ArrayRepository(array());
         $loader = new ArrayLoader(null, true);
         $dumper = new ArrayDumper();
