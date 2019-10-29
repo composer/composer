@@ -41,6 +41,24 @@ Update with a package whitelist only updates those packages and their dependenci
     { "name": "unrelated", "version": "1.0.0", "require": { "unrelated-dependency": "1.*" } },
     { "name": "unrelated-dependency", "version": "1.0.0" }
 ]
+--LOCK--
+{
+    "packages": [
+        { "name": "fixed", "version": "1.0.0" },
+        { "name": "whitelisted-component1", "version": "1.0.0" },
+        { "name": "whitelisted-component2", "version": "1.0.0", "require": { "dependency": "1.0.0" } },
+        { "name": "root-dependency", "version": "1.0.0" },
+        { "name": "dependency", "version": "1.0.0" },
+        { "name": "unrelated", "version": "1.0.0", "require": { "unrelated-dependency": "1.*" } },
+        { "name": "unrelated-dependency", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {"a/a":20},
+    "prefer-stable": false,
+    "prefer-lowest": false
+}
 --RUN--
 update whitelisted-* --with-dependencies
 --EXPECT--
