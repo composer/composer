@@ -283,15 +283,15 @@ class InstallerTest extends TestCase
                 continue;
             }
 
-            $testData = $this->readTestFile($file, $fixturesDir);
-
-            $installed = array();
-            $installedDev = array();
-            $lock = array();
-            $expectLock = array();
-            $expectResult = 0;
-
             try {
+                $testData = $this->readTestFile($file, $fixturesDir);
+
+                $installed = array();
+                $installedDev = array();
+                $lock = array();
+                $expectLock = array();
+                $expectResult = 0;
+
                 $message = $testData['TEST'];
                 $condition = !empty($testData['CONDITION']) ? $testData['CONDITION'] : null;
                 $composer = JsonFile::parseJson($testData['COMPOSER']);
