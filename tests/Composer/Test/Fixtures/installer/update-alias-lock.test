@@ -36,7 +36,7 @@ Update aliased package does not mess up the lock file
         { "package": "a/a", "version": "dev-master", "source-reference": "1234" },
         { "package": "a/a", "version": "dev-master", "alias-pretty-version": "1.0.x-dev", "alias-version": "1.0.9999999.9999999-dev" }
     ],
-    "packages-dev": null,
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": [],

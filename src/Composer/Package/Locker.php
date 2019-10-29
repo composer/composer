@@ -162,7 +162,7 @@ class Locker
             if (isset($lockData['packages-dev'])) {
                 $lockedPackages = array_merge($lockedPackages, $lockData['packages-dev']);
             } else {
-                throw new \RuntimeException('The lock file does not contain require-dev information, run install with the --no-dev option or run update to install those packages.');
+                throw new \RuntimeException('The lock file does not contain require-dev information, run install with the --no-dev option or delete it and run composer update to generate a new lock file.');
             }
         }
 
