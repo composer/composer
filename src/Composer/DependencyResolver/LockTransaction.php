@@ -76,9 +76,14 @@ class LockTransaction
             $package = $this->pool->literalToPackage($literal);
 
             // wanted & !present
-            if ($literal > 0 && !isset($this->presentMap[$package->id])) {
+            if ($literal > 0 && !isset($this->presentMap[spl_object_hash($package)])) {
                 if (isset($lockMeansUpdateMap[abs($literal)]) && !$package instanceof AliasPackage) {
-                    $operations[] = new Operation\UpdateOperation($lockMeansUpdateMap[abs($literal)], $package, $reason);
+                    // TODO we end up here sometimes because we prefer the remote package now to get up to date metadata
+                    // TODO define some level of identity here for what constitutes an update and what can be ignored? new kind of metadata only update?
+                    $target = $lockMeansUpdateMap[abs($literal)];
+                    if ($package->getName() !== $target->getName() || $package->getVersion() !== $target->getVersion()) {
+                        $operations[] = new Operation\UpdateOperation($target, $package, $reason);
+                    }
 
                     // avoid updates to one package from multiple origins
                     $ignoreRemove[$lockMeansUpdateMap[abs($literal)]->id] = true;
@@ -98,7 +103,7 @@ class LockTransaction
             $reason = $decision[Decisions::DECISION_REASON];
             $package = $this->pool->literalToPackage($literal);
 
-            if ($literal <= 0 && isset($this->presentMap[$package->id]) && !isset($ignoreRemove[$package->id])) {
+            if ($literal <= 0 && isset($this->presentMap[spl_object_hash($package)]) && !isset($ignoreRemove[$package->id])) {
                 if ($package instanceof AliasPackage) {
                     $operations[] = new Operation\MarkAliasUninstalledOperation($package, $reason);
                 } else {
@@ -163,29 +168,41 @@ class LockTransaction
     {
         $lockMeansUpdateMap = array();
 
+        $packages = array();
+
         foreach ($this->decisions as $i => $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
             $package = $this->pool->literalToPackage($literal);
 
+            if ($literal <= 0 && isset($this->presentMap[spl_object_hash($package)])) {
+                $packages[spl_object_hash($package)] = $package;
+            }
+        }
+
+        // some locked packages are not in the pool and thus, were not decided at all
+        foreach ($this->presentMap as $package) {
+            if ($package->id === -1) {
+                $packages[spl_object_hash($package)] = $package;
+            }
+        }
+
+        foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
                 continue;
             }
 
-            // !wanted & present
-            if ($literal <= 0 && isset($this->presentMap[$package->id])) {
-                // TODO can't we just look at existing rules?
-                $updates = $this->policy->findUpdatePackages($this->pool, $package);
+            // TODO can't we just look at existing rules?
+            $updates = $this->policy->findUpdatePackages($this->pool, $package);
 
-                $literals = array($package->id);
+            $literals = array($package->id);
 
-                foreach ($updates as $update) {
-                    $literals[] = $update->id;
-                }
+            foreach ($updates as $update) {
+                $literals[] = $update->id;
+            }
 
-                foreach ($literals as $updateLiteral) {
-                    if ($updateLiteral !== $literal && !isset($lockMeansUpdateMap[$updateLiteral])) {
-                        $lockMeansUpdateMap[$updateLiteral] = $package;
-                    }
+            foreach ($literals as $updateLiteral) {
+                if (!isset($lockMeansUpdateMap[$updateLiteral])) {
+                    $lockMeansUpdateMap[$updateLiteral] = $package;
                 }
             }
         }

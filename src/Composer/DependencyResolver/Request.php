@@ -85,18 +85,20 @@ class Request
         return isset($this->fixedPackages[spl_object_hash($package)]);
     }
 
-    public function getPresentMap()
+    // TODO look into removing the packageIds option, the only place true is used is for the installed map in the solver problems
+    // some locked packages may not be in the pool so they have a package->id of -1
+    public function getPresentMap($packageIds = false)
     {
         $presentMap = array();
 
         if ($this->lockedRepository) {
             foreach ($this->lockedRepository->getPackages() as $package) {
-                $presentMap[$package->id] = $package;
+                $presentMap[$packageIds ? $package->id : spl_object_hash($package)] = $package;
             }
         }
 
         foreach ($this->fixedPackages as $package) {
-            $presentMap[$package->id] = $package;
+            $presentMap[$packageIds ? $package->id : spl_object_hash($package)] = $package;
         }
 
         return $presentMap;
@@ -113,7 +115,8 @@ class Request
         return $unlockableMap;
     }
 
-    public function getLockMap()
+    public function getLockedRepository()
     {
+        return $this->lockedRepository;
     }
 }

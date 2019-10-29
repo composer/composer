@@ -59,6 +59,7 @@ class PoolBuilder
             // TODO can actually use very specific constraint
             $loadNames[$package->getName()] = null;
         }
+
         foreach ($request->getJobs() as $job) {
             switch ($job['cmd']) {
                 case 'install':
@@ -67,8 +68,21 @@ class PoolBuilder
                     // also see the solver-problems.test test case
                     $constraint = array_key_exists($job['packageName'], $loadNames) ? null : $job['constraint'];
                     $loadNames[$job['packageName']] = $constraint;
-                    $this->nameConstraints[$job['packageName']] = $constraint ? new MultiConstraint(array($job['constraint']), false) : null;
+                    $this->nameConstraints[$job['packageName']] = $constraint ? new MultiConstraint(array($constraint), false) : null;
                     break;
+            }
+        }
+
+        // packages from the locked repository only get loaded if they are explicitly fixed
+        foreach ($repositories as $key => $repository) {
+            if ($repository === $request->getLockedRepository()) {
+                foreach ($repository->getPackages() as $lockedPackage) {
+                    foreach ($request->getFixedPackages() as $package) {
+                        if ($package === $lockedPackage) {
+                            $loadNames += $this->loadPackage($request, $package, $key);
+                        }
+                    }
+                }
             }
         }
 
@@ -86,7 +100,7 @@ class PoolBuilder
 
             $newLoadNames = array();
             foreach ($repositories as $key => $repository) {
-                if ($repository instanceof PlatformRepository || $repository instanceof InstalledRepositoryInterface) {
+                if ($repository instanceof PlatformRepository || $repository instanceof InstalledRepositoryInterface || $repository === $request->getLockedRepository()) {
                     continue;
                 }
 

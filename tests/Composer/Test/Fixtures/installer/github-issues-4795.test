@@ -52,8 +52,10 @@ update b/b --with-dependencies
 <warning>Dependency "a/a" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>
 Loading composer repositories with package information
 Updating dependencies
-Nothing to install or update
+Nothing to modify in lock file
 Writing lock file
+Installing dependencies from lock file (including require-dev)
+Nothing to install, update or remove
 Generating autoload files
 
 --EXPECT--

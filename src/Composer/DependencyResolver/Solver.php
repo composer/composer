@@ -218,7 +218,7 @@ class Solver
         $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
         if ($this->problems) {
-            throw new SolverProblemsException($this->problems, $request->getPresentMap(), $this->learnedPool);
+            throw new SolverProblemsException($this->problems, $request->getPresentMap(true), $this->learnedPool);
         }
 
         return new LockTransaction($this->policy, $this->pool, $request->getPresentMap(), $request->getUnlockableMap(), $this->decisions);
