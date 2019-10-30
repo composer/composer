@@ -19,6 +19,22 @@ use Composer\Package\Version\VersionParser;
 
 class PathRepositoryTest extends TestCase
 {
+
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testLoadPackageFromFileSystemWithIncorrectPath()
+    {
+        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
+            ->getMock();
+
+        $config = new \Composer\Config();
+
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'missing'));
+        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
+        $repository->getPackages();
+    }
+
     public function testLoadPackageFromFileSystemWithVersion()
     {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')

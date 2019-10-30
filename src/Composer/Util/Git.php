@@ -193,7 +193,7 @@ class Git
                         }
                     }
 
-                    $this->io->writeError('    Authentication required (<info>' . parse_url($url, PHP_URL_HOST) . '</info>):');
+                    $this->io->writeError('    Authentication required (<info>' . $match[2] . '</info>):');
                     $auth = array(
                         'username' => $this->io->ask('      Username: ', $defaultUsername),
                         'password' => $this->io->askAndHideAnswer('      Password: '),

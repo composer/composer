@@ -125,7 +125,13 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
     {
         parent::initialize();
 
-        foreach ($this->getUrlMatches() as $url) {
+        $urlMatches = $this->getUrlMatches();
+
+        if (empty($urlMatches)) {
+            throw new \RuntimeException('The `url` supplied for the path (' . $this->url . ') repository does not exist');
+        }
+
+        foreach ($urlMatches as $url) {
             $path = realpath($url) . DIRECTORY_SEPARATOR;
             $composerFilePath = $path.'composer.json';
 
@@ -155,7 +161,11 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
             if (!isset($package['version'])) {
                 $versionData = $this->versionGuesser->guessVersion($package, $path);
-                $package['version'] = $versionData['pretty_version'] ?: 'dev-master';
+                if (is_array($versionData) && $versionData['pretty_version']) {
+                    $package['version'] = $versionData['pretty_version'];
+                } else {
+                    $package['version'] = 'dev-master';
+                }
             }
 
             $output = '';

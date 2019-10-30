@@ -93,7 +93,7 @@ EOT
                 continue;
             }
             foreach ($package['suggest'] as $suggestion => $reason) {
-                if (false === strpos('/', $suggestion) && null !== $platform->findPackage($suggestion, '*')) {
+                if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $suggestion) && null !== $platform->findPackage($suggestion, '*')) {
                     continue;
                 }
                 if (!isset($installed[$suggestion])) {
@@ -121,7 +121,7 @@ EOT
                 $io->write(sprintf('<info>%s</info>', $suggestion));
             }
 
-            return null;
+            return 0;
         }
 
         // Grouped by package
@@ -151,5 +151,7 @@ EOT
                 $io->write('');
             }
         }
+
+        return 0;
     }
 }

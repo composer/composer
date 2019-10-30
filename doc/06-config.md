@@ -296,4 +296,9 @@ Example:
 Defaults to `true`. If set to `false`, Composer will not create `.htaccess` files
 in the composer home, cache, and data directories.
 
+## lock
+
+Defaults to `true`. If set to `false`, Composer will not create a `composer.lock` 
+file.
+
 &larr; [Repositories](05-repositories.md)  |  [Community](07-community.md) &rarr;
