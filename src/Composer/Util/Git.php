@@ -240,7 +240,9 @@ class Git
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             try {
                 $commandCallable = function ($url) {
-                    return sprintf('git remote set-url origin %s && git remote update --prune origin', ProcessExecutor::escape($url));
+                    $sanitizedUrl = preg_replace('{://([^@]+?):(.+?)@}', '://', $url);
+
+                    return sprintf('git remote set-url origin %s && git remote update --prune origin && git remote set-url origin %s', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
                 };
                 $this->runCommand($commandCallable, $url, $dir);
             } catch (\Exception $e) {
@@ -264,15 +266,26 @@ class Git
 
     public function fetchRefOrSyncMirror($url, $dir, $ref)
     {
+        if ($this->checkRefIsInMirror($url, $dir, $ref)) {
+            return true;
+        }
+
+        if ($this->syncMirror($url, $dir)) {
+            return $this->checkRefIsInMirror($url, $dir, $ref);
+        }
+
+        return false;
+    }
+
+    private function checkRefIsInMirror($url, $dir, $ref)
+    {
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             $escapedRef = ProcessExecutor::escape($ref.'^{commit}');
-            $exitCode = $this->process->execute(sprintf('git rev-parse --quiet --verify %s', $escapedRef), $output, $dir);
+            $exitCode = $this->process->execute(sprintf('git rev-parse --quiet --verify %s', $escapedRef), $ignoredOutput, $dir);
             if ($exitCode === 0) {
                 return true;
             }
         }
-
-        $this->syncMirror($url, $dir);
 
         return false;
     }
