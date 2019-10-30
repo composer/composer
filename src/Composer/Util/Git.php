@@ -153,7 +153,14 @@ class Git
                         return;
                     }
                 }
-            } elseif (preg_match('{^(https?)://' . self::getGitLabDomainsRegex($this->config) . '/(.*)}', $url, $match)) {
+            } elseif (
+                preg_match('{^(git)@' . self::getGitLabDomainsRegex($this->config) . ':(.+?)\.git$}i', $url, $match)
+                || preg_match('{^(https?)://' . self::getGitLabDomainsRegex($this->config) . '/(.*)}', $url, $match)
+            ) {
+                if ($match[1] === 'git') {
+                    $match[1] = 'https';
+                }
+
                 if (!$this->io->hasAuthentication($match[2])) {
                     $gitLabUtil = new GitLab($this->io, $this->config, $this->process);
                     $message = 'Cloning failed, enter your GitLab credentials to access private repos';
@@ -165,11 +172,12 @@ class Git
 
                 if ($this->io->hasAuthentication($match[2])) {
                     $auth = $this->io->getAuthentication($match[2]);
-                    if($auth['password'] === 'private-token' || $auth['password'] === 'oauth2') {
+                    if ($auth['password'] === 'private-token' || $auth['password'] === 'oauth2' || $auth['password'] === 'gitlab-ci-token') {
                         $authUrl = $match[1] . '://' . rawurlencode($auth['password']) . ':' . rawurlencode($auth['username']) . '@' . $match[2] . '/' . $match[3]; // swap username and password
                     } else {
                         $authUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . '/' . $match[3];
                     }
+
                     $command = call_user_func($commandCallable, $authUrl);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;

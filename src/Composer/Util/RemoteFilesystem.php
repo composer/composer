@@ -689,7 +689,7 @@ class RemoteFilesystem
             $message = "\n".'Could not fetch '.$this->fileUrl.', enter your ' . $this->originUrl . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
 
-            if ($this->io->hasAuthentication($this->originUrl) && ($auth = $this->io->getAuthentication($this->originUrl)) && $auth['password'] === 'private-token') {
+            if ($this->io->hasAuthentication($this->originUrl) && ($auth = $this->io->getAuthentication($this->originUrl)) && in_array($auth['password'], array('gitlab-ci-token', 'private-token'), true)) {
                 throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
             }
 
@@ -820,7 +820,7 @@ class RemoteFilesystem
             } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
-                } elseif ($auth['password'] === 'private-token') {
+                } elseif ($auth['password'] === 'private-token' || $auth['password'] === 'gitlab-ci-token') {
                     $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
                 }
             } elseif ('bitbucket.org' === $originUrl
