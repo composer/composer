@@ -54,9 +54,9 @@ class Git
         }
 
         if (!$initialClone) {
-            // capture username/password from URL if there is one
+            // capture username/password from URL if there is one and we have no auth configured yet
             $this->process->execute('git remote -v', $output, $cwd);
-            if (preg_match('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)}im', $output, $match)) {
+            if (preg_match('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)}im', $output, $match) && !$this->io->hasAuthentication($match[3])) {
                 $this->io->setAuthentication($match[3], rawurldecode($match[1]), rawurldecode($match[2]));
             }
         }
@@ -95,8 +95,10 @@ class Git
 
         $auth = null;
         if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
-            // private github repository without git access, try https with auth
-            if (preg_match('{^git@' . self::getGitHubDomainsRegex($this->config) . ':(.+?)\.git$}i', $url, $match)) {
+            // private github repository without ssh key access, try https with auth
+            if (preg_match('{^git@' . self::getGitHubDomainsRegex($this->config) . ':(.+?)\.git$}i', $url, $match)
+                || preg_match('{^(https?)://' . self::getGitHubDomainsRegex($this->config) . '/(.*)}', $url, $match)
+            ) {
                 if (!$this->io->hasAuthentication($match[1])) {
                     $gitHubUtil = new GitHub($this->io, $this->config, $this->process);
                     $message = 'Cloning failed using an ssh key for authentication, enter your GitHub credentials to access private repos';
@@ -153,7 +155,14 @@ class Git
                         return;
                     }
                 }
-            } elseif (preg_match('{^(https?)://' . self::getGitLabDomainsRegex($this->config) . '/(.*)}', $url, $match)) {
+            } elseif (
+                preg_match('{^(git)@' . self::getGitLabDomainsRegex($this->config) . ':(.+?)\.git$}i', $url, $match)
+                || preg_match('{^(https?)://' . self::getGitLabDomainsRegex($this->config) . '/(.*)}', $url, $match)
+            ) {
+                if ($match[1] === 'git') {
+                    $match[1] = 'https';
+                }
+
                 if (!$this->io->hasAuthentication($match[2])) {
                     $gitLabUtil = new GitLab($this->io, $this->config, $this->process);
                     $message = 'Cloning failed, enter your GitLab credentials to access private repos';
@@ -165,17 +174,18 @@ class Git
 
                 if ($this->io->hasAuthentication($match[2])) {
                     $auth = $this->io->getAuthentication($match[2]);
-                    if($auth['password'] === 'private-token' || $auth['password'] === 'oauth2') {
+                    if ($auth['password'] === 'private-token' || $auth['password'] === 'oauth2' || $auth['password'] === 'gitlab-ci-token') {
                         $authUrl = $match[1] . '://' . rawurlencode($auth['password']) . ':' . rawurlencode($auth['username']) . '@' . $match[2] . '/' . $match[3]; // swap username and password
                     } else {
                         $authUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . '/' . $match[3];
                     }
+
                     $command = call_user_func($commandCallable, $authUrl);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
                     }
                 }
-            } elseif ($this->isAuthenticationFailure($url, $match)) { // private non-github repo that failed to authenticate
+            } elseif ($this->isAuthenticationFailure($url, $match)) { // private non-github/gitlab/bitbucket repo that failed to authenticate
                 if (strpos($match[2], '@')) {
                     list($authParts, $match[2]) = explode('@', $match[2], 2);
                 }
@@ -215,10 +225,12 @@ class Git
                 }
             }
 
+            $errorMsg = $this->process->getErrorOutput();
             if ($initialClone) {
                 $this->filesystem->removeDirectory($origCwd);
             }
-            $this->throwException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput(), $url);
+
+            $this->throwException('Failed to execute ' . $command . "\n\n" . $errorMsg, $url);
         }
     }
 
@@ -228,7 +240,9 @@ class Git
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             try {
                 $commandCallable = function ($url) {
-                    return sprintf('git remote set-url origin %s && git remote update --prune origin', ProcessExecutor::escape($url));
+                    $sanitizedUrl = preg_replace('{://([^@]+?):(.+?)@}', '://', $url);
+
+                    return sprintf('git remote set-url origin %s && git remote update --prune origin && git remote set-url origin %s', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
                 };
                 $this->runCommand($commandCallable, $url, $dir);
             } catch (\Exception $e) {
@@ -252,15 +266,26 @@ class Git
 
     public function fetchRefOrSyncMirror($url, $dir, $ref)
     {
+        if ($this->checkRefIsInMirror($url, $dir, $ref)) {
+            return true;
+        }
+
+        if ($this->syncMirror($url, $dir)) {
+            return $this->checkRefIsInMirror($url, $dir, $ref);
+        }
+
+        return false;
+    }
+
+    private function checkRefIsInMirror($url, $dir, $ref)
+    {
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             $escapedRef = ProcessExecutor::escape($ref.'^{commit}');
-            $exitCode = $this->process->execute(sprintf('git rev-parse --quiet --verify %s', $escapedRef), $output, $dir);
+            $exitCode = $this->process->execute(sprintf('git rev-parse --quiet --verify %s', $escapedRef), $ignoredOutput, $dir);
             if ($exitCode === 0) {
                 return true;
             }
         }
-
-        $this->syncMirror($url, $dir);
 
         return false;
     }
