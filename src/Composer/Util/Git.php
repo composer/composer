@@ -215,10 +215,12 @@ class Git
                 }
             }
 
+            $errorMsg = $this->process->getErrorOutput();
             if ($initialClone) {
                 $this->filesystem->removeDirectory($origCwd);
             }
-            $this->throwException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput(), $url);
+
+            $this->throwException('Failed to execute ' . $command . "\n\n" . $errorMsg, $url);
         }
     }
 
