@@ -1,3 +1,4 @@
+"apcu-autoloader": true
 <!--
     tagline: How to reduce the performance impact of the autoloader
 -->
