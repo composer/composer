@@ -1,3 +1,11 @@
+{ekkarat.w@gmail.com
+    "name": "your-vendor-name/package-name",
+    "description": "A short description of what your package does",
+    "require": {
+        "php": "^7.2",
+        "another-vendor/package": "1.*"
+    }
+}
 <?php
 
 $header = <<<EOF
