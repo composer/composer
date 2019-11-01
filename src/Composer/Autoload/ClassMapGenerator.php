@@ -110,7 +110,8 @@ class ClassMapGenerator
 
             foreach ($classes as $class) {
                 // skip classes not within the given namespace prefix
-                if (null === $autoloadType && null !== $namespace && 0 !== strpos($class, $namespace)) {
+                // TODO enable in Composer v1.11 or 2.0 whichever comes first
+                if (/* null === $autoloadType && */ null !== $namespace && 0 !== strpos($class, $namespace)) {
                     continue;
                 }
 
