@@ -189,7 +189,7 @@ class ClassMapGenerator
             //return array();
         }
 
-        // TODO enable in Composer v1.11 or 2.0 whichever comes first
+        // TODO enable in Composer v1.11 or 2.0 whichever comes first & unskip test in AutoloadGeneratorTest::testPSRToClassMapIgnoresNonPSRClasses
         //return $validClasses;
         return $classes;
     }
