@@ -568,8 +568,22 @@ class AutoloadGeneratorTest extends TestCase
         file_put_contents($this->workingDir.'/psr4/match.php', '<?php namespace psr4; class match {}');
         file_put_contents($this->workingDir.'/psr4/badfile.php', '<?php namespace psr4; class badclass {}');
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
+        set_error_handler(function ($errno, $errstr) {
+            if ($errno !== E_USER_DEPRECATED || !preg_match('{^Class (psr4\\\\badclass|psr0_badclass) located in .+? does not comply with psr-[04] autoloading standard}', $errstr)) {
+                throw new \UnexpectedValueException('Unexpected error: '.$errstr);
+            }
+        });
+
+        try {
+            $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
+        } catch (\Exception $e) {
+            restore_error_handler();
+            throw $e;
+        }
+        restore_error_handler();
+
         $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated.");
+
         $expectedClassmap = <<<EOF
 <?php
 
@@ -579,7 +593,9 @@ class AutoloadGeneratorTest extends TestCase
 \$baseDir = dirname(\$vendorDir);
 
 return array(
+    'psr0_badclass' => \$baseDir . '/psr0/psr0/badfile.php',
     'psr0_match' => \$baseDir . '/psr0/psr0/match.php',
+    'psr4\\\\badclass' => \$baseDir . '/psr4/badfile.php',
     'psr4\\\\match' => \$baseDir . '/psr4/match.php',
 );
 
