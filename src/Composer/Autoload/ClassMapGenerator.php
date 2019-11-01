@@ -143,6 +143,10 @@ class ClassMapGenerator
     {
         $validClasses = array();
         $rejectedClasses = array();
+
+        $realSubPath = substr($filePath, strlen($basePath) + 1);
+        $realSubPath = substr($realSubPath, 0, strrpos($realSubPath, '.'));
+
         foreach ($classes as $class) {
             // silently skip if ns doesn't have common root
             if ('' !== $baseNamespace && 0 !== strpos($class, $baseNamespace)) {
@@ -166,8 +170,6 @@ class ClassMapGenerator
             } else {
                 throw new \RuntimeException("namespaceType must be psr-0 or psr-4, $namespaceType given");
             }
-            $realSubPath = substr($filePath, strlen($basePath) + 1);
-            $realSubPath = substr($realSubPath, 0, strrpos($realSubPath, '.'));
             if ($subPath === $realSubPath) {
                 $validClasses[] = $class;
             } else {
@@ -175,16 +177,21 @@ class ClassMapGenerator
             }
         }
         // warn only if no valid classes, else silently skip invalid
-        if (!empty($validClasses)) {
-            return $validClasses;
-        }
-        if ($io) {
+        if (empty($validClasses)) {
             foreach ($rejectedClasses as $class) {
-                $io->writeError("<warning>Warning: class $class located in $filePath "
-                    . "doesn't comply with $namespaceType autoloading standard. Skipping.</warning>");
+                trigger_error(
+                    "Class $class located in ".preg_replace('{^'.preg_quote(getcwd()).'}', '.', $filePath, 1)." does not comply with $namespaceType autoloading standard. It will not autoload anymore in Composer v1.11+.",
+                    E_USER_DEPRECATED
+                );
             }
+
+            // TODO enable in Composer v1.11 or 2.0 whichever comes first
+            //return array();
         }
-        return array();
+
+        // TODO enable in Composer v1.11 or 2.0 whichever comes first
+        //return $validClasses;
+        return $classes;
     }
 
     /**
