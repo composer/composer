@@ -252,7 +252,7 @@
   * Fixed output inconsistencies
   * Fixed unicode handling in `init` command for author names
   * Fixed useless warning when doing partial updates/removes on packages that are not currently installed
-  * Fixed xdebug disabling issue when combined with disable_functions and allow_url_fopen CLI overrides
+  * Fixed Xdebug disabling issue when combined with disable_functions and allow_url_fopen CLI overrides
 
 ### [1.4.1] - 2017-03-10
 
@@ -313,7 +313,7 @@
   * Added `gitlab-token` auth config for GitLab private tokens
   * Added `--strict` to the `outdated` command to return a non-zero exit code when there are outdated packages
   * Added ability to call php scripts using the current php interpreter (instead of finding php in PATH by default) in script handlers via `@php ...`
-  * Added `COMPOSER_ALLOW_XDEBUG` env var to circumvent the xdebug-disabling behavior
+  * Added `COMPOSER_ALLOW_XDEBUG` env var to circumvent the Xdebug-disabling behavior
   * Added `COMPOSER_MIRROR_PATH_REPOS` env var to force mirroring of path repositories vs symlinking
   * Added `COMPOSER_DEV_MODE` env var that is set by Composer to forward the dev mode to script handlers
   * Fixed support for git 2.11
