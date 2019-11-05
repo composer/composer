@@ -279,6 +279,12 @@ EOT
             $packageVersion = $requirements[0]['version'];
         }
 
+        // if no directory was specified, use the 2nd part of the package name
+        if (null === $directory) {
+            $parts = explode("/", $name, 2);
+            $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
+        }
+
         $fs = new Filesystem();
         if (is_dir($directory) && !$fs->isDirEmpty($directory)) {
             throw new \InvalidArgumentException("Project directory $directory is not empty.");
@@ -323,11 +329,6 @@ EOT
             }
 
             throw new \InvalidArgumentException($errorMessage .'.');
-        }
-
-        if (null === $directory) {
-            $parts = explode("/", $name, 2);
-            $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
         // handler Ctrl+C for unix-like systems
