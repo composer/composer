@@ -285,6 +285,8 @@ EOT
             $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
+        $io->writeError('<info>Creating a "' . $packageName . '" project at "' . $directory . '"</info>');
+
         $fs = new Filesystem();
         if (file_exists($directory)) {
             if (!is_dir($directory)) {
