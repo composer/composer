@@ -279,6 +279,11 @@ EOT
             $packageVersion = $requirements[0]['version'];
         }
 
+        $fs = new Filesystem();
+        if (is_dir($directory) && !$fs->isDirEmpty($directory)) {
+            throw new \InvalidArgumentException("Project directory $directory is not empty.");
+        }
+
         if (null === $stability) {
             if (preg_match('{^[^,\s]*?@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $packageVersion, $match)) {
                 $stability = $match[1];
