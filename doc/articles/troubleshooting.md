@@ -156,10 +156,10 @@ This issue can also happen on cPanel instances, when the shell fork bomb protect
 
 ## Xdebug impact on Composer
 
-To improve performance when the xdebug extension is enabled, Composer automatically restarts PHP without it.
+To improve performance when the Xdebug extension is enabled, Composer automatically restarts PHP without it.
 You can override this behavior by using an environment variable: `COMPOSER_ALLOW_XDEBUG=1`.
 
-Composer will always show a warning if xdebug is being used, but you can override this with an environment variable:
+Composer will always show a warning if Xdebug is being used, but you can override this with an environment variable:
 `COMPOSER_DISABLE_XDEBUG_WARN=1`. If you see this warning unexpectedly, then the restart process has failed:
 please report this [issue](https://github.com/composer/composer/issues).
 
