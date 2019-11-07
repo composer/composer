@@ -149,14 +149,14 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
     "packages": [
         {
             "name": "a/a", "version": "dev-master",
-            "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/a/newa", "type": "git" },
-            "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/a/newa/zipball/2222222222222222222222222222222222222222", "type": "zip" },
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/a/newa", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/newa/zipball/1111111111111111111111111111111111111111", "type": "zip" },
             "type": "library"
         },
         {
             "name": "b/b", "version": "2.0.3",
-            "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/b/newb", "type": "git" },
-            "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/b/newb/zipball/2222222222222222222222222222222222222222", "type": "zip" },
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/b/newb", "type": "git" },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/b/newb/zipball/1111111111111111111111111111111111111111", "type": "zip" },
             "type": "library"
         },
         {
@@ -172,12 +172,6 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
             "type": "library"
         },
         {
-            "name": "e/e", "version": "dev-master",
-            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/e/newe", "type": "git" },
-            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/e/newe/zipball/1111111111111111111111111111111111111111", "type": "zip" },
-            "type": "library"
-        },
-        {
             "name": "f/f", "version": "dev-master",
             "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/f/newf", "type": "git" },
             "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/f/newf/zipball/1111111111111111111111111111111111111111", "type": "zip" },
@@ -185,8 +179,8 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
         },
         {
             "name": "g/g", "version": "dev-master",
-            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/g/newg", "type": "git" },
-            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/g/newg/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "source": { "reference": "0000000000000000000000000000000000000000", "url": "https://github.com/g/newg", "type": "git" },
+            "dist": { "reference": "0000000000000000000000000000000000000000", "url": "https://api.github.com/repos/g/newg/zipball/0000000000000000000000000000000000000000", "type": "zip" },
             "type": "library"
         }
     ],
@@ -206,8 +200,5 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
     "platform-dev": []
 }
 --RUN--
-update a/a b/b d/d g/g
+update mirrors
 --EXPECT--
-Installing e/e (dev-master 1111111)
-Updating a/a (dev-master 1111111) to a/a (dev-master 2222222)
-Updating g/g (dev-master 0000000) to g/g (dev-master 1111111)

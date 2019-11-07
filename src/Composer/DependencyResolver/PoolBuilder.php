@@ -184,7 +184,7 @@ class PoolBuilder
         if (isset($this->rootReferences[$name])) {
             // do not modify the references on already locked packages
             if (!$request->isFixedPackage($package)) {
-                $this->setReferences($package, $this->rootReferences[$name]);
+                $package->setSourceDistReferences($this->rootReferences[$name]);
             }
         }
 
@@ -224,20 +224,6 @@ class PoolBuilder
         }
 
         return $loadNames;
-    }
-
-    private function setReferences(Package $package, $reference)
-    {
-        $package->setSourceReference($reference);
-
-        // only bitbucket, github and gitlab have auto generated dist URLs that easily allow replacing the reference in the dist URL
-        // TODO generalize this a bit for self-managed/on-prem versions? Some kind of replace token in dist urls which allow this?
-        if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
-            $package->setDistReference($reference);
-            $package->setDistUrl(preg_replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|$)}i', $reference, $package->getDistUrl()));
-        } elseif ($package->getDistReference()) { // update the dist reference if there was one, but if none was provided ignore it
-            $package->setDistReference($reference);
-        }
     }
 }
 

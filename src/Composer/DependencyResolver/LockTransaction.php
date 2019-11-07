@@ -152,11 +152,19 @@ class LockTransaction
     }
 
     // TODO additionalFixedRepository needs to be looked at here as well?
-    public function getNewLockPackages($devMode)
+    public function getNewLockPackages($devMode, $updateMirrors = false)
     {
         $packages = array();
         foreach ($this->resultPackages[$devMode ? 'dev' : 'non-dev'] as $package) {
             if (!($package instanceof AliasPackage) && !($package instanceof RootAliasPackage)) {
+                // if we're just updating mirrors we need to reset references to the same as currently "present" packages' references to keep the lock file as-is
+                if ($updateMirrors && !isset($this->presentMap[spl_object_hash($package)])) {
+                    foreach ($this->presentMap as $presentPackage) {
+                        if ($package->getName() == $presentPackage->getName() && $package->getVersion() == $presentPackage->getVersion() && $presentPackage->getSourceReference()) {
+                            $package->setSourceDistReferences($presentPackage->getSourceReference());
+                        }
+                    }
+                }
                 $packages[] = $package;
             }
         }

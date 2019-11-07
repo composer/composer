@@ -269,11 +269,19 @@ class InstallerTest extends TestCase
         });
 
         $application->get('update')->setCode(function ($input, $output) use ($installer) {
+            $packages = $input->getArgument('packages');
+            $filteredPackages = array_filter($packages, function ($package) {
+                return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
+            });
+            $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
+            $packages = $filteredPackages;
+
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setUpdate(true)
                 ->setDryRun($input->getOption('dry-run'))
-                ->setUpdateWhitelist($input->getArgument('packages'))
+                ->setUpdateMirrors($updateMirrors)
+                ->setUpdateWhitelist($packages)
                 ->setWhitelistTransitiveDependencies($input->getOption('with-dependencies'))
                 ->setWhitelistAllDependencies($input->getOption('with-all-dependencies'))
                 ->setPreferStable($input->getOption('prefer-stable'))

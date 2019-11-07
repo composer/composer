@@ -42,7 +42,7 @@ Converting from one VCS type to another (including an URL change) should update 
     "platform-dev": []
 }
 --RUN--
-update
+update mirrors
 --EXPECT-LOCK--
 {
     "packages": [

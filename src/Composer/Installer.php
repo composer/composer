@@ -38,6 +38,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
+use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Package;
@@ -137,6 +138,7 @@ class Installer
      *
      * @var array|null
      */
+    protected $updateMirrors = false;
     protected $updateWhitelist = null;
     protected $whitelistTransitiveDependencies = false;
     protected $whitelistAllDependencies = false;
@@ -191,6 +193,10 @@ class Installer
         // and turning it off results in much better performance. Do not try this at home however.
         gc_collect_cycles();
         gc_disable();
+
+        if ($this->updateWhitelist && $this->updateMirrors) {
+            throw new \RuntimeException("The installer options updateMirrors and updateWhitelist are mutually exclusive.");
+        }
 
         // Force update if there is no lock file present
         if (!$this->update && !$this->locker->isLocked()) {
@@ -370,8 +376,15 @@ class Installer
 
         $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
 
-        foreach ($links as $link) {
-            $request->install($link->getTarget(), $link->getConstraint());
+        // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
+        if ($this->updateMirrors) {
+            foreach ($lockedRepository->getPackages() as $lockedPackage) {
+                $request->install($lockedPackage->getName(), new Constraint('==', $lockedPackage->getVersion()));
+            }
+        } else {
+            foreach ($links as $link) {
+                $request->install($link->getTarget(), $link->getConstraint());
+            }
         }
 
         // if the updateWhitelist is enabled, packages not in it are also fixed
@@ -489,8 +502,8 @@ class Installer
         }
 
         $updatedLock = $this->locker->setLockData(
-            $lockTransaction->getNewLockPackages(false),
-            $lockTransaction->getNewLockPackages(true),
+            $lockTransaction->getNewLockPackages(false, $this->updateMirrors),
+            $lockTransaction->getNewLockPackages(true, $this->updateMirrors),
             $platformReqs,
             $platformDevReqs,
             $aliases,
@@ -912,23 +925,6 @@ class Installer
         return $normalizedAliases;
     }
 
-    // TODO do we still need this function?
-    private function updateInstallReferences(PackageInterface $package, $reference)
-    {
-        if (!$reference) {
-            return;
-        }
-
-        $package->setSourceReference($reference);
-
-        if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
-            $package->setDistReference($reference);
-            $package->setDistUrl(preg_replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|$)}i', $reference, $package->getDistUrl()));
-        } elseif ($package->getDistReference()) { // update the dist reference if there was one, but if none was provided ignore it
-            $package->setDistReference($reference);
-        }
-    }
-
     /**
      * @param PlatformRepository $platformRepo
      * @param array              $aliases
@@ -1044,7 +1040,7 @@ class Installer
                 $depPackages = array_merge($depPackages, call_user_func_array('array_merge', $matchesByPattern));
             }
 
-            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock', 'mirrors'))) {
+            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage) {
                 $this->io->writeError('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 
@@ -1343,6 +1339,19 @@ class Installer
     public function setIgnorePlatformRequirements($ignorePlatformReqs = false)
     {
         $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;
+
+        return $this;
+    }
+
+    /**
+     * Update the lock file to the exact same versions and references but use current remote metadata like URLs and mirror info
+     *
+     * @param  bool $updateMirrors
+     * @return Installer
+     */
+    public function setUpdateMirrors($updateMirrors)
+    {
+        $this->updateMirrors = $updateMirrors;
 
         return $this;
     }

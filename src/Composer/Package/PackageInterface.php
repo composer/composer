@@ -386,4 +386,13 @@ interface PackageInterface
      * @return void
      */
     public function setDistReference($reference);
+
+    /**
+     * Set dist and source references and update dist URL for ones that contain a reference
+     *
+     * @param string $reference
+     *
+     * @return void
+     */
+    public function setSourceDistReferences($reference);
 }
