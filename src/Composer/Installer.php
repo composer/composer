@@ -709,12 +709,9 @@ class Installer
 
             // TODO should we warn people / error if plugins in vendor folder do not match contents of lock file before update?
             //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request, $lockTransaction);
-        } else {
-            // need to still create the pool to reconstruct aliases
         }
 
         // TODO in how far do we need to do anything here to ensure dev packages being updated to latest in lock without version change are treated correctly?
-
         $localRepoTransaction = new LocalRepoTransaction($lockedRepository, $localRepo);
 
         if (!$localRepoTransaction->getOperations()) {
