@@ -538,7 +538,7 @@ EOT
         $constraint = is_string($version) ? $this->versionParser->parseConstraints($version) : $version;
 
         $policy = new DefaultPolicy();
-        $repositorySet = new RepositorySet(array(), 'dev');
+        $repositorySet = new RepositorySet(array(), array(), 'dev');
         $repositorySet->addRepository($repos);
 
         $matchedPackage = null;
@@ -1002,7 +1002,7 @@ EOT
     private function getRepositorySet(Composer $composer)
     {
         if (!$this->repositorySet) {
-            $this->repositorySet = new RepositorySet(array(), $composer->getPackage()->getMinimumStability(), $composer->getPackage()->getStabilityFlags());
+            $this->repositorySet = new RepositorySet(array(), array(), $composer->getPackage()->getMinimumStability(), $composer->getPackage()->getStabilityFlags());
             $this->repositorySet->addRepository(new CompositeRepository($composer->getRepositoryManager()->getRepositories()));
         }
 
