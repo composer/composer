@@ -262,7 +262,7 @@ class RuleSetGenerator
 
         foreach ($request->getFixedPackages() as $package) {
             if ($package->id == -1) {
-                throw new \RuntimeException("Fixed package ".$package->getName()." was not added to solver pool.");
+                throw new \RuntimeException("Fixed package ".$package->getName()." ".$package->getVersion().($package instanceof AliasPackage ? " (alias)" : "")." was not added to solver pool.");
             }
 
             $this->addRulesForPackage($package, $ignorePlatformReqs);

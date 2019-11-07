@@ -31,6 +31,6 @@ Installing double aliased package
 install
 --EXPECT--
 Installing b/b (dev-foo)
-Marking b/b (1.0.x-dev) as installed, alias of b/b (dev-foo)
 Marking b/b (dev-master) as installed, alias of b/b (dev-foo)
+Marking b/b (1.0.x-dev) as installed, alias of b/b (dev-foo)
 Installing a/a (dev-master)

@@ -176,6 +176,11 @@ class Locker
                 $package = $this->loader->load($info);
                 $packages->addPackage($package);
                 $packageByName[$package->getName()] = $package;
+
+                if ($package instanceof AliasPackage) {
+                    $packages->addPackage($package->getAliasOf());
+                    $packageByName[$package->getAliasOf()->getName()] = $package->getAliasOf();
+                }
             }
 
             if (isset($lockData['aliases'])) {
