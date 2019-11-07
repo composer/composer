@@ -125,7 +125,7 @@ class InstallerTest extends TestCase
     {
         $dumper = new ArrayDumper();
 
-        $comparable = [];
+        $comparable = array();
         foreach ($packages as $package) {
             $comparable[] = $dumper->dump($package);
         }
