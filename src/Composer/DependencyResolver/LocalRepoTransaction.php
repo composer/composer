@@ -33,6 +33,9 @@ class LocalRepoTransaction
     /** @var RepositoryInterface */
     protected $localRepository;
 
+    /** @var array */
+    protected $operations;
+
     /**
      * Reassigns ids for all packages in the lockedrepository
      */
