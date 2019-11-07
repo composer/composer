@@ -40,10 +40,13 @@ class LockTransaction
      * @var array
      */
     protected $unlockableMap;
-
     protected $decisions;
-
     protected $resultPackages;
+
+    /**
+     * @var array
+     */
+    protected $operations;
 
     public function __construct($policy, $pool, $presentMap, $unlockableMap, $decisions)
     {
