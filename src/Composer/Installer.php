@@ -367,6 +367,8 @@ class Installer
                 if (!$repositorySet->isPackageAcceptable($lockedPackage->getNames(), $lockedPackage->getStability())) {
                     $constraint = new Constraint('=', $lockedPackage->getVersion());
                     $constraint->setPrettyString('(stability not acceptable)');
+
+                    // if we can get rid of this remove() here, we can generally get rid of remove support in the request
                     $request->remove($lockedPackage->getName(), $constraint);
                 }
             }
