@@ -12,14 +12,10 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
-use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\Package\AliasPackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
-use Composer\Repository\RepositoryInterface;
-use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -298,7 +294,7 @@ class Transaction
     {
         $uninstOps = array();
         foreach ($operations as $idx => $op) {
-            if ($op instanceof UninstallOperation) {
+            if ($op instanceof Operation\UninstallOperation) {
                 $uninstOps[] = $op;
                 unset($operations[$idx]);
             }
