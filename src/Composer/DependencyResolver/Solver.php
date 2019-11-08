@@ -221,7 +221,7 @@ class Solver
             throw new SolverProblemsException($this->problems, $request->getPresentMap(true), $this->learnedPool);
         }
 
-        return new LockTransaction($this->policy, $this->pool, $request->getPresentMap(), $request->getUnlockableMap(), $this->decisions);
+        return new LockTransaction($this->pool, $request->getPresentMap(), $request->getUnlockableMap(), $this->decisions);
     }
 
     /**

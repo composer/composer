@@ -168,9 +168,9 @@ class SolverTest extends TestCase
         $this->request->install('C');
 
         $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageA),
             array('job' => 'install', 'package' => $packageC),
             array('job' => 'install', 'package' => $packageB),
-            array('job' => 'install', 'package' => $packageA),
         ));
     }
 
@@ -339,13 +339,13 @@ class SolverTest extends TestCase
 
         $this->checkSolverResult(array(
             array(
+                'job' => 'remove',
+                'package' => $packageB,
+            ),
+            array(
                 'job' => 'update',
                 'from' => $packageA,
                 'to' => $newPackageA,
-            ),
-            array(
-                'job' => 'remove',
-                'package' => $packageB,
             ),
         ));
     }
@@ -369,10 +369,10 @@ class SolverTest extends TestCase
         $this->request->remove('D');
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageB),
-            array('job' => 'update',  'from' => $oldPackageC, 'to' => $packageC),
-            array('job' => 'install', 'package' => $packageA),
             array('job' => 'remove',  'package' => $packageD),
+            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'install', 'package' => $packageA),
+            array('job' => 'update',  'from' => $oldPackageC, 'to' => $packageC),
         ));
     }
 
@@ -406,7 +406,8 @@ class SolverTest extends TestCase
         $this->request->install('B');
 
         $this->checkSolverResult(array(
-            array('job' => 'update', 'from' => $packageA, 'to' => $packageB),
+            array('job' => 'remove', 'package' => $packageA),
+            array('job' => 'install', 'package' => $packageB),
         ));
     }
 
@@ -526,8 +527,8 @@ class SolverTest extends TestCase
         $this->request->install('X');
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageA),
             array('job' => 'install', 'package' => $newPackageB),
+            array('job' => 'install', 'package' => $packageA),
             array('job' => 'install', 'package' => $packageX),
         ));
     }
@@ -571,8 +572,8 @@ class SolverTest extends TestCase
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageB),
-            array('job' => 'install', 'package' => $packageC),
             array('job' => 'install', 'package' => $packageA),
+            array('job' => 'install', 'package' => $packageC),
         ));
     }
 
@@ -829,9 +830,9 @@ class SolverTest extends TestCase
         $this->request->install('B');
 
         $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageA),
             array('job' => 'install', 'package' => $packageAAlias),
             array('job' => 'install', 'package' => $packageB),
-            array('job' => 'install', 'package' => $packageA),
         ));
     }
 
@@ -894,12 +895,12 @@ class SolverTest extends TestCase
         $this->assertFalse($this->solver->testFlagLearnedPositiveLiteral);
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageC2),
-            array('job' => 'install', 'package' => $packageG2),
             array('job' => 'install', 'package' => $packageF1),
+            array('job' => 'install', 'package' => $packageD),
+            array('job' => 'install', 'package' => $packageG2),
+            array('job' => 'install', 'package' => $packageC2),
             array('job' => 'install', 'package' => $packageE),
             array('job' => 'install', 'package' => $packageB),
-            array('job' => 'install', 'package' => $packageD),
             array('job' => 'install', 'package' => $packageA),
         ));
 

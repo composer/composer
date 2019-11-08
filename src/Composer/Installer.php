@@ -486,23 +486,6 @@ class Installer
             if (false === strpos($operation->getJobType(), 'Alias') || $this->io->isDebug()) {
                 $this->io->writeError('  - ' . $operation);
             }
-
-            // output reasons why the operation was run, only for install/update operations
-            if ($this->verbose && $this->io->isVeryVerbose() && in_array($jobType, array('install', 'update'))) {
-                $reason = $operation->getReason();
-                if ($reason instanceof Rule) {
-                    switch ($reason->getReason()) {
-                        case Rule::RULE_JOB_INSTALL:
-                            $this->io->writeError('    REASON: Required by the root package: '.$reason->getPrettyString($pool));
-                            $this->io->writeError('');
-                            break;
-                        case Rule::RULE_PACKAGE_REQUIRES:
-                            $this->io->writeError('    REASON: '.$reason->getPrettyString($pool));
-                            $this->io->writeError('');
-                            break;
-                    }
-                }
-            }
         }
 
         $updatedLock = $this->locker->setLockData(

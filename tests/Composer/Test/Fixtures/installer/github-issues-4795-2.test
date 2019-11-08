@@ -55,8 +55,8 @@ update a/a b/b --with-dependencies
 Loading composer repositories with package information
 Updating dependencies
 Lock file operations: 0 installs, 2 updates, 0 removals
-  - Updating b/b (1.0.0) to b/b (1.1.0)
   - Updating a/a (1.0.0) to a/a (1.1.0)
+  - Updating b/b (1.0.0) to b/b (1.1.0)
 Writing lock file
 Installing dependencies from lock file (including require-dev)
 Package operations: 0 installs, 2 updates, 0 removals
