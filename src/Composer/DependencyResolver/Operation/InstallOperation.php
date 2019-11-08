@@ -59,8 +59,16 @@ class InstallOperation extends SolverOperation
     /**
      * {@inheritDoc}
      */
+    public function show($lock)
+    {
+        return ($lock ? 'Locking ' : 'Installing ').$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function __toString()
     {
-        return 'Installing '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+        return $this->show(false);
     }
 }

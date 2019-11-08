@@ -72,9 +72,17 @@ class UpdateOperation extends SolverOperation
     /**
      * {@inheritDoc}
      */
-    public function __toString()
+    public function show($lock)
     {
         return 'Updating '.$this->initialPackage->getPrettyName().' ('.$this->formatVersion($this->initialPackage).') to '.
             $this->targetPackage->getPrettyName(). ' ('.$this->formatVersion($this->targetPackage).')';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function __toString()
+    {
+        return $this->show(false);
     }
 }

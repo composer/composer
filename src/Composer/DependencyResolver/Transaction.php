@@ -24,7 +24,7 @@ use Composer\Semver\Constraint\Constraint;
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
-abstract class Transaction
+class Transaction
 {
     /**
      * @var array
@@ -53,7 +53,6 @@ abstract class Transaction
         $this->presentPackages = $presentPackages;
         $this->setResultPackageMaps($resultPackages);
         $this->operations = $this->calculateOperations();
-
     }
 
     public function getOperations()

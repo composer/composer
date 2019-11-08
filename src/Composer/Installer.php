@@ -484,7 +484,7 @@ class Installer
 
             // output op, but alias op only in debug verbosity
             if (false === strpos($operation->getJobType(), 'Alias') || $this->io->isDebug()) {
-                $this->io->writeError('  - ' . $operation);
+                $this->io->writeError('  - ' . $operation->show(true));
             }
         }
 
@@ -673,7 +673,7 @@ class Installer
 
             // output op, but alias op only in debug verbosity
             if ((!$this->executeOperations && false === strpos($operation->getJobType(), 'Alias')) || $this->io->isDebug()) {
-                $this->io->writeError('  - ' . $operation);
+                $this->io->writeError('  - ' . $operation->show(false));
             }
 
             $this->installationManager->execute($localRepo, $operation);
