@@ -339,6 +339,9 @@ One limitation of this is that you can not call multiple commands in
 a row like `@php install && @php foo`. You must split them up in a
 JSON array of commands.
 
+You can also call a shell/bash script, which will have the path to
+the PHP executable available in it as a `PHP_BINARY` env var.
+
 ## Custom descriptions.
 
 You can set custom script descriptions with the following in your `composer.json`:

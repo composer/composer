@@ -1,3 +1,28 @@
+### [1.9.1] 2019-11-01
+
+  * Fixed various credential handling issues with gitlab and github
+  * Fixed credentials being present in git remotes in Composer cache and vendor directory when not using SSH keys
+  * Fixed `composer why` not listing replacers as a reason something is present
+  * Fixed various PHP 7.4 compatibility issues
+  * Fixed root warnings always present in Docker containers, setting COMPOSER_ALLOW_SUPERUSER is not necessary anymore
+  * Fixed GitHub access tokens leaking into debug-verbosity output
+  * Fixed several edge case issues detecting GitHub, Bitbucket and GitLab repository types
+  * Fixed Composer asking if you want to use a composer.json in a parent directory when ran in non-interactive mode
+  * Fixed classmap autoloading issue finding classes located within a few non-PHP context blocks (?>...<?php)
+
+### [1.9.0] 2019-08-02
+
+  * Breaking: artifact repositories with URLs containing port numbers and requiring authentication now require you to configure http-basic auth for the `host:port` pair explicitly
+  * Added a `--no-cache` flag available on all commands to run with the cache disabled
+  * Added PHP_BINARY as env var pointing to the PHP process when executing Composer scripts as shell scripts
+  * Added a `use-github-api` config option which can set the `no-api` flag on all GitHub VCS repositories declared
+  * Added a static helper you can preprend to a script to avoid process timeouts, `"Composer\\Config::disableProcessTimeout"`
+  * Added Event::getOriginatingEvent to retrieve an event's original event when a script handler forwards to another one
+  * Added support for autoloading directly from a phar file
+  * Fixed loading order of plugins to always initialize them in order of dependencies
+  * Fixed various network-mount related issues
+  * Fixed --ignore-platform-reqs not ignoring conflict rules against platform packages
+
 ### [1.8.6] 2019-06-11
 
   * Fixed handling of backslash-escapes handling in composer.json when using the require command
@@ -751,6 +776,8 @@
 
   * Initial release
 
+[1.9.1]: https://github.com/composer/composer/compare/1.9.0...1.9.1
+[1.9.0]: https://github.com/composer/composer/compare/1.8.6...1.9.0
 [1.8.6]: https://github.com/composer/composer/compare/1.8.5...1.8.6
 [1.8.5]: https://github.com/composer/composer/compare/1.8.4...1.8.5
 [1.8.4]: https://github.com/composer/composer/compare/1.8.3...1.8.4

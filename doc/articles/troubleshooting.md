@@ -211,6 +211,19 @@ To enable the swap you can use for example:
 ```
 You can make a permanent swap file following this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04).
 
+## proc_open(): failed to open stream errors (Windows)
+
+If composer shows proc_open(NUL) errors on Windows:
+
+`proc_open(NUL): failed to open stream: No such file or directory`
+
+This could be happening because you are working in a _OneDrive_ directory and
+using a version of PHP that does not support the file system semantics of this
+service. The issue was fixed in PHP 7.2.23 and 7.3.10.
+
+Alternatively it could be because the Windows Null Service is not enabled. For
+more information, see this [issue](https://github.com/composer/composer/issues/7186#issuecomment-373134916).
+
 ## Degraded Mode
 
 Due to some intermittent issues on Travis and other systems, we introduced a

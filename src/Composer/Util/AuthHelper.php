@@ -23,6 +23,7 @@ class AuthHelper
 {
     protected $io;
     protected $config;
+    private $displayedOriginAuthentications = array();
 
     public function __construct(IOInterface $io, Config $config)
     {
@@ -116,7 +117,7 @@ class AuthHelper
             $message = "\n".'Could not fetch '.$url.', enter your ' . $origin . ' credentials ' .($statusCode === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
 
-            if ($this->io->hasAuthentication($origin) && ($auth = $this->io->getAuthentication($origin)) && $auth['password'] === 'private-token') {
+            if ($this->io->hasAuthentication($origin) && ($auth = $this->io->getAuthentication($origin)) && in_array($auth['password'], array('gitlab-ci-token', 'private-token'), true)) {
                 throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
             }
 
@@ -172,7 +173,7 @@ class AuthHelper
                 throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
             }
 
-            $this->io->writeError('    Authentication required (<info>'.parse_url($url, PHP_URL_HOST).'</info>):');
+            $this->io->writeError('    Authentication required (<info>'.$origin.'</info>):');
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');
             $this->io->setAuthentication($origin, $username, $password);
@@ -193,14 +194,18 @@ class AuthHelper
     public function addAuthenticationHeader(array $headers, $origin, $url)
     {
         if ($this->io->hasAuthentication($origin)) {
+            $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($origin);
             if ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
                 $headers[] = 'Authorization: token '.$auth['username'];
+                $authenticationDisplayMessage = 'Using GitHub token authentication';
             } elseif (in_array($origin, $this->config->get('gitlab-domains'), true)) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
-                } elseif ($auth['password'] === 'private-token') {
+                    $authenticationDisplayMessage = 'Using GitLab OAuth token authentication';
+                } elseif ($auth['password'] === 'private-token' || $auth['password'] === 'gitlab-ci-token') {
                     $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
+                    $authenticationDisplayMessage = 'Using GitLab private token authentication';
                 }
             } elseif (
                 'bitbucket.org' === $origin
@@ -209,10 +214,17 @@ class AuthHelper
             ) {
                 if (!$this->isPublicBitBucketDownload($url)) {
                     $headers[] = 'Authorization: Bearer ' . $auth['password'];
+                    $authenticationDisplayMessage = 'Using Bitbucket OAuth token authentication';
                 }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
+                $authenticationDisplayMessage = 'Using HTTP basic authentication with username "' . $auth['username'] . '"';
+            }
+
+            if ($authenticationDisplayMessage && !in_array($origin, $this->displayedOriginAuthentications, true)) {
+                $this->io->writeError($authenticationDisplayMessage, true, IOInterface::DEBUG);
+                $this->displayedOriginAuthentications[] = $origin;
             }
         }
 
@@ -242,5 +254,16 @@ class AuthHelper
         $pathParts = explode('/', $path);
 
         return count($pathParts) >= 4 && $pathParts[3] == 'downloads';
+    }
+
+    /**
+     * @param string $url
+     * @return string
+     */
+    public function stripCredentialsFromUrl($url)
+    {
+        // GitHub repository rename result in redirect locations containing the access_token as GET parameter
+        // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
+        return preg_replace('{([&?]access_token=)[^&]+}', '$1***', $url);
     }
 }

@@ -256,15 +256,14 @@ EOF;
                             continue;
                         }
 
-                        $namespaceFilter = $namespace === '' ? null : $namespace;
-                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespaceFilter, $classMap);
+                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespace, $group['type'], $classMap);
                     }
                 }
             }
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, null, $classMap);
+            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, null, null, $classMap);
         }
 
         ksort($classMap);
@@ -317,9 +316,9 @@ EOF;
         return count($classMap);
     }
 
-    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, array $classMap = array())
+    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, $autoloadType = null, array $classMap = array())
     {
-        foreach ($this->generateClassMap($dir, $blacklist, $namespaceFilter) as $class => $path) {
+        foreach ($this->generateClassMap($dir, $blacklist, $namespaceFilter, $autoloadType) as $class => $path) {
             $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
             if (!isset($classMap[$class])) {
                 $classMap[$class] = $pathCode;
@@ -334,9 +333,9 @@ EOF;
         return $classMap;
     }
 
-    private function generateClassMap($dir, $blacklist = null, $namespaceFilter = null, $showAmbiguousWarning = true)
+    private function generateClassMap($dir, $blacklist = null, $namespaceFilter = null, $autoloadType = null, $showAmbiguousWarning = true)
     {
-        return ClassMapGenerator::createMap($dir, $blacklist, $showAmbiguousWarning ? $this->io : null, $namespaceFilter);
+        return ClassMapGenerator::createMap($dir, $blacklist, $showAmbiguousWarning ? $this->io : null, $namespaceFilter, $autoloadType);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
@@ -447,7 +446,7 @@ EOF;
 
             foreach ($autoloads['classmap'] as $dir) {
                 try {
-                    $loader->addClassMap($this->generateClassMap($dir, $blacklist, null, false));
+                    $loader->addClassMap($this->generateClassMap($dir, $blacklist, null, null, false));
                 } catch (\RuntimeException $e) {
                     $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
                 }
@@ -592,6 +591,9 @@ class ComposerAutoloaderInit$suffix
         }
     }
 
+    /**
+     * @return \Composer\Autoload\ClassLoader
+     */
     public static function getLoader()
     {
         if (null !== self::\$loader) {

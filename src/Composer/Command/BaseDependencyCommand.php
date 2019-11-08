@@ -62,7 +62,7 @@ class BaseDependencyCommand extends BaseCommand
      * @param  InputInterface  $input
      * @param  OutputInterface $output
      * @param  bool            $inverted Whether to invert matching process (why-not vs why behaviour)
-     * @return int|null        Exit code of the operation.
+     * @return int             Exit code of the operation.
      */
     protected function doExecute(InputInterface $input, OutputInterface $output, $inverted = false)
     {

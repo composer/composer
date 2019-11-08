@@ -129,6 +129,12 @@ EOT
             return 1;
         }
 
+        if ($input->getOption('tree') && $input->getOption('path')) {
+            $io->writeError('The --tree (-t) option is not usable in combination with --path (-P)');
+
+            return 1;
+        }
+
         $format = $input->getOption('format');
         if (!in_array($format, array('text', 'json'))) {
             $io->writeError(sprintf('Unsupported format "%s". See help for supported formats.', $format));
@@ -586,6 +592,7 @@ EOT
         }
         $io->write('<info>type</info>     : ' . $package->getType());
         $this->printLicenses($package);
+        $io->write('<info>homepage</info> : ' . $package->getHomepage());
         $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
         $io->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
         if ($installedRepo->hasPackage($package)) {

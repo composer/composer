@@ -246,7 +246,7 @@ class RemoteFilesystem
 
         $actualContextOptions = stream_context_get_options($ctx);
         $usingProxy = !empty($actualContextOptions['http']['proxy']) ? ' using proxy ' . $actualContextOptions['http']['proxy'] : '';
-        $this->io->writeError((substr($origFileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $origFileUrl . $usingProxy, true, IOInterface::DEBUG);
+        $this->io->writeError((substr($origFileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $this->authHelper->stripCredentialsFromUrl($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
         unset($origFileUrl, $actualContextOptions);
 
         // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
@@ -704,7 +704,7 @@ class RemoteFilesystem
             $this->redirects++;
 
             $this->io->writeError('', true, IOInterface::DEBUG);
-            $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $targetUrl), true, IOInterface::DEBUG);
+            $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $this->authHelper->stripCredentialsFromUrl($targetUrl)), true, IOInterface::DEBUG);
 
             $additionalOptions['redirects'] = $this->redirects;
 

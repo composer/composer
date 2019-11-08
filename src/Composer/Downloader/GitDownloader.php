@@ -74,10 +74,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $command =
                 'git clone --no-checkout %cachePath% %path% --dissociate --reference %cachePath% '
                 . '&& cd '.$flag.'%path% '
-                . '&& git remote set-url origin %url% && git remote add composer %url%';
+                . '&& git remote set-url origin %sanitizedUrl% && git remote add composer %sanitizedUrl%';
         } else {
             $msg = "Cloning ".$this->getShortHash($ref);
-            $command = 'git clone --no-checkout %url% %path% && cd '.$flag.'%path% && git remote add composer %url% && git fetch composer';
+            $command = 'git clone --no-checkout %url% %path% && cd '.$flag.'%path% && git remote add composer %url% && git fetch composer && git remote set-url origin %sanitizedUrl% && git remote set-url composer %sanitizedUrl%';
             if (getenv('COMPOSER_DISABLE_NETWORK')) {
                 throw new \RuntimeException('The required git reference for '.$package->getName().' is not in cache and network is disabled, aborting');
             }
@@ -87,11 +87,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $commandCallable = function ($url) use ($path, $command, $cachePath) {
             return str_replace(
-                array('%url%', '%path%', '%cachePath%'),
+                array('%url%', '%path%', '%cachePath%', '%sanitizedUrl%'),
                 array(
                     ProcessExecutor::escape($url),
                     ProcessExecutor::escape($path),
                     ProcessExecutor::escape($cachePath),
+                    ProcessExecutor::escape(preg_replace('{://([^@]+?):(.+?)@}', '://', $url)),
                 ),
                 $command
             );
@@ -129,10 +130,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         if (!empty($this->cachedPackages[$target->getId()][$ref])) {
             $msg = "Checking out ".$this->getShortHash($ref).' from cache';
-            $command = 'git rev-parse --quiet --verify %ref% || (git remote set-url composer %cachePath% && git fetch composer && git fetch --tags composer); git remote set-url composer %url%';
+            $command = 'git rev-parse --quiet --verify %ref% || (git remote set-url composer %cachePath% && git fetch composer && git fetch --tags composer); git remote set-url composer %sanitizedUrl%';
         } else {
             $msg = "Checking out ".$this->getShortHash($ref);
-            $command = 'git remote set-url composer %url% && git rev-parse --quiet --verify %ref% || (git fetch composer && git fetch --tags composer)';
+            $command = 'git remote set-url composer %url% && git rev-parse --quiet --verify %ref% || (git fetch composer && git fetch --tags composer); git remote set-url composer %sanitizedUrl%';
             if (getenv('COMPOSER_DISABLE_NETWORK')) {
                 throw new \RuntimeException('The required git reference for '.$target->getName().' is not in cache and network is disabled, aborting');
             }
@@ -142,11 +143,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $commandCallable = function ($url) use ($ref, $command, $cachePath) {
             return str_replace(
-                array('%url%', '%ref%', '%cachePath%'),
+                array('%url%', '%ref%', '%cachePath%', '%sanitizedUrl%'),
                 array(
                     ProcessExecutor::escape($url),
                     ProcessExecutor::escape($ref.'^{commit}'),
                     ProcessExecutor::escape($cachePath),
+                    ProcessExecutor::escape(preg_replace('{://([^@]+?):(.+?)@}', '://', $url)),
                 ),
                 $command
             );
