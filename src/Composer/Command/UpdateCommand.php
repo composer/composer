@@ -121,6 +121,19 @@ EOT
             }
         }
 
+        // the arguments lock/nothing/mirrors are not package names but trigger a mirror update instead
+        // they are further mutually exclusive with listing actual package names
+        $filteredPackages = array_filter($packages, function ($package) {
+            return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
+        });
+        $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
+        $packages = $filteredPackages;
+
+        if ($updateMirrors && !empty($packages)) {
+            $io->writeError('<error>You cannot simultaneously update only a selection of packages and regenerate the lock file metadata.</error>');
+            return -1;
+        }
+
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
@@ -146,7 +159,8 @@ EOT
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
-            ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $packages)
+            ->setUpdateMirrors($updateMirrors)
+            ->setUpdateWhitelist($packages)
             ->setWhitelistTransitiveDependencies($input->getOption('with-dependencies'))
             ->setWhitelistAllDependencies($input->getOption('with-all-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))

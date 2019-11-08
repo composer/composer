@@ -46,6 +46,7 @@ class Locker
     /** @var ProcessExecutor */
     private $process;
     private $lockDataCache;
+    private $virtualFileWritten;
 
     /**
      * Initializes packages locker.
@@ -112,7 +113,7 @@ class Locker
      */
     public function isLocked()
     {
-        if (!$this->lockFile->exists()) {
+        if (!$this->virtualFileWritten && !$this->lockFile->exists()) {
             return false;
         }
 
@@ -161,7 +162,7 @@ class Locker
             if (isset($lockData['packages-dev'])) {
                 $lockedPackages = array_merge($lockedPackages, $lockData['packages-dev']);
             } else {
-                throw new \RuntimeException('The lock file does not contain require-dev information, run install with the --no-dev option or run update to install those packages.');
+                throw new \RuntimeException('The lock file does not contain require-dev information, run install with the --no-dev option or delete it and run composer update to generate a new lock file.');
             }
         }
 
@@ -170,8 +171,24 @@ class Locker
         }
 
         if (isset($lockedPackages[0]['name'])) {
+            $packageByName = array();
             foreach ($lockedPackages as $info) {
-                $packages->addPackage($this->loader->load($info));
+                $package = $this->loader->load($info);
+                $packages->addPackage($package);
+                $packageByName[$package->getName()] = $package;
+
+                if ($package instanceof AliasPackage) {
+                    $packages->addPackage($package->getAliasOf());
+                    $packageByName[$package->getAliasOf()->getName()] = $package->getAliasOf();
+                }
+            }
+
+            if (isset($lockData['aliases'])) {
+                foreach ($lockData['aliases'] as $alias) {
+                    if (isset($packageByName[$alias['package']])) {
+                        $packages->addPackage(new AliasPackage($packageByName[$alias['package']], $alias['alias_normalized'], $alias['alias']));
+                    }
+                }
             }
 
             return $packages;
@@ -286,10 +303,11 @@ class Locker
      * @param bool   $preferStable
      * @param bool   $preferLowest
      * @param array  $platformOverrides
+     * @param bool   $write             Whether to actually write data to disk, useful in tests and for --dry-run
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides, $write = true)
     {
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
@@ -329,7 +347,11 @@ class Locker
 
         if (empty($lock['packages']) && empty($lock['packages-dev']) && empty($lock['platform']) && empty($lock['platform-dev'])) {
             if ($this->lockFile->exists()) {
-                unlink($this->lockFile->getPath());
+                if ($write) {
+                    unlink($this->lockFile->getPath());
+                } else {
+                    $this->virtualFileWritten = false;
+                }
             }
 
             return false;
@@ -341,8 +363,15 @@ class Locker
             $isLocked = false;
         }
         if (!$isLocked || $lock !== $this->getLockData()) {
-            $this->lockFile->write($lock);
-            $this->lockDataCache = null;
+            if ($write) {
+                $this->lockFile->write($lock);
+//                $this->lockDataCache = JsonFile::parseJson(JsonFile::encode($lock, 448 & JsonFile::JSON_PRETTY_PRINT));
+                $this->lockDataCache = null;
+                $this->virtualFileWritten = false;
+            } else {
+                $this->virtualFileWritten = true;
+                $this->lockDataCache = JsonFile::parseJson(JsonFile::encode($lock, 448 & JsonFile::JSON_PRETTY_PRINT));
+            }
 
             return true;
         }

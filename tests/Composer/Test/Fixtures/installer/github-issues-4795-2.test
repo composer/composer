@@ -29,15 +29,37 @@ that are also a root package, when that root package is also explicitly whitelis
     { "name": "a/a", "version": "1.0.0" },
     { "name": "b/b", "version": "1.0.0", "require": { "a/a": "~1.0" } }
 ]
-
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "1.0.0"
+        },
+        {
+            "name": "b/b", "version": "1.0.0", "require": { "a/a": "~1.0" }
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --RUN--
 update a/a b/b --with-dependencies
 
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-Updating dependencies (including require-dev)
-Package operations: 0 installs, 2 updates, 0 removals
+Updating dependencies
+Lock file operations: 0 installs, 2 updates, 0 removals
+  - Updating a/a (1.0.0) to a/a (1.1.0)
+  - Updating b/b (1.0.0) to b/b (1.1.0)
 Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 0 installs, 2 updates, 0 removals
 Generating autoload files
 
 --EXPECT--

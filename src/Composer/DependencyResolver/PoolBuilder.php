@@ -14,11 +14,11 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Repository\AsyncRepositoryInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\InstalledRepositoryInterface;
-use Composer\Repository\LockArrayRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MultiConstraint;
@@ -31,6 +31,7 @@ class PoolBuilder
     private $isPackageAcceptableCallable;
     private $filterRequires;
     private $rootAliases;
+    private $rootReferences;
 
     private $aliasMap = array();
     private $nameConstraints = array();
@@ -46,19 +47,42 @@ class PoolBuilder
         $this->filterRequires = $filterRequires;
     }
 
-    public function buildPool(array $repositories, array $rootAliases, Request $request)
+    public function buildPool(array $repositories, array $rootAliases, array $rootReferences, Request $request)
     {
         $pool = new Pool($this->filterRequires);
         $this->rootAliases = $rootAliases;
+        $this->rootReferences = $rootReferences;
 
         // TODO do we really want the request here? kind of want a root requirements thingy instead
         $loadNames = array();
+        foreach ($request->getFixedPackages() as $package) {
+            // TODO can actually use very specific constraint
+            $loadNames[$package->getName()] = null;
+        }
+
         foreach ($request->getJobs() as $job) {
             switch ($job['cmd']) {
                 case 'install':
-                    $loadNames[$job['packageName']] = $job['constraint'];
-                    $this->nameConstraints[$job['packageName']] = $job['constraint'] ? new MultiConstraint(array($job['constraint']), false) : null;
+                    // TODO currently lock above is always NULL if we adjust that, this needs to merge constraints
+                    // TODO does it really make sense that we can have install requests for the same package that is actively locked with non-matching constraints?
+                    // also see the solver-problems.test test case
+                    $constraint = array_key_exists($job['packageName'], $loadNames) ? null : $job['constraint'];
+                    $loadNames[$job['packageName']] = $constraint;
+                    $this->nameConstraints[$job['packageName']] = $constraint ? new MultiConstraint(array($constraint), false) : null;
                     break;
+            }
+        }
+
+        // packages from the locked repository only get loaded if they are explicitly fixed
+        foreach ($repositories as $key => $repository) {
+            if ($repository === $request->getLockedRepository()) {
+                foreach ($repository->getPackages() as $lockedPackage) {
+                    foreach ($request->getFixedPackages() as $package) {
+                        if ($package === $lockedPackage) {
+                            $loadNames += $this->loadPackage($request, $package, $key);
+                        }
+                    }
+                }
             }
         }
 
@@ -76,7 +100,7 @@ class PoolBuilder
 
             $newLoadNames = array();
             foreach ($repositories as $key => $repository) {
-                if ($repository instanceof PlatformRepository || $repository instanceof InstalledRepositoryInterface) {
+                if ($repository instanceof PlatformRepository || $repository instanceof InstalledRepositoryInterface || $repository === $request->getLockedRepository()) {
                     continue;
                 }
 
@@ -90,7 +114,7 @@ class PoolBuilder
 
                 foreach ($packages as $package) {
                     if (call_user_func($this->isPackageAcceptableCallable, $package->getNames(), $package->getStability())) {
-                        $newLoadNames += $this->loadPackage($package, $key);
+                        $newLoadNames += $this->loadPackage($request, $package, $key);
                     }
                 }
             }
@@ -99,7 +123,7 @@ class PoolBuilder
         }
 
         foreach ($this->packages as $i => $package) {
-            // we check all alias related packages at once, so no need ot check individual aliases
+            // we check all alias related packages at once, so no need to check individual aliases
             // isset also checks non-null value
             if (!$package instanceof AliasPackage && isset($this->nameConstraints[$package->getName()])) {
                 $constraint = $this->nameConstraints[$package->getName()];
@@ -128,7 +152,7 @@ class PoolBuilder
             if ($repository instanceof PlatformRepository ||
                 $repository instanceof InstalledRepositoryInterface) {
                 foreach ($repository->getPackages() as $package) {
-                    $this->loadPackage($package, $key);
+                    $this->loadPackage($request, $package, $key);
                 }
             }
         }
@@ -142,7 +166,7 @@ class PoolBuilder
         return $pool;
     }
 
-    private function loadPackage(PackageInterface $package, $repoIndex)
+    private function loadPackage(Request $request, PackageInterface $package, $repoIndex)
     {
         $index = count($this->packages);
         $this->packages[] = $package;
@@ -152,8 +176,18 @@ class PoolBuilder
             $this->aliasMap[spl_object_hash($package->getAliasOf())][$index] = $package;
         }
 
-        // handle root package aliases
         $name = $package->getName();
+
+        // we're simply setting the root references on all versions for a name here and rely on the solver to pick the
+        // right version. It'd be more work to figure out which versions and which aliases of those versions this may
+        // apply to
+        if (isset($this->rootReferences[$name])) {
+            // do not modify the references on already locked packages
+            if (!$request->isFixedPackage($package)) {
+                $package->setSourceDistReferences($this->rootReferences[$name]);
+            }
+        }
+
         if (isset($this->rootAliases[$name][$package->getVersion()])) {
             $alias = $this->rootAliases[$name][$package->getVersion()];
             if ($package instanceof AliasPackage) {
@@ -183,6 +217,7 @@ class PoolBuilder
                     // TODO addConstraint function?
                     $this->nameConstraints[$require] = new MultiConstraint(array_merge(array($linkConstraint), $this->nameConstraints[$require]->getConstraints()), false);
                 }
+                // else it is null and should stay null
             } else {
                 $this->nameConstraints[$require] = null;
             }

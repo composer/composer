@@ -29,6 +29,23 @@ Update with a package whitelist only updates those packages if they are not pres
     { "name": "fixed-dependency", "version": "1.0.0", "require": { "fixed-sub-dependency": "1.*" } },
     { "name": "fixed-sub-dependency", "version": "1.0.0" }
 ]
+--LOCK--
+{
+    "packages": [
+        { "name": "whitelisted", "version": "1.0.0", "require": { "dependency": "1.0.0", "fixed-dependency": "1.*" } },
+        { "name": "dependency", "version": "1.0.0" },
+        { "name": "fixed-dependency", "version": "1.0.0", "require": { "fixed-sub-dependency": "1.*" } },
+        { "name": "fixed-sub-dependency", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --RUN--
 update whitelisted dependency
 --EXPECT--

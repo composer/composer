@@ -96,21 +96,21 @@ class SuggestedPackagesReporter
      * @param  RepositoryInterface       $installedRepo Installed packages
      * @return SuggestedPackagesReporter
      */
-    public function output(RepositoryInterface $installedRepo = null)
+    public function output(RepositoryInterface $lockedRepo = null)
     {
         $suggestedPackages = $this->getPackages();
-        $installedPackages = array();
-        if (null !== $installedRepo && ! empty($suggestedPackages)) {
-            foreach ($installedRepo->getPackages() as $package) {
-                $installedPackages = array_merge(
-                    $installedPackages,
+        $lockedPackages = array();
+        if (null !== $lockedRepo && ! empty($suggestedPackages)) {
+            foreach ($lockedRepo->getPackages() as $package) {
+                $lockedPackages = array_merge(
+                    $lockedPackages,
                     $package->getNames()
                 );
             }
         }
 
         foreach ($suggestedPackages as $suggestion) {
-            if (in_array($suggestion['target'], $installedPackages)) {
+            if (in_array($suggestion['target'], $lockedPackages)) {
                 continue;
             }
 

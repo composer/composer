@@ -25,7 +25,7 @@ Install from a lock file that deleted a package
         { "name": "whitelisted", "version": "1.1.0" },
         { "name": "fixed-dependency", "version": "1.0.0" }
     ],
-    "packages-dev": null,
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": [],

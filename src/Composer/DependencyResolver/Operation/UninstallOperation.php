@@ -59,8 +59,16 @@ class UninstallOperation extends SolverOperation
     /**
      * {@inheritDoc}
      */
-    public function __toString()
+    public function show($lock)
     {
         return 'Uninstalling '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function __toString()
+    {
+        return $this->show(false);
     }
 }

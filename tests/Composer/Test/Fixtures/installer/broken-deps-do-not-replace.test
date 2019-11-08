@@ -19,10 +19,10 @@ Broken dependencies should not lead to a replacer being installed which is not m
     }
 }
 --RUN--
-install
+update
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-Updating dependencies (including require-dev)
+Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1

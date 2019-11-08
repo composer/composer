@@ -21,7 +21,7 @@ Requirements from the composer file are not installed if the lock file is presen
     "packages": [
         { "name": "required", "version": "1.0.0" }
     ],
-    "packages-dev": null,
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],

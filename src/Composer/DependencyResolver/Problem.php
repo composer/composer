@@ -68,7 +68,7 @@ class Problem
     /**
      * A human readable textual representation of the problem's reasons
      *
-     * @param  array  $installedMap A map of all installed packages
+     * @param  array  $installedMap A map of all present packages
      * @return string
      */
     public function getPrettyString(array $installedMap = array(), array $learnedPool = array())
@@ -90,7 +90,7 @@ class Problem
                 $packages = array();
             }
 
-            if ($job && $job['cmd'] === 'install' && empty($packages)) {
+            if ($job && ($job['cmd'] === 'install' || $job['cmd'] === 'fix') && empty($packages)) {
 
                 // handle php/hhvm
                 if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
@@ -208,6 +208,13 @@ class Problem
         $packageName = $job['packageName'];
         $constraint = $job['constraint'];
         switch ($job['cmd']) {
+            case 'fix':
+                $package = $job['package'];
+                if ($job['lockable']) {
+                    return $package->getPrettyName().' is locked to version '.$package->getPrettyVersion().' and an update of this package was not requested.';
+                }
+
+                return $package->getPrettyName().' is present at version '.$package->getPrettyVersion() . ' and cannot be modified by Composer';
             case 'install':
                 $packages = $this->pool->whatProvides($packageName, $constraint);
                 if (!$packages) {
@@ -224,7 +231,7 @@ class Problem
         if (isset($constraint)) {
             $packages = $this->pool->whatProvides($packageName, $constraint);
         } else {
-            $packages = array();
+            $packages = $this->pool->whatProvides($job['packageName'], null);
         }
 
         return 'Job(cmd='.$job['cmd'].', target='.$packageName.', packages=['.$this->getPackageList($packages).'])';

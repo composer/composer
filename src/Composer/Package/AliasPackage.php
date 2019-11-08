@@ -411,4 +411,9 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->setDistType($type);
     }
+
+    public function setSourceDistReferences($reference)
+    {
+        return $this->aliasOf->setSourceDistReferences($reference);
+    }
 }

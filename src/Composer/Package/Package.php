@@ -570,6 +570,23 @@ class Package extends BasePackage
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function setSourceDistReferences($reference)
+    {
+        $this->setSourceReference($reference);
+
+        // only bitbucket, github and gitlab have auto generated dist URLs that easily allow replacing the reference in the dist URL
+        // TODO generalize this a bit for self-managed/on-prem versions? Some kind of replace token in dist urls which allow this?
+        if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $this->getDistUrl())) {
+            $this->setDistReference($reference);
+            $this->setDistUrl(preg_replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|$)}i', $reference, $this->getDistUrl()));
+        } elseif ($this->getDistReference()) { // update the dist reference if there was one, but if none was provided ignore it
+            $this->setDistReference($reference);
+        }
+    }
+
+    /**
      * Replaces current version and pretty version with passed values.
      * It also sets stability.
      *

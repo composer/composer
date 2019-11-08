@@ -39,10 +39,31 @@ Update with a package whitelist only updates those corresponding to the pattern
     { "name": "another/another", "version": "1.0" },
     { "name": "no/regexp", "version": "1.0" }
 ]
+--LOCK--
+{
+    "packages": [
+        { "name": "vendor/Test-Package", "version": "1.0" },
+        { "name": "vendor/NotMe", "version": "1.0" },
+        { "name": "exact/Test-Package", "version": "1.0" },
+        { "name": "notexact/TestPackage", "version": "1.0" },
+        { "name": "all/Package1", "version": "1.0" },
+        { "name": "all/Package2", "version": "1.0" },
+        { "name": "another/another", "version": "1.0" },
+        { "name": "no/regexp", "version": "1.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --RUN--
 update vendor/Test* exact/Test-Package notexact/Test all/* no/reg?xp
 --EXPECT--
-Updating vendor/Test-Package (1.0) to vendor/Test-Package (2.0)
-Updating exact/Test-Package (1.0) to exact/Test-Package (2.0)
 Updating all/Package1 (1.0) to all/Package1 (2.0)
 Updating all/Package2 (1.0) to all/Package2 (2.0)
+Updating exact/Test-Package (1.0) to exact/Test-Package (2.0)
+Updating vendor/Test-Package (1.0) to vendor/Test-Package (2.0)

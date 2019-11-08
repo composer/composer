@@ -12,6 +12,10 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Package\Package;
+use Composer\Package\PackageInterface;
+use Composer\Package\RootAliasPackage;
+use Composer\Repository\RepositoryInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
@@ -19,21 +23,19 @@ use Composer\Semver\Constraint\ConstraintInterface;
  */
 class Request
 {
-    protected $jobs;
+    protected $lockedRepository;
+    protected $jobs = array();
+    protected $fixedPackages = array();
+    protected $unlockables = array();
 
-    public function __construct()
+    public function __construct(RepositoryInterface $lockedRepository = null)
     {
-        $this->jobs = array();
+        $this->lockedRepository = $lockedRepository;
     }
 
     public function install($packageName, ConstraintInterface $constraint = null)
     {
         $this->addJob($packageName, 'install', $constraint);
-    }
-
-    public function update($packageName, ConstraintInterface $constraint = null)
-    {
-        $this->addJob($packageName, 'update', $constraint);
     }
 
     public function remove($packageName, ConstraintInterface $constraint = null)
@@ -43,18 +45,21 @@ class Request
 
     /**
      * Mark an existing package as being installed and having to remain installed
-     *
-     * These jobs will not be tempered with by the solver
-     *
-     * @param string                   $packageName
-     * @param ConstraintInterface|null $constraint
      */
-    public function fix($packageName, ConstraintInterface $constraint = null)
+    public function fixPackage(PackageInterface $package, $lockable = true)
     {
-        $this->addJob($packageName, 'install', $constraint, true);
+        if ($package instanceof RootAliasPackage) {
+            $package = $package->getAliasOf();
+        }
+
+        $this->fixedPackages[spl_object_hash($package)] = $package;
+
+        if (!$lockable) {
+            $this->unlockables[] = $package;
+        }
     }
 
-    protected function addJob($packageName, $cmd, ConstraintInterface $constraint = null, $fixed = false)
+    protected function addJob($packageName, $cmd, ConstraintInterface $constraint = null)
     {
         $packageName = strtolower($packageName);
 
@@ -62,17 +67,56 @@ class Request
             'cmd' => $cmd,
             'packageName' => $packageName,
             'constraint' => $constraint,
-            'fixed' => $fixed,
         );
-    }
-
-    public function updateAll()
-    {
-        $this->jobs[] = array('cmd' => 'update-all');
     }
 
     public function getJobs()
     {
         return $this->jobs;
+    }
+
+    public function getFixedPackages()
+    {
+        return $this->fixedPackages;
+    }
+
+    public function isFixedPackage(PackageInterface $package)
+    {
+        return isset($this->fixedPackages[spl_object_hash($package)]);
+    }
+
+    // TODO look into removing the packageIds option, the only place true is used is for the installed map in the solver problems
+    // some locked packages may not be in the pool so they have a package->id of -1
+    public function getPresentMap($packageIds = false)
+    {
+        $presentMap = array();
+
+        if ($this->lockedRepository) {
+            foreach ($this->lockedRepository->getPackages() as $package) {
+                $presentMap[$packageIds ? $package->id : spl_object_hash($package)] = $package;
+            }
+        }
+
+        foreach ($this->fixedPackages as $package) {
+            $presentMap[$packageIds ? $package->id : spl_object_hash($package)] = $package;
+        }
+
+        return $presentMap;
+    }
+
+    public function getUnlockableMap()
+    {
+        $unlockableMap = array();
+
+        foreach ($this->unlockables as $package) {
+            $unlockableMap[$package->id] = $package;
+        }
+
+        return $unlockableMap;
+    }
+
+    public function getLockedRepository()
+    {
+        return $this->lockedRepository;
     }
 }

@@ -31,14 +31,12 @@ class RequestTest extends TestCase
 
         $request = new Request();
         $request->install('foo');
-        $request->fix('bar');
         $request->remove('foobar');
 
         $this->assertEquals(
             array(
-                array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => null, 'fixed' => false),
-                array('cmd' => 'install', 'packageName' => 'bar', 'constraint' => null, 'fixed' => true),
-                array('cmd' => 'remove', 'packageName' => 'foobar', 'constraint' => null, 'fixed' => false),
+                array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => null),
+                array('cmd' => 'remove', 'packageName' => 'foobar', 'constraint' => null),
             ),
             $request->getJobs()
         );
@@ -60,20 +58,8 @@ class RequestTest extends TestCase
 
         $this->assertEquals(
             array(
-                    array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => $constraint, 'fixed' => false),
+                    array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => $constraint),
             ),
-            $request->getJobs()
-        );
-    }
-
-    public function testUpdateAll()
-    {
-        $request = new Request();
-
-        $request->updateAll();
-
-        $this->assertEquals(
-            array(array('cmd' => 'update-all')),
             $request->getJobs()
         );
     }
