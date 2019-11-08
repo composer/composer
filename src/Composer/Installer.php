@@ -557,14 +557,14 @@ class Installer
 
         $pool = $repositorySet->createPool($request);
 
-        // solve dependencies
+        //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request);
         $solver = new Solver($policy, $pool, $this->io);
         try {
             $nonDevLockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
+            //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request, $ops);
             $solver = null;
         } catch (SolverProblemsException $e) {
-            // TODO change info message here
-            $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
+            $this->io->writeError('<error>Unable to find a compatible set of packages based on your non-dev requirements alone.</error>', true, IOInterface::QUIET);
             $this->io->writeError($e->getMessage());
 
             return max(1, $e->getCode());
@@ -572,77 +572,6 @@ class Installer
 
         $lockTransaction->setNonDevPackages($nonDevLockTransaction);
     }
-
-
-    // TODO add proper output and events to above function based on old version below
-    /**
-     * Extracts the dev packages out of the localRepo
-     *
-     * This works by faking the operations so we can see what the dev packages
-     * would be at the end of the operation execution. This lets us then remove
-     * the dev packages from the list of operations accordingly if we are in a
-     * --no-dev install or update.
-     *
-     * @return array
-    private function extractDevPackages(array $operations, RepositoryInterface $localRepo, PlatformRepository $platformRepo, array $aliases)
-    {
-        // fake-apply all operations to this clone of the local repo so we see the complete set of package we would end up with
-        $tempLocalRepo = clone $localRepo;
-        foreach ($operations as $operation) {
-            switch ($operation->getJobType()) {
-                case 'install':
-                case 'markAliasInstalled':
-                    if (!$tempLocalRepo->hasPackage($operation->getPackage())) {
-                        $tempLocalRepo->addPackage(clone $operation->getPackage());
-                    }
-                    break;
-                case 'uninstall':
-                case 'markAliasUninstalled':
-                    $tempLocalRepo->removePackage($operation->getPackage());
-                    break;
-                case 'update':
-                    $tempLocalRepo->removePackage($operation->getInitialPackage());
-                    if (!$tempLocalRepo->hasPackage($operation->getTargetPackage())) {
-                        $tempLocalRepo->addPackage(clone $operation->getTargetPackage());
-                    }
-                    break;
-                default:
-                    throw new \LogicException('Unknown type: '.$operation->getJobType());
-            }
-        }
-        // we have to reload the local repo to handle aliases properly
-        // but as it is not persisted on disk we use a loader/dumper
-        // to reload it in memory
-        $localRepo = new InstalledArrayRepository(array());
-        $loader = new ArrayLoader(null, true);
-        $dumper = new ArrayDumper();
-        foreach ($tempLocalRepo->getCanonicalPackages() as $pkg) {
-            $localRepo->addPackage($loader->load($dumper->dump($pkg)));
-        }
-        unset($tempLocalRepo, $loader, $dumper);
-        $policy = $this->createPolicy();
-        $pool = $this->createPool();
-        $installedRepo = $this->createInstalledRepo($localRepo, $platformRepo);
-        $pool->addRepository($installedRepo, $aliases);
-        // creating requirements request without dev requirements
-        $request = $this->createRequest($this->package, $platformRepo);
-        $request->updateAll();
-        foreach ($this->package->getRequires() as $link) {
-            $request->install($link->getTarget(), $link->getConstraint());
-        }
-        // solve deps to see which get removed
-        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request);
-        $solver = new Solver($policy, $pool, $installedRepo, $this->io);
-        $ops = $solver->solve($request, $this->ignorePlatformReqs);
-        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request, $ops);
-        $devPackages = array();
-        foreach ($ops as $op) {
-            if ($op->getJobType() === 'uninstall') {
-                $devPackages[] = $op->getPackage();
-            }
-        }
-        return $devPackages;
-    }*/
 
     /**
      * @param  RepositoryInterface $localRepo
