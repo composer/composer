@@ -200,7 +200,7 @@ class Installer
 
         // Force update if there is no lock file present
         if (!$this->update && !$this->locker->isLocked()) {
-            // TODO throw an error instead?
+            $this->io->writeError('<warning>No lock file found. Updating dependencies instead of installing from lock file. Use composer update over composer install if you do not have a lock file.</warning>');
             $this->update = true;
         }
 
@@ -574,11 +574,9 @@ class Installer
     }
 
     /**
-     * @param  RepositoryInterface $localRepo
-     * @param  RepositoryInterface $installedRepo
-     * @param  PlatformRepository  $platformRepo
-     * @param  array               $aliases
-     * @return int                 exit code
+     * @param RepositoryInterface $localRepo
+     * @param bool $alreadySolved Whether the function is called as part of an update command or independently
+     * @return int exit code
      */
     protected function doInstall(RepositoryInterface $localRepo, $alreadySolved = false)
     {
@@ -625,14 +623,14 @@ class Installer
                 $lockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
                 $solver = null;
 
-                // installing the locked packages on this platfom resulted in lock modifying operations, there wasn't a conflict, but the lock file as-is seems to not work on this system
+                // installing the locked packages on this platform resulted in lock modifying operations, there wasn't a conflict, but the lock file as-is seems to not work on this system
                 if (0 !== count($lockTransaction->getOperations())) {
-                    $this->io->writeError('<error>Your lock file cannot be installed on this system without changes, please run composer update.</error>', true, IOInterface::QUIET);
+                    $this->io->writeError('<error>Your lock file cannot be installed on this system without changes. Please run composer update.</error>', true, IOInterface::QUIET);
                     // TODO actually display operations to explain what happened?
                     return 1;
                 }
             } catch (SolverProblemsException $e) {
-                $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
+                $this->io->writeError('<error>Your lock file does not contain a compatible set of packages. Please run composer update.</error>', true, IOInterface::QUIET);
                 $this->io->writeError($e->getMessage());
 
                 return max(1, $e->getCode());
