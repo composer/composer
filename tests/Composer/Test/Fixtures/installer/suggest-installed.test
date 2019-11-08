@@ -17,7 +17,7 @@ Suggestions are not displayed for installed packages
     }
 }
 --RUN--
-install
+update
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
 Updating dependencies

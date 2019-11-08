@@ -28,7 +28,7 @@ Present a clear error message when config.platform.php version results in a conf
 }
 
 --RUN--
-install
+update
 
 --EXPECT-OUTPUT--
 Loading composer repositories with package information

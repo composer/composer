@@ -19,7 +19,7 @@ Broken dependencies should not lead to a replacer being installed which is not m
     }
 }
 --RUN--
-install
+update
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
 Updating dependencies
