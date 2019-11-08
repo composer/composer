@@ -441,5 +441,5 @@ class ClassLoader
  */
 function includeFile($file)
 {
-    include $file;
+    require $file;
 }
