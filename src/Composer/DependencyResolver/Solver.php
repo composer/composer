@@ -213,7 +213,7 @@ class Solver
 
         $this->io->writeError('Resolving dependencies through SAT', true, IOInterface::DEBUG);
         $before = microtime(true);
-        $this->runSat(true);
+        $this->runSat();
         $this->io->writeError('', true, IOInterface::DEBUG);
         $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
@@ -298,11 +298,10 @@ class Solver
      *
      * @param  int        $level
      * @param  string|int $literal
-     * @param  bool       $disableRules
      * @param  Rule       $rule
      * @return int
      */
-    private function setPropagateLearn($level, $literal, $disableRules, Rule $rule)
+    private function setPropagateLearn($level, $literal, Rule $rule)
     {
         $level++;
 
@@ -316,7 +315,7 @@ class Solver
             }
 
             if ($level == 1) {
-                return $this->analyzeUnsolvable($rule, $disableRules);
+                return $this->analyzeUnsolvable($rule);
             }
 
             // conflict
@@ -353,11 +352,10 @@ class Solver
     /**
      * @param  int   $level
      * @param  array $decisionQueue
-     * @param  bool  $disableRules
      * @param  Rule  $rule
      * @return int
      */
-    private function selectAndInstall($level, array $decisionQueue, $disableRules, Rule $rule)
+    private function selectAndInstall($level, array $decisionQueue, Rule $rule)
     {
         // choose best package to install from decisionQueue
         $literals = $this->policy->selectPreferredPackages($this->pool, $decisionQueue, $rule->getRequiredPackage());
@@ -369,7 +367,7 @@ class Solver
             $this->branches[] = array($literals, $level);
         }
 
-        return $this->setPropagateLearn($level, $selectedLiteral, $disableRules, $rule);
+        return $this->setPropagateLearn($level, $selectedLiteral, $rule);
     }
 
     /**
@@ -515,10 +513,9 @@ class Solver
 
     /**
      * @param  Rule $conflictRule
-     * @param  bool $disableRules
      * @return int
      */
-    private function analyzeUnsolvable(Rule $conflictRule, $disableRules)
+    private function analyzeUnsolvable(Rule $conflictRule)
     {
         $problem = new Problem($this->pool);
         $problem->addRule($conflictRule);
@@ -560,16 +557,6 @@ class Solver
                 }
                 $seen[abs($literal)] = true;
             }
-        }
-
-        if ($disableRules) {
-            foreach ($this->problems[count($this->problems) - 1] as $reason) {
-                $this->disableProblem($reason['rule']);
-            }
-
-            $this->resetSolver();
-
-            return 1;
         }
 
         return 0;
@@ -637,10 +624,7 @@ class Solver
         }
     }
 
-    /**
-     * @param bool $disableRules
-     */
-    private function runSat($disableRules = true)
+    private function runSat()
     {
         $this->propagateIndex = 0;
 
@@ -656,10 +640,6 @@ class Solver
 
         $decisionQueue = array();
         $decisionSupplementQueue = array();
-        /**
-         * @todo this makes $disableRules always false; determine the rationale and possibly remove dead code?
-         */
-        $disableRules = false;
 
         $level = 1;
         $systemLevel = $level + 1;
@@ -669,7 +649,7 @@ class Solver
             if (1 === $level) {
                 $conflictRule = $this->propagate($level);
                 if (null !== $conflictRule) {
-                    if ($this->analyzeUnsolvable($conflictRule, $disableRules)) {
+                    if ($this->analyzeUnsolvable($conflictRule)) {
                         continue;
                     }
 
@@ -710,7 +690,7 @@ class Solver
 
                         if ($noneSatisfied && count($decisionQueue)) {
                             $oLevel = $level;
-                            $level = $this->selectAndInstall($level, $decisionQueue, $disableRules, $rule);
+                            $level = $this->selectAndInstall($level, $decisionQueue, $rule);
 
                             if (0 === $level) {
                                 return;
@@ -786,7 +766,7 @@ class Solver
                     continue;
                 }
 
-                $level = $this->selectAndInstall($level, $decisionQueue, $disableRules, $rule);
+                $level = $this->selectAndInstall($level, $decisionQueue, $rule);
 
                 if (0 === $level) {
                     return;
@@ -829,7 +809,7 @@ class Solver
 
                     $why = $this->decisions->lastReason();
 
-                    $level = $this->setPropagateLearn($level, $lastLiteral, $disableRules, $why);
+                    $level = $this->setPropagateLearn($level, $lastLiteral, $why);
 
                     if ($level == 0) {
                         return;
