@@ -136,6 +136,10 @@ class RuleSetGenerator
             $literals[] = -$package->id;
         }
 
+        if (count($literals) == 2) {
+            return new Rule2Literals($literals[0], $literals[1], $reason, $reasonData);
+        }
+
         return new MultiConflictRule($literals, $reason, $reasonData);
     }
 

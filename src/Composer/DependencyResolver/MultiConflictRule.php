@@ -34,6 +34,10 @@ class MultiConflictRule extends Rule
     {
         parent::__construct($reason, $reasonData, $job);
 
+        if (count($literals) < 3) {
+            throw new \RuntimeException("multi conflict rule requires at least 3 literals");
+        }
+
         // sort all packages ascending by id
         sort($literals);
 
@@ -62,7 +66,10 @@ class MultiConflictRule extends Rule
      */
     public function equals(Rule $rule)
     {
-        return $this->literals === $rule->getLiterals();
+        if ($rule instanceof MultiConflictRule) {
+            return $this->literals === $rule->getLiterals();
+        }
+        return false;
     }
 
     public function isAssertion()
