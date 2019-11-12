@@ -128,7 +128,6 @@ class RuleWatchGraph
                     $decisions->decide($otherWatch, $level, $node->getRule());
                 }
             } else {
-                // check isDisabled?
                 foreach ($node->getRule()->getLiterals() as $otherLiteral) {
                     if ($literal !== $otherLiteral && !$decisions->satisfy($otherLiteral)) {
                         if ($decisions->conflict($otherLiteral)) {
