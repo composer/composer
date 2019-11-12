@@ -436,11 +436,40 @@ EOT
         }
 
         $versionParser = new VersionParser();
+
+        $composer = $this->getComposer(false);
+        $installedRepo = ($composer) ? $composer->getRepositoryManager()->getLocalRepository() : null;
         $io = $this->getIO();
         while (null !== $package = $io->ask('Search for a package: ')) {
             $matches = $this->findPackages($package);
 
             if (count($matches)) {
+                // Exclude existing packages
+                $existingPackages = [];
+                foreach ($matches as $position => $foundPackage) {
+                    if ($installedRepo && $installedRepo->findPackage($foundPackage['name'], '*')) {
+                        $existingPackages[] = $position;
+                        continue;
+                    }
+
+                    foreach ($requires as $requiredPackage) {
+                        $existingPackageName = substr($requiredPackage, 0, strpos($requiredPackage, ' '));
+
+                        if ($foundPackage['name'] == $existingPackageName) {
+                            $existingPackages[] = $position;
+                            break;
+                        }
+                    }
+                }
+
+                // Remove existing packages from search results.
+                if (!empty($existingPackages)) {
+                    foreach ($existingPackages as $position) {
+                        unset($matches[$position]);
+                    }
+                    $matches = array_values($matches);
+                }
+
                 $exactMatch = null;
                 $choices = array();
                 foreach ($matches as $position => $foundPackage) {
