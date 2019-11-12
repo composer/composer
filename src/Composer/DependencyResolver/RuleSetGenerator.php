@@ -30,6 +30,7 @@ class RuleSetGenerator
     protected $conflictAddedMap;
     protected $addedPackages;
     protected $addedPackagesByNames;
+    protected $conflictsForName;
 
     public function __construct(PolicyInterface $policy, Pool $pool)
     {
@@ -128,6 +129,20 @@ class RuleSetGenerator
         return new Rule2Literals(-$issuer->id, -$provider->id, $reason, $reasonData);
     }
 
+    protected function createMultiConflictRule(array $packages, $reason, $reasonData = null)
+    {
+        $literals = array();
+        foreach ($packages as $package) {
+            $literals[] = -$package->id;
+        }
+
+        if (count($literals) == 2) {
+            return new Rule2Literals($literals[0], $literals[1], $reason, $reasonData);
+        }
+
+        return new MultiConflictRule($literals, $reason, $reasonData);
+    }
+
     /**
      * Adds a rule unless it duplicates an existing one of any type
      *
@@ -189,9 +204,16 @@ class RuleSetGenerator
 
                 if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
                     $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($provider), Rule::RULE_PACKAGE_ALIAS, $package));
-                } elseif (!$this->obsoleteImpossibleForAlias($package, $provider)) {
-                    $reason = ($packageName == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $provider, $reason, $package));
+                } else {
+                    if (!isset($this->conflictsForName[$packageName])) {
+                        $this->conflictsForName[$packageName] = array();
+                    }
+                    if (!$package instanceof AliasPackage) {
+                        $this->conflictsForName[$packageName][$package->id] = $package;
+                    }
+                    if (!$provider instanceof AliasPackage) {
+                        $this->conflictsForName[$packageName][$provider->id] = $provider;
+                    }
                 }
             }
         }
@@ -238,6 +260,13 @@ class RuleSetGenerator
                         $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $provider, $reason, $link));
                     }
                 }
+            }
+        }
+
+        foreach ($this->conflictsForName as $name => $packages) {
+            if (count($packages) > 1) {
+                $reason = Rule::RULE_PACKAGE_SAME_NAME;
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createMultiConflictRule($packages, $reason, null));
             }
         }
     }
@@ -316,6 +345,7 @@ class RuleSetGenerator
         $this->conflictAddedMap = array();
         $this->addedPackages = array();
         $this->addedPackagesByNames = array();
+        $this->conflictsForName = array();
 
         $this->addRulesForRequest($request, $ignorePlatformReqs);
 
