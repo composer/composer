@@ -141,9 +141,10 @@ class Transaction
 
                         // do we need to update?
                         // TODO different for lock?
-                        if ($package->getVersion() != $presentPackageMap[$package->getName()]->getVersion()) {
-                            $operations[] = new Operation\UpdateOperation($source, $package);
-                        } elseif ($package->isDev() && $package->getSourceReference() !== $presentPackageMap[$package->getName()]->getSourceReference()) {
+                        if ($package->getVersion() != $presentPackageMap[$package->getName()]->getVersion() ||
+                            $package->getDistReference() !== $presentPackageMap[$package->getName()]->getDistReference() ||
+                            $package->getSourceReference() !== $presentPackageMap[$package->getName()]->getSourceReference()
+                        ) {
                             $operations[] = new Operation\UpdateOperation($source, $package);
                         }
                         unset($removeMap[$package->getName()]);
