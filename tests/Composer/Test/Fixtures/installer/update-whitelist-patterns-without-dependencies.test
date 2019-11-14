@@ -57,5 +57,5 @@ Update with a package whitelist only updates those packages matching the pattern
 --RUN--
 update whitelisted-*
 --EXPECT--
-Updating whitelisted-component1 (1.0.0) to whitelisted-component1 (1.1.0)
-Updating whitelisted-component2 (1.0.0) to whitelisted-component2 (1.1.0)
+Updating whitelisted-component1 (1.0.0 => 1.1.0)
+Updating whitelisted-component2 (1.0.0 => 1.1.0)

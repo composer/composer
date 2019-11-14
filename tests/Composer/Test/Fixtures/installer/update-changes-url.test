@@ -214,6 +214,6 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
 --RUN--
 update a/a b/b d/d g/g
 --EXPECT--
-Updating a/a (dev-master 1111111) to a/a (dev-master 2222222)
+Updating a/a (dev-master 1111111 => dev-master 2222222)
 Installing e/e (dev-master 1111111)
-Updating g/g (dev-master 0000000) to g/g (dev-master 1111111)
+Updating g/g (dev-master 0000000 => dev-master 1111111)

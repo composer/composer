@@ -63,7 +63,7 @@ Update with a package whitelist only updates those corresponding to the pattern
 --RUN--
 update vendor/Test* exact/Test-Package notexact/Test all/* no/reg?xp
 --EXPECT--
-Updating all/Package1 (1.0) to all/Package1 (2.0)
-Updating all/Package2 (1.0) to all/Package2 (2.0)
-Updating exact/Test-Package (1.0) to exact/Test-Package (2.0)
-Updating vendor/Test-Package (1.0) to vendor/Test-Package (2.0)
+Updating all/Package1 (1.0 => 2.0)
+Updating all/Package2 (1.0 => 2.0)
+Updating exact/Test-Package (1.0 => 2.0)
+Updating vendor/Test-Package (1.0 => 2.0)

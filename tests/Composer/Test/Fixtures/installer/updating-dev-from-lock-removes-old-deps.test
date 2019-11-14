@@ -42,4 +42,4 @@ Installing locked dev packages should remove old dependencies
 install
 --EXPECT--
 Uninstalling a/dependency (dev-master ref)
-Updating a/devpackage (dev-master oldref) to a/devpackage (dev-master newref)
+Updating a/devpackage (dev-master oldref => dev-master newref)

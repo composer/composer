@@ -38,4 +38,4 @@ The locked version will not get overwritten by an install
 --RUN--
 install
 --EXPECT--
-Updating foo/baz (1.0.0) to foo/baz (2.0.0)
+Updating foo/baz (1.0.0 => 2.0.0)

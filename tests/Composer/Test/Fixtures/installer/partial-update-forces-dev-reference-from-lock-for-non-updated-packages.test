@@ -93,5 +93,5 @@ update b/b
     "platform-dev": []
 }
 --EXPECT--
-Updating a/a (dev-master oldmaster-a) to a/a (dev-master newmaster-a)
-Updating b/b (dev-master oldmaster-b) to b/b (dev-master newmaster-b2)
+Updating a/a (dev-master oldmaster-a => dev-master newmaster-a)
+Updating b/b (dev-master oldmaster-b => dev-master newmaster-b2)
