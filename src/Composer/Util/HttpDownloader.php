@@ -229,7 +229,9 @@ class HttpDownloader
             if (isset($job['request']['options']['http']['header']) && false !== stripos(implode('', $job['request']['options']['http']['header']), 'if-modified-since')) {
                 $resolve(new Response(array('url' => $url), 304, array(), ''));
             } else {
-                $resolve(new Response(array('url' => $url), 404, array(), ''));
+                $e = new TransportException('Network disabled, request canceled: '.$url, 499);
+                $e->setStatusCode(499);
+                $reject($e);
             }
             return;
         }
