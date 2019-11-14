@@ -18,7 +18,7 @@ use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Request;
 use Composer\EventDispatcher\Event;
 use Composer\IO\IOInterface;
-use Composer\Repository\CompositeRepository;
+use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
 
 /**
@@ -54,9 +54,9 @@ class InstallerEvent extends Event
     private $repositorySet;
 
     /**
-     * @var CompositeRepository
+     * @var RepositoryInterface
      */
-    private $installedRepo;
+    private $localRepo;
 
     /**
      * @var Request
@@ -77,11 +77,11 @@ class InstallerEvent extends Event
      * @param bool                 $devMode
      * @param PolicyInterface      $policy
      * @param RepositorySet        $repositorySet
-     * @param CompositeRepository  $installedRepo
+     * @param RepositoryInterface  $localRepo
      * @param Request              $request
      * @param OperationInterface[] $operations
      */
-    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, CompositeRepository $installedRepo, Request $request, array $operations = array())
+    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, RepositoryInterface $localRepo, Request $request, array $operations = array())
     {
         parent::__construct($eventName);
 
@@ -90,7 +90,7 @@ class InstallerEvent extends Event
         $this->devMode = $devMode;
         $this->policy = $policy;
         $this->repositorySet = $repositorySet;
-        $this->installedRepo = $installedRepo;
+        $this->localRepo = $localRepo;
         $this->request = $request;
         $this->operations = $operations;
     }
@@ -136,11 +136,11 @@ class InstallerEvent extends Event
     }
 
     /**
-     * @return CompositeRepository
+     * @return RepositoryInterface
      */
-    public function getInstalledRepo()
+    public function getLocalRepo()
     {
-        return $this->installedRepo;
+        return $this->localRepo;
     }
 
     /**

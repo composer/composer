@@ -100,21 +100,18 @@ class EventDispatcher
     /**
      * Dispatch a package event.
      *
-     * @param string              $eventName     The constant in PackageEvents
-     * @param bool                $devMode       Whether or not we are in dev mode
-     * @param PolicyInterface     $policy        The policy
-     * @param RepositorySet       $repositorySet The repository set
-     * @param CompositeRepository $installedRepo The installed repository
-     * @param Request             $request       The request
-     * @param array               $operations    The list of operations
-     * @param OperationInterface  $operation     The package being installed/updated/removed
+     * @param string              $eventName  The constant in PackageEvents
+     * @param bool                $devMode    Whether or not we are in dev mode
+     * @param RepositoryInterface $localRepo  The installed repository
+     * @param array               $operations The list of operations
+     * @param OperationInterface  $operation  The package being installed/updated/removed
      *
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
      */
-    public function dispatchPackageEvent($eventName, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, CompositeRepository $installedRepo, Request $request, array $operations, OperationInterface $operation)
+    public function dispatchPackageEvent($eventName, $devMode, RepositoryInterface $localRepo, array $operations, OperationInterface $operation)
     {
-        return $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $policy, $repositorySet, $installedRepo, $request, $operations, $operation));
+        return $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $localRepo, $operations, $operation));
     }
 
     /**
@@ -124,16 +121,16 @@ class EventDispatcher
      * @param bool                $devMode       Whether or not we are in dev mode
      * @param PolicyInterface     $policy        The policy
      * @param RepositorySet       $repositorySet The repository set
-     * @param CompositeRepository $installedRepo The installed repository
+     * @param RepositoryInterface $localRepo     The installed repository
      * @param Request             $request       The request
      * @param array               $operations    The list of operations
      *
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
      */
-    public function dispatchInstallerEvent($eventName, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, RepositoryInterface $lockedRepo, Request $request, array $operations = array())
+    public function dispatchInstallerEvent($eventName, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, RepositoryInterface $localRepo, Request $request, array $operations = array())
     {
-        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $policy, $repositorySet, $lockedRepo, $request, $operations));
+        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $policy, $repositorySet, $localRepo, $request, $operations));
     }
 
     /**

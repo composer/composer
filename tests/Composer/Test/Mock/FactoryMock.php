@@ -18,6 +18,7 @@ use Composer\Factory;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Installer;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Util\Loop;
@@ -40,7 +41,7 @@ class FactoryMock extends Factory
     {
     }
 
-    public function createInstallationManager(Loop $loop)
+    public function createInstallationManager(Loop $loop, IOInterface $io, EventDispatcher $dispatcher = null)
     {
         return new InstallationManagerMock();
     }

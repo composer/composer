@@ -212,7 +212,6 @@ class Installer
             $this->executeOperations = false;
             $this->writeLock = false;
             $this->dumpAutoloader = false;
-            $this->installationManager->addInstaller(new NoopInstaller);
             $this->mockLocalRepositories($this->repositoryManager);
         }
 
@@ -664,27 +663,14 @@ class Installer
             }
         }
 
-        foreach ($localRepoTransaction->getOperations() as $operation) {
-            $jobType = $operation->getJobType();
-            $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($jobType);
-            if (defined($event) && $this->runScripts) {
-                //$this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $repositorySet, $installedRepo, $request, $operations, $operation);
-            }
-
-            // output op, but alias op only in debug verbosity
-            if ((!$this->executeOperations && false === strpos($operation->getJobType(), 'Alias')) || $this->io->isDebug()) {
-                $this->io->writeError('  - ' . $operation->show(false));
-            }
-
-            $this->installationManager->execute($localRepo, $operation);
-
-            if ($this->executeOperations) {
-                $localRepo->write($this->devMode, $this->installationManager);
-            }
-
-            $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($jobType);
-            if (defined($event) && $this->runScripts) {
-                //$this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $repositorySet, $installedRepo, $request, $operations, $operation);
+        if ($this->executeOperations) {
+            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode);
+        } else {
+            foreach ($localRepoTransaction->getOperations() as $operation) {
+                // output op, but alias op only in debug verbosity
+                if (false === strpos($operation->getJobType(), 'Alias') || $this->io->isDebug()) {
+                    $this->io->writeError('  - ' . $operation->show(false));
+                }
             }
         }
 

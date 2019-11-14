@@ -35,11 +35,13 @@ class InstallationManagerMock extends InstallationManager
 
     }
 
-    public function execute(RepositoryInterface $repo, OperationInterface $operation)
+    public function execute(RepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true)
     {
-        $method = $operation->getJobType();
-        // skipping download() step here for tests
-        $this->$method($repo, $operation);
+        foreach ($operations as $operation) {
+            $method = $operation->getJobType();
+            // skipping download() step here for tests
+            $this->$method($repo, $operation);
+        }
     }
 
     public function getInstallPath(PackageInterface $package)

@@ -23,10 +23,10 @@ class InstallerEventTest extends TestCase
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $policy = $this->getMockBuilder('Composer\DependencyResolver\PolicyInterface')->getMock();
         $repositorySet = $this->getMockBuilder('Composer\Repository\RepositorySet')->disableOriginalConstructor()->getMock();
-        $installedRepo = $this->getMockBuilder('Composer\Repository\CompositeRepository')->disableOriginalConstructor()->getMock();
+        $localRepo = $this->getMockBuilder('Composer\Repository\CompositeRepository')->disableOriginalConstructor()->getMock();
         $request = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
         $operations = array($this->getMockBuilder('Composer\DependencyResolver\Operation\OperationInterface')->getMock());
-        $event = new InstallerEvent('EVENT_NAME', $composer, $io, true, $policy, $repositorySet, $installedRepo, $request, $operations);
+        $event = new InstallerEvent('EVENT_NAME', $composer, $io, true, $policy, $repositorySet, $localRepo, $request, $operations);
 
         $this->assertSame('EVENT_NAME', $event->getName());
         $this->assertInstanceOf('Composer\Composer', $event->getComposer());
@@ -34,7 +34,7 @@ class InstallerEventTest extends TestCase
         $this->assertTrue($event->isDevMode());
         $this->assertInstanceOf('Composer\DependencyResolver\PolicyInterface', $event->getPolicy());
         $this->assertInstanceOf('Composer\Repository\RepositorySet', $event->getRepositorySet());
-        $this->assertInstanceOf('Composer\Repository\CompositeRepository', $event->getInstalledRepo());
+        $this->assertInstanceOf('Composer\Repository\RepositoryInterface', $event->getLocalRepo());
         $this->assertInstanceOf('Composer\DependencyResolver\Request', $event->getRequest());
         $this->assertCount(1, $event->getOperations());
     }

@@ -354,7 +354,7 @@ class Factory
         $composer->setPackage($package);
 
         // initialize installation manager
-        $im = $this->createInstallationManager($loop);
+        $im = $this->createInstallationManager($loop, $io, $dispatcher);
         $composer->setInstallationManager($im);
 
         if ($fullLoad) {
@@ -527,9 +527,9 @@ class Factory
     /**
      * @return Installer\InstallationManager
      */
-    public function createInstallationManager(Loop $loop)
+    public function createInstallationManager(Loop $loop, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {
-        return new Installer\InstallationManager($loop);
+        return new Installer\InstallationManager($loop, $io, $eventDispatcher);
     }
 
     /**
