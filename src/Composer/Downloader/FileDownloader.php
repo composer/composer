@@ -127,7 +127,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             // use from cache if it is present and has a valid checksum or we have no checksum to check against
             if ($cache && (!$checksum || $checksum === $cache->sha1($cacheKey)) && $cache->copyTo($cacheKey, $fileName)) {
                 if ($output) {
-                    $io->writeError("  - Loading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>) from cache");
+                    $io->writeError("  - Loading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>) from cache", true, IOInterface::VERY_VERBOSE);
                 }
                 $result = \React\Promise\resolve($fileName);
             } else {
