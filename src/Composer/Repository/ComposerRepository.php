@@ -31,6 +31,7 @@ use Composer\Downloader\TransportException;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Util\Http\Response;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -1139,6 +1140,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $io->writeError('<warning>'.$url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
             }
             $degradedMode = true;
+
+            // special error code returned when network is being artificially disabled
+            if ($e instanceof TransportException && $e->getStatusCode() === 499) {
+                return $accept(new Response(array('url' => $url), 404, array(), ''));
+            }
 
             throw $e;
         };
