@@ -28,6 +28,7 @@ class ArrayRepository extends BaseRepository
 {
     /** @var PackageInterface[] */
     protected $packages;
+    protected $packageMap;
 
     public function __construct(array $packages = array())
     {
@@ -121,15 +122,13 @@ class ArrayRepository extends BaseRepository
      */
     public function hasPackage(PackageInterface $package)
     {
-        $packageId = $package->getUniqueName();
-
-        foreach ($this->getPackages() as $repoPackage) {
-            if ($packageId === $repoPackage->getUniqueName()) {
-                return true;
+        if (empty($this->packageMap)) {
+            foreach ($this->getPackages() as $repoPackage) {
+                $this->packageMap[$repoPackage->getUniqueName()] = $repoPackage;
             }
         }
 
-        return false;
+        return isset($this->packageMap[$package->getUniqueName()]);
     }
 
     /**
