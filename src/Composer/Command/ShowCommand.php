@@ -359,7 +359,7 @@ EOT
             if (isset($packages[$type])) {
                 ksort($packages[$type]);
 
-                $nameLength = $versionLength = $latestLength = 0;
+                $nameLength = $versionLength = $licenseLength = $latestLength = 0;
 
                 if ($showLatest && $showVersion) {
                     foreach ($packages[$type] as $package) {
@@ -400,7 +400,9 @@ EOT
                         }
 
                         $packageViewData['name'] = $package->getPrettyName();
+                        $packageViewData['license'] = implode(', ', $package->getLicense());
                         $nameLength = max($nameLength, strlen($package->getPrettyName()));
+                        $licenseLength = max($licenseLength, strlen($packageViewData['license']));
                         if ($writeVersion) {
                             $packageViewData['version'] = $package->getFullPrettyVersion();
                             $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
@@ -436,6 +438,7 @@ EOT
                 }
                 $viewMetaData[$type] = array(
                     'nameLength' => $nameLength,
+                    'licenseLength' => $licenseLength,
                     'versionLength' => $versionLength,
                     'latestLength' => $latestLength,
                 );
@@ -452,6 +455,7 @@ EOT
             foreach ($viewData as $type => $packages) {
                 $nameLength = $viewMetaData[$type]['nameLength'];
                 $versionLength = $viewMetaData[$type]['versionLength'];
+                $licenceLength = $viewMetaData[$type]['licenseLength'];
                 $latestLength = $viewMetaData[$type]['latestLength'];
 
                 $writeVersion = $nameLength + $versionLength + 3 <= $width;
@@ -475,6 +479,7 @@ EOT
                     if (isset($package['version']) && $writeVersion) {
                         $io->write(' ' . str_pad($package['version'], $versionLength, ' '), false);
                     }
+                    $io->write($indent . str_pad($package['license'], $licenceLength, ' '), false);
                     if (isset($package['latest']) && $writeLatest) {
                         $latestVersion = $package['latest'];
                         $updateStatus = $package['latest-status'];
