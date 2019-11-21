@@ -122,7 +122,8 @@ class ArrayRepository extends BaseRepository
      */
     public function hasPackage(PackageInterface $package)
     {
-        if (empty($this->packageMap)) {
+        if ($this->packageMap === null) {
+            $this->packageMap = array();
             foreach ($this->getPackages() as $repoPackage) {
                 $this->packageMap[$repoPackage->getUniqueName()] = $repoPackage;
             }
