@@ -155,7 +155,7 @@ class ProcessExecutor
         //@see https://bugs.php.net/bug.php?id=43784
         //@see https://bugs.php.net/bug.php?id=49446
         if ('\\' === DIRECTORY_SEPARATOR) {
-            if ('' === $argument) {
+            if ((string) $argument === '') {
                 return escapeshellarg($argument);
             }
 
