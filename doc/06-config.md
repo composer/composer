@@ -260,7 +260,7 @@ driver directly, Composer will still attempt to use GitHub's zip files.
 
 Defaults to `true`. Composer allows repositories to define a notification URL,
 so that they get notified whenever a package from that repository is installed.
-This option allows you to disable that behaviour.
+This option allows you to disable that behavior.
 
 ## discard-changes
 
