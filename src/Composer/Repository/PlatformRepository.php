@@ -125,7 +125,7 @@ class PlatformRepository extends ArrayRepository
             $this->addExtension($name, $prettyVersion);
         }
 
-        // Check for xdebug in a restarted process
+        // Check for Xdebug in a restarted process
         if (!in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = XdebugHandler::getSkippedVersion())) {
             $this->addExtension('xdebug', $prettyVersion);
         }

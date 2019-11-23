@@ -808,6 +808,10 @@ If set to 1, this env disables the warning about running commands as root/super 
 It also disables automatic clearing of sudo sessions, so you should really only set this
 if you use Composer as super user at all times like in docker containers.
 
+### COMPOSER_ALLOW_XDEBUG
+
+If set to 1, this env allows running Composer when the Xdebug extension is enabled, without restarting PHP without it.
+
 ### COMPOSER_AUTH
 
 The `COMPOSER_AUTH` var allows you to set up authentication as an environment variable.
@@ -832,6 +836,10 @@ By default it points to `$COMPOSER_HOME/cache` on \*nix and macOS, and
 
 By setting this environmental value, you can set a path to a certificate bundle
 file to be used during SSL/TLS peer verification.
+
+### COMPOSER_DISABLE_XDEBUG_WARN
+
+If set to 1, this env suppresses a warning when Composer is running with the Xdebug extension enabled.
 
 ### COMPOSER_DISCARD_CHANGES
 

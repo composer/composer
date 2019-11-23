@@ -735,7 +735,7 @@ composer https://github.com/old/url (push)
             $cmd = str_replace('cd ', 'cd /D ', $cmd);
             $cmd = str_replace('composerPath', getcwd().'/composerPath', $cmd);
 
-            return str_replace('""', '', strtr($cmd, "'", '"'));
+            return strtr($cmd, "'", '"');
         }
 
         return $cmd;

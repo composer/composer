@@ -205,7 +205,7 @@ class Application extends BaseApplication
             }
 
             if (extension_loaded('xdebug') && !getenv('COMPOSER_DISABLE_XDEBUG_WARN')) {
-                $io->writeError('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>');
+                $io->writeError('<warning>You are running composer with Xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>');
             }
 
             if (defined('COMPOSER_DEV_WARNING_TIME') && $commandName !== 'self-update' && $commandName !== 'selfupdate' && time() > COMPOSER_DEV_WARNING_TIME) {
