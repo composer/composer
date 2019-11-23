@@ -205,6 +205,8 @@ class InstallationManager
                 if ($this->io->isDebug()) {
                     $this->io->writeError('  - ' . $operation->show(false));
                 }
+                $this->$jobType($repo, $operation);
+
                 continue;
             }
 
