@@ -358,7 +358,7 @@ EOT
         $projectInstaller = new ProjectInstaller($directory, $dm);
         $im = $factory->createInstallationManager(new Loop($httpDownloader), $io);
         $im->addInstaller($projectInstaller);
-        $im->execute(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
+        $im->execute(new InstalledFilesystemRepository(new JsonFile('php://memory')), array(new InstallOperation($package)));
         $im->notifyInstalls($io);
 
         // collect suggestions
