@@ -173,14 +173,14 @@ class InstallationManager
         $promises = array();
 
         foreach ($operations as $operation) {
-            $method = $operation->getJobType();
+            $jobType = $operation->getJobType();
             $promise = null;
 
-            if ($method === 'install') {
+            if ($jobType === 'install') {
                 $package = $operation->getPackage();
                 $installer = $this->getInstaller($package->getType());
                 $promise = $installer->download($package);
-            } elseif ($method === 'update') {
+            } elseif ($jobType === 'update') {
                 $target = $operation->getTargetPackage();
                 $targetType = $target->getType();
                 $installer = $this->getInstaller($targetType);
@@ -197,66 +197,80 @@ class InstallationManager
         }
 
         foreach ($operations as $operation) {
-            $method = $operation->getJobType();
-            $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($method);
-            if (defined($event) && $runScripts && $this->eventDispatcher) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
+            $jobType = $operation->getJobType();
+
+            // ignoring alias ops as they don't need to execute anything
+            if (!in_array($jobType, array('update', 'install', 'uninstall'))) {
+                // output alias ops in debug verbosity as they have no output otherwise
+                if ($this->io->isDebug()) {
+                    $this->io->writeError('  - ' . $operation->show(false));
+                }
+                continue;
             }
 
-            // output alias ops in debug verbosity as they have no output otherwise
-            if ($this->io->isDebug()) {
-                $this->io->writeError('  - ' . $operation->show(false));
-            }
-
-            $e = null;
-            try {
-                if ($method === 'install' || $method === 'uninstall') {
-                    $package = $operation->getPackage();
-                    $installer = $this->getInstaller($package->getType());
-                    $promise = $installer->prepare($method, $package);
-                } elseif ($method === 'update') {
-                    $target = $operation->getTargetPackage();
-                    $targetType = $target->getType();
-                    $installer = $this->getInstaller($targetType);
-                    $promise = $installer->prepare('update', $target, $operation->getInitialPackage());
-                }
-
-                if (!empty($promise)) {
-                    $this->loop->wait(array($promise));
-                }
-
-                $promise = $this->$method($repo, $operation);
-                if (!empty($promise)) {
-                    $this->loop->wait(array($promise));
-                }
-            } catch (\Exception $e) {
-            }
-
-            if ($method === 'install' || $method === 'uninstall') {
+            if ($jobType === 'install' || $jobType === 'uninstall') {
                 $package = $operation->getPackage();
-                $installer = $this->getInstaller($package->getType());
-                $promise = $installer->cleanup($method, $package);
-            } elseif ($method === 'update') {
-                $target = $operation->getTargetPackage();
-                $targetType = $target->getType();
-                $installer = $this->getInstaller($targetType);
-                $promise = $installer->cleanup('update', $target, $operation->getInitialPackage());
+                $initialPackage = null;
+            } elseif ($jobType === 'update') {
+                $package = $operation->getTargetPackage();
+                $initialPackage = $operation->getInitialPackage();
             }
+            $installer = $this->getInstaller($package->getType());
 
-            if (!empty($promise)) {
-                $this->loop->wait(array($promise));
-            }
-
-            if ($e) {
-                throw $e;
-            }
-
-            $repo->write($devMode, $this);
-
-            $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($method);
+            $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($jobType);
             if (defined($event) && $runScripts && $this->eventDispatcher) {
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
             }
+
+            $dispatcher = $this->eventDispatcher;
+            $installManager = $this;
+            $loop = $this->loop;
+            $io = $this->io;
+
+            $promise = new \React\Promise\Promise(function ($resolve, $reject) use ($installer, $jobType, $package, $initialPackage) {
+                $promise = $installer->prepare($jobType, $package, $initialPackage);
+                if (null === $promise) {
+                    $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
+                }
+
+                return $promise->then($resolve, $reject);
+            });
+
+            $promise = $promise->then(function () use ($jobType, $installManager, $repo, $operation) {
+                $promise = $installManager->$jobType($repo, $operation);
+                if (null === $promise) {
+                    $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
+                }
+
+                return $promise;
+            })->then(function () use ($jobType, $installer, $package, $initialPackage) {
+                $promise = $installer->cleanup($jobType, $package, $initialPackage);
+                if (null === $promise) {
+                    $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
+                }
+
+                return $promise;
+            })->then(function () use ($jobType, $installer, $package, $initialPackage, $runScripts, $dispatcher, $installManager, $devMode, $repo, $operations, $operation) {
+                $repo->write($devMode, $installManager);
+
+                $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($jobType);
+                if (defined($event) && $runScripts && $dispatcher) {
+                    $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
+                }
+            }, function ($e) use ($jobType, $installer, $package, $initialPackage, $loop, $io) {
+                $this->io->writeError('    <error>' . ucfirst($jobType) .' of '.$package->getPrettyName().' failed</error>');
+
+                $promise = $installer->cleanup($jobType, $package, $initialPackage);
+                $loop->wait(array($promise));
+
+                throw $e;
+            });
+
+            $promises[] = $promise;
+        }
+
+        if (!empty($promises)) {
+            $this->loop->wait($promises);
         }
     }
 
