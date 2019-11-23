@@ -32,20 +32,16 @@ class Pool implements \Countable
     const MATCH = 1;
     const MATCH_PROVIDE = 2;
     const MATCH_REPLACE = 3;
-    const MATCH_FILTERED = 4;
 
-    protected $providerRepos = array();
     protected $packages = array();
     protected $packageByName = array();
     protected $packageByExactName = array();
     protected $priorities = array();
     protected $versionParser;
     protected $providerCache = array();
-    protected $filterRequires;
 
-    public function __construct(array $filterRequires = array())
+    public function __construct()
     {
-        $this->filterRequires = $filterRequires;
         $this->versionParser = new VersionParser;
     }
 
@@ -99,27 +95,22 @@ class Pool implements \Countable
      *                                            packages must match or null to return all
      * @param  bool                $mustMatchName Whether the name of returned packages
      *                                            must match the given name
-     * @param  bool                $bypassFilters If enabled, filterRequires and stability matching is ignored
      * @return PackageInterface[]  A set of packages
      */
-    public function whatProvides($name, ConstraintInterface $constraint = null, $mustMatchName = false, $bypassFilters = false)
+    public function whatProvides($name, ConstraintInterface $constraint = null, $mustMatchName = false)
     {
-        if ($bypassFilters) {
-            return $this->computeWhatProvides($name, $constraint, $mustMatchName, true);
-        }
-
         $key = ((int) $mustMatchName).$constraint;
         if (isset($this->providerCache[$name][$key])) {
             return $this->providerCache[$name][$key];
         }
 
-        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $mustMatchName, $bypassFilters);
+        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $mustMatchName);
     }
 
     /**
      * @see whatProvides
      */
-    private function computeWhatProvides($name, $constraint, $mustMatchName = false, $bypassFilters = false)
+    private function computeWhatProvides($name, $constraint, $mustMatchName = false)
     {
         $candidates = array();
 
@@ -135,7 +126,7 @@ class Pool implements \Countable
         $nameMatch = false;
 
         foreach ($candidates as $candidate) {
-            switch ($this->match($candidate, $name, $constraint, $bypassFilters)) {
+            switch ($this->match($candidate, $name, $constraint)) {
                 case self::MATCH_NONE:
                     break;
 
@@ -154,9 +145,6 @@ class Pool implements \Countable
 
                 case self::MATCH_REPLACE:
                     $matches[] = $candidate;
-                    break;
-
-                case self::MATCH_FILTERED:
                     break;
 
                 default:
@@ -201,24 +189,16 @@ class Pool implements \Countable
      * @param  ConstraintInterface    $constraint The constraint to verify
      * @return int                    One of the MATCH* constants of this class or 0 if there is no match
      */
-    public function match($candidate, $name, ConstraintInterface $constraint = null, $bypassFilters)
+    public function match($candidate, $name, ConstraintInterface $constraint = null)
     {
         $candidateName = $candidate->getName();
         $candidateVersion = $candidate->getVersion();
-        $isDev = $candidate->getStability() === 'dev';
-        $isAlias = $candidate instanceof AliasPackage;
-
-        if (!$bypassFilters && !$isDev && !$isAlias && isset($this->filterRequires[$name])) {
-            $requireFilter = $this->filterRequires[$name];
-        } else {
-            $requireFilter = new EmptyConstraint;
-        }
 
         if ($candidateName === $name) {
             $pkgConstraint = new Constraint('==', $candidateVersion);
 
             if ($constraint === null || $constraint->matches($pkgConstraint)) {
-                return $requireFilter->matches($pkgConstraint) ? self::MATCH : self::MATCH_FILTERED;
+                return self::MATCH;
             }
 
             return self::MATCH_NAME;
@@ -231,13 +211,13 @@ class Pool implements \Countable
         if (isset($replaces[0]) || isset($provides[0])) {
             foreach ($provides as $link) {
                 if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
-                    return $requireFilter->matches($link->getConstraint()) ? self::MATCH_PROVIDE : self::MATCH_FILTERED;
+                    return self::MATCH_PROVIDE;
                 }
             }
 
             foreach ($replaces as $link) {
                 if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
-                    return $requireFilter->matches($link->getConstraint()) ? self::MATCH_REPLACE : self::MATCH_FILTERED;
+                    return self::MATCH_REPLACE;
                 }
             }
 
@@ -245,11 +225,11 @@ class Pool implements \Countable
         }
 
         if (isset($provides[$name]) && ($constraint === null || $constraint->matches($provides[$name]->getConstraint()))) {
-            return $requireFilter->matches($provides[$name]->getConstraint()) ? self::MATCH_PROVIDE : self::MATCH_FILTERED;
+            return self::MATCH_PROVIDE;
         }
 
         if (isset($replaces[$name]) && ($constraint === null || $constraint->matches($replaces[$name]->getConstraint()))) {
-            return $requireFilter->matches($replaces[$name]->getConstraint()) ? self::MATCH_REPLACE : self::MATCH_FILTERED;
+            return self::MATCH_REPLACE;
         }
 
         return self::MATCH_NONE;

@@ -37,12 +37,12 @@ class RepositorySet
 
     private $acceptableStabilities;
     private $stabilityFlags;
-    protected $filterRequires;
+    protected $rootRequires;
 
     /** @var Pool */
     private $pool;
 
-    public function __construct(array $rootAliases = array(), array $rootReferences = array(), $minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
+    public function __construct(array $rootAliases = array(), array $rootReferences = array(), $minimumStability = 'stable', array $stabilityFlags = array(), array $rootRequires = array())
     {
         $this->rootAliases = $rootAliases;
         $this->rootReferences = $rootReferences;
@@ -54,10 +54,10 @@ class RepositorySet
             }
         }
         $this->stabilityFlags = $stabilityFlags;
-        $this->filterRequires = $filterRequires;
-        foreach ($filterRequires as $name => $constraint) {
+        $this->rootRequires = $rootRequires;
+        foreach ($rootRequires as $name => $constraint) {
             if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
-                unset($this->filterRequires[$name]);
+                unset($this->rootRequires[$name]);
             }
         }
     }
@@ -152,7 +152,7 @@ class RepositorySet
      */
     public function createPool(Request $request)
     {
-        $poolBuilder = new PoolBuilder(array($this, 'isPackageAcceptable'), $this->filterRequires);
+        $poolBuilder = new PoolBuilder(array($this, 'isPackageAcceptable'), $this->rootRequires);
 
         return $this->pool = $poolBuilder->buildPool($this->repositories, $this->rootAliases, $this->rootReferences, $request);
     }
