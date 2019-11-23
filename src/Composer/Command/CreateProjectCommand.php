@@ -356,7 +356,7 @@ EOT
             ->setPreferDist($preferDist);
 
         $projectInstaller = new ProjectInstaller($directory, $dm);
-        $im = $factory->createInstallationManager(new Loop($httpDownloader), $io, $composer->getEventDispatcher);
+        $im = $factory->createInstallationManager(new Loop($httpDownloader), $io);
         $im->addInstaller($projectInstaller);
         $im->execute(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
         $im->notifyInstalls($io);
