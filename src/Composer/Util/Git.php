@@ -85,7 +85,9 @@ class Git
             }
 
             // failed to checkout, first check git accessibility
-            $this->throwException('Failed to clone ' . $url . ' via ' . implode(', ', $protocols) . ' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
+            if (!$this->io->hasAuthentication($match[1]) && !$this->io->isInteractive()) {
+                $this->throwException('Failed to clone ' . $url . ' via ' . implode(', ', $protocols) . ' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
+            }
         }
 
         // if we have a private github url and the ssh protocol is disabled then we skip it and directly fallback to https
@@ -97,7 +99,7 @@ class Git
         if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
             // private github repository without ssh key access, try https with auth
             if (preg_match('{^git@' . self::getGitHubDomainsRegex($this->config) . ':(.+?)\.git$}i', $url, $match)
-                || preg_match('{^(https?)://' . self::getGitHubDomainsRegex($this->config) . '/(.*)}', $url, $match)
+                || preg_match('{^https?://' . self::getGitHubDomainsRegex($this->config) . '/(.*)}', $url, $match)
             ) {
                 if (!$this->io->hasAuthentication($match[1])) {
                     $gitHubUtil = new GitHub($this->io, $this->config, $this->process);
