@@ -114,7 +114,7 @@ class InstallationManagerTest extends TestCase
             ->with($this->repository, $updateOperation);
 
         $manager->addInstaller(new NoopInstaller());
-        $manager->execute($this->repository, [$installOperation, $removeOperation, $updateOperation]);
+        $manager->execute($this->repository, array($installOperation, $removeOperation, $updateOperation));
     }
 
     public function testInstall()
