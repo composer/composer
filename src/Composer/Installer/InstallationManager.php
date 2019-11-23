@@ -229,29 +229,15 @@ class InstallationManager
             $loop = $this->loop;
             $io = $this->io;
 
-            $promise = new \React\Promise\Promise(function ($resolve, $reject) use ($installer, $jobType, $package, $initialPackage) {
-                $promise = $installer->prepare($jobType, $package, $initialPackage);
-                if (null === $promise) {
-                    $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
-                }
-
-                return $promise->then($resolve, $reject);
-            });
+            $promise = $installer->prepare($jobType, $package, $initialPackage);
+            if (null === $promise) {
+                $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
+            }
 
             $promise = $promise->then(function () use ($jobType, $installManager, $repo, $operation) {
-                $promise = $installManager->$jobType($repo, $operation);
-                if (null === $promise) {
-                    $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
-                }
-
-                return $promise;
+                return $installManager->$jobType($repo, $operation);
             })->then(function () use ($jobType, $installer, $package, $initialPackage) {
-                $promise = $installer->cleanup($jobType, $package, $initialPackage);
-                if (null === $promise) {
-                    $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
-                }
-
-                return $promise;
+                return $installer->cleanup($jobType, $package, $initialPackage);
             })->then(function () use ($jobType, $installer, $package, $initialPackage, $runScripts, $dispatcher, $installManager, $devMode, $repo, $operations, $operation) {
                 $repo->write($devMode, $installManager);
 
@@ -263,7 +249,9 @@ class InstallationManager
                 $this->io->writeError('    <error>' . ucfirst($jobType) .' of '.$package->getPrettyName().' failed</error>');
 
                 $promise = $installer->cleanup($jobType, $package, $initialPackage);
-                $loop->wait(array($promise));
+                if ($promise) {
+                    $loop->wait(array($promise));
+                }
 
                 throw $e;
             });
