@@ -48,9 +48,4 @@ abstract class SolverOperation implements OperationInterface
     * @return string
     */
     abstract public function show($lock);
-
-    protected function formatVersion(PackageInterface $package)
-    {
-        return $package->getFullPrettyVersion();
-    }
 }

@@ -74,7 +74,18 @@ class UpdateOperation extends SolverOperation
      */
     public function show($lock)
     {
-        return 'Updating '.$this->initialPackage->getPrettyName().' ('.$this->formatVersion($this->initialPackage).' => '.$this->formatVersion($this->targetPackage).')';
+        $fromVersion = $this->initialPackage->getFullPrettyVersion();
+        $toVersion = $this->targetPackage->getFullPrettyVersion();
+
+        if ($fromVersion === $toVersion && $this->initialPackage->getSourceReference() !== $this->targetPackage->getSourceReference()) {
+            $fromVersion = $this->initialPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_SOURCE_REF);
+            $toVersion = $this->targetPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_SOURCE_REF);
+        } elseif ($fromVersion === $toVersion && $this->initialPackage->getDistReference() !== $this->targetPackage->getDistReference()) {
+            $fromVersion = $this->initialPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_DIST_REF);
+            $toVersion = $this->targetPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_DIST_REF);
+        }
+
+        return 'Updating '.$this->initialPackage->getPrettyName().' ('.$fromVersion.' => '.$toVersion.')';
     }
 
     /**

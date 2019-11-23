@@ -21,6 +21,10 @@ use Composer\Repository\RepositoryInterface;
  */
 interface PackageInterface
 {
+    const DISPLAY_SOURCE_REF_IF_DEV = 0;
+    const DISPLAY_SOURCE_REF = 1;
+    const DISPLAY_DIST_REF = 2;
+
     /**
      * Returns the package's name without version info, thus not a unique identifier
      *
@@ -198,9 +202,10 @@ interface PackageInterface
      * @see getPrettyVersion
      *
      * @param  bool   $truncate If the source reference is a sha1 hash, truncate it
+     * @param  int    $displayMode One of the DISPLAY_ constants on this interface determining display of references
      * @return string version
      */
-    public function getFullPrettyVersion($truncate = true);
+    public function getFullPrettyVersion($truncate = true, $displayMode = self::DISPLAY_SOURCE_REF_IF_DEV);
 
     /**
      * Returns the release date of the package

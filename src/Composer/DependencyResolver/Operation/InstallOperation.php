@@ -61,7 +61,7 @@ class InstallOperation extends SolverOperation
      */
     public function show($lock)
     {
-        return ($lock ? 'Locking ' : 'Installing ').$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+        return ($lock ? 'Locking ' : 'Installing ').$this->package->getPrettyName().' ('.$this->package->getFullPrettyVersion().')';
     }
 
     /**

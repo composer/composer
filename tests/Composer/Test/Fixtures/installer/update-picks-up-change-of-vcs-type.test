@@ -62,4 +62,4 @@ update mirrors
     "platform-dev": []
 }
 --EXPECT--
-
+Updating a/a (1.0.0 old-hg-ref => 1.0.0 new-git-ref)

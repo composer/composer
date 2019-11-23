@@ -210,18 +210,30 @@ abstract class BasePackage implements PackageInterface
     /**
      * {@inheritDoc}
      */
-    public function getFullPrettyVersion($truncate = true)
+    public function getFullPrettyVersion($truncate = true, $displayMode = PackageInterface::DISPLAY_SOURCE_REF_IF_DEV)
     {
-        if (!$this->isDev() || !in_array($this->getSourceType(), array('hg', 'git'))) {
+        if ($displayMode === PackageInterface::DISPLAY_SOURCE_REF_IF_DEV &&
+            (!$this->isDev() || !in_array($this->getSourceType(), array('hg', 'git')))
+        ) {
             return $this->getPrettyVersion();
         }
 
-        // if source reference is a sha1 hash -- truncate
-        if ($truncate && strlen($this->getSourceReference()) === 40) {
-            return $this->getPrettyVersion() . ' ' . substr($this->getSourceReference(), 0, 7);
+        switch ($displayMode) {
+            case PackageInterface::DISPLAY_SOURCE_REF_IF_DEV:
+            case PackageInterface::DISPLAY_SOURCE_REF:
+                $reference = $this->getSourceReference();
+                break;
+            case PackageInterface::DISPLAY_DIST_REF:
+                $reference = $this->getDistReference();
+                break;
         }
 
-        return $this->getPrettyVersion() . ' ' . $this->getSourceReference();
+        // if source reference is a sha1 hash -- truncate
+        if ($truncate && strlen($reference) === 40) {
+            return $this->getPrettyVersion() . ' ' . substr($reference, 0, 7);
+        }
+
+        return $this->getPrettyVersion() . ' ' . $reference;
     }
 
     public function getStabilityPriority()
