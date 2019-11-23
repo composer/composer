@@ -143,7 +143,7 @@ class GitDriver extends VcsDriver
     public function getChangeDate($identifier)
     {
         $this->process->execute(sprintf(
-            'git log -1 --format=%%at %s',
+            'git -c log.showSignature=false log -1 --format=%%at %s',
             ProcessExecutor::escape($identifier)
         ), $output, $this->repoDir);
 
