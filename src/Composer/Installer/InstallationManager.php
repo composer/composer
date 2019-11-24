@@ -238,7 +238,7 @@ class InstallationManager
                 return $installManager->$jobType($repo, $operation);
             })->then(function () use ($jobType, $installer, $package, $initialPackage) {
                 return $installer->cleanup($jobType, $package, $initialPackage);
-            })->then(function () use ($jobType, $installer, $package, $initialPackage, $runScripts, $dispatcher, $installManager, $devMode, $repo, $operations, $operation) {
+            })->then(function () use ($jobType, $runScripts, $dispatcher, $installManager, $devMode, $repo, $operations, $operation) {
                 $repo->write($devMode, $installManager);
 
                 $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($jobType);
