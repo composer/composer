@@ -65,6 +65,6 @@ class PoolTest extends TestCase
 
     protected function createPool()
     {
-        return new Pool(array('stable' => BasePackage::STABILITY_STABLE));
+        return new Pool();
     }
 }
