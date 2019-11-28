@@ -192,6 +192,10 @@ class ArrayDumperTest extends TestCase
                 array('foo' => 'bar'),
             ),
             array(
+                'funding',
+                array('type' => 'foo', 'url' => 'https://example.com'),
+            ),
+            array(
                 'require',
                 array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'requires',

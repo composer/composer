@@ -73,6 +73,15 @@ class ValidatingArrayLoaderTest extends TestCase
                         'rss' => 'http://example.org/rss',
                         'chat' => 'http://example.org/chat',
                     ),
+                    'funding' => array(
+                        array(
+                            'type' => 'example',
+                            'url' => 'https://example.org/fund'
+                        ),
+                        array(
+                            'url' => 'https://example.org/fund'
+                        ),
+                    ),
                     'require' => array(
                         'a/b' => '1.*',
                         'b/c' => '~2',

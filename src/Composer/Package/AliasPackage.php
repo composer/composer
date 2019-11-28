@@ -377,6 +377,11 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         return $this->aliasOf->getSupport();
     }
 
+    public function getFunding()
+    {
+        return $this->aliasOf->getFunding();
+    }
+
     public function getNotificationUrl()
     {
         return $this->aliasOf->getNotificationUrl();

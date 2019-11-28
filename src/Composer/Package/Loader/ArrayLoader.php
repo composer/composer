@@ -198,6 +198,10 @@ class ArrayLoader implements LoaderInterface
                 $package->setSupport($config['support']);
             }
 
+            if (!empty($config['funding']) && is_array($config['funding'])) {
+                $package->setFunding($config['funding']);
+            }
+
             if (isset($config['abandoned'])) {
                 $package->setAbandoned($config['abandoned']);
             }
