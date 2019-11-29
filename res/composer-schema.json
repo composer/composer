@@ -41,7 +41,7 @@
         "version": {
             "type": "string",
             "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes.",
-            "pattern": "^v?\\d+(((\\.\\d+)?\\.\\d+)?\\.\\d+)?"
+            "pattern": "^v?\\d+(((\\.\\d+)?\\.\\d+)?\\.\\d+)?|^dev-"
         },
         "time": {
             "type": "string",
