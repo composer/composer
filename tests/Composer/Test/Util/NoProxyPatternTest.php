@@ -56,7 +56,7 @@ class NoProxyPatternTest extends TestCase
 
     public function dataIpAddress()
     {
-        $noproxy = '192.168.1.1, 192.168.1.2, 192.168.1.3, 2001:db8::52:0:1';
+        $noproxy = '192.168.1.1, 2001:db8::52:0:1';
 
         // noproxy, url, expected
         return array(
@@ -81,14 +81,14 @@ class NoProxyPatternTest extends TestCase
 
     public function dataIpRange()
     {
-        $noproxy = '10.0.0.0/30, 2002:db8:a::45/64';
+        $noproxy = '10.0.0.0/30, 2002:db8:a::45/121';
 
         // noproxy, url, expected
         return array(
             'match IPv4/CIDR'       => array($noproxy, '10.0.0.2', true),
             'no match IPv4/CIDR'    => array($noproxy, '10.0.0.4', false),
-            'match IPv6/CIDR'       => array($noproxy, '[2002:db8:a:0:0:0:0:123]', true),
-            'no match IPv6'         => array($noproxy, '[2001:db8::52:0:2]', false),
+            'match IPv6/CIDR'       => array($noproxy, '[2002:db8:a:0:0:0:0:7f]', true),
+            'no match IPv6'         => array($noproxy, '[2002:db8:a:0:0:0:0:ff]', false),
             'match mapped IPv4'     => array($noproxy, '[::FFFF:0A00:0002]', true),
             'no match mapped IPv4'  => array($noproxy, '[::FFFF:0A00:0004]', false),
         );
