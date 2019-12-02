@@ -285,6 +285,7 @@ An example:
             "type": "other",
             "url": "https://www.doctrine-project.org/sponsorship.html"
         }
+    ]
 }
 ```
 
