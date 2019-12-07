@@ -179,7 +179,7 @@ class ZipDownloaderTest extends TestCase
 
     /**
      * @expectedException \Exception
-     * @expectedExceptionMessage Failed to execute unzip
+     * @expectedExceptionMessage Failed to execute (1) unzip
      */
     public function testSystemUnzipOnlyFailed()
     {
@@ -305,7 +305,7 @@ class ZipDownloaderTest extends TestCase
 
     /**
      * @expectedException \Exception
-     * @expectedExceptionMessage Failed to execute unzip
+     * @expectedExceptionMessage Failed to execute (1) unzip
      */
     public function testWindowsFallbackFailed()
     {
