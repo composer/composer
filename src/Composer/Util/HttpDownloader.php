@@ -190,7 +190,7 @@ class HttpDownloader
             $downloader->scheduleNextJob();
 
             return $response;
-        }, function ($e) use ($io, &$job, $downloader) {
+        }, function ($e) use (&$job, $downloader) {
             $job['status'] = HttpDownloader::STATUS_FAILED;
             $job['exception'] = $e;
 

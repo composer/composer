@@ -1119,7 +1119,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $data;
         };
 
-        $reject = function ($e) use (&$retries, $httpDownloader, $filename, $options, &$reject, $accept, $io, $url, $cache, &$degradedMode) {
+        $reject = function ($e) use (&$retries, $httpDownloader, $filename, $options, &$reject, $accept, $io, $url, &$degradedMode) {
             if ($e instanceof TransportException && $e->getStatusCode() === 404) {
                 return false;
             }
