@@ -29,13 +29,13 @@
         "composer/xdebug-handler": "^1.1",
         "justinrainbow/json-schema": "^3.0 || ^4.0 || ^5.0",
         "psr/log": "^1.0",
+        "react/promise": "^1.2 || ^2.7",
         "seld/jsonlint": "^1.4",
         "seld/phar-utils": "^1.0",
         "symfony/console": "^2.7 || ^3.0 || ^4.0 || ^5.0",
         "symfony/filesystem": "^2.7 || ^3.0 || ^4.0 || ^5.0",
         "symfony/finder": "^2.7 || ^3.0 || ^4.0 || ^5.0",
-        "symfony/process": "^2.7 || ^3.0 || ^4.0 || ^5.0",
-        "react/promise": "^1.2 || ^2.7"
+        "symfony/process": "^2.7 || ^3.0 || ^4.0 || ^5.0"
     },
     "conflict": {
         "symfony/console": "2.8.38"
@@ -52,7 +52,8 @@
     "config": {
         "platform": {
             "php": "5.3.9"
-        }
+        },
+        "sort-packages": true
     },
     "extra": {
         "branch-alias": {
