@@ -65,7 +65,7 @@ script:
   # Run PHPStan
   - if [[ $PHPSTAN == "1" ]]; then
       bin/composer require --dev phpstan/phpstan-shim:^0.11 --ignore-platform-reqs &&
-      vendor/bin/phpstan.phar analyse src tests --configuration=phpstan/config.neon --autoload-file=phpstan/autoload.php;
+      vendor/bin/phpstan.phar analyse --configuration=phpstan/config.neon;
     fi
 
 before_deploy:
