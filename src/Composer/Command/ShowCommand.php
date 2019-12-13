@@ -563,7 +563,7 @@ EOT
         $pool = $repositorySet->createPoolForPackage($package->getName());
 
         // select preferred package according to policy rules
-        if (!$matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($pool, array(), $matches)) {
+        if (!$matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($pool, $matches)) {
             $matchedPackage = $pool->literalToPackage($preferred[0]);
         }
 
