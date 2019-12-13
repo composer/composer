@@ -1,4 +1,6 @@
 parameters:
+    autoload_files:
+        - phpstan/autoload.php
     level: 0
     excludes_analyse:
         - 'tests/Composer/Test/Fixtures'
@@ -39,3 +41,6 @@ parameters:
         # parent call in test mocks
         - '~^Composer\\Test\\Mock\\HttpDownloaderMock::__construct\(\) does not call parent constructor from Composer\\Util\\HttpDownloader\.$~'
         - '~^Composer\\Test\\Mock\\InstallationManagerMock::__construct\(\) does not call parent constructor from Composer\\Installer\\InstallationManager\.$~'
+    paths:
+        - src
+        - tests
