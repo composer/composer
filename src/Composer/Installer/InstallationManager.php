@@ -246,7 +246,7 @@ class InstallationManager
                     $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
                 }
             }, function ($e) use ($jobType, $installer, $package, $initialPackage, $loop, $io) {
-                $this->io->writeError('    <error>' . ucfirst($jobType) .' of '.$package->getPrettyName().' failed</error>');
+                $io->writeError('    <error>' . ucfirst($jobType) .' of '.$package->getPrettyName().' failed</error>');
 
                 $promise = $installer->cleanup($jobType, $package, $initialPackage);
                 if ($promise) {

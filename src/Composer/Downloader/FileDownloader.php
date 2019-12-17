@@ -113,7 +113,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $accept = null;
         $reject = null;
-        $download = function () use ($io, $output, $httpDownloader, $cache, $eventDispatcher, $package, $fileName, $path, &$urls, &$accept, &$reject) {
+        $download = function () use ($io, $output, $httpDownloader, $cache, $eventDispatcher, $package, $fileName, &$urls, &$accept, &$reject) {
             $url = reset($urls);
 
             if ($eventDispatcher) {
@@ -160,7 +160,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             });
         };
 
-        $accept = function ($response) use ($io, $cache, $package, $fileName, $path, $self, &$urls) {
+        $accept = function ($response) use ($cache, $package, $fileName, $self, &$urls) {
             $url = reset($urls);
             $cacheKey = $url['cacheKey'];
 
@@ -174,7 +174,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             return $fileName;
         };
 
-        $reject = function ($e) use ($io, &$urls, $download, $fileName, $path, $package, &$retries, $filesystem, $self) {
+        $reject = function ($e) use ($io, &$urls, $download, $fileName, $package, &$retries, $filesystem, $self) {
             // clean up
             if (file_exists($fileName)) {
                 $filesystem->unlink($fileName);
