@@ -45,6 +45,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     /** @var VersionCacheInterface */
     private $versionCache;
     private $emptyReferences = array();
+    private $versionTransportExceptions = array();
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, array $drivers = null, VersionCacheInterface $versionCache = null)
     {
@@ -123,6 +124,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     public function getEmptyReferences()
     {
         return $this->emptyReferences;
+    }
+
+    public function getVersionTransportExceptions()
+    {
+        return $this->versionTransportExceptions;
     }
 
     protected function initialize()
@@ -226,11 +232,14 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
                 $this->addPackage($this->loader->load($this->preProcess($driver, $data, $identifier)));
             } catch (\Exception $e) {
-                if ($e instanceof TransportException && $e->getCode() === 404) {
-                    $this->emptyReferences[] = $identifier;
+                if ($e instanceof TransportException) {
+                    $this->versionTransportExceptions['tags'][$tag] = $e;
+                    if ($e->getCode() === 404) {
+                        $this->emptyReferences[] = $identifier;
+                    }
                 }
                 if ($isVeryVerbose) {
-                    $this->io->writeError('<warning>Skipped tag '.$tag.', '.($e instanceof TransportException ? 'no composer file was found' : $e->getMessage()).'</warning>');
+                    $this->io->writeError('<warning>Skipped tag '.$tag.', '.($e instanceof TransportException ? 'no composer file was found (' . $e->getCode() . ' HTTP status code)' : $e->getMessage()).'</warning>');
                 }
                 continue;
             }
@@ -306,11 +315,12 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 }
                 $this->addPackage($package);
             } catch (TransportException $e) {
+                $this->versionTransportExceptions['branches'][$branch] = $e;
                 if ($e->getCode() === 404) {
                     $this->emptyReferences[] = $identifier;
                 }
                 if ($isVeryVerbose) {
-                    $this->io->writeError('<warning>Skipped branch '.$branch.', no composer file was found</warning>');
+                    $this->io->writeError('<warning>Skipped branch '.$branch.', no composer file was found (' . $e->getCode() . ' HTTP status code)</warning>');
                 }
                 continue;
             } catch (\Exception $e) {
