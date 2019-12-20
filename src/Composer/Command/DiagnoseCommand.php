@@ -576,6 +576,13 @@ EOT
             $warnings['xdebug_loaded'] = true;
         }
 
+        if (defined('PHP_WINDOWS_VERSION_BUILD')
+            && (version_compare(PHP_VERSION, '7.2.23', '<')
+            || (version_compare(PHP_VERSION, '7.3.0', '>=')
+            && version_compare(PHP_VERSION, '7.3.10', '<')))) {
+            $warnings['onedrive'] = PHP_VERSION;
+        }
+
         if (!empty($errors)) {
             foreach ($errors as $error => $current) {
                 switch ($error) {
@@ -698,6 +705,11 @@ EOT
                         $text .= "Add the following to the end of your `php.ini` to disable it:".PHP_EOL;
                         $text .= "  xdebug.profiler_enabled = 0";
                         $displayIniMessage = true;
+                        break;
+
+                    case 'onedrive':
+                        $text = "The Windows OneDrive folder is not supported on PHP versions below 7.2.23 and 7.3.10.".PHP_EOL;
+                        $text .= "Upgrade your PHP ({$current}) to use this location with Composer.".PHP_EOL;
                         break;
                 }
                 $out($text, 'comment');
