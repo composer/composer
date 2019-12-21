@@ -244,7 +244,11 @@ class EventDispatcher
                     }
                 }
 
-                if (substr($exec, 0, 5) === '@php ') {
+                if (substr($exec, 0, 8) === '@putenv ') {
+                    putenv(substr($exec, 8));
+
+                    continue;
+                } elseif (substr($exec, 0, 5) === '@php ') {
                     $exec = $this->getPhpExecCommand() . ' ' . substr($exec, 5);
                 } else {
                     $finder = new PhpExecutableFinder();
@@ -512,7 +516,7 @@ class EventDispatcher
      */
     protected function isComposerScript($callable)
     {
-        return '@' === substr($callable, 0, 1) && '@php ' !== substr($callable, 0, 5);
+        return '@' === substr($callable, 0, 1) && '@php ' !== substr($callable, 0, 5) && '@putenv ' !== substr($callable, 0, 8);
     }
 
     /**

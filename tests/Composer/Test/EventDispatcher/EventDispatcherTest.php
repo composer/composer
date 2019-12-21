@@ -230,6 +230,43 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals($expected, $io->getOutput());
     }
 
+    public function testDispatcherCanPutEnv()
+    {
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs(array(
+                $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ))
+            ->setMethods(array(
+                'getListeners',
+            ))
+            ->getMock();
+
+        $listeners = array(
+            '@putenv ABC=123',
+            'Composer\\Test\\EventDispatcher\\EventDispatcherTest::getTestEnv',
+        );
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listeners));
+
+        $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
+
+        $expected = '> post-install-cmd: @putenv ABC=123'.PHP_EOL.
+            '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::getTestEnv'.PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
+    }
+
+    static public function getTestEnv() {
+        $val = getenv('ABC');
+        if ($val !== '123') {
+            throw new \Exception('getenv() did not return the expected value. expected 123 got '. var_export($val, true));
+        }
+    }
+
     public function testDispatcherCanExecuteComposerScriptGroups()
     {
         $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
