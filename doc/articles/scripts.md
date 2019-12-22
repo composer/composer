@@ -357,6 +357,8 @@ To set an environment variable in a cross-platform way, you can use `@putenv`:
 }
 ```
 
+> **Note:** Available since composer 1.10+
+
 ## Custom descriptions.
 
 You can set custom script descriptions with the following in your `composer.json`:
