@@ -111,6 +111,14 @@ Linux distributions.
 
 Now run `composer` in order to run Composer instead of `php composer.phar`.
 
+## Installation - macOS
+
+Homebrew could be another way to install composer.
+
+```bash
+brew install composer
+```
+
 ## Installation - Windows
 
 ### Using the Installer
