@@ -5,6 +5,10 @@
     "additionalProperties": false,
     "required": [ "name", "description" ],
     "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "URL to the underlying JSON schema, can be specified to assist with auto-completion."
+        },
         "name": {
             "type": "string",
             "description": "Package name, including 'vendor-name/' prefix."
