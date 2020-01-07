@@ -306,14 +306,6 @@ EOT
             'process-timeout' => array('is_numeric', 'intval'),
             'use-include-path' => array($booleanValidator, $booleanNormalizer),
             'use-github-api' => array($booleanValidator, $booleanNormalizer),
-            'preferred-install' => array(
-                function ($val) {
-                    return in_array($val, array('auto', 'source', 'dist'), true);
-                },
-                function ($val) {
-                    return $val;
-                },
-            ),
             'store-auths' => array(
                 function ($val) {
                     return in_array($val, array('true', 'false', 'prompt'), true);
@@ -458,6 +450,16 @@ EOT
                 },
             ),
         );
+        $uniqueOrDotNestedArray = array(
+        	'preferred-install' => array(
+		        function ($val) {
+			        return in_array($val, array('auto', 'source', 'dist'), true);
+		        },
+		        function ($val) {
+			        return $val;
+		        },
+	        ),
+        );
 
         if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {
             if ($settingKey === 'disable-tls' && $this->config->get('disable-tls')) {
@@ -478,6 +480,34 @@ EOT
 
             return 0;
         }
+	    if (isset($uniqueOrDotNestedArray[$settingKey])) {
+
+		    try {
+		    	$this->handleSingleValue($settingKey, $uniqueOrDotNestedArray[$settingKey], $values, 'addConfigSetting');
+		    } catch ( \RuntimeException $e ) {
+
+			    if ( $input->getOption( 'unset' ) ) {
+				    $this->configSource->removeProperty( $settingKey );
+
+				    return 0;
+			    }
+
+			    $valueData = explode( '.', $values[0] );
+
+			    if ( ! isset( $valueData[0], $valueData[1] ) ) {
+				    throw new \RuntimeException( 'Invalid pattern format. It should be my-organization/stable-package.dist' );
+			    }
+
+			    list( $validator, $normalizer ) = $uniqueOrDotNestedArray[ $settingKey ];
+			    if ( ! $validator( $valueData[1] ) ) {
+				    throw new \RuntimeException( 'Invalid option for install method. It accepts only: auto, source, and dist' );
+			    }
+
+			    $this->configSource->addProperty( 'config.' . $settingKey . '.' . $valueData[0], $valueData[1] );
+		    }
+
+		    return 0;
+	    }
 
         // handle properties
         $uniqueProps = array(

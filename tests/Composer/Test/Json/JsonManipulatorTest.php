@@ -1814,6 +1814,51 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+	public function testAddConfigWithPackage() {
+		$manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "authors": [],
+                "extra": {
+                    "package-xml": "package.xml"
+                }
+            }
+        }
+    ],
+    "config": {
+        "platform": {
+            "php": "5.3.9"
+        }
+    }
+}');
+
+		$this->assertTrue($manipulator->addProperty('config.preferred-install.my-organization/stable-package', 'dist'));
+		$this->assertEquals('{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "authors": [],
+                "extra": {
+                    "package-xml": "package.xml"
+                }
+            }
+        }
+    ],
+    "config": {
+        "platform": {
+            "php": "5.3.9"
+        },
+        "preferred-install": {
+            "my-organization/stable-package": "dist"
+        }
+    }
+}
+', $manipulator->getContents());
+	}
+
     public function testAddRepositoryCanInitializeEmptyRepositories()
     {
         $manipulator = new JsonManipulator('{
