@@ -249,6 +249,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->loadProviderListings($this->loadRootServerFile());
         }
 
+        if ($this->hasPartialPackages && null === $this->partialPackagesByName) {
+            $this->initializePartialPackages();
+            return array_keys($this->partialPackagesByName);
+        }
+
         if ($this->lazyProvidersUrl) {
             // Can not determine list of provided packages for lazy repositories
             return array();
@@ -808,6 +813,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private function initializePartialPackages()
     {
         $rootData = $this->loadRootServerFile();
+
+        // Already initialized
+        if ($rootData === true) {
+            return;
+        }
 
         $this->partialPackagesByName = array();
         foreach ($rootData['packages'] as $package => $versions) {
