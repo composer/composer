@@ -283,6 +283,10 @@ class ComposerRepositoryTest extends TestCase
             ->with('example.org', 'http://example.org/packages.json', false)
             ->willReturn(json_encode(array(
                 'providers-lazy-url' => '/foo/p/%package%.json',
+                'packages' => array('foo/bar' => array(
+                    'dev-branch' => array(),
+                    'v1.0.0' => array(),
+                ))
             )));
 
         $repository = new ComposerRepository(
