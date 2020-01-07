@@ -39,7 +39,7 @@ class ExecCommand extends BaseCommand
             ->setHelp(
                 <<<EOT
 Executes a vendored binary/script.
-                
+
 Read more at https://getcomposer.org/doc/03-cli.md#exec
 EOT
             )
@@ -90,6 +90,14 @@ EOT
         $dispatcher->addListener('__exec_command', $binary);
         if ($output->getVerbosity() === OutputInterface::VERBOSITY_NORMAL) {
             $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
+        }
+
+        if (getcwd() !== $this->getApplication()->getWorkingDirectory()) {
+            try {
+                chdir($this->getApplication()->getWorkingDirectory());
+            } catch (\Exception $e) {
+                throw new \RuntimeException('Could not switch back to working directory "'.$this->getApplication()->getWorkingDirectory().'"', 0, $e);
+            }
         }
 
         return $dispatcher->dispatchScript('__exec_command', true, $input->getArgument('args'));

@@ -62,6 +62,12 @@ class Application extends BaseApplication
     private $hasPluginCommands = false;
     private $disablePluginsByDefault = false;
 
+    /**
+     * @var string Store the working directory so Composer
+     *             can switch back to it if there are issues
+     */
+    private $workingDirectory = '';
+
     public function __construct()
     {
         static $shutdownRegistered = false;
@@ -90,6 +96,8 @@ class Application extends BaseApplication
         }
 
         $this->io = new NullIO();
+
+        $this->workingDirectory = getcwd();
 
         parent::__construct('Composer', Composer::getVersion());
     }
@@ -490,5 +498,15 @@ class Application extends BaseApplication
         }
 
         return $commands;
+    }
+
+    /**
+     * Get the working directoy
+     *
+     * @return string
+     */
+    public function getWorkingDirectory()
+    {
+        return $this->workingDirectory;
     }
 }
