@@ -1814,6 +1814,46 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddSuggestWithPackage()
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "authors": [],
+                "extra": {
+                    "package-xml": "package.xml"
+                }
+            }
+        }
+    ],
+    "suggest": {
+        "package": "Description"
+    }
+}');
+
+        $this->assertTrue($manipulator->addProperty('suggest.new-package', 'new-description'));
+        $this->assertEquals('{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "authors": [],
+                "extra": {
+                    "package-xml": "package.xml"
+                }
+            }
+        }
+    ],
+    "suggest": {
+        "package": "Description",
+        "new-package": "new-description"
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testAddRepositoryCanInitializeEmptyRepositories()
     {
         $manipulator = new JsonManipulator('{
