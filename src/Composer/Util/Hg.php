@@ -53,7 +53,7 @@ class Hg
             return;
         }
 
-        // Try with the authentication informations available
+        // Try with the authentication information available
         if (preg_match('{^(https?)://((.+)(?:\:(.+))?@)?([^/]+)(/.*)?}mi', $url, $match) && $this->io->hasAuthentication($match[5])) {
             $auth = $this->io->getAuthentication($match[5]);
             $authenticatedUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[5] . (!empty($match[6]) ? $match[6] : null);
