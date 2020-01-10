@@ -1,0 +1,76 @@
+--TEST--
+Local repository path fix on lock file when running update
+--COMPOSER--
+{
+    "repositories": [
+        {
+          "type": "path",
+          "url": "./Fixtures/installer/update-local-repo-path-change/"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "a/a": "dev-master"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "./example-a",
+                "reference": "3351ea27bebe6f6d750b6e304a6e0f4c92661210"
+            },
+            "type": "library"
+        }
+    ],
+    "packages-dev": null,
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {"a/a":20},
+    "prefer-stable": false,
+    "prefer-lowest": false
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a",
+        "version": "dev-master",
+        "dist": {
+            "type": "path",
+            "url": "./Fixtures/installer/update-local-repo-path-change",
+            "reference": "3351ea27bebe6f6d750b6e304a6e0f4c92661210"
+        },
+        "type": "library",
+        "dist": { "reference": "3351ea27bebe6f6d750b6e304a6e0f4c92661210", "url": "./Fixtures/installer/update-local-repo-path-change", "type": "path" }
+    }
+]
+--RUN--
+update
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "./Fixtures/installer/update-local-repo-path-change",
+                "reference": "3351ea27bebe6f6d750b6e304a6e0f4c92661210"
+            },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {"a/a":20},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
