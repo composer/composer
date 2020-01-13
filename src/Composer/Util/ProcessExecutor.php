@@ -112,10 +112,18 @@ class ProcessExecutor
             return;
         }
 
-        if (Process::ERR === $type) {
-            $this->io->writeError($buffer, false);
+        if (method_exists($this->io, 'writeRaw')) {
+            if (Process::ERR === $type) {
+                $this->io->writeErrorRaw($buffer, false);
+            } else {
+                $this->io->writeRaw($buffer, false);
+            }
         } else {
-            $this->io->write($buffer, false);
+            if (Process::ERR === $type) {
+                $this->io->writeError($buffer, false);
+            } else {
+                $this->io->write($buffer, false);
+            }
         }
     }
 

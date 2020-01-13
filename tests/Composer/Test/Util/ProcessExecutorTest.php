@@ -111,6 +111,6 @@ class ProcessExecutorTest extends TestCase
         $process = new ProcessExecutor(new ConsoleIO(new ArrayInput([]), $output, new HelperSet([])));
 
         $process->execute('echo \'<error>foo</error>\'');
-        $this->assertSame('<error>foo</error>', $output->fetch());
+        $this->assertSame('<error>foo</error>'.PHP_EOL, $output->fetch());
     }
 }
