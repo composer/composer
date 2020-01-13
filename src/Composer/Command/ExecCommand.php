@@ -92,9 +92,12 @@ EOT
             $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
         }
 
-        if (getcwd() !== $this->getApplication()->getWorkingDirectory()) {
+        // If the CWD was modified, we restore it to what it was initially, as it was
+        // most likely modified by the global command, and we want exec to run in the local working directory
+        // not the global one
+        if (getcwd() !== $this->getApplication()->getInitialWorkingDirectory()) {
             try {
-                chdir($this->getApplication()->getWorkingDirectory());
+                chdir($this->getApplication()->getInitialWorkingDirectory());
             } catch (\Exception $e) {
                 throw new \RuntimeException('Could not switch back to working directory "'.$this->getApplication()->getWorkingDirectory().'"', 0, $e);
             }
