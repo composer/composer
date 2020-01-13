@@ -466,6 +466,16 @@ EOT
                 },
             ),
         );
+        $uniqueOrDotNestedArray = array(
+        	'preferred-install' => array(
+		        function ($val) {
+			        return in_array($val, array('auto', 'source', 'dist'), true);
+		        },
+		        function ($val) {
+			        return $val;
+		        },
+	        ),
+        );
 
         if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {
             if ($settingKey === 'disable-tls' && $this->config->get('disable-tls')) {
@@ -483,6 +493,23 @@ EOT
         }
         if (isset($multiConfigValues[$settingKey])) {
             $this->handleMultiValue($settingKey, $multiConfigValues[$settingKey], $values, 'addConfigSetting');
+
+            return 0;
+        }
+        // handle preferred-install per-package config
+        if (preg_match('/^preferred-install\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                $this->configSource->removeConfigSetting($settingKey);
+
+                return 0;
+            }
+
+            list($validator) = $uniqueConfigValues['preferred-install'];
+            if (!$validator($values[0])) {
+                throw new \RuntimeException('Invalid value for '.$settingKey.'. Should be one of: auto, source, or dist');
+            }
+
+            $this->configSource->addConfigSetting($settingKey, $values[0]);
 
             return 0;
         }
