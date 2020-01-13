@@ -601,6 +601,18 @@ EOT
             return 0;
         }
 
+        if (preg_match('/^suggest\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                $this->configSource->removeProperty($settingKey);
+
+                return 0;
+            }
+
+            $this->configSource->addProperty($settingKey, $values[0]);
+
+            return 0;
+        }
+
         // handle platform
         if (preg_match('/^platform\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
