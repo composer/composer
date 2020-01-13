@@ -66,6 +66,22 @@ abstract class BaseIO implements IOInterface, LoggerInterface
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function writeRaw($messages, $newline = true, $verbosity = self::NORMAL)
+    {
+        $this->write($messages, $newline, $verbosity);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function writeErrorRaw($messages, $newline = true, $verbosity = self::NORMAL)
+    {
+        $this->writeError($messages, $newline, $verbosity);
+    }
+
+    /**
      * Check for overwrite and set the authentication information for the repository.
      *
      * @param string $repositoryName The unique name of repository
