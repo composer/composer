@@ -28,7 +28,7 @@ use Composer\Semver\Constraint\MultiConstraint;
 class PoolBuilder
 {
     private $isPackageAcceptableCallable;
-    private $filterRequires;
+    private $rootRequires;
     private $rootAliases;
     private $rootReferences;
 
@@ -40,15 +40,15 @@ class PoolBuilder
     private $packages = array();
     private $priorities = array();
 
-    public function __construct($isPackageAcceptableCallable, array $filterRequires = array())
+    public function __construct($isPackageAcceptableCallable, array $rootRequires = array())
     {
         $this->isPackageAcceptableCallable = $isPackageAcceptableCallable;
-        $this->filterRequires = $filterRequires;
+        $this->rootRequires = $rootRequires;
     }
 
     public function buildPool(array $repositories, array $rootAliases, array $rootReferences, Request $request)
     {
-        $pool = new Pool($this->filterRequires);
+        $pool = new Pool();
         $this->rootAliases = $rootAliases;
         $this->rootReferences = $rootReferences;
 

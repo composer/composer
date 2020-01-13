@@ -65,7 +65,7 @@ Your requirements could not be resolved to an installable set of packages.
     - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> no matching package found.
   Problem 4
     - stable-requiree-excluded/pkg is locked to version 1.0.0 and an update of this package was not requested.
-    - Same name, can only install one of: stable-requiree-excluded/pkg[1.0.1, 1.0.0].
+    - Same name, can only install one of: stable-requiree-excluded/pkg[1.0.0, 1.0.1].
     - Installation request for stable-requiree-excluded/pkg 1.0.1 -> satisfiable by stable-requiree-excluded/pkg[1.0.1].
 
 Potential causes:

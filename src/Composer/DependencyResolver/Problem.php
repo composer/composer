@@ -148,13 +148,15 @@ class Problem
                     return "\n    - The requested package ".$packageName.' could not be found, it looks like its name is invalid, "'.$illegalChars.'" is not allowed in package names.';
                 }
 
-                if ($providers = $this->pool->whatProvides($packageName, $constraint, true, true)) {
+                // TODO: The pool doesn't know about these anymore, it has to ask the RepositorySet
+                /*if ($providers = $this->pool->whatProvides($packageName, $constraint, true, true)) {
                     return "\n    - The requested package ".$packageName.$this->constraintToText($constraint).' is satisfiable by '.$this->getPackageList($providers).' but these conflict with your requirements or minimum-stability.';
-                }
+                }*/
 
-                if ($providers = $this->pool->whatProvides($packageName, null, true, true)) {
+                // TODO: The pool doesn't know about these anymore, it has to ask the RepositorySet
+                /*if ($providers = $this->pool->whatProvides($packageName, null, true, true)) {
                     return "\n    - The requested package ".$packageName.$this->constraintToText($constraint).' exists as '.$this->getPackageList($providers).' but these are rejected by your constraint.';
-                }
+                }*/
 
                 return "\n    - The requested package ".$packageName.' could not be found in any version, there may be a typo in the package name.';
             }

@@ -27,7 +27,7 @@ class RuleSetIteratorTest extends TestCase
 
     protected function setUp()
     {
-        $this->pool = new Pool(array('stable' => BasePackage::STABILITY_STABLE));
+        $this->pool = new Pool();
 
         $this->rules = array(
             RuleSet::TYPE_JOB => array(

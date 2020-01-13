@@ -717,16 +717,16 @@ class Installer
             }
         }
 
-        $rootConstraints = array();
+        $rootRequires = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
             if ($this->ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
                 continue;
             }
             if ($constraint instanceof Link) {
-                $rootConstraints[$req] = $constraint->getConstraint();
+                $rootRequires[$req] = $constraint->getConstraint();
             } else {
-                $rootConstraints[$req] = $constraint;
+                $rootRequires[$req] = $constraint;
             }
         }
 
@@ -734,7 +734,7 @@ class Installer
         $this->fixedRootPackage->setRequires(array());
         $this->fixedRootPackage->setDevRequires(array());
 
-        $repositorySet = new RepositorySet($rootAliases, $this->package->getReferences(), $minimumStability, $stabilityFlags, $rootConstraints);
+        $repositorySet = new RepositorySet($rootAliases, $this->package->getReferences(), $minimumStability, $stabilityFlags, $rootRequires);
         $repositorySet->addRepository(new InstalledArrayRepository(array($this->fixedRootPackage)));
         $repositorySet->addRepository($platformRepo);
         if ($this->additionalFixedRepository) {

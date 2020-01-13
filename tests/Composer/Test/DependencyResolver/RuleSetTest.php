@@ -139,7 +139,7 @@ class RuleSetTest extends TestCase
 
     public function testPrettyString()
     {
-        $pool = new Pool(array('stable' => BasePackage::STABILITY_STABLE));
+        $pool = new Pool();
         $pool->setPackages(array(
             $p = $this->getPackage('foo', '2.1'),
         ));
