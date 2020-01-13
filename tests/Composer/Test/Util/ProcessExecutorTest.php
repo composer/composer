@@ -108,7 +108,7 @@ class ProcessExecutorTest extends TestCase
     public function testConsoleIODoesNotFormatSymfonyConsoleStyle()
     {
         $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
-        $process = new ProcessExecutor(new ConsoleIO(new ArrayInput([]), $output, new HelperSet([])));
+        $process = new ProcessExecutor(new ConsoleIO(new ArrayInput(array()), $output, new HelperSet(array())));
 
         $process->execute('echo \'<error>foo</error>\'');
         $this->assertSame('<error>foo</error>'.PHP_EOL, $output->fetch());
