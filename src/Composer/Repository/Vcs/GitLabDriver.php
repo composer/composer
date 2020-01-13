@@ -120,6 +120,42 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function getComposerInformation($identifier)
+    {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getComposerInformation($identifier);
+        }
+
+        if (!isset($this->infoCache[$identifier])) {
+            if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
+                return $this->infoCache[$identifier] = JsonFile::parseJson($res);
+            }
+
+            $composer = $this->getBaseComposerInformation($identifier);
+
+            if ($composer) {
+                // specials for gitlab (this data is only available if authentication is provided)
+                if (!isset($composer['support']['issues']) && isset($this->project['_links']['issues'])) {
+                    $composer['support']['issues'] = $this->project['_links']['issues'];
+                }
+                if (!isset($composer['abandoned']) && !empty($this->project['archived'])) {
+                    $composer['abandoned'] = true;
+                }
+            }
+
+            if ($this->shouldCache($identifier)) {
+                $this->cache->write($identifier, json_encode($composer));
+            }
+
+            $this->infoCache[$identifier] = $composer;
+        }
+
+        return $this->infoCache[$identifier];
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getFileContent($file, $identifier)
