@@ -111,6 +111,14 @@ To disable packagist:
 You can alter repositories in the global config.json file by passing in the
 <info>--global</info> option.
 
+To add or edit suggested packages you can use:
+
+    <comment>%command.full_name% suggest.package reason for the suggestion</comment>
+
+To add or edit extra properties you can use:
+
+    <comment>%command.full_name% extra.property value</comment>
+
 To edit the file in an external editor:
 
     <comment>%command.full_name% --editor</comment>
@@ -601,6 +609,7 @@ EOT
             return 0;
         }
 
+        // handle suggest
         if (preg_match('/^suggest\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->configSource->removeProperty($settingKey);
@@ -608,7 +617,14 @@ EOT
                 return 0;
             }
 
-            $this->configSource->addProperty($settingKey, $values[0]);
+            $this->configSource->addProperty($settingKey, implode(' ', $values));
+
+            return 0;
+        }
+
+        // handle unsetting extra/suggest
+        if (in_array($settingKey, array('suggest', 'extra'), true) && $input->getOption('unset')) {
+            $this->configSource->removeProperty($settingKey);
 
             return 0;
         }
@@ -625,6 +641,8 @@ EOT
 
             return 0;
         }
+
+        // handle unsetting platform
         if ($settingKey === 'platform' && $input->getOption('unset')) {
             $this->configSource->removeConfigSetting($settingKey);
 
