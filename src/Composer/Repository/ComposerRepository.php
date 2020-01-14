@@ -242,11 +242,15 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return array_values($this->loadAsyncPackages($packageMap));
             }
 
-            throw new \LogicException('Composer repositories that have lazy providers and no available-packages list can not load the complete list of packages, use getProviderNames instead.');
+            if ($this->hasPartialPackages()) {
+                return array_values($this->partialPackagesByName);
+            }
+
+            throw new \LogicException('Composer repositories that have lazy providers and no available-packages list can not load the complete list of packages, use getPackageNames instead.');
         }
 
         if ($hasProviders) {
-            throw new \LogicException('Composer repositories that have providers can not load the complete list of packages, use getProviderNames instead.');
+            throw new \LogicException('Composer repositories that have providers can not load the complete list of packages, use getPackageNames instead.');
         }
 
         return parent::getPackages();
@@ -263,6 +267,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             // TODO implement new list API endpoint for those repos somehow?
+
+            if ($this->hasPartialPackages()) {
+                return array_keys($this->partialPackagesByName);
+            }
+
             return array();
         }
 
@@ -389,14 +398,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (null === $this->providerListing) {
             $this->loadProviderListings($this->loadRootServerFile());
-        }
-
-        if ($this->hasPartialPackages) {
-            if (null === $this->partialPackagesByName) {
-                $this->initializePartialPackages();
-            }
-
-            return array_keys($this->partialPackagesByName);
         }
 
         if ($this->lazyProvidersUrl) {

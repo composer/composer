@@ -286,30 +286,28 @@ class ComposerRepositoryTest extends TestCase
 
     public function testGetProviderNamesWillReturnPartialPackageNames()
     {
-        $rfs = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $rfs->expects($this->at(0))
-            ->method('getContents')
-            ->with('example.org', 'http://example.org/packages.json', false)
-            ->willReturn(json_encode(array(
+        $httpDownloader->expects($this->at(0))
+            ->method('get')
+            ->with($url = 'http://example.org/packages.json')
+            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode(array(
                 'providers-lazy-url' => '/foo/p/%package%.json',
                 'packages' => array('foo/bar' => array(
-                    'dev-branch' => array(),
-                    'v1.0.0' => array(),
+                    'dev-branch' => array('name' => 'foo/bar'),
+                    'v1.0.0' => array('name' => 'foo/bar'),
                 ))
-            )));
+            ))));
 
         $repository = new ComposerRepository(
             array('url' => 'http://example.org/packages.json'),
             new NullIO(),
             FactoryMock::createConfig(),
-            null,
-            $rfs
+            $httpDownloader
         );
 
-        $this->assertTrue($repository->hasProviders());
-        $this->assertEquals(array('foo/bar'), $repository->getProviderNames());
+        $this->assertEquals(array('foo/bar'), $repository->getPackageNames());
     }
 }
