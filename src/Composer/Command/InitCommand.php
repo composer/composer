@@ -439,38 +439,32 @@ EOT
 
         $versionParser = new VersionParser();
 
+        // Collect existing packages
         $composer = $this->getComposer(false);
-        $installedRepo = ($composer) ? $composer->getRepositoryManager()->getLocalRepository() : null;
+        $installedRepo = $composer ? $composer->getRepositoryManager()->getLocalRepository() : null;
+        $existingPackages = [];
+        if ($installedRepo) {
+            foreach ($installedRepo->getPackages() as $package) {
+                $existingPackages[] = $package->getName();
+            }
+        }
+        foreach ($requires as $requiredPackage) {
+            $existingPackages[] = substr($requiredPackage, 0, strpos($requiredPackage, ' '));
+        }
+        unset($composer, $installedRepo, $requiredPackage);
+
         $io = $this->getIO();
         while (null !== $package = $io->ask('Search for a package: ')) {
             $matches = $this->findPackages($package);
 
             if (count($matches)) {
-                // Exclude existing packages
-                $existingPackages = [];
-                foreach ($matches as $position => $foundPackage) {
-                    if ($installedRepo && $installedRepo->findPackage($foundPackage['name'], '*')) {
-                        $existingPackages[] = $position;
-                        continue;
-                    }
-
-                    foreach ($requires as $requiredPackage) {
-                        $existingPackageName = substr($requiredPackage, 0, strpos($requiredPackage, ' '));
-
-                        if ($foundPackage['name'] == $existingPackageName) {
-                            $existingPackages[] = $position;
-                            break;
-                        }
-                    }
-                }
-
                 // Remove existing packages from search results.
-                if (!empty($existingPackages)) {
-                    foreach ($existingPackages as $position) {
+                foreach ($matches as $position => $foundPackage) {
+                    if (in_array($foundPackage['name'], $existingPackages, true)) {
                         unset($matches[$position]);
                     }
-                    $matches = array_values($matches);
                 }
+                $matches = array_values($matches);
 
                 $exactMatch = null;
                 $choices = array();
@@ -569,6 +563,7 @@ EOT
 
                 if (false !== $package) {
                     $requires[] = $package;
+                    $existingPackages[] = substr($package, 0, strpos($package, ' '));
                 }
             }
         }
