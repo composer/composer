@@ -153,19 +153,26 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 }
             }
 
+            $output = '';
+            if (is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
+                $package['dist']['reference'] = trim($output);
+            }
+
             if (!isset($package['version'])) {
                 $versionData = $this->versionGuesser->guessVersion($package, $path);
                 if (is_array($versionData) && $versionData['pretty_version']) {
+                    // if there is a feature branch detected, we add a second packages with the feature branch version
+                    if (!empty($versionData['feature_pretty_version'])) {
+                        $package['version'] = $versionData['feature_pretty_version'];
+                        $this->addPackage($this->loader->load($package));
+                    }
+
                     $package['version'] = $versionData['pretty_version'];
                 } else {
                     $package['version'] = 'dev-master';
                 }
             }
 
-            $output = '';
-            if (is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
-                $package['dist']['reference'] = trim($output);
-            }
             $package = $this->loader->load($package);
             $this->addPackage($package);
         }
