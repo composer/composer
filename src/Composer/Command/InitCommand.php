@@ -442,7 +442,7 @@ EOT
         // Collect existing packages
         $composer = $this->getComposer(false);
         $installedRepo = $composer ? $composer->getRepositoryManager()->getLocalRepository() : null;
-        $existingPackages = [];
+        $existingPackages = array();
         if ($installedRepo) {
             foreach ($installedRepo->getPackages() as $package) {
                 $existingPackages[] = $package->getName();
