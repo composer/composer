@@ -234,25 +234,34 @@ class GitHubDriverTest extends TestCase
             ->method('isInteractive')
             ->will($this->returnValue(true));
 
-        $remoteFilesystem = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
-            ->setConstructorArgs(array($io))
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')
+            ->disableOriginalConstructor()
             ->getMock();
 
-        $remoteFilesystem->expects($this->at(0))
-            ->method('getContents')
-            ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
-            ->will($this->returnValue('{"master_branch": "test_master", "owner": {"login": "composer"}, "name": "packagist", "archived": true}'));
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
+            ->setConstructorArgs(array($io, $this->config))
+            ->getMock();
 
-        $remoteFilesystem->expects($this->at(1))
-            ->method('getContents')
-            ->with($this->equalTo('github.com'), $this->equalTo($composerJsonUrl), $this->equalTo(false))
-            ->will($this->returnValue('{"encoding": "base64", "content": "' . base64_encode('{"name": "composer/packagist"}') . '"}'));
+        $httpDownloader->expects($this->at(0))
+            ->method('get')
+            ->with($this->equalTo($repoApiUrl))
+            ->will($this->returnValue(new Response(array('url' => $repoApiUrl), 200, array(), '{"master_branch": "test_master", "owner": {"login": "composer"}, "name": "packagist", "archived": true}')));
+
+        $httpDownloader->expects($this->at(1))
+            ->method('get')
+            ->with($this->equalTo($composerJsonUrl))
+            ->will($this->returnValue(new Response(array('url' => $composerJsonUrl), 200, array(), '{"encoding": "base64", "content": "' . base64_encode('{"name": "composer/packagist"}') . '"}')));
+
+        $httpDownloader->expects($this->at(2))
+            ->method('get')
+            ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/commits/'.$sha))
+            ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"commit": {"committer":{ "date": "2012-09-10"}}}')));
 
         $repoConfig = array(
             'url' => $repoUrl,
         );
 
-        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, null, $remoteFilesystem);
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $process);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
