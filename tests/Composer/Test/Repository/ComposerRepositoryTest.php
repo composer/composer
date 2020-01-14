@@ -283,4 +283,33 @@ class ComposerRepositoryTest extends TestCase
             ),
         );
     }
+
+    public function testGetProviderNamesWillReturnPartialPackageNames()
+    {
+        $rfs = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $rfs->expects($this->at(0))
+            ->method('getContents')
+            ->with('example.org', 'http://example.org/packages.json', false)
+            ->willReturn(json_encode(array(
+                'providers-lazy-url' => '/foo/p/%package%.json',
+                'packages' => array('foo/bar' => array(
+                    'dev-branch' => array(),
+                    'v1.0.0' => array(),
+                ))
+            )));
+
+        $repository = new ComposerRepository(
+            array('url' => 'http://example.org/packages.json'),
+            new NullIO(),
+            FactoryMock::createConfig(),
+            null,
+            $rfs
+        );
+
+        $this->assertTrue($repository->hasProviders());
+        $this->assertEquals(array('foo/bar'), $repository->getProviderNames());
+    }
 }

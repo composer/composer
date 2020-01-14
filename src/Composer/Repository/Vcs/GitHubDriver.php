@@ -35,6 +35,7 @@ class GitHubDriver extends VcsDriver
     protected $hasIssues;
     protected $infoCache = array();
     protected $isPrivate = false;
+    private $isArchived = false;
 
     /**
      * Git Driver
@@ -162,6 +163,9 @@ class GitHubDriver extends VcsDriver
                 }
                 if (!isset($composer['support']['issues']) && $this->hasIssues) {
                     $composer['support']['issues'] = sprintf('https://%s/%s/%s/issues', $this->originUrl, $this->owner, $this->repository);
+                }
+                if (!isset($composer['abandoned']) && $this->isArchived) {
+                    $composer['abandoned'] = true;
                 }
             }
 
@@ -432,6 +436,7 @@ class GitHubDriver extends VcsDriver
             $this->rootIdentifier = 'master';
         }
         $this->hasIssues = !empty($this->repoData['has_issues']);
+        $this->isArchived = !empty($this->repoData['archived']);
     }
 
     protected function attemptCloneFallback()

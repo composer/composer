@@ -391,6 +391,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->loadProviderListings($this->loadRootServerFile());
         }
 
+        if ($this->hasPartialPackages) {
+            if (null === $this->partialPackagesByName) {
+                $this->initializePartialPackages();
+            }
+
+            return array_keys($this->partialPackagesByName);
+        }
+
         if ($this->lazyProvidersUrl) {
             // Can not determine list of provided packages for lazy repositories
             return array();

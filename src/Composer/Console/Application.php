@@ -62,6 +62,11 @@ class Application extends BaseApplication
     private $hasPluginCommands = false;
     private $disablePluginsByDefault = false;
 
+    /**
+     * @var string Store the initial working directory at startup time
+     */
+    private $initialWorkingDirectory = '';
+
     public function __construct()
     {
         static $shutdownRegistered = false;
@@ -90,6 +95,8 @@ class Application extends BaseApplication
         }
 
         $this->io = new NullIO();
+
+        $this->initialWorkingDirectory = getcwd();
 
         parent::__construct('Composer', Composer::getVersion());
     }
@@ -131,6 +138,7 @@ class Application extends BaseApplication
         if ($newWorkDir = $this->getNewWorkingDir($input)) {
             $oldWorkingDir = getcwd();
             chdir($newWorkDir);
+            $this->initialWorkingDirectory = $newWorkDir;
             $io->writeError('Changed CWD to ' . getcwd(), true, IOInterface::DEBUG);
         }
 
@@ -496,5 +504,15 @@ class Application extends BaseApplication
         }
 
         return $commands;
+    }
+
+    /**
+     * Get the working directoy at startup time
+     *
+     * @return string
+     */
+    public function getInitialWorkingDirectory()
+    {
+        return $this->initialWorkingDirectory;
     }
 }
