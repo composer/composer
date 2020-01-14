@@ -126,13 +126,15 @@ class VersionGuesserTest extends TestCase
 
         $this->assertEquals("9999999-dev", $versionArray['version']);
         $this->assertEquals("dev-master", $versionArray['pretty_version']);
+        $this->assertArrayNotHasKey('feature_version', $versionArray);
+        $this->assertArrayNotHasKey('feature_pretty_version', $versionArray);
         $this->assertEquals($commitHash, $versionArray['commit']);
     }
 
     public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNaming()
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
-        $anotherCommitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
+        $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
 
         $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
             ->setMethods(array('execute'))
@@ -172,12 +174,14 @@ class VersionGuesserTest extends TestCase
 
         $this->assertEquals("dev-arbitrary", $versionArray['version']);
         $this->assertEquals($anotherCommitHash, $versionArray['commit']);
+        $this->assertEquals("dev-current", $versionArray['feature_version']);
+        $this->assertEquals("dev-current", $versionArray['feature_pretty_version']);
     }
 
     public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNamingRegex()
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
-        $anotherCommitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
+        $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
 
         $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
             ->setMethods(array('execute'))
@@ -217,12 +221,14 @@ class VersionGuesserTest extends TestCase
 
         $this->assertEquals("dev-latest-testing", $versionArray['version']);
         $this->assertEquals($anotherCommitHash, $versionArray['commit']);
+        $this->assertEquals("dev-current", $versionArray['feature_version']);
+        $this->assertEquals("dev-current", $versionArray['feature_pretty_version']);
     }
 
     public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNamingWhenOnNonFeatureBranch()
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
-        $anotherCommitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
+        $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
 
         $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
             ->setMethods(array('execute'))
@@ -251,6 +257,8 @@ class VersionGuesserTest extends TestCase
 
         $this->assertEquals("dev-latest-testing", $versionArray['version']);
         $this->assertEquals($commitHash, $versionArray['commit']);
+        $this->assertArrayNotHasKey('feature_version', $versionArray);
+        $this->assertArrayNotHasKey('feature_pretty_version', $versionArray);
     }
 
     public function testDetachedHeadBecomesDevHash()
