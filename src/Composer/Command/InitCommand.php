@@ -16,6 +16,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
+use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
@@ -702,13 +703,13 @@ EOT
     private function getMinimumStability(InputInterface $input)
     {
         if ($input->hasOption('stability')) {
-            return $input->getOption('stability') ?: 'stable';
+            return VersionParser::normalizeStability($input->getOption('stability') ?: 'stable');
         }
 
         $file = Factory::getComposerFile();
         if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
             if (!empty($composer['minimum-stability'])) {
-                return $composer['minimum-stability'];
+                return VersionParser::normalizeStability($composer['minimum-stability']);
             }
         }
 
