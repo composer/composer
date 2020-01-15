@@ -20,6 +20,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\LockArrayRepository;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Test\DependencyResolver\PoolTest;
 
@@ -146,6 +147,12 @@ class RepositorySet
     public function createPool(Request $request)
     {
         $poolBuilder = new PoolBuilder(array($this, 'isPackageAcceptable'), $this->rootRequires);
+
+        foreach ($this->repositories as $repo) {
+            if ($repo instanceof InstalledRepositoryInterface) {
+                throw new \LogicException('The pool can not accept packages from an installed repository');
+            }
+        }
 
         return $this->pool = $poolBuilder->buildPool($this->repositories, $this->rootAliases, $this->rootReferences, $request);
     }
