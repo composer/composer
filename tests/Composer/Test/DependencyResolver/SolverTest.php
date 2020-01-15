@@ -14,6 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
+use Composer\Repository\LockArrayRepository;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
@@ -38,7 +39,7 @@ class SolverTest extends TestCase
     {
         $this->repoSet = new RepositorySet(array());
         $this->repo = new ArrayRepository;
-        $this->repoLocked = new ArrayRepository;
+        $this->repoLocked = new LockArrayRepository;
 
         $this->request = new Request($this->repoLocked);
         $this->policy = new DefaultPolicy;
