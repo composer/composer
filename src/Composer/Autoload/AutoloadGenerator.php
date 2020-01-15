@@ -318,7 +318,7 @@ EOF;
 
     private function filePutContentsIfModified($path, $content)
     {
-        $currentContent = file_get_contents($path);
+        $currentContent = @file_get_contents($path);
         if (!$currentContent || ($currentContent != $content)) {
             return file_put_contents($path, $content);
         }
@@ -1014,7 +1014,7 @@ INITIALIZER;
      */
     protected function safeCopy($source, $target)
     {
-        if (!$this->filesAreEqual($source, $target)) {
+        if (!file_exists($target) OR !file_exists($source) OR !$this->filesAreEqual($source, $target)) {
             $source = fopen($source, 'r');
             $target = fopen($target, 'w+');
 
