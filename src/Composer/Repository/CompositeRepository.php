@@ -95,6 +95,26 @@ class CompositeRepository extends BaseRepository
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function loadPackages(array $packageMap, $isPackageAcceptableCallable)
+    {
+        $packages = array();
+        $namesFound = array();
+        foreach ($this->repositories as $repository) {
+            /* @var $repository RepositoryInterface */
+            $result = $repository->findPackages($name, $constraint);
+            $packages[] = $result['packages'];
+            $namesFound[] = $result['namesFound'];
+        }
+
+        return array(
+            'packages' => $packages ? call_user_func_array('array_merge', $packages) : array(),
+            'namesFound' => $namesFound ? array_unique(call_user_func_array('array_merge', $namesFound)) : array(),
+        );
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function search($query, $mode = 0, $type = null)
