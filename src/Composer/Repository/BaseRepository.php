@@ -31,16 +31,20 @@ abstract class BaseRepository implements RepositoryInterface
         $packages = $this->getPackages();
 
         $result = array();
+        $namesFound = array();
         foreach ($packages as $package) {
-            if (
-                array_key_exists($package->getName(), $packageMap)
-                && (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
-                && call_user_func($isPackageAcceptableCallable, $package->getNames(), $package->getStability())
-            ) {
-                $result[spl_object_hash($package)] = $package;
-                if ($package instanceof AliasPackage && !isset($result[spl_object_hash($package->getAliasOf())])) {
-                    $result[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
+            if (array_key_exists($package->getName(), $packageMap)) {
+                if (
+                    (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
+                    && call_user_func($isPackageAcceptableCallable, $package->getNames(), $package->getStability())
+                ) {
+                    $result[spl_object_hash($package)] = $package;
+                    if ($package instanceof AliasPackage && !isset($result[spl_object_hash($package->getAliasOf())])) {
+                        $result[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
+                    }
                 }
+
+                $namesFound[$package->getName()] = true;
             }
         }
 
@@ -52,7 +56,7 @@ abstract class BaseRepository implements RepositoryInterface
             }
         }
 
-        return $result;
+        return array('namesFound' => array_keys($namesFound), 'packages' => $result);
     }
 
     /**

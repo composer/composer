@@ -97,9 +97,14 @@ class PoolBuilder
                 }
 
                 // TODO should we really pass the callable into here?
-                $packages = $repository->loadPackages($loadNames, $this->isPackageAcceptableCallable);
+                $result = $repository->loadPackages($loadNames, $this->isPackageAcceptableCallable);
 
-                foreach ($packages as $package) {
+                foreach ($result['namesFound'] as $name) {
+                    // avoid loading the same package again from other repositories once it has been found
+                    unset($loadNames[$name]);
+                }
+                foreach ($result['packages'] as $package) {
+
                     if (call_user_func($this->isPackageAcceptableCallable, $package->getNames(), $package->getStability())) {
                         $newLoadNames += $this->loadPackage($request, $package, $key);
                     }
