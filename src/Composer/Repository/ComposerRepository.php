@@ -32,6 +32,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Util\Http\Response;
+use Composer\Util\MetadataMinifier;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -631,30 +632,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $versions = $response['packages'][$realName];
 
                     if (isset($response['minified']) && $response['minified'] === 'composer/2.0') {
-                        // TODO extract in other method
-                        $expanded = array();
-                        $expandedVersion = null;
-                        foreach ($versions as $versionData) {
-                            if (!$expandedVersion) {
-                                $expandedVersion = $versionData;
-                                $expanded[] = $expandedVersion;
-                                continue;
-                            }
-
-                            // add any changes from the previous version to the expanded one
-                            foreach ($versionData as $key => $val) {
-                                if ($val === '__unset') {
-                                    unset($expandedVersion[$key]);
-                                } else {
-                                    $expandedVersion[$key] = $val;
-                                }
-                            }
-
-                            $expanded[] = $expandedVersion;
-                        }
-
-                        $versions = $expanded;
-                        unset($expanded, $expandedVersion, $versionData);
+                        $versions = MetadataMinifier::expand($versions);
                     }
 
                     $versionsToLoad = array();
