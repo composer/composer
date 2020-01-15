@@ -69,7 +69,7 @@ interface RepositoryInterface extends \Countable
      *
      * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
      * @param $isPackageAcceptableCallable
-     * @return PackageInterface[]
+     * @return array [namesFound => string[], packages => PackageInterface[]]
      */
     public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable);
 

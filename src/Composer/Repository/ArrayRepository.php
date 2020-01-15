@@ -28,8 +28,8 @@ class ArrayRepository extends BaseRepository
 {
     /** @var PackageInterface[] */
     protected $packages;
-    
-    /** 
+
+    /**
       * @var PackageInterface[] indexed by package unique name and used to cache hasPackage calls
       */
     protected $packageMap;
@@ -39,6 +39,42 @@ class ArrayRepository extends BaseRepository
         foreach ($packages as $package) {
             $this->addPackage($package);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function loadPackages(array $packageMap, $isPackageAcceptableCallable)
+    {
+        $packages = $this->getPackages();
+
+        $result = array();
+        $namesFound = array();
+        foreach ($packages as $package) {
+            if (array_key_exists($package->getName(), $packageMap)) {
+                if (
+                    (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
+                    && call_user_func($isPackageAcceptableCallable, $package->getNames(), $package->getStability())
+                ) {
+                    $result[spl_object_hash($package)] = $package;
+                    if ($package instanceof AliasPackage && !isset($result[spl_object_hash($package->getAliasOf())])) {
+                        $result[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
+                    }
+                }
+
+                $namesFound[$package->getName()] = true;
+            }
+        }
+
+        foreach ($packages as $package) {
+            if ($package instanceof AliasPackage) {
+                if (isset($result[spl_object_hash($package->getAliasOf())])) {
+                    $result[spl_object_hash($package)] = $package;
+                }
+            }
+        }
+
+        return array('namesFound' => array_keys($namesFound), 'packages' => $result);
     }
 
     /**

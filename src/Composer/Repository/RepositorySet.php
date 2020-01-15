@@ -65,6 +65,9 @@ class RepositorySet
     /**
      * Adds a repository to this repository set
      *
+     * The first repos added have a higher priority. As soon as a package is found in any
+     * repository the search for that package ends, and following repos will not be consulted.
+     *
      * @param RepositoryInterface $repo        A package repository
      */
     public function addRepository(RepositoryInterface $repo)
@@ -132,17 +135,6 @@ class RepositorySet
         }
 
         return $candidates;
-    }
-
-    public function getPriority(RepositoryInterface $repo)
-    {
-        $priority = array_search($repo, $this->repositories, true);
-
-        if (false === $priority) {
-            throw new \RuntimeException("Could not determine repository priority. The repository was not registered in the pool.");
-        }
-
-        return -$priority;
     }
 
     /**

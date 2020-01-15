@@ -38,7 +38,6 @@ class PoolBuilder
     private $loadedNames = array();
 
     private $packages = array();
-    private $priorities = array();
 
     public function __construct($isPackageAcceptableCallable, array $rootRequires = array())
     {
@@ -97,9 +96,14 @@ class PoolBuilder
                 }
 
                 // TODO should we really pass the callable into here?
-                $packages = $repository->loadPackages($loadNames, $this->isPackageAcceptableCallable);
+                $result = $repository->loadPackages($loadNames, $this->isPackageAcceptableCallable);
 
-                foreach ($packages as $package) {
+                foreach ($result['namesFound'] as $name) {
+                    // avoid loading the same package again from other repositories once it has been found
+                    unset($loadNames[$name]);
+                }
+                foreach ($result['packages'] as $package) {
+
                     if (call_user_func($this->isPackageAcceptableCallable, $package->getNames(), $package->getStability())) {
                         $newLoadNames += $this->loadPackage($request, $package, $key);
                     }
@@ -129,7 +133,6 @@ class PoolBuilder
                 if (!$found) {
                     foreach ($aliasedPackages as $index => $packageOrAlias) {
                         unset($this->packages[$index]);
-                        unset($this->priorities[$index]);
                     }
                 }
             }
@@ -144,7 +147,7 @@ class PoolBuilder
             }
         }
 
-        $pool->setPackages($this->packages, $this->priorities);
+        $pool->setPackages($this->packages);
 
         unset($this->aliasMap);
         unset($this->loadedNames);
@@ -153,11 +156,10 @@ class PoolBuilder
         return $pool;
     }
 
-    private function loadPackage(Request $request, PackageInterface $package, $repoIndex)
+    private function loadPackage(Request $request, PackageInterface $package)
     {
         $index = count($this->packages);
         $this->packages[] = $package;
-        $this->priorities[] = -$repoIndex;
 
         if ($package instanceof AliasPackage) {
             $this->aliasMap[spl_object_hash($package->getAliasOf())][$index] = $package;
@@ -187,7 +189,6 @@ class PoolBuilder
 
             $package->getRepository()->addPackage($aliasPackage); // TODO do we need this?
             $this->packages[] = $aliasPackage;
-            $this->priorities[] = -$repoIndex;
             $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$index+1] = $aliasPackage;
         }
 

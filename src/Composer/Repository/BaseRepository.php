@@ -25,36 +25,6 @@ use Composer\Package\Link;
  */
 abstract class BaseRepository implements RepositoryInterface
 {
-    // TODO should this stay here? some repos need a better implementation
-    public function loadPackages(array $packageMap, $isPackageAcceptableCallable)
-    {
-        $packages = $this->getPackages();
-
-        $result = array();
-        foreach ($packages as $package) {
-            if (
-                array_key_exists($package->getName(), $packageMap)
-                && (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
-                && call_user_func($isPackageAcceptableCallable, $package->getNames(), $package->getStability())
-            ) {
-                $result[spl_object_hash($package)] = $package;
-                if ($package instanceof AliasPackage && !isset($result[spl_object_hash($package->getAliasOf())])) {
-                    $result[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
-                }
-            }
-        }
-
-        foreach ($packages as $package) {
-            if ($package instanceof AliasPackage) {
-                if (isset($result[spl_object_hash($package->getAliasOf())])) {
-                    $result[spl_object_hash($package)] = $package;
-                }
-            }
-        }
-
-        return $result;
-    }
-
     /**
      * Returns a list of links causing the requested needle packages to be installed, as an associative array with the
      * dependent's name as key, and an array containing in order the PackageInterface and Link describing the relationship

@@ -144,7 +144,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $packages = $this->loadAsyncPackages(array($name => $constraint));
 
-            return reset($packages);
+            return reset($packages['packages']);
         }
 
         if ($hasProviders) {
@@ -182,7 +182,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return array();
             }
 
-            return $this->loadAsyncPackages(array($name => $constraint));
+            $result = $this->loadAsyncPackages(array($name => $constraint));
+
+            return $result['packages'];
         }
 
         if ($hasProviders) {
@@ -240,7 +242,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $packageMap[$name] = new EmptyConstraint();
                 }
 
-                return array_values($this->loadAsyncPackages($packageMap));
+                $result = $this->loadAsyncPackages($packageMap);
+
+                return array_values($result['packages']);
             }
 
             if ($this->hasPartialPackages()) {
@@ -298,6 +302,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         $packages = array();
+        $namesFound = array();
 
         if ($hasProviders || $this->hasPartialPackages()) {
             foreach ($packageNameMap as $name => $constraint) {
@@ -314,6 +319,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     if ($candidate->getName() !== $name) {
                         throw new \LogicException('whatProvides should never return a package with a different name than the requested one');
                     }
+                    $namesFound[$name] = true;
                     if (!$constraint || $constraint->matches(new Constraint('==', $candidate->getVersion()))) {
                         $matches[spl_object_hash($candidate)] = $candidate;
                         if ($candidate instanceof AliasPackage && !isset($matches[spl_object_hash($candidate->getAliasOf())])) {
@@ -344,10 +350,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }, ARRAY_FILTER_USE_KEY);
             }
 
-            $packages = array_merge($packages, $this->loadAsyncPackages($packageNameMap, $isPackageAcceptableCallable));
+            $result = $this->loadAsyncPackages($packageNameMap, $isPackageAcceptableCallable);
+            $packages = array_merge($packages, $result['packages']);
+            $namesFound = array_merge($namesFound, $result['namesFound']);
         }
 
-        return $packages;
+        return array('namesFound' => array_keys($namesFound), 'packages' => $packages);
     }
 
     /**
@@ -587,6 +595,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->loadRootServerFile();
 
         $packages = array();
+        $namesFound = array();
         $promises = array();
         $repo = $this;
 
@@ -620,7 +629,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
-                ->then(function ($response) use (&$packages, $contents, $realName, $constraint, $repo, $isPackageAcceptableCallable) {
+                ->then(function ($response) use (&$packages, &$namesFound, $contents, $realName, $constraint, $repo, $isPackageAcceptableCallable) {
                     if (true === $response) {
                         $response = $contents;
                     }
@@ -635,6 +644,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         $versions = MetadataMinifier::expand($versions);
                     }
 
+                    $namesFound[$realName] = true;
                     $versionsToLoad = array();
                     foreach ($versions as $version) {
                         if (!isset($version['version_normalized'])) {
@@ -661,7 +671,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $this->loop->wait($promises);
 
-        return $packages;
+        return array('namesFound' => $namesFound, 'packages' => $packages);
         // RepositorySet should call loadMetadata, getMetadata when all promises resolved, then metadataComplete when done so we can GC the loaded json and whatnot then as needed
     }
 

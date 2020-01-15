@@ -36,7 +36,6 @@ class Pool implements \Countable
     protected $packages = array();
     protected $packageByName = array();
     protected $packageByExactName = array();
-    protected $priorities = array();
     protected $versionParser;
     protected $providerCache = array();
 
@@ -45,13 +44,12 @@ class Pool implements \Countable
         $this->versionParser = new VersionParser;
     }
 
-    public function setPackages(array $packages, array $priorities = array())
+    public function setPackages(array $packages)
     {
         $id = 1;
 
         foreach ($packages as $i => $package) {
             $this->packages[] = $package;
-            $this->priorities[] = isset($priorities[$i]) ? $priorities[$i] : 0;
 
             $package->id = $id++;
             $names = $package->getNames();
@@ -61,11 +59,6 @@ class Pool implements \Countable
                 $this->packageByName[$provided][] = $package;
             }
         }
-    }
-
-    public function getPriority($id)
-    {
-        return $this->priorities[$id - 1];
     }
 
     /**

@@ -69,7 +69,6 @@ class DefaultPolicy implements PolicyInterface
         }
 
         foreach ($packages as &$sortedLiterals) {
-            $sortedLiterals = $this->pruneToHighestPriority($pool, $sortedLiterals);
             $sortedLiterals = $this->pruneToBestVersion($pool, $sortedLiterals);
             $sortedLiterals = $this->pruneRemoteAliases($pool, $sortedLiterals);
         }
@@ -104,51 +103,47 @@ class DefaultPolicy implements PolicyInterface
      */
     public function compareByPriority(Pool $pool, PackageInterface $a, PackageInterface $b, $requiredPackage = null, $ignoreReplace = false)
     {
-        if ($a->getRepository() === $b->getRepository()) {
-            // prefer aliases to the original package
-            if ($a->getName() === $b->getName()) {
-                $aAliased = $a instanceof AliasPackage;
-                $bAliased = $b instanceof AliasPackage;
-                if ($aAliased && !$bAliased) {
-                    return -1; // use a
-                }
-                if (!$aAliased && $bAliased) {
-                    return 1; // use b
-                }
+        // prefer aliases to the original package
+        if ($a->getName() === $b->getName()) {
+            $aAliased = $a instanceof AliasPackage;
+            $bAliased = $b instanceof AliasPackage;
+            if ($aAliased && !$bAliased) {
+                return -1; // use a
             }
-
-            if (!$ignoreReplace) {
-                // return original, not replaced
-                if ($this->replaces($a, $b)) {
-                    return 1; // use b
-                }
-                if ($this->replaces($b, $a)) {
-                    return -1; // use a
-                }
-
-                // for replacers not replacing each other, put a higher prio on replacing
-                // packages with the same vendor as the required package
-                if ($requiredPackage && false !== ($pos = strpos($requiredPackage, '/'))) {
-                    $requiredVendor = substr($requiredPackage, 0, $pos);
-
-                    $aIsSameVendor = substr($a->getName(), 0, $pos) === $requiredVendor;
-                    $bIsSameVendor = substr($b->getName(), 0, $pos) === $requiredVendor;
-
-                    if ($bIsSameVendor !== $aIsSameVendor) {
-                        return $aIsSameVendor ? -1 : 1;
-                    }
-                }
+            if (!$aAliased && $bAliased) {
+                return 1; // use b
             }
-
-            // priority equal, sort by package id to make reproducible
-            if ($a->id === $b->id) {
-                return 0;
-            }
-
-            return ($a->id < $b->id) ? -1 : 1;
         }
 
-        return ($pool->getPriority($a->id) > $pool->getPriority($b->id)) ? -1 : 1;
+        if (!$ignoreReplace) {
+            // return original, not replaced
+            if ($this->replaces($a, $b)) {
+                return 1; // use b
+            }
+            if ($this->replaces($b, $a)) {
+                return -1; // use a
+            }
+
+            // for replacers not replacing each other, put a higher prio on replacing
+            // packages with the same vendor as the required package
+            if ($requiredPackage && false !== ($pos = strpos($requiredPackage, '/'))) {
+                $requiredVendor = substr($requiredPackage, 0, $pos);
+
+                $aIsSameVendor = substr($a->getName(), 0, $pos) === $requiredVendor;
+                $bIsSameVendor = substr($b->getName(), 0, $pos) === $requiredVendor;
+
+                if ($bIsSameVendor !== $aIsSameVendor) {
+                    return $aIsSameVendor ? -1 : 1;
+                }
+            }
+        }
+
+        // priority equal, sort by package id to make reproducible
+        if ($a->id === $b->id) {
+            return 0;
+        }
+
+        return ($a->id < $b->id) ? -1 : 1;
     }
 
     /**
@@ -196,32 +191,6 @@ class DefaultPolicy implements PolicyInterface
         }
 
         return $bestLiterals;
-    }
-
-    /**
-     * Assumes that highest priority packages come first
-     */
-    protected function pruneToHighestPriority(Pool $pool, array $literals)
-    {
-        $selected = array();
-
-        $priority = null;
-
-        foreach ($literals as $literal) {
-            $package = $pool->literalToPackage($literal);
-
-            if (null === $priority) {
-                $priority = $pool->getPriority($package->id);
-            }
-
-            if ($pool->getPriority($package->id) != $priority) {
-                break;
-            }
-
-            $selected[] = $literal;
-        }
-
-        return $selected;
     }
 
     /**
