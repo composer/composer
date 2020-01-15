@@ -15,7 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootAliasPackage;
-use Composer\Repository\RepositoryInterface;
+use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
@@ -28,7 +28,7 @@ class Request
     protected $fixedPackages = array();
     protected $unlockables = array();
 
-    public function __construct(RepositoryInterface $lockedRepository = null)
+    public function __construct(LockArrayRepository $lockedRepository = null)
     {
         $this->lockedRepository = $lockedRepository;
     }

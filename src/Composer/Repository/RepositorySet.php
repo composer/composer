@@ -19,6 +19,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Test\DependencyResolver\PoolTest;
 
@@ -150,14 +151,15 @@ class RepositorySet
     }
 
     // TODO unify this with above in some simpler version without "request"?
-    public function createPoolForPackage($packageName)
+    public function createPoolForPackage($packageName, LockArrayRepository $lockedRepo = null)
     {
-        return $this->createPoolForPackages(array($packageName));
+        return $this->createPoolForPackages(array($packageName), $lockedRepo);
     }
 
-    public function createPoolForPackages($packageNames)
+    public function createPoolForPackages($packageNames, LockArrayRepository $lockedRepo = null)
     {
-        $request = new Request();
+        $request = new Request($lockedRepo);
+
         foreach ($packageNames as $packageName) {
             $request->install($packageName);
         }

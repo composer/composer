@@ -150,7 +150,7 @@ class Locker
      *
      * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
      * @throws \RuntimeException
-     * @return \Composer\Repository\RepositoryInterface
+     * @return \Composer\Repository\LockArrayRepository
      */
     public function getLockedRepository($withDevReqs = false)
     {
@@ -194,7 +194,7 @@ class Locker
             return $packages;
         }
 
-        throw new \RuntimeException('Your composer.lock was created before 2012-09-15, and is not supported anymore. Run "composer update" to generate a new one.');
+        throw new \RuntimeException('Your composer.lock is invalid. Run "composer update" to generate a new one.');
     }
 
     /**
