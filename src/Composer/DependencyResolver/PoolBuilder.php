@@ -52,6 +52,7 @@ class PoolBuilder
         // TODO do we really want the request here? kind of want a root requirements thingy instead
         $loadNames = array();
         foreach ($request->getFixedPackages() as $package) {
+            $this->nameConstraints[$package->getName()] = null;
             $this->loadedNames[$package->getName()] = true;
             unset($loadNames[$package->getName()]);
             $loadNames += $this->loadPackage($request, $package);
