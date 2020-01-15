@@ -113,6 +113,7 @@ class PoolBuilder
             $loadNames = $newLoadNames;
         }
 
+        // filter packages according to all the require statements collected for each package
         foreach ($this->packages as $i => $package) {
             // we check all alias related packages at once, so no need to check individual aliases
             // isset also checks non-null value

@@ -52,7 +52,7 @@ class MetadataMinifier
                 continue;
             }
 
-            $minifiedVersion = [];
+            $minifiedVersion = array();
 
             // add any changes from the previous version
             foreach ($version as $key => $val) {
