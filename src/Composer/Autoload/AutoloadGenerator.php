@@ -393,8 +393,8 @@ EOF;
     /**
      * Compiles an ordered list of namespace => path mappings
      *
-     * @param  array            $packageMap                  array of array(package, installDir-relative-to-composer.json)
-     * @param  PackageInterface $mainPackage                 root package instance
+     * @param  array            $packageMap  array of array(package, installDir-relative-to-composer.json)
+     * @param  PackageInterface $mainPackage root package instance
      * @param  bool             $filterOutRequireDevPackages whether to filter out require-dev packages
      * @return array            array('psr-0' => array('Ns\\Foo' => array('installDir')))
      */
