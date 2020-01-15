@@ -13,6 +13,7 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\Repository\ArrayRepository;
+use Composer\Repository\LockArrayRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
@@ -28,7 +29,7 @@ class DefaultPolicyTest extends TestCase
     protected $repositorySet;
     /** @var ArrayRepository */
     protected $repo;
-    /** @var ArrayRepository */
+    /** @var LockArrayRepository */
     protected $repoLocked;
     /** @var DefaultPolicy */
     protected $policy;
@@ -37,7 +38,7 @@ class DefaultPolicyTest extends TestCase
     {
         $this->repositorySet = new RepositorySet(array(), array(), 'dev');
         $this->repo = new ArrayRepository;
-        $this->repoLocked = new ArrayRepository;
+        $this->repoLocked = new LockArrayRepository;
 
         $this->policy = new DefaultPolicy;
     }
@@ -116,44 +117,6 @@ class DefaultPolicyTest extends TestCase
 
         $literals = array($packageA1->getId(), $packageA2->getId());
         $expected = array($packageA2->getId());
-
-        $selected = $this->policy->selectPreferredPackages($pool, $literals);
-
-        $this->assertSame($expected, $selected);
-    }
-
-    public function testSelectNewestOverLocked()
-    {
-        $this->repo->addPackage($packageA = $this->getPackage('A', '2.0'));
-        $this->repoLocked->addPackage($packageAInstalled = $this->getPackage('A', '1.0'));
-        $this->repositorySet->addRepository($this->repo);
-        $this->repositorySet->addRepository($this->repoLocked);
-
-        $pool = $this->repositorySet->createPoolForPackage('A');
-
-        $literals = array($packageA->getId(), $packageAInstalled->getId());
-        $expected = array($packageA->getId());
-
-        $selected = $this->policy->selectPreferredPackages($pool, $literals);
-
-        $this->assertSame($expected, $selected);
-    }
-
-    public function testSelectFirstRepo()
-    {
-        $otherRepository = new ArrayRepository;
-
-        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
-        $otherRepository->addPackage($packageAImportant = $this->getPackage('A', '1.0'));
-
-        $this->repositorySet->addRepository($otherRepository);
-        $this->repositorySet->addRepository($this->repo);
-        $this->repositorySet->addRepository($this->repoLocked);
-
-        $pool = $this->repositorySet->createPoolForPackage('A');
-
-        $literals = array($packageA->getId(), $packageAImportant->getId());
-        $expected = array($packageAImportant->getId());
 
         $selected = $this->policy->selectPreferredPackages($pool, $literals);
 

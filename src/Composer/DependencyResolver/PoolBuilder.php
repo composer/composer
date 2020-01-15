@@ -38,7 +38,6 @@ class PoolBuilder
     private $loadedNames = array();
 
     private $packages = array();
-    private $priorities = array();
 
     public function __construct($isPackageAcceptableCallable, array $rootRequires = array())
     {
@@ -134,7 +133,6 @@ class PoolBuilder
                 if (!$found) {
                     foreach ($aliasedPackages as $index => $packageOrAlias) {
                         unset($this->packages[$index]);
-                        unset($this->priorities[$index]);
                     }
                 }
             }
@@ -149,7 +147,7 @@ class PoolBuilder
             }
         }
 
-        $pool->setPackages($this->packages, $this->priorities);
+        $pool->setPackages($this->packages);
 
         unset($this->aliasMap);
         unset($this->loadedNames);
@@ -158,11 +156,10 @@ class PoolBuilder
         return $pool;
     }
 
-    private function loadPackage(Request $request, PackageInterface $package, $repoIndex)
+    private function loadPackage(Request $request, PackageInterface $package)
     {
         $index = count($this->packages);
         $this->packages[] = $package;
-        $this->priorities[] = -$repoIndex;
 
         if ($package instanceof AliasPackage) {
             $this->aliasMap[spl_object_hash($package->getAliasOf())][$index] = $package;
@@ -192,7 +189,6 @@ class PoolBuilder
 
             $package->getRepository()->addPackage($aliasPackage); // TODO do we need this?
             $this->packages[] = $aliasPackage;
-            $this->priorities[] = -$repoIndex;
             $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$index+1] = $aliasPackage;
         }
 
