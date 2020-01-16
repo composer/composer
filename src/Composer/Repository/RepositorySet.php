@@ -22,7 +22,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\LockArrayRepository;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
-use Composer\Test\DependencyResolver\PoolTest;
+use Composer\Package\Version\StabilityFilter;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -89,23 +89,6 @@ class RepositorySet
         }
     }
 
-    public function isPackageAcceptable($name, $stability)
-    {
-        foreach ((array) $name as $n) {
-            // allow if package matches the global stability requirement and has no exception
-            if (!isset($this->stabilityFlags[$n]) && isset($this->acceptableStabilities[$stability])) {
-                return true;
-            }
-
-            // allow if package matches the package-specific stability flag
-            if (isset($this->stabilityFlags[$n]) && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$n]) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     /**
      * Find packages providing or matching a name and optionally meeting a constraint in all repositories
      *
@@ -113,10 +96,11 @@ class RepositorySet
      *
      * @param string $name
      * @param ConstraintInterface|null $constraint
-     * @param bool $exactMatch
+     * @param bool $exactMatch if set to false, packages which replace/provide the given name might be returned as well even if they do not match the name exactly
+     * @param bool $ignoreStability if set to true, packages are returned even though their stability does not match the required stability
      * @return array
      */
-    public function findPackages($name, ConstraintInterface $constraint = null, $exactMatch = true)
+    public function findPackages($name, ConstraintInterface $constraint = null, $exactMatch = true, $ignoreStability = false)
     {
         $packages = array();
         foreach ($this->repositories as $repository) {
@@ -131,12 +115,17 @@ class RepositorySet
                 continue;
             }
 
-            if ($this->isPackageAcceptable($candidate->getNames(), $candidate->getStability())) {
+            if (!$ignoreStability && $this->isPackageAcceptable($candidate->getNames(), $candidate->getStability())) {
                 $result[] = $candidate;
             }
         }
 
         return $candidates;
+    }
+
+    public function isPackageAcceptable($names, $stability)
+    {
+        return StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $names, $stability);
     }
 
     /**
@@ -146,7 +135,7 @@ class RepositorySet
      */
     public function createPool(Request $request)
     {
-        $poolBuilder = new PoolBuilder(array($this, 'isPackageAcceptable'), $this->rootRequires);
+        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $this->rootRequires);
 
         foreach ($this->repositories as $repo) {
             if ($repo instanceof InstalledRepositoryInterface) {
@@ -154,7 +143,7 @@ class RepositorySet
             }
         }
 
-        return $this->pool = $poolBuilder->buildPool($this->repositories, $this->rootAliases, $this->rootReferences, $request);
+        return $this->pool = $poolBuilder->buildPool($this->repositories, $request);
     }
 
     // TODO unify this with above in some simpler version without "request"?

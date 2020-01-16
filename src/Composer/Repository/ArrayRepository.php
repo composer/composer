@@ -16,6 +16,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
+use Composer\Package\Version\StabilityFilter;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 
@@ -44,7 +45,7 @@ class ArrayRepository extends BaseRepository
     /**
      * {@inheritDoc}
      */
-    public function loadPackages(array $packageMap, $isPackageAcceptableCallable)
+    public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags)
     {
         $packages = $this->getPackages();
 
@@ -54,7 +55,7 @@ class ArrayRepository extends BaseRepository
             if (array_key_exists($package->getName(), $packageMap)) {
                 if (
                     (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
-                    && call_user_func($isPackageAcceptableCallable, $package->getNames(), $package->getStability())
+                    && StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, $package->getNames(), $package->getStability())
                 ) {
                     $result[spl_object_hash($package)] = $package;
                     if ($package instanceof AliasPackage && !isset($result[spl_object_hash($package->getAliasOf())])) {

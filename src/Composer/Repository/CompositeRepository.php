@@ -97,13 +97,13 @@ class CompositeRepository extends BaseRepository
     /**
      * {@inheritDoc}
      */
-    public function loadPackages(array $packageMap, $isPackageAcceptableCallable)
+    public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags)
     {
         $packages = array();
         $namesFound = array();
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
-            $result = $repository->findPackages($name, $constraint);
+            $result = $repository->loadPackages($packageMap, $acceptableStabilities, $stabilityFlags);
             $packages[] = $result['packages'];
             $namesFound[] = $result['namesFound'];
         }

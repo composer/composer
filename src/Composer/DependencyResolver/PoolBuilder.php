@@ -25,10 +25,11 @@ use Composer\Semver\Constraint\MultiConstraint;
  */
 class PoolBuilder
 {
-    private $isPackageAcceptableCallable;
-    private $rootRequires;
+    private $acceptableStabilities;
+    private $stabilityFlags;
     private $rootAliases;
     private $rootReferences;
+    private $rootRequires;
 
     private $aliasMap = array();
     private $nameConstraints = array();
@@ -37,17 +38,18 @@ class PoolBuilder
 
     private $packages = array();
 
-    public function __construct($isPackageAcceptableCallable, array $rootRequires = array())
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, array $rootRequires = array())
     {
-        $this->isPackageAcceptableCallable = $isPackageAcceptableCallable;
+        $this->acceptableStabilities = $acceptableStabilities;
+        $this->stabilityFlags = $stabilityFlags;
+        $this->rootAliases = $rootAliases;
+        $this->rootReferences = $rootReferences;
         $this->rootRequires = $rootRequires;
     }
 
-    public function buildPool(array $repositories, array $rootAliases, array $rootReferences, Request $request)
+    public function buildPool(array $repositories, Request $request)
     {
         $pool = new Pool();
-        $this->rootAliases = $rootAliases;
-        $this->rootReferences = $rootReferences;
 
         // TODO do we really want the request here? kind of want a root requirements thingy instead
         $loadNames = array();
@@ -87,17 +89,14 @@ class PoolBuilder
                     continue;
                 }
 
-                // TODO should we really pass the callable into here?
-                $result = $repository->loadPackages($loadNames, $this->isPackageAcceptableCallable);
+                $result = $repository->loadPackages($loadNames, $this->acceptableStabilities, $this->stabilityFlags);
 
                 foreach ($result['namesFound'] as $name) {
                     // avoid loading the same package again from other repositories once it has been found
                     unset($loadNames[$name]);
                 }
                 foreach ($result['packages'] as $package) {
-                    if (call_user_func($this->isPackageAcceptableCallable, $package->getNames(), $package->getStability())) {
-                        $newLoadNames += $this->loadPackage($request, $package);
-                    }
+                    $newLoadNames += $this->loadPackage($request, $package);
                 }
             }
 

@@ -364,19 +364,6 @@ class Installer
 
         $request = $this->createRequest($this->fixedRootPackage, $platformRepo, $lockedRepository);
 
-        if ($lockedRepository) {
-            // TODO do we really always need this? Maybe only to skip fix() in updateWhitelist case cause these packages get removed on full update automatically?
-            foreach ($lockedRepository->getPackages() as $lockedPackage) {
-                if (!$repositorySet->isPackageAcceptable($lockedPackage->getNames(), $lockedPackage->getStability())) {
-                    $constraint = new Constraint('=', $lockedPackage->getVersion());
-                    $constraint->setPrettyString('(stability not acceptable)');
-
-                    // if we can get rid of this remove() here, we can generally get rid of remove support in the request
-                    $request->remove($lockedPackage->getName(), $constraint);
-                }
-            }
-        }
-
         $this->io->writeError('<info>Updating dependencies</info>');
 
         $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
@@ -393,10 +380,11 @@ class Installer
         }
 
         // if the updateWhitelist is enabled, packages not in it are also fixed
-        // to the version specified in the lock
-        if ($this->updateWhitelist) {
+        // to the version specified in the lock, except if their stability is not
+        // acceptable anymore, to make sure that they get updated/downgraded to
+        // a working version
+        if ($this->updateWhitelist && $lockedRepository) {
             foreach ($lockedRepository->getPackages() as $lockedPackage) {
-                // TODO should this really be checking acceptability here?
                 if (!$this->isUpdateable($lockedPackage) && $repositorySet->isPackageAcceptable($lockedPackage->getNames(), $lockedPackage->getStability())) {
                     // TODO add reason for fix?
                     $request->fixPackage($lockedPackage);

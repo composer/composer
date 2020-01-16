@@ -56,7 +56,6 @@ interface RepositoryInterface extends \Countable
      */
     public function findPackages($name, $constraint = null);
 
-    // TODO this should really not be in this generic interface anymore
     /**
      * Returns list of registered packages.
      *
@@ -68,10 +67,11 @@ interface RepositoryInterface extends \Countable
      * Returns list of registered packages with the supplied name
      *
      * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
-     * @param $isPackageAcceptableCallable
+     * @param array $acceptableStabilities
+     * @param array $stabilityFlags
      * @return array [namesFound => string[], packages => PackageInterface[]]
      */
-    public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable);
+    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags);
 
     /**
      * Searches the repository for packages containing the query
