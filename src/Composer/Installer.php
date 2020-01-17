@@ -35,6 +35,7 @@ use Composer\Installer\NoopInstaller;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\RootAliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
@@ -779,6 +780,9 @@ class Installer
         $request = new Request($lockedRepository);
 
         $request->fixPackage($rootPackage, false);
+        if ($rootPackage instanceof RootAliasPackage) {
+            $request->fixPackage($rootPackage->getAliasOf(), false);
+        }
 
         $fixedPackages = $platformRepo->getPackages();
         if ($this->additionalFixedRepository) {
