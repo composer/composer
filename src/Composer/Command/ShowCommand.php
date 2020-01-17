@@ -201,6 +201,9 @@ EOT
                 if (empty($package)) {
                     $options = $input->getOptions();
                     if (!isset($options['working-dir']) || !file_exists('composer.json')) {
+                        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $input->getArgument('package')) && !$input->getOption('platform')) {
+                            throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found, try using --platform (-p) to show platform packages.');
+                        }
                         throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found');
                     }
 
