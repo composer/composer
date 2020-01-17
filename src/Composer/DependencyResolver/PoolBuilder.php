@@ -76,15 +76,29 @@ class PoolBuilder
         //  perhaps loadPackage needs to mark them as loadedNames when loading a fixed package?
 
         foreach ($request->getRequires() as $packageName => $constraint) {
+            // fixed packages do not need to get filtered as they are pinned already
             if (isset($this->loadedNames[$packageName])) {
                 continue;
             }
-            // TODO currently lock above is always NULL if we adjust that, this needs to merge constraints
-            // TODO does it really make sense that we can have install requests for the same package that is actively locked with non-matching constraints?
-            // also see the solver-problems.test test case
-            $constraint = array_key_exists($packageName, $loadNames) ? null : $constraint;
-            $loadNames[$packageName] = $constraint;
-            $this->nameConstraints[$packageName] = $constraint ? new MultiConstraint(array($constraint), false) : null;
+
+            $loadNames[$packageName] = null;
+            if ($constraint) {
+                if (!array_key_exists($packageName, $this->nameConstraints)) {
+                    $this->nameConstraints[$packageName] = new MultiConstraint(array($constraint), false);
+                } elseif ($this->nameConstraints[$packageName]) {
+                    // TODO addConstraint function?
+                    $this->nameConstraints[$packageName] = new MultiConstraint(array_merge(array($constraint), $this->nameConstraints[$packageName]->getConstraints()), false);
+                }
+            }
+        }
+
+        // all the merged constraints from install requests + fixed packages can be applied
+        // when loading package metadata already, as these are set in stone
+        foreach ($this->nameConstraints as $package => $constraint) {
+            if ($constraint !== null && array_key_exists($package, $loadNames)) {
+                $loadNames[$package] = $constraint;
+                unset($this->nameConstraints[$package]);
+            }
         }
 
         while (!empty($loadNames)) {
@@ -210,6 +224,8 @@ class PoolBuilder
                 $loadNames[$require] = null;
             }
             if ($linkConstraint = $link->getConstraint()) {
+                // TODO check if linkConstraint is EmptyConstraint then set to null as well?
+
                 if (!array_key_exists($require, $this->nameConstraints)) {
                     $this->nameConstraints[$require] = new MultiConstraint(array($linkConstraint), false);
                 } elseif ($this->nameConstraints[$require]) {
