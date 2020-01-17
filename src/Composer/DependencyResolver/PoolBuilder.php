@@ -69,6 +69,9 @@ class PoolBuilder
             }
         }
 
+        // TODO make sure if a fixed package replaces X packages they are not loaded again in loadNames
+        //  perhaps loadPackage needs to mark them as loadedNames when loading a fixed package?
+
         foreach ($request->getJobs() as $job) {
             switch ($job['cmd']) {
                 case 'install':
