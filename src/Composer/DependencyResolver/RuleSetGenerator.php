@@ -291,7 +291,13 @@ class RuleSetGenerator
 
         foreach ($request->getFixedPackages() as $package) {
             if ($package->id == -1) {
-                throw new \RuntimeException("Fixed package ".$package->getName()." ".$package->getVersion().($package instanceof AliasPackage ? " (alias)" : "")." was not added to solver pool.");
+                // fixed package was not added to the pool as it did not pass the stability requirements, this is fine
+                if ($this->pool->isUnacceptableFixedPackage($package)) {
+                    continue;
+                }
+
+                // otherwise, looks like a bug
+                throw new \LogicException("Fixed package ".$package->getName()." ".$package->getVersion().($package instanceof AliasPackage ? " (alias)" : "")." was not added to solver pool.");
             }
 
             $this->addRulesForPackage($package, $ignorePlatformReqs);
@@ -321,15 +327,6 @@ class RuleSetGenerator
                         }
 
                         $rule = $this->createInstallOneOfRule($packages, Rule::RULE_JOB_INSTALL, $job);
-                        $this->addRule(RuleSet::TYPE_JOB, $rule);
-                    }
-                    break;
-                case 'remove':
-                    // remove all packages with this name including uninstalled
-                    // ones to make sure none of them are picked as replacements
-                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
-                    foreach ($packages as $package) {
-                        $rule = $this->createRemoveRule($package, Rule::RULE_JOB_REMOVE, $job);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                     }
                     break;

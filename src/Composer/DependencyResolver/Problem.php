@@ -224,10 +224,6 @@ class Problem
                 }
 
                 return 'Installation request for '.$packageName.$this->constraintToText($constraint).' -> satisfiable by '.$this->getPackageList($packages).'.';
-            case 'update':
-                return 'Update request for '.$packageName.$this->constraintToText($constraint).'.';
-            case 'remove':
-                return 'Removal request for '.$packageName.$this->constraintToText($constraint).'';
         }
 
         if (isset($constraint)) {

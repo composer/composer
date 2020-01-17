@@ -38,11 +38,6 @@ class Request
         $this->addJob($packageName, 'install', $constraint);
     }
 
-    public function remove($packageName, ConstraintInterface $constraint = null)
-    {
-        $this->addJob($packageName, 'remove', $constraint);
-    }
-
     /**
      * Mark an existing package as being installed and having to remain installed
      *

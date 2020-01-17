@@ -18,7 +18,7 @@ use Composer\Test\TestCase;
 
 class RequestTest extends TestCase
 {
-    public function testRequestInstallAndRemove()
+    public function testRequestInstall()
     {
         $repo = new ArrayRepository;
         $foo = $this->getPackage('foo', '1');
@@ -31,12 +31,10 @@ class RequestTest extends TestCase
 
         $request = new Request();
         $request->install('foo');
-        $request->remove('foobar');
 
         $this->assertEquals(
             array(
                 array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => null),
-                array('cmd' => 'remove', 'packageName' => 'foobar', 'constraint' => null),
             ),
             $request->getJobs()
         );

@@ -48,25 +48,23 @@ Partial update from lock file should apply lock file and downgrade unstable pack
 ]
 --RUN--
 update c/uptodate
---EXPECT-LOCK--
-{
-    "packages": [
-        { "name": "a/old", "version": "1.0.0", "type": "library" },
-        { "name": "b/unstable", "version": "1.0.0", "type": "library" },
-        { "name": "c/uptodate", "version": "1.0.0", "type": "library" },
-        { "name": "d/removed", "version": "1.0.0", "type": "library" }
-    ],
-    "packages-dev": [],
-    "aliases": [],
-    "minimum-stability": "stable",
-    "stability-flags": [],
-    "prefer-stable": false,
-    "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
-}
 --EXPECT--
-Updating a/old (0.9.0 => 1.0.0)
-Updating b/unstable (1.1.0-alpha => 1.0.0)
-Updating c/uptodate (2.0.0 => 1.0.0)
-Installing d/removed (1.0.0)
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - The requested package b/unstable could not be found in any version, there may be a typo in the package name.
+
+Potential causes:
+ - A typo in the package name
+ - The package is not available in a stable-enough version according to your minimum-stability setting
+   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.
+ - It's a private package and you forgot to add a custom repository to find it
+
+Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
