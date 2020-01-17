@@ -380,12 +380,10 @@ class Installer
         }
 
         // if the updateWhitelist is enabled, packages not in it are also fixed
-        // to the version specified in the lock, except if their stability is not
-        // acceptable anymore, to make sure that they get updated/downgraded to
-        // a working version
+        // to the version specified in the lock
         if ($this->updateWhitelist && $lockedRepository) {
             foreach ($lockedRepository->getPackages() as $lockedPackage) {
-                if (!$this->isUpdateable($lockedPackage) && $repositorySet->isPackageAcceptable($lockedPackage->getNames(), $lockedPackage->getStability())) {
+                if (!$this->isUpdateable($lockedPackage)) {
                     // TODO add reason for fix?
                     $request->fixPackage($lockedPackage);
                 }

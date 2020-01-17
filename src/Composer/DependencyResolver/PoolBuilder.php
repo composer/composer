@@ -16,7 +16,9 @@ use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Package;
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\StabilityFilter;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MultiConstraint;
 
@@ -57,7 +59,12 @@ class PoolBuilder
             $this->nameConstraints[$package->getName()] = null;
             $this->loadedNames[$package->getName()] = true;
             unset($loadNames[$package->getName()]);
-            $loadNames += $this->loadPackage($request, $package);
+            if (
+                $package->getRepository() instanceof RootPackageRepository
+                || StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $package->getNames(), $package->getStability())
+            ) {
+                $loadNames += $this->loadPackage($request, $package);
+            }
         }
 
         foreach ($request->getJobs() as $job) {
