@@ -601,6 +601,7 @@ composer https://github.com/old/url (push)
         $process->execute($expectedFirstGitUpdateCommand, Argument::cetera())->willReturn(1)->shouldBeCalled();
         $process->execute($expectedSecondGitUpdateCommand, Argument::cetera())->willReturn(0)->shouldBeCalled();
         $process->execute($this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --"), null, $this->winCompat($this->workingDir))->willReturn(0)->shouldBeCalled();
+        $process->getErrorOutput()->willReturn('');
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
         $downloader = $this->getDownloaderMock(null, new Config(), $process->reveal());
