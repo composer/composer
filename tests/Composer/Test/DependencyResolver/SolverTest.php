@@ -196,28 +196,6 @@ class SolverTest extends TestCase
         $this->checkSolverResult(array());
     }
 
-    public function testSolverRemoveSingle()
-    {
-        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
-        $this->reposComplete();
-
-        $this->request->remove('A');
-
-        $this->checkSolverResult(array(
-            array('job' => 'remove', 'package' => $packageA),
-        ));
-    }
-
-    public function testSolverRemoveUninstalled()
-    {
-        $this->repo->addPackage($this->getPackage('A', '1.0'));
-        $this->reposComplete();
-
-        $this->request->remove('A');
-
-        $this->checkSolverResult(array());
-    }
-
     public function testSolverUpdateDoesOnlyUpdate()
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
@@ -367,7 +345,6 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
         $this->request->install('C');
-        $this->request->remove('D');
 
         $this->checkSolverResult(array(
             array('job' => 'remove',  'package' => $packageD),
