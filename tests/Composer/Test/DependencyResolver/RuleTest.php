@@ -93,8 +93,7 @@ class RuleTest extends TestCase
 
     public function testPrettyString()
     {
-        $pool = new Pool();
-        $pool->setPackages(array(
+        $pool = new Pool(array(
             $p1 = $this->getPackage('foo', '2.1'),
             $p2 = $this->getPackage('baz', '1.1'),
         ));

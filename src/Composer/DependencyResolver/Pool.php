@@ -38,24 +38,26 @@ class Pool implements \Countable
     protected $packageByExactName = array();
     protected $versionParser;
     protected $providerCache = array();
+    protected $unacceptableFixedPackages;
 
-    public function __construct()
+    public function __construct(array $packages = array(), array $unacceptableFixedPackages = array())
     {
         $this->versionParser = new VersionParser;
+        $this->setPackages($packages);
+        $this->unacceptableFixedPackages = $unacceptableFixedPackages;
     }
 
-    public function setPackages(array $packages)
+    private function setPackages(array $packages)
     {
         $id = 1;
 
-        foreach ($packages as $i => $package) {
+        foreach ($packages as $package) {
             $this->packages[] = $package;
 
             $package->id = $id++;
-            $names = $package->getNames();
             $this->packageByExactName[$package->getName()][$package->id] = $package;
 
-            foreach ($names as $provided) {
+            foreach ($package->getNames() as $provided) {
                 $this->packageByName[$provided][] = $package;
             }
         }
@@ -226,5 +228,10 @@ class Pool implements \Countable
         }
 
         return self::MATCH_NONE;
+    }
+
+    public function isUnacceptableFixedPackage(PackageInterface $package)
+    {
+        return in_array($package, $this->unacceptableFixedPackages, true);
     }
 }

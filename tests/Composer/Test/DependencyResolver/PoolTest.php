@@ -21,10 +21,9 @@ class PoolTest extends TestCase
 {
     public function testPool()
     {
-        $pool = $this->createPool();
         $package = $this->getPackage('foo', '1');
 
-        $pool->setPackages(array($package));
+        $pool = $this->createPool(array($package));
 
         $this->assertEquals(array($package), $pool->whatProvides('foo'));
         $this->assertEquals(array($package), $pool->whatProvides('foo'));
@@ -32,12 +31,11 @@ class PoolTest extends TestCase
 
     public function testWhatProvidesPackageWithConstraint()
     {
-        $pool = $this->createPool();
 
         $firstPackage = $this->getPackage('foo', '1');
         $secondPackage = $this->getPackage('foo', '2');
 
-        $pool->setPackages(array(
+        $pool = $this->createPool(array(
             $firstPackage,
             $secondPackage,
         ));
@@ -48,10 +46,9 @@ class PoolTest extends TestCase
 
     public function testPackageById()
     {
-        $pool = $this->createPool();
         $package = $this->getPackage('foo', '1');
 
-        $pool->setPackages(array($package));
+        $pool = $this->createPool(array($package));
 
         $this->assertSame($package, $pool->packageById(1));
     }
@@ -63,8 +60,8 @@ class PoolTest extends TestCase
         $this->assertEquals(array(), $pool->whatProvides('foo'));
     }
 
-    protected function createPool()
+    protected function createPool(array $packages = array())
     {
-        return new Pool();
+        return new Pool($packages);
     }
 }

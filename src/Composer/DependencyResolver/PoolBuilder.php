@@ -35,10 +35,9 @@ class PoolBuilder
 
     private $aliasMap = array();
     private $nameConstraints = array();
-
     private $loadedNames = array();
-
     private $packages = array();
+    private $unacceptableFixedPackages = array();
 
     public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, array $rootRequires = array())
     {
@@ -65,6 +64,8 @@ class PoolBuilder
                 || StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $package->getNames(), $package->getStability())
             ) {
                 $loadNames += $this->loadPackage($request, $package);
+            } else {
+                $this->unacceptableFixedPackages[] = $package;
             }
         }
 
@@ -137,11 +138,13 @@ class PoolBuilder
             }
         }
 
-        $pool->setPackages($this->packages);
+        $pool = new Pool($this->packages, $this->unacceptableFixedPackages);
 
-        unset($this->aliasMap);
-        unset($this->loadedNames);
-        unset($this->nameConstraints);
+        $this->aliasMap = array();
+        $this->nameConstraints = array();
+        $this->loadedNames = array();
+        $this->packages = array();
+        $this->unacceptableFixedPackages = array();
 
         return $pool;
     }

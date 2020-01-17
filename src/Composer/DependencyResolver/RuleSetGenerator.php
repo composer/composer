@@ -290,9 +290,14 @@ class RuleSetGenerator
         $unlockableMap = $request->getUnlockableMap();
 
         foreach ($request->getFixedPackages() as $package) {
-            // fixed package was not added to the pool which must mean it did not pass the stability requirements
             if ($package->id == -1) {
-                continue;
+                // fixed package was not added to the pool as it did not pass the stability requirements, this is fine
+                if ($this->pool->isUnacceptableFixedPackage($package)) {
+                    continue;
+                }
+
+                // otherwise, looks like a bug
+                throw new \LogicException("Fixed package ".$package->getName()." ".$package->getVersion().($package instanceof AliasPackage ? " (alias)" : "")." was not added to solver pool.");
             }
 
             $this->addRulesForPackage($package, $ignorePlatformReqs);
