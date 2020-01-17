@@ -61,6 +61,7 @@ class PoolBuilder
             unset($loadNames[$package->getName()]);
             if (
                 $package->getRepository() instanceof RootPackageRepository
+                || $package->getRepository() instanceof PlatformRepository
                 || StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $package->getNames(), $package->getStability())
             ) {
                 $loadNames += $this->loadPackage($request, $package);
