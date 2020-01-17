@@ -35,6 +35,7 @@ use Composer\Installer\NoopInstaller;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\RootAliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
@@ -50,6 +51,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\RootPackageRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
@@ -735,7 +737,7 @@ class Installer
         $this->fixedRootPackage->setDevRequires(array());
 
         $repositorySet = new RepositorySet($rootAliases, $this->package->getReferences(), $minimumStability, $stabilityFlags, $rootRequires);
-        $repositorySet->addRepository(new InstalledArrayRepository(array($this->fixedRootPackage)));
+        $repositorySet->addRepository(new RootPackageRepository(array($this->fixedRootPackage)));
         $repositorySet->addRepository($platformRepo);
         if ($this->additionalFixedRepository) {
             $repositorySet->addRepository($this->additionalFixedRepository);
@@ -778,6 +780,9 @@ class Installer
         $request = new Request($lockedRepository);
 
         $request->fixPackage($rootPackage, false);
+        if ($rootPackage instanceof RootAliasPackage) {
+            $request->fixPackage($rootPackage->getAliasOf(), false);
+        }
 
         $fixedPackages = $platformRepo->getPackages();
         if ($this->additionalFixedRepository) {

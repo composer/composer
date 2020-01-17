@@ -13,12 +13,12 @@
 namespace Composer\Repository;
 
 /**
- * Installed array repository.
+ * Root package repository.
  *
- * This is used as an in-memory InstalledRepository mostly for testing purposes
+ * This is used for serving the RootPackage inside an in-memory InstalledRepository
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class InstalledArrayRepository extends WritableArrayRepository implements InstalledRepositoryInterface
+class RootPackageRepository extends ArrayRepository
 {
 }

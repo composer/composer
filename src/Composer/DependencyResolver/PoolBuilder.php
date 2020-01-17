@@ -16,8 +16,6 @@ use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Package;
 use Composer\Package\PackageInterface;
-use Composer\Repository\ComposerRepository;
-use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MultiConstraint;
@@ -54,13 +52,18 @@ class PoolBuilder
         // TODO do we really want the request here? kind of want a root requirements thingy instead
         $loadNames = array();
         foreach ($request->getFixedPackages() as $package) {
-            // TODO can actually use very specific constraint
-            $loadNames[$package->getName()] = null;
+            $this->nameConstraints[$package->getName()] = null;
+            $this->loadedNames[$package->getName()] = true;
+            unset($loadNames[$package->getName()]);
+            $loadNames += $this->loadPackage($request, $package);
         }
 
         foreach ($request->getJobs() as $job) {
             switch ($job['cmd']) {
                 case 'install':
+                    if (isset($this->loadedNames[$job['packageName']])) {
+                        continue 2;
+                    }
                     // TODO currently lock above is always NULL if we adjust that, this needs to merge constraints
                     // TODO does it really make sense that we can have install requests for the same package that is actively locked with non-matching constraints?
                     // also see the solver-problems.test test case
@@ -71,27 +74,16 @@ class PoolBuilder
             }
         }
 
-        // packages from the locked repository only get loaded if they are explicitly fixed
-        foreach ($repositories as $key => $repository) {
-            if ($repository === $request->getLockedRepository()) {
-                foreach ($repository->getPackages() as $lockedPackage) {
-                    foreach ($request->getFixedPackages() as $package) {
-                        if ($package === $lockedPackage) {
-                            $loadNames += $this->loadPackage($request, $package, $key);
-                        }
-                    }
-                }
-            }
-        }
-
         while (!empty($loadNames)) {
             foreach ($loadNames as $name => $void) {
                 $this->loadedNames[$name] = true;
             }
 
             $newLoadNames = array();
-            foreach ($repositories as $key => $repository) {
-                if ($repository instanceof PlatformRepository || $repository instanceof InstalledRepositoryInterface || $repository === $request->getLockedRepository()) {
+            foreach ($repositories as $repository) {
+                // these repos have their packages fixed if they need to be loaded so we
+                // never need to load anything else from them
+                if ($repository instanceof PlatformRepository || $repository === $request->getLockedRepository()) {
                     continue;
                 }
 
@@ -103,9 +95,8 @@ class PoolBuilder
                     unset($loadNames[$name]);
                 }
                 foreach ($result['packages'] as $package) {
-
                     if (call_user_func($this->isPackageAcceptableCallable, $package->getNames(), $package->getStability())) {
-                        $newLoadNames += $this->loadPackage($request, $package, $key);
+                        $newLoadNames += $this->loadPackage($request, $package);
                     }
                 }
             }
@@ -135,15 +126,6 @@ class PoolBuilder
                     foreach ($aliasedPackages as $index => $packageOrAlias) {
                         unset($this->packages[$index]);
                     }
-                }
-            }
-        }
-
-        foreach ($repositories as $key => $repository) {
-            if ($repository instanceof PlatformRepository ||
-                $repository instanceof InstalledRepositoryInterface) {
-                foreach ($repository->getPackages() as $package) {
-                    $this->loadPackage($request, $package, $key);
                 }
             }
         }
