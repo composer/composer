@@ -236,13 +236,18 @@ EOT
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
-            ->setUpdateWhitelist(array_keys($requirements))
             ->setWhitelistTransitiveDependencies($input->getOption('update-with-dependencies'))
             ->setWhitelistAllDependencies($input->getOption('update-with-all-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
         ;
+
+        // if no lock is present, or the file is brand new, we do not do a
+        // partial update as this is not supported by the Installer
+        if (!$this->newlyCreated && $composer->getConfig()->get('lock')) {
+            $install->setUpdateWhitelist(array_keys($requirements));
+        }
 
         $status = $install->run();
         if ($status !== 0) {
