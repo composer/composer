@@ -697,8 +697,6 @@ class Installer
      */
     private function createRepositorySet(PlatformRepository $platformRepo, array $rootAliases = array(), $lockedRepository = null)
     {
-        $this->aliasPlatformPackages($platformRepo, $rootAliases);
-
         // TODO what's the point of rootConstraints at all, we generate the package pool taking them into account anyway?
         // TODO maybe we can drop the lockedRepository here
         // TODO if this gets called in doInstall, this->update is still true?!
@@ -828,25 +826,6 @@ class Installer
         }
 
         return $normalizedAliases;
-    }
-
-    /**
-     * @param PlatformRepository $platformRepo
-     * @param array              $aliases
-     */
-    private function aliasPlatformPackages(PlatformRepository $platformRepo, $aliases)
-    {
-        // TODO should the repository set do this?
-        foreach ($aliases as $packageName => $versions) {
-            foreach ($versions as $version => $alias) {
-                $packages = $platformRepo->findPackages($packageName, $version);
-                foreach ($packages as $package) {
-                    $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
-                    $aliasPackage->setRootPackageAlias(true);
-                    $platformRepo->addPackage($aliasPackage);
-                }
-            }
-        }
     }
 
     /**

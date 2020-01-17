@@ -170,7 +170,6 @@ class PoolBuilder
             $aliasPackage = new AliasPackage($basePackage, $alias['alias_normalized'], $alias['alias']);
             $aliasPackage->setRootPackageAlias(true);
 
-            $package->getRepository()->addPackage($aliasPackage); // TODO do we need this?
             $this->packages[] = $aliasPackage;
             $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$index+1] = $aliasPackage;
         }
