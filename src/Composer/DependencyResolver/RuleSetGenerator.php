@@ -325,15 +325,6 @@ class RuleSetGenerator
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                     }
                     break;
-                case 'remove':
-                    // remove all packages with this name including uninstalled
-                    // ones to make sure none of them are picked as replacements
-                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
-                    foreach ($packages as $package) {
-                        $rule = $this->createRemoveRule($package, Rule::RULE_JOB_REMOVE, $job);
-                        $this->addRule(RuleSet::TYPE_JOB, $rule);
-                    }
-                    break;
             }
         }
     }
