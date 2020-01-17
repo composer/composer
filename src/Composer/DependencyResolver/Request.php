@@ -45,6 +45,8 @@ class Request
 
     /**
      * Mark an existing package as being installed and having to remain installed
+     *
+     * @param bool $lockable if set to false, the package will not be written to the lock file
      */
     public function fixPackage(PackageInterface $package, $lockable = true)
     {
