@@ -48,10 +48,6 @@ class Request
      */
     public function fixPackage(PackageInterface $package, $lockable = true)
     {
-        if ($package instanceof RootAliasPackage) {
-            $package = $package->getAliasOf();
-        }
-
         $this->fixedPackages[spl_object_hash($package)] = $package;
 
         if (!$lockable) {
