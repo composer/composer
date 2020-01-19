@@ -1,0 +1,44 @@
+--TEST--
+Stability flags apply
+
+--ROOT--
+{
+    "stability-flags": {
+        "flagged/pkg": "alpha"
+    },
+    "minimum-stability": "RC",
+    "aliases": [
+        {
+            "package": "default/pkg",
+            "version": "1.0.0-RC",
+            "alias": "1.2.0"
+        }
+    ]
+}
+
+--REQUEST--
+{
+    "flagged/pkg": "*",
+    "default/pkg": "*"
+}
+
+--PACKAGES--
+[
+    {"name": "flagged/pkg", "version": "1.0.0", "id": 1},
+    {"name": "flagged/pkg", "version": "1.0.0-beta", "id": 2},
+    {"name": "flagged/pkg", "version": "1.0.0-dev", "id": 3},
+    {"name": "flagged/pkg", "version": "1.0.0-RC", "id": 4},
+    {"name": "default/pkg", "version": "1.0.0", "id": 5},
+    {"name": "default/pkg", "version": "1.0.0-RC", "id": 6},
+    {"name": "default/pkg", "version": "1.0.0-alpha", "id": 7}
+]
+
+--EXPECT--
+[
+    1,
+    2,
+    4,
+    5,
+    6,
+    "default/pkg-1.2.0.0 alias of 6"
+]
