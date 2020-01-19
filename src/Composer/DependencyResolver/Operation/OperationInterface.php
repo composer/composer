@@ -20,11 +20,11 @@ namespace Composer\DependencyResolver\Operation;
 interface OperationInterface
 {
     /**
-     * Returns job type.
+     * Returns operation type.
      *
      * @return string
      */
-    public function getJobType();
+    public function getOperationType();
 
     /**
      * Returns operation reason.

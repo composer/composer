@@ -17,6 +17,7 @@ use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\Pool;
 use Composer\Package\BasePackage;
+use Composer\Package\Link;
 use Composer\Repository\ArrayRepository;
 use Composer\Test\TestCase;
 
@@ -24,7 +25,7 @@ class RuleTest extends TestCase
 {
     public function testGetHash()
     {
-        $rule = new GenericRule(array(123), Rule::RULE_JOB_INSTALL, null);
+        $rule = new GenericRule(array(123), Rule::RULE_ROOT_REQUIRE, null);
 
         $hash = unpack('ihash', md5('123', true));
         $this->assertEquals($hash['hash'], $rule->getHash());
@@ -32,39 +33,39 @@ class RuleTest extends TestCase
 
     public function testEqualsForRulesWithDifferentHashes()
     {
-        $rule = new GenericRule(array(1, 2), Rule::RULE_JOB_INSTALL, null);
-        $rule2 = new GenericRule(array(1, 3), Rule::RULE_JOB_INSTALL, null);
+        $rule = new GenericRule(array(1, 2), Rule::RULE_ROOT_REQUIRE, null);
+        $rule2 = new GenericRule(array(1, 3), Rule::RULE_ROOT_REQUIRE, null);
 
         $this->assertFalse($rule->equals($rule2));
     }
 
     public function testEqualsForRulesWithDifferLiteralsQuantity()
     {
-        $rule = new GenericRule(array(1, 12), Rule::RULE_JOB_INSTALL, null);
-        $rule2 = new GenericRule(array(1), Rule::RULE_JOB_INSTALL, null);
+        $rule = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, null);
+        $rule2 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, null);
 
         $this->assertFalse($rule->equals($rule2));
     }
 
     public function testEqualsForRulesWithSameLiterals()
     {
-        $rule = new GenericRule(array(1, 12), Rule::RULE_JOB_INSTALL, null);
-        $rule2 = new GenericRule(array(1, 12), Rule::RULE_JOB_INSTALL, null);
+        $rule = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, null);
+        $rule2 = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, null);
 
         $this->assertTrue($rule->equals($rule2));
     }
 
     public function testSetAndGetType()
     {
-        $rule = new GenericRule(array(), Rule::RULE_JOB_INSTALL, null);
-        $rule->setType(RuleSet::TYPE_JOB);
+        $rule = new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null);
+        $rule->setType(RuleSet::TYPE_REQUEST);
 
-        $this->assertEquals(RuleSet::TYPE_JOB, $rule->getType());
+        $this->assertEquals(RuleSet::TYPE_REQUEST, $rule->getType());
     }
 
     public function testEnable()
     {
-        $rule = new GenericRule(array(), Rule::RULE_JOB_INSTALL, null);
+        $rule = new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null);
         $rule->disable();
         $rule->enable();
 
@@ -74,7 +75,7 @@ class RuleTest extends TestCase
 
     public function testDisable()
     {
-        $rule = new GenericRule(array(), Rule::RULE_JOB_INSTALL, null);
+        $rule = new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null);
         $rule->enable();
         $rule->disable();
 
@@ -84,8 +85,8 @@ class RuleTest extends TestCase
 
     public function testIsAssertions()
     {
-        $rule = new GenericRule(array(1, 12), Rule::RULE_JOB_INSTALL, null);
-        $rule2 = new GenericRule(array(1), Rule::RULE_JOB_INSTALL, null);
+        $rule = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, null);
+        $rule2 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, null);
 
         $this->assertFalse($rule->isAssertion());
         $this->assertTrue($rule2->isAssertion());
@@ -98,8 +99,8 @@ class RuleTest extends TestCase
             $p2 = $this->getPackage('baz', '1.1'),
         ));
 
-        $rule = new GenericRule(array($p1->getId(), -$p2->getId()), Rule::RULE_JOB_INSTALL, null);
+        $rule = new GenericRule(array($p1->getId(), -$p2->getId()), Rule::RULE_PACKAGE_REQUIRES, new Link('baz', 'foo'));
 
-        $this->assertEquals('Install command rule (don\'t install baz 1.1|install foo 2.1)', $rule->getPrettyString($pool));
+        $this->assertEquals('baz 1.1 relates to foo -> satisfiable by foo[2.1].', $rule->getPrettyString($pool));
     }
 }

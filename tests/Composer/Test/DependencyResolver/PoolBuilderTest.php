@@ -82,7 +82,7 @@ class PoolBuilderTest extends TestCase
 
         $request = new Request();
         foreach ($requestData as $package => $constraint) {
-            $request->install($package, $parser->parseConstraints($constraint));
+            $request->require($package, $parser->parseConstraints($constraint));
         }
 
         foreach ($fixed as $fixedPackage) {

@@ -30,13 +30,13 @@ class RequestTest extends TestCase
         $repo->addPackage($foobar);
 
         $request = new Request();
-        $request->install('foo');
+        $request->require('foo');
 
         $this->assertEquals(
             array(
-                array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => null),
+                'foo' => null,
             ),
-            $request->getJobs()
+            $request->getRequires()
         );
     }
 
@@ -52,13 +52,13 @@ class RequestTest extends TestCase
         $repo2->addPackage($foo2);
 
         $request = new Request();
-        $request->install('foo', $constraint = $this->getVersionConstraint('=', '1'));
+        $request->require('foo', $constraint = $this->getVersionConstraint('=', '1'));
 
         $this->assertEquals(
             array(
-                    array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => $constraint),
+                'foo' => $constraint,
             ),
-            $request->getJobs()
+            $request->getRequires()
         );
     }
 }

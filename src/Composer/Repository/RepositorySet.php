@@ -157,7 +157,7 @@ class RepositorySet
         $request = new Request($lockedRepo);
 
         foreach ($packageNames as $packageName) {
-            $request->install($packageName);
+            $request->require($packageName);
         }
 
         return $this->createPool($request);

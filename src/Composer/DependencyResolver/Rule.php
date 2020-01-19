@@ -24,8 +24,8 @@ abstract class Rule
 {
     // reason constants
     const RULE_INTERNAL_ALLOW_UPDATE = 1;
-    const RULE_JOB_INSTALL = 2;
-    const RULE_JOB_REMOVE = 3;
+    const RULE_ROOT_REQUIRE = 2;
+    const RULE_FIXED = 3;
     const RULE_PACKAGE_CONFLICT = 6;
     const RULE_PACKAGE_REQUIRES = 7;
     const RULE_PACKAGE_OBSOLETES = 8;
@@ -41,21 +41,16 @@ abstract class Rule
     const BITFIELD_DISABLED = 16;
 
     protected $bitfield;
-    protected $job;
+    protected $request;
     protected $reasonData;
 
     /**
      * @param int                   $reason     A RULE_* constant describing the reason for generating this rule
      * @param Link|PackageInterface $reasonData
-     * @param array                 $job        The job this rule was created from
      */
-    public function __construct($reason, $reasonData, $job = null)
+    public function __construct($reason, $reasonData)
     {
         $this->reasonData = $reasonData;
-
-        if ($job) {
-            $this->job = $job;
-        }
 
         $this->bitfield = (0 << self::BITFIELD_DISABLED) |
             ($reason << self::BITFIELD_REASON) |
@@ -65,11 +60,6 @@ abstract class Rule
     abstract public function getLiterals();
 
     abstract public function getHash();
-
-    public function getJob()
-    {
-        return $this->job;
-    }
 
     abstract public function equals(Rule $rule);
 
@@ -85,11 +75,17 @@ abstract class Rule
 
     public function getRequiredPackage()
     {
-        if ($this->getReason() === self::RULE_JOB_INSTALL) {
-            return $this->reasonData;
+        $reason = $this->getReason();
+
+        if ($reason === self::RULE_ROOT_REQUIRE) {
+            return $this->reasonData['packageName'];
         }
 
-        if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
+        if ($reason === self::RULE_FIXED) {
+            return $this->reasonData['package']->getName();
+        }
+
+        if ($reason === self::RULE_PACKAGE_REQUIRES) {
             return $this->reasonData->getTarget();
         }
     }
@@ -142,11 +138,24 @@ abstract class Rule
             case self::RULE_INTERNAL_ALLOW_UPDATE:
                 return $ruleText;
 
-            case self::RULE_JOB_INSTALL:
-                return "Install command rule ($ruleText)";
+            case self::RULE_ROOT_REQUIRE:
+                $packageName = $this->reasonData['packageName'];
+                $constraint = $this->reasonData['constraint'];
 
-            case self::RULE_JOB_REMOVE:
-                return "Remove command rule ($ruleText)";
+                $packages = $pool->whatProvides($packageName, $constraint);
+                if (!$packages) {
+                    return 'No package found to satisfy root composer.json require '.$packageName.($constraint ? ' '.$constraint->getPrettyString() : '');
+                }
+
+                return 'Root composer.json requires '.$packageName.($constraint ? ' '.$constraint->getPrettyString() : '').' -> satisfiable by '.$this->formatPackagesUnique($pool, $packages).'.';
+
+            case self::RULE_FIXED:
+                $package = $this->reasonData['package'];
+                if ($this->reasonData['lockable']) {
+                    return $package->getPrettyName().' is locked to version '.$package->getPrettyVersion().' and an update of this package was not requested.';
+                }
+
+                return $package->getPrettyName().' is present at version '.$package->getPrettyVersion() . ' and cannot be modified by Composer';
 
             case self::RULE_PACKAGE_CONFLICT:
                 $package1 = $pool->literalToPackage($literals[0]);
@@ -263,6 +272,8 @@ abstract class Rule
      */
     protected function formatPackagesUnique($pool, array $packages)
     {
+        // TODO this is essentially a duplicate of Problem: getPackageList, maintain in one place only?
+
         $prepared = array();
         foreach ($packages as $package) {
             if (!is_object($package)) {

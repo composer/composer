@@ -371,11 +371,11 @@ class Installer
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
         if ($this->updateMirrors) {
             foreach ($lockedRepository->getPackages() as $lockedPackage) {
-                $request->install($lockedPackage->getName(), new Constraint('==', $lockedPackage->getVersion()));
+                $request->require($lockedPackage->getName(), new Constraint('==', $lockedPackage->getVersion()));
             }
         } else {
             foreach ($links as $link) {
-                $request->install($link->getTarget(), $link->getConstraint());
+                $request->require($link->getTarget(), $link->getConstraint());
             }
         }
 
@@ -464,13 +464,12 @@ class Installer
 
         foreach ($lockTransaction->getOperations() as $operation) {
             // collect suggestions
-            $jobType = $operation->getJobType();
             if ($operation instanceof InstallOperation) {
                 $this->suggestedPackagesReporter->addSuggestionsFromPackage($operation->getPackage());
             }
 
             // output op, but alias op only in debug verbosity
-            if (false === strpos($operation->getJobType(), 'Alias') || $this->io->isDebug()) {
+            if (false === strpos($operation->getOperationType(), 'Alias') || $this->io->isDebug()) {
                 $this->io->writeError('  - ' . $operation->show(true));
             }
         }
@@ -524,7 +523,7 @@ class Installer
 
         $links = $this->package->getRequires();
         foreach ($links as $link) {
-            $request->install($link->getTarget(), $link->getConstraint());
+            $request->require($link->getTarget(), $link->getConstraint());
         }
 
         $pool = $repositorySet->createPool($request);
@@ -582,7 +581,7 @@ class Installer
             }
 
             foreach ($this->locker->getPlatformRequirements($this->devMode) as $link) {
-                $request->install($link->getTarget(), $link->getConstraint());
+                $request->require($link->getTarget(), $link->getConstraint());
             }
 
             //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
@@ -656,7 +655,7 @@ class Installer
         } else {
             foreach ($localRepoTransaction->getOperations() as $operation) {
                 // output op, but alias op only in debug verbosity
-                if (false === strpos($operation->getJobType(), 'Alias') || $this->io->isDebug()) {
+                if (false === strpos($operation->getOperationType(), 'Alias') || $this->io->isDebug()) {
                     $this->io->writeError('  - ' . $operation->show(false));
                 }
             }

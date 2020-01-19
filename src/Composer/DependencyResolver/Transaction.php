@@ -170,7 +170,7 @@ class Transaction
 
         // TODO skip updates which don't update? is this needed? we shouldn't schedule this update in the first place?
         /*
-        if ('update' === $jobType) {
+        if ('update' === $opType) {
             $targetPackage = $operation->getTargetPackage();
             if ($targetPackage->isDev()) {
                 $initialPackage = $operation->getInitialPackage();

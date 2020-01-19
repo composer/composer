@@ -28,7 +28,7 @@ class Problem
     protected $reasonSeen;
 
     /**
-     * A set of reasons for the problem, each is a rule or a job and a rule
+     * A set of reasons for the problem, each is a rule or a root require and a rule
      * @var array
      */
     protected $reasons = array();
@@ -49,10 +49,7 @@ class Problem
      */
     public function addRule(Rule $rule)
     {
-        $this->addReason(spl_object_hash($rule), array(
-            'rule' => $rule,
-            'job' => $rule->getJob(),
-        ));
+        $this->addReason(spl_object_hash($rule), $rule);
     }
 
     /**
@@ -73,16 +70,21 @@ class Problem
      */
     public function getPrettyString(array $installedMap = array(), array $learnedPool = array())
     {
+        // TODO doesn't this entirely defeat the purpose of the problem sections? what's the point of sections?
         $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
 
         if (count($reasons) === 1) {
             reset($reasons);
-            $reason = current($reasons);
+            $rule = current($reasons);
 
-            $job = $reason['job'];
+            if (!in_array($rule->getReason(), array(Rule::RULE_ROOT_REQUIRE, Rule::RULE_FIXED), true)) {
+                throw new \LogicException("Single reason problems must contain a request rule.");
+            }
 
-            $packageName = $job['packageName'];
-            $constraint = $job['constraint'];
+            $request = $rule->getReasonData();
+
+            $packageName = $request['packageName'];
+            $constraint = $request['constraint'];
 
             if (isset($constraint)) {
                 $packages = $this->pool->whatProvides($packageName, $constraint);
@@ -90,8 +92,7 @@ class Problem
                 $packages = array();
             }
 
-            if ($job && ($job['cmd'] === 'install' || $job['cmd'] === 'fix') && empty($packages)) {
-
+            if ($request && empty($packages)) {
                 // handle php/hhvm
                 if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
                     $version = phpversion();
@@ -164,17 +165,8 @@ class Problem
 
         $messages = array();
 
-        foreach ($reasons as $reason) {
-            $rule = $reason['rule'];
-            $job = $reason['job'];
-
-            if ($job) {
-                $messages[] = $this->jobToText($job);
-            } elseif ($rule) {
-                if ($rule instanceof Rule) {
-                    $messages[] = $rule->getPrettyString($this->pool, $installedMap, $learnedPool);
-                }
-            }
+        foreach ($reasons as $rule) {
+            $messages[] = $rule->getPrettyString($this->pool, $installedMap, $learnedPool);
         }
 
         return "\n    - ".implode("\n    - ", $messages);
@@ -184,10 +176,13 @@ class Problem
      * Store a reason descriptor but ignore duplicates
      *
      * @param string $id     A canonical identifier for the reason
-     * @param string|array $reason The reason descriptor
+     * @param Rule $reason The reason descriptor
      */
-    protected function addReason($id, $reason)
+    protected function addReason($id, Rule $reason)
     {
+        // TODO: if a rule is part of a problem description in two sections, isn't this going to remove a message
+        // that is important to understand the issue?
+
         if (!isset($this->reasonSeen[$id])) {
             $this->reasonSeen[$id] = true;
             $this->reasons[$this->section][] = $reason;
@@ -197,42 +192,6 @@ class Problem
     public function nextSection()
     {
         $this->section++;
-    }
-
-    /**
-     * Turns a job into a human readable description
-     *
-     * @param  array  $job
-     * @return string
-     */
-    protected function jobToText($job)
-    {
-        $packageName = $job['packageName'];
-        $constraint = $job['constraint'];
-        switch ($job['cmd']) {
-            case 'fix':
-                $package = $job['package'];
-                if ($job['lockable']) {
-                    return $package->getPrettyName().' is locked to version '.$package->getPrettyVersion().' and an update of this package was not requested.';
-                }
-
-                return $package->getPrettyName().' is present at version '.$package->getPrettyVersion() . ' and cannot be modified by Composer';
-            case 'install':
-                $packages = $this->pool->whatProvides($packageName, $constraint);
-                if (!$packages) {
-                    return 'No package found to satisfy install request for '.$packageName.$this->constraintToText($constraint);
-                }
-
-                return 'Installation request for '.$packageName.$this->constraintToText($constraint).' -> satisfiable by '.$this->getPackageList($packages).'.';
-        }
-
-        if (isset($constraint)) {
-            $packages = $this->pool->whatProvides($packageName, $constraint);
-        } else {
-            $packages = $this->pool->whatProvides($job['packageName'], null);
-        }
-
-        return 'Job(cmd='.$job['cmd'].', target='.$packageName.', packages=['.$this->getPackageList($packages).'])';
     }
 
     protected function getPackageList($packages)
@@ -250,7 +209,7 @@ class Problem
     }
 
     /**
-     * Turns a constraint into text usable in a sentence describing a job
+     * Turns a constraint into text usable in a sentence describing a request
      *
      * @param  \Composer\Semver\Constraint\ConstraintInterface $constraint
      * @return string

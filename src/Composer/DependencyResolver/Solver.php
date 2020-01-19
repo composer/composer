@@ -124,19 +124,19 @@ class Solver
 
                 $problem->addRule($rule);
                 $problem->addRule($conflict);
-                $this->disableProblem($rule);
+                $rule->disable();
                 $this->problems[] = $problem;
                 continue;
             }
 
-            // conflict with another job
+            // conflict with another root require/fixed package
             $problem = new Problem($this->pool);
             $problem->addRule($rule);
             $problem->addRule($conflict);
 
-            // push all of our rules (can only be job rules)
+            // push all of our rules (can only be root require/fixed package rules)
             // asserting this literal on the problem stack
-            foreach ($this->rules->getIteratorFor(RuleSet::TYPE_JOB) as $assertRule) {
+            foreach ($this->rules->getIteratorFor(RuleSet::TYPE_REQUEST) as $assertRule) {
                 if ($assertRule->isDisabled() || !$assertRule->isAssertion()) {
                     continue;
                 }
@@ -148,7 +148,7 @@ class Solver
                     continue;
                 }
                 $problem->addRule($assertRule);
-                $this->disableProblem($assertRule);
+                $assertRule->disable();
             }
             $this->problems[] = $problem;
 
@@ -171,19 +171,15 @@ class Solver
      */
     protected function checkForRootRequireProblems($request, $ignorePlatformReqs)
     {
-        foreach ($request->getJobs() as $job) {
-            switch ($job['cmd']) {
-                case 'install':
-                    if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
-                        break;
-                    }
+        foreach ($request->getRequires() as $packageName => $constraint) {
+            if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $packageName)) {
+                continue;
+            }
 
-                    if (!$this->pool->whatProvides($job['packageName'], $job['constraint'])) {
-                        $problem = new Problem($this->pool);
-                        $problem->addRule(new GenericRule(array(), null, null, $job));
-                        $this->problems[] = $problem;
-                    }
-                    break;
+            if (!$this->pool->whatProvides($packageName, $constraint)) {
+                $problem = new Problem($this->pool);
+                $problem->addRule(new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => $packageName, 'constraint' => $constraint)));
+                $this->problems[] = $problem;
             }
         }
     }
@@ -208,7 +204,7 @@ class Solver
             $this->watchGraph->insert(new RuleWatchNode($rule));
         }
 
-        /* make decisions based on job/update assertions */
+        /* make decisions based on root require/fix assertions */
         $this->makeAssertionRuleDecisions();
 
         $this->io->writeError('Resolving dependencies through SAT', true, IOInterface::DEBUG);
@@ -562,28 +558,6 @@ class Solver
         return 0;
     }
 
-    /**
-     * @param Rule $why
-     */
-    private function disableProblem(Rule $why)
-    {
-        $job = $why->getJob();
-
-        if (!$job) {
-            $why->disable();
-
-            return;
-        }
-
-        // disable all rules of this job
-        foreach ($this->rules as $rule) {
-            /** @var Rule $rule */
-            if ($job === $rule->getJob()) {
-                $rule->disable();
-            }
-        }
-    }
-
     private function resetSolver()
     {
         $this->decisions->reset();
@@ -631,7 +605,7 @@ class Solver
         /*
          * here's the main loop:
          * 1) propagate new decisions (only needed once)
-         * 2) fulfill jobs
+         * 2) fulfill root requires/fixed packages
          * 3) fulfill all unresolved rules
          * 4) minimalize solution if we had choices
          * if we encounter a problem, we rewind to a safe level and restart
@@ -657,9 +631,9 @@ class Solver
                 }
             }
 
-            // handle job rules
+            // handle root require/fixed package rules
             if ($level < $systemLevel) {
-                $iterator = $this->rules->getIteratorFor(RuleSet::TYPE_JOB);
+                $iterator = $this->rules->getIteratorFor(RuleSet::TYPE_REQUEST);
                 foreach ($iterator as $rule) {
                     if ($rule->isEnabled()) {
                         $decisionQueue = array();
@@ -704,7 +678,7 @@ class Solver
 
                 $systemLevel = $level + 1;
 
-                // jobs left
+                // root requires/fixed packages left
                 $iterator->next();
                 if ($iterator->valid()) {
                     continue;

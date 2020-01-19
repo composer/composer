@@ -28,11 +28,10 @@ class MultiConflictRule extends Rule
      * @param array                 $literals
      * @param int                   $reason     A RULE_* constant describing the reason for generating this rule
      * @param Link|PackageInterface $reasonData
-     * @param array                 $job        The job this rule was created from
      */
-    public function __construct(array $literals, $reason, $reasonData, $job = null)
+    public function __construct(array $literals, $reason, $reasonData)
     {
-        parent::__construct($reason, $reasonData, $job);
+        parent::__construct($reason, $reasonData);
 
         if (count($literals) < 3) {
             throw new \RuntimeException("multi conflict rule requires at least 3 literals");
