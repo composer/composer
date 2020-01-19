@@ -30,7 +30,7 @@ class RequestTest extends TestCase
         $repo->addPackage($foobar);
 
         $request = new Request();
-        $request->require('foo');
+        $request->requireName('foo');
 
         $this->assertEquals(
             array(
@@ -52,7 +52,7 @@ class RequestTest extends TestCase
         $repo2->addPackage($foo2);
 
         $request = new Request();
-        $request->require('foo', $constraint = $this->getVersionConstraint('=', '1'));
+        $request->requireName('foo', $constraint = $this->getVersionConstraint('=', '1'));
 
         $this->assertEquals(
             array(

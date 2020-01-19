@@ -33,7 +33,7 @@ class Request
         $this->lockedRepository = $lockedRepository;
     }
 
-    public function require($packageName, ConstraintInterface $constraint = null)
+    public function requireName($packageName, ConstraintInterface $constraint = null)
     {
         $packageName = strtolower($packageName);
         $this->requires[$packageName] = $constraint;
