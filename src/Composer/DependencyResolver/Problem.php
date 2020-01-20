@@ -82,7 +82,6 @@ class Problem
             }
 
             $request = $rule->getReasonData();
-
             $packageName = $request['packageName'];
             $constraint = $request['constraint'];
 
@@ -92,7 +91,7 @@ class Problem
                 $packages = array();
             }
 
-            if ($request && empty($packages)) {
+            if (empty($packages)) {
                 // handle php/hhvm
                 if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
                     $version = phpversion();
