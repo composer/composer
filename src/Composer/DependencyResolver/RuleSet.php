@@ -19,7 +19,7 @@ class RuleSet implements \IteratorAggregate, \Countable
 {
     // highest priority => lowest number
     const TYPE_PACKAGE = 0;
-    const TYPE_JOB = 1;
+    const TYPE_REQUEST = 1;
     const TYPE_LEARNED = 4;
 
     /**
@@ -32,7 +32,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     protected static $types = array(
         255 => 'UNKNOWN',
         self::TYPE_PACKAGE => 'PACKAGE',
-        self::TYPE_JOB => 'JOB',
+        self::TYPE_REQUEST => 'REQUEST',
         self::TYPE_LEARNED => 'LEARNED',
     );
 

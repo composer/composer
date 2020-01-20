@@ -24,7 +24,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 class Request
 {
     protected $lockedRepository;
-    protected $jobs = array();
+    protected $requires = array();
     protected $fixedPackages = array();
     protected $unlockables = array();
 
@@ -33,9 +33,10 @@ class Request
         $this->lockedRepository = $lockedRepository;
     }
 
-    public function install($packageName, ConstraintInterface $constraint = null)
+    public function requireName($packageName, ConstraintInterface $constraint = null)
     {
-        $this->addJob($packageName, 'install', $constraint);
+        $packageName = strtolower($packageName);
+        $this->requires[$packageName] = $constraint;
     }
 
     /**
@@ -52,20 +53,9 @@ class Request
         }
     }
 
-    protected function addJob($packageName, $cmd, ConstraintInterface $constraint = null)
+    public function getRequires()
     {
-        $packageName = strtolower($packageName);
-
-        $this->jobs[] = array(
-            'cmd' => $cmd,
-            'packageName' => $packageName,
-            'constraint' => $constraint,
-        );
-    }
-
-    public function getJobs()
-    {
-        return $this->jobs;
+        return $this->requires;
     }
 
     public function getFixedPackages()

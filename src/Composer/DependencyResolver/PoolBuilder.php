@@ -69,20 +69,16 @@ class PoolBuilder
             }
         }
 
-        foreach ($request->getJobs() as $job) {
-            switch ($job['cmd']) {
-                case 'install':
-                    if (isset($this->loadedNames[$job['packageName']])) {
-                        continue 2;
-                    }
-                    // TODO currently lock above is always NULL if we adjust that, this needs to merge constraints
-                    // TODO does it really make sense that we can have install requests for the same package that is actively locked with non-matching constraints?
-                    // also see the solver-problems.test test case
-                    $constraint = array_key_exists($job['packageName'], $loadNames) ? null : $job['constraint'];
-                    $loadNames[$job['packageName']] = $constraint;
-                    $this->nameConstraints[$job['packageName']] = $constraint ? new MultiConstraint(array($constraint), false) : null;
-                    break;
+        foreach ($request->getRequires() as $packageName => $constraint) {
+            if (isset($this->loadedNames[$packageName])) {
+                continue;
             }
+            // TODO currently lock above is always NULL if we adjust that, this needs to merge constraints
+            // TODO does it really make sense that we can have install requests for the same package that is actively locked with non-matching constraints?
+            // also see the solver-problems.test test case
+            $constraint = array_key_exists($packageName, $loadNames) ? null : $constraint;
+            $loadNames[$packageName] = $constraint;
+            $this->nameConstraints[$packageName] = $constraint ? new MultiConstraint(array($constraint), false) : null;
         }
 
         while (!empty($loadNames)) {

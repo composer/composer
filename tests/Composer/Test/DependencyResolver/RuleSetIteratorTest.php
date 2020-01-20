@@ -30,9 +30,9 @@ class RuleSetIteratorTest extends TestCase
         $this->pool = new Pool();
 
         $this->rules = array(
-            RuleSet::TYPE_JOB => array(
-                new GenericRule(array(), Rule::RULE_JOB_INSTALL, null),
-                new GenericRule(array(), Rule::RULE_JOB_INSTALL, null),
+            RuleSet::TYPE_REQUEST => array(
+                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null),
+                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null),
             ),
             RuleSet::TYPE_LEARNED => array(
                 new GenericRule(array(), Rule::RULE_INTERNAL_ALLOW_UPDATE, null),
@@ -51,8 +51,8 @@ class RuleSetIteratorTest extends TestCase
         }
 
         $expected = array(
-            $this->rules[RuleSet::TYPE_JOB][0],
-            $this->rules[RuleSet::TYPE_JOB][1],
+            $this->rules[RuleSet::TYPE_REQUEST][0],
+            $this->rules[RuleSet::TYPE_REQUEST][1],
             $this->rules[RuleSet::TYPE_LEARNED][0],
         );
 
@@ -69,8 +69,8 @@ class RuleSetIteratorTest extends TestCase
         }
 
         $expected = array(
-            RuleSet::TYPE_JOB,
-            RuleSet::TYPE_JOB,
+            RuleSet::TYPE_REQUEST,
+            RuleSet::TYPE_REQUEST,
             RuleSet::TYPE_LEARNED,
         );
 

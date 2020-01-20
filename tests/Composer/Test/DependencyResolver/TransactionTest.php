@@ -71,7 +71,7 @@ class TransactionTest extends TestCase
     {
         $result = array();
         foreach ($transaction->getOperations() as $operation) {
-            if ('update' === $operation->getJobType()) {
+            if ('update' === $operation->getOperationType()) {
                 $result[] = array(
                     'job' => 'update',
                     'from' => $operation->getInitialPackage(),
@@ -79,7 +79,7 @@ class TransactionTest extends TestCase
                 );
             } else {
                 $result[] = array(
-                    'job' => $operation->getJobType(),
+                    'job' => $operation->getOperationType(),
                     'package' => $operation->getPackage(),
                 );
             }

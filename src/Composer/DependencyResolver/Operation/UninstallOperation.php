@@ -47,11 +47,11 @@ class UninstallOperation extends SolverOperation
     }
 
     /**
-     * Returns job type.
+     * Returns operation type.
      *
      * @return string
      */
-    public function getJobType()
+    public function getOperationType()
     {
         return 'uninstall';
     }

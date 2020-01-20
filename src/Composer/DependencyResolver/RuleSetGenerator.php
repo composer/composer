@@ -76,33 +76,17 @@ class RuleSetGenerator
      * @param  array $packages The set of packages to choose from
      * @param  int   $reason   A RULE_* constant describing the reason for
      *                         generating this rule
-     * @param  array $job      The job this rule was created from
+     * @param  array $reasonData Additional data like the root require or fix request info
      * @return Rule  The generated rule
      */
-    protected function createInstallOneOfRule(array $packages, $reason, $job)
+    protected function createInstallOneOfRule(array $packages, $reason, $reasonData)
     {
         $literals = array();
         foreach ($packages as $package) {
             $literals[] = $package->id;
         }
 
-        return new GenericRule($literals, $reason, $job['packageName'], $job);
-    }
-
-    /**
-     * Creates a rule to remove a package
-     *
-     * The rule for a package A is (-A).
-     *
-     * @param  PackageInterface $package The package to be removed
-     * @param  int              $reason  A RULE_* constant describing the
-     *                                   reason for generating this rule
-     * @param  array            $job     The job this rule was created from
-     * @return Rule             The generated rule
-     */
-    protected function createRemoveRule(PackageInterface $package, $reason, $job)
-    {
-        return new GenericRule(array(-$package->id), $reason, $job['packageName'], $job);
+        return new GenericRule($literals, $reason, $reasonData);
     }
 
     /**
@@ -302,34 +286,29 @@ class RuleSetGenerator
 
             $this->addRulesForPackage($package, $ignorePlatformReqs);
 
-            $rule = $this->createInstallOneOfRule(array($package), Rule::RULE_JOB_INSTALL, array(
-                'cmd' => 'fix',
-                'packageName' => $package->getName(),
-                'constraint' => null,
+            $rule = $this->createInstallOneOfRule(array($package), Rule::RULE_FIXED, array(
                 'package' => $package,
                 'lockable' => !isset($unlockableMap[$package->id]),
-                'fixed' => true
             ));
-            $this->addRule(RuleSet::TYPE_JOB, $rule);
+            $this->addRule(RuleSet::TYPE_REQUEST, $rule);
         }
 
-        foreach ($request->getJobs() as $job) {
-            switch ($job['cmd']) {
-                case 'install':
-                    if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
-                        break;
-                    }
+        foreach ($request->getRequires() as $packageName => $constraint) {
+            if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $packageName)) {
+                continue;
+            }
 
-                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
-                    if ($packages) {
-                        foreach ($packages as $package) {
-                            $this->addRulesForPackage($package, $ignorePlatformReqs);
-                        }
+            $packages = $this->pool->whatProvides($packageName, $constraint);
+            if ($packages) {
+                foreach ($packages as $package) {
+                    $this->addRulesForPackage($package, $ignorePlatformReqs);
+                }
 
-                        $rule = $this->createInstallOneOfRule($packages, Rule::RULE_JOB_INSTALL, $job);
-                        $this->addRule(RuleSet::TYPE_JOB, $rule);
-                    }
-                    break;
+                $rule = $this->createInstallOneOfRule($packages, Rule::RULE_ROOT_REQUIRE, array(
+                    'packageName' => $packageName,
+                    'constraint' => $constraint,
+                ));
+                $this->addRule(RuleSet::TYPE_REQUEST, $rule);
             }
         }
     }
