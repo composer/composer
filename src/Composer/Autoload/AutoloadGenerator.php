@@ -1014,7 +1014,7 @@ INITIALIZER;
      */
     protected function safeCopy($source, $target)
     {
-        if (!file_exists($target) OR !file_exists($source) OR !$this->filesAreEqual($source, $target)) {
+        if (!file_exists($target) || !file_exists($source) || !$this->filesAreEqual($source, $target)) {
             $source = fopen($source, 'r');
             $target = fopen($target, 'w+');
 
