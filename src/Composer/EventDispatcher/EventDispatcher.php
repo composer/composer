@@ -145,27 +145,15 @@ class EventDispatcher
      */
     protected function doDispatch(Event $event)
     {
-        $pathStr = 'PATH';
-        if (!isset($_SERVER[$pathStr]) && isset($_SERVER['Path'])) {
-            $pathStr = 'Path';
-        }
-
-        // add the bin dir to the PATH to make local binaries of deps usable in scripts
-        $binDir = $this->composer->getConfig()->get('bin-dir');
-        if (is_dir($binDir)) {
-            $binDir = realpath($binDir);
-            if (isset($_SERVER[$pathStr]) && !preg_match('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $_SERVER[$pathStr])) {
-                $_SERVER[$pathStr] = $binDir.PATH_SEPARATOR.getenv($pathStr);
-                putenv($pathStr.'='.$_SERVER[$pathStr]);
-            }
-        }
-
         $listeners = $this->getListeners($event);
 
         $this->pushEvent($event);
 
         $return = 0;
         foreach ($listeners as $callable) {
+
+            $this->ensureBinDirIsInPath();
+
             if (!is_string($callable)) {
                 if (!is_callable($callable)) {
                     $className = is_object($callable[0]) ? get_class($callable[0]) : $callable[0];
@@ -544,5 +532,23 @@ class EventDispatcher
     protected function popEvent()
     {
         return array_pop($this->eventStack);
+    }
+
+    private function ensureBinDirIsInPath()
+    {
+        $pathStr = 'PATH';
+        if (!isset($_SERVER[$pathStr]) && isset($_SERVER['Path'])) {
+            $pathStr = 'Path';
+        }
+
+        // add the bin dir to the PATH to make local binaries of deps usable in scripts
+        $binDir = $this->composer->getConfig()->get('bin-dir');
+        if (is_dir($binDir)) {
+            $binDir = realpath($binDir);
+            if (isset($_SERVER[$pathStr]) && !preg_match('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $_SERVER[$pathStr])) {
+                $_SERVER[$pathStr] = $binDir.PATH_SEPARATOR.getenv($pathStr);
+                putenv($pathStr.'='.$_SERVER[$pathStr]);
+            }
+        }
     }
 }
