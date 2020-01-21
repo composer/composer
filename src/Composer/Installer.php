@@ -624,6 +624,7 @@ class Installer
             $localRepo->write();
         }
 
+        // see https://github.com/composer/composer/issues/2764
         if ($operations) {
             $vendorDir = $this->config->get('vendor-dir');
             if (is_dir($vendorDir)) {
