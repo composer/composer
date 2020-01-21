@@ -1,3 +1,21 @@
+### [1.10.0] 2020-01-XX
+
+  * Breaking: `composer global exec ...` now executes the process in the current working directory instead of executing it in the global directory.
+  * Warning: Added a warning when class names are being loaded by a PSR-4 or PSR-0 rule only due to classmap optimization, but would not otherwise be autoloadable. The next minor version will stop autoloading these classes so make sure you fix your autoload configs.
+  * Added support for configuring suggestions using config command, e.g. `composer config suggest.foo/bar some text`
+  * Added support for configuring fine-grained preferred-install using config command, e.g. `composer config preferred-install.foo/* dist`
+  * Added `@putenv` script handler to set environment variables from composer.json for following scripts
+  * Added `lock` option that can be set to false, in which case no composer.lock file will be generated
+  * Added support for IPv6 addresses in NO_PROXY
+  * Added package homepage display in the show command
+  * Added debug info about HTTP authentications
+  * Added Symfony 5 compatibility
+  * Added --fixed flag to require command to make it use a fixed constraint instead of a ^x.y constraint when adding the requirement
+  * Fixed GitHub deprecation of access_token query parameter, now using Authorization header
+  * Fixed archive command to persist file permissions inside the zip files
+  * Fixed init/require command to avoid suggesting packages which are already selected in the search results
+  * Fixed create-project UX issues
+
 ### [1.9.2] 2020-01-14
 
   * Fixed minor git driver bugs
@@ -783,6 +801,7 @@
 
   * Initial release
 
+[1.10.0]: https://github.com/composer/composer/compare/1.9.2...1.10.0
 [1.9.2]: https://github.com/composer/composer/compare/1.9.1...1.9.2
 [1.9.1]: https://github.com/composer/composer/compare/1.9.0...1.9.1
 [1.9.0]: https://github.com/composer/composer/compare/1.8.6...1.9.0
