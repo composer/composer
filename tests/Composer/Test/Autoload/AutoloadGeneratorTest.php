@@ -1573,6 +1573,29 @@ EOF;
         $this->assertAutoloadFiles('classmap', $this->vendorDir.'/composer', 'classmap');
     }
 
+    public function testGeneratesPhpVersionCheck()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setAutoload(array(
+            'psr-4' => array(
+                'Acme\Fruit\\' => 'src-fruit/',
+                'Acme\Cake\\' => array('src-cake/', 'lib-cake/'),
+            ),
+        ));
+        $package->setRequires(array(
+            new Link('a', 'php', new Constraint('>=', '7.3.0.0'))
+        ));
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue(array()));
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
+
+        $this->assertFileExists($this->vendorDir . '/composer/php_version_check.php');
+        $this->assertContains('$version = PHP_VERSION;', file_get_contents($this->vendorDir . '/composer/php_version_check.php'));
+    }
+
     private function assertAutoloadFiles($name, $dir, $type = 'namespaces')
     {
         $a = __DIR__.'/Fixtures/autoload_'.$name.'.php';
