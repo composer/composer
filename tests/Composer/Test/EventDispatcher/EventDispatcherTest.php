@@ -308,7 +308,7 @@ class EventDispatcherTest extends TestCase
         rmdir(__DIR__ . sprintf('%svendor', DIRECTORY_SEPARATOR));
 
         chdir($currentDirectoryBkp);
-        putenv('COMPOSER_BIN_DIR=' . $composerBinDirBkp);
+        putenv('COMPOSER_BIN_DIR' . ($composerBinDirBkp === false ? '' : '=' . $composerBinDirBkp));
     }
 
     static public function createsVendorBinFolderChecksEnvDoesNotContainsBin()
@@ -316,7 +316,7 @@ class EventDispatcherTest extends TestCase
         mkdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR), 0700, true);
         $val = getenv('PATH');
 
-        if ( ! $val ) {
+        if (!$val) {
             $val = getenv('Path');
         }
 
@@ -327,7 +327,7 @@ class EventDispatcherTest extends TestCase
     {
         $val = getenv('PATH');
 
-        if ( ! $val ) {
+        if (!$val) {
             $val = getenv('Path');
         }
 
