@@ -345,18 +345,6 @@ class Locker
             $lock['platform-overrides'] = $platformOverrides;
         }
 
-        if (empty($lock['packages']) && empty($lock['packages-dev']) && empty($lock['platform']) && empty($lock['platform-dev'])) {
-            if ($this->lockFile->exists()) {
-                if ($write) {
-                    unlink($this->lockFile->getPath());
-                } else {
-                    $this->virtualFileWritten = false;
-                }
-            }
-
-            return false;
-        }
-
         try {
             $isLocked = $this->isLocked();
         } catch (ParsingException $e) {
