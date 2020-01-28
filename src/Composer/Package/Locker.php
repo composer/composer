@@ -210,7 +210,7 @@ class Locker
 
         if (!empty($lockData['platform'])) {
             $requirements = $this->loader->parseLinks(
-                '__ROOT__',
+                '__root__',
                 '1.0.0',
                 'requires',
                 isset($lockData['platform']) ? $lockData['platform'] : array()
@@ -219,7 +219,7 @@ class Locker
 
         if ($withDevReqs && !empty($lockData['platform-dev'])) {
             $devRequirements = $this->loader->parseLinks(
-                '__ROOT__',
+                '__root__',
                 '1.0.0',
                 'requires',
                 isset($lockData['platform-dev']) ? $lockData['platform-dev'] : array()
