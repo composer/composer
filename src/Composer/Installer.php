@@ -262,9 +262,9 @@ class Installer
             $this->suggestedPackagesReporter->output($this->locker->getLockedRepository($this->devMode));
         }
 
-        // TODO probably makes more sense to do this on the lock file only?
-        # Find abandoned packages and warn user
-        foreach ($localRepo->getPackages() as $package) {
+        // Find abandoned packages and warn user
+        $lockedRepository = $this->locker->getLockedRepository(true);
+        foreach ($lockedRepository->getPackages() as $package) {
             if (!$package instanceof CompletePackage || !$package->isAbandoned()) {
                 continue;
             }
