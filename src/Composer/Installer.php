@@ -388,9 +388,6 @@ class Installer
 
         $pool = $repositorySet->createPool($request);
 
-        // TODO ensure that the solver always picks most recent reference for dev packages, so they get updated even when just a new commit is pushed but version is unchanged
-        // should already be solved by using the remote package in all cases in the pool
-
         // solve dependencies
         $solver = new Solver($policy, $pool, $this->io);
         try {
