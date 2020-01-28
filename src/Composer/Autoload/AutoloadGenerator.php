@@ -285,24 +285,24 @@ EOF;
             }
         }
 
-        file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
-        file_put_contents($targetDir.'/autoload_psr4.php', $psr4File);
-        file_put_contents($targetDir.'/autoload_classmap.php', $classmapFile);
+        $this->filePutContentsIfModified($targetDir.'/autoload_namespaces.php', $namespacesFile);
+        $this->filePutContentsIfModified($targetDir.'/autoload_psr4.php', $psr4File);
+        $this->filePutContentsIfModified($targetDir.'/autoload_classmap.php', $classmapFile);
         $includePathFilePath = $targetDir.'/include_paths.php';
         if ($includePathFileContents = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
-            file_put_contents($includePathFilePath, $includePathFileContents);
+            $this->filePutContentsIfModified($includePathFilePath, $includePathFileContents);
         } elseif (file_exists($includePathFilePath)) {
             unlink($includePathFilePath);
         }
         $includeFilesFilePath = $targetDir.'/autoload_files.php';
         if ($includeFilesFileContents = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
-            file_put_contents($includeFilesFilePath, $includeFilesFileContents);
+            $this->filePutContentsIfModified($includeFilesFilePath, $includeFilesFileContents);
         } elseif (file_exists($includeFilesFilePath)) {
             unlink($includeFilesFilePath);
         }
-        file_put_contents($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
-        file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion));
+        $this->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
+        $this->filePutContentsIfModified($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
+        $this->filePutContentsIfModified($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion));
 
         $this->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
         $this->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
@@ -314,6 +314,16 @@ EOF;
         }
 
         return count($classMap);
+    }
+
+    private function filePutContentsIfModified($path, $content)
+    {
+        $currentContent = @file_get_contents($path);
+        if (!$currentContent || ($currentContent != $content)) {
+            return file_put_contents($path, $content);
+        }
+
+        return 0;
     }
 
     private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, $autoloadType = null, array $classMap = array())
@@ -986,7 +996,6 @@ INITIALIZER;
 
         $sortedPackages = PackageSorter::sortPackages($packages);
 
-
         $sortedPackageMap = array();
 
         foreach ($sortedPackages as $package) {
@@ -1005,11 +1014,42 @@ INITIALIZER;
      */
     protected function safeCopy($source, $target)
     {
-        $source = fopen($source, 'r');
-        $target = fopen($target, 'w+');
+        if (!file_exists($target) || !file_exists($source) || !$this->filesAreEqual($source, $target)) {
+            $source = fopen($source, 'r');
+            $target = fopen($target, 'w+');
 
-        stream_copy_to_stream($source, $target);
-        fclose($source);
-        fclose($target);
+            stream_copy_to_stream($source, $target);
+            fclose($source);
+            fclose($target);
+        }
+    }
+
+    /**
+     * compare 2 files
+     * https://stackoverflow.com/questions/3060125/can-i-use-file-get-contents-to-compare-two-files
+     */
+    private function filesAreEqual($a, $b)
+    {
+        // Check if filesize is different
+        if (filesize($a) !== filesize($b)) {
+            return false;
+        }
+
+        // Check if content is different
+        $ah = fopen($a, 'rb');
+        $bh = fopen($b, 'rb');
+
+        $result = true;
+        while (!feof($ah)) {
+            if (fread($ah, 8192) != fread($bh, 8192)) {
+                $result = false;
+                break;
+            }
+        }
+
+        fclose($ah);
+        fclose($bh);
+
+        return $result;
     }
 }
