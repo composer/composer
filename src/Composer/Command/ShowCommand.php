@@ -201,6 +201,9 @@ EOT
                 if (empty($package)) {
                     $options = $input->getOptions();
                     if (!isset($options['working-dir']) || !file_exists('composer.json')) {
+                        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $input->getArgument('package')) && !$input->getOption('platform')) {
+                            throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found, try using --platform (-p) to show platform packages.');
+                        }
                         throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found');
                     }
 
@@ -235,18 +238,12 @@ EOT
 
                     return $exitCode;
                 }
-                $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null);
-                $this->printLinks($package, 'requires');
-                $this->printLinks($package, 'devRequires', 'requires (dev)');
-                if ($package->getSuggests()) {
-                    $io->write("\n<info>suggests</info>");
-                    foreach ($package->getSuggests() as $suggested => $reason) {
-                        $io->write($suggested . ' <comment>' . $reason . '</comment>');
-                    }
+
+                if ('json' === $format) {
+                    $this->printPackageInfoAsJson($package, $versions, $installedRepo, $latestPackage ?: null);
+                } else {
+                    $this->printPackageInfo($package, $versions, $installedRepo, $latestPackage ?: null);
                 }
-                $this->printLinks($package, 'provides');
-                $this->printLinks($package, 'conflicts');
-                $this->printLinks($package, 'replaces');
             }
 
             return $exitCode;
@@ -571,11 +568,40 @@ EOT
     }
 
     /**
+     * Prints package info.
+     *
+     * @param CompletePackageInterface $package
+     * @param array                    $versions
+     * @param RepositoryInterface      $installedRepo
+     * @param PackageInterface|null    $latestPackage
+     */
+    protected function printPackageInfo(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, PackageInterface $latestPackage = null)
+    {
+        $io = $this->getIO();
+
+        $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null);
+        $this->printLinks($package, 'requires');
+        $this->printLinks($package, 'devRequires', 'requires (dev)');
+
+        if ($package->getSuggests()) {
+            $io->write("\n<info>suggests</info>");
+            foreach ($package->getSuggests() as $suggested => $reason) {
+                $io->write($suggested . ' <comment>' . $reason . '</comment>');
+            }
+        }
+
+        $this->printLinks($package, 'provides');
+        $this->printLinks($package, 'conflicts');
+        $this->printLinks($package, 'replaces');
+    }
+
+    /**
      * Prints package metadata.
      *
      * @param CompletePackageInterface $package
      * @param array                    $versions
      * @param RepositoryInterface      $installedRepo
+     * @param PackageInterface|null    $latestPackage
      */
     protected function printMeta(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, PackageInterface $latestPackage = null)
     {
@@ -715,6 +741,165 @@ EOT
 
             $io->write('<info>license</info>  : ' . $out);
         }
+    }
+
+    /**
+     * Prints package info in JSON format.
+     *
+     * @param CompletePackageInterface $package
+     * @param array                    $versions
+     * @param RepositoryInterface      $installedRepo
+     * @param PackageInterface|null    $latestPackage
+     */
+    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, PackageInterface $latestPackage = null)
+    {
+        $json = array(
+            'name' => $package->getPrettyName(),
+            'description' => $package->getDescription(),
+            'keywords' => $package->getKeywords() ?: array(),
+            'type' => $package->getType(),
+            'homepage' => $package->getHomepage(),
+            'names' => $package->getNames()
+        );
+
+        $json = $this->appendVersions($json, $versions);
+        $json = $this->appendLicenses($json, $package);
+
+        if ($latestPackage) {
+            $json['latest'] = $latestPackage->getPrettyVersion();
+        } else {
+            $latestPackage = $package;
+        }
+
+        if ($package->getSourceType()) {
+            $json['source'] = array(
+                'type' => $package->getSourceType(),
+                'url' => $package->getSourceUrl(),
+                'reference' => $package->getSourceReference()
+            );
+        }
+
+        if ($package->getDistType()) {
+            $json['dist'] = array(
+                'type' => $package->getDistType(),
+                'url' => $package->getDistUrl(),
+                'reference' => $package->getDistReference()
+            );
+        }
+
+        if ($installedRepo->hasPackage($package)) {
+            $json['path'] = realpath($this->getComposer()->getInstallationManager()->getInstallPath($package));
+            if ($json['path'] === false) {
+                unset($json['path']);
+            }
+        }
+
+        if ($latestPackage->isAbandoned()) {
+            $json['replacement'] = $latestPackage->getReplacementPackage();
+        }
+
+        if ($package->getSuggests()) {
+            $json['suggests'] = $package->getSuggests();
+        }
+
+        if ($package->getSupport()) {
+            $json['support'] = $package->getSupport();
+        }
+
+        $json = $this->appendAutoload($json, $package);
+
+        if ($package->getIncludePaths()) {
+            $json['include_path'] = $package->getIncludePaths();
+        }
+
+        $json = $this->appendLinks($json, $package);
+
+        $this->getIO()->write(JsonFile::encode($json));
+    }
+
+    private function appendVersions($json, array $versions)
+    {
+        uasort($versions, 'version_compare');
+        $versions = array_keys(array_reverse($versions));
+        $json['versions'] = $versions;
+
+        return $json;
+    }
+
+    private function appendLicenses($json, CompletePackageInterface $package)
+    {
+        if ($licenses = $package->getLicense()) {
+            $spdxLicenses = new SpdxLicenses();
+
+            $json['licenses'] = array_map(function ($licenseId) use ($spdxLicenses) {
+                $license = $spdxLicenses->getLicenseByIdentifier($licenseId); // keys: 0 fullname, 1 osi, 2 url
+
+                if (!$license) {
+                    return $licenseId;
+                }
+
+                return array(
+                    'name' => $license[0],
+                    'osi' => $licenseId,
+                    'url' => $license[2]
+                );
+            }, $licenses);
+        }
+
+        return $json;
+    }
+
+    private function appendAutoload($json, CompletePackageInterface $package)
+    {
+        if ($package->getAutoload()) {
+            $autoload = array();
+
+            foreach ($package->getAutoload() as $type => $autoloads) {
+                if ($type === 'psr-0' || $type === 'psr-4') {
+                    $psr = array();
+
+                    foreach ($autoloads as $name => $path) {
+                        if (!$path) {
+                            $path = '.';
+                        }
+
+                        $psr[$name ?: '*'] = $path;
+                    }
+
+                    $autoload[$type] = $psr;
+                } elseif ($type === 'classmap') {
+                    $autoload['classmap'] = $autoloads;
+                }
+            }
+
+            $json['autoload'] = $autoload;
+        }
+
+        return $json;
+    }
+
+    private function appendLinks($json, CompletePackageInterface $package)
+    {
+        foreach (array('requires', 'devRequires', 'provides', 'conflicts', 'replaces') as $linkType) {
+            $json = $this->appendLink($json, $package, $linkType);
+        }
+
+        return $json;
+    }
+
+    private function appendLink($json, CompletePackageInterface $package, $linkType)
+    {
+        $links = $package->{'get' . ucfirst($linkType)}();
+
+        if ($links) {
+            $json[$linkType] = array();
+
+            foreach ($links as $link) {
+                $json[$linkType][$link->getTarget()] = $link->getPrettyConstraint();
+            }
+        }
+
+        return $json;
     }
 
     /**

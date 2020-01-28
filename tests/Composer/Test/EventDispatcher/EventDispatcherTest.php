@@ -280,6 +280,60 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals($expected, $io->getOutput());
     }
 
+    public function testDispatcherAppendsDirBinOnPathForEveryListener()
+    {
+        $currentDirectoryBkp = getcwd();
+        $composerBinDirBkp   = getenv('COMPOSER_BIN_DIR');
+        chdir(__DIR__);
+        putenv('COMPOSER_BIN_DIR=' . __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
+
+        $process    = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->setConstructorArgs(array(
+                $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ))->setMethods(array(
+                'getListeners',
+            ))->getMock();
+
+        $listeners = array(
+            'Composer\\Test\\EventDispatcher\\EventDispatcherTest::createsVendorBinFolderChecksEnvDoesNotContainsBin',
+            'Composer\\Test\\EventDispatcher\\EventDispatcherTest::createsVendorBinFolderChecksEnvContainsBin',
+        );
+
+        $dispatcher->expects($this->atLeastOnce())->method('getListeners')->will($this->returnValue($listeners));
+
+        $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
+        rmdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
+        rmdir(__DIR__ . sprintf('%svendor', DIRECTORY_SEPARATOR));
+
+        chdir($currentDirectoryBkp);
+        putenv('COMPOSER_BIN_DIR=' . $composerBinDirBkp);
+    }
+
+    static public function createsVendorBinFolderChecksEnvDoesNotContainsBin()
+    {
+        mkdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR), 0700, true);
+        $val = getenv('PATH');
+
+        if ( ! $val ) {
+            $val = getenv('Path');
+        }
+
+        self::assertFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
+    }
+
+    static public function createsVendorBinFolderChecksEnvContainsBin()
+    {
+        $val = getenv('PATH');
+
+        if ( ! $val ) {
+            $val = getenv('Path');
+        }
+
+        self::assertNotFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
+    }
+
     static public function getTestEnv() {
         $val = getenv('ABC');
         if ($val !== '123') {
