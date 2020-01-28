@@ -766,8 +766,8 @@ EOT
             'names' => $package->getNames()
         );
 
-        $this->appendVersions($json, $versions);
-        $this->appendLicenses($json, $package);
+        $json = $this->appendVersions($json, $versions);
+        $json = $this->appendLicenses($json, $package);
 
         if ($latestPackage) {
             $json['latest'] = $latestPackage->getPrettyVersion();
@@ -793,6 +793,9 @@ EOT
 
         if ($installedRepo->hasPackage($package)) {
             $json['path'] = realpath($this->getComposer()->getInstallationManager()->getInstallPath($package));
+            if ($json['path'] === false) {
+                unset($json['path']);
+            }
         }
 
         if ($latestPackage->isAbandoned()) {
@@ -807,25 +810,27 @@ EOT
             $json['support'] = $package->getSupport();
         }
 
-        $this->appendAutoload($json, $package);
+        $json = $this->appendAutoload($json, $package);
 
         if ($package->getIncludePaths()) {
             $json['include_path'] = $package->getIncludePaths();
         }
 
-        $this->appendLinks($json, $package);
+        $json = $this->appendLinks($json, $package);
 
         $this->getIO()->write(JsonFile::encode($json));
     }
 
-    protected function appendVersions(&$json, array $versions)
+    private function appendVersions($json, array $versions)
     {
         uasort($versions, 'version_compare');
         $versions = array_keys(array_reverse($versions));
         $json['versions'] = $versions;
+
+        return $json;
     }
 
-    protected function appendLicenses(&$json, CompletePackageInterface $package)
+    private function appendLicenses($json, CompletePackageInterface $package)
     {
         if ($licenses = $package->getLicense()) {
             $spdxLicenses = new SpdxLicenses();
@@ -844,9 +849,11 @@ EOT
                 );
             }, $licenses);
         }
+
+        return $json;
     }
 
-    protected function appendAutoload(&$json, CompletePackageInterface $package)
+    private function appendAutoload($json, CompletePackageInterface $package)
     {
         if ($package->getAutoload()) {
             $autoload = array();
@@ -871,16 +878,20 @@ EOT
 
             $json['autoload'] = $autoload;
         }
+
+        return $json;
     }
 
-    protected function appendLinks(&$json, CompletePackageInterface $package)
+    private function appendLinks($json, CompletePackageInterface $package)
     {
         foreach (array('requires', 'devRequires', 'provides', 'conflicts', 'replaces') as $linkType) {
-            $this->appendLink($json, $package, $linkType);
+            $json = $this->appendLink($json, $package, $linkType);
         }
+
+        return $json;
     }
 
-    protected function appendLink(&$json, CompletePackageInterface $package, $linkType)
+    private function appendLink($json, CompletePackageInterface $package, $linkType)
     {
         $links = $package->{'get' . ucfirst($linkType)}();
 
@@ -891,6 +902,8 @@ EOT
                 $json[$linkType][$link->getTarget()] = $link->getPrettyConstraint();
             }
         }
+
+        return $json;
     }
 
     /**
