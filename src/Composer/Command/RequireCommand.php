@@ -35,6 +35,7 @@ use Composer\Util\Silencer;
 class RequireCommand extends InitCommand
 {
     private $newlyCreated;
+    private $firstRequire;
     private $json;
     private $file;
     private $composerBackup;
@@ -186,6 +187,14 @@ EOT
 
         $sortPackages = $input->getOption('sort-packages') || $composer->getConfig()->get('sort-packages');
 
+        $this->firstRequire = $this->newlyCreated;
+        if (!$this->firstRequire) {
+            $composerDefinition = $this->json->read();
+            if (empty($composerDefinition['require']) && empty($composerDefinition['require-dev'])) {
+                $this->firstRequire = true;
+            }
+        }
+
         if (!$this->updateFileCleanly($this->json, $requirements, $requireKey, $removeKey, $sortPackages)) {
             $composerDefinition = $this->json->read();
             foreach ($requirements as $package => $version) {
@@ -245,7 +254,7 @@ EOT
 
         // if no lock is present, or the file is brand new, we do not do a
         // partial update as this is not supported by the Installer
-        if (!$this->newlyCreated && $composer->getConfig()->get('lock')) {
+        if (!$this->firstRequire && $composer->getConfig()->get('lock')) {
             $install->setUpdateWhitelist(array_keys($requirements));
         }
 
