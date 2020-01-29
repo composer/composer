@@ -86,16 +86,8 @@ class PoolBuilder
             }
 
             $loadNames[$packageName] = $constraint;
+            // TODO do we even need to set these in name constraints or can we skip them entirely?
             $this->nameConstraints[$packageName] = $constraint ? new MultiConstraint(array($constraint), false) : null;
-        }
-
-        // all the merged constraints from install requests + fixed packages can be applied
-        // when loading package metadata already, as these are set in stone
-        foreach ($this->nameConstraints as $package => $constraint) {
-            if ($constraint !== null && array_key_exists($package, $loadNames)) {
-                $loadNames[$package] = $constraint;
-                unset($this->nameConstraints[$package]);
-            }
         }
 
         // clean up loadNames for anything we manually marked loaded above

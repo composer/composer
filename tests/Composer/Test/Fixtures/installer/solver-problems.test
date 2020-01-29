@@ -117,8 +117,6 @@ Your requirements could not be resolved to an installable set of packages.
   Problem 3
     - Root composer.json requires non-existent/pkg, it could not be found in any version, there may be a typo in the package name.
   Problem 4
-    - The requested package dependency/pkg could not be found in any version, there may be a typo in the package name.
-  Problem 4
     - Root composer.json requires stable-requiree-excluded/pkg 1.0.1, found stable-requiree-excluded/pkg[1.0.1] but the package is fixed to 1.0.0 (lock file version) by a partial update and that version does not match. Make sure you whitelist it for update.
   Problem 5
     - Root composer.json requires linked library lib-xml 1002.* but it has the wrong version installed or is missing from your system, make sure to load the extension providing it.
