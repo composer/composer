@@ -53,14 +53,21 @@ class PoolBuilder
 
     public function buildPool(array $repositories, Request $request)
     {
-        $pool = new Pool();
-
-        // TODO do we really want the request here? kind of want a root requirements thingy instead
         $loadNames = array();
         foreach ($request->getFixedPackages() as $package) {
+            // TODO do we need to add this to nameConstraints at all?
             $this->nameConstraints[$package->getName()] = null;
             $this->loadedNames[$package->getName()] = true;
-            unset($loadNames[$package->getName()]);
+
+            // replace means conflict, so if a fixed package replaces a name, no need to load that one, packages would conflict anyways
+            foreach ($package->getReplaces() as $link) {
+                $this->nameConstraints[$package->getName()] = null;
+                $this->loadedNames[$link->getTarget()] = true;
+            }
+
+            // TODO in how far can we do the above for conflicts? It's more tricky cause conflicts can be limited to
+            // specific versions while replace is a conflict with all versions of the name
+
             if (
                 $package->getRepository() instanceof RootPackageRepository
                 || $package->getRepository() instanceof PlatformRepository
@@ -72,24 +79,14 @@ class PoolBuilder
             }
         }
 
-        // TODO make sure if a fixed package replaces X packages they are not loaded again in loadNames
-        //  perhaps loadPackage needs to mark them as loadedNames when loading a fixed package?
-
         foreach ($request->getRequires() as $packageName => $constraint) {
-            // fixed packages do not need to get filtered as they are pinned already
+            // fixed packages have already been added, so if a root require needs one of them, no need to do anything
             if (isset($this->loadedNames[$packageName])) {
                 continue;
             }
 
-            $loadNames[$packageName] = null;
-            if ($constraint) {
-                if (!array_key_exists($packageName, $this->nameConstraints)) {
-                    $this->nameConstraints[$packageName] = new MultiConstraint(array($constraint), false);
-                } elseif ($this->nameConstraints[$packageName]) {
-                    // TODO addConstraint function?
-                    $this->nameConstraints[$packageName] = new MultiConstraint(array_merge(array($constraint), $this->nameConstraints[$packageName]->getConstraints()), false);
-                }
-            }
+            $loadNames[$packageName] = $constraint;
+            $this->nameConstraints[$packageName] = $constraint ? new MultiConstraint(array($constraint), false) : null;
         }
 
         // all the merged constraints from install requests + fixed packages can be applied
@@ -98,6 +95,13 @@ class PoolBuilder
             if ($constraint !== null && array_key_exists($package, $loadNames)) {
                 $loadNames[$package] = $constraint;
                 unset($this->nameConstraints[$package]);
+            }
+        }
+
+        // clean up loadNames for anything we manually marked loaded above
+        foreach ($loadNames as $name => $void) {
+            if (isset($this->loadedNames[$name])) {
+                unset($loadNames[$name]);
             }
         }
 
