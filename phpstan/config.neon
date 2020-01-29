@@ -9,10 +9,6 @@ parameters:
     ignoreErrors:
         # ion cube is not installed
         - '~^Function ioncube_loader_\w+ not found\.$~'
-        # rar is not installed
-        - '~^Call to static method open\(\) on an unknown class RarArchive\.$~'
-        # imagick is not installed
-        - '~^Instantiated class Imagick not found\.$~'
 
         # variables from global scope
         - '~^Undefined variable: \$vendorDir$~'
