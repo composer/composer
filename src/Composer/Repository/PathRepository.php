@@ -111,6 +111,11 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         parent::__construct();
     }
 
+    public function getRepoName()
+    {
+        return 'path repo ('.$this->repoConfig['url'].')';
+    }
+
     public function getRepoConfig()
     {
         return $this->repoConfig;

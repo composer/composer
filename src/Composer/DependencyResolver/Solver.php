@@ -29,7 +29,9 @@ class Solver
     /** @var PolicyInterface */
     protected $policy;
     /** @var Pool */
-    protected $pool = null;
+    protected $pool;
+    /** @var RepositorySet */
+    protected $repositorySet;
 
     /** @var RuleSet */
     protected $rules;
@@ -65,11 +67,12 @@ class Solver
      * @param Pool                $pool
      * @param IOInterface         $io
      */
-    public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io)
+    public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io, RepositorySet $repositorySet)
     {
         $this->io = $io;
         $this->policy = $policy;
         $this->pool = $pool;
+        $this->repositorySet = $repositorySet;
     }
 
     /**
@@ -83,6 +86,11 @@ class Solver
     public function getPool()
     {
         return $this->pool;
+    }
+
+    public function getRepositorySet()
+    {
+        return $this->repositorySet;
     }
 
     // aka solver_makeruledecisions
@@ -120,7 +128,7 @@ class Solver
             $conflict = $this->decisions->decisionRule($literal);
 
             if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
-                $problem = new Problem($this->pool);
+                $problem = new Problem();
 
                 $problem->addRule($rule);
                 $problem->addRule($conflict);
@@ -130,7 +138,7 @@ class Solver
             }
 
             // conflict with another root require/fixed package
-            $problem = new Problem($this->pool);
+            $problem = new Problem();
             $problem->addRule($rule);
             $problem->addRule($conflict);
 
@@ -177,7 +185,7 @@ class Solver
             }
 
             if (!$this->pool->whatProvides($packageName, $constraint)) {
-                $problem = new Problem($this->pool);
+                $problem = new Problem();
                 $problem->addRule(new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => $packageName, 'constraint' => $constraint)));
                 $this->problems[] = $problem;
             }
@@ -214,7 +222,7 @@ class Solver
         $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
         if ($this->problems) {
-            throw new SolverProblemsException($this->problems, $request->getPresentMap(true), $this->learnedPool);
+            throw new SolverProblemsException($this->problems, $this->repositorySet, $request, $this->learnedPool);
         }
 
         return new LockTransaction($this->pool, $request->getPresentMap(), $request->getUnlockableMap(), $this->decisions);
@@ -513,7 +521,7 @@ class Solver
      */
     private function analyzeUnsolvable(Rule $conflictRule)
     {
-        $problem = new Problem($this->pool);
+        $problem = new Problem();
         $problem->addRule($conflictRule);
 
         $this->analyzeUnsolvableRule($problem, $conflictRule);

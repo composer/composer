@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
+use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -122,8 +123,9 @@ abstract class Rule
 
     abstract public function isAssertion();
 
-    public function getPrettyString(Pool $pool, array $installedMap = array(), array $learnedPool = array())
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, array $installedMap = array(), array $learnedPool = array())
     {
+        $pool = $repositorySet->getPool();
         $literals = $this->getLiterals();
 
         $ruleText = '';
@@ -178,60 +180,9 @@ abstract class Rule
                 } else {
                     $targetName = $this->reasonData->getTarget();
 
-                    if ($targetName === 'php' || $targetName === 'php-64bit' || $targetName === 'hhvm') {
-                        // handle php/hhvm
-                        if (defined('HHVM_VERSION')) {
-                            return $text . ' -> your HHVM version does not satisfy that requirement.';
-                        }
+                    $reason = Problem::getMissingPackageReason($repositorySet, $request, $targetName, $this->reasonData->getConstraint());
 
-                        $packages = $pool->whatProvides($targetName);
-                        $package = count($packages) ? current($packages) : phpversion();
-
-                        if ($targetName === 'hhvm') {
-                            if ($package instanceof CompletePackage) {
-                                return $text . ' -> your HHVM version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
-                            } else {
-                                return $text . ' -> you are running this with PHP and not HHVM.';
-                            }
-                        }
-
-
-                        if (!($package instanceof CompletePackage)) {
-                            return $text . ' -> your PHP version ('.phpversion().') does not satisfy that requirement.';
-                        }
-
-                        $extra = $package->getExtra();
-
-                        if (!empty($extra['config.platform'])) {
-                            $text .= ' -> your PHP version ('.phpversion().') overridden by "config.platform.php" version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
-                        } else {
-                            $text .= ' -> your PHP version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
-                        }
-
-                        return $text;
-                    }
-
-                    if (0 === strpos($targetName, 'ext-')) {
-                        // handle php extensions
-                        $ext = substr($targetName, 4);
-                        $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
-
-                        return $text . ' -> the requested PHP extension '.$ext.' '.$error.'.';
-                    }
-
-                    if (0 === strpos($targetName, 'lib-')) {
-                        // handle linked libs
-                        $lib = substr($targetName, 4);
-
-                        return $text . ' -> the requested linked library '.$lib.' has the wrong version installed or is missing from your system, make sure to have the extension providing it.';
-                    }
-
-                    // TODO: The pool doesn't know about these anymore, it has to ask the RepositorySet
-                    /*if ($providers = $pool->whatProvides($targetName, $this->reasonData->getConstraint(), true, true)) {
-                        return $text . ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $providers) .' but these conflict with your requirements or minimum-stability.';
-                    }*/
-
-                    return $text . ' -> no matching package found.';
+                    return $text . ' -> ' . $reason[1];
                 }
 
                 return $text;
@@ -249,7 +200,7 @@ abstract class Rule
                 $learnedString = '(learned rule, ';
                 if (isset($learnedPool[$this->reasonData])) {
                     foreach ($learnedPool[$this->reasonData] as $learnedRule) {
-                        $learnedString .= $learnedRule->getPrettyString($pool, $installedMap, $learnedPool);
+                        $learnedString .= $learnedRule->getPrettyString($repositorySet, $request, $installedMap, $learnedPool);
                     }
                 } else {
                     $learnedString .= 'reasoning unavailable';
@@ -272,20 +223,13 @@ abstract class Rule
      */
     protected function formatPackagesUnique($pool, array $packages)
     {
-        // TODO this is essentially a duplicate of Problem: getPackageList, maintain in one place only?
-
         $prepared = array();
-        foreach ($packages as $package) {
+        foreach ($packages as $index => $package) {
             if (!is_object($package)) {
-                $package = $pool->literalToPackage($package);
+                $packages[$index] = $pool->literalToPackage($package);
             }
-            $prepared[$package->getName()]['name'] = $package->getPrettyName();
-            $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion();
-        }
-        foreach ($prepared as $name => $package) {
-            $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
         }
 
-        return implode(', ', $prepared);
+        return Problem::getPackageList($packages);
     }
 }

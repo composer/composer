@@ -125,6 +125,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->loop = new Loop($this->httpDownloader);
     }
 
+    public function getRepoName()
+    {
+        return 'composer repo ('.$this->url.')';
+    }
+
     public function getRepoConfig()
     {
         return $this->repoConfig;

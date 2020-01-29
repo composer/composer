@@ -51,6 +51,11 @@ class PlatformRepository extends ArrayRepository
         parent::__construct($packages);
     }
 
+    public function getRepoName()
+    {
+        return 'platform repo';
+    }
+
     protected function initialize()
     {
         parent::initialize();
@@ -275,7 +280,7 @@ class PlatformRepository extends ArrayRepository
             } else {
                 $actualText = 'actual: '.$package->getPrettyVersion();
             }
-            $overrider->setDescription($overrider->getDescription().' ('.$actualText.')');
+            $overrider->setDescription($overrider->getDescription().', '.$actualText);
 
             return;
         }
@@ -288,7 +293,7 @@ class PlatformRepository extends ArrayRepository
             } else {
                 $actualText = 'actual: '.$package->getPrettyVersion();
             }
-            $overrider->setDescription($overrider->getDescription().' ('.$actualText.')');
+            $overrider->setDescription($overrider->getDescription().', '.$actualText);
 
             return;
         }

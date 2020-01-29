@@ -21,4 +21,8 @@ namespace Composer\Repository;
  */
 class InstalledArrayRepository extends WritableArrayRepository implements InstalledRepositoryInterface
 {
+    public function getRepoName()
+    {
+        return 'installed '.parent::getRepoName();
+    }
 }

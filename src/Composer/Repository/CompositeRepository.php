@@ -39,6 +39,11 @@ class CompositeRepository extends BaseRepository
         }
     }
 
+    public function getRepoName()
+    {
+        return 'composite repo ('.count($this->repositories).' repos)';
+    }
+
     /**
      * Returns all the wrapped repositories
      *

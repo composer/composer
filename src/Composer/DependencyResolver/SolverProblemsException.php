@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Util\IniHelper;
+use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -23,21 +24,21 @@ class SolverProblemsException extends \RuntimeException
     protected $installedMap;
     protected $learnedPool;
 
-    public function __construct(array $problems, array $installedMap, array $learnedPool)
+    public function __construct(array $problems, RepositorySet $repositorySet, Request $request, array $learnedPool)
     {
         $this->problems = $problems;
-        $this->installedMap = $installedMap;
+        $this->installedMap = $request->getPresentMap(true);
         $this->learnedPool = $learnedPool;
 
-        parent::__construct($this->createMessage(), 2);
+        parent::__construct($this->createMessage($repositorySet, $request), 2);
     }
 
-    protected function createMessage()
+    protected function createMessage(RepositorySet $repositorySet, Request $request)
     {
         $text = "\n";
         $hasExtensionProblems = false;
         foreach ($this->problems as $i => $problem) {
-            $text .= "  Problem ".($i + 1).$problem->getPrettyString($this->installedMap, $this->learnedPool)."\n";
+            $text .= "  Problem ".($i + 1).$problem->getPrettyString($repositorySet, $request, $this->installedMap, $this->learnedPool)."\n";
 
             if (!$hasExtensionProblems && $this->hasExtensionProblems($problem->getReasons())) {
                 $hasExtensionProblems = true;

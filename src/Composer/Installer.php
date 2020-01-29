@@ -389,7 +389,7 @@ class Installer
         $pool = $repositorySet->createPool($request);
 
         // solve dependencies
-        $solver = new Solver($policy, $pool, $this->io);
+        $solver = new Solver($policy, $pool, $this->io, $repositorySet);
         try {
             $lockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
             $ruleSetSize = $solver->getRuleSetSize();
@@ -529,7 +529,7 @@ class Installer
         $pool = $repositorySet->createPool($request);
 
         //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request);
-        $solver = new Solver($policy, $pool, $this->io);
+        $solver = new Solver($policy, $pool, $this->io, $repositorySet);
         try {
             $nonDevLockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
             //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request, $ops);
@@ -589,7 +589,7 @@ class Installer
             $pool = $repositorySet->createPool($request);
 
             // solve dependencies
-            $solver = new Solver($policy, $pool, $this->io);
+            $solver = new Solver($policy, $pool, $this->io, $repositorySet);
             try {
                 $lockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
                 $solver = null;
@@ -884,7 +884,7 @@ class Installer
             $packageQueue = new \SplQueue;
             $nameMatchesRequiredPackage = false;
 
-            $depPackages = $repositorySet->findPackages($packageName, null, false);
+            $depPackages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_PROVIDERS_REPLACERS);
             $matchesByPattern = array();
 
             // check if the name is a glob pattern that did not match directly
@@ -892,7 +892,7 @@ class Installer
                 // add any installed package matching the whitelisted name/pattern
                 $whitelistPatternSearchRegexp = BasePackage::packageNameToRegexp($packageName, '^%s$');
                 foreach ($lockRepo->search($whitelistPatternSearchRegexp) as $installedPackage) {
-                    $matchesByPattern[] = $repositorySet->findPackages($installedPackage['name'], null, false);
+                    $matchesByPattern[] = $repositorySet->findPackages($installedPackage['name'], null, RepositorySet::ALLOW_PROVIDERS_REPLACERS);
                 }
 
                 // add root requirements which match the whitelisted name/pattern
@@ -933,7 +933,7 @@ class Installer
                 $requires = $package->getRequires();
 
                 foreach ($requires as $require) {
-                    $requirePackages = $repositorySet->findPackages($require->getTarget(), null, false);
+                    $requirePackages = $repositorySet->findPackages($require->getTarget(), null, RepositorySet::ALLOW_PROVIDERS_REPLACERS);
 
                     foreach ($requirePackages as $requirePackage) {
                         if (isset($this->updateWhitelist[$requirePackage->getName()])) {

@@ -83,4 +83,13 @@ interface RepositoryInterface extends \Countable
      * @return array[] an array of array('name' => '...', 'description' => '...')
      */
     public function search($query, $mode = 0, $type = null);
+
+    /**
+     * Returns a name representing this repository to the user
+     *
+     * This is best effort and definitely can not always be very precise
+     *
+     * @return string
+     */
+    public function getRepoName();
 }

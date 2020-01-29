@@ -79,6 +79,17 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $this->processExecutor = new ProcessExecutor($io);
     }
 
+    public function getRepoName()
+    {
+        $driverClass = get_class($this->getDriver());
+        $driverType = array_search($driverClass, $this->drivers);
+        if (!$driverType) {
+            $driverType = $driverClass;
+        }
+
+        return 'vcs repo ('.$driverType.' '.$this->url.')';
+    }
+
     public function getRepoConfig()
     {
         return $this->repoConfig;

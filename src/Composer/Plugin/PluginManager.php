@@ -412,7 +412,7 @@ class PluginManager
      */
     private function lookupInstalledPackage(RepositorySet $repositorySet, Link $link)
     {
-        $packages = $repositorySet->findPackages($link->getTarget(), $link->getConstraint(), false);
+        $packages = $repositorySet->findPackages($link->getTarget(), $link->getConstraint(), RepositorySet::ALLOW_PROVIDERS_REPLACERS | RepositorySet::ALLOW_SHADOWED_REPOSITORIES);
 
         return !empty($packages) ? $packages[0] : null;
     }

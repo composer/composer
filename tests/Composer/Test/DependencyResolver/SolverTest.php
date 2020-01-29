@@ -82,7 +82,7 @@ class SolverTest extends TestCase
             $problems = $e->getProblems();
             $this->assertCount(1, $problems);
             $this->assertEquals(2, $e->getCode());
-            $this->assertEquals("\n    - The requested package b could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString());
+            $this->assertEquals("\n    - Root composer.json requires b, it could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString($this->repoSet, $this->request));
         }
     }
 
@@ -682,13 +682,7 @@ class SolverTest extends TestCase
             $msg = "\n";
             $msg .= "  Problem 1\n";
             $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
-            $msg .= "    - A 1.0 requires b >= 2.0 -> no matching package found.\n\n";
-            $msg .= "Potential causes:\n";
-            $msg .= " - A typo in the package name\n";
-            $msg .= " - The package is not available in a stable-enough version according to your minimum-stability setting\n";
-            $msg .= "   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n";
-            $msg .= " - It's a private package and you forgot to add a custom repository to find it\n\n";
-            $msg .= "Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
+            $msg .= "    - A 1.0 requires b >= 2.0 -> found B[1.0] but it does not match your constraint.\n";
             $this->assertEquals($msg, $e->getMessage());
         }
     }
@@ -895,7 +889,7 @@ class SolverTest extends TestCase
 
     protected function createSolver()
     {
-        $this->solver = new Solver($this->policy, $this->repoSet->createPool($this->request), new NullIO());
+        $this->solver = new Solver($this->policy, $this->repoSet->createPool($this->request), new NullIO(), $this->repoSet);
     }
 
     protected function checkSolverResult(array $expected)

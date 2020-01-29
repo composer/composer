@@ -67,6 +67,11 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
         $this->repoConfig = $repoConfig;
     }
 
+    public function getRepoName()
+    {
+        return 'pear repo ('.$this->url.')';
+    }
+
     public function getRepoConfig()
     {
         return $this->repoConfig;

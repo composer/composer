@@ -21,4 +21,8 @@ namespace Composer\Repository;
  */
 class RootPackageRepository extends ArrayRepository
 {
+    public function getRepoName()
+    {
+        return 'root package repo';
+    }
 }
