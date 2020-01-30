@@ -14,6 +14,8 @@ namespace Composer\EventDispatcher;
 
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Composer;
@@ -128,9 +130,9 @@ class EventDispatcher
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
      */
-    public function dispatchInstallerEvent($eventName, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, RepositoryInterface $localRepo, Request $request, array $operations = array())
+    public function dispatchInstallerEvent($eventName, $devMode, RepositorySet $repositorySet, Pool $pool, Request $request, PolicyInterface $policy, Transaction $transaction = null)
     {
-        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $policy, $repositorySet, $localRepo, $request, $operations));
+        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $repositorySet, $pool, $request, $policy, $transaction));
     }
 
     /**

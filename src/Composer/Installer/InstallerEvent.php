@@ -14,11 +14,11 @@ namespace Composer\Installer;
 
 use Composer\Composer;
 use Composer\DependencyResolver\PolicyInterface;
-use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\Transaction;
 use Composer\EventDispatcher\Event;
 use Composer\IO\IOInterface;
-use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
 
 /**
@@ -44,19 +44,14 @@ class InstallerEvent extends Event
     private $devMode;
 
     /**
-     * @var PolicyInterface
-     */
-    private $policy;
-
-    /**
      * @var RepositorySet
      */
     private $repositorySet;
 
     /**
-     * @var RepositoryInterface
+     * @var Pool
      */
-    private $localRepo;
+    private $pool;
 
     /**
      * @var Request
@@ -64,9 +59,14 @@ class InstallerEvent extends Event
     private $request;
 
     /**
-     * @var OperationInterface[]
+     * @var PolicyInterface
      */
-    private $operations;
+    private $policy;
+
+    /**
+     * @var Transaction|null
+     */
+    private $transaction;
 
     /**
      * Constructor.
@@ -75,24 +75,24 @@ class InstallerEvent extends Event
      * @param Composer             $composer
      * @param IOInterface          $io
      * @param bool                 $devMode
-     * @param PolicyInterface      $policy
      * @param RepositorySet        $repositorySet
-     * @param RepositoryInterface  $localRepo
+     * @param Pool                 $pool
      * @param Request              $request
-     * @param OperationInterface[] $operations
+     * @param PolicyInterface      $policy
+     * @param Transaction          $transaction
      */
-    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, RepositoryInterface $localRepo, Request $request, array $operations = array())
+    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, RepositorySet $repositorySet, Pool $pool, Request $request, PolicyInterface $policy, Transaction $transaction = null)
     {
         parent::__construct($eventName);
 
         $this->composer = $composer;
         $this->io = $io;
         $this->devMode = $devMode;
-        $this->policy = $policy;
         $this->repositorySet = $repositorySet;
-        $this->localRepo = $localRepo;
+        $this->pool = $pool;
         $this->request = $request;
-        $this->operations = $operations;
+        $this->policy = $policy;
+        $this->transaction = $transaction;
     }
 
     /**
@@ -136,11 +136,11 @@ class InstallerEvent extends Event
     }
 
     /**
-     * @return RepositoryInterface
+     * @return Pool
      */
-    public function getLocalRepo()
+    public function getPool()
     {
-        return $this->localRepo;
+        return $this->pool;
     }
 
     /**
@@ -152,10 +152,10 @@ class InstallerEvent extends Event
     }
 
     /**
-     * @return OperationInterface[]
+     * @return Transaction|null
      */
-    public function getOperations()
+    public function getTransaction()
     {
-        return $this->operations;
+        return $this->transaction;
     }
 }

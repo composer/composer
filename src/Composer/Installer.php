@@ -381,10 +381,8 @@ class Installer
             }
         }
 
-        // TODO reenable events
-        //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
-
         $pool = $repositorySet->createPool($request);
+        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $repositorySet, $pool, $request, $policy);
 
         // solve dependencies
         $solver = new Solver($policy, $pool, $this->io, $repositorySet);
@@ -403,7 +401,7 @@ class Installer
         }
 
         // TODO should we warn people / error if plugins in vendor folder do not match contents of lock file before update?
-        //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $lockedRepository, $request, $lockTransaction);
+        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $repositorySet, $pool, $request, $policy, $lockTransaction);
 
         $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
         $this->io->writeError("Analyzed ".$ruleSetSize." rules to resolve dependencies", true, IOInterface::VERBOSE);
@@ -526,11 +524,11 @@ class Installer
 
         $pool = $repositorySet->createPool($request);
 
-        //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request);
+        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $repositorySet, $pool, $request, $policy);
         $solver = new Solver($policy, $pool, $this->io, $repositorySet);
         try {
             $nonDevLockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
-            //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request, $ops);
+            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $repositorySet, $pool, $request, $policy, $nonDevLockTransaction);
             $solver = null;
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Unable to find a compatible set of packages based on your non-dev requirements alone.</error>', true, IOInterface::QUIET);
@@ -580,9 +578,8 @@ class Installer
                 $request->requireName($link->getTarget(), $link->getConstraint());
             }
 
-            //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request);
-
             $pool = $repositorySet->createPool($request);
+            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $repositorySet, $pool, $request, $policy);
 
             // solve dependencies
             $solver = new Solver($policy, $pool, $this->io, $repositorySet);
@@ -604,7 +601,7 @@ class Installer
             }
 
             // TODO should we warn people / error if plugins in vendor folder do not match contents of lock file before update?
-            //$this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $repositorySet, $installedRepo, $request, $lockTransaction);
+            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $repositorySet, $pool, $request, $policy, $lockTransaction);
         }
 
         // TODO in how far do we need to do anything here to ensure dev packages being updated to latest in lock without version change are treated correctly?
