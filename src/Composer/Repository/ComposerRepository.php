@@ -35,7 +35,7 @@ use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Util\Http\Response;
 use Composer\Util\MetadataMinifier;
 use Composer\Util\Url;
-use React\Promise\Util as PromiseUtil;
+use React\Promise\Promise;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -1112,7 +1112,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $retries = 3;
 
         if (isset($this->packagesNotFoundCache[$filename])) {
-            return PromiseUtil::promiseFor(array('packages' => array()));
+            return new Promise(function ($resolve, $reject) { $resolve(array('packages' => array())); });
         }
 
         $httpDownloader = $this->httpDownloader;
