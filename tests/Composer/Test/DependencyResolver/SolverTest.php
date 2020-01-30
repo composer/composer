@@ -34,6 +34,7 @@ class SolverTest extends TestCase
     protected $request;
     protected $policy;
     protected $solver;
+    protected $pool;
 
     public function setUp()
     {
@@ -82,7 +83,7 @@ class SolverTest extends TestCase
             $problems = $e->getProblems();
             $this->assertCount(1, $problems);
             $this->assertEquals(2, $e->getCode());
-            $this->assertEquals("\n    - Root composer.json requires b, it could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString($this->repoSet, $this->request));
+            $this->assertEquals("\n    - Root composer.json requires b, it could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString($this->repoSet, $this->request, $this->pool));
         }
     }
 
@@ -653,7 +654,7 @@ class SolverTest extends TestCase
             $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
             $msg .= "    - B 1.0 conflicts with A[1.0].\n";
             $msg .= "    - Root composer.json requires b -> satisfiable by B[1.0].\n";
-            $this->assertEquals($msg, $e->getMessage());
+            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool));
         }
     }
 
@@ -683,7 +684,7 @@ class SolverTest extends TestCase
             $msg .= "  Problem 1\n";
             $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
             $msg .= "    - A 1.0 requires b >= 2.0 -> found B[1.0] but it does not match your constraint.\n";
-            $this->assertEquals($msg, $e->getMessage());
+            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool));
         }
     }
 
@@ -728,7 +729,7 @@ class SolverTest extends TestCase
             $msg .= "    - Only one of these can be installed: B[0.9, 1.0].\n";
             $msg .= "    - A 1.0 requires b >= 1.0 -> satisfiable by B[1.0].\n";
             $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
-            $this->assertEquals($msg, $e->getMessage());
+            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool));
         }
     }
 
@@ -889,7 +890,8 @@ class SolverTest extends TestCase
 
     protected function createSolver()
     {
-        $this->solver = new Solver($this->policy, $this->repoSet->createPool($this->request), new NullIO(), $this->repoSet);
+        $this->pool = $this->repoSet->createPool($this->request);
+        $this->solver = new Solver($this->policy, $this->pool, new NullIO());
     }
 
     protected function checkSolverResult(array $expected)

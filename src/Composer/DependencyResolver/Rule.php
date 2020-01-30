@@ -123,9 +123,8 @@ abstract class Rule
 
     abstract public function isAssertion();
 
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, array $installedMap = array(), array $learnedPool = array())
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, array $installedMap = array(), array $learnedPool = array())
     {
-        $pool = $repositorySet->getPool();
         $literals = $this->getLiterals();
 
         $ruleText = '';
@@ -180,7 +179,7 @@ abstract class Rule
                 } else {
                     $targetName = $this->reasonData->getTarget();
 
-                    $reason = Problem::getMissingPackageReason($repositorySet, $request, $targetName, $this->reasonData->getConstraint());
+                    $reason = Problem::getMissingPackageReason($repositorySet, $request, $pool, $targetName, $this->reasonData->getConstraint());
 
                     return $text . ' -> ' . $reason[1];
                 }
@@ -241,7 +240,7 @@ abstract class Rule
                     $learnedString = ', learned rules:'."\n        - ";
                     $reasons = array();
                     foreach ($learnedPool[$this->reasonData] as $learnedRule) {
-                        $reasons[] = $learnedRule->getPrettyString($repositorySet, $request, $installedMap, $learnedPool);
+                        $reasons[] = $learnedRule->getPrettyString($repositorySet, $request, $pool, $installedMap, $learnedPool);
                     }
                     $learnedString .= implode("\n        - ", array_unique($reasons));
                 } else {

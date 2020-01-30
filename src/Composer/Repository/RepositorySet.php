@@ -54,8 +54,8 @@ class RepositorySet
     private $stabilityFlags;
     private $rootRequires;
 
-    /** @var Pool */
-    private $pool;
+    /** @var bool */
+    private $locked = false;
 
     public function __construct(array $rootAliases = array(), array $rootReferences = array(), $minimumStability = 'stable', array $stabilityFlags = array(), array $rootRequires = array())
     {
@@ -92,7 +92,7 @@ class RepositorySet
      */
     public function addRepository(RepositoryInterface $repo)
     {
-        if ($this->pool) {
+        if ($this->locked) {
             throw new \RuntimeException("Pool has already been created from this repository set, it cannot be modified anymore.");
         }
 
@@ -191,7 +191,9 @@ class RepositorySet
             }
         }
 
-        return $this->pool = $poolBuilder->buildPool($this->repositories, $request);
+        $this->locked = true;
+
+        return $poolBuilder->buildPool($this->repositories, $request);
     }
 
     // TODO unify this with above in some simpler version without "request"?
@@ -209,14 +211,5 @@ class RepositorySet
         }
 
         return $this->createPool($request);
-    }
-
-    /**
-     * Access the pool object after it has been created, relevant for plugins which need to read info from the pool
-     * @return Pool
-     */
-    public function getPool()
-    {
-        return $this->pool;
     }
 }

@@ -63,7 +63,7 @@ class Problem
      * @param  array  $installedMap A map of all present packages
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, array $installedMap = array(), array $learnedPool = array())
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, array $installedMap = array(), array $learnedPool = array())
     {
         // TODO doesn't this entirely defeat the purpose of the problem sections? what's the point of sections?
         $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
@@ -81,20 +81,20 @@ class Problem
             $constraint = $reasonData['constraint'];
 
             if (isset($constraint)) {
-                $packages = $repositorySet->getPool()->whatProvides($packageName, $constraint);
+                $packages = $pool->whatProvides($packageName, $constraint);
             } else {
                 $packages = array();
             }
 
             if (empty($packages)) {
-                return "\n    ".implode(self::getMissingPackageReason($repositorySet, $request, $packageName, $constraint));
+                return "\n    ".implode(self::getMissingPackageReason($repositorySet, $request, $pool, $packageName, $constraint));
             }
         }
 
         $messages = array();
 
         foreach ($reasons as $rule) {
-            $messages[] = $rule->getPrettyString($repositorySet, $request, $installedMap, $learnedPool);
+            $messages[] = $rule->getPrettyString($repositorySet, $request, $pool, $installedMap, $learnedPool);
         }
 
         return "\n    - ".implode("\n    - ", $messages);
@@ -125,10 +125,8 @@ class Problem
     /**
      * @internal
      */
-    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, $packageName, $constraint = null)
+    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $packageName, $constraint = null)
     {
-        $pool = $repositorySet->getPool();
-
         // handle php/hhvm
         if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
             $version = phpversion();

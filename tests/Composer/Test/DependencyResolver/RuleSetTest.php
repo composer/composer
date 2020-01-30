@@ -144,9 +144,6 @@ class RuleSetTest extends TestCase
         ));
 
         $repositorySetMock = $this->getMockBuilder('Composer\Repository\RepositorySet')->disableOriginalConstructor()->getMock();
-        $repositorySetMock->expects($this->any())
-            ->method('getPool')
-            ->willReturn($pool);
         $requestMock = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
 
         $ruleSet = new RuleSet;
@@ -155,6 +152,6 @@ class RuleSetTest extends TestCase
 
         $ruleSet->add($rule, RuleSet::TYPE_REQUEST);
 
-        $this->assertContains('REQUEST : No package found to satisfy root composer.json require foo/bar', $ruleSet->getPrettyString($repositorySetMock, $requestMock));
+        $this->assertContains('REQUEST : No package found to satisfy root composer.json require foo/bar', $ruleSet->getPrettyString($repositorySetMock, $requestMock, $pool));
     }
 }

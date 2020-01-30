@@ -396,7 +396,7 @@ class Installer
             $solver = null;
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
-            $this->io->writeError($e->getMessage());
+            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool));
             if (!$this->devMode) {
                 $this->io->writeError('<warning>Running update with --no-dev does not mean require-dev is ignored, it just means the packages will not be installed. If dev requirements are blocking the update you have to resolve those problems.</warning>', true, IOInterface::QUIET);
             }
@@ -536,7 +536,7 @@ class Installer
             $solver = null;
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Unable to find a compatible set of packages based on your non-dev requirements alone.</error>', true, IOInterface::QUIET);
-            $this->io->writeError($e->getMessage());
+            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool));
 
             return max(1, $e->getCode());
         }
@@ -602,7 +602,7 @@ class Installer
                 }
             } catch (SolverProblemsException $e) {
                 $this->io->writeError('<error>Your lock file does not contain a compatible set of packages. Please run composer update.</error>', true, IOInterface::QUIET);
-                $this->io->writeError($e->getMessage());
+                $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool));
 
                 return max(1, $e->getCode());
             }
