@@ -44,19 +44,6 @@ class DefaultPolicy implements PolicyInterface
         return $constraint->matchSpecific($version, true);
     }
 
-    public function findUpdatePackages(Pool $pool, PackageInterface $package, $mustMatchName = false)
-    {
-        $packages = array();
-
-        foreach ($pool->whatProvides($package->getName(), null, $mustMatchName) as $candidate) {
-            if ($candidate !== $package) {
-                $packages[] = $candidate;
-            }
-        }
-
-        return $packages;
-    }
-
     public function selectPreferredPackages(Pool $pool, array $literals, $requiredPackage = null)
     {
         $packages = $this->groupLiteralsByName($pool, $literals);
