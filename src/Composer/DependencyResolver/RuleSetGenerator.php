@@ -160,7 +160,7 @@ class RuleSetGenerator
             $this->addedMap[$package->id] = true;
 
             $this->addedPackages[] = $package;
-            foreach ($package->getNames() as $name) {
+            foreach ($package->getNames(false) as $name) {
                 $this->addedPackagesByNames[$name][] = $package;
             }
 
@@ -179,7 +179,7 @@ class RuleSetGenerator
             }
 
             $packageName = $package->getName();
-            $obsoleteProviders = $this->pool->whatProvides($packageName, null);
+            $obsoleteProviders = $this->pool->whatProvides($packageName, null, false);
 
             foreach ($obsoleteProviders as $provider) {
                 if ($provider === $package) {

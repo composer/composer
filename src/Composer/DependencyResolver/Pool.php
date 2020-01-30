@@ -34,7 +34,6 @@ class Pool implements \Countable
 
     protected $packages = array();
     protected $packageByName = array();
-    protected $packageByExactName = array();
     protected $versionParser;
     protected $providerCache = array();
     protected $unacceptableFixedPackages;
@@ -54,7 +53,6 @@ class Pool implements \Countable
             $this->packages[] = $package;
 
             $package->id = $id++;
-            $this->packageByExactName[$package->getName()][$package->id] = $package;
 
             foreach ($package->getNames() as $provided) {
                 $this->packageByName[$provided][] = $package;
@@ -87,44 +85,41 @@ class Pool implements \Countable
      * @param  string              $name          The package name to be searched for
      * @param  ConstraintInterface $constraint    A constraint that all returned
      *                                            packages must match or null to return all
-     * @param  bool                $mustMatchName Whether the name of returned packages
-     *                                            must match the given name
      * @return PackageInterface[]  A set of packages
      */
-    public function whatProvides($name, ConstraintInterface $constraint = null, $mustMatchName = false)
+    public function whatProvides($name, ConstraintInterface $constraint = null, $allowProvide = true)
     {
-        $key = ((int) $mustMatchName).$constraint;
+        $key = ((int) $allowProvide).$constraint;
         if (isset($this->providerCache[$name][$key])) {
             return $this->providerCache[$name][$key];
         }
 
-        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $mustMatchName);
+        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $allowProvide);
     }
 
     /**
      * @see whatProvides
      */
-    private function computeWhatProvides($name, $constraint, $mustMatchName = false)
+    private function computeWhatProvides($name, $constraint, $allowProvide = true)
     {
-        $candidates = array();
-
-        if ($mustMatchName) {
-            if (isset($this->packageByExactName[$name])) {
-                $candidates = $this->packageByExactName[$name];
-            }
-        } elseif (isset($this->packageByName[$name])) {
-            $candidates = $this->packageByName[$name];
+        if (!isset($this->packageByName[$name])) {
+            return array();
         }
 
         $matches = array();
 
-        foreach ($candidates as $candidate) {
+        foreach ($this->packageByName[$name] as $candidate) {
             switch ($this->match($candidate, $name, $constraint)) {
                 case self::MATCH_NONE:
                     break;
 
-                case self::MATCH:
                 case self::MATCH_PROVIDE:
+                    if ($allowProvide) {
+                        $matches[] = $candidate;
+                    }
+                    break;
+
+                case self::MATCH:
                 case self::MATCH_REPLACE:
                     $matches[] = $candidate;
                     break;
