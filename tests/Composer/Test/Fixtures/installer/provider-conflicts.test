@@ -1,5 +1,5 @@
 --TEST--
-Test that providers provided by a dependent and root package cause a conflict
+Test that names provided by a dependent and root package cause a conflict only for replace
 --COMPOSER--
 {
     "version": "1.2.3",
@@ -42,7 +42,7 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - __root__ is present at version 1.2.3 and cannot be modified by Composer
-    - provider/pkg 1.0.0 can not be installed as that would require removing __root__ 1.2.3. They both provide [root-provided/transitive-provided, root-replaced/transitive-provided, root-provided/transitive-replaced, root-replaced/transitive-replaced] and can thus not coexist.
+    - provider/pkg 1.0.0 can not be installed as that would require removing __root__ 1.2.3. They both replace root-replaced/transitive-replaced and can thus not coexist.
     - Root composer.json requires provider/pkg * -> satisfiable by provider/pkg[1.0.0].
 
 --EXPECT--

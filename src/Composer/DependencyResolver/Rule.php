@@ -190,49 +190,77 @@ abstract class Rule
                 if (count($literals) === 2 && $literals[0] < 0 && $literals[1] < 0) {
                     $package1 = $pool->literalToPackage($literals[0]);
                     $package2 = $pool->literalToPackage($literals[1]);
-                    $conflictingNames = array_values(array_intersect($package1->getNames(), $package2->getNames()));
-                    $provideClash = count($conflictingNames) > 1 ? '['.implode(', ', $conflictingNames).']' : $conflictingNames[0];
 
-                    if ($conflictingNames && isset($installedMap[$package1->id]) && !isset($installedMap[$package2->id])) {
-                        // swap vars so the if below passes
-                        $tmp = $package2;
-                        $package2 = $package1;
-                        $package1 = $tmp;
+                    $replaces1 = $this->getReplacedNames($package1);
+                    $replaces2 = $this->getReplacedNames($package2);
+
+                    $reason = null;
+                    if ($conflictingNames = array_values(array_intersect($replaces1, $replaces2))) {
+                        $reason = 'They both replace '.(count($conflictingNames) > 1 ? '['.implode(', ', $conflictingNames).']' : $conflictingNames[0]).' and can thus not coexist.';
+                    } elseif (in_array($package1->getName(), $replaces2, true)) {
+                        $reason = $package2->getName().' replaces '.$package1->getName().' and can thus not coexist with it.';
+                    } elseif (in_array($package2->getName(), $replaces1, true)) {
+                        $reason = $package1->getName().' replaces '.$package2->getName().' and can thus not coexist with it.';
                     }
-                    if ($conflictingNames && !isset($installedMap[$package1->id]) && isset($installedMap[$package2->id])) {
-                        return $package1->getPrettyString().' can not be installed as that would require removing '.$package2->getPrettyString().'. They both provide '.$provideClash.' and can thus not coexist.';
-                    }
-                    if (!isset($installedMap[$package1->id]) && !isset($installedMap[$package2->id])) {
-                        if ($conflictingNames) {
-                            return 'Only one of these can be installed: '.$package1->getPrettyString().', '.$package2->getPrettyString().'. They both provide '.$provideClash.' and can thus not coexist.';
+
+                    if ($reason) {
+                        if (isset($installedMap[$package1->id]) && !isset($installedMap[$package2->id])) {
+                            // swap vars so the if below passes
+                            $tmp = $package2;
+                            $package2 = $package1;
+                            $package1 = $tmp;
+                        }
+                        if (!isset($installedMap[$package1->id]) && isset($installedMap[$package2->id])) {
+                            return $package1->getPrettyString().' can not be installed as that would require removing '.$package2->getPrettyString().'. '.$reason;
                         }
 
-                        return 'Only one of these can be installed: '.$package1->getPrettyString().', '.$package2->getPrettyString().'.';
+                        if (!isset($installedMap[$package1->id]) && !isset($installedMap[$package2->id])) {
+                            return 'Only one of these can be installed: '.$package1->getPrettyString().', '.$package2->getPrettyString().'. '.$reason;
+                        }
                     }
+
+                    return 'Only one of these can be installed: '.$package1->getPrettyString().', '.$package2->getPrettyString().'.';
                 }
 
                 return $ruleText;
             case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
                 return $ruleText;
             case self::RULE_PACKAGE_SAME_NAME:
-                $conflictingNames = null;
-                $allNames = array();
+                $replacedNames = null;
+                $packageNames = array();
                 foreach ($literals as $literal) {
                     $package = $pool->literalToPackage($literal);
-                    if ($conflictingNames === null) {
-                        $conflictingNames = $package->getNames();
-                    } else {
-                        $conflictingNames = array_values(array_intersect($conflictingNames, $package->getNames()));
+                    $pkgReplaces = $this->getReplacedNames($package);
+                    if ($pkgReplaces) {
+                        if ($replacedNames === null) {
+                            $replacedNames = $this->getReplacedNames($package);
+                        } else {
+                            $replacedNames = array_intersect($replacedNames, $this->getReplacedNames($package));
+                        }
                     }
-                    $allNames = array_unique(array_merge($allNames, $package->getNames()));
-                }
-                $provideClash = count($conflictingNames) > 1 ? '['.implode(', ', $conflictingNames).']' : $conflictingNames[0];
-
-                if ($conflictingNames && count($allNames) > 1) {
-                    return 'Only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '. They all provide '.$provideClash.' and can thus not coexist.';
+                    $packageNames[$package->getName()] = true;
                 }
 
-                return 'Only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '.';
+                if ($replacedNames) {
+                    $replacedNames = array_values(array_intersect(array_keys($packageNames), $replacedNames));
+                }
+                if ($replacedNames && count($packageNames) > 1) {
+                    $replacer = null;
+                    foreach ($literals as $literal) {
+                        $package = $pool->literalToPackage($literal);
+                        if (array_intersect($replacedNames, $this->getReplacedNames($package))) {
+                            $replacer = $package;
+                            break;
+                        }
+                    }
+                    $replacedNames = count($replacedNames) > 1 ? '['.implode(', ', $replacedNames).']' : $replacedNames[0];
+
+                    if ($replacer) {
+                        return 'Only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '. '.$replacer->getName().' replaces '.$replacedNames.' and can thus not coexist with it.';
+                    }
+                }
+
+                return 'You can only install one version of a package, so only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '.';
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
                 return $ruleText;
             case self::RULE_LEARNED:
@@ -271,5 +299,15 @@ abstract class Rule
         }
 
         return Problem::getPackageList($packages);
+    }
+
+    private function getReplacedNames(PackageInterface $package)
+    {
+        $names = array();
+        foreach ($package->getReplaces() as $link) {
+            $names[] = $link->getTarget();
+        }
+
+        return $names;
     }
 }
