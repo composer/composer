@@ -345,7 +345,7 @@ class Installer
 
         // creating repository set
         $policy = $this->createPolicy(true);
-        $repositorySet = $this->createRepositorySet($platformRepo, $aliases);
+        $repositorySet = $this->createRepositorySet(true, $platformRepo, $aliases);
         $repositories = $this->repositoryManager->getRepositories();
         foreach ($repositories as $repository) {
             $repositorySet->addRepository($repository);
@@ -353,7 +353,6 @@ class Installer
         if ($lockedRepository) {
             $repositorySet->addRepository($lockedRepository);
         }
-        // TODO can we drop any locked packages that we have matching remote versions for?
 
         $request = $this->createRequest($this->fixedRootPackage, $platformRepo, $lockedRepository);
 
@@ -377,7 +376,6 @@ class Installer
         if ($this->updateWhitelist && $lockedRepository) {
             foreach ($lockedRepository->getPackages() as $lockedPackage) {
                 if (!$this->isUpdateable($lockedPackage)) {
-                    // TODO add reason for fix?
                     $request->fixPackage($lockedPackage);
                 }
             }
@@ -516,7 +514,7 @@ class Installer
             $resultRepo->addPackage($loader->load($dumper->dump($pkg)));
         }
 
-        $repositorySet = $this->createRepositorySet($platformRepo, $aliases, null);
+        $repositorySet = $this->createRepositorySet(true, $platformRepo, $aliases);
         $repositorySet->addRepository($resultRepo);
 
         $request = $this->createRequest($this->fixedRootPackage, $platformRepo, null);
@@ -552,14 +550,12 @@ class Installer
     protected function doInstall(RepositoryInterface $localRepo, $alreadySolved = false)
     {
         $platformRepo = $this->createPlatformRepo(false);
-        $aliases = $this->getRootAliases(false);
-
         $lockedRepository = $this->locker->getLockedRepository($this->devMode);
 
         // creating repository set
         $policy = $this->createPolicy(false);
         // use aliases from lock file only, so empty root aliases here
-        $repositorySet = $this->createRepositorySet($platformRepo, array(), $lockedRepository);
+        $repositorySet = $this->createRepositorySet(false, $platformRepo, array(), $lockedRepository);
         $repositorySet->addRepository($lockedRepository);
 
         $this->io->writeError('<info>Installing dependencies from lock file'.($this->devMode ? ' (including require-dev)' : '').'</info>');
@@ -676,16 +672,15 @@ class Installer
     }
 
     /**
+     * @param bool $forUpdate
+     * @param PlatformRepository $platformRepo
      * @param array $rootAliases
      * @param RepositoryInterface|null $lockedRepository
      * @return RepositorySet
      */
-    private function createRepositorySet(PlatformRepository $platformRepo, array $rootAliases = array(), $lockedRepository = null)
+    private function createRepositorySet($forUpdate, PlatformRepository $platformRepo, array $rootAliases = array(), $lockedRepository = null)
     {
-        // TODO what's the point of rootConstraints at all, we generate the package pool taking them into account anyway?
-        // TODO maybe we can drop the lockedRepository here
-        // TODO if this gets called in doInstall, this->update is still true?!
-        if ($this->update) {
+        if ($forUpdate) {
             $minimumStability = $this->package->getMinimumStability();
             $stabilityFlags = $this->package->getStabilityFlags();
 
