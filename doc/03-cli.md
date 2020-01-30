@@ -665,6 +665,7 @@ By default the command checks for the packages on packagist.org.
   to a `composer` repository, a path to a local `packages.json` file, or a
   JSON string which similar to what the [repositories](04-schema.md#repositories)
   key accepts.
+* **--add-repository:** Add the repository option to the composer.json.
 * **--dev:** Install packages listed in `require-dev`.
 * **--no-dev:** Disables installation of require-dev packages.
 * **--no-scripts:** Disables the execution of the scripts defined in the root
