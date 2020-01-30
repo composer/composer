@@ -41,7 +41,7 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - Root composer.json requires foo/standard 1.0.0 -> satisfiable by foo/standard[1.0.0].
-    - foo/standard 1.0.0 requires foo/does-not-exist 1.0.0 -> no matching package found.
+    - foo/standard 1.0.0 requires foo/does-not-exist 1.0.0 -> could not be found in any version, there may be a typo in the package name.
 
 Potential causes:
  - A typo in the package name
