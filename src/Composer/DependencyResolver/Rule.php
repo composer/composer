@@ -188,11 +188,52 @@ abstract class Rule
                 return $text;
 
             case self::RULE_PACKAGE_OBSOLETES:
+                if (count($literals) === 2 && $literals[0] < 0 && $literals[1] < 0) {
+                    $package1 = $pool->literalToPackage($literals[0]);
+                    $package2 = $pool->literalToPackage($literals[1]);
+                    $conflictingNames = array_values(array_intersect($package1->getNames(), $package2->getNames()));
+                    $provideClash = count($conflictingNames) > 1 ? '['.implode(', ', $conflictingNames).']' : $conflictingNames[0];
+
+                    if ($conflictingNames && isset($installedMap[$package1->id]) && !isset($installedMap[$package2->id])) {
+                        // swap vars so the if below passes
+                        $tmp = $package2;
+                        $package2 = $package1;
+                        $package1 = $tmp;
+                    }
+                    if ($conflictingNames && !isset($installedMap[$package1->id]) && isset($installedMap[$package2->id])) {
+                        return $package1->getPrettyString().' can not be installed as that would require removing '.$package2->getPrettyString().'. They both provide '.$provideClash.' and can thus not coexist.';
+                    }
+                    if (!isset($installedMap[$package1->id]) && !isset($installedMap[$package2->id])) {
+                        if ($conflictingNames) {
+                            return 'Only one of these can be installed: '.$package1->getPrettyString().', '.$package2->getPrettyString().'. They both provide '.$provideClash.' and can thus not coexist.';
+                        }
+
+                        return 'Only one of these can be installed: '.$package1->getPrettyString().', '.$package2->getPrettyString().'.';
+                    }
+                }
+
                 return $ruleText;
             case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
                 return $ruleText;
             case self::RULE_PACKAGE_SAME_NAME:
-                return 'Same name, can only install one of: ' . $this->formatPackagesUnique($pool, $literals) . '.';
+                $conflictingNames = null;
+                $allNames = array();
+                foreach ($literals as $literal) {
+                    $package = $pool->literalToPackage($literal);
+                    if ($conflictingNames === null) {
+                        $conflictingNames = $package->getNames();
+                    } else {
+                        $conflictingNames = array_values(array_intersect($conflictingNames, $package->getNames()));
+                    }
+                    $allNames = array_unique(array_merge($allNames, $package->getNames()));
+                }
+                $provideClash = count($conflictingNames) > 1 ? '['.implode(', ', $conflictingNames).']' : $conflictingNames[0];
+
+                if ($conflictingNames && count($allNames) > 1) {
+                    return 'Only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '. They all provide '.$provideClash.' and can thus not coexist.';
+                }
+
+                return 'Only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '.';
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
                 return $ruleText;
             case self::RULE_LEARNED:
