@@ -34,6 +34,7 @@ use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Util\Http\Response;
 use Composer\Util\MetadataMinifier;
+use React\Promise\Util as PromiseUtil;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -67,10 +68,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $partialPackagesByName;
 
     /**
+     * TODO v3 should make this private once we can drop PHP 5.3 support
+     * @private
      * @var array list of package names which returned a 404 and should not be re-fetched in case loadPackage is called several times
      *          useful for v2 metadata repositories with lazy providers
      */
-    private $packagesNotFoundCache = array();
+    public $packagesNotFoundCache = array();
     /**
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @private
@@ -1086,7 +1089,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $retries = 3;
 
         if (isset($this->packagesNotFoundCache[$filename])) {
-            return \React\Promise\Util::promiseFor(array('packages' => array()));
+            return PromiseUtil::promiseFor(array('packages' => array()));
         }
 
         $httpDownloader = $this->httpDownloader;
@@ -1101,11 +1104,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $url = $this->url;
         $cache = $this->cache;
         $degradedMode =& $this->degradedMode;
+        $repo = $this;
 
-        $accept = function ($response) use ($io, $url, $cache, $cacheKey) {
+        $accept = function ($response) use ($io, $url, $filename, $cache, $cacheKey, $repo) {
             // package not found is acceptable for a v2 protocol repository
             if ($response->getStatusCode() === 404) {
-                $this->packagesNotFoundCache[$filename] = true;
+                $repo->packagesNotFoundCache[$filename] = true;
                 return array('packages' => array());
             }
 
@@ -1128,9 +1132,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $data;
         };
 
-        $reject = function ($e) use (&$retries, $httpDownloader, $filename, $options, &$reject, $accept, $io, $url, &$degradedMode) {
+        $reject = function ($e) use (&$retries, $httpDownloader, $filename, $options, &$reject, $accept, $io, $url, &$degradedMode, $repo) {
             if ($e instanceof TransportException && $e->getStatusCode() === 404) {
-                $this->packagesNotFoundCache[$filename] = true;
+                $repo->packagesNotFoundCache[$filename] = true;
                 return false;
             }
 
