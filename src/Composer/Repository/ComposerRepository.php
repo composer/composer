@@ -52,6 +52,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $cache;
     protected $notifyUrl;
     protected $searchUrl;
+    /** @var string|null a URL containing %package% which can be queried to get providers of a given name */
+    protected $providersApiUrl;
     protected $hasProviders = false;
     protected $providersUrl;
     protected $availablePackages;
@@ -414,6 +416,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         return parent::search($query, $mode);
+    }
+
+    public function getProviders($packageName)
+    {
+        if (!$this->providersApiUrl) {
+            return array();
+        }
+
+        $result = $this->httpDownloader->get(str_replace('%package%', $packageName, $this->providersApiUrl), $this->options)->decodeJson();
+
+        return $result['providers'];
     }
 
     private function getProviderNames()
@@ -808,6 +821,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (!empty($data['providers']) || !empty($data['providers-includes'])) {
             $this->hasProviders = true;
+        }
+
+        if (!empty($data['providers-api'])) {
+            $this->providersApiUrl = $data['providers-api'];
         }
 
         return $this->rootData = $data;

@@ -158,6 +158,19 @@ class RepositorySet
         return $candidates;
     }
 
+    public function getProviders($packageName)
+    {
+        foreach ($this->repositories as $repository) {
+            if ($repository instanceof ComposerRepository) {
+                if ($providers = $repository->getProviders($packageName)) {
+                    return $providers;
+                }
+            }
+        }
+
+        return array();
+    }
+
     public function isPackageAcceptable($names, $stability)
     {
         return StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $names, $stability);
