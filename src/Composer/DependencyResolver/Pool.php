@@ -27,7 +27,6 @@ use Composer\Package\PackageInterface;
  */
 class Pool implements \Countable
 {
-    const MATCH_NAME = -1;
     const MATCH_NONE = 0;
     const MATCH = 1;
     const MATCH_PROVIDE = 2;
@@ -117,27 +116,15 @@ class Pool implements \Countable
             $candidates = $this->packageByName[$name];
         }
 
-        $matches = $provideMatches = array();
-        $nameMatch = false;
+        $matches = array();
 
         foreach ($candidates as $candidate) {
             switch ($this->match($candidate, $name, $constraint)) {
                 case self::MATCH_NONE:
                     break;
 
-                case self::MATCH_NAME:
-                    $nameMatch = true;
-                    break;
-
                 case self::MATCH:
-                    $nameMatch = true;
-                    $matches[] = $candidate;
-                    break;
-
                 case self::MATCH_PROVIDE:
-                    $provideMatches[] = $candidate;
-                    break;
-
                 case self::MATCH_REPLACE:
                     $matches[] = $candidate;
                     break;
@@ -147,12 +134,7 @@ class Pool implements \Countable
             }
         }
 
-        // if a package with the required name exists, we ignore providers
-        if ($nameMatch) {
-            return $matches;
-        }
-
-        return array_merge($matches, $provideMatches);
+        return $matches;
     }
 
     public function literalToPackage($literal)
@@ -196,7 +178,7 @@ class Pool implements \Countable
                 return self::MATCH;
             }
 
-            return self::MATCH_NAME;
+            return self::MATCH_NONE;
         }
 
         $provides = $candidate->getProvides();
