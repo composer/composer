@@ -652,7 +652,7 @@ class SolverTest extends TestCase
             $msg = "\n";
             $msg .= "  Problem 1\n";
             $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
-            $msg .= "    - B 1.0 conflicts with A[1.0].\n";
+            $msg .= "    - A 1.0 conflicts with B 1.0.\n";
             $msg .= "    - Root composer.json requires b -> satisfiable by B[1.0].\n";
             $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool));
         }

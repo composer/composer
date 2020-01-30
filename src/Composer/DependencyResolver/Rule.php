@@ -162,7 +162,7 @@ abstract class Rule
                 $package1 = $pool->literalToPackage($literals[0]);
                 $package2 = $pool->literalToPackage($literals[1]);
 
-                return $package1->getPrettyString().' conflicts with '.$this->formatPackagesUnique($pool, array($package2)).'.';
+                return $package2->getPrettyString().' conflicts with '.$package1->getPrettyString().'.';
 
             case self::RULE_PACKAGE_REQUIRES:
                 $sourceLiteral = array_shift($literals);
