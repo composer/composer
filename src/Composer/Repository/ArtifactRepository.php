@@ -45,7 +45,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
     public function getRepoName()
     {
-        return 'platform repo ('.$this->lookup.')';
+        return 'artifact repo ('.$this->lookup.')';
     }
 
     public function getRepoConfig()

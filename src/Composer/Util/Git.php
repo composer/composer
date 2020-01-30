@@ -362,27 +362,16 @@ class Git
         return '(' . implode('|', array_map('preg_quote', $config->get('gitlab-domains'))) . ')';
     }
 
-    public static function sanitizeUrl($message)
-    {
-        return preg_replace_callback('{://(?P<user>[^@]+?):(?P<password>.+?)@}', function ($m) {
-            if (preg_match('{^[a-f0-9]{12,}$}', $m[1])) {
-                return '://***:***@';
-            }
-
-            return '://' . $m[1] . ':***@';
-        }, $message);
-    }
-
     private function throwException($message, $url)
     {
         // git might delete a directory when it fails and php will not know
         clearstatcache();
 
         if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
-            throw new \RuntimeException(self::sanitizeUrl('Failed to clone ' . $url . ', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
+            throw new \RuntimeException(Url::sanitize('Failed to clone ' . $url . ', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
         }
 
-        throw new \RuntimeException(self::sanitizeUrl($message));
+        throw new \RuntimeException(Url::sanitize($message));
     }
 
     /**

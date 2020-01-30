@@ -34,6 +34,7 @@ use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Util\Http\Response;
 use Composer\Util\MetadataMinifier;
+use Composer\Util\Url;
 use React\Promise\Util as PromiseUtil;
 
 /**
@@ -129,7 +130,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     public function getRepoName()
     {
-        return 'composer repo ('.$this->url.')';
+        return 'composer repo ('.Url::sanitize($this->url).')';
     }
 
     public function getRepoConfig()

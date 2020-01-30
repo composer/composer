@@ -195,7 +195,7 @@ class CurlDownloader
         $usingProxy = !empty($options['http']['proxy']) ? ' using proxy ' . $options['http']['proxy'] : '';
         $ifModified = false !== strpos(strtolower(implode(',', $options['http']['header'])), 'if-modified-since:') ? ' if modified' : '';
         if ($attributes['redirects'] === 0) {
-            $this->io->writeError('Downloading ' . $this->authHelper->stripCredentialsFromUrl($url) . $usingProxy . $ifModified, true, IOInterface::DEBUG);
+            $this->io->writeError('Downloading ' . Url::sanitize($url) . $usingProxy . $ifModified, true, IOInterface::DEBUG);
         }
 
         $this->checkCurlResult(curl_multi_add_handle($this->multiHandle, $curlHandle));
@@ -254,12 +254,12 @@ class CurlDownloader
                         $contents = stream_get_contents($job['bodyHandle']);
                     }
                     $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
-                    $this->io->writeError('['.$statusCode.'] '.$this->authHelper->stripCredentialsFromUrl($progress['url']), true, IOInterface::DEBUG);
+                    $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
                 } else {
                     rewind($job['bodyHandle']);
                     $contents = stream_get_contents($job['bodyHandle']);
                     $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
-                    $this->io->writeError('['.$statusCode.'] '.$this->authHelper->stripCredentialsFromUrl($progress['url']), true, IOInterface::DEBUG);
+                    $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
                 }
                 fclose($job['bodyHandle']);
 
@@ -362,7 +362,7 @@ class CurlDownloader
         }
 
         if (!empty($targetUrl)) {
-            $this->io->writeError(sprintf('Following redirect (%u) %s', $job['attributes']['redirects'] + 1, $this->authHelper->stripCredentialsFromUrl($targetUrl)), true, IOInterface::DEBUG);
+            $this->io->writeError(sprintf('Following redirect (%u) %s', $job['attributes']['redirects'] + 1, Url::sanitize($targetUrl)), true, IOInterface::DEBUG);
 
             return $targetUrl;
         }
