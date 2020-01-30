@@ -22,6 +22,7 @@ use Composer\Package\Loader\LoaderInterface;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\HttpDownloader;
+use Composer\Util\Url;
 use Composer\IO\IOInterface;
 use Composer\Config;
 
@@ -77,6 +78,17 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $this->versionCache = $versionCache;
         $this->httpDownloader = $httpDownloader;
         $this->processExecutor = new ProcessExecutor($io);
+    }
+
+    public function getRepoName()
+    {
+        $driverClass = get_class($this->getDriver());
+        $driverType = array_search($driverClass, $this->drivers);
+        if (!$driverType) {
+            $driverType = $driverClass;
+        }
+
+        return 'vcs repo ('.$driverType.' '.Url::sanitize($this->url).')';
     }
 
     public function getRepoConfig()

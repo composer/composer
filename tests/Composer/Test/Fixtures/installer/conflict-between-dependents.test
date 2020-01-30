@@ -1,0 +1,38 @@
+--TEST--
+Test the error output of solver problems for conflicts between two dependents
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "conflicter/pkg", "version": "1.0.0", "conflict": { "victim/pkg": "1.0.0"} },
+                { "name": "victim/pkg", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "conflicter/pkg": "1.0.0",
+        "victim/pkg": "1.0.0"
+    }
+}
+
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires conflicter/pkg 1.0.0 -> satisfiable by conflicter/pkg[1.0.0].
+    - conflicter/pkg 1.0.0 conflicts with victim/pkg 1.0.0.
+    - Root composer.json requires victim/pkg 1.0.0 -> satisfiable by victim/pkg[1.0.0].
+
+--EXPECT--
+

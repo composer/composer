@@ -1,5 +1,5 @@
 --TEST--
-Partial update from lock file should apply lock file and downgrade unstable packages even if not whitelisted
+Partial update from lock file should apply lock file and if an unstable package is not allowed anymore by latest composer.json it should fail
 --COMPOSER--
 {
     "repositories": [
@@ -59,12 +59,4 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - The requested package b/unstable could not be found in any version, there may be a typo in the package name.
-
-Potential causes:
- - A typo in the package name
- - The package is not available in a stable-enough version according to your minimum-stability setting
-   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.
- - It's a private package and you forgot to add a custom repository to find it
-
-Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
+    - b/unstable is fixed to 1.1.0-alpha (lock file version) by a partial update but that version is rejected by your minimum-stability. Make sure you whitelist it for update.

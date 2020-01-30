@@ -89,7 +89,7 @@ class BaseDependencyCommand extends BaseCommand
         );
 
         // Find packages that are or provide the requested package first
-        $packages = $repositorySet->findPackages(strtolower($needle), null, false);
+        $packages = $repositorySet->findPackages(strtolower($needle), null, RepositorySet::ALLOW_PROVIDERS_REPLACERS);
         if (empty($packages)) {
             throw new \InvalidArgumentException(sprintf('Could not find package "%s" in your project', $needle));
         }

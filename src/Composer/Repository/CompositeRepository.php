@@ -39,6 +39,11 @@ class CompositeRepository extends BaseRepository
         }
     }
 
+    public function getRepoName()
+    {
+        return 'composite repo ('.implode(', ', array_map(function ($repo) { return $repo->getRepoName(); }, $this->repositories)).')';
+    }
+
     /**
      * Returns all the wrapped repositories
      *

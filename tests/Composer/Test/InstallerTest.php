@@ -323,6 +323,9 @@ class InstallerTest extends TestCase
         $this->assertSame(rtrim($expect), implode("\n", $installationManager->getTrace()));
 
         if ($expectOutput) {
+            $output = preg_replace('{^    - .*?\.ini$}m', '__inilist__', $output);
+            $output = preg_replace('{(__inilist__\r?\n)+}', "__inilist__\n", $output);
+
             $this->assertStringMatchesFormat(rtrim($expectOutput), rtrim($output));
         }
     }

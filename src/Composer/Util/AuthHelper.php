@@ -255,15 +255,4 @@ class AuthHelper
 
         return count($pathParts) >= 4 && $pathParts[3] == 'downloads';
     }
-
-    /**
-     * @param string $url
-     * @return string
-     */
-    public function stripCredentialsFromUrl($url)
-    {
-        // GitHub repository rename result in redirect locations containing the access_token as GET parameter
-        // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
-        return preg_replace('{([&?]access_token=)[^&]+}', '$1***', $url);
-    }
 }

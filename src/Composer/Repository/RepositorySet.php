@@ -29,6 +29,19 @@ use Composer\Package\Version\StabilityFilter;
  */
 class RepositorySet
 {
+    /**
+     * Packages which replace/provide the given name might be returned as well even if they do not match the name exactly
+     */
+    const ALLOW_PROVIDERS_REPLACERS = 1;
+    /**
+     * Packages are returned even though their stability does not match the required stability
+     */
+    const ALLOW_UNACCEPTABLE_STABILITIES = 2;
+    /**
+     * Packages will be looked up in all repositories, even after they have been found in a higher prio one
+     */
+    const ALLOW_SHADOWED_REPOSITORIES = 4;
+
     /** @var array */
     private $rootAliases;
     /** @var array */
@@ -39,10 +52,10 @@ class RepositorySet
 
     private $acceptableStabilities;
     private $stabilityFlags;
-    protected $rootRequires;
+    private $rootRequires;
 
-    /** @var Pool */
-    private $pool;
+    /** @var bool */
+    private $locked = false;
 
     public function __construct(array $rootAliases = array(), array $rootReferences = array(), $minimumStability = 'stable', array $stabilityFlags = array(), array $rootRequires = array())
     {
@@ -64,6 +77,11 @@ class RepositorySet
         }
     }
 
+    public function getRootRequires()
+    {
+        return $this->rootRequires;
+    }
+
     /**
      * Adds a repository to this repository set
      *
@@ -74,7 +92,7 @@ class RepositorySet
      */
     public function addRepository(RepositoryInterface $repo)
     {
-        if ($this->pool) {
+        if ($this->locked) {
             throw new \RuntimeException("Pool has already been created from this repository set, it cannot be modified anymore.");
         }
 
@@ -96,15 +114,32 @@ class RepositorySet
      *
      * @param string $name
      * @param ConstraintInterface|null $constraint
-     * @param bool $exactMatch if set to false, packages which replace/provide the given name might be returned as well even if they do not match the name exactly
-     * @param bool $ignoreStability if set to true, packages are returned even though their stability does not match the required stability
+     * @param int $flags any of the ALLOW_* constants from this class to tweak what is returned
      * @return array
      */
-    public function findPackages($name, ConstraintInterface $constraint = null, $exactMatch = true, $ignoreStability = false)
+    public function findPackages($name, ConstraintInterface $constraint = null, $flags = 0)
     {
+        $exactMatch = ($flags & self::ALLOW_PROVIDERS_REPLACERS) === 0;
+        $ignoreStability = ($flags & self::ALLOW_UNACCEPTABLE_STABILITIES) !== 0;
+        $loadFromAllRepos = ($flags & self::ALLOW_SHADOWED_REPOSITORIES) !== 0;
+
         $packages = array();
-        foreach ($this->repositories as $repository) {
-            $packages[] = $repository->findPackages($name, $constraint) ?: array();
+        if ($loadFromAllRepos) {
+            foreach ($this->repositories as $repository) {
+                $packages[] = $repository->findPackages($name, $constraint) ?: array();
+            }
+        } else {
+            foreach ($this->repositories as $repository) {
+                $result = $repository->loadPackages(array($name => $constraint), $ignoreStability ? BasePackage::$stabilities : $this->acceptableStabilities, $ignoreStability ? array() : $this->stabilityFlags);
+
+                $packages[] = $result['packages'];
+                foreach ($result['namesFound'] as $nameFound) {
+                    // avoid loading the same package again from other repositories once it has been found
+                    if ($name === $nameFound) {
+                        break 2;
+                    }
+                }
+            }
         }
 
         $candidates = $packages ? call_user_func_array('array_merge', $packages) : array();
@@ -123,6 +158,19 @@ class RepositorySet
         return $candidates;
     }
 
+    public function getProviders($packageName)
+    {
+        foreach ($this->repositories as $repository) {
+            if ($repository instanceof ComposerRepository) {
+                if ($providers = $repository->getProviders($packageName)) {
+                    return $providers;
+                }
+            }
+        }
+
+        return array();
+    }
+
     public function isPackageAcceptable($names, $stability)
     {
         return StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $names, $stability);
@@ -135,7 +183,7 @@ class RepositorySet
      */
     public function createPool(Request $request)
     {
-        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $this->rootRequires);
+        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences);
 
         foreach ($this->repositories as $repo) {
             if ($repo instanceof InstalledRepositoryInterface) {
@@ -143,7 +191,9 @@ class RepositorySet
             }
         }
 
-        return $this->pool = $poolBuilder->buildPool($this->repositories, $request);
+        $this->locked = true;
+
+        return $poolBuilder->buildPool($this->repositories, $request);
     }
 
     // TODO unify this with above in some simpler version without "request"?
@@ -161,14 +211,5 @@ class RepositorySet
         }
 
         return $this->createPool($request);
-    }
-
-    /**
-     * Access the pool object after it has been created, relevant for plugins which need to read info from the pool
-     * @return Pool
-     */
-    public function getPool()
-    {
-        return $this->pool;
     }
 }

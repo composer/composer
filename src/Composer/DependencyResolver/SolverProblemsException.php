@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Util\IniHelper;
+use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -20,24 +21,23 @@ use Composer\Util\IniHelper;
 class SolverProblemsException extends \RuntimeException
 {
     protected $problems;
-    protected $installedMap;
     protected $learnedPool;
 
-    public function __construct(array $problems, array $installedMap, array $learnedPool)
+    public function __construct(array $problems, array $learnedPool)
     {
         $this->problems = $problems;
-        $this->installedMap = $installedMap;
         $this->learnedPool = $learnedPool;
 
-        parent::__construct($this->createMessage(), 2);
+        parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', 2);
     }
 
-    protected function createMessage()
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool)
     {
+        $installedMap = $request->getPresentMap(true);
         $text = "\n";
         $hasExtensionProblems = false;
         foreach ($this->problems as $i => $problem) {
-            $text .= "  Problem ".($i + 1).$problem->getPrettyString($this->installedMap, $this->learnedPool)."\n";
+            $text .= "  Problem ".($i + 1).$problem->getPrettyString($repositorySet, $request, $pool, $installedMap, $this->learnedPool)."\n";
 
             if (!$hasExtensionProblems && $this->hasExtensionProblems($problem->getReasons())) {
                 $hasExtensionProblems = true;

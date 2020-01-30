@@ -58,4 +58,25 @@ class UrlTest extends TestCase
             array('https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=abcd', 'https://mygitlab.com/api/v3/projects/foo%2Fbar/repository/archive.tar.bz2?sha=65', array('gitlab-domains' => array('mygitlab.com')), '65'),
         );
     }
+
+    /**
+     * @dataProvider sanitizeProvider
+     */
+    public function testSanitize($expected, $url)
+    {
+        $this->assertSame($expected, Url::sanitize($url));
+    }
+
+    public static function sanitizeProvider()
+    {
+        return array(
+            array('https://foo:***@example.org/', 'https://foo:bar@example.org/'),
+            array('https://foo@example.org/', 'https://foo@example.org/'),
+            array('https://example.org/', 'https://example.org/'),
+            array('http://***:***@example.org', 'http://10a8f08e8d7b7b9:foo@example.org'),
+            array('https://foo:***@example.org:123/', 'https://foo:bar@example.org:123/'),
+            array('https://example.org/foo/bar?access_token=***', 'https://example.org/foo/bar?access_token=abcdef'),
+            array('https://example.org/foo/bar?foo=bar&access_token=***', 'https://example.org/foo/bar?foo=bar&access_token=abcdef'),
+        );
+    }
 }

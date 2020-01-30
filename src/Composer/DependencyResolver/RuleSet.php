@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Repository\RepositorySet;
+
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -155,13 +157,13 @@ class RuleSet implements \IteratorAggregate, \Countable
         return array_keys($types);
     }
 
-    public function getPrettyString(Pool $pool = null)
+    public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null)
     {
         $string = "\n";
         foreach ($this->rules as $type => $rules) {
             $string .= str_pad(self::$types[$type], 8, ' ') . ": ";
             foreach ($rules as $rule) {
-                $string .= ($pool ? $rule->getPrettyString($pool) : $rule)."\n";
+                $string .= ($repositorySet && $request && $pool ? $rule->getPrettyString($repositorySet, $request, $pool) : $rule)."\n";
             }
             $string .= "\n\n";
         }
@@ -171,6 +173,6 @@ class RuleSet implements \IteratorAggregate, \Countable
 
     public function __toString()
     {
-        return $this->getPrettyString(null);
+        return $this->getPrettyString(null, null, null);
     }
 }

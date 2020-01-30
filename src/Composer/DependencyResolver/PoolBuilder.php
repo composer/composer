@@ -31,7 +31,6 @@ class PoolBuilder
     private $stabilityFlags;
     private $rootAliases;
     private $rootReferences;
-    private $rootRequires;
 
     private $aliasMap = array();
     private $nameConstraints = array();
@@ -39,13 +38,12 @@ class PoolBuilder
     private $packages = array();
     private $unacceptableFixedPackages = array();
 
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, array $rootRequires = array())
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
         $this->rootAliases = $rootAliases;
         $this->rootReferences = $rootReferences;
-        $this->rootRequires = $rootRequires;
     }
 
     public function buildPool(array $repositories, Request $request)

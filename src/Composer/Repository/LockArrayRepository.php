@@ -21,5 +21,9 @@ namespace Composer\Repository;
  */
 class LockArrayRepository extends ArrayRepository implements RepositoryInterface
 {
+    public function getRepoName()
+    {
+        return 'lock '.parent::getRepoName();
+    }
 }
 

@@ -42,6 +42,11 @@ class ArrayRepository extends BaseRepository
         }
     }
 
+    public function getRepoName()
+    {
+        return 'array repo (defining '.count($this->packages).' package'.(count($this->packages) > 1 ? 's' : '').')';
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -57,7 +62,9 @@ class ArrayRepository extends BaseRepository
                     (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
                     && StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, $package->getNames(), $package->getStability())
                 ) {
+                    // add selected packages which match stability requirements
                     $result[spl_object_hash($package)] = $package;
+                    // add the aliased package for packages where the alias matches
                     if ($package instanceof AliasPackage && !isset($result[spl_object_hash($package->getAliasOf())])) {
                         $result[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
                     }
@@ -67,6 +74,7 @@ class ArrayRepository extends BaseRepository
             }
         }
 
+        // add aliases of packages that were selected, even if the aliases did not match
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
                 if (isset($result[spl_object_hash($package->getAliasOf())])) {

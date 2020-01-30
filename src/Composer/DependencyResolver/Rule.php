@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
+use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -122,7 +123,7 @@ abstract class Rule
 
     abstract public function isAssertion();
 
-    public function getPrettyString(Pool $pool, array $installedMap = array(), array $learnedPool = array())
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, array $installedMap = array(), array $learnedPool = array())
     {
         $literals = $this->getLiterals();
 
@@ -161,7 +162,7 @@ abstract class Rule
                 $package1 = $pool->literalToPackage($literals[0]);
                 $package2 = $pool->literalToPackage($literals[1]);
 
-                return $package1->getPrettyString().' conflicts with '.$this->formatPackagesUnique($pool, array($package2)).'.';
+                return $package2->getPrettyString().' conflicts with '.$package1->getPrettyString().'.';
 
             case self::RULE_PACKAGE_REQUIRES:
                 $sourceLiteral = array_shift($literals);
@@ -178,85 +179,103 @@ abstract class Rule
                 } else {
                     $targetName = $this->reasonData->getTarget();
 
-                    if ($targetName === 'php' || $targetName === 'php-64bit' || $targetName === 'hhvm') {
-                        // handle php/hhvm
-                        if (defined('HHVM_VERSION')) {
-                            return $text . ' -> your HHVM version does not satisfy that requirement.';
-                        }
+                    $reason = Problem::getMissingPackageReason($repositorySet, $request, $pool, $targetName, $this->reasonData->getConstraint());
 
-                        $packages = $pool->whatProvides($targetName);
-                        $package = count($packages) ? current($packages) : phpversion();
-
-                        if ($targetName === 'hhvm') {
-                            if ($package instanceof CompletePackage) {
-                                return $text . ' -> your HHVM version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
-                            } else {
-                                return $text . ' -> you are running this with PHP and not HHVM.';
-                            }
-                        }
-
-
-                        if (!($package instanceof CompletePackage)) {
-                            return $text . ' -> your PHP version ('.phpversion().') does not satisfy that requirement.';
-                        }
-
-                        $extra = $package->getExtra();
-
-                        if (!empty($extra['config.platform'])) {
-                            $text .= ' -> your PHP version ('.phpversion().') overridden by "config.platform.php" version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
-                        } else {
-                            $text .= ' -> your PHP version ('.$package->getPrettyVersion().') does not satisfy that requirement.';
-                        }
-
-                        return $text;
-                    }
-
-                    if (0 === strpos($targetName, 'ext-')) {
-                        // handle php extensions
-                        $ext = substr($targetName, 4);
-                        $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
-
-                        return $text . ' -> the requested PHP extension '.$ext.' '.$error.'.';
-                    }
-
-                    if (0 === strpos($targetName, 'lib-')) {
-                        // handle linked libs
-                        $lib = substr($targetName, 4);
-
-                        return $text . ' -> the requested linked library '.$lib.' has the wrong version installed or is missing from your system, make sure to have the extension providing it.';
-                    }
-
-                    // TODO: The pool doesn't know about these anymore, it has to ask the RepositorySet
-                    /*if ($providers = $pool->whatProvides($targetName, $this->reasonData->getConstraint(), true, true)) {
-                        return $text . ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $providers) .' but these conflict with your requirements or minimum-stability.';
-                    }*/
-
-                    return $text . ' -> no matching package found.';
+                    return $text . ' -> ' . $reason[1];
                 }
 
                 return $text;
 
             case self::RULE_PACKAGE_OBSOLETES:
+                if (count($literals) === 2 && $literals[0] < 0 && $literals[1] < 0) {
+                    $package1 = $pool->literalToPackage($literals[0]);
+                    $package2 = $pool->literalToPackage($literals[1]);
+
+                    $replaces1 = $this->getReplacedNames($package1);
+                    $replaces2 = $this->getReplacedNames($package2);
+
+                    $reason = null;
+                    if ($conflictingNames = array_values(array_intersect($replaces1, $replaces2))) {
+                        $reason = 'They both replace '.(count($conflictingNames) > 1 ? '['.implode(', ', $conflictingNames).']' : $conflictingNames[0]).' and can thus not coexist.';
+                    } elseif (in_array($package1->getName(), $replaces2, true)) {
+                        $reason = $package2->getName().' replaces '.$package1->getName().' and can thus not coexist with it.';
+                    } elseif (in_array($package2->getName(), $replaces1, true)) {
+                        $reason = $package1->getName().' replaces '.$package2->getName().' and can thus not coexist with it.';
+                    }
+
+                    if ($reason) {
+                        if (isset($installedMap[$package1->id]) && !isset($installedMap[$package2->id])) {
+                            // swap vars so the if below passes
+                            $tmp = $package2;
+                            $package2 = $package1;
+                            $package1 = $tmp;
+                        }
+                        if (!isset($installedMap[$package1->id]) && isset($installedMap[$package2->id])) {
+                            return $package1->getPrettyString().' can not be installed as that would require removing '.$package2->getPrettyString().'. '.$reason;
+                        }
+
+                        if (!isset($installedMap[$package1->id]) && !isset($installedMap[$package2->id])) {
+                            return 'Only one of these can be installed: '.$package1->getPrettyString().', '.$package2->getPrettyString().'. '.$reason;
+                        }
+                    }
+
+                    return 'Only one of these can be installed: '.$package1->getPrettyString().', '.$package2->getPrettyString().'.';
+                }
+
                 return $ruleText;
             case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
                 return $ruleText;
             case self::RULE_PACKAGE_SAME_NAME:
-                return 'Same name, can only install one of: ' . $this->formatPackagesUnique($pool, $literals) . '.';
+                $replacedNames = null;
+                $packageNames = array();
+                foreach ($literals as $literal) {
+                    $package = $pool->literalToPackage($literal);
+                    $pkgReplaces = $this->getReplacedNames($package);
+                    if ($pkgReplaces) {
+                        if ($replacedNames === null) {
+                            $replacedNames = $this->getReplacedNames($package);
+                        } else {
+                            $replacedNames = array_intersect($replacedNames, $this->getReplacedNames($package));
+                        }
+                    }
+                    $packageNames[$package->getName()] = true;
+                }
+
+                if ($replacedNames) {
+                    $replacedNames = array_values(array_intersect(array_keys($packageNames), $replacedNames));
+                }
+                if ($replacedNames && count($packageNames) > 1) {
+                    $replacer = null;
+                    foreach ($literals as $literal) {
+                        $package = $pool->literalToPackage($literal);
+                        if (array_intersect($replacedNames, $this->getReplacedNames($package))) {
+                            $replacer = $package;
+                            break;
+                        }
+                    }
+                    $replacedNames = count($replacedNames) > 1 ? '['.implode(', ', $replacedNames).']' : $replacedNames[0];
+
+                    if ($replacer) {
+                        return 'Only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '. '.$replacer->getName().' replaces '.$replacedNames.' and can thus not coexist with it.';
+                    }
+                }
+
+                return 'You can only install one version of a package, so only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '.';
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
                 return $ruleText;
             case self::RULE_LEARNED:
-                // TODO not sure this is a good idea, most of these rules should be listed in the problem anyway
-                $learnedString = '(learned rule, ';
                 if (isset($learnedPool[$this->reasonData])) {
+                    $learnedString = ', learned rules:'."\n        - ";
+                    $reasons = array();
                     foreach ($learnedPool[$this->reasonData] as $learnedRule) {
-                        $learnedString .= $learnedRule->getPrettyString($pool, $installedMap, $learnedPool);
+                        $reasons[] = $learnedRule->getPrettyString($repositorySet, $request, $pool, $installedMap, $learnedPool);
                     }
+                    $learnedString .= implode("\n        - ", array_unique($reasons));
                 } else {
-                    $learnedString .= 'reasoning unavailable';
+                    $learnedString = ' (reasoning unavailable)';
                 }
-                $learnedString .= ')';
 
-                return 'Conclusion: '.$ruleText.' '.$learnedString;
+                return 'Conclusion: '.$ruleText.$learnedString;
             case self::RULE_PACKAGE_ALIAS:
                 return $ruleText;
             default:
@@ -272,20 +291,23 @@ abstract class Rule
      */
     protected function formatPackagesUnique($pool, array $packages)
     {
-        // TODO this is essentially a duplicate of Problem: getPackageList, maintain in one place only?
-
         $prepared = array();
-        foreach ($packages as $package) {
+        foreach ($packages as $index => $package) {
             if (!is_object($package)) {
-                $package = $pool->literalToPackage($package);
+                $packages[$index] = $pool->literalToPackage($package);
             }
-            $prepared[$package->getName()]['name'] = $package->getPrettyName();
-            $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion();
-        }
-        foreach ($prepared as $name => $package) {
-            $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
         }
 
-        return implode(', ', $prepared);
+        return Problem::getPackageList($packages);
+    }
+
+    private function getReplacedNames(PackageInterface $package)
+    {
+        $names = array();
+        foreach ($package->getReplaces() as $link) {
+            $names[] = $link->getTarget();
+        }
+
+        return $names;
     }
 }

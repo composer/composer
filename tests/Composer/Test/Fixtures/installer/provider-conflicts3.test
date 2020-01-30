@@ -1,0 +1,54 @@
+--TEST--
+Test that a replacer can not be installed together with another version of the package it replaces
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {"name": "replacer/pkg", "version": "2.0.0", "replace": { "regular/pkg": "self.version" }},
+                {"name": "replacer/pkg", "version": "2.0.1", "replace": { "regular/pkg": "self.version" }},
+                {"name": "replacer/pkg", "version": "2.0.2", "replace": { "regular/pkg": "self.version" }},
+                {"name": "replacer/pkg", "version": "2.0.3", "replace": { "regular/pkg": "self.version" }},
+                {"name": "regular/pkg", "version": "1.0.0"},
+                {"name": "regular/pkg", "version": "1.0.1"},
+                {"name": "regular/pkg", "version": "1.0.2"},
+                {"name": "regular/pkg", "version": "1.0.3"},
+                {"name": "regular/pkg", "version": "2.0.0"},
+                {"name": "regular/pkg", "version": "2.0.1"}
+            ]
+        }
+    ],
+    "require": {
+        "regular/pkg": "1.*",
+        "replacer/pkg": "2.*"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Conclusion: don't install regular/pkg 1.0.3, learned rules:
+        - Root composer.json requires replacer/pkg 2.* -> satisfiable by replacer/pkg[2.0.0, 2.0.1, 2.0.2, 2.0.3].
+        - Only one of these can be installed: regular/pkg[1.0.3, 1.0.2, 1.0.1, 1.0.0], replacer/pkg[2.0.3, 2.0.2, 2.0.1, 2.0.0]. replacer/pkg replaces regular/pkg and can thus not coexist with it.
+    - Conclusion: don't install regular/pkg 1.0.2, learned rules:
+        - Root composer.json requires replacer/pkg 2.* -> satisfiable by replacer/pkg[2.0.0, 2.0.1, 2.0.2, 2.0.3].
+        - Only one of these can be installed: regular/pkg[1.0.3, 1.0.2, 1.0.1, 1.0.0], replacer/pkg[2.0.3, 2.0.2, 2.0.1, 2.0.0]. replacer/pkg replaces regular/pkg and can thus not coexist with it.
+    - Conclusion: don't install regular/pkg 1.0.1, learned rules:
+        - Root composer.json requires replacer/pkg 2.* -> satisfiable by replacer/pkg[2.0.0, 2.0.1, 2.0.2, 2.0.3].
+        - Only one of these can be installed: regular/pkg[1.0.3, 1.0.2, 1.0.1, 1.0.0], replacer/pkg[2.0.3, 2.0.2, 2.0.1, 2.0.0]. replacer/pkg replaces regular/pkg and can thus not coexist with it.
+    - Only one of these can be installed: regular/pkg[1.0.3, 1.0.2, 1.0.1, 1.0.0], replacer/pkg[2.0.3, 2.0.2, 2.0.1, 2.0.0]. replacer/pkg replaces regular/pkg and can thus not coexist with it.
+    - Root composer.json requires regular/pkg 1.* -> satisfiable by regular/pkg[1.0.0, 1.0.1, 1.0.2, 1.0.3].
+    - Root composer.json requires replacer/pkg 2.* -> satisfiable by replacer/pkg[2.0.0, 2.0.1, 2.0.2, 2.0.3].
+
+--EXPECT--
+
