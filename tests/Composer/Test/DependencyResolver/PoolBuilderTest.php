@@ -74,7 +74,7 @@ class PoolBuilderTest extends TestCase
             return $pkg;
         };
 
-        $repositorySet = new RepositorySet($normalizedAliases, array(), $minimumStability, $stabilityFlags);
+        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $normalizedAliases);
         $repositorySet->addRepository($repo = new ArrayRepository());
         foreach ($packages as $package) {
             $repo->addPackage($loadPackage($package));

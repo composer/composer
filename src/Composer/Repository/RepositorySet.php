@@ -56,8 +56,10 @@ class RepositorySet
 
     /** @var bool */
     private $locked = false;
+    /** @var bool */
+    private $allowInstalledRepositories = false;
 
-    public function __construct(array $rootAliases = array(), array $rootReferences = array(), $minimumStability = 'stable', array $stabilityFlags = array(), array $rootRequires = array())
+    public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
     {
         $this->rootAliases = $rootAliases;
         $this->rootReferences = $rootReferences;
@@ -75,6 +77,11 @@ class RepositorySet
                 unset($this->rootRequires[$name]);
             }
         }
+    }
+
+    public function allowInstalledRepositories($allow = true)
+    {
+        $this->allowInstalledRepositories = $allow;
     }
 
     public function getRootRequires()
@@ -186,7 +193,7 @@ class RepositorySet
         $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences);
 
         foreach ($this->repositories as $repo) {
-            if ($repo instanceof InstalledRepositoryInterface) {
+            if ($repo instanceof InstalledRepositoryInterface && !$this->allowInstalledRepositories) {
                 throw new \LogicException('The pool can not accept packages from an installed repository');
             }
         }

@@ -36,7 +36,7 @@ class DefaultPolicyTest extends TestCase
 
     public function setUp()
     {
-        $this->repositorySet = new RepositorySet(array(), array(), 'dev');
+        $this->repositorySet = new RepositorySet('dev');
         $this->repo = new ArrayRepository;
         $this->repoLocked = new LockArrayRepository;
 
@@ -144,7 +144,7 @@ class DefaultPolicyTest extends TestCase
 
         $this->assertSame($expected, $selected);
 
-        $this->repositorySet = new RepositorySet(array(), array(), 'dev');
+        $this->repositorySet = new RepositorySet('dev');
         $this->repositorySet->addRepository($repo2);
         $this->repositorySet->addRepository($repo1);
 
@@ -250,7 +250,7 @@ class DefaultPolicyTest extends TestCase
         $repo->addPackage($packageA = clone $packageA);
         $repo->addPackage($packageB = clone $packageB);
 
-        $repositorySet = new RepositorySet(array(), array(), 'dev');
+        $repositorySet = new RepositorySet('dev');
         $repositorySet->addRepository($this->repo);
 
         $pool = $this->repositorySet->createPoolForPackages(array('vendor-a/replacer', 'vendor-b/replacer'), $this->repoLocked);

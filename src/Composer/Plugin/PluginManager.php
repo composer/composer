@@ -158,7 +158,7 @@ class PluginManager
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
 
-        $repositorySet = new RepositorySet(array(), array(), 'dev');
+        $repositorySet = new RepositorySet('dev');
         $repositorySet->addRepository($localRepo);
         if ($globalRepo) {
             $repositorySet->addRepository($globalRepo);

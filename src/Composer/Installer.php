@@ -719,7 +719,7 @@ class Installer
         $this->fixedRootPackage->setRequires(array());
         $this->fixedRootPackage->setDevRequires(array());
 
-        $repositorySet = new RepositorySet($rootAliases, $this->package->getReferences(), $minimumStability, $stabilityFlags, $rootRequires);
+        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $this->package->getReferences(), $rootRequires);
         $repositorySet->addRepository(new RootPackageRepository(array($this->fixedRootPackage)));
         $repositorySet->addRepository($platformRepo);
         if ($this->additionalFixedRepository) {
@@ -873,7 +873,7 @@ class Installer
             }
         }
 
-        $repositorySet = new RepositorySet(array(), array(), 'dev');
+        $repositorySet = new RepositorySet('dev');
         $repositorySet->addRepository($lockRepo);
 
         $seen = array();

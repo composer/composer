@@ -311,7 +311,7 @@ EOT
             throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
-        $repositorySet = new RepositorySet(array(), array(), $stability);
+        $repositorySet = new RepositorySet($stability);
         $repositorySet->addRepository($sourceRepo);
 
         $phpVersion = null;

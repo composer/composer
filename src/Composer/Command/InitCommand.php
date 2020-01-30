@@ -693,7 +693,7 @@ EOT
         $key = $minimumStability ?: 'default';
 
         if (!isset($this->repositorySets[$key])) {
-            $this->repositorySets[$key] = $repositorySet = new RepositorySet(array(), array(), $minimumStability ?: $this->getMinimumStability($input));
+            $this->repositorySets[$key] = $repositorySet = new RepositorySet($minimumStability ?: $this->getMinimumStability($input));
             $repositorySet->addRepository($this->getRepos());
         }
 
