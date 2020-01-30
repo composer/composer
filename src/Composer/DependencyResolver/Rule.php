@@ -196,18 +196,18 @@ abstract class Rule
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
                 return $ruleText;
             case self::RULE_LEARNED:
-                // TODO not sure this is a good idea, most of these rules should be listed in the problem anyway
-                $learnedString = '(learned rule, ';
                 if (isset($learnedPool[$this->reasonData])) {
+                    $learnedString = ', learned rules:'."\n        - ";
+                    $reasons = array();
                     foreach ($learnedPool[$this->reasonData] as $learnedRule) {
-                        $learnedString .= $learnedRule->getPrettyString($repositorySet, $request, $installedMap, $learnedPool);
+                        $reasons[] = $learnedRule->getPrettyString($repositorySet, $request, $installedMap, $learnedPool);
                     }
+                    $learnedString .= implode("\n        - ", array_unique($reasons));
                 } else {
-                    $learnedString .= 'reasoning unavailable';
+                    $learnedString = ' (reasoning unavailable)';
                 }
-                $learnedString .= ')';
 
-                return 'Conclusion: '.$ruleText.' '.$learnedString;
+                return 'Conclusion: '.$ruleText.$learnedString;
             case self::RULE_PACKAGE_ALIAS:
                 return $ruleText;
             default:
