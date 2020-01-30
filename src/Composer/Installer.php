@@ -381,7 +381,7 @@ class Installer
             }
         }
 
-        $pool = $repositorySet->createPool($request);
+        $pool = $repositorySet->createPool($request, $this->eventDispatcher);
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $repositorySet, $pool, $request, $policy);
 
         // solve dependencies
@@ -522,7 +522,7 @@ class Installer
             $request->requireName($link->getTarget(), $link->getConstraint());
         }
 
-        $pool = $repositorySet->createPool($request);
+        $pool = $repositorySet->createPool($request, $this->eventDispatcher);
 
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $repositorySet, $pool, $request, $policy);
         $solver = new Solver($policy, $pool, $this->io, $repositorySet);
@@ -578,7 +578,7 @@ class Installer
                 $request->requireName($link->getTarget(), $link->getConstraint());
             }
 
-            $pool = $repositorySet->createPool($request);
+            $pool = $repositorySet->createPool($request, $this->eventDispatcher);
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $repositorySet, $pool, $request, $policy);
 
             // solve dependencies

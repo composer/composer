@@ -66,6 +66,8 @@ Composer fires the following named events during its execution process:
 - **pre-command-run**: occurs before a command is executed and allows you to
   manipulate the `InputInterface` object's options and arguments to tweak
   a command's behavior.
+- **pre-pool-create**: occurs before the Pool of packages is created, and lets
+  you filter the list of packages which is going to enter the Solver.
 
 > **Note:** Composer makes no assumptions about the state of your dependencies
 > prior to `install` or `update`. Therefore, you should not specify scripts

@@ -58,4 +58,15 @@ class PluginEvents
      * @var string
      */
     const PRE_COMMAND_RUN = 'pre-command-run';
+
+    /**
+     * The PRE_POOL_CREATE event occurs before the Pool of packages is created, and lets
+     * you filter the list of packages which is going to enter the Solver
+     *
+     * The event listener method receives a
+     * Composer\Plugin\PrePoolCreateEvent instance.
+     *
+     * @var string
+     */
+    const PRE_POOL_CREATE = 'pre-pool-create';
 }
