@@ -697,7 +697,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         foreach ($versions as $version) {
-            if ($acceptableStabilities && $stabilityFlags && !StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), VersionParser::parseStability($version))) {
+            if (null !== $acceptableStabilities && null !== $stabilityFlags && !StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), VersionParser::parseStability($version))) {
                 continue;
             }
 
