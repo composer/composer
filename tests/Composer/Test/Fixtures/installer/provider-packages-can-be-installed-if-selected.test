@@ -1,0 +1,36 @@
+--TEST--
+Test that providers can be installed if they are selected and the package they provide is not installable
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "foo/polyfill",
+                    "provide": {
+                        "foo/standard": "1.0.0"
+                    },
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/standard",
+                    "require": {
+                        "foo/does-not-exist": "1.0.0"
+                    },
+                    "version": "1.0.0"
+                }
+            ]
+        }
+    ],
+    "require": {
+        "foo/standard": "1.0.0",
+        "foo/polyfill": "1.0.0"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT--
+Installing foo/polyfill (1.0.0)
