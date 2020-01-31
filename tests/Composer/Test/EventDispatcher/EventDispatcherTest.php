@@ -538,6 +538,10 @@ class EventDispatcherTest extends TestCase
             ->willReturn('> exit 1');
 
         $io->expects($this->at(2))
+            ->method('isInteractive')
+            ->willReturn(1);
+
+        $io->expects($this->at(3))
             ->method('writeError')
             ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with error code 1</error>'));
 

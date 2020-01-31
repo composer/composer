@@ -174,7 +174,7 @@ class EventDispatcher
                 $flags = $event->getFlags();
                 if (substr($callable, 0, 10) === '@composer ') {
                     $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
-                    if (0 !== ($exitCode = $this->process->execute($exec, $ignoredOutput, null, $this->io->isInteractive()))) {
+                    if (0 !== ($exitCode = $this->executeTty($exec))) {
                         $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
                         throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
@@ -248,7 +248,7 @@ class EventDispatcher
                     }
                 }
 
-                if (0 !== ($exitCode = $this->process->execute($exec, $ignoredOutput, null, $this->io->isInteractive()))) {
+                if (0 !== ($exitCode = $this->executeTty($exec))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
                     throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
@@ -263,6 +263,15 @@ class EventDispatcher
         $this->popEvent();
 
         return $return;
+    }
+
+    protected function executeTty($exec)
+    {
+        if ($this->io->isInteractive()) {
+            return $this->process->executeTty($exec);
+        }
+
+        return $this->process->execute($exec);
     }
 
     protected function getPhpExecCommand()
