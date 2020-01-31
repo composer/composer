@@ -27,11 +27,6 @@ use Composer\Package\PackageInterface;
  */
 class Pool implements \Countable
 {
-    const MATCH_NONE = 0;
-    const MATCH = 1;
-    const MATCH_PROVIDE = 2;
-    const MATCH_REPLACE = 3;
-
     protected $packages = array();
     protected $packageByName = array();
     protected $versionParser;
@@ -109,18 +104,8 @@ class Pool implements \Countable
         $matches = array();
 
         foreach ($this->packageByName[$name] as $candidate) {
-            switch ($this->match($candidate, $name, $constraint)) {
-                case self::MATCH_NONE:
-                    break;
-
-                case self::MATCH:
-                case self::MATCH_REPLACE:
-                case self::MATCH_PROVIDE:
-                    $matches[] = $candidate;
-                    break;
-
-                default:
-                    throw new \UnexpectedValueException('Unexpected match type');
+            if ($this->match($candidate, $name, $constraint)) {
+                $matches[] = $candidate;
             }
         }
 
@@ -154,7 +139,7 @@ class Pool implements \Countable
      * @param  PackageInterface       $candidate
      * @param  string                 $name       Name of the package to be matched
      * @param  ConstraintInterface    $constraint The constraint to verify
-     * @return int                    One of the MATCH* constants of this class or 0 if there is no match
+     * @return bool
      */
     public function match($candidate, $name, ConstraintInterface $constraint = null)
     {
@@ -165,10 +150,10 @@ class Pool implements \Countable
             $pkgConstraint = new Constraint('==', $candidateVersion);
 
             if ($constraint === null || $constraint->matches($pkgConstraint)) {
-                return self::MATCH;
+                return true;
             }
 
-            return self::MATCH_NONE;
+            return false;
         }
 
         $provides = $candidate->getProvides();
@@ -178,28 +163,28 @@ class Pool implements \Countable
         if (isset($replaces[0]) || isset($provides[0])) {
             foreach ($provides as $link) {
                 if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
-                    return self::MATCH_PROVIDE;
+                    return true;
                 }
             }
 
             foreach ($replaces as $link) {
                 if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
-                    return self::MATCH_REPLACE;
+                    return true;
                 }
             }
 
-            return self::MATCH_NONE;
+            return false;
         }
 
         if (isset($provides[$name]) && ($constraint === null || $constraint->matches($provides[$name]->getConstraint()))) {
-            return self::MATCH_PROVIDE;
+            return true;
         }
 
         if (isset($replaces[$name]) && ($constraint === null || $constraint->matches($replaces[$name]->getConstraint()))) {
-            return self::MATCH_REPLACE;
+            return true;
         }
 
-        return self::MATCH_NONE;
+        return false;
     }
 
     public function isUnacceptableFixedPackage(PackageInterface $package)
