@@ -29,10 +29,7 @@ abstract class Rule
     const RULE_FIXED = 3;
     const RULE_PACKAGE_CONFLICT = 6;
     const RULE_PACKAGE_REQUIRES = 7;
-    const RULE_PACKAGE_OBSOLETES = 8;
-    const RULE_INSTALLED_PACKAGE_OBSOLETES = 9;
     const RULE_PACKAGE_SAME_NAME = 10;
-    const RULE_PACKAGE_IMPLICIT_OBSOLETES = 11;
     const RULE_LEARNED = 12;
     const RULE_PACKAGE_ALIAS = 13;
 
@@ -191,83 +188,50 @@ abstract class Rule
 
                 return $text;
 
-            case self::RULE_PACKAGE_OBSOLETES:
-                if (count($literals) === 2 && $literals[0] < 0 && $literals[1] < 0) {
-                    $package1 = $pool->literalToPackage($literals[0]);
-                    $package2 = $pool->literalToPackage($literals[1]);
-
-                    $replaces1 = $this->getReplacedNames($package1);
-                    $replaces2 = $this->getReplacedNames($package2);
-
-                    $reason = null;
-                    if ($conflictingNames = array_values(array_intersect($replaces1, $replaces2))) {
-                        $reason = 'They both replace '.(count($conflictingNames) > 1 ? '['.implode(', ', $conflictingNames).']' : $conflictingNames[0]).' and thus cannot coexist.';
-                    } elseif (in_array($package1->getName(), $replaces2, true)) {
-                        $reason = $package2->getName().' replaces '.$package1->getName().' and thus cannot coexist with it.';
-                    } elseif (in_array($package2->getName(), $replaces1, true)) {
-                        $reason = $package1->getName().' replaces '.$package2->getName().' and thus cannot coexist with it.';
-                    }
-
-                    if ($reason) {
-                        if (isset($installedMap[$package1->id]) && !isset($installedMap[$package2->id])) {
-                            // swap vars so the if below passes
-                            $tmp = $package2;
-                            $package2 = $package1;
-                            $package1 = $tmp;
-                        }
-                        if (!isset($installedMap[$package1->id]) && isset($installedMap[$package2->id])) {
-                            return $package1->getPrettyString().' cannot be installed as that would require removing '.$package2->getPrettyString().'. '.$reason;
-                        }
-
-                        if (!isset($installedMap[$package1->id]) && !isset($installedMap[$package2->id])) {
-                            return 'Only one of these can be installed: '.$package1->getPrettyString().', '.$package2->getPrettyString().'. '.$reason;
-                        }
-                    }
-
-                    return 'Only one of these can be installed: '.$package1->getPrettyString().', '.$package2->getPrettyString().'.';
-                }
-
-                return $ruleText;
-            case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
-                return $ruleText;
             case self::RULE_PACKAGE_SAME_NAME:
-                $replacedNames = null;
                 $packageNames = array();
                 foreach ($literals as $literal) {
                     $package = $pool->literalToPackage($literal);
-                    $pkgReplaces = $this->getReplacedNames($package);
-                    if ($pkgReplaces) {
-                        if ($replacedNames === null) {
-                            $replacedNames = $this->getReplacedNames($package);
-                        } else {
-                            $replacedNames = array_intersect($replacedNames, $this->getReplacedNames($package));
-                        }
-                    }
                     $packageNames[$package->getName()] = true;
                 }
+                $replacedName = $this->reasonData;
 
-                if ($replacedNames) {
-                    $replacedNames = array_values(array_intersect(array_keys($packageNames), $replacedNames));
-                }
-                if ($replacedNames && count($packageNames) > 1) {
-                    $replacer = null;
+                if (count($packageNames) > 1) {
+                    $reason = null;
+
+                    if (!isset($packageNames[$replacedName])) {
+                        $reason = 'They '.(count($literals) == 2 ? 'both' : 'all').' replace '.$replacedName.' and thus cannot coexist.';
+                    } else {
+                        $replacerNames = $packageNames;
+                        unset($replacerNames[$replacedName]);
+                        $replacerNames = array_keys($replacerNames);
+
+                        if (count($replacerNames) == 1) {
+                            $reason = $replacerNames[0] . ' replaces ';
+                        } else {
+                            $reason = '['.implode(', ', $replacerNames).'] replace ';
+                        }
+                        $reason .= $replacedName.' and thus cannot coexist with it.';
+                    }
+
+                    $installedPackages = array();
+                    $removablePackages = array();
                     foreach ($literals as $literal) {
-                        $package = $pool->literalToPackage($literal);
-                        if (array_intersect($replacedNames, $this->getReplacedNames($package))) {
-                            $replacer = $package;
-                            break;
+                        if (isset($installedMap[abs($literal)])) {
+                            $installedPackages[] = $pool->literalToPackage($literal);
+                        } else {
+                            $removablePackages[] = $pool->literalToPackage($literal);
                         }
                     }
-                    $replacedNames = count($replacedNames) > 1 ? '['.implode(', ', $replacedNames).']' : $replacedNames[0];
 
-                    if ($replacer) {
-                        return 'Only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '. '.$replacer->getName().' replaces '.$replacedNames.' and thus cannot coexist with it.';
+                    if ($installedPackages && $removablePackages) {
+                        return $this->formatPackagesUnique($pool, $removablePackages).' cannot be installed as that would require removing '.$this->formatPackagesUnique($pool, $installedPackages).'. '.$reason;
                     }
+
+                    return 'Only one of these can be installed: '.$this->formatPackagesUnique($pool, $literals).'. '.$reason;
                 }
 
                 return 'You can only install one version of a package, so only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '.';
-            case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
-                return $ruleText;
             case self::RULE_LEARNED:
                 if (isset($learnedPool[$this->reasonData])) {
                     $learnedString = ', learned rules:'."\n        - ";

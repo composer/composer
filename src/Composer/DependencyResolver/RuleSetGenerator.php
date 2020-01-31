@@ -160,8 +160,12 @@ class RuleSetGenerator
             $this->addedMap[$package->id] = true;
 
             $this->addedPackages[] = $package;
-            foreach ($package->getNames(false) as $name) {
-                $this->addedPackagesByNames[$name][] = $package;
+            if (!$package instanceof AliasPackage) {
+                foreach ($package->getNames(false) as $name) {
+                    $this->addedPackagesByNames[$name][] = $package;
+                }
+            } else {
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($package->getAliasOf()), Rule::RULE_PACKAGE_ALIAS, $package));
             }
 
             foreach ($package->getRequires() as $link) {
@@ -175,29 +179,6 @@ class RuleSetGenerator
 
                 foreach ($possibleRequires as $require) {
                     $workQueue->enqueue($require);
-                }
-            }
-
-            $packageName = $package->getName();
-            $obsoleteProviders = $this->pool->whatProvides($packageName, null, false);
-
-            foreach ($obsoleteProviders as $provider) {
-                if ($provider === $package) {
-                    continue;
-                }
-
-                if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($provider), Rule::RULE_PACKAGE_ALIAS, $package));
-                } else {
-                    if (!isset($this->conflictsForName[$packageName])) {
-                        $this->conflictsForName[$packageName] = array();
-                    }
-                    if (!$package instanceof AliasPackage) {
-                        $this->conflictsForName[$packageName][$package->id] = $package;
-                    }
-                    if (!$provider instanceof AliasPackage) {
-                        $this->conflictsForName[$packageName][$provider->id] = $provider;
-                    }
                 }
             }
         }
@@ -218,39 +199,17 @@ class RuleSetGenerator
 
                 /** @var PackageInterface $possibleConflict */
                 foreach ($this->addedPackagesByNames[$link->getTarget()] as $possibleConflict) {
-                    $conflictMatch = $this->pool->match($possibleConflict, $link->getTarget(), $link->getConstraint());
-
-                    if ($conflictMatch === Pool::MATCH || $conflictMatch === Pool::MATCH_REPLACE) {
+                    if ($this->pool->match($possibleConflict, $link->getTarget(), $link->getConstraint())) {
                         $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $possibleConflict, Rule::RULE_PACKAGE_CONFLICT, $link));
-                    }
-
-                }
-            }
-
-            // check obsoletes and implicit obsoletes of a package
-            foreach ($package->getReplaces() as $link) {
-                if (!isset($this->addedPackagesByNames[$link->getTarget()])) {
-                    continue;
-                }
-
-                /** @var PackageInterface $possibleConflict */
-                foreach ($this->addedPackagesByNames[$link->getTarget()] as $provider) {
-                    if ($provider === $package) {
-                        continue;
-                    }
-
-                    if (!$this->obsoleteImpossibleForAlias($package, $provider)) {
-                        $reason = Rule::RULE_PACKAGE_OBSOLETES;
-                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $provider, $reason, $link));
                     }
                 }
             }
         }
 
-        foreach ($this->conflictsForName as $name => $packages) {
+        foreach ($this->addedPackagesByNames as $name => $packages) {
             if (count($packages) > 1) {
                 $reason = Rule::RULE_PACKAGE_SAME_NAME;
-                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createMultiConflictRule($packages, $reason, null));
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createMultiConflictRule($packages, $reason, $name));
             }
         }
     }

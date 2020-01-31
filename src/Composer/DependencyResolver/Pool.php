@@ -87,20 +87,20 @@ class Pool implements \Countable
      *                                            packages must match or null to return all
      * @return PackageInterface[]  A set of packages
      */
-    public function whatProvides($name, ConstraintInterface $constraint = null, $allowProvide = true)
+    public function whatProvides($name, ConstraintInterface $constraint = null)
     {
-        $key = ((int) $allowProvide).$constraint;
+        $key = (string) $constraint;
         if (isset($this->providerCache[$name][$key])) {
             return $this->providerCache[$name][$key];
         }
 
-        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $allowProvide);
+        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint);
     }
 
     /**
      * @see whatProvides
      */
-    private function computeWhatProvides($name, $constraint, $allowProvide = true)
+    private function computeWhatProvides($name, $constraint)
     {
         if (!isset($this->packageByName[$name])) {
             return array();
@@ -113,14 +113,9 @@ class Pool implements \Countable
                 case self::MATCH_NONE:
                     break;
 
-                case self::MATCH_PROVIDE:
-                    if ($allowProvide) {
-                        $matches[] = $candidate;
-                    }
-                    break;
-
                 case self::MATCH:
                 case self::MATCH_REPLACE:
+                case self::MATCH_PROVIDE:
                     $matches[] = $candidate;
                     break;
 
