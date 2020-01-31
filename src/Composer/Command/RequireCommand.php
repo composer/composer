@@ -21,6 +21,8 @@ use Composer\Installer;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Version\VersionParser;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\BasePackage;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
@@ -48,6 +50,7 @@ class RequireCommand extends InitCommand
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Optional package name can also include a version constraint, e.g. foo/bar or foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
+                new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
                 new InputOption('fixed', null, InputOption::VALUE_NONE, 'Write fixed version to the composer.json.'),
@@ -195,7 +198,7 @@ EOT
             }
         }
 
-        if (!$this->updateFileCleanly($this->json, $requirements, $requireKey, $removeKey, $sortPackages)) {
+        if (!$input->getOption('dry-run') && !$this->updateFileCleanly($this->json, $requirements, $requireKey, $removeKey, $sortPackages)) {
             $composerDefinition = $this->json->read();
             foreach ($requirements as $package => $version) {
                 $composerDefinition[$requireKey][$package] = $version;
@@ -211,18 +214,34 @@ EOT
         }
 
         try {
-            return $this->doUpdate($input, $output, $io, $requirements);
+            return $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
         } catch (\Exception $e) {
             $this->revertComposerFile(false);
             throw $e;
         }
     }
 
-    private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements)
+    private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, $requireKey, $removeKey)
     {
         // Update packages
         $this->resetComposer();
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+
+        if ($input->getOption('dry-run')) {
+            $rootPackage = $composer->getPackage();
+            $links = array(
+                'require' => $rootPackage->getRequires(),
+                'require-dev' => $rootPackage->getDevRequires(),
+            );
+            $loader = new ArrayLoader();
+            $newLinks = $loader->parseLinks($rootPackage->getName(), $rootPackage->getPrettyVersion(), BasePackage::$supportedLinkTypes[$requireKey]['description'], $requirements);
+            $links[$requireKey] = array_merge($links[$requireKey], $newLinks);
+            foreach ($requirements as $package => $constraint) {
+                unset($links[$removeKey][$package]);
+            }
+            $rootPackage->setRequires($links['require']);
+            $rootPackage->setDevRequires($links['require-dev']);
+        }
 
         $updateDevMode = !$input->getOption('update-no-dev');
         $optimize = $input->getOption('optimize-autoloader') || $composer->getConfig()->get('optimize-autoloader');
@@ -250,6 +269,7 @@ EOT
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
+            ->setDryRun($input->getOption('dry-run'))
         ;
 
         // if no lock is present, or the file is brand new, we do not do a

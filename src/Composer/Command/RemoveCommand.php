@@ -38,6 +38,7 @@ class RemoveCommand extends BaseCommand
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Packages that should be removed.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section.'),
+                new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
@@ -92,26 +93,44 @@ EOT
             }
         }
 
+        $dryRun = $input->getOption('dry-run');
+        $toRemove = array();
         foreach ($packages as $package) {
             if (isset($composer[$type][$package])) {
-                $json->removeLink($type, $composer[$type][$package]);
+                if ($dryRun) {
+                    $toRemove[$type][] = $composer[$type][$package];
+                } else {
+                    $json->removeLink($type, $composer[$type][$package]);
+                }
             } elseif (isset($composer[$altType][$package])) {
                 $io->writeError('<warning>' . $composer[$altType][$package] . ' could not be found in ' . $type . ' but it is present in ' . $altType . '</warning>');
                 if ($io->isInteractive()) {
                     if ($io->askConfirmation('Do you want to remove it from ' . $altType . ' [<comment>yes</comment>]? ', true)) {
-                        $json->removeLink($altType, $composer[$altType][$package]);
+                        if ($dryRun) {
+                            $toRemove[$altType][] = $composer[$altType][$package];
+                        } else {
+                            $json->removeLink($altType, $composer[$altType][$package]);
+                        }
                     }
                 }
             } elseif (isset($composer[$type]) && $matches = preg_grep(BasePackage::packageNameToRegexp($package), array_keys($composer[$type]))) {
                 foreach ($matches as $matchedPackage) {
-                    $json->removeLink($type, $matchedPackage);
+                    if ($dryRun) {
+                        $toRemove[$type][] = $matchedPackage;
+                    } else {
+                        $json->removeLink($type, $matchedPackage);
+                    }
                 }
             } elseif (isset($composer[$altType]) && $matches = preg_grep(BasePackage::packageNameToRegexp($package), array_keys($composer[$altType]))) {
                 foreach ($matches as $matchedPackage) {
                     $io->writeError('<warning>' . $matchedPackage . ' could not be found in ' . $type . ' but it is present in ' . $altType . '</warning>');
                     if ($io->isInteractive()) {
                         if ($io->askConfirmation('Do you want to remove it from ' . $altType . ' [<comment>yes</comment>]? ', true)) {
-                            $json->removeLink($altType, $matchedPackage);
+                            if ($dryRun) {
+                                $toRemove[$altType][] = $matchedPackage;
+                            } else {
+                                $json->removeLink($altType, $matchedPackage);
+                            }
                         }
                     }
                 }
@@ -127,6 +146,21 @@ EOT
         // Update packages
         $this->resetComposer();
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+
+        if ($dryRun) {
+            $rootPackage = $composer->getPackage();
+            $links = array(
+                'require' => $rootPackage->getRequires(),
+                'require-dev' => $rootPackage->getDevRequires(),
+            );
+            foreach ($toRemove as $type => $packages) {
+                foreach ($packages as $package) {
+                    unset($links[$type][$package]);
+                }
+            }
+            $rootPackage->setRequires($links['require']);
+            $rootPackage->setDevRequires($links['require-dev']);
+        }
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'remove', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -149,6 +183,7 @@ EOT
             ->setWhitelistTransitiveDependencies(!$input->getOption('no-update-with-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setRunScripts(!$input->getOption('no-scripts'))
+            ->setDryRun($dryRun)
         ;
 
         $status = $install->run();

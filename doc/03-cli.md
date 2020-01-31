@@ -198,6 +198,7 @@ If you do not specify a package, composer will prompt you to search for a packag
 ### Options
 
 * **--dev:** Add packages to `require-dev`.
+* **--dry-run:** Simulate the command without actually doing anything.
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -236,6 +237,7 @@ uninstalled.
 
 ### Options
 * **--dev:** Remove packages from `require-dev`.
+* **--dry-run:** Simulate the command without actually doing anything.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies.
