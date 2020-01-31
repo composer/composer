@@ -174,7 +174,7 @@ class EventDispatcher
                 $flags = $event->getFlags();
                 if (substr($callable, 0, 10) === '@composer ') {
                     $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
-                    if (0 !== ($exitCode = $this->process->execute($exec))) {
+                    if (0 !== ($exitCode = $this->process->execute($exec, $ignoredOutput, null, $this->io->isInteractive()))) {
                         $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
                         throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
@@ -248,7 +248,7 @@ class EventDispatcher
                     }
                 }
 
-                if (0 !== ($exitCode = $this->process->execute($exec))) {
+                if (0 !== ($exitCode = $this->process->execute($exec, $ignoredOutput, null, $this->io->isInteractive()))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
                     throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);

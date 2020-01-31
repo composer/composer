@@ -41,7 +41,7 @@ class ProcessExecutor
      * @param  string $cwd     the working directory
      * @return int    statuscode
      */
-    public function execute($command, &$output = null, $cwd = null)
+    public function execute($command, &$output = null, $cwd = null, $tty = false)
     {
         if ($this->io && $this->io->isDebug()) {
             $safeCommand = preg_replace_callback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
@@ -69,6 +69,9 @@ class ProcessExecutor
             $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
         } else {
             $process = new Process($command, $cwd, null, null, static::getTimeout());
+        }
+        if (!Platform::isWindows() && $tty) {
+            $process->setTty(true);
         }
 
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
