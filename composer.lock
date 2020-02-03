@@ -68,12 +68,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Toflar/semver.git",
-                "reference": "0f8fd3ee8022bea4403bfac0b3aaf3f4581710f8"
+                "reference": "e09b73cc0671ef06a8e1d0988b439fa0910a297a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Toflar/semver/zipball/0f8fd3ee8022bea4403bfac0b3aaf3f4581710f8",
-                "reference": "0f8fd3ee8022bea4403bfac0b3aaf3f4581710f8",
+                "url": "https://api.github.com/repos/Toflar/semver/zipball/e09b73cc0671ef06a8e1d0988b439fa0910a297a",
+                "reference": "e09b73cc0671ef06a8e1d0988b439fa0910a297a",
                 "shasum": ""
             },
             "require": {
@@ -135,7 +135,7 @@
                 "issues": "https://github.com/composer/semver/issues",
                 "source": "https://github.com/Toflar/semver/tree/feature/constraint-bounds"
             },
-            "time": "2020-01-20T16:58:29+00:00"
+            "time": "2020-02-03T16:43:54+00:00"
         },
         {
             "name": "composer/spdx-licenses",
