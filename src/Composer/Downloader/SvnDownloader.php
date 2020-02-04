@@ -50,7 +50,7 @@ class SvnDownloader extends VcsDownloader
         }
 
         $this->io->writeError(" Checking out ".$package->getSourceReference());
-        $this->execute($url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
+        $this->execute($package, $url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
     }
 
     /**
@@ -72,7 +72,7 @@ class SvnDownloader extends VcsDownloader
         }
 
         $this->io->writeError(" Checking out " . $ref);
-        $this->execute($url, "svn switch" . $flags, sprintf("%s/%s", $url, $ref), $path);
+        $this->execute($target, $url, "svn switch" . $flags, sprintf("%s/%s", $url, $ref), $path);
     }
 
     /**
@@ -101,7 +101,7 @@ class SvnDownloader extends VcsDownloader
      * @throws \RuntimeException
      * @return string
      */
-    protected function execute($baseUrl, $command, $url, $cwd = null, $path = null)
+    protected function execute(PackageInterface $package, $baseUrl, $command, $url, $cwd = null, $path = null)
     {
         $util = new SvnUtil($baseUrl, $this->io, $this->config);
         $util->setCacheCredentials($this->cacheCredentials);
