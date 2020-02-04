@@ -11,10 +11,13 @@
   * Added debug info about HTTP authentications
   * Added Symfony 5 compatibility
   * Added --fixed flag to require command to make it use a fixed constraint instead of a ^x.y constraint when adding the requirement
-  * Fixed GitHub deprecation of access_token query parameter, now using Authorization header
   * Fixed archive command to persist file permissions inside the zip files
   * Fixed init/require command to avoid suggesting packages which are already selected in the search results
   * Fixed create-project UX issues
+
+### [1.9.3] 2020-02-04
+
+  * Fixed GitHub deprecation of access_token query parameter, now using Authorization header
 
 ### [1.9.2] 2020-01-14
 
@@ -801,7 +804,8 @@
 
   * Initial release
 
-[1.10.0]: https://github.com/composer/composer/compare/1.9.2...1.10.0
+[1.10.0]: https://github.com/composer/composer/compare/1.9.3...1.10.0
+[1.9.3]: https://github.com/composer/composer/compare/1.9.2...1.9.3
 [1.9.2]: https://github.com/composer/composer/compare/1.9.1...1.9.2
 [1.9.1]: https://github.com/composer/composer/compare/1.9.0...1.9.1
 [1.9.0]: https://github.com/composer/composer/compare/1.8.6...1.9.0
