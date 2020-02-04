@@ -1,3 +1,7 @@
+### [1.9.3] 2020-02-04
+
+  * Fixed GitHub deprecation of access_token query parameter, now using Authorization header
+
 ### [1.9.2] 2020-01-14
 
   * Fixed minor git driver bugs
@@ -783,6 +787,7 @@
 
   * Initial release
 
+[1.9.3]: https://github.com/composer/composer/compare/1.9.2...1.9.3
 [1.9.2]: https://github.com/composer/composer/compare/1.9.1...1.9.2
 [1.9.1]: https://github.com/composer/composer/compare/1.9.0...1.9.1
 [1.9.0]: https://github.com/composer/composer/compare/1.8.6...1.9.0
