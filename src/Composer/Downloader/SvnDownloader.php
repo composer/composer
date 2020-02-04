@@ -109,7 +109,7 @@ class SvnDownloader extends VcsDownloader
             return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
         } catch (\RuntimeException $e) {
             throw new \RuntimeException(
-                'Package could not be downloaded, '.$e->getMessage()
+                $package->getPrettyName().' could not be downloaded, '.$e->getMessage()
             );
         }
     }
@@ -135,7 +135,7 @@ class SvnDownloader extends VcsDownloader
             return '    '.$elem;
         }, preg_split('{\s*\r?\n\s*}', $changes));
         $countChanges = count($changes);
-        $this->io->writeError(sprintf('    <error>The package has modified file%s:</error>', $countChanges === 1 ? '' : 's'));
+        $this->io->writeError(sprintf('    <error>'.$package->getPrettyName().' has modified file%s:</error>', $countChanges === 1 ? '' : 's'));
         $this->io->writeError(array_slice($changes, 0, 10));
         if ($countChanges > 10) {
             $remainingChanges = $countChanges - 10;
