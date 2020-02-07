@@ -25,10 +25,16 @@ matrix:
     - php: 7.1
     - php: 7.2
     - php: 7.3
+    # Regular 7.4 build with locked deps
+    - php: 7.4
+      env:
+        - SYMFONY_PHPUNIT_VERSION=7.5
+    # High deps check
     - php: 7.4
       env:
         - deps=high
         - SYMFONY_PHPUNIT_VERSION=7.5
+    # PHPStan checks
     - php: 7.4
       env:
         - deps=high
