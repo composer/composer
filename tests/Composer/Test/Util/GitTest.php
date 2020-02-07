@@ -102,6 +102,7 @@ class GitTest extends TestCase
         $this->mockConfig($protocol);
 
         $this->process
+            ->expects($this->atLeast(2))
             ->method('execute')
             ->willReturnMap(array(
                 array('git command failing', null, null, 1),
@@ -113,11 +114,13 @@ class GitTest extends TestCase
             ->willReturn(false);
 
         $this->io
+            ->expects($this->atLeastOnce())
             ->method('hasAuthentication')
             ->with($this->equalTo('github.com'))
             ->willReturn(true);
 
         $this->io
+            ->expects($this->atLeastOnce())
             ->method('getAuthentication')
             ->with($this->equalTo('github.com'))
             ->willReturn(array('username' => 'token', 'password' => $gitHubToken));

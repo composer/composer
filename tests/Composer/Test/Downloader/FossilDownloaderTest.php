@@ -153,7 +153,7 @@ class FossilDownloaderTest extends TestCase
             ->method('execute')
             ->with($this->equalTo($expectedResetCommand));
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
-        $filesystem->expects($this->any())
+        $filesystem->expects($this->once())
             ->method('removeDirectory')
             ->with($this->equalTo('composerPath'))
             ->will($this->returnValue(true));

@@ -83,7 +83,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertEquals('1.2.3.4', $package->getVersion());
     }
 
-    public function testParseDumpProvider()
+    public function parseDumpProvider()
     {
         $validConfig = array(
             'name' => 'A/B',
@@ -142,7 +142,7 @@ class ArrayLoaderTest extends TestCase
      * The default parser should default to loading the config as this
      * allows require-dev libraries to have transport options included.
      *
-     * @dataProvider testParseDumpProvider
+     * @dataProvider parseDumpProvider
      */
     public function testParseDumpDefaultLoadConfig($config)
     {
@@ -153,7 +153,7 @@ class ArrayLoaderTest extends TestCase
     }
 
     /**
-     * @dataProvider testParseDumpProvider
+     * @dataProvider parseDumpProvider
      */
     public function testParseDumpTrueLoadConfig($config)
     {
@@ -165,7 +165,7 @@ class ArrayLoaderTest extends TestCase
     }
 
     /**
-     * @dataProvider testParseDumpProvider
+     * @dataProvider parseDumpProvider
      */
     public function testParseDumpFalseLoadConfig($config)
     {
