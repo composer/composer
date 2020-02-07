@@ -73,7 +73,7 @@
     ],
     "scripts": {
         "compile": "@php -dphar.readonly=0 bin/compile",
-        "test": "phpunit"
+        "test": "simple-phpunit"
     },
     "scripts-descriptions": {
         "compile": "Compile composer.phar",
