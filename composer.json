@@ -40,7 +40,7 @@
         "symfony/console": "2.8.38"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "^4.2",
+        "symfony/phpunit-bridge": "^3.4",
         "phpspec/prophecy": "^1.10"
     },
     "suggest": {
