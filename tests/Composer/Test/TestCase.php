@@ -105,4 +105,24 @@ abstract class TestCase extends BaseTestCase
             $this->markTestSkipped($executableName . ' is not found or not executable.');
         }
     }
+
+    /**
+     * @param string      $exception
+     * @param string|null $message
+     * @param int|null    $code
+     */
+    public function setExpectedException($exception, $message = null, $code = null)
+    {
+        if (!class_exists('PHPUnit\Framework\Error\Notice')) {
+            $exception = str_replace('PHPUnit\\Framework\\Error\\', 'PHPUnit_Framework_Error_', $exception);
+        }
+        if (method_exists($this, 'expectException')) {
+            $this->expectException($exception);
+            if (null !== $message) {
+                $this->expectExceptionMessage($message);
+            }
+        } else {
+            parent::setExpectedException($exception, $message, $code);
+        }
+    }
 }

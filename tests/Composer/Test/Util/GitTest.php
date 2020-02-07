@@ -7,7 +7,7 @@ use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Git;
 use Composer\Util\ProcessExecutor;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class GitTest extends TestCase
 {

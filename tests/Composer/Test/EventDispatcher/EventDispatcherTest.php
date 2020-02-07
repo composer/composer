@@ -53,7 +53,7 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error_Deprecated
+     * @group legacy
      */
     public function testDispatcherCanConvertScriptEventToCommandEventForListener()
     {
@@ -62,6 +62,7 @@ class EventDispatcherTest extends TestCase
             'Composer\Test\EventDispatcher\EventDispatcherTest::expectsCommandEvent',
         ), $io);
 
+        $this->setExpectedException('PHPUnit\Framework\Error\Deprecated');
         $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
     }
 

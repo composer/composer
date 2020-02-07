@@ -13,7 +13,7 @@
 namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\HgExcludeFilter;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class HgExcludeFilterTest extends TestCase
 {

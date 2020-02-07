@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\NoProxyPattern;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class NoProxyPatternTest extends TestCase
 {

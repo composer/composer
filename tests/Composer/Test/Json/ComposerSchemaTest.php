@@ -13,7 +13,7 @@
 namespace Composer\Test\Json;
 
 use JsonSchema\Validator;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * @author Rob Bast <rob.bast@gmail.com>

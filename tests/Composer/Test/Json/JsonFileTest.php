@@ -14,7 +14,7 @@ namespace Composer\Test\Json;
 
 use Seld\JsonLint\ParsingException;
 use Composer\Json\JsonFile;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class JsonFileTest extends TestCase
 {

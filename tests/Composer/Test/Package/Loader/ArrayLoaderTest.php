@@ -14,7 +14,7 @@ namespace Composer\Test\Package\Loader;
 
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class ArrayLoaderTest extends TestCase
 {
