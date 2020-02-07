@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\StreamContextFactory;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class StreamContextFactoryTest extends TestCase
 {

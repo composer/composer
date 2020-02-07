@@ -13,7 +13,7 @@
 namespace Composer\Test\Package\Version;
 
 use Composer\Package\Version\VersionParser;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class VersionParserTest extends TestCase
 {

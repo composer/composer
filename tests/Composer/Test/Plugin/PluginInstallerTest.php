@@ -105,7 +105,7 @@ class PluginInstallerTest extends TestCase
         $this->autoloadGenerator = new AutoloadGenerator($dispatcher);
 
         $this->composer = new Composer();
-        $config = new Config();
+        $config = new Config(false);
         $this->composer->setConfig($config);
         $this->composer->setDownloadManager($dm);
         $this->composer->setRepositoryManager($rm);

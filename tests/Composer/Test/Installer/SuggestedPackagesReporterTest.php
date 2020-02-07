@@ -13,7 +13,7 @@
 namespace Composer\Test\Installer;
 
 use Composer\Installer\SuggestedPackagesReporter;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * @coversDefaultClass Composer\Installer\SuggestedPackagesReporter

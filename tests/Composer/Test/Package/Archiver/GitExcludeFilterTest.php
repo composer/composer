@@ -13,7 +13,7 @@
 namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\GitExcludeFilter;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class GitExcludeFilterTest extends TestCase
 {

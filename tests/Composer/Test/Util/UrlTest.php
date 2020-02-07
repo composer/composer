@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Url;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 use Composer\Config;
 
 class UrlTest extends TestCase

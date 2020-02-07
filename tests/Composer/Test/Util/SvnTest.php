@@ -16,7 +16,7 @@ use Composer\Config;
 use Composer\IO\NullIO;
 use Composer\Util\Platform;
 use Composer\Util\Svn;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class SvnTest extends TestCase
 {

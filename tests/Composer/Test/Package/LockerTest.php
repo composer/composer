@@ -14,7 +14,7 @@ namespace Composer\Test\Package;
 
 use Composer\Package\Locker;
 use Composer\IO\NullIO;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class LockerTest extends TestCase
 {

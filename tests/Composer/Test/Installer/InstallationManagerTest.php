@@ -17,7 +17,7 @@ use Composer\Installer\NoopInstaller;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class InstallationManagerTest extends TestCase
 {

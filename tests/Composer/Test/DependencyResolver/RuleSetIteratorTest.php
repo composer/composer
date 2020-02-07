@@ -18,7 +18,7 @@ use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\RuleSetIterator;
 use Composer\DependencyResolver\Pool;
 use Composer\Package\BasePackage;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class RuleSetIteratorTest extends TestCase
 {

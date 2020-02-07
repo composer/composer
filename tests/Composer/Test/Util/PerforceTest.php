@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Perforce;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 use Composer\Util\ProcessExecutor;
 
 /**

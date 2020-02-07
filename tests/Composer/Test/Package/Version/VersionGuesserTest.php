@@ -15,7 +15,7 @@ namespace Composer\Test\Package\Version;
 use Composer\Config;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class VersionGuesserTest extends TestCase
 {

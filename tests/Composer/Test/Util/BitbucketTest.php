@@ -14,7 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Util\Bitbucket;
 use Composer\Util\Http\Response;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * @author Paul Wenke <wenke.paul@gmail.com>

@@ -224,7 +224,7 @@ class FileDownloaderTest extends TestCase
     public function testDowngradeShowsAppropriateMessage()
     {
         $oldPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
-        $oldPackage->expects($this->any())
+        $oldPackage->expects($this->once())
             ->method('getFullPrettyVersion')
             ->will($this->returnValue('1.2.0'));
         $oldPackage->expects($this->once())

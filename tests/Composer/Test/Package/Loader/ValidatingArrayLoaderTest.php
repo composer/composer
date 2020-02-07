@@ -14,7 +14,7 @@ namespace Composer\Test\Package\Loader;
 
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class ValidatingArrayLoaderTest extends TestCase
 {

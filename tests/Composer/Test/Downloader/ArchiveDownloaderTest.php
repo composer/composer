@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Downloader;
 
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class ArchiveDownloaderTest extends TestCase
 {

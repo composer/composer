@@ -13,7 +13,7 @@
 namespace Composer\Test\Json;
 
 use Composer\Json\JsonManipulator;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class JsonManipulatorTest extends TestCase
 {

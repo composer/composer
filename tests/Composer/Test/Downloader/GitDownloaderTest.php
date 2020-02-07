@@ -712,7 +712,7 @@ composer https://github.com/old/url (push)
             ->with($this->equalTo($expectedGitResetCommand))
             ->will($this->returnValue(0));
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
-        $filesystem->expects($this->any())
+        $filesystem->expects($this->once())
             ->method('removeDirectory')
             ->with($this->equalTo('composerPath'))
             ->will($this->returnValue(true));

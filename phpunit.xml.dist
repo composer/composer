@@ -8,10 +8,14 @@
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
+         strict="false"
          processIsolation="false"
          stopOnFailure="false"
          bootstrap="tests/bootstrap.php"
 >
+    <php>
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak"/>
+    </php>
     <testsuites>
         <testsuite name="Composer Test Suite">
             <directory>./tests/Composer/</directory>

@@ -108,14 +108,8 @@ class CacheTest extends TestCase
 
     public function testClearCache()
     {
-        $this->filesystem
-            ->method('removeDirectory')
-            ->with($this->root.'/')
-            ->willReturn(true);
-
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->cache = new Cache($io, $this->root, 'a-z0-9.', $this->filesystem);
-
         $this->assertTrue($this->cache->clear());
     }
 }

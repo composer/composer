@@ -15,7 +15,7 @@ namespace Composer\Test\Util;
 use Composer\Downloader\TransportException;
 use Composer\Util\GitHub;
 use Composer\Util\Http\Response;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 

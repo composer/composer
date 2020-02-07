@@ -240,7 +240,7 @@ class ClassMapGeneratorTest extends TestCase
         $fs->removeDirectory($tempDir);
     }
 
-    protected function assertEqualsNormalized($expected, $actual, $message = null)
+    protected function assertEqualsNormalized($expected, $actual, $message = '')
     {
         foreach ($expected as $ns => $path) {
             $expected[$ns] = strtr($path, '\\', '/');
