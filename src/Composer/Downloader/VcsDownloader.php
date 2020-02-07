@@ -68,7 +68,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 return $this->doDownload($package, $path, $url, $prevPackage);
             } catch (\Exception $e) {
                 // rethrow phpunit exceptions to avoid hard to debug bug failures
-                if ($e instanceof \PHPUnit_Framework_Exception) {
+                if ($e instanceof \PHPUnit\Framework\Exception) {
                     throw $e;
                 }
                 if ($this->io->isDebug()) {
@@ -126,7 +126,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 break;
             } catch (\Exception $e) {
                 // rethrow phpunit exceptions to avoid hard to debug bug failures
-                if ($e instanceof \PHPUnit_Framework_Exception) {
+                if ($e instanceof \PHPUnit\Framework\Exception) {
                     throw $e;
                 }
                 if ($this->io->isDebug()) {
@@ -179,7 +179,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 break;
             } catch (\Exception $exception) {
                 // rethrow phpunit exceptions to avoid hard to debug bug failures
-                if ($exception instanceof \PHPUnit_Framework_Exception) {
+                if ($exception instanceof \PHPUnit\Framework\Exception) {
                     throw $exception;
                 }
                 if ($this->io->isDebug()) {
