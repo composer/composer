@@ -35,7 +35,7 @@ class LibraryInstallerTest extends TestCase
         $this->fs = new Filesystem;
 
         $this->composer = new Composer();
-        $this->config = new Config();
+        $this->config = new Config(false);
         $this->composer->setConfig($this->config);
 
         $this->rootDir = $this->getUniqueTmpDirectory();
