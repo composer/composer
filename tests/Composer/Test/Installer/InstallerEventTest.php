@@ -13,7 +13,7 @@
 namespace Composer\Test\Installer;
 
 use Composer\Installer\InstallerEvent;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class InstallerEventTest extends TestCase
 {

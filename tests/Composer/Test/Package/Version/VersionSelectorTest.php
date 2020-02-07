@@ -16,7 +16,7 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Package\Package;
 use Composer\Package\Link;
 use Composer\Semver\VersionParser;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class VersionSelectorTest extends TestCase
 {

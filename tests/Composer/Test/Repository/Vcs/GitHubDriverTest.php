@@ -239,6 +239,11 @@ class GitHubDriverTest extends TestCase
             ->with($this->equalTo('github.com'), $this->equalTo($composerJsonUrl), $this->equalTo(false))
             ->will($this->returnValue('{"encoding": "base64", "content": "' . base64_encode('{"name": "composer/packagist"}') . '"}'));
 
+        $remoteFilesystem->expects($this->at(2))
+            ->method('getContents')
+            ->with($this->equalTo('github.com'), $this->equalTo('https://api.github.com/repos/composer/packagist/commits/SOMESHA'), $this->equalTo(false))
+            ->will($this->returnValue('{"commit": {"committer":{ "date": "2012-09-10"}}}'));
+
         $repoConfig = array(
             'url' => $repoUrl,
         );

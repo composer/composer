@@ -30,4 +30,4 @@ install:
 
 test_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - vendor\bin\phpunit --colors=always
+  - vendor\bin\simple-phpunit --colors=always

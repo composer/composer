@@ -13,7 +13,7 @@
 namespace Composer\Test\Question;
 
 use Composer\Question\StrictConfirmationQuestion;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\ArrayInput;
