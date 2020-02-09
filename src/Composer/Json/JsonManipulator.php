@@ -167,6 +167,10 @@ class JsonManipulator
 
     public function addProperty($name, $value)
     {
+        if (substr($name, 0, 8) === 'suggest.') {
+            return $this->addSubNode('suggest', substr($name, 8), $value);
+        }
+
         if (substr($name, 0, 6) === 'extra.') {
             return $this->addSubNode('extra', substr($name, 6), $value);
         }
@@ -180,6 +184,10 @@ class JsonManipulator
 
     public function removeProperty($name)
     {
+        if (substr($name, 0, 8) === 'suggest.') {
+            return $this->removeSubNode('suggest', substr($name, 8));
+        }
+
         if (substr($name, 0, 6) === 'extra.') {
             return $this->removeSubNode('extra', substr($name, 6));
         }

@@ -17,7 +17,7 @@ use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 use Prophecy\Argument;
 
 class RootPackageLoaderTest extends TestCase

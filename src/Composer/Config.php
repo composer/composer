@@ -63,6 +63,7 @@ class Config
         'archive-dir' => '.',
         'htaccess-protect' => true,
         'use-github-api' => true,
+        'lock' => true,
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth
@@ -328,6 +329,8 @@ class Config
             case 'secure-http':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
             case 'use-github-api':
+                return $this->config[$key] !== 'false' && (bool) $this->config[$key];
+            case 'lock':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
             default:
                 if (!isset($this->config[$key])) {

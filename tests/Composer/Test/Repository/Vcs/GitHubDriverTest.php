@@ -207,7 +207,54 @@ class GitHubDriverTest extends TestCase
         $this->assertEquals($repoUrl, $source['url']);
         $this->assertEquals($sha, $source['reference']);
 
-        $gitHubDriver->getComposerInformation($identifier);
+        $data = $gitHubDriver->getComposerInformation($identifier);
+
+        $this->assertArrayNotHasKey('abandoned', $data);
+    }
+
+    public function testPublicRepositoryArchived()
+    {
+        $repoUrl = 'http://github.com/composer/packagist';
+        $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
+        $identifier = 'v0.0.0';
+        $sha = 'SOMESHA';
+        $composerJsonUrl = 'https://api.github.com/repos/composer/packagist/contents/composer.json?ref=' . $sha;
+
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io->expects($this->any())
+            ->method('isInteractive')
+            ->will($this->returnValue(true));
+
+        $remoteFilesystem = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+            ->setConstructorArgs(array($io))
+            ->getMock();
+
+        $remoteFilesystem->expects($this->at(0))
+            ->method('getContents')
+            ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
+            ->will($this->returnValue('{"master_branch": "test_master", "owner": {"login": "composer"}, "name": "packagist", "archived": true}'));
+
+        $remoteFilesystem->expects($this->at(1))
+            ->method('getContents')
+            ->with($this->equalTo('github.com'), $this->equalTo($composerJsonUrl), $this->equalTo(false))
+            ->will($this->returnValue('{"encoding": "base64", "content": "' . base64_encode('{"name": "composer/packagist"}') . '"}'));
+
+        $remoteFilesystem->expects($this->at(2))
+            ->method('getContents')
+            ->with($this->equalTo('github.com'), $this->equalTo('https://api.github.com/repos/composer/packagist/commits/SOMESHA'), $this->equalTo(false))
+            ->will($this->returnValue('{"commit": {"committer":{ "date": "2012-09-10"}}}'));
+
+        $repoConfig = array(
+            'url' => $repoUrl,
+        );
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, null, $remoteFilesystem);
+        $gitHubDriver->initialize();
+        $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
+
+        $data = $gitHubDriver->getComposerInformation($sha);
+
+        $this->assertTrue($data['abandoned']);
     }
 
     public function testPrivateRepositoryNoInteraction()

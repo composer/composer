@@ -16,6 +16,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
+use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
@@ -152,6 +153,8 @@ EOT
         if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question, true)) {
             $this->installDependencies($output);
         }
+
+        return 0;
     }
 
     /**
@@ -436,11 +439,34 @@ EOT
         }
 
         $versionParser = new VersionParser();
+
+        // Collect existing packages
+        $composer = $this->getComposer(false);
+        $installedRepo = $composer ? $composer->getRepositoryManager()->getLocalRepository() : null;
+        $existingPackages = array();
+        if ($installedRepo) {
+            foreach ($installedRepo->getPackages() as $package) {
+                $existingPackages[] = $package->getName();
+            }
+        }
+        foreach ($requires as $requiredPackage) {
+            $existingPackages[] = substr($requiredPackage, 0, strpos($requiredPackage, ' '));
+        }
+        unset($composer, $installedRepo, $requiredPackage);
+
         $io = $this->getIO();
         while (null !== $package = $io->ask('Search for a package: ')) {
             $matches = $this->findPackages($package);
 
             if (count($matches)) {
+                // Remove existing packages from search results.
+                foreach ($matches as $position => $foundPackage) {
+                    if (in_array($foundPackage['name'], $existingPackages, true)) {
+                        unset($matches[$position]);
+                    }
+                }
+                $matches = array_values($matches);
+
                 $exactMatch = null;
                 $choices = array();
                 foreach ($matches as $position => $foundPackage) {
@@ -538,6 +564,7 @@ EOT
 
                 if (false !== $package) {
                     $requires[] = $package;
+                    $existingPackages[] = substr($package, 0, strpos($package, ' '));
                 }
             }
         }
@@ -676,13 +703,13 @@ EOT
     private function getMinimumStability(InputInterface $input)
     {
         if ($input->hasOption('stability')) {
-            return $input->getOption('stability') ?: 'stable';
+            return VersionParser::normalizeStability($input->getOption('stability') ?: 'stable');
         }
 
         $file = Factory::getComposerFile();
         if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
             if (!empty($composer['minimum-stability'])) {
-                return $composer['minimum-stability'];
+                return VersionParser::normalizeStability($composer['minimum-stability']);
             }
         }
 
@@ -792,7 +819,13 @@ EOT
         }
         $similarPackages = array();
 
+        $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+
         foreach ($results as $result) {
+            if ($installedRepo->findPackage($result['name'], '*')) {
+                // Ignore installed package
+                continue;
+            }
             $similarPackages[$result['name']] = levenshtein($package, $result['name']);
         }
         asort($similarPackages);

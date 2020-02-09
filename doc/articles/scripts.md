@@ -342,6 +342,21 @@ JSON array of commands.
 You can also call a shell/bash script, which will have the path to
 the PHP executable available in it as a `PHP_BINARY` env var.
 
+## Setting environment variables
+
+To set an environment variable in a cross-platform way, you can use `@putenv`:
+
+```json
+{
+    "scripts": {
+        "install-phpstan": [
+            "@putenv COMPOSER=phpstan-composer.json",
+            "composer install --prefer-dist"
+        ]
+    }
+}
+```
+
 ## Custom descriptions.
 
 You can set custom script descriptions with the following in your `composer.json`:

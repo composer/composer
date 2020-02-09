@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\RemoteFilesystem;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class RemoteFilesystemTest extends TestCase
 {
@@ -64,6 +64,12 @@ class RemoteFilesystemTest extends TestCase
             ->will($this->returnValue(true))
         ;
 
+        $io
+            ->expects($this->once())
+            ->method('getAuthentication')
+            ->will($this->returnValue(array('username' => null, 'password' => null)))
+        ;
+
         $streamOptions = array('ssl' => array(
             'allow_self_signed' => true,
         ));
@@ -79,6 +85,12 @@ class RemoteFilesystemTest extends TestCase
             ->expects($this->once())
             ->method('hasAuthentication')
             ->will($this->returnValue(true))
+        ;
+
+        $io
+            ->expects($this->once())
+            ->method('getAuthentication')
+            ->will($this->returnValue(array('username' => null, 'password' => null)))
         ;
 
         $streamOptions = array('http' => array(

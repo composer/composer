@@ -105,11 +105,6 @@ class CacheTest extends TestCase
 
     public function testClearCache()
     {
-        $this->finder
-            ->method('removeDirectory')
-            ->with($this->root)
-            ->willReturn(true);
-
         $this->assertTrue($this->cache->clear());
 
         for ($i = 0; $i < 3; $i++) {

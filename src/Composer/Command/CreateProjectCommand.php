@@ -279,6 +279,24 @@ EOT
             $packageVersion = $requirements[0]['version'];
         }
 
+        // if no directory was specified, use the 2nd part of the package name
+        if (null === $directory) {
+            $parts = explode("/", $name, 2);
+            $directory = array_pop($parts);
+        }
+
+        $directory = getcwd() . DIRECTORY_SEPARATOR . $directory;
+        $io->writeError('<info>Creating a "' . $packageName . '" project at "' . $directory . '"</info>');
+
+        $fs = new Filesystem();
+        if (file_exists($directory)) {
+            if (!is_dir($directory)) {
+                throw new \InvalidArgumentException('Cannot create project directory at "'.$directory.'", it exists as a file.');
+            } elseif (!$fs->isDirEmpty($directory)) {
+                throw new \InvalidArgumentException('Project directory "'.$directory.'" is not empty.');
+            }
+        }
+
         if (null === $stability) {
             if (preg_match('{^[^,\s]*?@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $packageVersion, $match)) {
                 $stability = $match[1];
@@ -318,11 +336,6 @@ EOT
             }
 
             throw new \InvalidArgumentException($errorMessage .'.');
-        }
-
-        if (null === $directory) {
-            $parts = explode("/", $name, 2);
-            $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
         // handler Ctrl+C for unix-like systems

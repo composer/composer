@@ -53,7 +53,7 @@ class ApplicationTest extends TestCase
 
         $index = 0;
         $outputMock->expects($this->at($index++))
-            ->method("writeError");
+            ->method("write");
 
         if (extension_loaded('xdebug')) {
             $outputMock->expects($this->at($index++))
@@ -62,7 +62,7 @@ class ApplicationTest extends TestCase
 
             $outputMock->expects($this->at($index++))
                 ->method("write")
-                ->with($this->equalTo('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>'));
+                ->with($this->equalTo('<warning>You are running composer with Xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>'));
         }
 
         $outputMock->expects($this->at($index++))

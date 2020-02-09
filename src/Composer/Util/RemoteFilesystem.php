@@ -47,6 +47,7 @@ class RemoteFilesystem
     private $degradedMode = false;
     private $redirects;
     private $maxRedirects = 20;
+    private $displayedOriginAuthentications = array();
 
     /**
      * Constructor.
@@ -277,7 +278,7 @@ class RemoteFilesystem
         if (isset($options['github-token'])) {
             // only add the access_token if it is actually a github URL (in case we were redirected to S3)
             if (preg_match('{^https?://([a-z0-9-]+\.)*github\.com/}', $fileUrl)) {
-                $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
+                $options['http']['header'][] = 'Authorization: token '.$options['github-token'];
             }
             unset($options['github-token']);
         }
@@ -689,7 +690,7 @@ class RemoteFilesystem
             $message = "\n".'Could not fetch '.$this->fileUrl.', enter your ' . $this->originUrl . ' credentials ' .($httpStatus === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
 
-            if ($this->io->hasAuthentication($this->originUrl) && ($auth = $this->io->getAuthentication($this->originUrl)) && $auth['password'] === 'private-token') {
+            if ($this->io->hasAuthentication($this->originUrl) && ($auth = $this->io->getAuthentication($this->originUrl)) && in_array($auth['password'], array('gitlab-ci-token', 'private-token'), true)) {
                 throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
             }
 
@@ -814,24 +815,35 @@ class RemoteFilesystem
         }
 
         if ($this->io->hasAuthentication($originUrl)) {
+            $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($originUrl);
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
                 $options['github-token'] = $auth['username'];
+                $authenticationDisplayMessage = 'Using GitHub token authentication';
             } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
-                } elseif ($auth['password'] === 'private-token') {
+                    $authenticationDisplayMessage = 'Using GitLab OAuth token authentication';
+                } elseif ($auth['password'] === 'private-token' || $auth['password'] === 'gitlab-ci-token') {
                     $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
+                    $authenticationDisplayMessage = 'Using GitLab private token authentication';
                 }
             } elseif ('bitbucket.org' === $originUrl
                 && $this->fileUrl !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL && 'x-token-auth' === $auth['username']
             ) {
                 if (!$this->isPublicBitBucketDownload($this->fileUrl)) {
                     $headers[] = 'Authorization: Bearer ' . $auth['password'];
+                    $authenticationDisplayMessage = 'Using Bitbucket OAuth token authentication';
                 }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
+                $authenticationDisplayMessage = 'Using HTTP basic authentication with username "' . $auth['username'] . '"';
+            }
+
+            if ($authenticationDisplayMessage && !in_array($originUrl, $this->displayedOriginAuthentications, true)) {
+                $this->io->writeError($authenticationDisplayMessage, true, IOInterface::DEBUG);
+                $this->displayedOriginAuthentications[] = $originUrl;
             }
         }
 

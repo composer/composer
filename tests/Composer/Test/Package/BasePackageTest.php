@@ -13,10 +13,13 @@
 namespace Composer\Test\Package;
 
 use Composer\Package\BasePackage;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class BasePackageTest extends TestCase
 {
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testSetSameRepository()
     {
         $package = $this->getMockForAbstractClass('Composer\Package\BasePackage', array('foo'));

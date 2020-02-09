@@ -190,7 +190,7 @@ If you do not want to choose requirements interactively, you can pass them
 to the command.
 
 ```sh
-php composer.phar require vendor/package:2.* vendor/package2:dev-master
+php composer.phar require "vendor/package:2.*" vendor/package2:dev-master
 ```
 
 If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of  matches to require.
@@ -647,7 +647,7 @@ provide a version as third argument, otherwise the latest version is used.
 If the directory does not currently exist, it will be created during installation.
 
 ```sh
-php composer.phar create-project doctrine/orm path 2.2.*
+php composer.phar create-project doctrine/orm path "2.2.*"
 ```
 
 It is also possible to run the command without params in a directory with an
@@ -706,7 +706,7 @@ performance.
 * **--apcu:** Use APCu to cache found/not-found classes.
 * **--no-dev:** Disables autoload-dev rules.
 
-## clear-cache (clearcache)
+## clear-cache / clearcache / cc
 
 Deletes all content from Composer's cache directories.
 
@@ -808,6 +808,10 @@ If set to 1, this env disables the warning about running commands as root/super 
 It also disables automatic clearing of sudo sessions, so you should really only set this
 if you use Composer as super user at all times like in docker containers.
 
+### COMPOSER_ALLOW_XDEBUG
+
+If set to 1, this env allows running Composer when the Xdebug extension is enabled, without restarting PHP without it.
+
 ### COMPOSER_AUTH
 
 The `COMPOSER_AUTH` var allows you to set up authentication as an environment variable.
@@ -832,6 +836,10 @@ By default it points to `$COMPOSER_HOME/cache` on \*nix and macOS, and
 
 By setting this environmental value, you can set a path to a certificate bundle
 file to be used during SSL/TLS peer verification.
+
+### COMPOSER_DISABLE_XDEBUG_WARN
+
+If set to 1, this env suppresses a warning when Composer is running with the Xdebug extension enabled.
 
 ### COMPOSER_DISCARD_CHANGES
 

@@ -222,6 +222,7 @@ class ConfigTest extends TestCase
 
     /**
      * @dataProvider allowedUrlProvider
+     * @doesNotPerformAssertions
      *
      * @param string $url
      */

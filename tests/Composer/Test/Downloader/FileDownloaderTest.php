@@ -208,7 +208,7 @@ class FileDownloaderTest extends TestCase
 
     public function testDowngradeShowsAppropriateMessage()
     {
-        $oldPackage = $this->getMock('Composer\Package\PackageInterface');
+        $oldPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $oldPackage->expects($this->once())
             ->method('getFullPrettyVersion')
             ->will($this->returnValue('1.2.0'));
@@ -216,7 +216,7 @@ class FileDownloaderTest extends TestCase
             ->method('getVersion')
             ->will($this->returnValue('1.2.0.0'));
 
-        $newPackage = $this->getMock('Composer\Package\PackageInterface');
+        $newPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $newPackage->expects($this->once())
             ->method('getFullPrettyVersion')
             ->will($this->returnValue('1.0.0'));
@@ -230,14 +230,14 @@ class FileDownloaderTest extends TestCase
             ->method('getDistUrls')
             ->will($this->returnValue(array($distUrl)));
 
-        $ioMock = $this->getMock('Composer\IO\IOInterface');
+        $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $ioMock->expects($this->at(0))
             ->method('writeError')
             ->with($this->stringContains('Downgrading'));
 
         $path = $this->getUniqueTmpDirectory();
         touch($path.'/script.js');
-        $filesystem = $this->getMock('Composer\Util\Filesystem');
+        $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $filesystem->expects($this->once())
             ->method('removeDirectory')
             ->will($this->returnValue(true));

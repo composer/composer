@@ -14,7 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Downloader\TransportException;
 use Composer\Util\GitLab;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * @author Jérôme Tamarelle <jerome@tamarelle.net>

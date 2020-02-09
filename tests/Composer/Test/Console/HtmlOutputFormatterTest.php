@@ -13,7 +13,7 @@
 namespace Composer\Test\Console;
 
 use Composer\Console\HtmlOutputFormatter;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
 class HtmlOutputFormatterTest extends TestCase

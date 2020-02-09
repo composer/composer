@@ -260,7 +260,7 @@ driver directly, Composer will still attempt to use GitHub's zip files.
 
 Defaults to `true`. Composer allows repositories to define a notification URL,
 so that they get notified whenever a package from that repository is installed.
-This option allows you to disable that behaviour.
+This option allows you to disable that behavior.
 
 ## discard-changes
 
@@ -295,5 +295,10 @@ Example:
 
 Defaults to `true`. If set to `false`, Composer will not create `.htaccess` files
 in the composer home, cache, and data directories.
+
+## lock
+
+Defaults to `true`. If set to `false`, Composer will not create a `composer.lock` 
+file.
 
 &larr; [Repositories](05-repositories.md)  |  [Community](07-community.md) &rarr;

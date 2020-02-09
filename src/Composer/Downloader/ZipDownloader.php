@@ -105,11 +105,11 @@ class ZipDownloader extends ArchiveDownloader
         $command = 'unzip -qq '.$overwrite.' '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path);
 
         try {
-            if (0 === $this->process->execute($command, $ignoredOutput)) {
+            if (0 === $exitCode = $this->process->execute($command, $ignoredOutput)) {
                 return true;
             }
 
-            $processError = new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            $processError = new \RuntimeException('Failed to execute ('.$exitCode.') '.$command."\n\n".$this->process->getErrorOutput());
         } catch (\Exception $e) {
             $processError = $e;
         }

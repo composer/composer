@@ -26,7 +26,7 @@ class ClearCacheCommand extends BaseCommand
     {
         $this
             ->setName('clear-cache')
-            ->setAliases(array('clearcache'))
+            ->setAliases(array('clearcache', 'cc'))
             ->setDescription('Clears composer\'s internal package cache.')
             ->setHelp(
                 <<<EOT
@@ -70,5 +70,7 @@ EOT
         }
 
         $io->writeError('<info>All caches cleared.</info>');
+
+        return 0;
     }
 }

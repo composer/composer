@@ -13,7 +13,7 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\DownloadManager;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class DownloadManagerTest extends TestCase
 {

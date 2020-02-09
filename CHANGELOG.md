@@ -1,3 +1,43 @@
+### [1.10.0] 2020-01-XX
+
+  * Breaking: `composer global exec ...` now executes the process in the current working directory instead of executing it in the global directory.
+  * Warning: Added a warning when class names are being loaded by a PSR-4 or PSR-0 rule only due to classmap optimization, but would not otherwise be autoloadable. The next minor version will stop autoloading these classes so make sure you fix your autoload configs.
+  * Added support for configuring suggestions using config command, e.g. `composer config suggest.foo/bar some text`
+  * Added support for configuring fine-grained preferred-install using config command, e.g. `composer config preferred-install.foo/* dist`
+  * Added `@putenv` script handler to set environment variables from composer.json for following scripts
+  * Added `lock` option that can be set to false, in which case no composer.lock file will be generated
+  * Added support for IPv6 addresses in NO_PROXY
+  * Added package homepage display in the show command
+  * Added debug info about HTTP authentications
+  * Added Symfony 5 compatibility
+  * Added --fixed flag to require command to make it use a fixed constraint instead of a ^x.y constraint when adding the requirement
+  * Fixed archive command to persist file permissions inside the zip files
+  * Fixed init/require command to avoid suggesting packages which are already selected in the search results
+  * Fixed create-project UX issues
+
+### [1.9.3] 2020-02-04
+
+  * Fixed GitHub deprecation of access_token query parameter, now using Authorization header
+
+### [1.9.2] 2020-01-14
+
+  * Fixed minor git driver bugs
+  * Fixed schema validation for version field to allow dev-* versions too
+  * Fixed external processes' output being formatted even though it should not
+  * Fixed issue with path repositories when trying to install feature branches
+
+### [1.9.1] 2019-11-01
+
+  * Fixed various credential handling issues with gitlab and github
+  * Fixed credentials being present in git remotes in Composer cache and vendor directory when not using SSH keys
+  * Fixed `composer why` not listing replacers as a reason something is present
+  * Fixed various PHP 7.4 compatibility issues
+  * Fixed root warnings always present in Docker containers, setting COMPOSER_ALLOW_SUPERUSER is not necessary anymore
+  * Fixed GitHub access tokens leaking into debug-verbosity output
+  * Fixed several edge case issues detecting GitHub, Bitbucket and GitLab repository types
+  * Fixed Composer asking if you want to use a composer.json in a parent directory when ran in non-interactive mode
+  * Fixed classmap autoloading issue finding classes located within a few non-PHP context blocks (?>...<?php)
+
 ### [1.9.0] 2019-08-02
 
   * Breaking: artifact repositories with URLs containing port numbers and requiring authentication now require you to configure http-basic auth for the `host:port` pair explicitly
@@ -240,7 +280,7 @@
   * Fixed output inconsistencies
   * Fixed unicode handling in `init` command for author names
   * Fixed useless warning when doing partial updates/removes on packages that are not currently installed
-  * Fixed xdebug disabling issue when combined with disable_functions and allow_url_fopen CLI overrides
+  * Fixed Xdebug disabling issue when combined with disable_functions and allow_url_fopen CLI overrides
 
 ### [1.4.1] - 2017-03-10
 
@@ -301,7 +341,7 @@
   * Added `gitlab-token` auth config for GitLab private tokens
   * Added `--strict` to the `outdated` command to return a non-zero exit code when there are outdated packages
   * Added ability to call php scripts using the current php interpreter (instead of finding php in PATH by default) in script handlers via `@php ...`
-  * Added `COMPOSER_ALLOW_XDEBUG` env var to circumvent the xdebug-disabling behavior
+  * Added `COMPOSER_ALLOW_XDEBUG` env var to circumvent the Xdebug-disabling behavior
   * Added `COMPOSER_MIRROR_PATH_REPOS` env var to force mirroring of path repositories vs symlinking
   * Added `COMPOSER_DEV_MODE` env var that is set by Composer to forward the dev mode to script handlers
   * Fixed support for git 2.11
@@ -764,6 +804,10 @@
 
   * Initial release
 
+[1.10.0]: https://github.com/composer/composer/compare/1.9.3...1.10.0
+[1.9.3]: https://github.com/composer/composer/compare/1.9.2...1.9.3
+[1.9.2]: https://github.com/composer/composer/compare/1.9.1...1.9.2
+[1.9.1]: https://github.com/composer/composer/compare/1.9.0...1.9.1
 [1.9.0]: https://github.com/composer/composer/compare/1.8.6...1.9.0
 [1.8.6]: https://github.com/composer/composer/compare/1.8.5...1.8.6
 [1.8.5]: https://github.com/composer/composer/compare/1.8.4...1.8.5

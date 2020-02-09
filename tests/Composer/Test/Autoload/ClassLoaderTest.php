@@ -13,7 +13,7 @@
 namespace Composer\Test\Autoload;
 
 use Composer\Autoload\ClassLoader;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * Tests the Composer\Autoload\ClassLoader class.

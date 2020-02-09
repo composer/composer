@@ -118,7 +118,7 @@ class Installer
     protected $preferStable = false;
     protected $preferLowest = false;
     protected $skipSuggest = false;
-    protected $writeLock = true;
+    protected $writeLock;
     protected $executeOperations = true;
 
     /**
@@ -164,6 +164,8 @@ class Installer
         $this->installationManager = $installationManager;
         $this->eventDispatcher = $eventDispatcher;
         $this->autoloadGenerator = $autoloadGenerator;
+
+        $this->writeLock = $config->get('lock');
     }
 
     /**
@@ -231,13 +233,13 @@ class Installer
                 return $res;
             }
         } catch (\Exception $e) {
-            if ($this->executeOperations) {
+            if ($this->executeOperations && $this->config->get('notify-on-install')) {
                 $this->installationManager->notifyInstalls($this->io);
             }
 
             throw $e;
         }
-        if ($this->executeOperations) {
+        if ($this->executeOperations && $this->config->get('notify-on-install')) {
             $this->installationManager->notifyInstalls($this->io);
         }
 
@@ -308,13 +310,6 @@ class Installer
             // force binaries re-generation in case they are missing
             foreach ($localRepo->getPackages() as $package) {
                 $this->installationManager->ensureBinariesPresence($package);
-            }
-
-            $vendorDir = $this->config->get('vendor-dir');
-            if (is_dir($vendorDir)) {
-                // suppress errors as this fails sometimes on OSX for no apparent reason
-                // see https://github.com/composer/composer/issues/4070#issuecomment-129792748
-                @touch($vendorDir);
             }
         }
 
@@ -447,7 +442,7 @@ class Installer
             $this->io->writeError('<info>Installing dependencies'.($this->devMode ? ' (including require-dev)' : '').' from lock file</info>');
 
             if (!$this->locker->isFresh()) {
-                $this->io->writeError('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. Run update to update them.</warning>', true, IOInterface::QUIET);
+                $this->io->writeError('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. It is recommended that you run `composer update` or `composer update <package name>`.</warning>', true, IOInterface::QUIET);
             }
 
             foreach ($lockedRepository->getPackages() as $package) {
@@ -627,6 +622,16 @@ class Installer
             // force source/dist urls to be updated for all packages
             $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
             $localRepo->write();
+        }
+
+        // see https://github.com/composer/composer/issues/2764
+        if ($operations) {
+            $vendorDir = $this->config->get('vendor-dir');
+            if (is_dir($vendorDir)) {
+                // suppress errors as this fails sometimes on OSX for no apparent reason
+                // see https://github.com/composer/composer/issues/4070#issuecomment-129792748
+                @touch($vendorDir);
+            }
         }
 
         return array(0, $devPackages);
