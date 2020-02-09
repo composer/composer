@@ -190,7 +190,7 @@ If you do not want to choose requirements interactively, you can pass them
 to the command.
 
 ```sh
-php composer.phar require vendor/package:2.* vendor/package2:dev-master
+php composer.phar require "vendor/package:2.*" vendor/package2:dev-master
 ```
 
 If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of  matches to require.
@@ -647,7 +647,7 @@ provide a version as third argument, otherwise the latest version is used.
 If the directory does not currently exist, it will be created during installation.
 
 ```sh
-php composer.phar create-project doctrine/orm path 2.2.*
+php composer.phar create-project doctrine/orm path "2.2.*"
 ```
 
 It is also possible to run the command without params in a directory with an
