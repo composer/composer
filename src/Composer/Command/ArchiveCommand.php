@@ -64,13 +64,19 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $config = Factory::createConfig();
         $composer = $this->getComposer(false);
+        $config = null;
+
         if ($composer) {
+            $config = $composer->getConfig();
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'archive', $input, $output);
             $eventDispatcher = $composer->getEventDispatcher();
             $eventDispatcher->dispatch($commandEvent->getName(), $commandEvent);
             $eventDispatcher->dispatchScript(ScriptEvents::PRE_ARCHIVE_CMD);
+        }
+
+        if (!$config) {
+            $config = Factory::createConfig();
         }
 
         if (null === $input->getOption('format')) {

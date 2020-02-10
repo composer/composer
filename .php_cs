@@ -53,6 +53,7 @@ return PhpCsFixer\Config::create()
         'standardize_not_equals' => true,
         'ternary_operator_spaces' => true,
         'trailing_comma_in_multiline_array' => true,
+        'unary_operator_spaces' => true,
     ))
     ->setFinder($finder)
 ;
