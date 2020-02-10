@@ -17,9 +17,6 @@ parameters:
         # variable defined in eval
         - '~^Undefined variable: \$res$~'
 
-        # erroneous detection of missing const, see https://github.com/phpstan/phpstan/issues/2960
-        - '~^Access to undefined constant ZipArchive::OPSYS_UNIX.$~'
-
         # we don't have different constructors for parent/child
         - '~^Unsafe usage of new static\(\)\.$~'
 

@@ -1,6 +1,6 @@
 language: php
 
-dist: trusty
+dist: bionic
 
 git:
   depth: 5
@@ -9,22 +9,24 @@ cache:
   directories:
     - $HOME/.composer/cache
 
-addons:
-  apt:
-    packages:
-      - parallel
-
 matrix:
   include:
     - php: 5.3
       dist: precise
     - php: 5.4
+      dist: trusty
     - php: 5.5
+      dist: trusty
     - php: 5.6
+      dist: xenial
     - php: 7.0
+      dist: xenial
     - php: 7.1
+      dist: xenial
     - php: 7.2
+      dist: xenial
     - php: 7.3
+      dist: xenial
     # Regular 7.4 build with locked deps
     - php: 7.4
       env:
