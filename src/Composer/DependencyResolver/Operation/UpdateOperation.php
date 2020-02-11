@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver\Operation;
 
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionParser;
 
 /**
  * Solver update operation.
@@ -85,7 +86,9 @@ class UpdateOperation extends SolverOperation
             $toVersion = $this->targetPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_DIST_REF);
         }
 
-        return 'Updating '.$this->initialPackage->getPrettyName().' ('.$fromVersion.' => '.$toVersion.')';
+        $actionName = VersionParser::isUpgrade($this->initialPackage->getVersion(), $this->targetPackage->getVersion()) ? 'Updating' : 'Downgrading';
+
+        return $actionName.' '.$this->initialPackage->getPrettyName().' ('.$fromVersion.' => '.$toVersion.')';
     }
 
     /**

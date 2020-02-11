@@ -37,4 +37,4 @@ Updates packages to their lowest stable version
 update --prefer-lowest --prefer-stable
 --EXPECT--
 Updating a/a (1.0.0-rc1 => 1.0.1)
-Updating a/b (1.0.1 => 1.0.0)
+Downgrading a/b (1.0.1 => 1.0.0)

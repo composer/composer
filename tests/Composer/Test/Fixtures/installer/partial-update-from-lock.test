@@ -75,7 +75,7 @@ update b/unstable
 }
 --EXPECT--
 Updating a/old (0.9.0 => 1.0.0)
-Updating b/unstable (1.1.0-alpha => 1.0.0)
-Updating c/uptodate (2.0.0 => 1.0.0)
+Downgrading b/unstable (1.1.0-alpha => 1.0.0)
+Downgrading c/uptodate (2.0.0 => 1.0.0)
 Installing d/removed (1.0.0)
 Installing e/newreq (1.0.0)
