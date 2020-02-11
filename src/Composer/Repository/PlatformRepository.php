@@ -221,6 +221,13 @@ class PlatformRepository extends ArrayRepository
                     $prettyVersion = LIBXSLT_DOTTED_VERSION;
                     break;
 
+                case 'zip':
+                    if (defined('ZipArchive::LIBZIP_VERSION')) {
+                        $prettyVersion = \ZipArchive::LIBZIP_VERSION;
+                    } else {
+                        continue 2;
+                    }
+
                 default:
                     // None handled extensions have no special cases, skip
                     continue 2;
