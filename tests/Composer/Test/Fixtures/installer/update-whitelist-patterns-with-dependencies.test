@@ -62,6 +62,6 @@ Update with a package whitelist only updates those packages and their dependenci
 --RUN--
 update whitelisted-* --with-dependencies
 --EXPECT--
-Updating whitelisted-component1 (1.0.0 => 1.1.0)
-Updating dependency (1.0.0 => 1.1.0)
-Updating whitelisted-component2 (1.0.0 => 1.1.0)
+Upgrading whitelisted-component1 (1.0.0 => 1.1.0)
+Upgrading dependency (1.0.0 => 1.1.0)
+Upgrading whitelisted-component2 (1.0.0 => 1.1.0)

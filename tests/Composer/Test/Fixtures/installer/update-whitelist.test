@@ -54,4 +54,4 @@ Update with a package whitelist only updates those packages listed as command ar
 --RUN--
 update whitelisted
 --EXPECT--
-Updating whitelisted (1.0.0 => 1.1.0)
+Upgrading whitelisted (1.0.0 => 1.1.0)

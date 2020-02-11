@@ -97,9 +97,9 @@ update b/b
     "platform-dev": []
 }
 --EXPECT--
-Updating a/a (dev-master oldmaster-a => dev-master newmaster-a)
+Upgrading a/a (dev-master oldmaster-a => dev-master newmaster-a)
 Marking a/a (2.2.x-dev newmaster-a) as installed, alias of a/a (dev-master newmaster-a)
-Updating b/b (dev-master oldmaster-b => dev-master newmaster-b2)
+Upgrading b/b (dev-master oldmaster-b => dev-master newmaster-b2)
 Marking b/b (2.3.x-dev newmaster-b2) as installed, alias of b/b (dev-master newmaster-b2)
 Marking a/a (2.1.x-dev oldmaster-a) as uninstalled, alias of a/a (dev-master oldmaster-a)
 Marking b/b (2.1.x-dev oldmaster-b) as uninstalled, alias of b/b (dev-master oldmaster-b)

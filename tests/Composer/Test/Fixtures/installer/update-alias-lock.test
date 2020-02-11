@@ -59,4 +59,4 @@ update
     "platform-dev": []
 }
 --EXPECT--
-Updating a/a (dev-master 1234 => dev-master master)
+Upgrading a/a (dev-master 1234 => dev-master master)

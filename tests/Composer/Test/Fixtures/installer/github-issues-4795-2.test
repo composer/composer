@@ -55,13 +55,13 @@ update a/a b/b --with-dependencies
 Loading composer repositories with package information
 Updating dependencies
 Lock file operations: 0 installs, 2 updates, 0 removals
-  - Updating a/a (1.0.0 => 1.1.0)
-  - Updating b/b (1.0.0 => 1.1.0)
+  - Upgrading a/a (1.0.0 => 1.1.0)
+  - Upgrading b/b (1.0.0 => 1.1.0)
 Writing lock file
 Installing dependencies from lock file (including require-dev)
 Package operations: 0 installs, 2 updates, 0 removals
 Generating autoload files
 
 --EXPECT--
-Updating a/a (1.0.0 => 1.1.0)
-Updating b/b (1.0.0 => 1.1.0)
+Upgrading a/a (1.0.0 => 1.1.0)
+Upgrading b/b (1.0.0 => 1.1.0)

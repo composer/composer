@@ -49,5 +49,5 @@ Update with a package whitelist only updates those packages if they are not pres
 --RUN--
 update whitelisted dependency
 --EXPECT--
-Updating dependency (1.0.0 => 1.1.0)
-Updating whitelisted (1.0.0 => 1.1.0)
+Upgrading dependency (1.0.0 => 1.1.0)
+Upgrading whitelisted (1.0.0 => 1.1.0)

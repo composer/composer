@@ -28,4 +28,4 @@ Updating a dev package should update to the latest available reference
 --RUN--
 update
 --EXPECT--
-Updating a/a (dev-master def000 => dev-master abc123)
+Upgrading a/a (dev-master def000 => dev-master abc123)

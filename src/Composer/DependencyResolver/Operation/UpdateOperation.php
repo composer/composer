@@ -86,7 +86,7 @@ class UpdateOperation extends SolverOperation
             $toVersion = $this->targetPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_DIST_REF);
         }
 
-        $actionName = VersionParser::isUpgrade($this->initialPackage->getVersion(), $this->targetPackage->getVersion()) ? 'Updating' : 'Downgrading';
+        $actionName = VersionParser::isUpgrade($this->initialPackage->getVersion(), $this->targetPackage->getVersion()) ? 'Upgrading' : 'Downgrading';
 
         return $actionName.' '.$this->initialPackage->getPrettyName().' ('.$fromVersion.' => '.$toVersion.')';
     }

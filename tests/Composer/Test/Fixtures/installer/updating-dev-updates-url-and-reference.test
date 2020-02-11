@@ -65,4 +65,4 @@ update
     "platform-dev": []
 }
 --EXPECT--
-Updating a/a (dev-master oldref => dev-master newref)
+Upgrading a/a (dev-master oldref => dev-master newref)
