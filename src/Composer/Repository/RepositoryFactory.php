@@ -153,10 +153,8 @@ class RepositoryFactory
             if (!isset($repo['type'])) {
                 throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') must have a type defined');
             }
-            $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
-            while (isset($repos[$name])) {
-                $name .= '2';
-            }
+
+            $name = self::generateRepositoryName($index, $repo, $repos);
             if ($repo['type'] === 'filesystem') {
                 $repos[$name] = new FilesystemRepository($repo['json']);
             } else {
@@ -165,5 +163,15 @@ class RepositoryFactory
         }
 
         return $repos;
+    }
+
+    public static function generateRepositoryName($index, array $repo, array $existingRepos)
+    {
+        $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
+        while (isset($existingRepos[$name])) {
+            $name .= '2';
+        }
+
+        return $name;
     }
 }
