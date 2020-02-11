@@ -93,7 +93,7 @@ class MetapackageInstaller implements InstallerInterface
         $name = $target->getName();
         $from = $initial->getFullPrettyVersion();
         $to = $target->getFullPrettyVersion();
-        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Updating' : 'Downgrading';
+        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Upgrading' : 'Downgrading';
         $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
 
         $repo->removePackage($initial);

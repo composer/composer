@@ -691,7 +691,7 @@ composer https://github.com/old/url (push)
         $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $ioMock->expects($this->at(0))
             ->method('writeError')
-            ->with($this->stringContains('Updating'));
+            ->with($this->stringContains('Upgrading'));
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
         $downloader = $this->getDownloaderMock($ioMock, null, $processExecutor);
