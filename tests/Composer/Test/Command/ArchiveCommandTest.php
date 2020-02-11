@@ -57,7 +57,7 @@ class ArchiveCommandTest extends TestCase
                 'isInteractive',
                 'getComposer',
             ))->getMock();
-        $command->expects($this->any())->method('getComposer')
+        $command->expects($this->atLeastOnce())->method('getComposer')
             ->willReturn($composer);
         $command->method('isInteractive')->willReturn(false);
 
@@ -70,25 +70,7 @@ class ArchiveCommandTest extends TestCase
 
         $output = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')
             ->getMock();
-
-        $ed = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
-            ->disableOriginalConstructor()->getMock();
-
-        $composer = new Composer;
         $config = Factory::createConfig();
-
-        $manager = $this->getMockBuilder('Composer\Package\Archiver\ArchiveManager')
-            ->disableOriginalConstructor()->getMock();
-
-        $factory = $this->getMockBuilder('Composer\Factory')->getMock();
-        $factory->method('createArchiveManager')->willReturn($manager);
-
-        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')
-            ->getMock();
-
-        $composer->setArchiveManager($manager);
-        $composer->setEventDispatcher($ed);
-        $composer->setPackage($package);
 
         $command = $this->getMockBuilder('Composer\Command\ArchiveCommand')
             ->setMethods(array(
@@ -100,11 +82,11 @@ class ArchiveCommandTest extends TestCase
                 'getComposer',
                 'archive',
             ))->getMock();
-        $command->expects($this->any())->method('getComposer')
-            ->willReturnOnConsecutiveCalls(null, $composer);
-        $command->expects($this->any())->method('archive')
+        $command->expects($this->once())->method('getComposer')
+            ->willReturn(null);
+        $command->expects($this->once())->method('archive')
             ->with(
-                $this->isType('object'),
+                $this->isInstanceOf('Composer\IO\IOInterface'),
                 $config,
                 null,
                 null,
