@@ -46,4 +46,4 @@ Downgrading from unstable to more stable package should work even if already ins
 --RUN--
 update
 --EXPECT--
-Updating a/a (dev-master abcd) to a/a (1.0.0)
+Downgrading a/a (dev-master abcd) to a/a (1.0.0)

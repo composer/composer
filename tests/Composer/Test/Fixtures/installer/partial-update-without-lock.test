@@ -48,4 +48,4 @@ update b/unstable
     "platform-dev": []
 }
 --EXPECT--
-Updating b/unstable (1.1.0-alpha) to b/unstable (1.0.0)
+Downgrading b/unstable (1.1.0-alpha) to b/unstable (1.0.0)
