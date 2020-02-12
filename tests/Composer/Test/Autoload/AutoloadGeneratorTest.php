@@ -1525,8 +1525,8 @@ EOF;
                 '/composersrc/ClassToExclude.php',
                 '/composersrc/*/excluded/excsubpath',
                 '**/excsubpath',
-                'composers',    // should _not_ cause exclusion of /composersrc/**
-                '/src-ca/',     // should _not_ cause exclusion of /src-cake/**
+                'composers',    // should _not_ cause exclusion of /composersrc/**, as it is equivalent to /composers/**
+                '/src-ca/',     // should _not_ cause exclusion of /src-cake/**, as it is equivalent to /src-ca/**
             ),
         ));
 
