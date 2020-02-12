@@ -21,6 +21,9 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MultiConstraint;
+use Composer\EventDispatcher\EventDispatcher;
+use Composer\Plugin\PrePoolCreateEvent;
+use Composer\Plugin\PluginEvents;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -31,6 +34,7 @@ class PoolBuilder
     private $stabilityFlags;
     private $rootAliases;
     private $rootReferences;
+    private $eventDispatcher;
 
     private $aliasMap = array();
     private $nameConstraints = array();
@@ -38,12 +42,13 @@ class PoolBuilder
     private $packages = array();
     private $unacceptableFixedPackages = array();
 
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, EventDispatcher $eventDispatcher = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
         $this->rootAliases = $rootAliases;
         $this->rootReferences = $rootReferences;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function buildPool(array $repositories, Request $request)
@@ -130,6 +135,23 @@ class PoolBuilder
                     }
                 }
             }
+        }
+
+        if ($this->eventDispatcher) {
+            $prePoolCreateEvent = new PrePoolCreateEvent(
+                PluginEvents::PRE_POOL_CREATE,
+                $repositories,
+                $request,
+                $this->acceptableStabilities,
+                $this->stabilityFlags,
+                $this->rootAliases,
+                $this->rootReferences,
+                $this->packages,
+                $this->unacceptableFixedPackages
+            );
+            $this->eventDispatcher->dispatch($prePoolCreateEvent->getName(), $prePoolCreateEvent);
+            $this->packages = $prePoolCreateEvent->getPackages();
+            $this->unacceptableFixedPackages = $prePoolCreateEvent->getUnacceptableFixedPackages();
         }
 
         $pool = new Pool($this->packages, $this->unacceptableFixedPackages);

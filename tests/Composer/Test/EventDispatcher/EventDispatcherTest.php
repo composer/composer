@@ -565,13 +565,9 @@ class EventDispatcherTest extends TestCase
             ->method('getListeners')
             ->will($this->returnValue(array()));
 
-        $policy = $this->getMockBuilder('Composer\DependencyResolver\PolicyInterface')->getMock();
-        $repositorySet = $this->getMockBuilder('Composer\Repository\RepositorySet')->disableOriginalConstructor()->getMock();
-        $installedRepo = $this->getMockBuilder('Composer\Repository\CompositeRepository')->disableOriginalConstructor()->getMock();
-        $request = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
+        $transaction = $this->getMockBuilder('Composer\DependencyResolver\LockTransaction')->disableOriginalConstructor()->getMock();
 
-        $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, true, $policy, $repositorySet, $installedRepo, $request);
-        $dispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, true, $policy, $repositorySet, $installedRepo, $request, array());
+        $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_OPERATIONS_EXEC, true, true, $transaction);
     }
 
     public static function call()

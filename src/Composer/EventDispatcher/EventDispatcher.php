@@ -14,6 +14,8 @@ namespace Composer\EventDispatcher;
 
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Composer;
@@ -117,20 +119,17 @@ class EventDispatcher
     /**
      * Dispatch a installer event.
      *
-     * @param string              $eventName     The constant in InstallerEvents
-     * @param bool                $devMode       Whether or not we are in dev mode
-     * @param PolicyInterface     $policy        The policy
-     * @param RepositorySet       $repositorySet The repository set
-     * @param RepositoryInterface $localRepo     The installed repository
-     * @param Request             $request       The request
-     * @param array               $operations    The list of operations
+     * @param string              $eventName         The constant in InstallerEvents
+     * @param bool                $devMode           Whether or not we are in dev mode
+     * @param bool                $executeOperations True if operations will be executed, false in --dry-run
+     * @param Transaction         $transaction       The transaction contains the list of operations
      *
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
      */
-    public function dispatchInstallerEvent($eventName, $devMode, PolicyInterface $policy, RepositorySet $repositorySet, RepositoryInterface $localRepo, Request $request, array $operations = array())
+    public function dispatchInstallerEvent($eventName, $devMode, $executeOperations, Transaction $transaction)
     {
-        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $policy, $repositorySet, $localRepo, $request, $operations));
+        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $executeOperations, $transaction));
     }
 
     /**
