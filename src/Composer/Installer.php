@@ -382,7 +382,6 @@ class Installer
         }
 
         $pool = $repositorySet->createPool($request, $this->eventDispatcher);
-        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $repositorySet, $pool, $request, $policy);
 
         // solve dependencies
         $solver = new Solver($policy, $pool, $this->io, $repositorySet);
@@ -399,9 +398,6 @@ class Installer
 
             return max(1, $e->getCode());
         }
-
-        // TODO should we warn people / error if plugins in vendor folder do not match contents of lock file before update?
-        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $repositorySet, $pool, $request, $policy, $lockTransaction);
 
         $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
         $this->io->writeError("Analyzed ".$ruleSetSize." rules to resolve dependencies", true, IOInterface::VERBOSE);
@@ -524,11 +520,9 @@ class Installer
 
         $pool = $repositorySet->createPool($request, $this->eventDispatcher);
 
-        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $repositorySet, $pool, $request, $policy);
         $solver = new Solver($policy, $pool, $this->io, $repositorySet);
         try {
             $nonDevLockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
-            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $repositorySet, $pool, $request, $policy, $nonDevLockTransaction);
             $solver = null;
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Unable to find a compatible set of packages based on your non-dev requirements alone.</error>', true, IOInterface::QUIET);
@@ -547,21 +541,21 @@ class Installer
      */
     protected function doInstall(RepositoryInterface $localRepo, $alreadySolved = false)
     {
-        $platformRepo = $this->createPlatformRepo(false);
-        $lockedRepository = $this->locker->getLockedRepository($this->devMode);
-
-        // creating repository set
-        $policy = $this->createPolicy(false);
-        // use aliases from lock file only, so empty root aliases here
-        $repositorySet = $this->createRepositorySet(false, $platformRepo, array(), $lockedRepository);
-        $repositorySet->addRepository($lockedRepository);
-
         $this->io->writeError('<info>Installing dependencies from lock file'.($this->devMode ? ' (including require-dev)' : '').'</info>');
+
+        $lockedRepository = $this->locker->getLockedRepository($this->devMode);
 
         // verify that the lock file works with the current platform repository
         // we can skip this part if we're doing this as the second step after an update
         if (!$alreadySolved) {
             $this->io->writeError('<info>Verifying lock file contents can be installed on current platform.</info>');
+
+            $platformRepo = $this->createPlatformRepo(false);
+            // creating repository set
+            $policy = $this->createPolicy(false);
+            // use aliases from lock file only, so empty root aliases here
+            $repositorySet = $this->createRepositorySet(false, $platformRepo, array(), $lockedRepository);
+            $repositorySet->addRepository($lockedRepository);
 
             // creating requirements request
             $request = $this->createRequest($this->fixedRootPackage, $platformRepo, $lockedRepository);
@@ -579,7 +573,6 @@ class Installer
             }
 
             $pool = $repositorySet->createPool($request, $this->eventDispatcher);
-            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $repositorySet, $pool, $request, $policy);
 
             // solve dependencies
             $solver = new Solver($policy, $pool, $this->io, $repositorySet);
@@ -599,13 +592,11 @@ class Installer
 
                 return max(1, $e->getCode());
             }
-
-            // TODO should we warn people / error if plugins in vendor folder do not match contents of lock file before update?
-            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $repositorySet, $pool, $request, $policy, $lockTransaction);
         }
 
         // TODO in how far do we need to do anything here to ensure dev packages being updated to latest in lock without version change are treated correctly?
         $localRepoTransaction = new LocalRepoTransaction($lockedRepository, $localRepo);
+        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_OPERATIONS_EXEC, $this->devMode, $this->executeOperations, $localRepoTransaction);
 
         if (!$localRepoTransaction->getOperations()) {
             $this->io->writeError('Nothing to install, update or remove');

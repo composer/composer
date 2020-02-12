@@ -43,8 +43,8 @@ Composer fires the following named events during its execution process:
 
 ### Installer Events
 
-- **pre-dependencies-solving**: occurs before the dependencies are resolved.
-- **post-dependencies-solving**: occurs after the dependencies have been resolved.
+- **pre-operations-exec**: occurs before the install/upgrade/.. operations
+  are executed when installing a lock file.
 
 ### Package Events
 

@@ -21,11 +21,6 @@ use Composer\EventDispatcher\Event;
 use Composer\IO\IOInterface;
 use Composer\Repository\RepositorySet;
 
-/**
- * An event for all installer.
- *
- * @author François Pluchino <francois.pluchino@gmail.com>
- */
 class InstallerEvent extends Event
 {
     /**
@@ -44,27 +39,12 @@ class InstallerEvent extends Event
     private $devMode;
 
     /**
-     * @var RepositorySet
+     * @var bool
      */
-    private $repositorySet;
+    private $executeOperations;
 
     /**
-     * @var Pool
-     */
-    private $pool;
-
-    /**
-     * @var Request
-     */
-    private $request;
-
-    /**
-     * @var PolicyInterface
-     */
-    private $policy;
-
-    /**
-     * @var Transaction|null
+     * @var Transaction
      */
     private $transaction;
 
@@ -75,23 +55,17 @@ class InstallerEvent extends Event
      * @param Composer             $composer
      * @param IOInterface          $io
      * @param bool                 $devMode
-     * @param RepositorySet        $repositorySet
-     * @param Pool                 $pool
-     * @param Request              $request
-     * @param PolicyInterface      $policy
+     * @param bool                 $executeOperations
      * @param Transaction          $transaction
      */
-    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, RepositorySet $repositorySet, Pool $pool, Request $request, PolicyInterface $policy, Transaction $transaction = null)
+    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, $executeOperations, Transaction $transaction)
     {
         parent::__construct($eventName);
 
         $this->composer = $composer;
         $this->io = $io;
         $this->devMode = $devMode;
-        $this->repositorySet = $repositorySet;
-        $this->pool = $pool;
-        $this->request = $request;
-        $this->policy = $policy;
+        $this->executeOperations = $executeOperations;
         $this->transaction = $transaction;
     }
 
@@ -120,35 +94,11 @@ class InstallerEvent extends Event
     }
 
     /**
-     * @return PolicyInterface
+     * @return bool
      */
-    public function getPolicy()
+    public function isExecutingOperations()
     {
-        return $this->policy;
-    }
-
-    /**
-     * @return RepositorySet
-     */
-    public function getRepositorySet()
-    {
-        return $this->repositorySet;
-    }
-
-    /**
-     * @return Pool
-     */
-    public function getPool()
-    {
-        return $this->pool;
-    }
-
-    /**
-     * @return Request
-     */
-    public function getRequest()
-    {
-        return $this->request;
+        return $this->executeOperations;
     }
 
     /**
