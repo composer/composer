@@ -578,7 +578,7 @@ composer https://github.com/old/url (push)
 
     public function testUpdateDoesntThrowsRuntimeExceptionIfGitCommandFailsAtFirstButIsAbleToRecover()
     {
-        $expectedFirstGitUpdateCommand = $this->winCompat("git remote set-url composer '".(Platform::isWindows() ? 'C:\\' : '/')."' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer); git remote set-url composer '/'");
+        $expectedFirstGitUpdateCommand = $this->winCompat("git remote set-url composer '".(Platform::isWindows() ? 'C:\\' : '/')."' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer); git remote set-url composer '".(Platform::isWindows() ? 'C:\\' : '/')."'");
         $expectedSecondGitUpdateCommand = $this->winCompat("git remote set-url composer 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer); git remote set-url composer 'https://github.com/composer/composer'");
 
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
