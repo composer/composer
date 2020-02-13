@@ -25,7 +25,7 @@ use Composer\Semver\Constraint\Constraint;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class ArrayRepository extends BaseRepository
+class ArrayRepository implements RepositoryInterface
 {
     /** @var PackageInterface[] */
     protected $packages;
@@ -44,7 +44,7 @@ class ArrayRepository extends BaseRepository
 
     public function getRepoName()
     {
-        return 'array repo (defining '.count($this->packages).' package'.(count($this->packages) > 1 ? 's' : '').')';
+        return 'array repo (defining '.$this->count().' package'.($this->count() > 1 ? 's' : '').')';
     }
 
     /**
@@ -126,8 +126,7 @@ class ArrayRepository extends BaseRepository
 
         foreach ($this->getPackages() as $package) {
             if ($name === $package->getName()) {
-                $pkgConstraint = new Constraint('==', $package->getVersion());
-                if (null === $constraint || $constraint->matches($pkgConstraint)) {
+                if (null === $constraint || $constraint->matches(new Constraint('==', $package->getVersion()))) {
                     $packages[] = $package;
                 }
             }
@@ -250,6 +249,10 @@ class ArrayRepository extends BaseRepository
      */
     public function count()
     {
+        if (null === $this->packages) {
+            $this->initialize();
+        }
+
         return count($this->packages);
     }
 

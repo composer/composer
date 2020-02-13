@@ -31,17 +31,13 @@ use Composer\Package\Version\StabilityFilter;
 class RepositorySet
 {
     /**
-     * Packages which replace/provide the given name might be returned as well even if they do not match the name exactly
-     */
-    const ALLOW_PROVIDERS_REPLACERS = 1;
-    /**
      * Packages are returned even though their stability does not match the required stability
      */
-    const ALLOW_UNACCEPTABLE_STABILITIES = 2;
+    const ALLOW_UNACCEPTABLE_STABILITIES = 1;
     /**
      * Packages will be looked up in all repositories, even after they have been found in a higher prio one
      */
-    const ALLOW_SHADOWED_REPOSITORIES = 4;
+    const ALLOW_SHADOWED_REPOSITORIES = 2;
 
     /** @var array */
     private $rootAliases;
@@ -127,7 +123,6 @@ class RepositorySet
      */
     public function findPackages($name, ConstraintInterface $constraint = null, $flags = 0)
     {
-        $exactMatch = ($flags & self::ALLOW_PROVIDERS_REPLACERS) === 0;
         $ignoreStability = ($flags & self::ALLOW_UNACCEPTABLE_STABILITIES) !== 0;
         $loadFromAllRepos = ($flags & self::ALLOW_SHADOWED_REPOSITORIES) !== 0;
 
@@ -152,13 +147,14 @@ class RepositorySet
 
         $candidates = $packages ? call_user_func_array('array_merge', $packages) : array();
 
+        // when using loadPackages above (!$loadFromAllRepos) the repos already filter for stability so no need to do it again
+        if ($ignoreStability || !$loadFromAllRepos) {
+            return $candidates;
+        }
+
         $result = array();
         foreach ($candidates as $candidate) {
-            if ($exactMatch && $candidate->getName() !== $name) {
-                continue;
-            }
-
-            if (!$ignoreStability && $this->isPackageAcceptable($candidate->getNames(), $candidate->getStability())) {
+            if ($this->isPackageAcceptable($candidate->getNames(), $candidate->getStability())) {
                 $result[] = $candidate;
             }
         }

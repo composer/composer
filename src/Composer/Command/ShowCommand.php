@@ -22,13 +22,14 @@ use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Repository\ArrayRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
+use Composer\Repository\InstalledRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
+use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Semver;
 use Composer\Spdx\SpdxLicenses;
@@ -152,11 +153,11 @@ EOT
 
         if ($input->getOption('self')) {
             $package = $this->getComposer()->getPackage();
-            $repos = $installedRepo = new ArrayRepository(array($package));
+            $repos = $installedRepo = new InstalledRepository(array(new RootPackageRepository($package)));
         } elseif ($input->getOption('platform')) {
-            $repos = $installedRepo = $platformRepo;
+            $repos = $installedRepo = new InstalledRepository(array($platformRepo));
         } elseif ($input->getOption('available')) {
-            $installedRepo = $platformRepo;
+            $installedRepo = new InstalledRepository(array($platformRepo));
             if ($composer) {
                 $repos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
             } else {
@@ -166,15 +167,15 @@ EOT
             }
         } elseif ($input->getOption('all') && $composer) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-            $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
+            $installedRepo = new InstalledRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } elseif ($input->getOption('all')) {
             $defaultRepos = RepositoryFactory::defaultRepos($io);
             $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
-            $installedRepo = $platformRepo;
+            $installedRepo = new InstalledRepository(array($platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         } else {
-            $repos = $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+            $repos = $installedRepo = new InstalledRepository(array($this->getComposer()->getRepositoryManager()->getLocalRepository()));
             $rootPkg = $this->getComposer()->getPackage();
             if (!$installedRepo->getPackages() && ($rootPkg->getRequires() || $rootPkg->getDevRequires())) {
                 $io->writeError('<warning>No dependencies installed. Try running composer install or update.</warning>');
@@ -313,10 +314,7 @@ EOT
         foreach ($repos as $repo) {
             if ($repo === $platformRepo) {
                 $type = 'platform';
-            } elseif (
-                $repo === $installedRepo
-                || ($installedRepo instanceof CompositeRepository && in_array($repo, $installedRepo->getRepositories(), true))
-            ) {
+            } elseif ($repo === $installedRepo || in_array($repo, $installedRepo->getRepositories(), true)) {
                 $type = 'installed';
             } else {
                 $type = 'available';
@@ -528,14 +526,14 @@ EOT
     /**
      * finds a package by name and version if provided
      *
-     * @param  RepositoryInterface        $installedRepo
+     * @param  InstalledRepository        $installedRepo
      * @param  RepositoryInterface        $repos
      * @param  string                     $name
      * @param  ConstraintInterface|string $version
      * @throws \InvalidArgumentException
      * @return array                      array(CompletePackageInterface, array of versions)
      */
-    protected function getPackage(RepositoryInterface $installedRepo, RepositoryInterface $repos, $name, $version = null)
+    protected function getPackage(InstalledRepository $installedRepo, RepositoryInterface $repos, $name, $version = null)
     {
         $name = strtolower($name);
         $constraint = is_string($version) ? $this->versionParser->parseConstraints($version) : $version;
@@ -573,10 +571,10 @@ EOT
      *
      * @param CompletePackageInterface $package
      * @param array                    $versions
-     * @param RepositoryInterface      $installedRepo
+     * @param InstalledRepository      $installedRepo
      * @param PackageInterface|null    $latestPackage
      */
-    protected function printPackageInfo(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, PackageInterface $latestPackage = null)
+    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null)
     {
         $io = $this->getIO();
 
@@ -601,10 +599,10 @@ EOT
      *
      * @param CompletePackageInterface $package
      * @param array                    $versions
-     * @param RepositoryInterface      $installedRepo
+     * @param InstalledRepository      $installedRepo
      * @param PackageInterface|null    $latestPackage
      */
-    protected function printMeta(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, PackageInterface $latestPackage = null)
+    protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null)
     {
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
@@ -673,9 +671,9 @@ EOT
      *
      * @param CompletePackageInterface $package
      * @param array                    $versions
-     * @param RepositoryInterface      $installedRepo
+     * @param InstalledRepository      $installedRepo
      */
-    protected function printVersions(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo)
+    protected function printVersions(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo)
     {
         uasort($versions, 'version_compare');
         $versions = array_keys(array_reverse($versions));
@@ -749,10 +747,10 @@ EOT
      *
      * @param CompletePackageInterface $package
      * @param array                    $versions
-     * @param RepositoryInterface      $installedRepo
+     * @param InstalledRepository      $installedRepo
      * @param PackageInterface|null    $latestPackage
      */
-    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, PackageInterface $latestPackage = null)
+    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null)
     {
         $json = array(
             'name' => $package->getPrettyName(),
@@ -972,15 +970,15 @@ EOT
     /**
      * Generate the package tree
      *
-     * @param  PackageInterface $package
-     * @param  RepositoryInterface     $installedRepo
-     * @param  RepositoryInterface     $distantRepos
+     * @param  PackageInterface    $package
+     * @param  InstalledRepository $installedRepo
+     * @param  RepositoryInterface $remoteRepos
      * @return array
      */
     protected function generatePackageTree(
         PackageInterface $package,
-        RepositoryInterface $installedRepo,
-        RepositoryInterface $distantRepos
+        InstalledRepository $installedRepo,
+        RepositoryInterface $remoteRepos
     ) {
         $requires = $package->getRequires();
         ksort($requires);
@@ -993,7 +991,7 @@ EOT
                 'version' => $require->getPrettyConstraint(),
             );
 
-            $deepChildren = $this->addTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree);
+            $deepChildren = $this->addTree($requireName, $require, $installedRepo, $remoteRepos, $packagesInTree);
 
             if ($deepChildren) {
                 $treeChildDesc['requires'] = $deepChildren;
@@ -1072,22 +1070,22 @@ EOT
      *
      * @param  string                  $name
      * @param  PackageInterface|string $package
-     * @param  RepositoryInterface     $installedRepo
-     * @param  RepositoryInterface     $distantRepos
+     * @param  InstalledRepository     $installedRepo
+     * @param  RepositoryInterface     $remoteRepos
      * @param  array                   $packagesInTree
      * @return array
      */
     protected function addTree(
         $name,
         $package,
-        RepositoryInterface $installedRepo,
-        RepositoryInterface $distantRepos,
+        InstalledRepository $installedRepo,
+        RepositoryInterface $remoteRepos,
         array $packagesInTree
     ) {
         $children = array();
         list($package, $versions) = $this->getPackage(
             $installedRepo,
-            $distantRepos,
+            $remoteRepos,
             $name,
             $package->getPrettyConstraint() === 'self.version' ? $package->getConstraint() : $package->getPrettyConstraint()
         );
@@ -1104,7 +1102,7 @@ EOT
 
                 if (!in_array($requireName, $currentTree, true)) {
                     $currentTree[] = $requireName;
-                    $deepChildren = $this->addTree($requireName, $require, $installedRepo, $distantRepos, $currentTree);
+                    $deepChildren = $this->addTree($requireName, $require, $installedRepo, $remoteRepos, $currentTree);
                     if ($deepChildren) {
                         $treeChildDesc['requires'] = $deepChildren;
                     }

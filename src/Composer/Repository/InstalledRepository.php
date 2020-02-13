@@ -12,19 +12,48 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\AliasPackage;
-use Composer\Package\RootPackageInterface;
+use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Package\AliasPackage;
+use Composer\Package\RootPackageInterface;
 use Composer\Package\Link;
 
+
 /**
- * Common ancestor class for generic repository functionality.
+ * Installed repository is a composite of all installed repo types.
  *
- * @author Niels Keurentjes <niels.keurentjes@omines.com>
+ * The main use case is tagging a repo as an "installed" repository, and offering a way to get providers/replacers easily.
+ *
+ * Installed repos are LockArrayRepository, InstalledRepositoryInterface, RootPackageRepository and PlatformRepository
+ *
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-abstract class BaseRepository implements RepositoryInterface
+class InstalledRepository extends CompositeRepository
 {
+    public function findPackagesWithReplacersAndProviders($name, $constraint = null)
+    {
+        $name = strtolower($name);
+
+        if (null !== $constraint && !$constraint instanceof ConstraintInterface) {
+            $versionParser = new VersionParser();
+            $constraint = $versionParser->parseConstraints($constraint);
+        }
+
+        $matches = array();
+        foreach ($this->getRepositories() as $repo) {
+            foreach ($repo->getPackages() as $candidate) {
+                if (in_array($name, $candidate->getNames(), true)) {
+                    if (null === $constraint || $constraint->matches(new Constraint('==', $candidate->getVersion()))) {
+                        $matches[] = $candidate;
+                    }
+                }
+            }
+        }
+
+        return $matches;
+    }
+
     /**
      * Returns a list of links causing the requested needle packages to be installed, as an associative array with the
      * dependent's name as key, and an array containing in order the PackageInterface and Link describing the relationship
@@ -175,5 +204,28 @@ abstract class BaseRepository implements RepositoryInterface
         ksort($results);
 
         return $results;
+    }
+
+    public function getRepoName()
+    {
+        return 'installed repo ('.implode(', ', array_map(function ($repo) { return $repo->getRepoName(); }, $this->repositories)).')';
+    }
+
+    /**
+     * Add a repository.
+     * @param RepositoryInterface $repository
+     */
+    public function addRepository(RepositoryInterface $repository)
+    {
+        if (
+            $repository instanceof LockArrayRepository
+            || $repository instanceof InstalledRepositoryInterface
+            || $repository instanceof RootPackageRepository
+            || $repository instanceof PlatformRepository
+        ) {
+            return parent::addRepository($repository);
+        }
+
+        throw new \LogicException('An InstalledRepository can not contain a repository of type '.get_class($repository).' ('.$repository->getRepoName().')');
     }
 }

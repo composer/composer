@@ -14,8 +14,10 @@ namespace Composer\Command;
 
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
-use Composer\Repository\ArrayRepository;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\RootPackageRepository;
+use Composer\Repository\InstalledRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Plugin\CommandEvent;
@@ -70,10 +72,9 @@ class BaseDependencyCommand extends BaseCommand
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, $this->getName(), $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
-        // Prepare repositories and set up a repo set
         $platformOverrides = $composer->getConfig()->get('platform') ?: array();
-        $repository = new CompositeRepository(array(
-            new ArrayRepository(array($composer->getPackage())),
+        $installedRepo = new InstalledRepository(array(
+            new RootPackageRepository($composer->getPackage()),
             $composer->getRepositoryManager()->getLocalRepository(),
             new PlatformRepository(array(), $platformOverrides),
         ));
@@ -84,25 +85,19 @@ class BaseDependencyCommand extends BaseCommand
             2,
             $input->getArgument(self::ARGUMENT_CONSTRAINT)
         );
-        $needle = strtolower($needle);
 
         // Find packages that are or provide the requested package first
-        $packages = array();
-        foreach ($repository->getPackages() as $package) {
-            if (in_array($needle, $package->getNames(), true)) {
-                $packages[] = $package;
-            }
-        }
+        $packages = $installedRepo->findPackagesWithReplacersAndProviders($needle);
         if (empty($packages)) {
             throw new \InvalidArgumentException(sprintf('Could not find package "%s" in your project', $needle));
         }
 
         // If the version we ask for is not installed then we need to locate it in remote repos and add it.
         // This is needed for why-not to resolve conflicts from an uninstalled version against installed packages.
-        if (!$repository->findPackage($needle, $textConstraint)) {
+        if (!$installedRepo->findPackage($needle, $textConstraint)) {
             $defaultRepos = new CompositeRepository(RepositoryFactory::defaultRepos($this->getIO()));
             if ($match = $defaultRepos->findPackage($needle, $textConstraint)) {
-                $repository->addRepository(new ArrayRepository(array(clone $match)));
+                $installedRepo->addRepository(new InstalledArrayRepository(array(clone $match)));
             }
         }
 
@@ -129,7 +124,7 @@ class BaseDependencyCommand extends BaseCommand
         $recursive = $renderTree || $input->getOption(self::OPTION_RECURSIVE);
 
         // Resolve dependencies
-        $results = $repository->getDependents($needles, $constraint, $inverted, $recursive);
+        $results = $installedRepo->getDependents($needles, $constraint, $inverted, $recursive);
         if (empty($results)) {
             $extra = (null !== $constraint) ? sprintf(' in versions %smatching %s', $inverted ? 'not ' : '', $textConstraint) : '';
             $this->getIO()->writeError(sprintf(

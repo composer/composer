@@ -51,6 +51,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\InstalledRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
@@ -257,12 +258,12 @@ class Installer
         }
 
         if ($this->update) {
-            $installedRepos = array(
+            $installedRepo = new InstalledRepository(array(
                 $this->locker->getLockedRepository($this->devMode),
                 $this->createPlatformRepo(false),
                 new RootPackageRepository(clone $this->package),
-            );
-            $this->suggestedPackagesReporter->outputMinimalistic(new CompositeRepository($installedRepos));
+            ));
+            $this->suggestedPackagesReporter->outputMinimalistic($installedRepo);
         }
 
         // Find abandoned packages and warn user
@@ -859,8 +860,7 @@ class Installer
             }
         }
 
-        $repositorySet = new RepositorySet('dev');
-        $repositorySet->addRepository($lockRepo);
+        $installedRepo = new InstalledRepository(array($lockRepo));
 
         $seen = array();
 
@@ -870,7 +870,7 @@ class Installer
             $packageQueue = new \SplQueue;
             $nameMatchesRequiredPackage = false;
 
-            $depPackages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_PROVIDERS_REPLACERS);
+            $depPackages = $installedRepo->findPackagesWithReplacersAndProviders($packageName);
             $matchesByPattern = array();
 
             // check if the name is a glob pattern that did not match directly
@@ -878,7 +878,7 @@ class Installer
                 // add any installed package matching the whitelisted name/pattern
                 $whitelistPatternSearchRegexp = BasePackage::packageNameToRegexp($packageName, '^%s$');
                 foreach ($lockRepo->search($whitelistPatternSearchRegexp) as $installedPackage) {
-                    $matchesByPattern[] = $repositorySet->findPackages($installedPackage['name'], null, RepositorySet::ALLOW_PROVIDERS_REPLACERS);
+                    $matchesByPattern[] = $installedRepo->findPackages($installedPackage['name']);
                 }
 
                 // add root requirements which match the whitelisted name/pattern
@@ -919,7 +919,7 @@ class Installer
                 $requires = $package->getRequires();
 
                 foreach ($requires as $require) {
-                    $requirePackages = $repositorySet->findPackages($require->getTarget(), null, RepositorySet::ALLOW_PROVIDERS_REPLACERS);
+                    $requirePackages = $installedRepo->findPackagesWithReplacersAndProviders($require->getTarget());
 
                     foreach ($requirePackages as $requirePackage) {
                         if (isset($this->updateWhitelist[$requirePackage->getName()])) {
