@@ -3,7 +3,7 @@ clone_depth: 5
 
 environment:
   # This sets the PHP version (from Chocolatey)
-  PHPCI_CHOCO_VERSION: 7.3.1
+  PHPCI_CHOCO_VERSION: 7.3.14
   PHPCI_CACHE: C:\tools\phpci
   PHPCI_PHP: C:\tools\phpci\php
   PHPCI_COMPOSER: C:\tools\phpci\composer
@@ -25,6 +25,15 @@ install:
   - IF %PHP%==0 cinst composer -i -y --ia "/DEV=%PHPCI_COMPOSER%"
   - php -v
   - IF %PHP%==0 (composer --version) ELSE (composer self-update)
+  - IF %PHP%==0 cd %PHPCI_PHP%
+  - IF %PHP%==0 copy php.ini-production php.ini /Y
+  - IF %PHP%==0 echo date.timezone="UTC" >> php.ini
+  - IF %PHP%==0 echo extension_dir=ext >> php.ini
+  - IF %PHP%==0 echo extension=php_openssl.dll >> php.ini
+  - IF %PHP%==0 echo extension=php_mbstring.dll >> php.ini
+  - IF %PHP%==0 echo extension=php_fileinfo.dll >> php.ini
+  - IF %PHP%==0 echo extension=php_intl.dll >> php.ini
+  - IF %PHP%==0 echo extension=php_curl.dll >> php.ini
   - cd %APPVEYOR_BUILD_FOLDER%
   - composer install --prefer-dist --no-progress
 
