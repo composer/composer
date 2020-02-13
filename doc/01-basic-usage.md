@@ -248,7 +248,8 @@ php composer.phar dump-autoload
 ```
 
 This command will re-generate the `vendor/autoload.php` file.
-See the [`dump-autoload`](03-cli.md#dump-autoload) section for more information.
+See the [`dump-autoload`](03-cli.md#dump-autoload-dumpautoload-) section for
+more information.
 
 Including that file will also return the autoloader instance, so you can store
 the return value of the include call in a variable and add more namespaces.
