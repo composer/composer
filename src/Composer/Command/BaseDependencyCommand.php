@@ -20,7 +20,6 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Repository\RepositorySet;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Package\Version\VersionParser;
 use Symfony\Component\Console\Helper\Table;
@@ -78,8 +77,6 @@ class BaseDependencyCommand extends BaseCommand
             $composer->getRepositoryManager()->getLocalRepository(),
             new PlatformRepository(array(), $platformOverrides),
         ));
-        $repositorySet = new RepositorySet();
-        $repositorySet->addRepository($repository);
 
         // Parse package name and constraint
         list($needle, $textConstraint) = array_pad(
@@ -87,9 +84,15 @@ class BaseDependencyCommand extends BaseCommand
             2,
             $input->getArgument(self::ARGUMENT_CONSTRAINT)
         );
+        $needle = strtolower($needle);
 
         // Find packages that are or provide the requested package first
-        $packages = $repositorySet->findPackages(strtolower($needle), null, RepositorySet::ALLOW_PROVIDERS_REPLACERS);
+        $packages = array();
+        foreach ($repository->getPackages() as $package) {
+            if (in_array($needle, $package->getNames(), true)) {
+                $packages[] = $package;
+            }
+        }
         if (empty($packages)) {
             throw new \InvalidArgumentException(sprintf('Could not find package "%s" in your project', $needle));
         }

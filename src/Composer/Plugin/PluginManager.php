@@ -21,7 +21,6 @@ use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
-use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Plugin\Capability\Capability;
 use Composer\Util\PackageSorter;
@@ -158,14 +157,13 @@ class PluginManager
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
 
-        $repositorySet = new RepositorySet('dev');
-        $repositorySet->addRepository($localRepo);
+        $localRepos = $localRepo;
         if ($globalRepo) {
-            $repositorySet->addRepository($globalRepo);
+            $localRepos = new CompositeRepository(array($localRepos, $globalRepo));
         }
 
         $autoloadPackages = array($package->getName() => $package);
-        $autoloadPackages = $this->collectDependencies($repositorySet, $autoloadPackages, $package);
+        $autoloadPackages = $this->collectDependencies($localRepos, $autoloadPackages, $package);
 
         $generator = $this->composer->getAutoloadGenerator();
         $autoloads = array();
@@ -376,13 +374,13 @@ class PluginManager
     /**
      * Recursively generates a map of package names to packages for all deps
      *
-     * @param RepositorySet    $repositorySet Repository set of installed packages
-     * @param array            $collected     Current state of the map for recursion
-     * @param PackageInterface $package       The package to analyze
+     * @param RepositoryInterface $localRepos Set of local repos
+     * @param array               $collected  Current state of the map for recursion
+     * @param PackageInterface    $package    The package to analyze
      *
      * @return array Map of package names to packages
      */
-    private function collectDependencies(RepositorySet $repositorySet, array $collected, PackageInterface $package)
+    private function collectDependencies(RepositoryInterface $localRepos, array $collected, PackageInterface $package)
     {
         $requires = array_merge(
             $package->getRequires(),
@@ -390,10 +388,11 @@ class PluginManager
         );
 
         foreach ($requires as $requireLink) {
-            $requiredPackage = $this->lookupInstalledPackage($repositorySet, $requireLink);
-            if ($requiredPackage && !isset($collected[$requiredPackage->getName()])) {
-                $collected[$requiredPackage->getName()] = $requiredPackage;
-                $collected = $this->collectDependencies($repositorySet, $collected, $requiredPackage);
+            foreach ($this->lookupInstalledPackages($localRepos, $requireLink) as $requiredPackage) {
+                if (!isset($collected[$requiredPackage->getName()])) {
+                    $collected[$requiredPackage->getName()] = $requiredPackage;
+                    $collected = $this->collectDependencies($localRepos, $collected, $requiredPackage);
+                }
             }
         }
 
@@ -405,16 +404,23 @@ class PluginManager
      *
      * Since dependencies are already installed this should always find one.
      *
-     * @param RepositorySet $repositorySet Repository set of installed packages only
+     * @param RepositoryInterface $localRepos Set of local repos
      * @param Link $link Package link to look up
      *
-     * @return PackageInterface|null The found package
+     * @return PackageInterface[] The found packages
      */
-    private function lookupInstalledPackage(RepositorySet $repositorySet, Link $link)
+    private function lookupInstalledPackages(RepositoryInterface $localRepos, Link $link)
     {
-        $packages = $repositorySet->findPackages($link->getTarget(), $link->getConstraint(), RepositorySet::ALLOW_PROVIDERS_REPLACERS | RepositorySet::ALLOW_SHADOWED_REPOSITORIES);
+        $matches = array();
+        foreach ($localRepos->getPackages() as $candidate) {
+            if (in_array($link->getTarget(), $candidate->getNames(), true)) {
+                if ($link->getConstraint() === null || $link->getConstraint()->matches(new Constraint('=', $candidate->getVersion()))) {
+                    $matches[] = $candidate;
+                }
+            }
+        }
 
-        return !empty($packages) ? $packages[0] : null;
+        return $matches;
     }
 
     /**
