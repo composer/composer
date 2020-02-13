@@ -19,6 +19,7 @@ use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\CompositeRepository;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
