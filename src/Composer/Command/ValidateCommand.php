@@ -108,6 +108,7 @@ EOT
                 $file = $path . '/composer.json';
                 if (is_dir($path) && file_exists($file)) {
                     list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
+
                     $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors, false, array(), false, $isStrict);
 
                     // $errors include publish errors when exists
@@ -128,17 +129,17 @@ EOT
     {
         $doPrintSchemaUrl = false;
 
-        if (!$errors && !$publishErrors && !$warnings) {
-            $io->write('<info>' . $name . ' is valid</info>');
-        } elseif (!$errors && !$publishErrors) {
-            $io->writeError('<info>' . $name . ' is valid, but with a few warnings</info>');
-            $doPrintSchemaUrl = $printSchemaUrl;
-        } elseif (!$errors) {
+        if ($errors) {
+            $io->writeError('<error>' . $name . ' is invalid, the following errors/warnings were found:</error>');
+        } elseif ($publishErrors) {
             $io->writeError('<info>' . $name . ' is valid for simple usage with composer but has</info>');
             $io->writeError('<info>strict errors that make it unable to be published as a package:</info>');
             $doPrintSchemaUrl = $printSchemaUrl;
+        } elseif ($warnings) {
+            $io->writeError('<info>' . $name . ' is valid, but with a few warnings</info>');
+            $doPrintSchemaUrl = $printSchemaUrl;
         } else {
-            $io->writeError('<error>' . $name . ' is invalid, the following errors/warnings were found:</error>');
+            $io->write('<info>' . $name . ' is valid</info>');
         }
 
         if ($doPrintSchemaUrl) {
