@@ -143,25 +143,31 @@ EOT
             $io->writeError('<error>' . $name . ' is invalid, the following errors/warnings were found:</error>');
         }
 
+        $allWarnings = $warnings;
+
         // If checking publish errors, display them as errors, otherwise just show them as warnings
         // Skip when it is a strict check and we don't want to check publish errors
         if ($checkPublish) {
             $errors = array_merge($errors, $publishErrors);
-        } elseif (!$isStrict) {
-            $warnings = array_merge($warnings, $publishErrors);
+        } else {
+            $allWarnings = array_merge($allWarnings, $publishErrors);
         }
 
         // If checking lock errors, display them as errors, otherwise just show them as warnings
         // Skip when it is a strict check and we don't want to check lock errors
         if ($checkLock) {
             $errors = array_merge($errors, $lockErrors);
-        } elseif (!$isStrict) {
-            $warnings = array_merge($warnings, $lockErrors);
+        } else {
+            $allWarnings = array_merge($allWarnings, $lockErrors);
+        }
+
+        if (!$isStrict) {
+            $warnings = $allWarnings;
         }
 
         $messages = array(
             'error' => $errors,
-            'warning' => $warnings,
+            'warning' => $allWarnings,
         );
 
         foreach ($messages as $style => $msgs) {
