@@ -126,21 +126,23 @@ EOT
 
     private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false, $isStrict = false)
     {
+        $doPrintSchemaUrl = false;
+
         if (!$errors && !$publishErrors && !$warnings) {
             $io->write('<info>' . $name . ' is valid</info>');
         } elseif (!$errors && !$publishErrors) {
             $io->writeError('<info>' . $name . ' is valid, but with a few warnings</info>');
-            if ($printSchemaUrl) {
-                $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
-            }
+            $doPrintSchemaUrl = $printSchemaUrl;
         } elseif (!$errors) {
             $io->writeError('<info>' . $name . ' is valid for simple usage with composer but has</info>');
             $io->writeError('<info>strict errors that make it unable to be published as a package:</info>');
-            if ($printSchemaUrl) {
-                $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
-            }
+            $doPrintSchemaUrl = $printSchemaUrl;
         } else {
             $io->writeError('<error>' . $name . ' is invalid, the following errors/warnings were found:</error>');
+        }
+
+        if ($doPrintSchemaUrl) {
+            $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         }
 
         $allWarnings = $warnings;
