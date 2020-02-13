@@ -106,7 +106,6 @@ resolution.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--no-suggest:** Skips suggested packages in the output.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -156,7 +155,6 @@ php composer.phar update "vendor/*"
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--no-suggest:** Skips suggested packages in the output.
 * **--with-dependencies:** Add also dependencies of whitelisted packages to the whitelist, except those that are root requirements.
 * **--with-all-dependencies:** Add also all dependencies of whitelisted packages to the whitelist, including those that are root requirements.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
@@ -203,7 +201,6 @@ If you do not specify a package, composer will prompt you to search for a packag
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--no-suggest:** Skips suggested packages in the output.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
@@ -410,16 +407,16 @@ Lists all packages suggested by currently installed set of packages. You can
 optionally pass one or multiple package names in the format of `vendor/package`
 to limit output to suggestions made by those packages only.
 
-Use the `--by-package` or `--by-suggestion` flags to group the output by
+Use the `--by-package` (default) or `--by-suggestion` flags to group the output by
 the package offering the suggestions or the suggested packages respectively.
 
-Use the `--verbose (-v)` flag to display the suggesting package and the suggestion reason.
-This implies `--by-package --by-suggestion`, showing both lists.
+If you only want a list of suggested package names, use `--list`.
 
 ### Options
 
-* **--by-package:** Groups output by suggesting package.
+* **--by-package:** Groups output by suggesting package (default).
 * **--by-suggestion:** Groups output by suggested package.
+* **--list:** Show only list of suggested package names.
 * **--no-dev:** Excludes suggestions from `require-dev` packages.
 
 ## depends (why)

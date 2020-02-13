@@ -131,7 +131,6 @@ class Installer
     protected $ignorePlatformReqs = false;
     protected $preferStable = false;
     protected $preferLowest = false;
-    protected $skipSuggest = false;
     protected $writeLock;
     protected $executeOperations = true;
 
@@ -257,9 +256,13 @@ class Installer
             $this->installationManager->notifyInstalls($this->io);
         }
 
-        // output suggestions if we're in dev mode
-        if ($this->update && $this->devMode && !$this->skipSuggest) {
-            $this->suggestedPackagesReporter->output($this->locker->getLockedRepository($this->devMode));
+        if ($this->update) {
+            $installedRepos = array(
+                $this->locker->getLockedRepository($this->devMode),
+                $this->createPlatformRepo(false),
+                new RootPackageRepository(array(clone $this->package)),
+            );
+            $this->suggestedPackagesReporter->outputMinimalistic(new CompositeRepository($installedRepos));
         }
 
         // Find abandoned packages and warn user
@@ -1306,19 +1309,6 @@ class Installer
     public function setExecuteOperations($executeOperations = true)
     {
         $this->executeOperations = (bool) $executeOperations;
-
-        return $this;
-    }
-
-    /**
-     * Should suggestions be skipped?
-     *
-     * @param  bool      $skipSuggest
-     * @return Installer
-     */
-    public function setSkipSuggest($skipSuggest = true)
-    {
-        $this->skipSuggest = (bool) $skipSuggest;
 
         return $this;
     }
