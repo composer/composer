@@ -54,7 +54,7 @@ EOT
         $composer = $this->getComposer();
 
         $installedRepos = array(
-            new RootPackageRepository(array(clone $composer->getPackage())),
+            new RootPackageRepository(clone $composer->getPackage()),
         );
 
         $locker = $composer->getLocker();

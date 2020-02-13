@@ -260,7 +260,7 @@ class Installer
             $installedRepos = array(
                 $this->locker->getLockedRepository($this->devMode),
                 $this->createPlatformRepo(false),
-                new RootPackageRepository(array(clone $this->package)),
+                new RootPackageRepository(clone $this->package),
             );
             $this->suggestedPackagesReporter->outputMinimalistic(new CompositeRepository($installedRepos));
         }
@@ -706,7 +706,7 @@ class Installer
         $this->fixedRootPackage->setDevRequires(array());
 
         $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $this->package->getReferences(), $rootRequires);
-        $repositorySet->addRepository(new RootPackageRepository(array($this->fixedRootPackage)));
+        $repositorySet->addRepository(new RootPackageRepository($this->fixedRootPackage));
         $repositorySet->addRepository($platformRepo);
         if ($this->additionalFixedRepository) {
             $repositorySet->addRepository($this->additionalFixedRepository);
