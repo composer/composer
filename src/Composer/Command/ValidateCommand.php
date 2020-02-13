@@ -140,6 +140,7 @@ EOT
             $doPrintSchemaUrl = $printSchemaUrl;
         } else {
             $io->write('<info>' . $name . ' is valid</info>');
+            // if ($lockErrors) then they will be displayed below
         }
 
         if ($doPrintSchemaUrl) {
