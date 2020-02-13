@@ -57,7 +57,7 @@ before_install:
 
 install:
   # flags to pass to install
-  - flags="--ansi --prefer-dist --no-interaction --optimize-autoloader --no-suggest --no-progress"
+  - flags="--ansi --prefer-dist --no-interaction --optimize-autoloader --no-progress"
   # update deps to latest in case of high deps build
   - if [ "$deps" == "high" ]; then composer config platform.php 7.4.0; composer update $flags; fi
   # install dependencies using system provided composer binary
