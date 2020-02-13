@@ -108,8 +108,9 @@ EOT
                 $file = $path . '/composer.json';
                 if (is_dir($path) && file_exists($file)) {
                     list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
-                    $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors);
+                    $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors, false, array(), false, $isStrict);
 
+                    // $errors include publish errors when exists
                     $depCode = $errors ? 2 : ($isStrict && $warnings ? 1 : 0);
                     $exitCode = max($depCode, $exitCode);
                 }
