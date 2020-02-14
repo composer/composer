@@ -96,7 +96,7 @@ EOT
             $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update` or `composer update <package name>`.';
         }
 
-        $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true, $isStrict);
+        $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true);
 
         // $errors include publish and lock errors when exists
         $exitCode = $errors ? 2 : ($isStrict && $warnings ? 1 : 0);
@@ -109,7 +109,7 @@ EOT
                 if (is_dir($path) && file_exists($file)) {
                     list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
 
-                    $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors, false, array(), false, $isStrict);
+                    $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors);
 
                     // $errors include publish errors when exists
                     $depCode = $errors ? 2 : ($isStrict && $warnings ? 1 : 0);
@@ -125,7 +125,7 @@ EOT
         return $exitCode;
     }
 
-    private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false, $isStrict = false)
+    private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false)
     {
         $doPrintSchemaUrl = false;
 
@@ -147,10 +147,10 @@ EOT
             $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         }
 
+        // Avoid setting the exit code to 1 in case --strict and --no-check-publish/--no-check-lock are combined
         $allWarnings = $warnings;
 
         // If checking publish errors, display them as errors, otherwise just show them as warnings
-        // Skip when it is a strict check and we don't want to check publish errors
         if ($checkPublish) {
             $errors = array_merge($errors, $publishErrors);
         } else {
@@ -158,15 +158,10 @@ EOT
         }
 
         // If checking lock errors, display them as errors, otherwise just show them as warnings
-        // Skip when it is a strict check and we don't want to check lock errors
         if ($checkLock) {
             $errors = array_merge($errors, $lockErrors);
         } else {
             $allWarnings = array_merge($allWarnings, $lockErrors);
-        }
-
-        if (!$isStrict) {
-            $warnings = $allWarnings;
         }
 
         $messages = array(
