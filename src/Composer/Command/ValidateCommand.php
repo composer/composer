@@ -148,25 +148,25 @@ EOT
         }
 
         // Avoid setting the exit code to 1 in case --strict and --no-check-publish/--no-check-lock are combined
-        $allWarnings = $warnings;
+        $extraWarnings = [];
 
         // If checking publish errors, display them as errors, otherwise just show them as warnings
         if ($checkPublish) {
             $errors = array_merge($errors, $publishErrors);
         } else {
-            $allWarnings = array_merge($allWarnings, $publishErrors);
+            $extraWarnings = array_merge($extraWarnings, $publishErrors);
         }
 
         // If checking lock errors, display them as errors, otherwise just show them as warnings
         if ($checkLock) {
             $errors = array_merge($errors, $lockErrors);
         } else {
-            $allWarnings = array_merge($allWarnings, $lockErrors);
+            $extraWarnings = array_merge($extraWarnings, $lockErrors);
         }
 
         $messages = array(
             'error' => $errors,
-            'warning' => $allWarnings,
+            'warning' => array_merge($warnings, $extraWarnings),
         );
 
         foreach ($messages as $style => $msgs) {
