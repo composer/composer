@@ -181,16 +181,16 @@ class ClassMapGenerator
         if (empty($validClasses)) {
             foreach ($rejectedClasses as $class) {
                 trigger_error(
-                    "Class $class located in ".preg_replace('{^'.preg_quote(getcwd()).'}', '.', $filePath, 1)." does not comply with $namespaceType autoloading standard. It will not autoload anymore in Composer v1.11+.",
+                    "Class $class located in ".preg_replace('{^'.preg_quote(getcwd()).'}', '.', $filePath, 1)." does not comply with $namespaceType autoloading standard. It will not autoload anymore in Composer v2.0.",
                     E_USER_DEPRECATED
                 );
             }
 
-            // TODO enable in Composer v1.11 or 2.0 whichever comes first
+            // TODO enable in Composer 2.0
             //return array();
         }
 
-        // TODO enable in Composer v1.11 or 2.0 whichever comes first & unskip test in AutoloadGeneratorTest::testPSRToClassMapIgnoresNonPSRClasses
+        // TODO enable in Composer 2.0 & unskip test in AutoloadGeneratorTest::testPSRToClassMapIgnoresNonPSRClasses
         //return $validClasses;
         return $classes;
     }
