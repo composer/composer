@@ -196,7 +196,7 @@ class GitHubDriver extends VcsDriver
 
         $graphql = 'query{repository(owner:"'.$this->owner.'",name:"'.$this->repository.'"){fundingLinks{platform,url}}}';
         try {
-            $result = $this->remoteFilesystem->getContents($this->originUrl, 'https://api.github.com/graphql', false, array(
+            $result = $this->httpDownloader->get('https://api.github.com/graphql', array(
                 'http' => array(
                     'method' => 'POST',
                     'content' => json_encode(array('query' => $graphql)),
