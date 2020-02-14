@@ -148,7 +148,7 @@ EOT
         }
 
         // Avoid setting the exit code to 1 in case --strict and --no-check-publish/--no-check-lock are combined
-        $extraWarnings = [];
+        $extraWarnings = array();
 
         // If checking publish errors, display them as errors, otherwise just show them as warnings
         if ($checkPublish) {
