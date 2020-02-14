@@ -316,7 +316,7 @@ class Installer
 
         $fundingCount = 0;
         foreach ($localRepo->getPackages() as $package) {
-            if ($package instanceof CompletePackageInterface && !empty($package->getFunding())) {
+            if ($package instanceof CompletePackageInterface && !$package instanceof AliasPackage && $package->getFunding()) {
                 $fundingCount++;
             }
         }
