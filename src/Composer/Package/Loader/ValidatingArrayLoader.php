@@ -193,6 +193,32 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
+        if ($this->validateArray('funding') && !empty($this->config['funding'])) {
+            foreach ($this->config['funding'] as $key => $fundingOption) {
+                if (!is_array($fundingOption)) {
+                    $this->errors[] = 'funding.'.$key.' : should be an array, '.gettype($fundingOption).' given';
+                    unset($this->config['funding'][$key]);
+                    continue;
+                }
+                foreach (array('type', 'url') as $fundingData) {
+                    if (isset($fundingOption[$fundingData]) && !is_string($fundingOption[$fundingData])) {
+                        $this->errors[] = 'funding.'.$key.'.'.$fundingData.' : invalid value, must be a string';
+                        unset($this->config['funding'][$key][$fundingData]);
+                    }
+                }
+                if (isset($fundingOption['url']) && !$this->filterUrl($fundingOption['url'])) {
+                    $this->warnings[] = 'funding.'.$key.'.url : invalid value ('.$fundingOption['url'].'), must be an http/https URL';
+                    unset($this->config['funding'][$key]['url']);
+                }
+                if (empty($this->config['funding'][$key])) {
+                    unset($this->config['funding'][$key]);
+                }
+            }
+            if (empty($this->config['funding'])) {
+                unset($this->config['funding']);
+            }
+        }
+
         $unboundConstraint = new Constraint('=', $this->versionParser->normalize('dev-master'));
         $stableConstraint = new Constraint('=', '1.0.0');
 

@@ -258,6 +258,39 @@ An example:
 
 Optional.
 
+### funding
+
+A list of URLs to provide funding to the package authors for maintenance and
+development of new functionality.
+
+Each entry consists of the following
+
+* **type:** The type of funding or the platform through which funding can be provided, e.g. patreon, opencollective, tidelift or github.
+* **url:** URL to a website with details and a way to fund the package.
+
+An example:
+
+```json
+{
+    "funding": [
+        {
+            "type": "patreon",
+            "url": "https://www.patreon.com/phpdoctrine"
+        },
+        {
+            "type": "tidelift",
+            "url": "https://tidelift.com/subscription/pkg/packagist-doctrine_doctrine-bundle"
+        },
+        {
+            "type": "other",
+            "url": "https://www.doctrine-project.org/sponsorship.html"
+        }
+    ]
+}
+```
+
+Optional.
+
 ### Package links
 
 All of the following take an object which maps package names to

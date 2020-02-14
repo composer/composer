@@ -38,6 +38,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Loader\ArrayLoader;
@@ -306,6 +307,24 @@ class Installer
             foreach ($localRepo->getPackages() as $package) {
                 $this->installationManager->ensureBinariesPresence($package);
             }
+        }
+
+        $fundingCount = 0;
+        foreach ($localRepo->getPackages() as $package) {
+            if ($package instanceof CompletePackageInterface && !$package instanceof AliasPackage && $package->getFunding()) {
+                $fundingCount++;
+            }
+        }
+        if ($fundingCount) {
+            $this->io->writeError(array(
+                sprintf(
+                    "<info>%d package%s you are using %s looking for funding.</info>",
+                    $fundingCount,
+                    1 === $fundingCount ? '' : 's',
+                    1 === $fundingCount ? 'is' : 'are'
+                ),
+                '<info>Use the composer fund command to find out more!</info>',
+            ));
         }
 
         if ($this->runScripts) {

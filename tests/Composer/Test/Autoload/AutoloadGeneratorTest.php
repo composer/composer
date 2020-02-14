@@ -1525,6 +1525,8 @@ EOF;
                 '/composersrc/ClassToExclude.php',
                 '/composersrc/*/excluded/excsubpath',
                 '**/excsubpath',
+                'composers',    // should _not_ cause exclusion of /composersrc/**, as it is equivalent to /composers/**
+                '/src-ca/',     // should _not_ cause exclusion of /src-cake/**, as it is equivalent to /src-ca/**
             ),
         ));
 
@@ -1547,7 +1549,7 @@ EOF;
         $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/tests');
         file_put_contents($this->workingDir.'/composersrc/foo.php', '<?php class ClassMapFoo {}');
 
-        // this classes should not be found in the classmap
+        // these classes should not be found in the classmap
         $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/excludedTests');
         file_put_contents($this->workingDir.'/composersrc/excludedTests/bar.php', '<?php class ClassExcludeMapFoo {}');
         file_put_contents($this->workingDir.'/composersrc/ClassToExclude.php', '<?php class ClassClassToExclude {}');

@@ -80,6 +80,15 @@ interface CompletePackageInterface extends PackageInterface
     public function getSupport();
 
     /**
+     * Returns an array of funding options for the package
+     *
+     * Each item will contain type and url keys
+     *
+     * @return array
+     */
+    public function getFunding();
+
+    /**
      * Returns if the package is abandoned or not
      *
      * @return bool

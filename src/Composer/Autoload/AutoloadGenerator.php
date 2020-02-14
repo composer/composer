@@ -901,7 +901,7 @@ INITIALIZER;
                         }
 
                         $resolvedPath = realpath($installPath . '/' . $updir);
-                        $autoloads[] = preg_quote(strtr($resolvedPath, '\\', '/')) . '/' . $path;
+                        $autoloads[] = preg_quote(strtr($resolvedPath, '\\', '/')) . '/' . $path . '($|/)';
                         continue;
                     }
 

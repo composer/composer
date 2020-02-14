@@ -522,6 +522,24 @@
                 }
             }
         },
+        "funding": {
+            "type": "array",
+            "description": "A list of options to fund the development and maintenance of the package.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "Type of funding or platform through which funding is possible."
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "URL to a website with details on funding and a way to fund the package.",
+                        "format": "uri"
+                    }
+                }
+            }
+        },
         "non-feature-branches": {
             "type": ["array"],
             "description": "A set of string or regex patterns for non-numeric branch names that will not be handled as feature branches.",

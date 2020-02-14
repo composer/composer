@@ -70,6 +70,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED, 'Pick a different repository (as url or json config) to look for the package.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'DEPRECATED: Use --repository instead.'),
+                new InputOption('add-repository', null, InputOption::VALUE_NONE, 'Add the repository option to the composer.json.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
@@ -143,11 +144,12 @@ EOT
             $input->getOption('no-progress'),
             $input->getOption('no-install'),
             $input->getOption('ignore-platform-reqs'),
-            !$input->getOption('no-secure-http')
+            !$input->getOption('no-secure-http'),
+            $input->getOption('add-repository')
         );
     }
 
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true)
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true, $addRepository = false)
     {
         $oldCwd = getcwd();
 
@@ -163,6 +165,25 @@ EOT
         }
 
         $composer = Factory::create($io, null, $disablePlugins);
+
+        // add the repository to the composer.json and use it for the install run later
+        if ($repository !== null && $addRepository) {
+            if ($composer->getLocker()->isLocked()) {
+                $io->writeError('<error>Adding a repository when creating a project that provides a composer.lock file is not supported</error>');
+
+                return false;
+            }
+
+            $repoConfig = RepositoryFactory::configFromString($io, $composer->getConfig(), $repository, true);
+            $composerJsonRepositoriesConfig = $composer->getConfig()->getRepositories();
+            $name = RepositoryFactory::generateRepositoryName(0, $repoConfig, $composerJsonRepositoriesConfig);
+            $configSource = new JsonConfigSource(new JsonFile('composer.json'));
+            $configSource->addRepository($name, $repoConfig);
+
+            $composer = Factory::create($io, null, $disablePlugins);
+        }
+
+        $composer->getDownloadManager()->setOutputProgress(!$noProgress);
 
         $fs = new Filesystem();
 

@@ -96,7 +96,7 @@ EOT
             $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update` or `composer update <package name>`.';
         }
 
-        $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true, $isStrict);
+        $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true);
 
         // $errors include publish and lock errors when exists
         $exitCode = $errors ? 2 : ($isStrict && $warnings ? 1 : 0);
@@ -108,8 +108,10 @@ EOT
                 $file = $path . '/composer.json';
                 if (is_dir($path) && file_exists($file)) {
                     list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
+
                     $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors);
 
+                    // $errors include publish errors when exists
                     $depCode = $errors ? 2 : ($isStrict && $warnings ? 1 : 0);
                     $exitCode = max($depCode, $exitCode);
                 }
@@ -123,44 +125,48 @@ EOT
         return $exitCode;
     }
 
-    private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false, $isStrict = false)
+    private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false)
     {
-        if (!$errors && !$publishErrors && !$warnings) {
-            $io->write('<info>' . $name . ' is valid</info>');
-        } elseif (!$errors && !$publishErrors) {
-            $io->writeError('<info>' . $name . ' is valid, but with a few warnings</info>');
-            if ($printSchemaUrl) {
-                $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
-            }
-        } elseif (!$errors) {
+        $doPrintSchemaUrl = false;
+
+        if ($errors) {
+            $io->writeError('<error>' . $name . ' is invalid, the following errors/warnings were found:</error>');
+        } elseif ($publishErrors) {
             $io->writeError('<info>' . $name . ' is valid for simple usage with composer but has</info>');
             $io->writeError('<info>strict errors that make it unable to be published as a package:</info>');
-            if ($printSchemaUrl) {
-                $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
-            }
+            $doPrintSchemaUrl = $printSchemaUrl;
+        } elseif ($warnings) {
+            $io->writeError('<info>' . $name . ' is valid, but with a few warnings</info>');
+            $doPrintSchemaUrl = $printSchemaUrl;
         } else {
-            $io->writeError('<error>' . $name . ' is invalid, the following errors/warnings were found:</error>');
+            $io->write('<info>' . $name . ' is valid</info>');
+            // if ($lockErrors) then they will be displayed below
         }
 
+        if ($doPrintSchemaUrl) {
+            $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+        }
+
+        // Avoid setting the exit code to 1 in case --strict and --no-check-publish/--no-check-lock are combined
+        $extraWarnings = array();
+
         // If checking publish errors, display them as errors, otherwise just show them as warnings
-        // Skip when it is a strict check and we don't want to check publish errors
         if ($checkPublish) {
             $errors = array_merge($errors, $publishErrors);
-        } elseif (!$isStrict) {
-            $warnings = array_merge($warnings, $publishErrors);
+        } else {
+            $extraWarnings = array_merge($extraWarnings, $publishErrors);
         }
 
         // If checking lock errors, display them as errors, otherwise just show them as warnings
-        // Skip when it is a strict check and we don't want to check lock errors
         if ($checkLock) {
             $errors = array_merge($errors, $lockErrors);
-        } elseif (!$isStrict) {
-            $warnings = array_merge($warnings, $lockErrors);
+        } else {
+            $extraWarnings = array_merge($extraWarnings, $lockErrors);
         }
 
         $messages = array(
             'error' => $errors,
-            'warning' => $warnings,
+            'warning' => array_merge($warnings, $extraWarnings),
         );
 
         foreach ($messages as $style => $msgs) {

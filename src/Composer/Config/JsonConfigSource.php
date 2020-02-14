@@ -246,6 +246,12 @@ class JsonConfigSource implements ConfigSourceInterface
             $config = $this->file->read();
             $this->arrayUnshiftRef($args, $config);
             call_user_func_array($fallback, $args);
+            // avoid ending up with arrays for keys that should be objects
+            foreach (array('require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev') as $linkType) {
+                if (isset($config[$linkType]) && $config[$linkType] === array()) {
+                    $config[$linkType] = new \stdClass;
+                }
+            }
             $this->file->write($config);
         }
 
