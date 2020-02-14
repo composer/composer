@@ -97,6 +97,9 @@ class ArrayLoaderTest extends TestCase
             'authors' => array(
                 array('name' => 'Bob', 'email' => 'bob@example.org', 'homepage' => 'example.org', 'role' => 'Developer'),
             ),
+            'funding' => array(
+                array('type' => 'example', 'url' => 'https://example.org/fund'),
+            ),
             'require' => array(
                 'foo/bar' => '1.0',
             ),

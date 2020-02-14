@@ -420,6 +420,11 @@ This implies `--by-package --by-suggestion`, showing both lists.
 * **--by-suggestion:** Groups output by suggested package.
 * **--no-dev:** Excludes suggestions from `require-dev` packages.
 
+## fund
+
+Discover how to help fund the maintenance of your dependencies. This lists
+all funding links from the installed dependencies.
+
 ## depends (why)
 
 The `depends` command tells you which other packages depend on a certain
