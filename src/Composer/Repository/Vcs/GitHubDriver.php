@@ -204,7 +204,7 @@ class GitHubDriver extends VcsDriver
                 ),
                 'retry-auth-failure' => false,
             ));
-        } catch (\TransportException $e) {
+        } catch (TransportException $e) {
             return $this->fundingInfo = false;
         }
         $result = json_decode($result, true);
