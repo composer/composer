@@ -26,7 +26,7 @@ Composer:
 1. Enables you to declare the libraries you depend on.
 2. Finds out which versions of which packages can and need to be installed, and
    installs them (meaning it downloads them into your project).
-3. you can update all your dependencies in one command.
+3. You can update all your dependencies in one command.
 
 See the [Basic usage](01-basic-usage.md) chapter for more details on declaring
 dependencies.
