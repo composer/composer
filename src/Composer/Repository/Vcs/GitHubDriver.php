@@ -35,6 +35,7 @@ class GitHubDriver extends VcsDriver
     protected $infoCache = array();
     protected $isPrivate = false;
     private $isArchived = false;
+    private $fundingInfo;
 
     /**
      * Git Driver
@@ -166,6 +167,10 @@ class GitHubDriver extends VcsDriver
                 if (!isset($composer['abandoned']) && $this->isArchived) {
                     $composer['abandoned'] = true;
                 }
+
+                if (!isset($composer['funding']) && $funding = $this->getFundingInfo()) {
+                    $composer['funding'] = $funding;
+                }
             }
 
             if ($this->shouldCache($identifier)) {
@@ -176,6 +181,35 @@ class GitHubDriver extends VcsDriver
         }
 
         return $this->infoCache[$identifier];
+    }
+
+    private function getFundingInfo()
+    {
+        if (null !== $this->fundingInfo) {
+            return $this->fundingInfo;
+        }
+
+        if ($this->originUrl !== 'github.com') {
+            return $this->fundingInfo = false;
+        }
+
+        $graphql = 'query{repository(owner:"'.$this->owner.'",name:"'.$this->repository.'"){fundingLinks{platform,url}}}';
+        $result = $this->remoteFilesystem->getContents($this->originUrl, 'https://api.github.com/graphql', false, [
+            'http' => [
+                'method' => 'POST',
+                'content' => json_encode(['query' => $graphql]),
+                'header' => ['Content-Type: application/json'],
+            ],
+        ]);
+        $result = json_decode($result, true);
+
+        if (empty($result['data']['repository']['fundingLinks'])) {
+            return $this->fundingInfo = false;
+        }
+
+        return $this->fundingInfo = array_map(function ($link) {
+            return array('type' => strtolower($link['platform']), 'url' => $link['url']);
+        }, $result['data']['repository']['fundingLinks']);
     }
 
     /**
