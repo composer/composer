@@ -43,20 +43,20 @@ class InstalledRepository extends CompositeRepository
         $matches = array();
         foreach ($this->getRepositories() as $repo) {
             foreach ($repo->getPackages() as $candidate) {
-                if (in_array($name, $candidate->getNames(), true)) {
-                    if (null === $constraint) {
+                if ($name === $candidate->getName()) {
+                    if (null === $constraint || $constraint->matches(new Constraint('==', $candidate->getVersion()))) {
+                        $matches[] = $candidate;
+                    }
+                    continue;
+                }
+
+                foreach (array_merge($candidate->getProvides(), $candidate->getReplaces()) as $link) {
+                    if (
+                        $name === $link->getTarget()
+                        && ($constraint === null || $link->getConstraint() === null || $constraint->matches($link->getConstraint()))
+                    ) {
                         $matches[] = $candidate;
                         continue;
-                    }
-                    if ($name === $candidate->getName() && $constraint->matches(new Constraint('==', $candidate->getVersion()))) {
-                        $matches[] = $candidate;
-                        continue;
-                    }
-                    foreach (array_merge($candidate->getProvides(), $candidate->getReplaces()) as $link) {
-                        if ($name === $link->getTarget() && ($link->getConstraint() === null || $constraint->matches($link->getConstraint()))) {
-                            $matches[] = $candidate;
-                            continue;
-                        }
                     }
                 }
             }
