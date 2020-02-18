@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cc6f9640996dfad00a5b03a8be01a571",
+    "content-hash": "31dc4f17094da515062590dfa7cd3bcc",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -568,9 +568,6 @@
             ],
             "description": "Symfony Debug Component",
             "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/debug/tree/v2.8.50"
-            },
             "time": "2018-11-11T11:18:13+00:00"
         },
         {
@@ -1323,7 +1320,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^5.3.2 || ^7.0"
+        "php": "^5.3.2 || ^7.0 || ^8.0"
     },
     "platform-dev": [],
     "platform-overrides": {
