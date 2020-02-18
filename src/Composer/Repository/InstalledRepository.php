@@ -56,7 +56,7 @@ class InstalledRepository extends CompositeRepository
                         && ($constraint === null || $link->getConstraint() === null || $constraint->matches($link->getConstraint()))
                     ) {
                         $matches[] = $candidate;
-                        continue;
+                        continue 2;
                     }
                 }
             }
