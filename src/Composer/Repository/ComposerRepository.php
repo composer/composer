@@ -20,7 +20,6 @@ use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
-use Composer\Composer;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
