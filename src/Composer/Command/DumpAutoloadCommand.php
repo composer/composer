@@ -35,6 +35,7 @@ class DumpAutoloadCommand extends BaseCommand
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.'),
                 new InputOption('apcu', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules.'),
+                new InputOption('autoloader-dir', null, InputOption::VALUE_OPTIONAL, 'Directory for the autoload classes.', 'composer'),
             ))
             ->setHelp(
                 <<<EOT
@@ -75,7 +76,7 @@ EOT
         $generator->setClassMapAuthoritative($authoritative);
         $generator->setApcu($apcu);
         $generator->setRunScripts(!$input->getOption('no-scripts'));
-        $numberOfClasses = $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
+        $numberOfClasses = $generator->dump($config, $localRepo, $package, $installationManager, $input->getOption('autoloader-dir'), $optimize);
 
         if ($authoritative) {
             $this->getIO()->write('<info>Generated optimized autoload files (authoritative) containing '. $numberOfClasses .' classes</info>');
