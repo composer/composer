@@ -335,7 +335,7 @@ EOF;
                 $classMap[$class] = $pathCode;
             } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
                 $this->io->writeError(
-                    '<warning>Warning: Ambiguous class resolution, "'.$class.'"'. $classMap[$class].
+                    '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
                     ' was found in both "'.str_replace(array('$vendorDir . \'', '$baseDir . \'', "',\n"), array($vendorPath, $basePath, ''), $classMap[$class]).'" and "'.$path.'", the first will be used.</warning>'
                 );
             }
