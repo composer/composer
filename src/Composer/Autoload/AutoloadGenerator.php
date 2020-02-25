@@ -29,6 +29,8 @@ use Composer\Util\PackageSorter;
  */
 class AutoloadGenerator
 {
+    public const DEFAULT_AUTOLOADER_NAME = 'composer';
+
     /**
      * @var EventDispatcher
      */

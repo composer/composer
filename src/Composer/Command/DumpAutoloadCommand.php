@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Autoload\AutoloadGenerator;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,7 +36,7 @@ class DumpAutoloadCommand extends BaseCommand
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.'),
                 new InputOption('apcu', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules.'),
-                new InputOption('autoloader-dir', null, InputOption::VALUE_OPTIONAL, 'Directory for the autoload classes.', 'composer'),
+                new InputOption('autoloader-dir', null, InputOption::VALUE_OPTIONAL, 'Directory for the autoload classes.', AutoloadGenerator::DEFAULT_AUTOLOADER_NAME),
             ))
             ->setHelp(
                 <<<EOT
