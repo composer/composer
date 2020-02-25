@@ -326,6 +326,7 @@ EOF;
         return 0;
     }
 
+
     private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, $autoloadType = null, array $classMap = array())
     {
         foreach ($this->generateClassMap($dir, $blacklist, $namespaceFilter, $autoloadType) as $class => $path) {
@@ -334,8 +335,8 @@ EOF;
                 $classMap[$class] = $pathCode;
             } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
                 $this->io->writeError(
-                    '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
-                    ' was found in both "'.str_replace(array('$vendorDir . \'', "',\n"), array($vendorPath, ''), $classMap[$class]).'" and "'.$path.'", the first will be used.</warning>'
+                    '<warning>Warning: Ambiguous class resolution, "'.$class.'"'. $classMap[$class].
+                    ' was found in both "'.str_replace(array('$vendorDir . \'', '$baseDir . \'', "',\n"), array($vendorPath, $basePath, ''), $classMap[$class]).'" and "'.$path.'", the first will be used.</warning>'
                 );
             }
         }
