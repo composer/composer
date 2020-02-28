@@ -205,6 +205,7 @@ class GitHubDriver extends VcsDriver
             if (empty($response['content']) || $response['encoding'] !== 'base64' || !($funding = base64_decode($response['content']))) {
                 continue;
             }
+            break;
         }
         if (empty($funding)) {
             return $this->fundingInfo = false;
@@ -218,16 +219,16 @@ class GitHubDriver extends VcsDriver
             if (preg_match('{^(\w+)\s*:\s*(.+)$}', $line, $match)) {
                 if (preg_match('{^\[.*\]$}', $match[2])) {
                     foreach (array_map('trim', preg_split('{[\'"]?\s*,\s*[\'"]?}', substr($match[2], 1, -1))) as $item) {
-                        $result[] = array('type' => $match[1], 'url' => trim($item, '"\''));
+                        $result[] = array('type' => $match[1], 'url' => trim($item, '"\' '));
                     }
                 } else {
-                    $result[] = array('type' => $match[1], 'url' => $match[2]);
+                    $result[] = array('type' => $match[1], 'url' => trim($match[2], '"\' '));
                 }
                 $key = null;
             } elseif (preg_match('{^(\w+)\s*:$}', $line, $match)) {
                 $key = $match[1];
             } elseif ($key && preg_match('{^-\s*(.+)$}', $line, $match)) {
-                $result[] = array('type' => $key, 'url' => $match[1]);
+                $result[] = array('type' => $key, 'url' => trim($match[1], '"\' '));
             }
         }
 
