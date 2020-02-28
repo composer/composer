@@ -615,7 +615,6 @@ class Solver
 
         $level = 1;
         $systemLevel = $level + 1;
-        $installedPos = 0;
 
         while (true) {
             if (1 === $level) {

@@ -191,6 +191,11 @@ class GitHubDriverTest extends TestCase
             ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/commits/feature%2F3.2-foo'))
             ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"commit": {"committer":{ "date": "2012-09-10"}}}')));
 
+        $httpDownloader->expects($this->at(3))
+            ->method('get')
+            ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/contents/.github/FUNDING.yml'))
+            ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"encoding": "base64", "content": "'.base64_encode("custom: https://example.com").'"}')));
+
         $repoConfig = array(
             'url' => $repoUrl,
         );
@@ -256,6 +261,11 @@ class GitHubDriverTest extends TestCase
             ->method('get')
             ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/commits/'.$sha))
             ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"commit": {"committer":{ "date": "2012-09-10"}}}')));
+
+        $httpDownloader->expects($this->at(3))
+            ->method('get')
+            ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/contents/.github/FUNDING.yml'))
+            ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"encoding": "base64", "content": "'.base64_encode("custom: https://example.com").'"}')));
 
         $repoConfig = array(
             'url' => $repoUrl,
