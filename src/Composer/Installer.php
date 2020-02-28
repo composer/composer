@@ -200,8 +200,8 @@ class Installer
         }
 
         if ($this->runScripts) {
-            $devMode = (int) $this->devMode;
-            putenv("COMPOSER_DEV_MODE=$devMode");
+            $_SERVER['COMPOSER_DEV_MODE'] = (int) $this->devMode;
+            putenv('COMPOSER_DEV_MODE='.$_SERVER['COMPOSER_DEV_MODE']);
 
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;

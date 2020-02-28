@@ -242,7 +242,8 @@ class EventDispatcher
                     $finder = new PhpExecutableFinder();
                     $phpPath = $finder->find(false);
                     if ($phpPath) {
-                        putenv('PHP_BINARY=' . $phpPath);
+                        $_SERVER['PHP_BINARY'] = $phpPath;
+                        putenv('PHP_BINARY=' . $_SERVER['PHP_BINARY']);
                     }
                 }
 
