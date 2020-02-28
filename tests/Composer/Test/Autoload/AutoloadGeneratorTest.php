@@ -486,6 +486,58 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated, even if empty.");
     }
 
+    public function testNonDevAutoloadReplacesNestedRequirements()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a')
+        ));
+
+        $packages = array();
+        $packages[] = $a = new Package('a/a', '1.0', '1.0');
+        $packages[] = $b = new Package('b/b', '1.0', '1.0');
+        $packages[] = $c = new Package('c/c', '1.0', '1.0');
+        $packages[] = $d = new Package('d/d', '1.0', '1.0');
+        $packages[] = $e = new Package('e/e', '1.0', '1.0');
+        $a->setAutoload(array('classmap' => array('src/A.php')));
+        $a->setRequires(array(
+            new Link('a/a', 'b/b')
+        ));
+        $b->setAutoload(array('classmap' => array('src/B.php')));
+        $b->setRequires(array(
+            new Link('b/b', 'e/e')
+        ));
+        $c->setAutoload(array('classmap' => array('src/C.php')));
+        $c->setReplaces(array(
+            new Link('c/c', 'b/b')
+        ));
+        $c->setRequires(array(
+            new Link('c/c', 'd/d')
+        ));
+        $d->setAutoload(array('classmap' => array('src/D.php')));
+        $e->setAutoload(array('classmap' => array('src/E.php')));
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($packages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/c/c/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/d/d/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/e/e/src');
+
+        file_put_contents($this->vendorDir.'/a/a/src/A.php', '<?php class A {}');
+        file_put_contents($this->vendorDir.'/b/b/src/B.php', '<?php class B {}');
+        file_put_contents($this->vendorDir.'/c/c/src/C.php', '<?php class C {}');
+        file_put_contents($this->vendorDir.'/d/d/src/D.php', '<?php class D {}');
+        file_put_contents($this->vendorDir.'/e/e/src/E.php', '<?php class E {}');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_5');
+
+        $this->assertAutoloadFiles('classmap9', $this->vendorDir.'/composer', 'classmap');
+    }
+
     public function testPharAutoload()
     {
         $package = new Package('a', '1.0', '1.0');

@@ -939,16 +939,23 @@ INITIALIZER;
     {
         $packages = array();
         $include = array();
+        $replacedBy = array();
 
         foreach ($packageMap as $item) {
             $package = $item[0];
             $name = $package->getName();
             $packages[$name] = $package;
+            foreach ($package->getReplaces() as $replace) {
+                $replacedBy[$replace->getTarget()] = $name;
+            }
         }
 
-        $add = function (PackageInterface $package) use (&$add, $packages, &$include) {
+        $add = function (PackageInterface $package) use (&$add, $packages, &$include, $replacedBy) {
             foreach ($package->getRequires() as $link) {
                 $target = $link->getTarget();
+                if (isset($replacedBy[$target])) {
+                    $target = $replacedBy[$target];
+                }
                 if (!isset($include[$target])) {
                     $include[$target] = true;
                     if (isset($packages[$target])) {
