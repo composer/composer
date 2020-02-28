@@ -302,10 +302,9 @@ EOT
         // if no directory was specified, use the 2nd part of the package name
         if (null === $directory) {
             $parts = explode("/", $name, 2);
-            $directory = array_pop($parts);
+            $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
-        $directory = getcwd() . DIRECTORY_SEPARATOR . $directory;
         $io->writeError('<info>Creating a "' . $packageName . '" project at "' . $directory . '"</info>');
 
         $fs = new Filesystem();
