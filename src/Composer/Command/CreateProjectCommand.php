@@ -305,9 +305,13 @@ EOT
             $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
-        $io->writeError('<info>Creating a "' . $packageName . '" project at "' . $directory . '"</info>');
-
         $fs = new Filesystem();
+        if (!$fs->isAbsolutePath($directory)) {
+            $directory = getcwd() . DIRECTORY_SEPARATOR . $directory;
+        }
+
+        $io->writeError('<info>Creating a "' . $packageName . '" project at "' . $fs->findShortestPath(getcwd(), $directory, true) . '"</info>');
+
         if (file_exists($directory)) {
             if (!is_dir($directory)) {
                 throw new \InvalidArgumentException('Cannot create project directory at "'.$directory.'", it exists as a file.');
