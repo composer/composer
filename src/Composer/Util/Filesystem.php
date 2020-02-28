@@ -310,7 +310,9 @@ class Filesystem
         }
 
         if (!function_exists('proc_open')) {
-            return $this->copyThenRemove($source, $target);
+            $this->copyThenRemove($source, $target);
+            
+            return;
         }
 
         if (Platform::isWindows()) {
