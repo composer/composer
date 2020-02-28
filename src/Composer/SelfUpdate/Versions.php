@@ -63,7 +63,12 @@ class Versions
 
     public function getLatest($channel = null)
     {
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
+        if ($this->config->get('disable-tls') === true) {
+            $protocol = 'http';
+        } else {
+            $protocol = 'https';
+        }
+
         $versions = JsonFile::parseJson($this->rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/versions', false));
 
         foreach ($versions[$channel ?: $this->getChannel()] as $version) {

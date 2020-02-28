@@ -432,7 +432,11 @@ EOT
         }
 
         $versionsUtil = new Versions($config, $this->rfs);
-        $latest = $versionsUtil->getLatest();
+        try {
+            $latest = $versionsUtil->getLatest();
+        } catch (\Exception $e) {
+            return $e;
+        }
 
         if (Composer::VERSION !== $latest['version'] && Composer::VERSION !== '@package_version@') {
             return '<comment>You are not running the latest '.$versionsUtil->getChannel().' version, run `composer self-update` to update ('.Composer::VERSION.' => '.$latest['version'].')</comment>';
