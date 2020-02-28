@@ -262,6 +262,7 @@ class InstallerTest extends TestCase
             unset($actualLock['hash']);
             unset($actualLock['content-hash']);
             unset($actualLock['_readme']);
+            unset($actualLock['plugin-api-version']);
             $this->assertEquals($expectLock, $actualLock);
         }
 

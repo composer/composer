@@ -13,6 +13,7 @@
 namespace Composer\Test\Package;
 
 use Composer\Package\Locker;
+use Composer\Plugin\PluginInterface;
 use Composer\IO\NullIO;
 use Composer\Test\TestCase;
 
@@ -154,6 +155,7 @@ class LockerTest extends TestCase
                 'platform-overrides' => array('foo/bar' => '1.0'),
                 'prefer-stable' => false,
                 'prefer-lowest' => false,
+                'plugin-api-version' => PluginInterface::PLUGIN_API_VERSION,
             ));
 
         $locker->setLockData(array($package1, $package2), array(), array(), array(), array(), 'dev', array(), false, false, array('foo/bar' => '1.0'));
