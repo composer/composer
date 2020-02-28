@@ -206,7 +206,7 @@ class Filesystem
                 usleep(350000);
                 $unlinked = @$this->unlinkImplementation($path);
             }
-            
+
             if (!$unlinked) {
                 $error = error_get_last();
                 $message = 'Could not delete '.$path.': ' . @$error['message'];
@@ -237,7 +237,7 @@ class Filesystem
                 usleep(350000);
                 $deleted = @rmdir($path);
             }
-            
+
             if (!$deleted) {
                 $error = error_get_last();
                 $message = 'Could not delete '.$path.': ' . @$error['message'];
@@ -310,7 +310,9 @@ class Filesystem
         }
 
         if (!function_exists('proc_open')) {
-            return $this->copyThenRemove($source, $target);
+            $this->copyThenRemove($source, $target);
+            
+            return;
         }
 
         if (Platform::isWindows()) {
@@ -340,7 +342,7 @@ class Filesystem
             }
         }
 
-        return $this->copyThenRemove($source, $target);
+        $this->copyThenRemove($source, $target);
     }
 
     /**
