@@ -236,7 +236,7 @@ EOF;
 
         // flatten array
         $classMap = array();
-        $ambigiousClasses = array();
+        $ambiguousClasses = array();
         if ($scanPsr0Packages) {
             $namespacesToScan = array();
 
@@ -257,17 +257,17 @@ EOF;
                             continue;
                         }
 
-                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespace, $group['type'], $classMap, $ambigiousClasses);
+                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespace, $group['type'], $classMap, $ambiguousClasses);
                     }
                 }
             }
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, null, null, $classMap, $ambigiousClasses);
+            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, null, null, $classMap, $ambiguousClasses);
         }
 
-        foreach($ambigiousClasses as $className => $ambigiousPaths)
+        foreach($ambiguousClasses as $className => $ambigiousPaths)
         {
             $cleanPath = str_replace(array('$vendorDir . \'', "',\n"), array($vendorPath, ''), $classMap[$className]);
 
@@ -337,17 +337,17 @@ EOF;
         return 0;
     }
 
-    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, $autoloadType = null, array $classMap, array &$ambigiousClasses)
+    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, $autoloadType = null, array $classMap, array &$ambiguousClasses)
     {
         foreach ($this->generateClassMap($dir, $blacklist, $namespaceFilter, $autoloadType) as $class => $path) {
             $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
             if (!isset($classMap[$class])) {
                 $classMap[$class] = $pathCode;
             } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
-                if (!isset($ambigiousClasses[$class])) {
-                    $ambigiousClasses[$class] = array();
+                if (!isset($ambiguousClasses[$class])) {
+                    $ambiguousClasses[$class] = array();
                 }
-                $ambigiousClasses[$class][] = $path;
+                $ambiguousClasses[$class][] = $path;
             }
         }
 
