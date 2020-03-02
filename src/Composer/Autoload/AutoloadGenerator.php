@@ -344,9 +344,6 @@ EOF;
             if (!isset($classMap[$class])) {
                 $classMap[$class] = $pathCode;
             } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
-                if (!isset($ambiguousClasses[$class])) {
-                    $ambiguousClasses[$class] = array();
-                }
                 $ambiguousClasses[$class][] = $path;
             }
         }
