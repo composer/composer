@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Composer;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
+use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
@@ -33,6 +34,8 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Semver;
 use Composer\Spdx\SpdxLicenses;
 use Composer\Util\Platform;
+use Seld\JsonLint\DuplicateKeyException;
+use Seld\JsonLint\JsonParser;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -79,6 +82,8 @@ class ShowCommand extends BaseCommand
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
+                new InputOption('unbounded', 'u', InputOption::VALUE_NONE, 'Ignore version contraints'),
+                new InputOption('unbounded-agressive', 'U', InputOption::VALUE_NONE, 'Agressively ignore version contraints'),
             ))
             ->setHelp(
                 <<<EOT
@@ -100,6 +105,20 @@ EOT
 
         $composer = $this->getComposer(false);
         $io = $this->getIO();
+
+        $showUnboundedAgressively = $showUnbounded = false;
+
+        if ($input->getOption('unbounded-agressive')) {
+            $input->setOption('unbounded', true);
+
+            $showUnboundedAgressively = $input->getOption('unbounded-agressive');
+        }
+        if ($input->getOption('unbounded')) {
+            $input->setOption('latest', true);
+
+
+            $showUnbounded = $input->getOption('unbounded');
+        }
 
         if ($input->getOption('installed')) {
             $io->writeError('<warning>You are using the deprecated option "installed". Only installed packages are shown by default now. The --all option can be used to show all packages.</warning>');
@@ -227,7 +246,7 @@ EOT
             } else {
                 $latestPackage = null;
                 if ($input->getOption('latest')) {
-                    $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion);
+                    $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, false, $showUnbounded, $showUnboundedAgressively);
                 }
                 if ($input->getOption('outdated') && $input->getOption('strict') && $latestPackage && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion() && !$latestPackage->isAbandoned()) {
                     $exitCode = 1;
@@ -349,6 +368,7 @@ EOT
         $ignoredPackages = array_map('strtolower', $input->getOption('ignore'));
         $indent = $showAllTypes ? '  ' : '';
         $latestPackages = array();
+        $unboundedPackages = array();
         $exitCode = 0;
         $viewData = array();
         $viewMetaData = array();
@@ -361,7 +381,7 @@ EOT
                 if ($showLatest && $showVersion) {
                     foreach ($packages[$type] as $package) {
                         if (is_object($package)) {
-                            $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly);
+                            $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly, $showUnbounded, $showUnboundedAgressively);
                             if ($latestPackage === false) {
                                 continue;
                             }
@@ -497,7 +517,7 @@ EOT
                     }
                     $io->write('');
                     if (isset($package['warning'])) {
-                        $io->write('<warning>' . $package['warning'] . '</warning>');
+                        $io->writeError('<warning>' . $package['warning'] . '</warning>');
                     }
                 }
 
@@ -1123,9 +1143,9 @@ EOT
     private function updateStatusToVersionStyle($updateStatus)
     {
         // 'up-to-date' is printed green
-        // 'semver-safe-update' is printed red
-        // 'update-possible' is printed yellow
-        return str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('info', 'highlight', 'comment'), $updateStatus);
+        // 'semver-safe-update' is printed yellow
+        // 'update-possible' is printed red
+        return str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('info', 'comment', 'highlight'), $updateStatus);
     }
 
     private function getUpdateStatus(PackageInterface $latestPackage, PackageInterface $package)
@@ -1167,7 +1187,7 @@ EOT
      *
      * @return PackageInterface|null
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false)
+    private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false, $showUnbounded = false, $showUnboundedAgressively = false)
     {
         // find the latest version allowed in this pool
         $name = $package->getName();
@@ -1183,17 +1203,24 @@ EOT
             $bestStability = $package->getStability();
         }
 
-        $targetVersion = null;
-        if (0 === strpos($package->getVersion(), 'dev-')) {
-            $targetVersion = $package->getVersion();
+        if ($showUnbounded) {
+            $targetVersion = '*';
+        } else {
+            $targetVersion = null;
+            if (0 === strpos($package->getVersion(), 'dev-')) {
+                $targetVersion = $package->getVersion();
+            }
+
+            if ($targetVersion === null && $minorOnly) {
+                $targetVersion = '^' . $package->getVersion();
+            }
         }
 
-        if ($targetVersion === null && $minorOnly) {
-            $targetVersion = '^' . $package->getVersion();
-        }
 
-        return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability);
+
+        return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability, $showUnboundedAgressively);
     }
+
 
     private function getPool(Composer $composer)
     {
