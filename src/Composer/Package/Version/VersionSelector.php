@@ -59,7 +59,7 @@ class VersionSelector
                     $package = $candidate;
                 }
             }
-            return $package;
+            return isset($package) ? $package : false;
         }
 
         if ($targetPhpVersion) {
