@@ -268,7 +268,7 @@ EOF;
         }
 
         foreach ($ambiguousClasses as $className => $ambigiousPaths) {
-            $cleanPath = str_replace(array('$vendorDir . \'', "',\n"), array($vendorPath, ''), $classMap[$className]);
+            $cleanPath = str_replace(array('$vendorDir . \'', '$baseDir . \'', "',\n"), array($vendorPath, $basePath, ''), $classMap[$className]);
 
             $this->io->writeError(
                 '<warning>Warning: Ambiguous class resolution, "'.$className.'"'.
