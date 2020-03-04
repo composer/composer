@@ -835,6 +835,8 @@ class RemoteFilesystem
                     $headers[] = 'Authorization: Bearer ' . $auth['password'];
                     $authenticationDisplayMessage = 'Using Bitbucket OAuth token authentication';
                 }
+            } elseif ($auth['password'] === 'bearer' ) {
+                $headers[] = 'Authorization: Bearer '.$auth['username'];
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
