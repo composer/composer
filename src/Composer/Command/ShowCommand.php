@@ -112,9 +112,9 @@ EOT
         if ($input->getOption('unbounded')) {
             $input->setOption('latest', true);
 
-            $candidates = [self::UNBOUNDED_IGNORE_TARGET_PHP_VERSION, self::UNBOUNDED_IGNORE_TARGET_STABILITY, self::UNBOUNDED_IGNORE_VERSION_LOCK];
+            $candidates = array(self::UNBOUNDED_IGNORE_TARGET_PHP_VERSION, self::UNBOUNDED_IGNORE_TARGET_STABILITY, self::UNBOUNDED_IGNORE_VERSION_LOCK);
 
-            $unboundedOptions = [];
+            $unboundedOptions = array();
             foreach ($input->getOption('unbounded') as $unboundedOption) {
                 $unboundedOption = strtolower($unboundedOption);
                 if (! in_array($unboundedOption, $candidates)) {
