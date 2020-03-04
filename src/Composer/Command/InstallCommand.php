@@ -44,6 +44,7 @@ class InstallCommand extends BaseCommand
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
+                new InputOption('no-install', null, InputOption::VALUE_NONE, 'Do not use, only defined here to catch misuse of the install command.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
@@ -78,6 +79,12 @@ EOT
 
         if ($args = $input->getArgument('packages')) {
             $io->writeError('<error>Invalid argument '.implode(' ', $args).'. Use "composer require '.implode(' ', $args).'" instead to add packages to your composer.json.</error>');
+
+            return 1;
+        }
+
+        if ($input->getOption('no-install')) {
+            $io->writeError('<error>Invalid option "--no-install". Use "composer update --no-install" instead if you are trying to update the composer.lock file.</error>');
 
             return 1;
         }

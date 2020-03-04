@@ -149,6 +149,7 @@ php composer.phar update "vendor/*"
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
+* **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
 * **--no-autoloader:** Skips autoloader generation.
@@ -201,7 +202,8 @@ If you do not specify a package, composer will prompt you to search for a packag
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--no-update:** Disables the automatic update of the dependencies.
+* **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
+* **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
 * **--update-with-dependencies:** Also update dependencies of the newly required packages, except those that are root requirements.
@@ -237,7 +239,8 @@ uninstalled.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--no-update:** Disables the automatic update of the dependencies.
+* **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
+* **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies:** Also update dependencies of the removed packages.

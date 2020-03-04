@@ -129,6 +129,7 @@ class Installer
     protected $dryRun = false;
     protected $verbose = false;
     protected $update = false;
+    protected $install = true;
     protected $dumpAutoloader = true;
     protected $runScripts = true;
     protected $ignorePlatformReqs = false;
@@ -220,6 +221,10 @@ class Installer
             $this->mockLocalRepositories($this->repositoryManager);
         }
 
+        if ($this->update && !$this->install) {
+            $this->dumpAutoloader = false;
+        }
+
         if ($this->runScripts) {
             $_SERVER['COMPOSER_DEV_MODE'] = (int) $this->devMode;
             putenv('COMPOSER_DEV_MODE='.$_SERVER['COMPOSER_DEV_MODE']);
@@ -241,8 +246,7 @@ class Installer
 
         try {
             if ($this->update) {
-                // TODO introduce option to set doInstall to false (update lock file without vendor install)
-                $res = $this->doUpdate($localRepo, true);
+                $res = $this->doUpdate($localRepo, $this->install);
             } else {
                 $res = $this->doInstall($localRepo);
             }
@@ -250,13 +254,13 @@ class Installer
                 return $res;
             }
         } catch (\Exception $e) {
-            if ($this->executeOperations && $this->config->get('notify-on-install')) {
+            if ($this->executeOperations && $this->install && $this->config->get('notify-on-install')) {
                 $this->installationManager->notifyInstalls($this->io);
             }
 
             throw $e;
         }
-        if ($this->executeOperations && $this->config->get('notify-on-install')) {
+        if ($this->executeOperations && $this->install && $this->config->get('notify-on-install')) {
             $this->installationManager->notifyInstalls($this->io);
         }
 
@@ -307,7 +311,7 @@ class Installer
             $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
         }
 
-        if ($this->executeOperations) {
+        if ($this->install && $this->executeOperations) {
             // force binaries re-generation in case they are missing
             foreach ($localRepo->getPackages() as $package) {
                 $this->installationManager->ensureBinariesPresence($package);
@@ -1014,6 +1018,19 @@ class Installer
     public function setUpdate($update = true)
     {
         $this->update = (bool) $update;
+
+        return $this;
+    }
+
+    /**
+     * Allows disabling the install step after an update
+     *
+     * @param  bool      $install
+     * @return Installer
+     */
+    public function setInstall($install = true)
+    {
+        $this->install = (bool) $install;
 
         return $this;
     }
