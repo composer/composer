@@ -218,6 +218,17 @@ class Installer
             $this->mockLocalRepositories($this->repositoryManager);
         }
 
+        if ($this->onlyCreateLock) {
+            $this->runScripts = false;
+            $this->executeOperations = true;
+            $this->writeLock = true;
+            $this->dumpAutoloader = false;
+            $this->mockLocalRepositories($this->repositoryManager);
+            if ($this->locker->isLocked()) {
+                throw new \RuntimeException("Can only create a lock file using --only-create-lock if it not already exists");
+            }
+        }
+
         if ($this->runScripts) {
             $devMode = (int) $this->devMode;
             putenv("COMPOSER_DEV_MODE=$devMode");
@@ -239,8 +250,8 @@ class Installer
 
         try {
             if ($this->update) {
-                // TODO introduce option to set doInstall to false (update lock file without vendor install)
-                $res = $this->doUpdate($localRepo, true);
+                // we do not want to install if we only want the lock
+                $res = $this->doUpdate($localRepo, !$this->onlyCreateLock);
             } else {
                 $res = $this->doInstall($localRepo);
             }
@@ -1023,6 +1034,19 @@ class Installer
     public function setDryRun($dryRun = true)
     {
         $this->dryRun = (bool) $dryRun;
+
+        return $this;
+    }
+
+    /**
+     * Whether to only create the lock file
+     *
+     * @param  bool      $onlyCreateLock
+     * @return Installer
+     */
+    public function setOnlyCreateLock($onlyCreateLock = false)
+    {
+        $this->onlyCreateLock = (bool) $onlyCreateLock;
 
         return $this;
     }

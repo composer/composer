@@ -44,6 +44,7 @@ class InstallCommand extends BaseCommand
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
+                new InputOption('only-create-lock', null, InputOption::VALUE_NONE, 'Create a composer.lock file, but do not install anything.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
@@ -100,6 +101,7 @@ EOT
 
         $install
             ->setDryRun($input->getOption('dry-run'))
+            ->setOnlyCreateLock($input->getOption('only-create-lock'))
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)

@@ -106,6 +106,8 @@ resolution.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--only-create-lock:** Does not install anything, but creates the
+  composer.lock file.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
