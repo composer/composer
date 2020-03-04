@@ -109,12 +109,12 @@ EOT
         $composer = $this->getComposer(false);
         $io = $this->getIO();
 
+        $unboundedOptions = array();
         if ($input->getOption('unbounded')) {
             $input->setOption('latest', true);
 
             $candidates = array(self::UNBOUNDED_IGNORE_TARGET_PHP_VERSION, self::UNBOUNDED_IGNORE_TARGET_STABILITY, self::UNBOUNDED_IGNORE_VERSION_LOCK);
 
-            $unboundedOptions = array();
             foreach ($input->getOption('unbounded') as $unboundedOption) {
                 $unboundedOption = strtolower($unboundedOption);
                 if (! in_array($unboundedOption, $candidates)) {
